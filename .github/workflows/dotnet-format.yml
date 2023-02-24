@@ -1,0 +1,44 @@
+#
+# This workflow runs the dotnet formatter on all c-sharp code.
+#
+
+name: dotnet-format
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "dotnet/**"
+      - "**.cs"
+      - "**.csproj"
+      - ".editorconfig"
+
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Install dotnet-format tool
+        run: dotnet tool install -g dotnet-format
+
+      - name: Check out code
+        uses: actions/checkout@v3.3.0
+        with:
+          fetch-depth: 0
+
+      - name: Run dotnet format
+        shell: bash
+        run: |
+          allProjectFiles=$(find ./ -type f -name "*.csproj" | tr '\n' ' ');
+          if [ $? -ne 0 ]; then exit 1; fi
+          echo "$allProjectFiles"
+
+          for file in $allProjectFiles; do
+              dotnet format $file --verify-no-changes --verbosity detailed
+          done

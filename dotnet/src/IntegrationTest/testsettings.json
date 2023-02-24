@@ -1,0 +1,16 @@
+﻿{
+  "OpenAI": {
+    "Label": "text-davinci-002",
+    "ModelId": "text-davinci-002",
+    "ApiKey": ""
+  },
+  "AzureOpenAI": {
+    "Label": "azure-text-davinci-002",
+    "DeploymentName": "",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
+  "Bing": {
+    "ApiKey": ""
+  }
+}

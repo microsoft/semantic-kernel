@@ -1,0 +1,19 @@
+{
+  "ignorePatterns": [
+    { "pattern": "/github/" },
+    { "pattern": "./actions" },
+    { "pattern": "./blob" },
+    { "pattern": "./issues" }
+  ],
+  "replacementPatterns": [
+    {
+      "pattern": "https://github.com/microsoft/semantic-kernel",
+      "replacement": "."
+    }
+  ],
+  "timeout": "20s",
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": "30s",
+  "aliveStatusCodes": [200, 206]
+}

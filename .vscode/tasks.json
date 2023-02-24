@@ -1,0 +1,161 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build (KernelSyntaxExamples)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/samples/dotnet-kernel-syntax-examples/KernelSyntaxExamples.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "/property:DebugType=portable"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "watch (KernelSyntaxExamples)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/samples/dotnet-kernel-syntax-examples/KernelSyntaxExamples.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      // r# inspect - dotnet jb inspectcode -o="inspectcode.log" --no-build -s=".\SK-dotnet.sln.DotSettings" -f=Text ".\SK-dotnet.sln"
+      "label": "R# check",
+      "command": "dotnet",
+      "type": "process",
+      "group": "test",
+      "args": [
+        "jb",
+        "inspectcode",
+        "-o=inspectcode.log",
+        "--no-build",
+        "-s=SK-dotnet.sln.DotSettings",
+        "-f=Text",
+        "SK-dotnet.sln"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet"
+      }
+    },
+    {
+      // r# cleanup - dotnet jb cleanupcode --no-build -p="Built-in: Reformat Code" -s=SK-dotnet.sln.DotSettings SK-dotnet.sln
+      "label": "R# cleanup",
+      "command": "dotnet",
+      "type": "process",
+      "group": "test",
+      "args": [
+        "jb",
+        "cleanupcode",
+        "--no-build",
+        "-s=SK-dotnet.sln.DotSettings",
+        "SK-dotnet.sln"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet"
+      }
+    },
+    {
+      "label": "PR - Validate",
+      "detail": "Runs tasks to validate changes before checking in.",
+      "group": "test",
+      "dependsOn": [
+        "Build - Semantic-Kernel",
+        "Test - Semantic-Kernel",
+        "Run - Kernel-Demo",
+        "R# check"
+      ],
+      "dependsOrder": "sequence"
+    },
+    {
+      "label": "Build - Semantic-Kernel",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/dotnet/SK-dotnet.sln",
+        "--configuration",
+        "Release"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "PR-Validate"
+      }
+    },
+    {
+      "label": "Test - Semantic-Kernel",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "${workspaceFolder}/dotnet/src/SemanticKernel.Test/SemanticKernel.Test.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "PR-Validate"
+      }
+    },
+    {
+      "label": "Run - Kernel-Demo",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/samples/dotnet-kernel-syntax-examples/KernelSyntaxExamples.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "PR-Validate"
+      }
+    },
+    {
+      "label": "Run - Starter API Azure Function",
+      "command": "func",
+      "type": "shell",
+      "args": ["start", "--csharp"],
+      "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/samples/starter-api-azure-function"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "Run-Samples"
+      }
+    },
+    {
+      "label": "Run - Starter Chat WebApp React",
+      "command": "yarn",
+      "type": "shell",
+      "args": ["start"],
+      "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/samples/starter-chat-webapp-react"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "Run-Samples"
+      }
+    }
+  ]
+}

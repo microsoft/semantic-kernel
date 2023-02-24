@@ -1,0 +1,9 @@
+*.json
+bin
+obj
+.ipy*
+*.csproj
+*.ini
+*.cache
+*.log
+*.tmp

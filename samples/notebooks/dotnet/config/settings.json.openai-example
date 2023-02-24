@@ -1,0 +1,6 @@
+{
+  "type":   "openai",
+  "model":  "text-davinci-003",
+  "apikey": "... your OpenAI key ...",
+  "org":    ""
+}

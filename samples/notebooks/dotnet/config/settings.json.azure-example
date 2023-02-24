@@ -1,0 +1,6 @@
+{
+  "type":     "azure",
+  "model":    "... your Azure OpenAI deployment name ...",
+  "endpoint": "https:// ... your endpoint ... .openai.azure.com/",
+  "apikey":   "... your Azure OpenAI key ..."
+}
