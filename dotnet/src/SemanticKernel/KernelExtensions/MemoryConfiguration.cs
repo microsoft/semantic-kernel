@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.KernelExtensions;
 public static class MemoryConfiguration
 {
     /// <summary>
-    /// Set the semantic memory to use the given memory storage. Uses the kernel's default embedding backend.
+    /// Set the semantic memory to use the given memory storage. Uses the kernel's default embeddings backend.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="storage">Memory storage</param>
@@ -26,7 +26,7 @@ public static class MemoryConfiguration
     }
 
     /// <summary>
-    /// Set the semantic memory to use the given memory storage and embedding backend.
+    /// Set the semantic memory to use the given memory storage and embeddings backend.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="embeddingsBackendName">Kernel backend for embedding generation</param>

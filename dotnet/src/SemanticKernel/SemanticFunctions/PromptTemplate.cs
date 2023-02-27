@@ -13,6 +13,9 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 namespace Microsoft.SemanticKernel.SemanticFunctions;
 
+/// <summary>
+/// Prompt template. 
+/// </summary>
 public sealed class PromptTemplate : IPromptTemplate
 {
     private readonly string _template;
@@ -24,11 +27,24 @@ public sealed class PromptTemplate : IPromptTemplate
     // ReSharper disable once NotAccessedField.Local
     private readonly PromptTemplateConfig _promptConfig;
 
+    /// <summary>
+    /// Constructor for PromptTemplate.
+    /// </summary>
+    /// <param name="template">Template.</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="kernel">Kernel in which template is to take effect.</param>
     public PromptTemplate(string template, PromptTemplateConfig promptTemplateConfig, IKernel kernel)
         : this(template, promptTemplateConfig, kernel.PromptTemplateEngine, kernel.Log)
     {
     }
 
+    /// <summary>
+    /// Constructor for PromptTemplate.
+    /// </summary>
+    /// <param name="template">Template.</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="promptTemplateEngine">Prompt template engine.</param>
+    /// <param name="log">Optional logger for prompt template.</param>
     public PromptTemplate(
         string template,
         PromptTemplateConfig promptTemplateConfig,

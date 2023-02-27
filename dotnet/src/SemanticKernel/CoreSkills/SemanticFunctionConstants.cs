@@ -68,7 +68,7 @@ Here are some good examples:
 [END AVAILABLE FUNCTIONS]
 
 <goal>
-Summarize an input, translate to french, and e-mail to John Doe
+Summarize an input, translate to French, and e-mail to John Doe
 </goal>
 <plan>
     <function.SummarizeSkill.Summarize/>

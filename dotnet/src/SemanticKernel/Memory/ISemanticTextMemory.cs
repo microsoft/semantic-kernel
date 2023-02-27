@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// An interface semantic memory that creates and recalls memories associated with text.
+/// An interface for semantic memory that creates and recalls memories associated with text.
 /// </summary>
 public interface ISemanticTextMemory
 {
