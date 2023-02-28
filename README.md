@@ -6,7 +6,9 @@
 Language Models (LLMs) with conventional programming languages. The SK extensible
 programming model combines natural language **semantic functions**, traditional
 code **native functions**, and **embeddings-based memory** unlocking new potential
-and adding value to applications with AI. SK supports
+and adding value to applications with AI.
+
+SK supports
 [prompt templating](docs/PROMPT_TEMPLATE_LANGUAGE.md), function
 chaining, 
 [vectorized memory](docs/EMBEDDINGS.md), and
@@ -30,7 +32,7 @@ in the history of computing.
 ## Samples ⚡
 
 If you would like a quick overview about how Semantic Kernel can integrate with your
-app, you can clone the repository:
+app, start by cloning the repository:
 
 ```shell
 git clone https://github.com/microsoft/semantic-kernel.git
@@ -65,7 +67,7 @@ working with Memory, and see how the kernel works.
      [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode)
      to run the notebooks.
 
-## Get Started using Semantic Kernel ⚡
+## Get Started with Semantic Kernel ⚡
 
 Here is a quick example of how to use Semantic Kernel from a C# console app.
 
@@ -88,7 +90,7 @@ using Microsoft.SemanticKernel.KernelExtensions;
 var kernel = Kernel.Builder.Build();
 
 kernel.Config.AddAzureOpenAICompletionBackend(
-    "dv3-backend",                       // Alias used by the kernel
+    "davinci-backend",                   // Alias used by the kernel
     "text-davinci-003",                  // Azure OpenAI *Deployment ID*
     "https://contoso.openai.azure.com/", // Azure OpenAI *Endpoint*
     "...your Azure OpenAI Key..."        // Azure OpenAI *Key*
@@ -130,7 +132,14 @@ For new features, components, or extensions, please open an issue and discuss wi
 us before sending a PR. This is to avoid rejection as we might be taking the core
 in a different direction, but also to consider the impact on the larger ecosystem.
 
-To learn more and get started, please read our [Contributing page](CONTRIBUTING.md).
+To learn more and get started, please read our [Contributing page](CONTRIBUTING.md)
+and check some of our documentation:
+
+* [SK Prompt Template Language](docs/PROMPT_TEMPLATE_LANGUAGE.md)
+* [SKills and Functions](docs/SKILLS.md)
+* [Embeddings and Semantic Memory](docs/EMBEDDINGS.md)
+* [SK Planner](docs/PLANNER.md)
+* [SK Notebooks](samples/notebooks/README.md)
 
 ## Code of Conduct
 
