@@ -13,5 +13,4 @@ stores as well as your own data.
 ## Getting Started ⚡
 
 - Check out the [GitHub repository](https://github.com/microsoft/semantic-kernel) for the latest updates
-- Join the [Discord community](https://aka.ms/SKDiscord)
 - Learn more at the [documentation site](https://aka.ms/SK-Docs)

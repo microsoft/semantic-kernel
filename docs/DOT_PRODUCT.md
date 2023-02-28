@@ -7,7 +7,7 @@ elements of each vector and then summing the results.
 
 The dot product has many applications in computer science, particularly in artificial
 intelligence and machine learning. One common use case for the dot product is to
-measure the similarity between two vectors, such as word [embeddings](README.md)
+measure the similarity between two vectors, such as word [embeddings](EMBEDDINGS.md)
 or image embeddings. This can be useful when trying to find similar words or images
 in a dataset.
 
