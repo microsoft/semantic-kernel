@@ -12,12 +12,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.MsGraph;
-using Microsoft.SemanticKernel.Connectors.MsGraph.Client;
-using Microsoft.SemanticKernel.Connectors.MsGraph.CredentialManagers;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.Productivity;
+using Microsoft.SemanticKernel.Skills.Productivity.MsGraph;
+using Microsoft.SemanticKernel.Skills.Productivity.MsGraph.Client;
+using Microsoft.SemanticKernel.Skills.Productivity.MsGraph.CredentialManagers;
 using DayOfWeek = System.DayOfWeek;
 
 /// <summary>
