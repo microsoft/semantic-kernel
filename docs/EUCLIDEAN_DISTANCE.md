@@ -12,7 +12,7 @@ In higher dimensions, this formula can be generalized to:
     d = √(x2 - x1)² + (y2 - y1)² + ... + (zn - zn-1)²
 
 Euclidean distance has many applications in computer science and artificial intelligence,
-particularly when working with [embeddings](README.md). Embeddings are numerical
+particularly when working with [embeddings](EMBEDDINGS.md). Embeddings are numerical
 representations of data that capture the underlying structure and relationships
 between different data points. They are commonly used in natural language processing,
 computer vision, and recommendation systems.

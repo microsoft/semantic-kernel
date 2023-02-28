@@ -40,5 +40,3 @@ Sample app learning examples:
 -   [Authentication and APIs](../../apps/auth-api-webapp-react/README.md) – learn how to connect to external
     API's with authentication while using Semantic Kernel
 -   GitHub Repo Q&A (coming soon) – learn how Memories and Embeddings can be used in your app
-
-Join the [Discord community](https://aka.ms/SKDiscord).
