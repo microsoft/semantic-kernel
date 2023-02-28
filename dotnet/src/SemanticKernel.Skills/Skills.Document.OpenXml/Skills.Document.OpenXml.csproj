@@ -23,6 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Skills,Abstractions\Skills.Abstractions.csproj" />
+    <ProjectReference Include="..\Skills.Abstractions\Skills.Abstractions.csproj" />
   </ItemGroup>
 </Project>

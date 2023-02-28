@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
-    <ProjectReference Include="..\Skills,Abstractions\Skills.Abstractions.csproj" />
+    <ProjectReference Include="..\Skills.Abstractions\Skills.Abstractions.csproj" />
     <ProjectReference Include="..\Skills.Memory.Sqlite\Skills.Memory.Sqlite.csproj" />
   </ItemGroup>
 
