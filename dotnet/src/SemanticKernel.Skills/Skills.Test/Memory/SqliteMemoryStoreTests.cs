@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 using Microsoft.SemanticKernel.Memory.Storage;
 using Xunit;
 
-namespace SemanticKernelConnectorsSqliteTests;
+namespace SemanticKernelSkills.Test.Memory;
 
 /// <summary>
 /// Unit tests of <see cref="SqliteDataStore{TValue}"/>.

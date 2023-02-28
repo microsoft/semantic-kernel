@@ -375,7 +375,7 @@ Possible updated plan:
 ";
 
     internal const string SummarizeConversationDefinition =
-    @"BEGIN CONTENT TO SUMMARIZE:
+        @"BEGIN CONTENT TO SUMMARIZE:
 {{$INPUT}}
 
 END CONTENT TO SUMMARIZE.

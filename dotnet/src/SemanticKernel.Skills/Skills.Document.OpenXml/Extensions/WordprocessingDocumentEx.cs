@@ -5,7 +5,7 @@ using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenXml.Extensions;
+namespace Microsoft.SemanticKernel.Skills.Document.OpenXml.Extensions;
 
 // Extension methods for DocumentFormat.OpenXml.Packaging.WordprocessingDocument
 // Note: the "Wordprocessing" vs "WordProcessing" typo is in the 3P class, we follow the original naming.
