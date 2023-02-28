@@ -3,7 +3,7 @@
 using System.IO;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
-using Microsoft.SemanticKernel.Connectors.OpenXml.Extensions;
+using Microsoft.SemanticKernel.Skills.Document.OpenXml.Extensions;
 
 namespace Microsoft.SemanticKernel.Skills.Document.OpenXml;
 

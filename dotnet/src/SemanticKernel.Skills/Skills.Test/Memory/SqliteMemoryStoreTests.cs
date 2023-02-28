@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 using Microsoft.SemanticKernel.Memory.Storage;
+using Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 using Xunit;
 
 namespace SemanticKernelSkills.Test.Memory;
