@@ -4,10 +4,14 @@
 
 **Semantic Kernel (SK)** is a lightweight SDK enabling integration of AI Large
 Language Models (LLMs) with conventional programming languages. The SK extensible
-programming model enriches your AI applications by combining natural language
-**semantic functions**, traditional code **native functions**, and **embeddings-based
-memory**.  SK supports prompt templating, function chaining, vectorized memory,
-and intelligent planning capabilities out of the box.
+programming model combines natural language **semantic functions**, traditional
+code **native functions**, and **embeddings-based memory** unlocking new potential
+and adding value to applications with AI. SK supports
+[prompt templating](docs/PROMPT_TEMPLATE_LANGUAGE.md), function
+chaining, 
+[vectorized memory](docs/EMBEDDINGS.md), and
+[intelligent planning](docs/PLANNER.md)
+capabilities out of the box.
 
 ![image](https://user-images.githubusercontent.com/371009/221739773-cf43522f-c1e4-42f2-b73d-5ba84e21febb.png)
 
@@ -18,7 +22,7 @@ recursive reasoning, summarization, zero/few-shot learning, contextual memory,
 long-term memory, [embeddings](docs/EMBEDDINGS.md), semantic indexing, [planning](docs/PLANNER.md),
 and accessing external knowledge stores as well as your own data.
 
-With SK, you can now build AI-first apps faster by design while also having a front-row
+By joining the SK community, you can build AI-first apps faster and have a front-row
 peek at how the SDK is being built. SK has been released as open-source so that more
 pioneering developers can join us in crafting the future of this landmark moment
 in the history of computing.
@@ -34,13 +38,13 @@ git clone https://github.com/microsoft/semantic-kernel.git
 
 and try these examples:
 
-|                                                                         |                                                                                                                                                                                                          |
-| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Simple chat summary](samples/apps/chat-summary-webapp-react/README.md) | Use ready-to-use skills and get those skills into your app easily. Be sure that the local API service is running for this sample to work.                                                                |
-| [Book creator](samples/apps/book-creator-webapp-react/README.md)        | Use planner to deconstruct a complex goal and envision using the planner in your app. Be sure that the local API service is running for this sample to work.                                             |
-| [Authentication and APIs](samples/apps/auth-api-webapp-react/README.md) | Use a basic connector pattern to authenticate and connect to an API and imagine integrating external data into your app's LLM AI. Be sure that the local API service is running for this sample to work. |
+|                                                                         |                                                                                                                                   |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [Simple chat summary](samples/apps/chat-summary-webapp-react/README.md) | Use ready-to-use skills and get those skills into your app easily.                                                                |
+| [Book creator](samples/apps/book-creator-webapp-react/README.md)        | Use planner to deconstruct a complex goal and envision using the planner in your app.                                             |
+| [Authentication and APIs](samples/apps/auth-api-webapp-react/README.md) | Use a basic connector pattern to authenticate and connect to an API and imagine integrating external data into your app's LLM AI. |
 
-For a more hands on overview, you can also run the
+For a more hands-on overview, you can also run the
 [Getting Started notebook](samples/notebooks/dotnet/Getting-Started-Notebook.ipynb),
 looking into the syntax, creating
 [Semantic Functions](docs/GLOSSARY.md),
