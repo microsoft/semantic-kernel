@@ -139,7 +139,7 @@ and check some of our documentation:
 * [SKills and Functions](docs/SKILLS.md)
 * [Embeddings and Semantic Memory](docs/EMBEDDINGS.md)
 * [SK Planner](docs/PLANNER.md)
-* [SK Notebooks](samples/notebooks/README.md)
+* [SK Notebooks](samples/notebooks/dotnet/README.md)
 
 ## Code of Conduct
 
