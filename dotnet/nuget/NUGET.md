@@ -1,14 +1,24 @@
 ## About Semantic Kernel
 
-Semantic Kernel is a lightweight SDK that offers a simple, powerful, and consistent programming
-model mixing classical code with AI and "semantic" functions, covering multiple programming
-languages and platforms.
+**Semantic Kernel (SK)** is a lightweight SDK enabling integration of AI Large
+Language Models (LLMs) with conventional programming languages. The SK extensible
+programming model combines natural language **semantic functions**, traditional
+code **native functions**, and **embeddings-based memory** unlocking new potential
+and adding value to applications with AI.
 
-Semantic Kernel is designed to support and encapsulate several design patterns from the latest
-in AI research such that developers can infuse their applications with complex skills like prompt
-chaining, recursive reasoning, summarization, zero/few-shot learning, contextual memory,
-long-term memory, embeddings, semantic indexing, planning, and accessing external knowledge
-stores as well as your own data.
+SK supports prompt templating, function chaining, vectorized memory, and intelligent planning
+capabilities out of the box.
+
+Semantic Kernel is designed to support and encapsulate several design patterns from the
+latest in AI research, such that developers can infuse their applications with complex
+skills like prompt chaining, recursive reasoning, summarization, zero/few-shot learning,
+contextual memory, long-term memory, embeddings, semantic indexing, planning, and accessing
+external knowledge stores as well as your own data.
+
+A skill refers to a domain of expertise made available to the kernel as a single
+function, or as a group of functions related to the skill. The design of SK skills
+has prioritized maximum flexibility for the developer to be both lightweight and
+extensible.
 
 ## Getting Started ⚡
 
