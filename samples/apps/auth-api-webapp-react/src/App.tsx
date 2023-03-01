@@ -97,27 +97,27 @@ const App: FC = () => {
                 },
                 {
                     title: 'AppendTextAsync',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills/Skills/Document/DocumentSkill.cs#L86',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills.Document/DocumentSkill.cs#L86',
                 },
                 {
                     title: 'UploadFileAsync',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills/Skills/Productivity/CloudDriveSkill.cs#L61',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills.MsGraph/CloudDriveSkill.cs#L61',
                 },
                 {
                     title: 'CreateLinkAsync',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills/Skills/Productivity/CloudDriveSkill.cs#L88',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills.MsGraph/CloudDriveSkill.cs#L88',
                 },
                 {
                     title: 'GetMyEmailAddressAsync',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills/Skills/Productivity/EmailSkill.cs#L55',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills.MsGraph/EmailSkill.cs#L55',
                 },
                 {
                     title: 'SendEmailAsync',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills/Skills/Productivity/EmailSkill.cs#L65',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills.MsGraph/EmailSkill.cs#L65',
                 },
                 {
                     title: 'AddTaskAsync',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills/Skills/Productivity/TaskListSkill.cs#L71',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills.MsGraph/TaskListSkill.cs#L71',
                 },
             ],
         },
