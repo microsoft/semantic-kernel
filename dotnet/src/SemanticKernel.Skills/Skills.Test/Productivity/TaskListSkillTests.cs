@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.Productivity;
-using Microsoft.SemanticKernel.Skills.Productivity.Models;
+using Microsoft.SemanticKernel.Skills.MsGraph;
+using Microsoft.SemanticKernel.Skills.MsGraph.Models;
 using Moq;
 using Xunit;
-using static Microsoft.SemanticKernel.Skills.Productivity.TaskListSkill;
+using static Microsoft.SemanticKernel.Skills.MsGraph.TaskListSkill;
 
 namespace SemanticKernelSkills.Test.Productivity;
 

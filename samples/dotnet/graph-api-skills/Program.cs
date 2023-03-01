@@ -14,10 +14,10 @@ using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.Productivity;
-using Microsoft.SemanticKernel.Skills.Productivity.MsGraph;
-using Microsoft.SemanticKernel.Skills.Productivity.MsGraph.Client;
-using Microsoft.SemanticKernel.Skills.Productivity.MsGraph.CredentialManagers;
+using Microsoft.SemanticKernel.Skills.MsGraph;
+using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
+using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
+using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
 using DayOfWeek = System.DayOfWeek;
 
 /// <summary>

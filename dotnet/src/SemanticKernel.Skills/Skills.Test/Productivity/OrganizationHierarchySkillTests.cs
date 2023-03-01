@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.Productivity;
+using Microsoft.SemanticKernel.Skills.MsGraph;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;

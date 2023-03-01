@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.Document;
-using Microsoft.SemanticKernel.Skills.FileSystem;
+using Microsoft.SemanticKernel.Skills.Document.FileSystem;
 using Moq;
 using Xunit;
 using static Microsoft.SemanticKernel.Skills.Document.DocumentSkill;

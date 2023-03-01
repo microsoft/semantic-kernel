@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.Productivity;
-using Microsoft.SemanticKernel.Skills.Productivity.Models;
+using Microsoft.SemanticKernel.Skills.MsGraph;
+using Microsoft.SemanticKernel.Skills.MsGraph.Models;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
-using static Microsoft.SemanticKernel.Skills.Productivity.CalendarSkill;
+using static Microsoft.SemanticKernel.Skills.MsGraph.CalendarSkill;
 
 namespace SemanticKernelSkills.Test.Productivity;
 

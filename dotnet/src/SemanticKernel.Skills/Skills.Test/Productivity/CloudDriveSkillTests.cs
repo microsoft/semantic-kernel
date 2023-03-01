@@ -7,11 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.Productivity;
+using Microsoft.SemanticKernel.Skills.MsGraph;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
-using static Microsoft.SemanticKernel.Skills.Productivity.CloudDriveSkill;
+using static Microsoft.SemanticKernel.Skills.MsGraph.CloudDriveSkill;
 
 namespace SemanticKernelSkills.Test.Productivity;
 

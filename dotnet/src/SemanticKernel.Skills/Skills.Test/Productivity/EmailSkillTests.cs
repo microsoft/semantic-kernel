@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.Productivity;
+using Microsoft.SemanticKernel.Skills.MsGraph;
 using Moq;
 using Xunit;
-using static Microsoft.SemanticKernel.Skills.Productivity.EmailSkill;
+using static Microsoft.SemanticKernel.Skills.MsGraph.EmailSkill;
 
 namespace SemanticKernelSkills.Test.Productivity;
 
