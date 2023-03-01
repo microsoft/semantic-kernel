@@ -9,11 +9,7 @@
   <PropertyGroup>
     <RootNamespace></RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>10</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
     <OutputType>Exe</OutputType>
-    <IsPackable>false</IsPackable>
     <NoWarn>CA1050</NoWarn>
     <!-- Suppress: "Declare types in namespaces" -->
     <UserSecretsId>d255a2b4-c92e-4b26-b8e1-a29584583b92</UserSecretsId>

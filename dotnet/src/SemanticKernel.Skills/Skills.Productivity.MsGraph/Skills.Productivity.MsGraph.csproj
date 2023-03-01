@@ -20,8 +20,8 @@
   
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="Microsoft.Graph" VersionOverride="4.51.0" />
-    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" VersionOverride="2.25.3" />
+    <PackageReference Include="Microsoft.Graph" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
   </ItemGroup>
   
   <ItemGroup>
