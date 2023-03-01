@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Skills.Connectors;
+namespace Microsoft.SemanticKernel.Skills.FileSystem;
 
 /// <summary>
 /// Interface for filesystem connections.

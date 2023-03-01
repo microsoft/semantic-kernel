@@ -18,6 +18,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Document.OpenXml;
+using Microsoft.SemanticKernel.Skills.FileSystem;
 using Microsoft.SemanticKernel.Skills.Productivity;
 using Microsoft.SemanticKernel.Skills.Productivity.MsGraph;
 using Microsoft.SemanticKernel.TemplateEngine;

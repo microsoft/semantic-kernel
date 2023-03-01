@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
-using Microsoft.SemanticKernel.Skills.Connectors;
+using Microsoft.SemanticKernel.Skills.FileSystem;
 using Microsoft.SemanticKernel.Skills.Productivity.MsGraph.Diagnostics;
 using Microsoft.SemanticKernel.Skills.Productivity.MsGraph.Exceptions;
 

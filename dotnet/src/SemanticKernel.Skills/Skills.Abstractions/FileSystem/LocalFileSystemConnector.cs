@@ -4,9 +4,8 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.Connectors;
 
-namespace Microsoft.SemanticKernel.Skills.Document.OpenXml;
+namespace Microsoft.SemanticKernel.Skills.FileSystem;
 
 /// <summary>
 /// Connector for local filesystem

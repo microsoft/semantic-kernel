@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Connectors;
+using Microsoft.SemanticKernel.Skills.FileSystem;
 
 namespace Microsoft.SemanticKernel.Skills.Document;
 
