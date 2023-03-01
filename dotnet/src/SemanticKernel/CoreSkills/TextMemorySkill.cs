@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 namespace Microsoft.SemanticKernel.CoreSkills;
 
 /// <summary>
-/// TextMemorySkill provides a skill to recall information from the long or short term memory.
+/// TextMemorySkill provides a skill to save or recall information from the long or short term memory.
 /// </summary>
 /// <example>
 /// Usage: kernel.ImportSkill("memory", new TextMemorySkill());
@@ -23,17 +23,17 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 public class TextMemorySkill
 {
     /// <summary>
-    /// Name of the context parameter used to specify which memory collection to use.
+    /// Name of the context variable used to specify which memory collection to use.
     /// </summary>
     public const string CollectionParam = "collection";
 
     /// <summary>
-    /// Name of the context parameter used to specify memory search relevance score.
+    /// Name of the context variable used to specify memory search relevance score.
     /// </summary>
     public const string RelevanceParam = "relevance";
 
     /// <summary>
-    /// Name of the context parameter used to specify a unique key associated with stored information.
+    /// Name of the context variable used to specify a unique key associated with stored information.
     /// </summary>
     public const string KeyParam = "key";
 
@@ -87,11 +87,11 @@ public class TextMemorySkill
     /// </summary>
     /// <example>
     /// SKContext["input"] = "the capital of France is Paris"
-    /// SKContext[TextMemorySkill.KeyParam] = "countryinfo1"
+    /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
     /// {{memory.save $input }}
     /// </example>
     /// <param name="text">The information to save</param>
-    /// <param name="=context">Contains the 'collection' to save the information and unique 'key' to associate it with.</param>
+    /// <param name="context">Contains the 'collection' to save the information and unique 'key' to associate it with.</param>
     [SKFunction("Save information to semantic memory")]
     [SKFunctionName("Save")]
     [SKFunctionInput(Description = "The information to save")]
@@ -105,7 +105,7 @@ public class TextMemorySkill
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
         Verify.NotEmpty(key, "Memory key not defined");
 
-        context.Log.LogTrace("Saving memory '{0}' to collection '{1}', key '{2}'", text, collection, key);
+        context.Log.LogTrace("Saving memory to collection '{0}'", collection);
 
         await context.Memory.SaveInformationAsync(collection, text: text, id: key);
     }
