@@ -37,9 +37,9 @@
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="2.25.3" />
 
     <!-- Analyzers -->
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.5.22">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <!-- <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.5.22"> -->
+    <!--   <PrivateAssets>all</PrivateAssets> -->
+    <!--   <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets> -->
+    <!-- </PackageReference> -->
   </ItemGroup>
 </Project>
