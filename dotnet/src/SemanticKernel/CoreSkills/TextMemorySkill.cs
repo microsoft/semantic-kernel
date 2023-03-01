@@ -32,6 +32,11 @@ public class TextMemorySkill
     /// </summary>
     public const string RelevanceParam = "relevance";
 
+    /// <summary>
+    /// Name of the context paramter use to specify key associated with stored information.
+    /// </summary>
+    public const string KeyParam = "key";
+
     private const string DefaultCollection = "generic";
     private const string DefaultRelevance = "0.75";
 
@@ -75,5 +80,32 @@ public class TextMemorySkill
         }
 
         return memory != null ? memory.Text : string.Empty;
+    }
+
+    /// <summary>
+    /// Save information to semantic memory
+    /// </summary>
+    /// <example>
+    /// SKContext["input"] = "the capital of France is Paris"
+    /// {{memory.save $input }}
+    /// </example>
+    /// <param name="text"> The information to save </param>
+    /// <param name="=context"> Contains the 'collection' and 'key' to save the information </param>
+    [SKFunction("Save information to semantic memory")]
+    [SKFunctionName("Save")]
+    [SKFunctionInput(Description = "The information to save")]
+    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection where to save the information", DefaultValue = DefaultCollection)]
+    [SKFunctionContextParameter(Name = "key", Description = "The key to save the information")]
+    public async Task SaveAsync(string text, SKContext context)
+    {
+        var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
+        Verify.NotEmpty(collection, "Memory collection not defined");
+
+        var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
+        Verify.NotEmpty(key, "Memory key not defined");
+
+        context.Log.LogTrace("Saving memory '{0}' to collection '{1}', key '{2}'", text, collection, key);
+
+        await context.Memory.SaveInformationAsync(collection, text: text, id: key);
     }
 }
