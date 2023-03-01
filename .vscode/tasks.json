@@ -117,7 +117,7 @@
       "args": [
         "run",
         "--project",
-        "${workspaceFolder}/samples/dotnet-kernel-syntax-examples/KernelSyntaxExamples.csproj"
+        "${workspaceFolder}/samples/dotnet/kernel-syntax-examples/KernelSyntaxExamples.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",
