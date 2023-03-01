@@ -3,9 +3,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Bing;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Skills.Web;
+using Microsoft.SemanticKernel.Skills.Web.Bing;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming

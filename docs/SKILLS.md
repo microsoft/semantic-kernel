@@ -3,7 +3,7 @@
 ![image](https://user-images.githubusercontent.com/371009/221739773-cf43522f-c1e4-42f2-b73d-5ba84e21febb.png)
 
 A skill refers to a domain of expertise made available to the kernel as a single
-function, or as a group of functions related to the skill* The design of SK skills
+function, or as a group of functions related to the skill. The design of SK skills
 has prioritized maximum flexibility for the developer to be both lightweight and
 extensible.
 
