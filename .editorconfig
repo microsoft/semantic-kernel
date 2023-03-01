@@ -91,14 +91,15 @@ dotnet_style_prefer_conditional_expression_over_return = true:silent
 dotnet_style_prefer_simplified_interpolation = true:suggestion
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 dotnet_style_namespace_match_folder = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_compound_assignment = true:suggestion
 # Code quality rules
 dotnet_code_quality_unused_parameters = all:suggestion
 
 # Suppressed diagnostics
 dotnet_diagnostic.CA1002.severity = none # Change 'List<string>' in '...' to use 'Collection<T>' ...
-dotnet_diagnostic.CA1032.severity = none # Add the following constructor to ...Exception: public ...
 dotnet_diagnostic.CA1034.severity = none # Do not nest type. Alternatively, change its accessibility so that it is not externally visible
-dotnet_diagnostic.CA1062.severity = none # Disable null check, C# already does it for usdotnet_diagnostic.CA1416.severity = silent # Validate platform compatibility
+dotnet_diagnostic.CA1062.severity = none # Disable null check, C# already does it for us
 dotnet_diagnostic.CA1303.severity = none # Do not pass literals as localized parameters
 dotnet_diagnostic.CS1591.severity = none # Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
@@ -113,8 +114,10 @@ dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging mes
 # Diagnostics elevated as warnings
 dotnet_diagnostic.CA1000.severity = warning # Do not declare static members on generic types
 dotnet_diagnostic.CA1031.severity = warning # Do not catch general exception types
+dotnet_diagnostic.CA1032.severity = warning # Add the following constructor to ...Exception: public ...
 dotnet_diagnostic.CA1063.severity = warning # Implement IDisposable correctly
 dotnet_diagnostic.CA1064.severity = warning # Exceptions should be public
+dotnet_diagnostic.CA1416.severity = warning # Validate platform compatibility
 dotnet_diagnostic.CA1508.severity = warning # Avoid dead conditional code
 dotnet_diagnostic.CA2000.severity = warning # Call System.IDisposable.Dispose on object before all references to it are out of scope
 dotnet_diagnostic.CA2201.severity = warning # Exception type System.Exception is not sufficiently specific
@@ -123,55 +126,56 @@ dotnet_diagnostic.CA2201.severity = warning # Exception type System.Exception is
 ###############################
 # Naming Conventions          #
 ###############################
-# Style Definitions
-dotnet_naming_style.pascal_case_style.capitalization              = pascal_case
-# Use PascalCase for constant fields
-dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = error
-dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
-dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
-# Define the 'constant_fields' symbol group:
-dotnet_naming_symbols.constant_fields.applicable_kinds            = field
-dotnet_naming_symbols.constant_fields.applicable_accessibilities  = *
-dotnet_naming_symbols.constant_fields.required_modifiers          = const
 
-# Define the 'private_static_fields' symbol group
-dotnet_naming_symbols.private_static_fields.applicable_kinds = field
-dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
-dotnet_naming_symbols.private_static_fields.required_modifiers = static
-# Define the 'static_underscored' naming style
+# Styles
+
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+
 dotnet_naming_style.static_underscored.capitalization = camel_case
 dotnet_naming_style.static_underscored.required_prefix = s_
-# Define the 'private_static_fields_underscored' naming rule
-dotnet_naming_rule.private_static_fields_underscored.symbols = private_static_fields
-dotnet_naming_rule.private_static_fields_underscored.style = static_underscored
-dotnet_naming_rule.private_static_fields_underscored.severity = error
 
-# Define the 'private_fields' symbol group:
-dotnet_naming_symbols.private_fields.applicable_kinds = field
-dotnet_naming_symbols.private_fields.applicable_accessibilities = private
-# Define the 'underscored' naming style
 dotnet_naming_style.underscored.capitalization = camel_case
 dotnet_naming_style.underscored.required_prefix = _
-# Define the 'private_fields_underscored' naming rule
-dotnet_naming_rule.private_fields_underscored.symbols = private_fields
-dotnet_naming_rule.private_fields_underscored.style = underscored
-dotnet_naming_rule.private_fields_underscored.severity = error
 
-# Define the 'any_async_methods' symbol group
-dotnet_naming_symbols.any_async_methods.applicable_kinds = method
-dotnet_naming_symbols.any_async_methods.applicable_accessibilities = *
-dotnet_naming_symbols.any_async_methods.required_modifiers = async
-# Define the 'end_in_async' naming style
 dotnet_naming_style.end_in_async.required_prefix =
 dotnet_naming_style.end_in_async.required_suffix = Async
 dotnet_naming_style.end_in_async.capitalization = pascal_case
 dotnet_naming_style.end_in_async.word_separator =
-# Define the 'async_methods_end_in_async' naming rule
+
+# Symbols
+
+dotnet_naming_symbols.constant_fields.applicable_kinds = field
+dotnet_naming_symbols.constant_fields.applicable_accessibilities  = *
+dotnet_naming_symbols.constant_fields.required_modifiers = const
+
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_symbols.any_async_methods.applicable_kinds = method
+dotnet_naming_symbols.any_async_methods.applicable_accessibilities = *
+dotnet_naming_symbols.any_async_methods.required_modifiers = async
+
+# Rules
+
+dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = error
+dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
+dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_rule.private_static_fields_underscored.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_underscored.style = static_underscored
+dotnet_naming_rule.private_static_fields_underscored.severity = error
+
+dotnet_naming_rule.private_fields_underscored.symbols = private_fields
+dotnet_naming_rule.private_fields_underscored.style = underscored
+dotnet_naming_rule.private_fields_underscored.severity = error
+
 dotnet_naming_rule.async_methods_end_in_async.symbols = any_async_methods
 dotnet_naming_rule.async_methods_end_in_async.style = end_in_async
 dotnet_naming_rule.async_methods_end_in_async.severity = error
-dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
-dotnet_style_prefer_compound_assignment = true:suggestion
 
 ###############################
 # C# Coding Conventions       #

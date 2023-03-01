@@ -81,7 +81,7 @@ public class AIException : Exception<AIException.ErrorCodes>
     /// </summary>
     /// <param name="errCode">Error code of the exception.</param>
     /// <param name="message">Message of the exception</param>
-    public AIException(ErrorCodes errCode, string message) : base(errCode, message)
+    public AIException(ErrorCodes errCode, string? message = null) : base(errCode, message)
     {
         this.ErrorCode = errCode;
     }
@@ -96,4 +96,23 @@ public class AIException : Exception<AIException.ErrorCodes>
     {
         this.ErrorCode = errCode;
     }
+
+    #region private ================================================================================
+
+    private AIException()
+    {
+        // Not allowed, error code is required
+    }
+
+    private AIException(string message) : base(message)
+    {
+        // Not allowed, error code is required
+    }
+
+    private AIException(string message, Exception innerException) : base(message, innerException)
+    {
+        // Not allowed, error code is required
+    }
+
+    #endregion
 }

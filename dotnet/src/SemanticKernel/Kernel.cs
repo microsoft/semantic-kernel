@@ -172,7 +172,10 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                context = await f.InvokeAsync(context);
+                await this._config.RetryMechanism.ExecuteWithRetryAsync(
+                    async () => { context = await f.InvokeAsync(context); },
+                    this._log,
+                    cancellationToken);
 
                 if (context.ErrorOccurred)
                 {

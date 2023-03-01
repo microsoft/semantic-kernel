@@ -81,7 +81,7 @@ public interface IKernel
     void RegisterMemory(ISemanticTextMemory memory);
 
     /// <summary>
-    /// Run a pipeline composed by synchronous and asynchronous functions.
+    /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
@@ -89,7 +89,7 @@ public interface IKernel
         params ISKFunction[] pipeline);
 
     /// <summary>
-    /// Run a pipeline composed by synchronous and asynchronous functions.
+    /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="input">Input to process</param>
     /// <param name="pipeline">List of functions</param>
@@ -99,7 +99,7 @@ public interface IKernel
         params ISKFunction[] pipeline);
 
     /// <summary>
-    /// Run a pipeline composed by synchronous and asynchronous functions.
+    /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="variables">Input to process</param>
     /// <param name="pipeline">List of functions</param>
@@ -109,7 +109,7 @@ public interface IKernel
         params ISKFunction[] pipeline);
 
     /// <summary>
-    /// Run a pipeline composed by synchronous and asynchronous functions.
+    /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <param name="pipeline">List of functions</param>
@@ -119,7 +119,7 @@ public interface IKernel
         params ISKFunction[] pipeline);
 
     /// <summary>
-    /// Run a pipeline composed by synchronous and asynchronous functions.
+    /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="input">Input to process</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -131,7 +131,7 @@ public interface IKernel
         params ISKFunction[] pipeline);
 
     /// <summary>
-    /// Run a pipeline composed by synchronous and asynchronous functions.
+    /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">Cancellation token</param>
