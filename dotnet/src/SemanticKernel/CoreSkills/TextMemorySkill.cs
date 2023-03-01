@@ -33,7 +33,7 @@ public class TextMemorySkill
     public const string RelevanceParam = "relevance";
 
     /// <summary>
-    /// Name of the context parameter used to specify key associated with stored information.
+    /// Name of the context parameter used to specify a unique key associated with stored information.
     /// </summary>
     public const string KeyParam = "key";
 
@@ -91,7 +91,7 @@ public class TextMemorySkill
     /// {{memory.save $input }}
     /// </example>
     /// <param name="text">The information to save</param>
-    /// <param name="=context">Contains the 'collection' and 'key' to save the information</param>
+    /// <param name="=context">Contains the 'collection' to save the information and unique 'key' to associate it with.</param>
     [SKFunction("Save information to semantic memory")]
     [SKFunctionName("Save")]
     [SKFunctionInput(Description = "The information to save")]
