@@ -13,7 +13,7 @@ using Xunit;
 using Xunit.Abstractions;
 using static Microsoft.SemanticKernel.Skills.MsGraph.CloudDriveSkill;
 
-namespace SemanticKernelSkills.Test.Productivity;
+namespace SemanticKernelSkills.Test.MsGraph;
 
 public class CloudDriveSkillTests : IDisposable
 {

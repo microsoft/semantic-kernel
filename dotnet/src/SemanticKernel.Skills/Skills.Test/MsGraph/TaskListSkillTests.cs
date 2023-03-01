@@ -12,7 +12,7 @@ using Moq;
 using Xunit;
 using static Microsoft.SemanticKernel.Skills.MsGraph.TaskListSkill;
 
-namespace SemanticKernelSkills.Test.Productivity;
+namespace SemanticKernelSkills.Test.MsGraph;
 
 public class TaskListSkillTests
 {
