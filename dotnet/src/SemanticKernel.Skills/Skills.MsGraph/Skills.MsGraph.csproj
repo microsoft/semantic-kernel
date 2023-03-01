@@ -15,7 +15,7 @@
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Skills.MsGraph</PackageId>
     <Title>Semantic Kernel - Microsoft Graph Connector</Title>
-    <Version>0.7</Version>
+    <Version>0.8</Version>
   </PropertyGroup>
   
   <ItemGroup>

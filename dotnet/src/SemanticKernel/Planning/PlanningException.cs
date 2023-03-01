@@ -41,7 +41,7 @@ public class PlanningException : Exception<PlanningException.ErrorCodes>
     /// </summary>
     /// <param name="errCode">The error code.</param>
     /// <param name="message">The message.</param>
-    public PlanningException(ErrorCodes errCode, string message) : base(errCode, message)
+    public PlanningException(ErrorCodes errCode, string? message = null) : base(errCode, message)
     {
         this.ErrorCode = errCode;
     }
@@ -56,4 +56,23 @@ public class PlanningException : Exception<PlanningException.ErrorCodes>
     {
         this.ErrorCode = errCode;
     }
+
+    #region private ================================================================================
+
+    private PlanningException()
+    {
+        // Not allowed, error code is required
+    }
+
+    private PlanningException(string message) : base(message)
+    {
+        // Not allowed, error code is required
+    }
+
+    private PlanningException(string message, Exception innerException) : base(message, innerException)
+    {
+        // Not allowed, error code is required
+    }
+
+    #endregion
 }

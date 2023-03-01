@@ -12,7 +12,10 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </summary>
 public sealed class NullMemory : ISemanticTextMemory
 {
-    public static NullMemory Instance { get; } = new NullMemory();
+    /// <summary>
+    /// Singleton instance
+    /// </summary>
+    public static NullMemory Instance { get; } = new();
 
     /// <inheritdoc/>
     public Task SaveInformationAsync(

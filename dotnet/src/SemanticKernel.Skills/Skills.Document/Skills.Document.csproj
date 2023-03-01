@@ -15,7 +15,7 @@
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Skills.Document</PackageId>
     <Title>Semantic Kernel - OpenXml Connector</Title>
-    <Version>0.7</Version>
+    <Version>0.8</Version>
   </PropertyGroup>
 
   <ItemGroup>
