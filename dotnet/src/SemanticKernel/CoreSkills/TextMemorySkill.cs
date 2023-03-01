@@ -33,7 +33,7 @@ public class TextMemorySkill
     public const string RelevanceParam = "relevance";
 
     /// <summary>
-    /// Name of the context paramter use to specify key associated with stored information.
+    /// Name of the context paramter used to specify key associated with stored information.
     /// </summary>
     public const string KeyParam = "key";
 
