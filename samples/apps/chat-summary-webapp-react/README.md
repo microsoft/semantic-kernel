@@ -37,9 +37,7 @@ can edit or just add more to the chat while you are on the page.
 ## Next Steps: Try a more advanced sample app
 
 [Book creator](../book-creator-webapp-react/README.md) – learn how Planner and chaining
-of semantic functions can be used in your app
-
-Join the [Discord community](https://aka.ms/SKDiscord).
+of semantic functions can be used in your app.
 
 ## Deeper Learning Tips
 

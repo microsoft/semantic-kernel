@@ -2,7 +2,7 @@
 
 Cosine similarity is a measure of the degree of similarity between two vectors in
 a multi-dimensional space. It is commonly used in artificial intelligence and natural
-language processing to compare [embeddings](README.md),
+language processing to compare [embeddings](EMBEDDINGS.md),
 which are numerical representations of
 words or other objects.
 

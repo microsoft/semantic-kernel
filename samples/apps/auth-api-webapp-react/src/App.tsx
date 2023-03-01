@@ -83,10 +83,6 @@ const App: FC = () => {
             header: 'Useful Resources',
             items: [
                 {
-                    title: 'Join Discord Community',
-                    uri: 'https://aka.ms/skdiscord',
-                },
-                {
                     title: 'Read Documentation',
                     uri: 'https://aka.ms/SKDoc-Auth-API',
                 },

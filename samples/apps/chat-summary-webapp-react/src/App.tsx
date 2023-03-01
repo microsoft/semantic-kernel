@@ -3,11 +3,11 @@
 import { Subtitle1, Tab, TabList } from '@fluentui/react-components';
 import { FC, useEffect, useState } from 'react';
 import AISummary from './components/AISummary';
+import ChatInteraction from './components/chat/ChatInteraction';
+import { IChatMessage } from './components/chat/ChatThread';
 import FunctionProbe from './components/FunctionProbe';
 import QuickTips, { ITipGroup } from './components/QuickTips';
 import ServiceConfig from './components/ServiceConfig';
-import ChatInteraction from './components/chat/ChatInteraction';
-import { IChatMessage } from './components/chat/ChatThread';
 import { IKeyConfig } from './model/KeyConfig';
 
 const App: FC = () => {
@@ -52,10 +52,6 @@ const App: FC = () => {
         {
             header: 'Useful Resources',
             items: [
-                {
-                    title: 'Join Discord Community',
-                    uri: 'https://aka.ms/skdiscord',
-                },
                 {
                     title: 'Read Documentation',
                     uri: 'https://aka.ms/SKDocBook',
