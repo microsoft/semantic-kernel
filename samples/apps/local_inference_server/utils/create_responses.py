@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 
 # These responses are modeled after the OpenAI REST API

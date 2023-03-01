@@ -1,6 +1,4 @@
-import os
 import torch
-import numpy as np
 from . import InferenceGenerator
 from transformers import AutoModel, AutoTokenizer
 

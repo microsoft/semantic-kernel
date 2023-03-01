@@ -1,5 +1,3 @@
-
-import PIL.Image
 from diffusers import DiffusionPipeline
 import base64
 from . import InferenceGenerator

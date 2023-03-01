@@ -1,10 +1,7 @@
 # Importing flask module in the project is mandatory
 # An object of Flask class is our WSGI application.
 from flask import Flask, request, json, redirect, url_for, render_template, jsonify
-from utils import model_utils, create_responses, CompletionGenerator, EmbeddingGenerator, ImageGenerator
-import os
-import socket
-import sys
+from utils import create_responses, CompletionGenerator, EmbeddingGenerator, ImageGenerator
 import argparse
 
 # Flask constructor takes the name of
