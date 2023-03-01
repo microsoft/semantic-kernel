@@ -27,7 +27,7 @@ public sealed class KernelBuilder
     /// <summary>
     /// Create a new kernel instance
     /// </summary>
-    /// <returns></returns>
+    /// <returns>New kernel instance</returns>
     public static IKernel Create()
     {
         var builder = new KernelBuilder();
