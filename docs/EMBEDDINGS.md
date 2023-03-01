@@ -21,7 +21,18 @@ meaningful representations of words that can be used in machine learning models.
 Embeddings can be used in many different applications, including sentiment analysis,
 document classification, and recommendation systems. They are particularly useful
 when working with unstructured text data where traditional methods like bag-of-words
-models struggle.
+models struggle, and are a fundamental part of **SK Semantic Memory**.
+
+**Semantic Memory** is similar to how the human brain stores and retrieves knowledge about
+the world. Embeddings are used to create a semantic memory by **representing concepts
+or entities as vectors in a high-dimensional space**. This approach allows the model
+to learn relationships between concepts and make inferences based on similarity or
+distance between vector representations. For example, the Semantic Memory can be
+trained to understand that "Word" and "Excel" are related concepts because they are
+both document types and both Microsoft products, even though they use different
+file formats and provide different features. This type of memory is useful in
+many applications, including question-answering systems, natural language understanding,
+and knowledge graphs.
 
 Software developers can use pre-trained embedding model, or train their one with their
 own custom datasets. Pre-trained embedding models have been trained on large amounts
@@ -36,23 +47,27 @@ the meaning of words in a computationally efficient manner.
 
 Some examples about embeddings applications.
 
-1. Recommender systems: Embeddings can be used to represent the items in a recommender
-   system, allowing for more accurate recommendations based on similarity between items.
+1. Semantic Memory: Embeddings can be used to create a semantic memory, by which
+   a machine can learn to understand the meanings of words and sentences and can
+   understand the relationships between them.
 
 2. Natural Language Processing (NLP): Embeddings can be used to represent words or
    sentences in NLP tasks such as sentiment analysis, named entity recognition, and
    text classification.
 
-3. Image recognition: Embeddings can be used to represent images in computer vision
+3. Recommender systems: Embeddings can be used to represent the items in a recommender
+   system, allowing for more accurate recommendations based on similarity between items.
+
+4. Image recognition: Embeddings can be used to represent images in computer vision
    tasks such as object detection and image classification.
 
-4. Anomaly detection: Embeddings can be used to represent data points in high-dimensional
+5. Anomaly detection: Embeddings can be used to represent data points in high-dimensional
    datasets, making it easier to identify outliers or anomalous data points.
 
-5. Graph analysis: Embeddings can be used to represent nodes in a graph, allowing
+6. Graph analysis: Embeddings can be used to represent nodes in a graph, allowing
    for more efficient graph analysis and visualization.
 
-6. Personalization: Embeddings can be used to represent users in personalized recommendation
+7. Personalization: Embeddings can be used to represent users in personalized recommendation
    systems or personalized search engines.
 
 ## Vector Operations used with Embeddings

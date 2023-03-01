@@ -1,7 +1,20 @@
+Prompts are the inputs or queries that a user or a program gives to an LLM AI,
+in order to elicit a specific response from the model.
+
+Prompts can be natural
+language sentences or questions, or code snippets or commands, or any combination
+of text or code, depending on the domain and the task.
+
+Prompts can also be nested
+or chained, meaning that the output of one prompt can be used as the input of another
+prompt, creating more complex and dynamic interactions with the model.
+
 # SK Prompt Template Syntax
 
 The Semantic Kernel prompt template language is a simple and powerful way to
-define and compose AI functions **using plain text**.
+define and compose AI
+[functions](GLOSSARY.md)
+**using plain text**.
 You can use it to create natural language prompts, generate responses, extract
 information, **invoke other prompts** or perform any other task that can be
 expressed with text.

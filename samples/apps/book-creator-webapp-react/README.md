@@ -34,8 +34,6 @@ creates a plan for the functions to run based on the ask. You can see the plan a
 [Authentication and APIs](../auth-api-webapp-react/README.md) – learn how to connect
 to external API's with authentication while using Semantic Kernel.
 
-Join the [Discord community](https://aka.ms/SKDiscord).
-
 ## Deeper Learning Tips
 
 -   Try modifying the language that the book is translated to via editing
