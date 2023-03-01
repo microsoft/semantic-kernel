@@ -57,10 +57,12 @@ public class LocalUserMSALCredentialManager
                 attribute2: new KeyValuePair<string, string>("Product", "SemanticKernel"))
             .Build();
 
-        // TODO: remove sync wait, may cause deadlock, use await or JoinableTaskFactory.Run
+        // TODO: remove sync wait, may cause deadlock
+#pragma warning disable VSTHRD002 // Synchronously waiting on tasks or awaiters may cause deadlocks. Use await or JoinableTaskFactory.Run instead.
         this._cacheHelper = MsalCacheHelper.CreateAsync(this._storageProperties)
             .GetAwaiter()
             .GetResult();
+#pragma warning restore VSTHRD002
 
         this._cacheHelper.VerifyPersistence();
     }

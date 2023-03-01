@@ -30,12 +30,35 @@ public abstract class Exception<TErrorCode> : Exception where TErrorCode : Enum
     {
     }
 
-    #region private ================================================================================
+    /// <summary>
+    /// Parameterless ctor, do not use
+    /// </summary>
+    protected Exception()
+    {
+        // Not allowed, error code is required
+    }
+
+    /// <summary>
+    /// Standard ctor, do not use
+    /// </summary>
+    /// <param name="message">Exception message</param>
+    protected Exception(string message) : base(message)
+    {
+        // Not allowed, error code is required
+    }
+
+    /// <summary>
+    /// Standard ctor, do not use
+    /// </summary>
+    /// <param name="message">Exception message</param>
+    /// <param name="innerException">Internal exception</param>
+    protected Exception(string message, Exception innerException) : base(message, innerException)
+    {
+        // Not allowed, error code is required
+    }
 
     private static string BuildMessage(TErrorCode errorType, string? message)
     {
         return message != null ? $"{errorType.ToString("G")}: {message}" : errorType.ToString("G");
     }
-
-    #endregion
 }
