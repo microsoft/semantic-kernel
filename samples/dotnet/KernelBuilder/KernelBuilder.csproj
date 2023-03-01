@@ -2,7 +2,7 @@
 
     <PropertyGroup>
       <RootNamespace>KernelSetup</RootNamespace>
-      <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+      <TargetFramework>net6.0</TargetFramework>
       <OutputType>Exe</OutputType>
       <Nullable>disable</Nullable>
       <ImplicitUsings>enable</ImplicitUsings>

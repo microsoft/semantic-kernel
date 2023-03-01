@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernelSkills.Test</AssemblyName>
     <RootNamespace>SemanticKernelSkills.Test</RootNamespace>
-    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>

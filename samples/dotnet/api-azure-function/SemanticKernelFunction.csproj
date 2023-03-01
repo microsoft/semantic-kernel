@@ -7,7 +7,7 @@
   <Import Project="$(RepoRoot)/dotnet/Directory.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <OutputType>Exe</OutputType>
     <LangVersion>10</LangVersion>
