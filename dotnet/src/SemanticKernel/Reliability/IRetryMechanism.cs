@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -16,6 +17,7 @@ public interface IRetryMechanism
     /// </summary>
     /// <param name="action">The action to retry on exception.</param>
     /// <param name="log">The logger to use.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An awaitable task.</returns>
-    Task ExecuteWithRetryAsync(Func<Task> action, ILogger log);
+    Task ExecuteWithRetryAsync(Func<Task> action, ILogger log, CancellationToken cancellationToken = default);
 }

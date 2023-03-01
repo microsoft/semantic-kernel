@@ -55,7 +55,7 @@ public class ValidationException : Exception<ValidationException.ErrorCodes>
     /// </summary>
     /// <param name="errCode">The error code.</param>
     /// <param name="message">The message.</param>
-    public ValidationException(ErrorCodes errCode, string message) : base(errCode, message)
+    public ValidationException(ErrorCodes errCode, string? message = null) : base(errCode, message)
     {
         this.ErrorCode = errCode;
     }
@@ -70,4 +70,23 @@ public class ValidationException : Exception<ValidationException.ErrorCodes>
     {
         this.ErrorCode = errCode;
     }
+
+    #region private ================================================================================
+
+    private ValidationException()
+    {
+        // Not allowed, error code is required
+    }
+
+    private ValidationException(string message) : base(message)
+    {
+        // Not allowed, error code is required
+    }
+
+    private ValidationException(string message, Exception innerException) : base(message, innerException)
+    {
+        // Not allowed, error code is required
+    }
+
+    #endregion
 }

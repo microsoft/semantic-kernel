@@ -25,4 +25,9 @@ public class MsGraphConnectorException : Exception
     public MsGraphConnectorException(string message, Exception innerException) : base(message, innerException)
     {
     }
+
+    private MsGraphConnectorException()
+    {
+        // Do not use, error message is required
+    }
 }
