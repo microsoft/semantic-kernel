@@ -19,5 +19,5 @@ public interface IRetryMechanism
     /// <param name="log">The logger to use.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An awaitable task.</returns>
-    Task ExecuteWithRetryAsync(Func<Task> action, ILogger log, CancellationToken cancellationToken);
+    Task ExecuteWithRetryAsync(Func<Task> action, ILogger log, CancellationToken cancellationToken = default);
 }

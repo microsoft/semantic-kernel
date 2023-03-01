@@ -17,7 +17,10 @@ internal class PassThroughWithoutRetry : IRetryMechanism
     {
         try
         {
-            await action();
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                await action();
+            }
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {

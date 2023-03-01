@@ -109,10 +109,10 @@ var kernel8 = Kernel.Builder
 
 public class RetryThreeTimes : IRetryMechanism
 {
-    public Task ExecuteWithRetryAsync(Func<Task> action, ILogger log, CancellationToken cancellationToken)
+    public Task ExecuteWithRetryAsync(Func<Task> action, ILogger log, CancellationToken cancellationToken = default)
     {
         var policy = GetPolicy(log);
-        return policy.ExecuteAsync((ct) => action(), cancellationToken);
+        return policy.ExecuteAsync((_) => action(), cancellationToken);
     }
 
     private static AsyncRetryPolicy GetPolicy(ILogger log)
