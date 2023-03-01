@@ -5,6 +5,8 @@ Watch the [Service API Quick Start Video](https://aka.ms/SK-Local-API-Setup).
 This service API is written in C# against Azure Function Runtime v4 and exposes
 some Semantic Kernel APIs that you can call via HTTP POST requests for the learning samples.
 
+![azure-function-diagram](https://user-images.githubusercontent.com/146438/222171146-b72149c0-1a60-4064-893f-b758234e3143.png)
+
 **!IMPORTANT**
 
 > This service API is for educational purposes only and should not be used in any production use
