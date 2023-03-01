@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <RootNamespace></RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <NoWarn>CA1050</NoWarn>
     <!-- Suppress: "Declare types in namespaces" -->
