@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
@@ -15,10 +16,10 @@ namespace Reliability;
 /// </summary>
 public class RetryThreeTimesWithBackoff : IRetryMechanism
 {
-    public Task ExecuteWithRetryAsync(Func<Task> action, ILogger log)
+    public Task ExecuteWithRetryAsync(Func<Task> action, ILogger log, CancellationToken cancellationToken = default)
     {
         var policy = GetPolicy(log);
-        return policy.ExecuteAsync(action);
+        return policy.ExecuteAsync((_) => action(), cancellationToken);
     }
 
     private static AsyncRetryPolicy GetPolicy(ILogger log)
