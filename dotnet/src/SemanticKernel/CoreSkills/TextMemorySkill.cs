@@ -95,7 +95,7 @@ public class TextMemorySkill
     [SKFunctionName("Save")]
     [SKFunctionInput(Description = "The information to save")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection where to save the information", DefaultValue = DefaultCollection)]
-    [SKFunctionContextParameter(Name = "key", Description = "The key to save the information")]
+    [SKFunctionContextParameter(Name = KeyParam, Description = "The key to save the information")]
     public async Task SaveAsync(string text, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
