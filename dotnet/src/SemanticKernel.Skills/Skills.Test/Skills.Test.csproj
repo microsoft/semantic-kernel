@@ -22,10 +22,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
-    <ProjectReference Include="..\Document\Skills.Document.csproj" />
-    <ProjectReference Include="..\Memory.Sqlite\Skills.Memory.Sqlite.csproj" />
-    <ProjectReference Include="..\MsGraph\Skills.MsGraph.csproj" />
-    <ProjectReference Include="..\Web\Skills.Web.csproj" />
+    <ProjectReference Include="..\Skills.Document\Skills.Document.csproj" />
+    <ProjectReference Include="..\Skills.Memory.Sqlite\Skills.Memory.Sqlite.csproj" />
+    <ProjectReference Include="..\Skills.MsGraph\Skills.MsGraph.csproj" />
+    <ProjectReference Include="..\Skills.Web\Skills.Web.csproj" />
   </ItemGroup>
 
 </Project>

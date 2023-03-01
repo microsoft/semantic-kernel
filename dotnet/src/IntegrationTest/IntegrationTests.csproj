@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SemanticKernel.Skills\Web\Skills.Web.csproj" />
+    <ProjectReference Include="..\SemanticKernel.Skills\Skills.Web\Skills.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 
