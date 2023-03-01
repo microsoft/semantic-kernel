@@ -3,11 +3,11 @@
 import { Subtitle1, Tab, TabList } from '@fluentui/react-components';
 import { FC, useEffect, useState } from 'react';
 import AISummary from './components/AISummary';
+import ChatInteraction from './components/chat/ChatInteraction';
+import { IChatMessage } from './components/chat/ChatThread';
 import FunctionProbe from './components/FunctionProbe';
 import QuickTips, { ITipGroup } from './components/QuickTips';
 import ServiceConfig from './components/ServiceConfig';
-import ChatInteraction from './components/chat/ChatInteraction';
-import { IChatMessage } from './components/chat/ChatThread';
 import { IKeyConfig } from './model/KeyConfig';
 
 const App: FC = () => {
@@ -53,10 +53,6 @@ const App: FC = () => {
             header: 'Useful Resources',
             items: [
                 {
-                    title: 'Join Discord Community',
-                    uri: 'https://aka.ms/skdiscord',
-                },
-                {
                     title: 'Read Documentation',
                     uri: 'https://aka.ms/SKDocBook',
                 },
@@ -67,15 +63,15 @@ const App: FC = () => {
             items: [
                 {
                     title: 'Summarize',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills/Skills/ConversationSummary/ConversationSummarySkill.cs#L70',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/CoreSkills/ConversationSummarySkill.cs#L70',
                 },
                 {
                     title: 'Action Items',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills/Skills/ConversationSummary/ConversationSummarySkill.cs#L87',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/CoreSkills/ConversationSummarySkill.cs#L87',
                 },
                 {
                     title: 'Topics',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Skills/Skills/Skills/ConversationSummary/ConversationSummarySkill.cs#L104',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/CoreSkills/ConversationSummarySkill.cs#L104',
                 },
             ],
         },

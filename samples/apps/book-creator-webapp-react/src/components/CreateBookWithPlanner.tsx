@@ -11,7 +11,7 @@ import {
     Spinner,
     Subtitle1,
     Subtitle2,
-    Title3,
+    Title3
 } from '@fluentui/react-components';
 import { Book24Regular, Code24Regular, Thinking24Regular } from '@fluentui/react-icons';
 import { FC, useState } from 'react';
@@ -110,7 +110,7 @@ const CreateBookWithPlanner: FC<IData> = ({ uri, title, description, keyConfig, 
             var translatedPages: IPage[] = [];
 
             for (var p of bookState.pages) {
-                var translatedPage = await translate(p.content, [{ key: 'language', value: translateToLanguage }]);
+                var translatedPage = await translate(p.content, [{ key: 'language', value: language }]);
                 translatedPages.push({ content: translatedPage!, num: p.num });
             }
 

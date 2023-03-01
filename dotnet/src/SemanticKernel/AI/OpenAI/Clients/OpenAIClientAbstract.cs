@@ -238,7 +238,9 @@ public abstract class OpenAIClientAbstract : IDisposable
         }
     }
 
-    // C# finalizer
+    /// <summary>
+    /// C# finalizer
+    /// </summary>
     ~OpenAIClientAbstract()
     {
         this.Dispose(false);

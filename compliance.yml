@@ -8,9 +8,8 @@ pool:
   vmImage: 'windows-latest'
 
 steps:
-- task: CredScan@2
-  inputs:
-    toolMajorVersion: 'V2'
+- task: CredScan@3
+
 - task: ESLint@1
   inputs:
     Configuration: 'recommended'
@@ -23,18 +22,6 @@ steps:
     packageType: 'sdk'
     version: '3.1.x'
 
-# - task: Semmle@0
-#   env: 
-#     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-#   inputs:
-#     sourceCodeDirectory: '$(Build.SourcesDirectory)'
-#     language: 'tsandjs'
-#     includeNodeModules: true
-#     querySuite: 'Recommended'
-#     timeout: '1800'
-#     ram: '16384'
-# addProjectDirToScanningExclusionList: true
-
 - task: Semmle@1
   env: 
      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -46,12 +33,6 @@ steps:
     timeout: '1800'
     ram: '16384'
     addProjectDirToScanningExclusionList: true
-
-# Both versions of Semmle (0 and 1) aren't required
-# Either one is fine. The latest version will show up as
-# Semmle@1 while older version will be listed as Semmle@0
-# By default, version 1 (@1) will be added to pipeline
-# This sample contains both, just for sample purposes
 
 # Usage of System.AccessToken is only required for uploading
 # results to CodeQL servers via variable LGTM.UploadSnapshot = true
@@ -71,7 +52,7 @@ steps:
     verbosity: 'Verbose'
     alertWarningLevel: 'High'
 
-- task: PublishSecurityAnalysisLogs@2
+- task: PublishSecurityAnalysisLogs@3
   inputs:
     ArtifactName: 'CodeAnalysisLogs'
     ArtifactType: 'Container'

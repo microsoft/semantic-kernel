@@ -71,7 +71,7 @@ public class KernelException : Exception<KernelException.ErrorCodes>
     /// </summary>
     /// <param name="errCode">Error code to put in KernelException.</param>
     /// <param name="message">Message to put in KernelException.</param>
-    public KernelException(ErrorCodes errCode, string message) : base(errCode, message)
+    public KernelException(ErrorCodes errCode, string? message = null) : base(errCode, message)
     {
         this.ErrorCode = errCode;
     }
@@ -86,4 +86,23 @@ public class KernelException : Exception<KernelException.ErrorCodes>
     {
         this.ErrorCode = errCode;
     }
+
+    #region private ================================================================================
+
+    private KernelException()
+    {
+        // Not allowed, error code is required
+    }
+
+    private KernelException(string message) : base(message)
+    {
+        // Not allowed, error code is required
+    }
+
+    private KernelException(string message, Exception innerException) : base(message, innerException)
+    {
+        // Not allowed, error code is required
+    }
+
+    #endregion
 }

@@ -113,6 +113,10 @@ public class HttpSkill : IDisposable
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Dispose internal resources
+    /// </summary>
+    /// <param name="disposing">Whether the method is explicitly called by the public Dispose method</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)

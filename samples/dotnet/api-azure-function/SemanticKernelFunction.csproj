@@ -24,9 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Connectors\Connectors.MsGraph\Connectors.MsGraph.csproj" />
-    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Connectors\Connectors.OpenXml\Connectors.OpenXml.csproj" />
-    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills\SemanticKernel.Skills.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.Document\Skills.Document.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.MsGraph\Skills.MsGraph.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 

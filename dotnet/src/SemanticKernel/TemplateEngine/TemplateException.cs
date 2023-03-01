@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
@@ -40,4 +41,34 @@ public class TemplateException : Exception<TemplateException.ErrorCodes>
     {
         this.ErrorCode = errCode;
     }
+
+    /// <summary>
+    /// Construct an exception with an error code, message, and existing exception.
+    /// </summary>
+    /// <param name="errCode">Error code of the exception.</param>
+    /// <param name="message">Message of the exception.</param>
+    /// <param name="e">An exception that was thrown.</param>
+    public TemplateException(ErrorCodes errCode, string message, Exception e) : base(errCode, message, e)
+    {
+        this.ErrorCode = errCode;
+    }
+
+    #region private ================================================================================
+
+    private TemplateException()
+    {
+        // Not allowed, error code is required
+    }
+
+    private TemplateException(string message) : base(message)
+    {
+        // Not allowed, error code is required
+    }
+
+    private TemplateException(string message, Exception innerException) : base(message, innerException)
+    {
+        // Not allowed, error code is required
+    }
+
+    #endregion
 }

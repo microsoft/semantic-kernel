@@ -39,7 +39,3 @@ Each function will call Microsoft Graph and/or Open AI to perform the tasks.
 
 > [!CAUTION]
 > Each function will call Open AI which will use tokens that you will be billed for.
-
-## Next Steps
-
-Join the [Discord community](https://aka.ms/SKDiscord).
