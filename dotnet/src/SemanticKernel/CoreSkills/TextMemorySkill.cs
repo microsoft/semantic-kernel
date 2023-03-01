@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 namespace Microsoft.SemanticKernel.CoreSkills;
 
 /// <summary>
-/// TextMemorySkill provides a skill to recall information from the long or short term memory.
+/// TextMemorySkill provides a skill to save or recall information from the long or short term memory.
 /// </summary>
 /// <example>
 /// Usage: kernel.ImportSkill("memory", new TextMemorySkill());
@@ -23,14 +23,19 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 public class TextMemorySkill
 {
     /// <summary>
-    /// Name of the context parameter used to specify which memory collection to use.
+    /// Name of the context variable used to specify which memory collection to use.
     /// </summary>
     public const string CollectionParam = "collection";
 
     /// <summary>
-    /// Name of the context parameter used to specify memory search relevance score.
+    /// Name of the context variable used to specify memory search relevance score.
     /// </summary>
     public const string RelevanceParam = "relevance";
+
+    /// <summary>
+    /// Name of the context variable used to specify a unique key associated with stored information.
+    /// </summary>
+    public const string KeyParam = "key";
 
     private const string DefaultCollection = "generic";
     private const string DefaultRelevance = "0.75";
@@ -42,8 +47,8 @@ public class TextMemorySkill
     /// SKContext["input"] = "what is the capital of France?"
     /// {{memory.recall $input }} => "Paris"
     /// </example>
-    /// <param name="ask"> The information to retrieve </param>
-    /// <param name="context"> Contains the 'collection' to search for information and 'relevance' score </param>
+    /// <param name="ask">The information to retrieve</param>
+    /// <param name="context">Contains the 'collection' to search for information and 'relevance' score</param>
     [SKFunction("Recall a fact from the long term memory")]
     [SKFunctionName("Recall")]
     [SKFunctionInput(Description = "The information to retrieve")]
@@ -75,5 +80,33 @@ public class TextMemorySkill
         }
 
         return memory != null ? memory.Text : string.Empty;
+    }
+
+    /// <summary>
+    /// Save information to semantic memory
+    /// </summary>
+    /// <example>
+    /// SKContext["input"] = "the capital of France is Paris"
+    /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
+    /// {{memory.save $input }}
+    /// </example>
+    /// <param name="text">The information to save</param>
+    /// <param name="context">Contains the 'collection' to save the information and unique 'key' to associate it with.</param>
+    [SKFunction("Save information to semantic memory")]
+    [SKFunctionName("Save")]
+    [SKFunctionInput(Description = "The information to save")]
+    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection where to save the information", DefaultValue = DefaultCollection)]
+    [SKFunctionContextParameter(Name = KeyParam, Description = "The key to save the information")]
+    public async Task SaveAsync(string text, SKContext context)
+    {
+        var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
+        Verify.NotEmpty(collection, "Memory collection not defined");
+
+        var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
+        Verify.NotEmpty(key, "Memory key not defined");
+
+        context.Log.LogTrace("Saving memory to collection '{0}'", collection);
+
+        await context.Memory.SaveInformationAsync(collection, text: text, id: key);
     }
 }
