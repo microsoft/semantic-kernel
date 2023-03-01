@@ -33,7 +33,7 @@ public class TextMemorySkill
     public const string RelevanceParam = "relevance";
 
     /// <summary>
-    /// Name of the context paramter used to specify key associated with stored information.
+    /// Name of the context parameter used to specify key associated with stored information.
     /// </summary>
     public const string KeyParam = "key";
 
@@ -47,8 +47,8 @@ public class TextMemorySkill
     /// SKContext["input"] = "what is the capital of France?"
     /// {{memory.recall $input }} => "Paris"
     /// </example>
-    /// <param name="ask"> The information to retrieve </param>
-    /// <param name="context"> Contains the 'collection' to search for information and 'relevance' score </param>
+    /// <param name="ask">The information to retrieve</param>
+    /// <param name="context">Contains the 'collection' to search for information and 'relevance' score</param>
     [SKFunction("Recall a fact from the long term memory")]
     [SKFunctionName("Recall")]
     [SKFunctionInput(Description = "The information to retrieve")]
@@ -87,10 +87,11 @@ public class TextMemorySkill
     /// </summary>
     /// <example>
     /// SKContext["input"] = "the capital of France is Paris"
+    /// SKContext[TextMemorySkill.KeyParam] = "countryinfo1"
     /// {{memory.save $input }}
     /// </example>
-    /// <param name="text"> The information to save </param>
-    /// <param name="=context"> Contains the 'collection' and 'key' to save the information </param>
+    /// <param name="text">The information to save</param>
+    /// <param name="=context">Contains the 'collection' and 'key' to save the information</param>
     [SKFunction("Save information to semantic memory")]
     [SKFunctionName("Save")]
     [SKFunctionInput(Description = "The information to save")]
