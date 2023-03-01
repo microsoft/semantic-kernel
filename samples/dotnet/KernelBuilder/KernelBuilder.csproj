@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net7.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>disable</Nullable>
-        <RootNamespace>KernelSetup</RootNamespace>
-        <NoWarn>CA2000</NoWarn>
-        <IsPackable>false</IsPackable>
+      <RootNamespace>KernelSetup</RootNamespace>
+      <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+      <OutputType>Exe</OutputType>
+      <Nullable>disable</Nullable>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <NoWarn>CA2000</NoWarn>
+      <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
