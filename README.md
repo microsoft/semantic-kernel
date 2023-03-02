@@ -10,7 +10,7 @@ and adding value to applications with AI.
 
 SK supports
 [prompt templating](docs/PROMPT_TEMPLATE_LANGUAGE.md), function
-chaining, 
+chaining,
 [vectorized memory](docs/EMBEDDINGS.md), and
 [intelligent planning](docs/PLANNER.md)
 capabilities out of the box.
@@ -63,7 +63,8 @@ working with Memory, and see how the kernel works.
      used for running the kernel as a local API, required by the web apps.
   2. [Yarn](https://yarnpkg.com/getting-started/install) used for installing
      web apps' dependencies.
-  3. [.NET 7](https://dotnet.microsoft.com/download) and VS Code
+  3. Semantic Kernel supports .NET Standard 2.1 and it's recommended using .NET 6+. However, some of
+     the examples in the repository require [.NET 7](https://dotnet.microsoft.com/download) and the VS Code
      [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode)
      to run the notebooks.
 
@@ -71,7 +72,7 @@ working with Memory, and see how the kernel works.
 
 Here is a quick example of how to use Semantic Kernel from a C# console app.
 
-1.  Create a new project, targeting .NET 3.1 or newer, and add the
+1.  Create a new project, targeting .NET 6 or newer, and add the
     `Microsoft.SemanticKernel` nuget package:
 
         dotnet add package Microsoft.SemanticKernel --version <version number>
@@ -135,11 +136,11 @@ in a different direction, but also to consider the impact on the larger ecosyste
 To learn more and get started, please read our [Contributing page](CONTRIBUTING.md)
 and check some of our documentation:
 
-* [SK Prompt Template Language](docs/PROMPT_TEMPLATE_LANGUAGE.md)
-* [SKills and Functions](docs/SKILLS.md)
-* [Embeddings and Semantic Memory](docs/EMBEDDINGS.md)
-* [SK Planner](docs/PLANNER.md)
-* [SK Notebooks](samples/notebooks/dotnet/README.md)
+- [SK Prompt Template Language](docs/PROMPT_TEMPLATE_LANGUAGE.md)
+- [SKills and Functions](docs/SKILLS.md)
+- [Embeddings and Semantic Memory](docs/EMBEDDINGS.md)
+- [SK Planner](docs/PLANNER.md)
+- [SK Notebooks](samples/notebooks/dotnet/README.md)
 
 ## Code of Conduct
 
