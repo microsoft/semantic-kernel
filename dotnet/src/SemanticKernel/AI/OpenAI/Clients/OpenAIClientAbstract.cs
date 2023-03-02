@@ -33,6 +33,7 @@ public abstract class OpenAIClientAbstract : IDisposable
     protected HttpClient HTTPClient { get; }
 
     private readonly HttpClientHandler _httpClientHandler;
+    private readonly RetryHandler _retryHandler;
 
     internal OpenAIClientAbstract(ILogger? log = null)
     {
@@ -40,7 +41,8 @@ public abstract class OpenAIClientAbstract : IDisposable
 
         // TODO: allow injection of retry logic, e.g. Polly
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
-        this.HTTPClient = new HttpClient(this._httpClientHandler);
+        this._retryHandler = new RetryHandler() { InnerHandler = this._httpClientHandler };
+        this.HTTPClient = new HttpClient(this._retryHandler);
         this.HTTPClient.DefaultRequestHeaders.Add("User-Agent", HTTPUseragent);
     }
 
@@ -124,6 +126,7 @@ public abstract class OpenAIClientAbstract : IDisposable
         {
             this.HTTPClient.Dispose();
             this._httpClientHandler.Dispose();
+            this._retryHandler.Dispose();
         }
     }
 
