@@ -57,8 +57,8 @@ const TaskButton: FC<IData> = ({ taskDescription, onTaskComplete, keyConfig, uri
             );
 
             onTaskComplete(executePlanResult);
-        } catch {
-            alert('Unable to complete task, please check the azure function is online');
+        } catch (e) {
+            alert('Unable to complete task.\n\nDetails:\n' + e);
         }
 
         setIsBusy(false);

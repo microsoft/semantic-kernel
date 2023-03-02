@@ -24,8 +24,8 @@ const AISummary: FC<IData> = ({ uri, chat, keyConfig, onBack }) => {
         try {
             var result = await sk.invokeAsync(keyConfig, ask, 'ConversationSummarySkill', 'SummarizeConversation');
             setSummary(result.value);
-        } catch {
-            alert('Something went wrong. Please check that the function is running and accessible from this location.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 
@@ -33,8 +33,8 @@ const AISummary: FC<IData> = ({ uri, chat, keyConfig, onBack }) => {
         try {
             var result = await sk.invokeAsync(keyConfig, ask, 'ConversationSummarySkill', 'GetConversationActionItems');
             setActionItems(result.value);
-        } catch {
-            alert('Something went wrong. Please check that the function is running and accessible from this location.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 
@@ -85,8 +85,8 @@ const AISummary: FC<IData> = ({ uri, chat, keyConfig, onBack }) => {
         try {
             var result = await sk.invokeAsync(keyConfig, ask, 'ConversationSummarySkill', 'GetConversationTopics');
             setTopics(result.value);
-        } catch {
-            alert('Something went wrong. Please check that the function is running and accessible from this location.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 
