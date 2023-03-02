@@ -10,7 +10,23 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('home.html')
+
+@app.route('/docs')
+def docs():
+    return render_template('documentation.html')
+
+@app.route('/docs/completions')
+def completions_docs():
+    return render_template('completions.html')
+
+@app.route('/docs/embeddings')
+def embeddings_docs():
+    return render_template('embeddings.html')
+
+@app.route('/docs/images')
+def images_docs():
+    return render_template('images.html')
 
 @app.route('/completions', methods=['POST'])
 def receive_completion_request():
