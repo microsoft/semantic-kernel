@@ -10,6 +10,17 @@
     "Endpoint": "",
     "ApiKey": ""
   },
+  "OpenAIEmbeddings": {
+    "Label": "text-ada-002",
+    "ModelId": "text-ada-002",
+    "ApiKey": ""
+  },
+  "AzureOpenAIEmbeddings": {
+    "Label": "azure-text-ada-002",
+    "DeploymentName": "",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
   "Bing": {
     "ApiKey": ""
   }
