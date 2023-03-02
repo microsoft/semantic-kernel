@@ -49,7 +49,7 @@ public sealed class AzureTextEmbeddings : AzureOpenAIClientAbstract, IEmbeddingG
         var deploymentName = await this.GetDeploymentNameAsync(this._modelId);
         var url = $"{this.Endpoint}/openai/deployments/{deploymentName}/embeddings?api-version={this.AzureOpenAIApiVersion}";
 
-        IEnumerable< Embedding<float>> embeddings = new List<Embedding<float>>();
+        IEnumerable<Embedding<float>> embeddings = new List<Embedding<float>>();
 
         foreach (string text in data)
         {

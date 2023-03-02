@@ -44,7 +44,7 @@ public sealed class OpenAIEmbeddingTests : IDisposable
         OpenAITextEmbeddings embeddingGenerator = new OpenAITextEmbeddings(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
 
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
-        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString } );
+        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
 
         Assert.Equal(1536, singleResult.Count); // text-embedding-ada-002 produces vectors of length 1536
         Assert.Equal(3, batchResult.Count);
@@ -61,9 +61,9 @@ public sealed class OpenAIEmbeddingTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
 
         AzureTextEmbeddings embeddingGenerator = new AzureTextEmbeddings(azureOpenAIConfiguration.DeploymentName,
-                                                                         azureOpenAIConfiguration.Endpoint,
-                                                                         azureOpenAIConfiguration.ApiKey,
-                                                                         "2022-12-01");
+            azureOpenAIConfiguration.Endpoint,
+            azureOpenAIConfiguration.ApiKey,
+            "2022-12-01");
 
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
         var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
@@ -73,6 +73,7 @@ public sealed class OpenAIEmbeddingTests : IDisposable
 
         embeddingGenerator.Dispose();
     }
+
     #region internals
 
     private readonly RedirectOutput _testOutputHelper;
