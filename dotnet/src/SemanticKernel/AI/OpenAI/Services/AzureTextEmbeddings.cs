@@ -47,8 +47,14 @@ public sealed class AzureTextEmbeddings : AzureOpenAIClientAbstract, IEmbeddingG
     {
         var deploymentName = await this.GetDeploymentNameAsync(this._modelId);
         var url = $"{this.Endpoint}/openai/deployments/{deploymentName}/embeddings?api-version={this.AzureOpenAIApiVersion}";
-        var requestBody = Json.Serialize(new AzureEmbeddingRequest { Input = data });
 
-        return await this.ExecuteEmbeddingRequestAsync(url, requestBody);
+        IList < Embedding<float> > embeddings = new List<Embedding<float>>();
+        foreach (string text in data)
+        {
+            var embedding = await this.GenerateEmbeddingAsync(text);
+            embeddings.Add(embedding);
+        }
+
+        return embeddings;
     }
 }
