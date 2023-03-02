@@ -39,7 +39,15 @@ public abstract class OpenAIClientAbstract : IDisposable
         if (log != null) { this.Log = log; }
 
         // TODO: allow injection of retry logic, e.g. Polly
-        this._httpClientHandler = new() { CheckCertificateRevocationList = true };
+        this._httpClientHandler = new()
+        {
+#if DEBUG
+            // This enables using Fiddler and similar tools in development scenarios
+            CheckCertificateRevocationList = false
+#else
+            CheckCertificateRevocationList = true
+#endif
+        };
         this.HTTPClient = new HttpClient(this._httpClientHandler);
         this.HTTPClient.DefaultRequestHeaders.Add("User-Agent", HTTPUseragent);
     }
