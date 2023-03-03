@@ -250,16 +250,15 @@ public sealed class Kernel : IKernel, IDisposable
         }
 
         ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig);
-        func.RequestSettings.UpdateFromCompletionConfig(functionConfig.PromptTemplateConfig.Completion);
 
         // Connect the function to the current kernel skill collection, in case the function
         // is invoked manually without a context and without a way to find other functions.
         func.SetDefaultSkillCollection(this.Skills);
 
+        func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
+
         // TODO: allow to postpone this (e.g. use lazy init), allow to create semantic functions without a default backend
         var backend = this._config.GetCompletionBackend(functionConfig.PromptTemplateConfig.DefaultBackends.FirstOrDefault());
-
-        func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
         switch (backend.BackendType)
         {
