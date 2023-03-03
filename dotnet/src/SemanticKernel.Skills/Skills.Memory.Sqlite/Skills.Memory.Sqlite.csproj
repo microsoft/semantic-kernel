@@ -15,7 +15,6 @@
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Skills.Memory.Sqlite</PackageId>
     <Title>Semantic Kernel - SQLite Connector</Title>
-    <Version>0.8</Version>
   </PropertyGroup>
 
   <ItemGroup>

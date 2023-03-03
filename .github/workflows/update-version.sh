@@ -11,6 +11,11 @@ while [[ $# -gt 0 ]]; do
             shift # past argument
             shift # past value
         ;;
+        -p|--propsFile)
+            propsFile="$2"
+            shift # past argument
+            shift # past value
+        ;;
         -b|--buildAndRevisionNumber)
             buildAndRevisionNumber="$2"
             shift # past argument
