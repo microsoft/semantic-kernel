@@ -39,4 +39,11 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="TemplateLanguage\tests.txt" />
+    <Content Include="TemplateLanguage\tests.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
