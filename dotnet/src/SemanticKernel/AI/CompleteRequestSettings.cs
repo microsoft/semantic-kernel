@@ -42,22 +42,6 @@ public class CompleteRequestSettings
     public IList<string> StopSequences { get; set; } = Array.Empty<string>();
 
     /// <summary>
-    /// Update this settings object with the values from another settings object.
-    /// </summary>
-    /// <param name="config">The config whose values to use</param>
-    /// <returns>Returns this CompleteRequestSettings object</returns>
-    public CompleteRequestSettings UpdateFromCompletionConfig(PromptTemplateConfig.CompletionConfig config)
-    {
-        this.Temperature = config.Temperature;
-        this.TopP = config.TopP;
-        this.PresencePenalty = config.PresencePenalty;
-        this.FrequencyPenalty = config.FrequencyPenalty;
-        this.MaxTokens = config.MaxTokens;
-        this.StopSequences = config.StopSequences;
-        return this;
-    }
-
-    /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
     /// <param name="config"></param>

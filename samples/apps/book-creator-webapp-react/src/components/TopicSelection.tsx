@@ -55,10 +55,8 @@ const TopicSelection: FC<IData> = ({ uri, keyConfig, onTopicSelected, onBack }) 
                 });
             }
             setTopics(topics);
-        } catch {
-            alert(
-                'Something went wrong, please check you have the function running and that it is accessible by the web app',
-            );
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
 
         setFetchingTopics(false);
