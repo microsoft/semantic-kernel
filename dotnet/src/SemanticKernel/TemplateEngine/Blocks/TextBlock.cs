@@ -9,16 +9,16 @@ internal class TextBlock : Block
 {
     internal override BlockTypes Type => BlockTypes.Text;
 
-    internal TextBlock(string content, ILogger? log = null)
-        : base(log)
+    internal override bool? SynchronousRendering => true;
+
+    internal TextBlock(string? text, ILogger? log = null)
+        : base(text, log)
     {
-        this.Content = content;
     }
 
     internal TextBlock(string text, int startIndex, int stopIndex, ILogger log)
-        : base(log)
+        : base(text.Substring(startIndex, stopIndex - startIndex), log)
     {
-        this.Content = text.Substring(startIndex, stopIndex - startIndex);
     }
 
     internal override bool IsValid(out string error)
