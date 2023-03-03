@@ -37,7 +37,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public bool IsSemantic { get; }
 
     /// <inheritdoc/>
-    public CompleteRequestSettings RequestSettings { get; } = new();
+    public CompleteRequestSettings RequestSettings
+    {
+        get { return this._aiRequestSettings; }
+    }
 
     /// <summary>
     /// List of function parameters
@@ -98,25 +101,25 @@ public sealed class SKFunction : ISKFunction, IDisposable
         async Task<SKContext> LocalFunc(
             ITextCompletionClient client,
             CompleteRequestSettings requestSettings,
-            SKContext executionContext)
+            SKContext context)
         {
             Verify.NotNull(client, "AI LLM backed is empty");
 
             try
             {
-                string prompt = await functionConfig.PromptTemplate.RenderAsync(executionContext);
+                string prompt = await functionConfig.PromptTemplate.RenderAsync(context);
 
                 string completion = await client.CompleteAsync(prompt, requestSettings);
-                executionContext.Variables.Update(completion);
+                context.Variables.Update(completion);
             }
 #pragma warning disable CA1031 // We need to catch all exceptions to handle the execution state
             catch (Exception e) when (!e.IsCriticalException())
             {
-                executionContext.Fail(e.Message, e);
+                context.Fail(e.Message, e);
             }
 #pragma warning restore CA1031
 
-            return executionContext;
+            return context;
         }
 
         return new SKFunction(
