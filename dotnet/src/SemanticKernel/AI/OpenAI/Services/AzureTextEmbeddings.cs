@@ -49,14 +49,14 @@ public sealed class AzureTextEmbeddings : AzureOpenAIClientAbstract, IEmbeddingG
         var deploymentName = await this.GetDeploymentNameAsync(this._modelId);
         var url = $"{this.Endpoint}/openai/deployments/{deploymentName}/embeddings?api-version={this.AzureOpenAIApiVersion}";
 
-        IEnumerable<Embedding<float>> embeddings = new List<Embedding<float>>();
+        var embeddings = new List<Embedding<float>>(data.Count);
 
-        foreach (string text in data)
+        for (int i = 0; i < data.Count; i++)
         {
-            var requestBody = Json.Serialize(new AzureEmbeddingRequest { Input = new List<string> { text } });
-            embeddings = embeddings.Concat(await this.ExecuteEmbeddingRequestAsync(url, requestBody));
+            var requestBody = Json.Serialize(new AzureEmbeddingRequest { Input = new List<string> { data[i] } });
+            embeddings.AddRange(await this.ExecuteEmbeddingRequestAsync(url, requestBody));
         }
 
-        return embeddings.ToList();
+        return embeddings;
     }
 }

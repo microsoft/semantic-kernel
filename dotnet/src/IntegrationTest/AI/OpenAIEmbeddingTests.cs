@@ -2,12 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using IntegrationTests.TestSettings;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.OpenAI.Services;
 using Xunit;
@@ -18,6 +15,7 @@ namespace IntegrationTests.AI;
 public sealed class OpenAIEmbeddingTests : IDisposable
 {
     private readonly IConfigurationRoot _configuration;
+    private const int ADA_VECTOR_LENGTH = 1536;
 
     public OpenAIEmbeddingTests(ITestOutputHelper output)
     {
@@ -43,10 +41,12 @@ public sealed class OpenAIEmbeddingTests : IDisposable
 
         OpenAITextEmbeddings embeddingGenerator = new OpenAITextEmbeddings(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
 
+        // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
         var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
 
-        Assert.Equal(1536, singleResult.Count); // text-embedding-ada-002 produces vectors of length 1536
+        // Assert
+        Assert.Equal(ADA_VECTOR_LENGTH, singleResult.Count);
         Assert.Equal(3, batchResult.Count);
 
         embeddingGenerator.Dispose();
@@ -56,7 +56,7 @@ public sealed class OpenAIEmbeddingTests : IDisposable
     [InlineData("test sentence")]
     public async Task AzureOpenAITestAsync(string testInputString)
     {
-        // Arrangeazu
+        // Arrange
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
@@ -65,10 +65,12 @@ public sealed class OpenAIEmbeddingTests : IDisposable
             azureOpenAIConfiguration.ApiKey,
             "2022-12-01");
 
+        // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
         var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
 
-        Assert.Equal(1536, singleResult.Count); // text-embedding-ada-002 produces vectors of length 1536
+        // Assert
+        Assert.Equal(ADA_VECTOR_LENGTH, singleResult.Count);
         Assert.Equal(3, batchResult.Count);
 
         embeddingGenerator.Dispose();
