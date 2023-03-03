@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   build:
@@ -48,17 +47,14 @@ jobs:
         allProjectFiles=$(find ./dotnet -type f -name "*.csproj" | tr '\n' ' ');
         if [ $? -ne 0 ]; then exit 1; fi
         echo "$allProjectFiles"
-        branchName="${{ github.ref }}"
+
+        propsFile="./dotnet/nuget/nuget-package.props"
         
         buildAndRevisionNumber="${{ github.run_number }}.${{ github.run_attempt }}"
-        if [ $branchName != "refs/heads/main" ]; then
-          buildAndRevisionNumber="$buildAndRevisionNumber-dev"
-        fi
-        
         echo "buildAndRevisionNumber: $buildAndRevisionNumber"
 
         for file in $allProjectFiles; do
-            ./.github/workflows/update-version.sh --file $file --buildAndRevisionNumber $buildAndRevisionNumber
+          ./.github/workflows/update-version.sh --file $file --propsFile $propsFile --buildAndRevisionNumber $buildAndRevisionNumber
         done
 
     - name: Find solutions
@@ -108,36 +104,3 @@ jobs:
         name: drop-${{ matrix.os }}-${{ matrix.configuration }}
         path: ./out
       if: ${{ github.event_name == 'push' }}
-  
-  publish-nuget:
-    runs-on: ubuntu-latest
-    needs: build
-    continue-on-error: true
-    if: ${{ github.event_name == 'push' }}
-    steps:
-      # Pull all nuget packages (*.nupkg) and the accompanying symbols packages (*.snupkg)
-      - uses: actions/download-artifact@v3
-        with:
-          name: drop-ubuntu-latest-Release
-          path: ./out/dotnet/**/*nupkg
-          
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 6.0.x
-
-      - name: Find nupkg files
-        shell: bash
-        run: echo "nuget_packages=$(find ./out/dotnet -type f -name "*nupkg" | tr '\n' ' ')" >> $GITHUB_ENV
-
-      # Publish NuGet to GitHub Package Repository
-      # This will publish both the nuget package (*.nupkg) and the accompanying symbols (*.snupkg).
-      - name: Publish to GitHub package repository
-        shell: bash
-        run: |
-          for nupkg in ${{ env.nuget_packages }}; do
-            dotnet nuget push $nupkg \
-              --api-key ${{ secrets.GITHUB_TOKEN }} \
-              --source https://nuget.pkg.github.com/${{ github.repository_owner }} \
-              --skip-duplicate
-          done
