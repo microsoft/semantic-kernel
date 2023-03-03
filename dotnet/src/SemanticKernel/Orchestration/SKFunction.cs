@@ -239,7 +239,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
     private ITextCompletionClient? _aiBackend = null;
-    private RequestSettings _aiRequestSettings = new();
+    private RequestSettings _aiRequestSettings = new RequestSettings { CompleteRequestSettings = new() };
 
     private struct MethodDetails
     {
