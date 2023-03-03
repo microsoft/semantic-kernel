@@ -2,6 +2,8 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
+    <!-- Central version prefix - applies to all nuget packages -->
+    <Version>0.8</Version>
   </PropertyGroup>
 
   <PropertyGroup>
