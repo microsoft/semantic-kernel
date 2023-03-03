@@ -10,14 +10,14 @@ import {
     MenuTrigger,
     Spinner,
     Subtitle1,
-    Title3,
+    Title3
 } from '@fluentui/react-components';
 import {
     Book24Regular,
     CheckmarkCircle24Regular,
     Code24Regular,
     PlayCircle24Regular,
-    Thinking24Regular,
+    Thinking24Regular
 } from '@fluentui/react-icons';
 import { FC, useEffect, useState } from 'react';
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
@@ -122,8 +122,8 @@ const CreateBook: FC<IData> = ({ uri, title, description, keyConfig, onBack }) =
                 ...bookState,
                 outline: (result.value as string).substring(0, (result.value as string).length),
             }));
-        } catch {
-            alert('Something went wrong. Please check that the function is running and accessible from this location.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
     const runCreateBookFunction = async () => {
@@ -165,8 +165,8 @@ const CreateBook: FC<IData> = ({ uri, title, description, keyConfig, onBack }) =
             }
 
             setBookState((bookState) => ({ ...bookState, pages: pages }));
-        } catch {
-            alert('Something went wrong. Please check that the function is running and accessible from this location.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 
@@ -184,8 +184,8 @@ const CreateBook: FC<IData> = ({ uri, title, description, keyConfig, onBack }) =
             };
             setProcessHistory((processHistory) => [...processHistory, historyItem]);
             setBookState((bookState) => ({ ...bookState, summary: result.value }));
-        } catch {
-            alert('Something went wrong. Please check that the function is running and accessible from this location.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 
@@ -211,8 +211,8 @@ const CreateBook: FC<IData> = ({ uri, title, description, keyConfig, onBack }) =
             };
             setProcessHistory((processHistory) => [...processHistory, historyItem]);
             return result.value;
-        } catch {
-            alert('Something went wrong. Please check that the function is running and accessible from this location.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 
@@ -230,8 +230,8 @@ const CreateBook: FC<IData> = ({ uri, title, description, keyConfig, onBack }) =
             };
             setProcessHistory((processHistory) => [...processHistory, historyItem]);
             return result.value;
-        } catch {
-            alert('Something went wrong. Please check that the function is running and accessible from this location.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 

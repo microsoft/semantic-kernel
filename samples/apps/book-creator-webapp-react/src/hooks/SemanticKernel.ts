@@ -8,7 +8,7 @@ import {
     SK_HTTP_HEADER_COMPLETION,
     SK_HTTP_HEADER_ENDPOINT,
     SK_HTTP_HEADER_MODEL,
-    SK_HTTP_HEADER_MSGRAPH,
+    SK_HTTP_HEADER_MSGRAPH
 } from '../model/KeyConfig';
 
 interface ServiceRequest {
@@ -60,16 +60,25 @@ export class SemanticKernel {
             headers.append(SK_HTTP_HEADER_MSGRAPH, keyConfig.graphToken);
         }
 
-        const response = await fetch(`${this.serviceUrl}${commandPath}`, {
-            method: method ?? 'GET',
-            headers,
-            body: JSON.stringify(body),
-        });
+        try {
+            const response = await fetch(`${this.serviceUrl}${commandPath}`, {
+                method: method ?? 'GET',
+                headers,
+                body: JSON.stringify(body),
+            });
 
-        if (!response.ok) {
-            throw response.statusText;
+            if (!response.ok) {
+                throw response.statusText + " => " + await response.text();
+            }
+
+            return (await response.json()) as T;
+        } catch (e) {
+            var additional_error_msg = ''
+            if (e instanceof TypeError) {
+                // fetch() will reject with a TypeError when a network error is encountered.
+                additional_error_msg = '\n\nPlease check you have the function running and that it is accessible by the app'
+            }
+            throw e + additional_error_msg;
         }
-
-        return (await response.json()) as T;
     };
 }
