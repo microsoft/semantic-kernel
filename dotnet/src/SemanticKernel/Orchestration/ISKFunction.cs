@@ -39,7 +39,7 @@ public interface ISKFunction
     /// <summary>
     /// AI backend settings
     /// </summary>
-    public CompleteRequestSettings RequestSettings { get; }
+    public RequestSettings RequestSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.
@@ -59,7 +59,7 @@ public interface ISKFunction
     Task<SKContext> InvokeAsync(
         string input,
         SKContext? context = null,
-        CompleteRequestSettings? settings = null,
+        RequestSettings? settings = null,
         ILogger? log = null,
         CancellationToken? cancel = null);
 
@@ -73,7 +73,7 @@ public interface ISKFunction
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     Task<SKContext> InvokeAsync(
         SKContext? context = null,
-        CompleteRequestSettings? settings = null,
+        RequestSettings? settings = null,
         ILogger? log = null,
         CancellationToken? cancel = null);
 
@@ -98,5 +98,5 @@ public interface ISKFunction
     /// </summary>
     /// <param name="settings">LLM completion settings</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
+    ISKFunction SetAIConfiguration(RequestSettings settings);
 }

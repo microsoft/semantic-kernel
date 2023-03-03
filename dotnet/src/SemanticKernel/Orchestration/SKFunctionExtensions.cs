@@ -4,7 +4,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -17,17 +16,6 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public static class SKFunctionExtensions
 {
     /// <summary>
-    /// Configure the LLM settings used by semantic function.
-    /// </summary>
-    /// <param name="skFunction">Semantic function</param>
-    /// <param name="settings">Completion settings</param>
-    /// <returns>Self instance</returns>
-    public static ISKFunction UseCompletionSettings(this ISKFunction skFunction, CompleteRequestSettings settings)
-    {
-        return skFunction.SetAIConfiguration(settings);
-    }
-
-    /// <summary>
     /// Change the LLM Max Tokens configuration
     /// </summary>
     /// <param name="skFunction">Semantic function</param>
@@ -35,7 +23,8 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UseMaxTokens(this ISKFunction skFunction, int maxTokens)
     {
-        skFunction.RequestSettings.MaxTokens = maxTokens;
+        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        skFunction.RequestSettings.CompleteRequestSettings.MaxTokens = maxTokens;
         return skFunction;
     }
 
@@ -47,7 +36,8 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UseTemperature(this ISKFunction skFunction, double temperature)
     {
-        skFunction.RequestSettings.Temperature = temperature;
+        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        skFunction.RequestSettings.CompleteRequestSettings.Temperature = temperature;
         return skFunction;
     }
 
@@ -59,7 +49,8 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UseTopP(this ISKFunction skFunction, double topP)
     {
-        skFunction.RequestSettings.TopP = topP;
+        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        skFunction.RequestSettings.CompleteRequestSettings.TopP = topP;
         return skFunction;
     }
 
@@ -71,7 +62,8 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UsePresencePenalty(this ISKFunction skFunction, double presencePenalty)
     {
-        skFunction.RequestSettings.PresencePenalty = presencePenalty;
+        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        skFunction.RequestSettings.CompleteRequestSettings.PresencePenalty = presencePenalty;
         return skFunction;
     }
 
@@ -83,7 +75,8 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UseFrequencyPenalty(this ISKFunction skFunction, double frequencyPenalty)
     {
-        skFunction.RequestSettings.FrequencyPenalty = frequencyPenalty;
+        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        skFunction.RequestSettings.CompleteRequestSettings.FrequencyPenalty = frequencyPenalty;
         return skFunction;
     }
 

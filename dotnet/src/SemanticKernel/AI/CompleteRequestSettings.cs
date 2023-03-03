@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.AI;
 
@@ -40,22 +39,4 @@ public class CompleteRequestSettings
     /// Sequences where the completion will stop generating further tokens.
     /// </summary>
     public IList<string> StopSequences { get; set; } = Array.Empty<string>();
-
-    /// <summary>
-    /// Create a new settings object with the values from another settings object.
-    /// </summary>
-    /// <param name="config"></param>
-    /// <returns>An instance of <see cref="CompleteRequestSettings"/> </returns>
-    public static CompleteRequestSettings FromCompletionConfig(PromptTemplateConfig.CompletionConfig config)
-    {
-        return new CompleteRequestSettings
-        {
-            Temperature = config.Temperature,
-            TopP = config.TopP,
-            PresencePenalty = config.PresencePenalty,
-            FrequencyPenalty = config.FrequencyPenalty,
-            MaxTokens = config.MaxTokens,
-            StopSequences = config.StopSequences,
-        };
-    }
 }

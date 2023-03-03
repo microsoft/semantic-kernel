@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -39,8 +40,9 @@ public sealed class SKFunctionTests1 : IDisposable
         var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
 
         // Assert
-        Assert.Equal(0, skFunction.RequestSettings.Temperature);
-        Assert.Equal(100, skFunction.RequestSettings.MaxTokens);
+        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        Assert.Equal(0, skFunction.RequestSettings.CompleteRequestSettings.Temperature);
+        Assert.Equal(100, skFunction.RequestSettings.CompleteRequestSettings.MaxTokens);
     }
 
     [Fact]
@@ -50,32 +52,37 @@ public sealed class SKFunctionTests1 : IDisposable
         var templateConfig = new PromptTemplateConfig();
         var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
         var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
-        var settings = new CompleteRequestSettings
+        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+
+        var settings = new RequestSettings
         {
-            Temperature = 0.9,
-            MaxTokens = 2001,
+            CompleteRequestSettings = new CompleteRequestSettings
+            {
+                Temperature = 0.9,
+                MaxTokens = 2001,
+            }
         };
 
         // Act
-        skFunction.RequestSettings.Temperature = 1.3;
-        skFunction.RequestSettings.MaxTokens = 130;
+        skFunction.RequestSettings.CompleteRequestSettings.Temperature = 1.3;
+        skFunction.RequestSettings.CompleteRequestSettings.MaxTokens = 130;
 
         // Assert
-        Assert.Equal(1.3, skFunction.RequestSettings.Temperature);
-        Assert.Equal(130, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal(1.3, skFunction.RequestSettings.CompleteRequestSettings.Temperature);
+        Assert.Equal(130, skFunction.RequestSettings.CompleteRequestSettings.MaxTokens);
 
         // Act
-        skFunction.RequestSettings.Temperature = 0.7;
+        skFunction.RequestSettings.CompleteRequestSettings.Temperature = 0.7;
 
         // Assert
-        Assert.Equal(0.7, skFunction.RequestSettings.Temperature);
+        Assert.Equal(0.7, skFunction.RequestSettings.CompleteRequestSettings.Temperature);
 
         // Act
         skFunction.SetAIConfiguration(settings);
 
         // Assert
-        Assert.Equal(settings.Temperature, skFunction.RequestSettings.Temperature);
-        Assert.Equal(settings.MaxTokens, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal(settings.CompleteRequestSettings.Temperature, skFunction.RequestSettings.CompleteRequestSettings.Temperature);
+        Assert.Equal(settings.CompleteRequestSettings.MaxTokens, skFunction.RequestSettings.CompleteRequestSettings.MaxTokens);
     }
 
     public void Dispose()

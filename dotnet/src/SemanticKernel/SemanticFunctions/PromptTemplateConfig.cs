@@ -65,6 +65,13 @@ public class PromptTemplateConfig
         [JsonPropertyOrder(6)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<string> StopSequences { get; set; } = new();
+
+        /// <summary>
+        /// The number of seconds to wait before the request to the completion backend times out.
+        /// </summary>
+        [JsonPropertyName("http_timeout_in_seconds")]
+        [JsonPropertyOrder(7)]
+        public int HttpTimeoutInSeconds { get; set; } = 100;
     }
 
     /// <summary>

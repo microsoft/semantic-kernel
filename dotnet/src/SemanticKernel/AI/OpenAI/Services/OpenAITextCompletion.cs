@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -49,31 +50,34 @@ public sealed class OpenAITextCompletion : OpenAIClientAbstract, ITextCompletion
     /// <param name="requestSettings">Request settings for the completion API</param>
     /// <returns>The completed text</returns>
     /// <exception cref="AIException">AIException thrown during the request</exception>
-    public async Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings)
+    public async Task<string> CompleteAsync(string text, RequestSettings requestSettings)
     {
-        Verify.NotNull(requestSettings, "Completion settings cannot be empty");
+        Verify.NotNull(requestSettings, "Request settings cannot be empty");
+        Verify.NotNull(requestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        var completeRequestSettings = requestSettings.CompleteRequestSettings;
 
         var url = $"{OpenaiEndpoint}/engines/{this._modelId}/completions";
         this.Log.LogDebug("Sending OpenAI completion request to {0}", url);
 
-        if (requestSettings.MaxTokens < 1)
+        if (completeRequestSettings.MaxTokens < 1)
         {
             throw new AIException(
                 AIException.ErrorCodes.InvalidRequest,
-                $"MaxTokens {requestSettings.MaxTokens} is not valid, the value must be greater than zero");
+                $"MaxTokens {completeRequestSettings.MaxTokens} is not valid, the value must be greater than zero");
         }
 
         var requestBody = Json.Serialize(new OpenAICompletionRequest
         {
             Prompt = text,
-            Temperature = requestSettings.Temperature,
-            TopP = requestSettings.TopP,
-            PresencePenalty = requestSettings.PresencePenalty,
-            FrequencyPenalty = requestSettings.FrequencyPenalty,
-            MaxTokens = requestSettings.MaxTokens,
-            Stop = requestSettings.StopSequences is { Count: > 0 } ? requestSettings.StopSequences : null,
+            Temperature = completeRequestSettings.Temperature,
+            TopP = completeRequestSettings.TopP,
+            PresencePenalty = completeRequestSettings.PresencePenalty,
+            FrequencyPenalty = completeRequestSettings.FrequencyPenalty,
+            MaxTokens = completeRequestSettings.MaxTokens,
+            Stop = completeRequestSettings.StopSequences is { Count: > 0 } ? completeRequestSettings.StopSequences : null,
         });
 
+        this.HTTPClient.Timeout = TimeSpan.FromSeconds(requestSettings.HttpTimeoutInSeconds);
         return await this.ExecuteCompleteRequestAsync(url, requestBody);
     }
 }
