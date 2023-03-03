@@ -2,7 +2,7 @@
 name = "semantic-kernel"
 version = "0.1.0"
 description = ""
-authors = ["Jordan Henkel <jordanhenkel@microsoft.com>"]
+authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "README.md"
 packages = [{include = "semantic_kernel"}]
 
