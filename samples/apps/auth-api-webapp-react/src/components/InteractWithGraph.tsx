@@ -48,8 +48,8 @@ const InteractWithGraph: FC<IData> = ({ uri, config, onBack }) => {
                 'clouddriveskill',
                 'uploadfileasync',
             );
-        } catch {
-            alert('Something went wrong.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 
@@ -81,8 +81,8 @@ const InteractWithGraph: FC<IData> = ({ uri, config, onBack }) => {
                 'emailskill',
                 'sendemailasync',
             );
-        } catch {
-            alert('Something went wrong.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 
@@ -105,8 +105,8 @@ const InteractWithGraph: FC<IData> = ({ uri, config, onBack }) => {
                 'tasklistskill',
                 'addtaskasync',
             );
-        } catch {
-            alert('Something went wrong.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 
