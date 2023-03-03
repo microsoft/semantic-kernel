@@ -16,7 +16,6 @@
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel</PackageId>
     <Title>Semantic Kernel</Title>
-    <Version>0.8</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
