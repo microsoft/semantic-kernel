@@ -1,8 +1,9 @@
 .code {
     background-color: black;
     height: auto;
-    width: max-content;
+    width: auto;
     border-style: solid;
     font-family:'Courier New', Courier, monospace;
     color: white;
+    font-size: 14px;
 }
