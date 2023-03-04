@@ -15,6 +15,11 @@ This application provides an API service for interacting with models available t
 
 This will run the service at **`http://localhost:5000`**. Navigating to **`http://localhost:5000`** in a browser window will provide instruction on how to construct requests to the service. 
 
+> [!IMPORTANT]
+> If the model has not been cached (ex: first time calling it) the response can take some time 
+> due to the model being downloaded. 
+> Using this service to generate images can also take a very long time - a factor that scales with your hardware.
+
 ## Alternative: Bare-Metal
 Alternatively, the service can be started on bare-metal. To do this, you will need to have Python 3.6 installed. 
 
