@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.OpenAI.Services;
 using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Reliability;
@@ -64,6 +65,65 @@ public class KernelConfigTests
         // Act
         // Assert
         Assert.IsType<PassThroughWithoutRetry>(config.RetryMechanism);
+    }
+
+    [Fact]
+    public void ItFailsWhenAddingCompletionBackendsWithSameLabel()
+    {
+        var target = new KernelConfig();
+        target.AddAzureOpenAICompletionBackend("azure", "depl", "https://url", "key");
+
+        var exception = Assert.Throws<KernelException>(() =>
+        {
+            target.AddAzureOpenAICompletionBackend("azure", "depl2", "https://url", "key");
+        });
+        Assert.Equal(KernelException.ErrorCodes.InvalidBackendConfiguration, exception.ErrorCode);
+    }
+
+    [Fact]
+    public void ItFailsWhenAddingEmbeddingsBackendsWithSameLabel()
+    {
+        var target = new KernelConfig();
+        target.AddAzureOpenAIEmbeddingsBackend("azure", "depl", "https://url", "key");
+
+        var exception = Assert.Throws<KernelException>(() =>
+        {
+            target.AddAzureOpenAIEmbeddingsBackend("azure", "depl2", "https://url", "key");
+        });
+        Assert.Equal(KernelException.ErrorCodes.InvalidBackendConfiguration, exception.ErrorCode);
+    }
+
+    [Fact]
+    public void ItSucceedsWhenAddingDifferentBackendsWithSameLabel()
+    {
+        var target = new KernelConfig();
+        target.AddAzureOpenAICompletionBackend("azure", "depl", "https://url", "key");
+        target.AddAzureOpenAIEmbeddingsBackend("azure", "depl2", "https://url", "key");
+
+        Assert.True(target.HasCompletionBackend("azure"));
+        Assert.True(target.HasEmbeddingsBackend("azure"));
+    }
+
+    [Fact]
+    public void ItFailsWhenSetNonExistentCompletionBackend()
+    {
+        var target = new KernelConfig();
+        var exception = Assert.Throws<KernelException>(() =>
+        {
+            target.SetDefaultCompletionBackend("azure");
+        });
+        Assert.Equal(KernelException.ErrorCodes.BackendNotFound, exception.ErrorCode);
+    }
+
+    [Fact]
+    public void ItFailsWhenSetNonExistentEmbeddingBackend()
+    {
+        var target = new KernelConfig();
+        var exception = Assert.Throws<KernelException>(() =>
+        {
+            target.SetDefaultEmbeddingsBackend("azure");
+        });
+        Assert.Equal(KernelException.ErrorCodes.BackendNotFound, exception.ErrorCode);
     }
 
     [Fact]
@@ -223,4 +283,6 @@ public class KernelConfigTests
         target.RemoveEmbeddingsBackend("3");
         Assert.Null(target.DefaultEmbeddingsBackend);
     }
+
+
 }

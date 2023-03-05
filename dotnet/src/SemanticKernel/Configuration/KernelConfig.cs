@@ -239,12 +239,12 @@ public sealed class KernelConfig
     public string? DefaultEmbeddingsBackend => this._defaultEmbeddingsBackend;
 
     /// <summary>
-    /// Get the backend configuration matching the given completion backend label.
+    /// Get the backend configuration matching the given completion backend label or the default.
     /// </summary>
     /// <param name="label">Label of backend desired.</param>
-    /// <returns>The backend configuration matching the given label.</returns>
+    /// <returns>The backend configuration matching the given label or the default.</returns>
     /// <exception cref="KernelException">Thrown when no suitable backend is found.</exception>
-    public IBackendConfig GetCompletionBackend(string? label)
+    public IBackendConfig GetCompletionBackendOrDefault(string? label)
     {
         if (string.IsNullOrEmpty(label))
         {
@@ -252,7 +252,7 @@ public sealed class KernelConfig
             {
                 throw new KernelException(
                     KernelException.ErrorCodes.BackendNotFound,
-                    $"Completion backend not found with label: {label}. No default backend available.");
+                    $"A label was not provided and no default completion backend available.");
             }
 
             return this.CompletionBackends[this._defaultCompletionBackend];
@@ -270,16 +270,16 @@ public sealed class KernelConfig
 
         throw new KernelException(
             KernelException.ErrorCodes.BackendNotFound,
-            $"Completion backend not found with label: {label}. No default backend available.");
+            $"Completion backend not found with label: {label} and no default completion backend available.");
     }
 
     /// <summary>
-    /// Get the backend configuration matching the given embeddings backend label.
+    /// Get the backend configuration matching the given embeddings backend label or the default.
     /// </summary>
     /// <param name="label">Label of backend desired.</param>
-    /// <returns>The backend configuration matching the given label.</returns>
+    /// <returns>The backend configuration matching the given label or the default.</returns>
     /// <exception cref="KernelException">Thrown when no suitable backend is found.</exception>
-    public IBackendConfig GetEmbeddingsBackend(string? label)
+    public IBackendConfig GetEmbeddingsBackendOrDefault(string? label)
     {
         if (string.IsNullOrEmpty(label))
         {
@@ -287,7 +287,7 @@ public sealed class KernelConfig
             {
                 throw new KernelException(
                     KernelException.ErrorCodes.BackendNotFound,
-                    $"Embeddings backend not found with label: {label}. No default backend available.");
+                    $"A label was not provided and no default embeddings backend available.");
             }
 
             return this.EmbeddingsBackends[this._defaultEmbeddingsBackend];
@@ -305,7 +305,7 @@ public sealed class KernelConfig
 
         throw new KernelException(
             KernelException.ErrorCodes.BackendNotFound,
-            $"Embeddings backend not found with label: {label}. No default backend available.");
+            $"Embeddings backend not found with label: {label} and no default embeddings backend available.");
     }
 
     /// <summary>

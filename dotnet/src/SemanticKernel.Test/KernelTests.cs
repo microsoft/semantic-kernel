@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
@@ -131,6 +132,20 @@ public class KernelTests
         // Assert
         Assert.Equal(3, skill.Count);
         Assert.True(kernel.Skills.HasNativeFunction("GetAnyValue"));
+    }
+
+    [Fact]
+    public void ItFailsIfCompletionBackendConfigIsNotSet()
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+
+        var exception = Assert.Throws<KernelException>(() => kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun"));
+    }
+
+    public class NonSupportedConfig : IBackendConfig
+    {
+        public string Label => "Any";
     }
 
     public class MySkill
