@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
+using Microsoft.SemanticKernel.AI.OpenAI.Services;
 using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Reliability;
 using Moq;
@@ -87,19 +88,19 @@ public class KernelConfigTests
         Assert.False(target.HasEmbeddingsBackend("oai"));
 
         Assert.True(target.HasCompletionBackend("azure",
-            x => x.BackendType == BackendTypes.AzureOpenAI));
+            x => x is AzureOpenAIConfig));
         Assert.False(target.HasCompletionBackend("azure",
-            x => x.BackendType == BackendTypes.OpenAI));
+            x => x is OpenAIConfig));
 
         Assert.False(target.HasEmbeddingsBackend("oai2",
-            x => x.BackendType == BackendTypes.AzureOpenAI));
+            x => x is AzureOpenAIConfig));
         Assert.True(target.HasEmbeddingsBackend("oai2",
-            x => x.BackendType == BackendTypes.OpenAI));
+            x => x is OpenAIConfig));
 
         Assert.True(target.HasCompletionBackend("azure",
-            x => x.BackendType == BackendTypes.AzureOpenAI && x.AzureOpenAI?.DeploymentName == "depl"));
+            x => x is AzureOpenAIConfig azureConfig && azureConfig.DeploymentName == "depl"));
         Assert.False(target.HasCompletionBackend("azure",
-            x => x.BackendType == BackendTypes.AzureOpenAI && x.AzureOpenAI?.DeploymentName == "nope"));
+            x => x is AzureOpenAIConfig azureConfig && azureConfig.DeploymentName == "nope"));
     }
 
     [Fact]
