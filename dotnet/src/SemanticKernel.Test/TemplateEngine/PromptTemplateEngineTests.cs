@@ -253,14 +253,14 @@ public sealed class TemplateEngineTests : IDisposable
         var context = this.MockContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context).ConfigureAwait(false);
+        var result = await this._target.RenderAsync(template, context);
 
         // Assert
         Assert.Equal("foo-F(INPUT-BAR)-baz", result);
     }
 
     [Fact]
-    public void ItRendersCodeUsingVariables()
+    public async Task ItRendersCodeUsingVariablesAsync()
     {
         // Arrange
         [SKFunction("test")]
@@ -281,7 +281,7 @@ public sealed class TemplateEngineTests : IDisposable
         var context = this.MockContext();
 
         // Act
-        var result = this._target.RenderAsync(template, context).GetAwaiter().GetResult();
+        var result = await this._target.RenderAsync(template, context);
 
         // Assert
         Assert.Equal("foo-F(BAR)-baz", result);
