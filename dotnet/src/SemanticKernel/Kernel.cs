@@ -258,7 +258,7 @@ public sealed class Kernel : IKernel, IDisposable
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
         // TODO: allow to postpone this (e.g. use lazy init), allow to create semantic functions without a default backend
-        var backend = this._config.GetCompletionBackendOrDefault(functionConfig.PromptTemplateConfig.DefaultBackends.FirstOrDefault());
+        var backend = this._config.GetCompletionBackend(functionConfig.PromptTemplateConfig.DefaultBackends.FirstOrDefault());
 
         switch (backend)
         {

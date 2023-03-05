@@ -284,5 +284,114 @@ public class KernelConfigTests
         Assert.Null(target.DefaultEmbeddingsBackend);
     }
 
+    [Fact]
+    public void GetEmbeddingsBackendItReturnsDefaultWhenNonExistingLabelIsProvided()
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var defaultBackendLabel = "2";
+        target.AddAzureOpenAIEmbeddingsBackend("1", "dep", "https://localhost", "key");
+        target.AddAzureOpenAIEmbeddingsBackend(defaultBackendLabel, "dep", "https://localhost", "key");
+        target.SetDefaultEmbeddingsBackend(defaultBackendLabel);
 
+        // Act
+        var result = target.GetEmbeddingsBackend("test");
+
+        // Assert
+        Assert.IsType<AzureOpenAIConfig>(result);
+        Assert.Equal(defaultBackendLabel, result.Label);
+    }
+
+    [Fact]
+    public void GetEmbeddingsBackendItReturnsSpecificWhenExistingLabelIsProvided()
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var specificBackendLabel = "1";
+        var defaultBackendLabel = "2";
+        target.AddOpenAIEmbeddingsBackend(specificBackendLabel, "dep", "https://localhost", "key");
+        target.AddAzureOpenAIEmbeddingsBackend(defaultBackendLabel, "dep", "https://localhost", "key");
+        target.SetDefaultEmbeddingsBackend(defaultBackendLabel);
+
+        // Act
+        var result = target.GetEmbeddingsBackend(specificBackendLabel);
+
+        // Assert
+        Assert.IsType<OpenAIConfig>(result);
+        Assert.Equal(specificBackendLabel, result.Label);
+    }
+
+    [Fact]
+    public void GetEmbeddingsBackendItReturnsDefaultWhenNoLabelIsProvided()
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var defaultBackendLabel = "2";
+        target.AddAzureOpenAIEmbeddingsBackend("1", "dep", "https://localhost", "key");
+        target.AddAzureOpenAIEmbeddingsBackend(defaultBackendLabel, "dep", "https://localhost", "key");
+        target.SetDefaultEmbeddingsBackend(defaultBackendLabel);
+
+        // Act
+        var result = target.GetEmbeddingsBackend();
+
+        // Assert
+        Assert.IsType<AzureOpenAIConfig>(result);
+        Assert.Equal(defaultBackendLabel, result.Label);
+    }
+
+
+    [Fact]
+    public void GetCompletionBackendItReturnsDefaultWhenNonExistingLabelIsProvided()
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var defaultBackendLabel = "2";
+        target.AddAzureOpenAICompletionBackend("1", "dep", "https://localhost", "key");
+        target.AddAzureOpenAICompletionBackend(defaultBackendLabel, "dep", "https://localhost", "key");
+        target.SetDefaultCompletionBackend(defaultBackendLabel);
+
+        // Act
+        var result = target.GetCompletionBackend("test");
+
+        // Assert
+        Assert.IsType<AzureOpenAIConfig>(result);
+        Assert.Equal(defaultBackendLabel, result.Label);
+    }
+
+    [Fact]
+    public void GetCompletionBackendItReturnsSpecificWhenExistingLabelIsProvided()
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var specificBackendLabel = "1";
+        var defaultBackendLabel = "2";
+        target.AddOpenAICompletionBackend(specificBackendLabel, "dep", "https://localhost", "key");
+        target.AddAzureOpenAICompletionBackend(defaultBackendLabel, "dep", "https://localhost", "key");
+        target.SetDefaultCompletionBackend(defaultBackendLabel);
+
+        // Act
+        var result = target.GetCompletionBackend(specificBackendLabel);
+
+        // Assert
+        Assert.IsType<OpenAIConfig>(result);
+        Assert.Equal(specificBackendLabel, result.Label);
+    }
+
+    [Fact]
+    public void GetCompletionBackendItReturnsDefaultWhenNoLabelIsProvided()
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var defaultBackendLabel = "2";
+        target.AddAzureOpenAICompletionBackend("1", "dep", "https://localhost", "key");
+        target.AddAzureOpenAICompletionBackend(defaultBackendLabel, "dep", "https://localhost", "key");
+        target.SetDefaultCompletionBackend(defaultBackendLabel);
+
+        // Act
+        var result = target.GetCompletionBackend();
+
+        // Assert
+        Assert.IsType<AzureOpenAIConfig>(result);
+        Assert.Equal(defaultBackendLabel, result.Label);
+    }
 }

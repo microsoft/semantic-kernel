@@ -37,7 +37,7 @@ public static class MemoryConfiguration
     {
         Verify.NotEmpty(embeddingsBackendLabel, "The embedding backend label is empty");
 
-        IBackendConfig embeddingsBackendCfg = kernel.Config.GetEmbeddingsBackendOrDefault(embeddingsBackendLabel);
+        IBackendConfig embeddingsBackendCfg = kernel.Config.GetEmbeddingsBackend(embeddingsBackendLabel);
 
         Verify.NotNull(embeddingsBackendCfg, $"AI configuration is missing for label: {embeddingsBackendLabel}");
 
