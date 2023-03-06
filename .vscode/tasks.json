@@ -28,6 +28,9 @@
       "problemMatcher": "$msCompile",
       "group": "build"
     },
+    // If R# commands fails run:
+    // - dotnet new tool-manifest
+    // - dotnet tool install JetBrains.ReSharper.GlobalTools
     {
       // r# inspect - dotnet jb inspectcode -o="inspectcode.log" --no-build -s=".\SK-dotnet.sln.DotSettings" -f=Text ".\SK-dotnet.sln"
       "label": "R# check",
@@ -37,10 +40,10 @@
       "args": [
         "jb",
         "inspectcode",
-        "-o=inspectcode.log",
+        "--output=inspectcode.log",
         "--no-build",
-        "-s=SK-dotnet.sln.DotSettings",
-        "-f=Text",
+        "--settings=SK-dotnet.sln.DotSettings",
+        "--format=Text",
         "SK-dotnet.sln"
       ],
       "options": {
@@ -57,7 +60,9 @@
         "jb",
         "cleanupcode",
         "--no-build",
-        "-s=SK-dotnet.sln.DotSettings",
+        "--verbosity=WARN",
+        "--profile=Built-in: Reformat Code",
+        "--settings=SK-dotnet.sln.DotSettings",
         "SK-dotnet.sln"
       ],
       "options": {
