@@ -94,7 +94,7 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItSucceedsWhenAddingDifferentBackendsWithSameLabel()
+    public void ItSucceedsWhenAddingDifferentBackendTypeWithSameLabel()
     {
         var target = new KernelConfig();
         target.AddAzureOpenAICompletionBackend("azure", "depl", "https://url", "key");
