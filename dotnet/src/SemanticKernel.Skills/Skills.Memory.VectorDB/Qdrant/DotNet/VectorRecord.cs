@@ -11,7 +11,7 @@ public class VectorRecordData<TEmbedding> : IEmbeddingWithMetadata<TEmbedding>
     public Embedding<TEmbedding> Embedding { get; private set; }
     public Dictionary<string, object> Payload { get; set; }
     public List<string>? Tags { get; set; }
-    
+
     public VectorRecordData(Embedding<TEmbedding> embedding, Dictionary<string, object> payload, List<string>? tags)
     {
         this.Embedding = embedding;

@@ -30,6 +30,7 @@ internal class SearchVectorsResponse
 
     internal string Status { get; set; }
     internal List<VectorFound> Vectors { get; set; }
+
     internal SearchVectorsResponse(string json) : this()
     {
         // TODO: Replace with a System.Text.Json implementation

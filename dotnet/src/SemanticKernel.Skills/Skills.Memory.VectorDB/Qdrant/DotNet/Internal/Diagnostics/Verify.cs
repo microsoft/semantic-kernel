@@ -96,7 +96,6 @@ internal class Verify
         }
     }
 
-
     public static void Equals<T>(T value, T test, string message)
         where T : IComparable<T>
     {
@@ -106,7 +105,6 @@ internal class Verify
             throw new ArgumentException(message);
         }
     }
-
 
     // internal static void Contains<T>(IDictionary<string, T> dictionary, string key, string message)
     // {

@@ -9,7 +9,8 @@ using Qdrant.DotNet;
 
 //namespace Microsoft.SemanticKernel.Connectors.VectorDB.Qdrant;
 namespace Microsoft.SemanticKernel.Skills.Memory.VectorDB;
+
 internal interface ILongTermMemoryStore<TEmbedding> : IDataStore<VectorRecordData<TEmbedding>>, IEmbeddingIndex<TEmbedding>
-    where TEmbedding: unmanaged
+    where TEmbedding : unmanaged
 {
 }

@@ -27,6 +27,7 @@ public static class ConsoleLogger
     }
 
     private static ILoggerFactory? s_loggerFactory = null;
+
     public static ILoggerFactory Factory
     {
         get

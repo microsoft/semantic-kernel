@@ -10,7 +10,6 @@ namespace Qdrant.DotNet.Internal.Http.Specs;
 
 internal class SearchVectorsRequest : IValidatable
 {
-
     [JsonPropertyName("vector")]
     private float[] StartingVector { get; set; }
 
@@ -111,7 +110,6 @@ internal class SearchVectorsRequest : IValidatable
             $"collections/{this._collectionName}/points/search",
             payload: this);
     }
-
 
     #region private ================================================================================
 
