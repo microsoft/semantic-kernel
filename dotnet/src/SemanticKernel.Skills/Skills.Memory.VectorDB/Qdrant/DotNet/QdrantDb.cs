@@ -10,6 +10,7 @@ using Qdrant.DotNet.Internal;
 using Qdrant.DotNet.Internal.Diagnostics;
 using Qdrant.DotNet.Internal.Http;
 using Qdrant.DotNet.Internal.Http.Specs;
+
 namespace Qdrant.DotNet;
 
 public class QdrantDb : IVectorDb
@@ -27,8 +28,10 @@ public class QdrantDb : IVectorDb
             this._log);
         this._vectorHttp.BaseAddress = endpoint;
 
-        if (port.HasValue) 
-        { this._vectorHttp.AddressPort = port.Value; }
+        if (port.HasValue)
+        {
+            this._vectorHttp.AddressPort = port.Value;
+        }
     }
 
     public Task CreateCollectionIfMissing(string collectionName, int vectorSize)
@@ -46,7 +49,8 @@ public class QdrantDb : IVectorDb
 
         if (test.Status != "green")
         {
-            throw new VectorDbException(VectorDbException.ErrorCodes.InvalidCollectionState, $"The vector collection state is not ready: state = {test.Status}");
+            throw new VectorDbException(VectorDbException.ErrorCodes.InvalidCollectionState,
+                $"The vector collection state is not ready: state = {test.Status}");
         }
 
         return new QdrantCollection(collectionName, this._vectorHttp, this._log)
@@ -121,7 +125,7 @@ public class QdrantDb : IVectorDb
         this._log.Debug("Deleting collection {0}", collectionName);
         var request = DeleteCollectionRequest.Create(collectionName).Build();
         var (response, responseContent) = await this._vectorHttp.ExecuteHttpRequestAsync(request);
-            response.EnsureSuccessStatusCode();
+        response.EnsureSuccessStatusCode();
     }
 
     #endregion

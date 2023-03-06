@@ -10,21 +10,17 @@ using Microsoft.SemanticKernel.Memory.Storage;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using System.Numerics;
 
-
 namespace Microsoft.SemanticKernel.Skills.Memory.VectorDB;
 
 /// <summary>
 /// An implementation of a client for the Qdrant VectorDB. This class is used to 
 /// connect, create, delete, and get embeddings data from a Qdrant VectorDB instance.
 /// </summary>
-
 public class QdrantVectorDb
 {
     public QdrantVectorDb(string endpoint, int port)
     {
-
         this._qdrantdbclient = this.ConnectVectorDB(endpoint, port);
-
     }
 
     public async Task<IVectorDbCollection> CreateCollectionAsync(string collectionname, int? vectorsize, string? distancetype)
@@ -46,7 +42,6 @@ public class QdrantVectorDb
         this._qdrantcollections.TryAdd(collectionname, collection);
         return this._qdrantcollections[collectionname];
     }
-
 
     public async Task<bool> DeleteCollectionAsync(string collectionname)
     {
@@ -79,9 +74,8 @@ public class QdrantVectorDb
 
         this._qdrantcollections[collectionname] = collection;
         return true;
-
     }
-    
+
     public async Task<IVectorDbCollection> GetCollectionDataAsync(string collectionkey)
     {
         //var collectionResult = new List<IVectorDbCollection>();
@@ -102,7 +96,7 @@ public class QdrantVectorDb
     public async Task<IAsyncEnumerable<DataEntry<VectorRecordData<float>>>> GetVectorsByCollection(string collectionname)
     {
         IVectorDbCollection collection;
-        IAsyncEnumerable<DataEntry<VectorRecordData<float>>> vectors =null;
+        IAsyncEnumerable<DataEntry<VectorRecordData<float>>> vectors = null;
         try
         {
             collection = await this._qdrantdbclient.GetCollectionAsync(collectionname);
@@ -114,21 +108,18 @@ public class QdrantVectorDb
         }
 
         return vectors!;
-
     }
 
     public async Task<DataEntry<VectorRecordData<float>>> GetVectorDataAsync(string collectionname, string vectorid)
     {
         IVectorDbCollection collection;
         DataEntry<VectorRecordData<float>> result;
-        
+
         try
         {
             collection = await this._qdrantdbclient.GetCollectionAsync(collectionname);
             var record = await collection.GetVectorAsync(vectorid);
-            result = record != null ? 
-                        (DataEntry<VectorRecordData<float>>) record : 
-                        new DataEntry<VectorRecordData<float>>();
+            result = record != null ? (DataEntry<VectorRecordData<float>>)record : new DataEntry<VectorRecordData<float>>();
         }
         catch (Exception ex) //look up specific exece
         {
@@ -150,14 +141,13 @@ public class QdrantVectorDb
         }
 
         _metadata = metadata == null ? _metadata : metadata;
-               
-        
+
         DataEntry<VectorRecordData<float>> vectorRecord =
             new DataEntry<VectorRecordData<float>>(key: vectorid,
-                                                        value: new VectorRecordData<float>(
-                                                            new Embedding<float>(vector!),
-                                                            _metadata,
-                                                            new List<string>()));
+                value: new VectorRecordData<float>(
+                    new Embedding<float>(vector!),
+                    _metadata,
+                    new List<string>()));
 
         try
         {
@@ -165,16 +155,16 @@ public class QdrantVectorDb
             await collection.UpsertVectorAsync(vectorRecord);
             this._qdrantcollections[collectionname] = collection;
         }
-        catch 
+        catch
         {
             return false;
         }
 
         return true;
-
     }
 
-    public async Task<IEnumerable<KeyValuePair<DataEntry<VectorRecordData<float>>, double>>> SearchVectorBySimilarityAsync(string collectionname, DataEntry<VectorRecordData<float>> recordData, double minScore)
+    public async Task<IEnumerable<KeyValuePair<DataEntry<VectorRecordData<float>>, double>>> SearchVectorBySimilarityAsync(string collectionname,
+        DataEntry<VectorRecordData<float>> recordData, double minScore)
     {
         List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> matchresults = new List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>>();
         List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> vectorresults;
@@ -182,7 +172,7 @@ public class QdrantVectorDb
         {
             IVectorDbCollection collection = await this._qdrantdbclient.GetCollectionAsync(collectionname);
             vectorresults = collection.FindClosestAsync(recordData).ToListAsync().Result;
-            
+
             if (vectorresults != null && vectorresults.Count > 0)
             {
                 foreach (var match in vectorresults)
@@ -194,13 +184,12 @@ public class QdrantVectorDb
                 }
             }
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             throw new Qdrant.DotNet.Internal.Diagnostics.VectorDbException($"Error occurred, Failed to get nearest matches from Qdrant{ex.Message}");
         }
 
         return matchresults;
-
     }
 
     public QdrantDb ConnectVectorDB(string hostendpoint, int port)
@@ -210,12 +199,11 @@ public class QdrantVectorDb
     }
 
     #region private ================================================================================
+
     private readonly ConcurrentDictionary<string, IVectorDbCollection> _qdrantcollections = new();
     private QdrantDb _qdrantdbclient;
     private readonly int _defaultvectorsize = 1536; //output dimension size for OpenAI's text-emebdding-ada-002
     private readonly VectorDistanceType _defaultdistancetype = VectorDistanceType.Cosine;
 
     #endregion
-
-
 }

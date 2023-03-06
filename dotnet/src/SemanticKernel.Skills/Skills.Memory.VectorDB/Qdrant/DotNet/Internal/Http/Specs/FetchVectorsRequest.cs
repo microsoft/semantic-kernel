@@ -28,6 +28,7 @@ internal class FetchVectorsRequest : IValidatable
     {
         return new FetchVectorsRequest(collectionName);
     }
+
     public void Validate()
     {
         Verify.NotNullOrEmpty(this._collectionName, "The collection name is empty");
@@ -41,8 +42,6 @@ internal class FetchVectorsRequest : IValidatable
             $"collections/{this._collectionName}/points/scroll");
     }
 
-
-
     #region private ================================================================================
 
     private readonly string _collectionName;
@@ -53,7 +52,6 @@ internal class FetchVectorsRequest : IValidatable
         this.Filters = new Filter();
         this.WithPayload = true;
         this.WithVector = true;
-
     }
 
     private class Filter : IValidatable
@@ -123,6 +121,6 @@ internal class FetchVectorsRequest : IValidatable
             }
         }
     }
-    #endregion
 
+    #endregion
 }

@@ -9,32 +9,33 @@ using Qdrant.DotNet.Internal.Diagnostics;
 
 namespace Qdrant.DotNet.Internal.Http.Specs;
 
-internal class FetchVectorsResponse 
-{ 
+internal class FetchVectorsResponse
+{
     internal class Points
-    {   
+    {
         [JsonPropertyName("id")]
-        internal string? VectorId {get; set; }
+        internal string? VectorId { get; set; }
 
         [JsonPropertyName("payload")]
         internal Dictionary<string, object>? Payload { get; set; }
-        
+
         [JsonPropertyName("vector")]
         internal float[]? Vector { get; set; }
 
         internal Points()
-        {}
+        {
+        }
     }
-      
+
     internal string Status { get; set; }
     internal List<Points> VectorPointCollection { get; set; }
 
     internal void ConvertFromJson(string json)
     {
-        try 
+        try
         {
-            JsonNode jsondata  = JsonNode.Parse(json)!;
-        
+            JsonNode jsondata = JsonNode.Parse(json)!;
+
             this.Status = jsondata.Root["status"]!.GetValue<string>()!;
             JsonNode result = jsondata.Root["result"]!;
 
@@ -49,7 +50,6 @@ internal class FetchVectorsResponse
         {
             throw new JsonException("Error in parsing Json from retrieving vectors", ex);
         }
-
     }
 
     internal FetchVectorsResponse(string json) : this()

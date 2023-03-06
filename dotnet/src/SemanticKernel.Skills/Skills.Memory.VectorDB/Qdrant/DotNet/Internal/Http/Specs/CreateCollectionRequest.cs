@@ -72,7 +72,8 @@ internal class CreateCollectionRequest : IValidatable
         {
             Verify.True(this.Size > 0, "The vector size must be greater than zero");
             Verify.NotNull(this.DistanceType, "The distance type has not been defined");
-            Verify.True(this.DistanceType is VectorDistanceType.Cosine or VectorDistanceType.DotProduct or VectorDistanceType.Euclidean or VectorDistanceType.Manhattan,
+            Verify.True(
+                this.DistanceType is VectorDistanceType.Cosine or VectorDistanceType.DotProduct or VectorDistanceType.Euclidean or VectorDistanceType.Manhattan,
                 $"Distance type {this.DistanceType:G} not supported.");
         }
 
