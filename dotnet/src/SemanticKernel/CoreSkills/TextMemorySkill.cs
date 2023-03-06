@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,11 +38,23 @@ public class TextMemorySkill
     /// </summary>
     public const string KeyParam = "key";
 
-    private const string DefaultCollection = "generic";
-    private const string DefaultRelevance = "0.75";
+    /// <summary>
+    /// Name of the context variable used to specify the number of memories to recall
+    /// </summary>
+    public const string LimitParam = "limit";
 
     /// <summary>
-    /// Recall a fact from the long term memory
+    /// Name of the context variable used to specify string separating multiple recalled memories
+    /// </summary>
+    public const string JoinParam = "join";
+
+    private const string DefaultCollection = "generic";
+    private const string DefaultRelevance = "0.75";
+    private const string DefaultLimit = "1";
+    private const string DefaultJoiner = ";";
+
+    /// <summary>
+    /// Recall information from the long term memory
     /// </summary>
     /// <example>
     /// SKContext["input"] = "what is the capital of France?"
@@ -49,37 +62,41 @@ public class TextMemorySkill
     /// </example>
     /// <param name="ask">The information to retrieve</param>
     /// <param name="context">Contains the 'collection' to search for information and 'relevance' score</param>
-    [SKFunction("Recall a fact from the long term memory")]
+    [SKFunction("Recall information from the long term memory")]
     [SKFunctionName("Recall")]
     [SKFunctionInput(Description = "The information to retrieve")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection where to search for information", DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = RelevanceParam, Description = "The relevance score, from 0.0 to 1.0, where 1.0 means perfect match",
         DefaultValue = DefaultRelevance)]
+    [SKFunctionContextParameter(Name = LimitParam, Description = "The maximum number of relevant memories to recall", DefaultValue = DefaultLimit)]
+    [SKFunctionContextParameter(Name = JoinParam, Description = "String used to separate multiple memories", DefaultValue = DefaultJoiner)]
     public async Task<string> RecallAsync(string ask, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
-        Verify.NotEmpty(collection, "Memory collection not defined");
+        Verify.NotEmpty(collection, "Memories collection not defined");
 
         var relevance = context.Variables.ContainsKey(RelevanceParam) ? context[RelevanceParam] : DefaultRelevance;
         if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultRelevance; }
 
-        context.Log.LogTrace("Searching memory for '{0}', collection '{1}', relevance '{2}'", ask, collection, relevance);
+        var limit = context.Variables.ContainsKey(LimitParam) ? context[LimitParam] : LimitParam;
+        if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultLimit; }
+
+        context.Log.LogTrace("Searching memories for '{0}', collection '{1}', relevance '{2}'", ask, collection, relevance);
 
         // TODO: support locales, e.g. "0.7" and "0,7" must both work
-        MemoryQueryResult? memory = await context.Memory
-            .SearchAsync(collection, ask, limit: 1, minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture))
-            .FirstOrDefaultAsync();
+        IAsyncEnumerable<MemoryQueryResult> memories = context.Memory
+            .SearchAsync(collection, ask, limit: int.Parse(limit, CultureInfo.InvariantCulture), minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture));
 
-        if (memory == null)
+        if (await memories.AnyAsync())
         {
-            context.Log.LogWarning("Memory not found in collection: {0}", collection);
+            context.Log.LogTrace("Memories found (collection: {0})", collection);
+            return string.Join(JoinParam, memories.Select(m => m.Text).ToEnumerable());
         }
         else
         {
-            context.Log.LogTrace("Memory found (collection: {0})", collection);
+            context.Log.LogWarning("Memories not found in collection: {0}", collection);
+            return string.Empty;
         }
-
-        return memory != null ? memory.Text : string.Empty;
     }
 
     /// <summary>
@@ -95,8 +112,8 @@ public class TextMemorySkill
     [SKFunction("Save information to semantic memory")]
     [SKFunctionName("Save")]
     [SKFunctionInput(Description = "The information to save")]
-    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection where to save the information", DefaultValue = DefaultCollection)]
-    [SKFunctionContextParameter(Name = KeyParam, Description = "The key to save the information")]
+    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the information to save", DefaultValue = DefaultCollection)]
+    [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated wtih the information to save")]
     public async Task SaveAsync(string text, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
@@ -109,4 +126,5 @@ public class TextMemorySkill
 
         await context.Memory.SaveInformationAsync(collection, text: text, id: key);
     }
+
 }
