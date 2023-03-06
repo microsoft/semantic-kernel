@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.OpenAI.Clients;
@@ -75,8 +74,8 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
             Stop = completeRequestSettings.StopSequences is { Count: > 0 } ? completeRequestSettings.StopSequences : null,
         });
 
-        this.HTTPClient.Timeout = TimeSpan.FromSeconds(requestSettings.HttpTimeoutInSeconds);
-        return await this.ExecuteCompleteRequestAsync(url, requestBody);
+
+        return await this.ExecuteCompleteRequestAsync(url, requestBody, requestSettings.HttpTimeoutInSeconds);
     }
 
     #region private ================================================================================
