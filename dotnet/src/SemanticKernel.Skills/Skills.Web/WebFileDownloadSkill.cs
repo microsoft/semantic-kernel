@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -44,9 +45,17 @@ public class WebFileDownloadSkill : IDisposable
         this._httpClient = new HttpClient(this._httpClientHandler);
     }
 
+    /// <summary>
+    /// Downloads a file to local storage.
+    /// </summary>
+    /// <param name="uri">URI of file to download</param>
+    /// <param name="context">Semantic Kernel context</param>
+    /// <returns>Task.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the location where to download the file is not provided</exception>
     [SKFunction("Downloads a file to local storage")]
     [SKFunctionInput(Description = "URL of file to download")]
     [SKFunctionContextParameter(Name = Parameters.FilePath, Description = "Path where to save file locally")]
+    [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "Semantic Kernel operates on strings")]
     public async Task DownloadToFileAsync(string uri, SKContext context)
     {
         this._logger.LogDebug($"{nameof(DownloadToFileAsync)} got called");
