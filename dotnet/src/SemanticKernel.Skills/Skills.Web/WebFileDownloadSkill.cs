@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -46,17 +45,16 @@ public class WebFileDownloadSkill : IDisposable
     }
 
     /// <summary>
-    /// Downloads a file to local storage.
+    /// Downloads a file to a local file path.
     /// </summary>
-    /// <param name="uri">URI of file to download</param>
+    /// <param name="source">URI of file to download</param>
     /// <param name="context">Semantic Kernel context</param>
     /// <returns>Task.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when the location where to download the file is not provided</exception>
     [SKFunction("Downloads a file to local storage")]
     [SKFunctionInput(Description = "URL of file to download")]
     [SKFunctionContextParameter(Name = Parameters.FilePath, Description = "Path where to save file locally")]
-    [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "Semantic Kernel operates on strings")]
-    public async Task DownloadToFileAsync(string uri, SKContext context)
+    public async Task DownloadToFileAsync(string source, SKContext context)
     {
         this._logger.LogDebug($"{nameof(DownloadToFileAsync)} got called");
 
@@ -69,8 +67,8 @@ public class WebFileDownloadSkill : IDisposable
             throw new KeyNotFoundException(errorMessage);
         }
 
-        this._logger.LogDebug("Sending GET request for {0}", uri);
-        HttpResponseMessage response = await this._httpClient.GetAsync(new Uri(uri), context.CancellationToken);
+        this._logger.LogDebug("Sending GET request for {0}", source);
+        HttpResponseMessage response = await this._httpClient.GetAsync(new Uri(source), context.CancellationToken);
         response.EnsureSuccessStatusCode();
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
