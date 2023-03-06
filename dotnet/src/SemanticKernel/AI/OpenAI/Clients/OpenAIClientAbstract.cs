@@ -58,7 +58,7 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// </summary>
     /// <param name="url">URL for the completion request API</param>
     /// <param name="requestBody">Prompt to complete</param>
-    /// <param name="httpTimeoutInSeconds"></param>
+    /// <param name="httpTimeoutInSeconds">Number of seconds to wait before the request times out</param>
     /// <returns>The completed text</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
     protected async Task<string> ExecuteCompleteRequestAsync(string url, string requestBody, int httpTimeoutInSeconds = DEFAULT_HTTP_TIMEOUT_IN_SECONDS)
@@ -88,9 +88,9 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <summary>
     /// Asynchronously sends an embedding request for the text.
     /// </summary>
-    /// <param name="url"></param>
-    /// <param name="requestBody"></param>
-    /// <param name="httpTimeoutInSeconds"></param>
+    /// <param name="url">URL for the embedding request API</param>
+    /// <param name="requestBody">Text to be embedded</param>
+    /// <param name="httpTimeoutInSeconds">Number of seconds to wait before the request times out</param>
     /// <returns></returns>
     /// <exception cref="AIException"></exception>
     protected async Task<IList<Embedding<float>>> ExecuteEmbeddingRequestAsync(string url, string requestBody, int httpTimeoutInSeconds = DEFAULT_HTTP_TIMEOUT_IN_SECONDS)
