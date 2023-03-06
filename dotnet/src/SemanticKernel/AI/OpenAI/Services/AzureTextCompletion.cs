@@ -42,14 +42,14 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
     /// Creates a completion for the provided prompt and parameters
     /// </summary>
     /// <param name="text">Text to complete</param>
-    /// <param name="requestSettings">Request settings for the completion API</param>
+    /// <param name="aiRequestSettings">The request settings for the completion backend</param>
     /// <returns>The completed text.</returns>
     /// <exception cref="AIException">AIException thrown during the request</exception>
-    public async Task<string> CompleteAsync(string text, RequestSettings requestSettings)
+    public async Task<string> CompleteAsync(string text, AIRequestSettings aiRequestSettings)
     {
-        Verify.NotNull(requestSettings, "Request settings cannot be empty");
-        Verify.NotNull(requestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
-        var completeRequestSettings = requestSettings.CompleteRequestSettings;
+        Verify.NotNull(aiRequestSettings, "Request settings cannot be empty");
+        Verify.NotNull(aiRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        var completeRequestSettings = aiRequestSettings.CompleteRequestSettings;
 
         var deploymentName = await this.GetDeploymentNameAsync(this._modelId);
         var url = $"{this.Endpoint}/openai/deployments/{deploymentName}/completions?api-version={this.AzureOpenAIApiVersion}";
@@ -75,7 +75,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
         });
 
 
-        return await this.ExecuteCompleteRequestAsync(url, requestBody, requestSettings.HttpTimeoutInSeconds);
+        return await this.ExecuteCompleteRequestAsync(url, requestBody, aiRequestSettings.HttpTimeoutInSeconds);
     }
 
     #region private ================================================================================

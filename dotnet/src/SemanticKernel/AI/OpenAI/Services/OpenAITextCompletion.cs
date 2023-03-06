@@ -46,14 +46,14 @@ public sealed class OpenAITextCompletion : OpenAIClientAbstract, ITextCompletion
     /// Creates a new completion for the prompt and settings.
     /// </summary>
     /// <param name="text">The prompt to complete.</param>
-    /// <param name="requestSettings">Request settings for the completion API</param>
+    /// <param name="aiRequestSettings">Request settings for the completion API</param>
     /// <returns>The completed text</returns>
     /// <exception cref="AIException">AIException thrown during the request</exception>
-    public async Task<string> CompleteAsync(string text, RequestSettings requestSettings)
+    public async Task<string> CompleteAsync(string text, AIRequestSettings aiRequestSettings)
     {
-        Verify.NotNull(requestSettings, "Request settings cannot be empty");
-        Verify.NotNull(requestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
-        var completeRequestSettings = requestSettings.CompleteRequestSettings;
+        Verify.NotNull(aiRequestSettings, "Request settings cannot be empty");
+        Verify.NotNull(aiRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        var completeRequestSettings = aiRequestSettings.CompleteRequestSettings;
 
         var url = $"{OpenaiEndpoint}/engines/{this._modelId}/completions";
         this.Log.LogDebug("Sending OpenAI completion request to {0}", url);
@@ -76,6 +76,6 @@ public sealed class OpenAITextCompletion : OpenAIClientAbstract, ITextCompletion
             Stop = completeRequestSettings.StopSequences is { Count: > 0 } ? completeRequestSettings.StopSequences : null,
         });
 
-        return await this.ExecuteCompleteRequestAsync(url, requestBody, requestSettings.HttpTimeoutInSeconds);
+        return await this.ExecuteCompleteRequestAsync(url, requestBody, aiRequestSettings.HttpTimeoutInSeconds);
     }
 }

@@ -23,8 +23,8 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UseMaxTokens(this ISKFunction skFunction, int maxTokens)
     {
-        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
-        skFunction.RequestSettings.CompleteRequestSettings.MaxTokens = maxTokens;
+        Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        skFunction.AIRequestSettings.CompleteRequestSettings.MaxTokens = maxTokens;
         return skFunction;
     }
 
@@ -36,8 +36,8 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UseTemperature(this ISKFunction skFunction, double temperature)
     {
-        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
-        skFunction.RequestSettings.CompleteRequestSettings.Temperature = temperature;
+        Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        skFunction.AIRequestSettings.CompleteRequestSettings.Temperature = temperature;
         return skFunction;
     }
 
@@ -49,8 +49,8 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UseTopP(this ISKFunction skFunction, double topP)
     {
-        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
-        skFunction.RequestSettings.CompleteRequestSettings.TopP = topP;
+        Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        skFunction.AIRequestSettings.CompleteRequestSettings.TopP = topP;
         return skFunction;
     }
 
@@ -62,8 +62,8 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UsePresencePenalty(this ISKFunction skFunction, double presencePenalty)
     {
-        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
-        skFunction.RequestSettings.CompleteRequestSettings.PresencePenalty = presencePenalty;
+        Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        skFunction.AIRequestSettings.CompleteRequestSettings.PresencePenalty = presencePenalty;
         return skFunction;
     }
 
@@ -75,8 +75,8 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UseFrequencyPenalty(this ISKFunction skFunction, double frequencyPenalty)
     {
-        Verify.NotNull(skFunction.RequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
-        skFunction.RequestSettings.CompleteRequestSettings.FrequencyPenalty = frequencyPenalty;
+        Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        skFunction.AIRequestSettings.CompleteRequestSettings.FrequencyPenalty = frequencyPenalty;
         return skFunction;
     }
 

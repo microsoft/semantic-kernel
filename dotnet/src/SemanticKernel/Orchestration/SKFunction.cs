@@ -37,7 +37,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public bool IsSemantic { get; }
 
     /// <inheritdoc/>
-    public RequestSettings RequestSettings
+    public AIRequestSettings AIRequestSettings
     {
         get { return this._aiRequestSettings; }
     }
@@ -100,7 +100,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         async Task<SKContext> LocalFunc(
             ITextCompletionClient client,
-            RequestSettings requestSettings,
+            AIRequestSettings aiRequestSettings,
             SKContext context)
         {
             Verify.NotNull(client, "AI LLM backed is empty");
@@ -109,7 +109,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             {
                 string prompt = await functionConfig.PromptTemplate.RenderAsync(context);
 
-                string completion = await client.CompleteAsync(prompt, requestSettings);
+                string completion = await client.CompleteAsync(prompt, aiRequestSettings);
                 context.Variables.Update(completion);
             }
 #pragma warning disable CA1031 // We need to catch all exceptions to handle the execution state
@@ -150,7 +150,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public Task<SKContext> InvokeAsync(
         string input,
         SKContext? context = null,
-        RequestSettings? settings = null,
+        AIRequestSettings? settings = null,
         ILogger? log = null,
         CancellationToken? cancel = null)
     {
@@ -174,7 +174,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
         SKContext? context = null,
-        RequestSettings? settings = null,
+        AIRequestSettings? settings = null,
         ILogger? log = null,
         CancellationToken? cancel = null)
     {
@@ -207,7 +207,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(RequestSettings settings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings settings)
     {
         Verify.NotNull(settings, "AI LLM request settings are empty");
         this.VerifyIsSemantic();
@@ -239,7 +239,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
     private ITextCompletionClient? _aiBackend = null;
-    private RequestSettings _aiRequestSettings = new RequestSettings { CompleteRequestSettings = new() };
+    private AIRequestSettings _aiRequestSettings = new AIRequestSettings { CompleteRequestSettings = new() };
 
     private struct MethodDetails
     {
@@ -324,7 +324,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     // Run the semantic function
-    private async Task<SKContext> InvokeSemanticAsync(SKContext context, RequestSettings? settings)
+    private async Task<SKContext> InvokeSemanticAsync(SKContext context, AIRequestSettings? settings)
     {
         this.VerifyIsSemantic();
 
@@ -332,7 +332,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         settings ??= this._aiRequestSettings;
 
-        var callable = (Func<ITextCompletionClient?, RequestSettings?, SKContext, Task<SKContext>>)this._function;
+        var callable = (Func<ITextCompletionClient?, AIRequestSettings?, SKContext, Task<SKContext>>)this._function;
         context.Variables.Update((await callable(this._aiBackend, settings, context)).Variables);
         return context;
     }
