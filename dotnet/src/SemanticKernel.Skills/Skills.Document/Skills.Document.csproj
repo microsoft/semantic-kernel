@@ -14,7 +14,7 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Skills.Document</PackageId>
-    <Title>Semantic Kernel - OpenXml Connector</Title>
+    <Title>Semantic Kernel - Document Skill</Title>
   </PropertyGroup>
 
   <ItemGroup>

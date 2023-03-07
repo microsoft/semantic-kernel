@@ -18,18 +18,18 @@ public static class Example14_Memory
         {
             ["https://github.com/microsoft/semantic-kernel/blob/main/README.md"]
                 = "README: Installation, getting started, and how to contribute",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/dotnet-jupyter-notebooks/2-running-prompts-from-file.ipynb"]
+            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/notebooks/dotnet/2-running-prompts-from-file.ipynb"]
                 = "Jupyter notebook describing how to pass prompts from a file to a semantic skill or function",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/dotnet-jupyter-notebooks/Getting-Started-Notebook.ipynb"]
+            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/notebooks/dotnet/Getting-Started-Notebook.ipynb"]
                 = "Jupyter notebook describing how to get started with the Semantic Kernel",
             ["https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChatSkill/ChatGPT"]
                 = "Sample demonstrating how to create a chat skill interfacing with ChatGPT",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/Volatile/VolatileEmbeddingStore.cs"]
+            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/VolatileMemoryStore.cs"]
                 = "C# class that defines a volatile embedding store",
             ["https://github.com/microsoft/semantic-kernel/blob/main/samples/dotnet/KernelHttpServer/README.md"]
                 = "README: How to set up a Semantic Kernel Service API using Azure Function Runtime v4",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/starter-webapp-react/README.md"]
-                = "README: README associated with a sample starter react-based webapp",
+            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/chat-summary-webapp-react/README.md"]
+                = "README: README associated with a sample chat summary react-based webapp",
         };
 
         var kernel = Kernel.Builder
