@@ -9,16 +9,17 @@
 
 ## Running the sample
 
-1. You will need an [Open AI Key](https://openai.com/api/) or
+1. You will need an [Open AI Key](https://platform.openai.com/account/api-keys) or
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample.
-1. Ensure the service API is already running `http://localhost:7071`. If not learn
+1. Ensure the KernelHttpServer sample is already running `http://localhost:7071`. If not follow the steps
    how to start it [here](../../dotnet/KernelHttpServer/README.md).
+1. Create a new copy of `.env.development` and save it as `.env` next to the original. 
+   This `.env` file will be ignored by git preventing it to end up in pull requests, so it's safe for personal settings. Keep the file safe.
 1. **Run** the following command `yarn install` (if you have never run the sample before)
    and/or `yarn start` from the command line.
 1. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
-1. Create a new copy of `.env.development` and save it as `.env` next to the original. 
-   This `.env` file will be ignored by git, the content will not end up in pull requests, so it's safe for personal settings. Keep the file safe.
+
 ## About the Book Creator Sample
 
 The Book creator sample allows you to enter in a topic then the
