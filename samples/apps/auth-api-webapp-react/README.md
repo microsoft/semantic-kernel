@@ -9,7 +9,7 @@
 
 ## Running the sample
 
-1. You will need an [Open AI Key](https://openai.com/api/) or
+1. You will need an [Open AI Key](https://platform.openai.com/account/api-keys) or
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample
 1. Ensure the service API is already running `http://localhost:7071`. If not learn
