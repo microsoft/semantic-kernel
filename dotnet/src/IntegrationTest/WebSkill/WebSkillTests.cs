@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -58,6 +59,28 @@ public sealed class WebSkillTests : IDisposable
 
         // Assert
         Assert.Contains(expectedAnswerContains, result.Result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task WebFileDownloadSkillFileTestAsync()
+    {
+        // Arrange
+        IKernel kernel = Kernel.Builder.WithLogger(this._logger).Build();
+        using XunitLogger<WebFileDownloadSkill> skillLogger = new(this._output);
+        using var skill = new WebFileDownloadSkill(skillLogger);
+        var download = kernel.ImportSkill(skill, "WebFileDownload");
+        string fileWhereToSaveWebPage = Path.GetTempFileName();
+        var contextVariables = new ContextVariables("https://www.microsoft.com");
+        contextVariables.Set(WebFileDownloadSkill.Parameters.FilePath, fileWhereToSaveWebPage);
+
+        // Act
+        await kernel.RunAsync(contextVariables, download["DownloadToFileAsync"]);
+
+        // Assert
+        var fileInfo = new FileInfo(fileWhereToSaveWebPage);
+        Assert.True(fileInfo.Length > 0);
+
+        File.Delete(fileWhereToSaveWebPage);
     }
 
     #region internals

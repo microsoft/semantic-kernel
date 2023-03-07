@@ -260,31 +260,29 @@ public sealed class Kernel : IKernel, IDisposable
         // TODO: allow to postpone this (e.g. use lazy init), allow to create semantic functions without a default backend
         var backend = this._config.GetCompletionBackend(functionConfig.PromptTemplateConfig.DefaultBackends.FirstOrDefault());
 
-        switch (backend.BackendType)
+        switch (backend)
         {
-            case BackendTypes.AzureOpenAI:
-                Verify.NotNull(backend.AzureOpenAI, "Azure OpenAI configuration is missing");
+            case AzureOpenAIConfig azureBackendConfig:
                 func.SetAIBackend(() => new AzureTextCompletion(
-                    backend.AzureOpenAI.DeploymentName,
-                    backend.AzureOpenAI.Endpoint,
-                    backend.AzureOpenAI.APIKey,
-                    backend.AzureOpenAI.APIVersion,
+                    azureBackendConfig.DeploymentName,
+                    azureBackendConfig.Endpoint,
+                    azureBackendConfig.APIKey,
+                    azureBackendConfig.APIVersion,
                     this._log));
                 break;
 
-            case BackendTypes.OpenAI:
-                Verify.NotNull(backend.OpenAI, "OpenAI configuration is missing");
+            case OpenAIConfig openAiConfig:
                 func.SetAIBackend(() => new OpenAITextCompletion(
-                    backend.OpenAI.ModelId,
-                    backend.OpenAI.APIKey,
-                    backend.OpenAI.OrgId,
+                    openAiConfig.ModelId,
+                    openAiConfig.APIKey,
+                    openAiConfig.OrgId,
                     this._log));
                 break;
 
             default:
                 throw new AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    $"Unknown/unsupported backend type {backend.BackendType:G}, unable to prepare semantic function. " +
+                    $"Unknown/unsupported backend configuration type {backend.GetType():G}, unable to prepare semantic function. " +
                     $"Function description: {functionConfig.PromptTemplateConfig.Description}");
         }
 

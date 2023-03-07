@@ -6,9 +6,8 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
 
 /// <summary>
 /// Azure OpenAI configuration.
-/// TODO: support for AAD auth.
 /// </summary>
-public sealed class AzureOpenAIConfig
+public sealed class AzureOpenAIConfig : BackendConfig
 {
     /// <summary>
     /// Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource
@@ -31,13 +30,16 @@ public sealed class AzureOpenAIConfig
     public string APIVersion { get; set; }
 
     /// <summary>
-    /// Creates a new AzureOpenAIConfig with supplied values.
+    /// Creates a new <see cref="AzureOpenAIConfig" /> with supplied values.
     /// </summary>
+    /// <param name="label">An identifier used to map semantic functions to backend,
+    /// decoupling prompts configurations from the actual model used</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
-    public AzureOpenAIConfig(string deploymentName, string endpoint, string apiKey, string apiVersion)
+    public AzureOpenAIConfig(string label, string deploymentName, string endpoint, string apiKey, string apiVersion)
+        : base(label)
     {
         Verify.NotEmpty(deploymentName, "The deployment name is empty");
         Verify.NotEmpty(endpoint, "The endpoint is empty");
