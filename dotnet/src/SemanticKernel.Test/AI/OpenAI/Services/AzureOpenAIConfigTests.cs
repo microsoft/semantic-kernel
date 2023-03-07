@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Xunit;
 
 namespace SemanticKernelTests.AI.OpenAI.Services;
+
 public class AzureOpenAIConfigTests
 {
     [Fact]
@@ -18,7 +19,7 @@ public class AzureOpenAIConfigTests
         string apiVersion = "testApiVersion";
 
         // Act
-        AzureOpenAIConfig config = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
+        var config = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
 
         // Assert
         Assert.Equal(label, config.Label);
@@ -36,8 +37,7 @@ public class AzureOpenAIConfigTests
     public void ConstructorWithEmptyParametersThrowsValidationException(
         string label, string deploymentName, string endpoint, string apiKey, string apiVersion)
     {
-        // Act
-        // Assert
+        // Act + Assert
         var exception = Assert.Throws<ValidationException>(() => new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion));
         Assert.Equal(ValidationException.ErrorCodes.EmptyValue, exception?.ErrorCode);
     }
@@ -49,8 +49,7 @@ public class AzureOpenAIConfigTests
     public void ConstructorWithMissingPrefixParametersThrowsValidationException(
         string label, string deploymentName, string endpoint, string apiKey, string apiVersion)
     {
-        // Act
-        // Assert
+        // Act + Assert
         var exception = Assert.Throws<ValidationException>(() => new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion));
         Assert.Equal(ValidationException.ErrorCodes.MissingPrefix, exception?.ErrorCode);
     }
@@ -65,9 +64,9 @@ public class AzureOpenAIConfigTests
         string apiKey = "testApiKey";
         string apiVersion = "testApiVersion";
 
-        AzureOpenAIConfig config = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
-
         // Act
+        var config = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
+
         // Assert
         Assert.Equal(endpoint, config.Endpoint);
     }

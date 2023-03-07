@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Xunit;
 
 namespace SemanticKernelTests.AI.OpenAI.Services;
+
 /// <summary>
 /// Unit tests of <see cref="OpenAIConfig"/>
 /// </summary>
@@ -20,7 +21,7 @@ public class OpenAIConfigTests
         string orgId = "testOrgId";
 
         // Act
-        OpenAIConfig config = new OpenAIConfig(label, modelId, apiKey, orgId);
+        var config = new OpenAIConfig(label, modelId, apiKey, orgId);
 
         // Assert
         Assert.Equal(label, config.Label);
@@ -36,8 +37,7 @@ public class OpenAIConfigTests
     public void ConstructorWithEmptyRequiredParameterThrowsArgumentException(
         string label, string modelId, string apiKey, string orgId)
     {
-        // Act
-        // Assert
+        // Act + Assert
         var exception = Assert.Throws<ValidationException>(() => new OpenAIConfig(label, modelId, apiKey, orgId));
 
         Assert.Equal(ValidationException.ErrorCodes.EmptyValue, exception?.ErrorCode);
@@ -51,9 +51,9 @@ public class OpenAIConfigTests
         string modelId = "testModelId";
         string apiKey = "testApiKey";
 
-        OpenAIConfig config = new OpenAIConfig(label, modelId, apiKey, null);
-
         // Act
+        var config = new OpenAIConfig(label, modelId, apiKey, null);
+
         // Assert
         Assert.Null(config.OrgId);
     }

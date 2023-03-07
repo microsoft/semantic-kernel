@@ -339,7 +339,6 @@ public class KernelConfigTests
         Assert.Equal(defaultBackendLabel, result.Label);
     }
 
-
     [Fact]
     public void GetCompletionBackendItReturnsDefaultWhenNonExistingLabelIsProvided()
     {
