@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
 /// <summary>
 /// Azure OpenAI configuration.
 /// </summary>
-public sealed class AzureAIBackendConfig : BackendConfig
+public sealed class AzureOpenAIConfig : BackendConfig
 {
     /// <summary>
     /// Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource
@@ -38,7 +38,7 @@ public sealed class AzureAIBackendConfig : BackendConfig
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
-    public AzureAIBackendConfig(string label, string deploymentName, string endpoint, string apiKey, string apiVersion)
+    public AzureOpenAIConfig(string label, string deploymentName, string endpoint, string apiKey, string apiVersion)
         : base(label)
     {
         Verify.NotEmpty(label, "The configuration label is empty");

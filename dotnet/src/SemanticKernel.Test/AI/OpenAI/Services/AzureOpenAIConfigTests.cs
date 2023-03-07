@@ -6,7 +6,7 @@ using Xunit;
 
 namespace SemanticKernelTests.AI.OpenAI.Services;
 
-public class AzureAIBackendConfigTests
+public class AzureOpenAIConfigTests
 {
     [Fact]
     public void ConstructorWithValidParametersSetsProperties()
@@ -19,7 +19,7 @@ public class AzureAIBackendConfigTests
         string apiVersion = "testApiVersion";
 
         // Act
-        var config = new AzureAIBackendConfig(label, deploymentName, endpoint, apiKey, apiVersion);
+        var config = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
 
         // Assert
         Assert.Equal(label, config.Label);
@@ -38,7 +38,7 @@ public class AzureAIBackendConfigTests
         string label, string deploymentName, string endpoint, string apiKey, string apiVersion)
     {
         // Act + Assert
-        var exception = Assert.Throws<ValidationException>(() => new AzureAIBackendConfig(label, deploymentName, endpoint, apiKey, apiVersion));
+        var exception = Assert.Throws<ValidationException>(() => new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion));
         Assert.Equal(ValidationException.ErrorCodes.EmptyValue, exception?.ErrorCode);
     }
 
@@ -50,7 +50,7 @@ public class AzureAIBackendConfigTests
         string label, string deploymentName, string endpoint, string apiKey, string apiVersion)
     {
         // Act + Assert
-        var exception = Assert.Throws<ValidationException>(() => new AzureAIBackendConfig(label, deploymentName, endpoint, apiKey, apiVersion));
+        var exception = Assert.Throws<ValidationException>(() => new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion));
         Assert.Equal(ValidationException.ErrorCodes.MissingPrefix, exception?.ErrorCode);
     }
 
@@ -65,7 +65,7 @@ public class AzureAIBackendConfigTests
         string apiVersion = "testApiVersion";
 
         // Act
-        var config = new AzureAIBackendConfig(label, deploymentName, endpoint, apiKey, apiVersion);
+        var config = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
 
         // Assert
         Assert.Equal(endpoint, config.Endpoint);

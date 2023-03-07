@@ -43,7 +43,7 @@ public sealed class KernelConfig
                 $"A completion backend already exists for the label: {label}");
         }
 
-        this.CompletionBackends[label] = new AzureAIBackendConfig(label, deploymentName, endpoint, apiKey, apiVersion);
+        this.CompletionBackends[label] = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
 
         if (this.CompletionBackends.Count == 1)
         {
@@ -76,7 +76,7 @@ public sealed class KernelConfig
                 $"A completion backend already exists for the label: {label}");
         }
 
-        this.CompletionBackends[label] = new OpenAIBackendConfig(label, modelId, apiKey, orgId);
+        this.CompletionBackends[label] = new OpenAIConfig(label, modelId, apiKey, orgId);
 
         if (this.CompletionBackends.Count == 1)
         {
@@ -110,7 +110,7 @@ public sealed class KernelConfig
                 $"An embeddings backend already exists for the label: {label}");
         }
 
-        this.EmbeddingsBackends[label] = new AzureAIBackendConfig(label, deploymentName, endpoint, apiKey, apiVersion);
+        this.EmbeddingsBackends[label] = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
 
         if (this.EmbeddingsBackends.Count == 1)
         {
@@ -143,7 +143,7 @@ public sealed class KernelConfig
                 $"An embeddings backend already exists for the label: {label}");
         }
 
-        this.EmbeddingsBackends[label] = new OpenAIBackendConfig(label, modelId, apiKey, orgId);
+        this.EmbeddingsBackends[label] = new OpenAIConfig(label, modelId, apiKey, orgId);
 
         if (this.EmbeddingsBackends.Count == 1)
         {

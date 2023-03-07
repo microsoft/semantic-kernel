@@ -45,7 +45,7 @@ public static class MemoryConfiguration
 
         switch (embeddingsBackendCfg)
         {
-            case AzureAIBackendConfig azureAIConfig:
+            case AzureOpenAIConfig azureAIConfig:
                 embeddingGenerator = new AzureTextEmbeddings(
                     azureAIConfig.DeploymentName,
                     azureAIConfig.Endpoint,
@@ -54,7 +54,7 @@ public static class MemoryConfiguration
                     kernel.Log);
                 break;
 
-            case OpenAIBackendConfig openAIConfig:
+            case OpenAIConfig openAIConfig:
                 embeddingGenerator = new OpenAITextEmbeddings(
                     openAIConfig.ModelId,
                     openAIConfig.APIKey,

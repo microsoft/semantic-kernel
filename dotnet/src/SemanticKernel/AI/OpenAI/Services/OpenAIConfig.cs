@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
 /// <summary>
 /// OpenAI configuration.
 /// </summary>
-public sealed class OpenAIBackendConfig : BackendConfig
+public sealed class OpenAIConfig : BackendConfig
 {
     /// <summary>
     /// OpenAI model name, see https://platform.openai.com/docs/models
@@ -32,7 +32,7 @@ public sealed class OpenAIBackendConfig : BackendConfig
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    public OpenAIBackendConfig(string label, string modelId, string apiKey, string? orgId)
+    public OpenAIConfig(string label, string modelId, string apiKey, string? orgId)
         : base(label)
     {
         Verify.NotEmpty(label, "The configuration label is empty");
