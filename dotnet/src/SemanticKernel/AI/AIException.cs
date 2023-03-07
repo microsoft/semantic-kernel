@@ -69,6 +69,11 @@ public class AIException : Exception<AIException.ErrorCodes>
         /// The function is not supported.
         /// </summary>
         FunctionTypeNotSupported,
+
+        /// <summary>
+        /// The desired request timeout setting is invalid.
+        /// </summary>
+        InvalidHttpTimeout,
     }
 
     /// <summary>

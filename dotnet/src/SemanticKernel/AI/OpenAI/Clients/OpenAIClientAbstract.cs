@@ -145,7 +145,7 @@ public abstract class OpenAIClientAbstract : IDisposable
 
     private async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, int httpTimeoutInSeconds)
     {
-        if (httpTimeoutInSeconds < 1) throw new AIException(AIException.ErrorCodes.UnknownError, "Invalid http timeout");
+        if (httpTimeoutInSeconds < 1) throw new AIException(AIException.ErrorCodes.InvalidHttpTimeout, "Invalid http timeout");
         CancellationTokenSource cancellationSource = new CancellationTokenSource();
         cancellationSource.CancelAfter(TimeSpan.FromSeconds(httpTimeoutInSeconds));
 
