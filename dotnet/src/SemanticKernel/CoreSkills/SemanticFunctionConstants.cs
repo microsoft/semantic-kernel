@@ -9,12 +9,13 @@ internal static class SemanticFunctionConstants
 To create a plan, follow these steps:
 1. From a <goal> create a <plan> as a series of <functions>.
 2. Use only the [AVAILABLE FUNCTIONS] - do not create new functions, inputs or attribute values.
-3. A function has an $input and an $output.
-4. The $output from each function is automatically passed as $input to the subsequent <function>.
-5. $input does not need to be specified if it consumes the $output of the previous function.
-6. To save an $output from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""$<UNIQUE_VARIABLE_KEY>""/>
-7. To save an $output from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
-8. Append an ""END"" XML comment at the end of the plan.
+3. Only use functions that are required for the given goal.
+4. A function has an $input and an $output.
+5. The $output from each function is automatically passed as $input to the subsequent <function>.
+6. $input does not need to be specified if it consumes the $output of the previous function.
+7. To save an $output from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""$<UNIQUE_VARIABLE_KEY>""/>
+8. To save an $output from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
+9. Append an ""END"" XML comment at the end of the plan.
 
 Here are some good examples:
 
