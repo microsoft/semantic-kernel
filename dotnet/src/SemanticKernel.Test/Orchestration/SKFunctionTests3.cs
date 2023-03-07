@@ -7,8 +7,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.OpenAI.Services;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Moq;
 using SemanticKernelTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -20,10 +24,16 @@ public sealed class SKFunctionTests3 : IDisposable
 {
     private readonly RedirectOutput _testOutputHelper;
 
+    private readonly Mock<IPromptTemplate> _promptTemplate;
+
     public SKFunctionTests3(ITestOutputHelper testOutputHelper)
     {
         this._testOutputHelper = new RedirectOutput(testOutputHelper);
         Console.SetOut(this._testOutputHelper);
+
+        this._promptTemplate = new Mock<IPromptTemplate>();
+        this._promptTemplate.Setup(x => x.RenderAsync(It.IsAny<SKContext>())).ReturnsAsync("foo");
+        this._promptTemplate.Setup(x => x.GetParameters()).Returns(new List<ParameterView>());
     }
 
     [Fact]
@@ -75,6 +85,40 @@ public sealed class SKFunctionTests3 : IDisposable
 
         // Assert
         Assert.Equal(3, count);
+    }
+
+    [Fact]
+    public async Task ItErrorsFornInvalidHttpTimeoutAsync()
+    {
+        // Arrange
+        var templateConfig = new PromptTemplateConfig();
+        var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
+
+        // Act
+        var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
+        skFunction.SetAIBackend(() => new OpenAITextCompletion("mockModelId", "mockAPIKey", "mockOrg"));
+        skFunction.AIRequestSettings.HttpTimeoutInSeconds = 0;
+
+        var result = await skFunction.InvokeAsync();
+        Assert.True(result.ToString().Contains("Invalid http timeout"));
+    }
+
+    [Fact]
+    public async Task ItErrorsForInvalidHttpTimeoutFromInvokeAsyncParameterAsync()
+    {
+        // Arrange
+        var templateConfig = new PromptTemplateConfig();
+        var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
+
+        // Act
+        var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
+        skFunction.SetAIBackend(() => new OpenAITextCompletion("mockModelId", "mockAPIKey", "mockOrg"));
+
+        var aiRequestSettings = new AIRequestSettings();
+        aiRequestSettings.CompleteRequestSettings = new();
+        aiRequestSettings.HttpTimeoutInSeconds = 0;
+        var result = await skFunction.InvokeAsync(settings: aiRequestSettings);
+        Assert.True(result.ToString().Contains("Invalid http timeout"));
     }
 
     public void Dispose()
