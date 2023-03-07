@@ -79,8 +79,8 @@ const CreateBookWithPlanner: FC<IData> = ({ uri, title, description, keyConfig, 
             };
             setProcessHistory((processHistory) => [...processHistory, historyItem]);
             return result.value;
-        } catch {
-            alert('Something went wrong. Please check that the function is running and accessible from this location.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 
@@ -98,8 +98,8 @@ const CreateBookWithPlanner: FC<IData> = ({ uri, title, description, keyConfig, 
             };
             setProcessHistory((processHistory) => [...processHistory, historyItem]);
             return result.value;
-        } catch {
-            alert('Something went wrong. Please check that the function is running and accessible from this location.');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 

@@ -34,19 +34,16 @@ public sealed class KernelConfig
     public KernelConfig AddAzureOpenAICompletionBackend(
         string label, string deploymentName, string endpoint, string apiKey, string apiVersion = "2022-12-01", bool overwrite = false)
     {
-        Verify.NotEmpty(label, "The backend name is empty");
+        Verify.NotEmpty(label, "The backend label is empty");
 
         if (!overwrite && this.CompletionBackends.ContainsKey(label))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"The completion backend cannot be added twice: {label}");
+                $"A completion backend already exists for the label: {label}");
         }
 
-        this.CompletionBackends[label] = new BackendConfig
-        {
-            BackendType = BackendTypes.AzureOpenAI, AzureOpenAI = new AzureOpenAIConfig(deploymentName, endpoint, apiKey, apiVersion)
-        };
+        this.CompletionBackends[label] = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
 
         if (this.CompletionBackends.Count == 1)
         {
@@ -70,20 +67,16 @@ public sealed class KernelConfig
     public KernelConfig AddOpenAICompletionBackend(
         string label, string modelId, string apiKey, string? orgId = null, bool overwrite = false)
     {
-        Verify.NotEmpty(label, "The backend name is empty");
+        Verify.NotEmpty(label, "The backend label is empty");
 
         if (!overwrite && this.CompletionBackends.ContainsKey(label))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"The completion backend cannot be added twice: {label}");
+                $"A completion backend already exists for the label: {label}");
         }
 
-        this.CompletionBackends[label] = new BackendConfig
-        {
-            BackendType = BackendTypes.OpenAI,
-            OpenAI = new OpenAIConfig(modelId, apiKey, orgId)
-        };
+        this.CompletionBackends[label] = new OpenAIConfig(label, modelId, apiKey, orgId);
 
         if (this.CompletionBackends.Count == 1)
         {
@@ -108,20 +101,16 @@ public sealed class KernelConfig
     public KernelConfig AddAzureOpenAIEmbeddingsBackend(
         string label, string deploymentName, string endpoint, string apiKey, string apiVersion = "2022-12-01", bool overwrite = false)
     {
-        Verify.NotEmpty(label, "The backend name is empty");
+        Verify.NotEmpty(label, "The backend label is empty");
 
         if (!overwrite && this.EmbeddingsBackends.ContainsKey(label))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"The embeddings backend cannot be added twice: {label}");
+                $"An embeddings backend already exists for the label: {label}");
         }
 
-        this.EmbeddingsBackends[label] = new BackendConfig
-        {
-            BackendType = BackendTypes.AzureOpenAI,
-            AzureOpenAI = new AzureOpenAIConfig(deploymentName, endpoint, apiKey, apiVersion)
-        };
+        this.EmbeddingsBackends[label] = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
 
         if (this.EmbeddingsBackends.Count == 1)
         {
@@ -145,20 +134,16 @@ public sealed class KernelConfig
     public KernelConfig AddOpenAIEmbeddingsBackend(
         string label, string modelId, string apiKey, string? orgId = null, bool overwrite = false)
     {
-        Verify.NotEmpty(label, "The backend name is empty");
+        Verify.NotEmpty(label, "The backend label is empty");
 
         if (!overwrite && this.EmbeddingsBackends.ContainsKey(label))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"The embeddings backend cannot be added twice: {label}");
+                $"An embeddings backend already exists for the label: {label}");
         }
 
-        this.EmbeddingsBackends[label] = new BackendConfig
-        {
-            BackendType = BackendTypes.OpenAI,
-            OpenAI = new OpenAIConfig(modelId, apiKey, orgId)
-        };
+        this.EmbeddingsBackends[label] = new OpenAIConfig(label, modelId, apiKey, orgId);
 
         if (this.EmbeddingsBackends.Count == 1)
         {
@@ -174,7 +159,7 @@ public sealed class KernelConfig
     /// <param name="label">Name of completion backend to look for.</param>
     /// <param name="condition">Optional condition that must be met for a backend to be deemed present.</param>
     /// <returns><c>true</c> when a completion backend matching the giving label is present, <c>false</c> otherwise.</returns>
-    public bool HasCompletionBackend(string label, Func<BackendConfig, bool>? condition = null)
+    public bool HasCompletionBackend(string label, Func<IBackendConfig, bool>? condition = null)
     {
         return condition == null
             ? this.CompletionBackends.ContainsKey(label)
@@ -187,7 +172,7 @@ public sealed class KernelConfig
     /// <param name="label">Name of embeddings backend to look for.</param>
     /// <param name="condition">Optional condition that must be met for a backend to be deemed present.</param>
     /// <returns><c>true</c> when an embeddings backend matching the giving label is present, <c>false</c> otherwise.</returns>
-    public bool HasEmbeddingsBackend(string label, Func<BackendConfig, bool>? condition = null)
+    public bool HasEmbeddingsBackend(string label, Func<IBackendConfig, bool>? condition = null)
     {
         return condition == null
             ? this.EmbeddingsBackends.ContainsKey(label)
@@ -217,7 +202,7 @@ public sealed class KernelConfig
         {
             throw new KernelException(
                 KernelException.ErrorCodes.BackendNotFound,
-                $"The completion backend doesn't exist: {label}");
+                $"The completion backend doesn't exist with label: {label}");
         }
 
         this._defaultCompletionBackend = label;
@@ -241,7 +226,7 @@ public sealed class KernelConfig
         {
             throw new KernelException(
                 KernelException.ErrorCodes.BackendNotFound,
-                $"The embeddings backend doesn't exist: {label}");
+                $"The embeddings backend doesn't exist with label: {label}");
         }
 
         this._defaultEmbeddingsBackend = label;
@@ -254,12 +239,12 @@ public sealed class KernelConfig
     public string? DefaultEmbeddingsBackend => this._defaultEmbeddingsBackend;
 
     /// <summary>
-    /// Get the backend configuration matching the given completion backend label.
+    /// Get the completion backend configuration matching the given label or the default if a label is not provided or not found.
     /// </summary>
-    /// <param name="label">Label of backend desired.</param>
-    /// <returns>The backend configuration matching the given label.</returns>
+    /// <param name="label">Optional label of the desired backend.</param>
+    /// <returns>The completion backend configuration matching the given label or the default.</returns>
     /// <exception cref="KernelException">Thrown when no suitable backend is found.</exception>
-    public BackendConfig GetCompletionBackend(string? label)
+    public IBackendConfig GetCompletionBackend(string? label = null)
     {
         if (string.IsNullOrEmpty(label))
         {
@@ -267,13 +252,13 @@ public sealed class KernelConfig
             {
                 throw new KernelException(
                     KernelException.ErrorCodes.BackendNotFound,
-                    $"Completion backend not found: {label}. No default backend available.");
+                    $"A label was not provided and no default completion backend is available.");
             }
 
             return this.CompletionBackends[this._defaultCompletionBackend];
         }
 
-        if (this.CompletionBackends.TryGetValue(label, out BackendConfig value))
+        if (this.CompletionBackends.TryGetValue(label, out IBackendConfig value))
         {
             return value;
         }
@@ -285,16 +270,16 @@ public sealed class KernelConfig
 
         throw new KernelException(
             KernelException.ErrorCodes.BackendNotFound,
-            $"Completion backend not found: {label}. No default backend available.");
+            $"Completion backend not found with label: {label} and no default completion backend is available.");
     }
 
     /// <summary>
-    /// Get the backend configuration matching the given embeddings backend label.
+    /// Get the embeddings backend configuration matching the given label or the default if a label is not provided or not found.
     /// </summary>
-    /// <param name="label">Label of backend desired.</param>
-    /// <returns>The backend configuration matching the given label.</returns>
+    /// <param name="label">Optional label of the desired backend.</param>
+    /// <returns>The embeddings backend configuration matching the given label or the default.</returns>
     /// <exception cref="KernelException">Thrown when no suitable backend is found.</exception>
-    public BackendConfig GetEmbeddingsBackend(string? label)
+    public IBackendConfig GetEmbeddingsBackend(string? label = null)
     {
         if (string.IsNullOrEmpty(label))
         {
@@ -302,13 +287,13 @@ public sealed class KernelConfig
             {
                 throw new KernelException(
                     KernelException.ErrorCodes.BackendNotFound,
-                    $"Embeddings backend not found: {label}. No default backend available.");
+                    $"A label was not provided and no default embeddings backend is available.");
             }
 
             return this.EmbeddingsBackends[this._defaultEmbeddingsBackend];
         }
 
-        if (this.EmbeddingsBackends.TryGetValue(label, out BackendConfig value))
+        if (this.EmbeddingsBackends.TryGetValue(label, out IBackendConfig value))
         {
             return value;
         }
@@ -320,14 +305,14 @@ public sealed class KernelConfig
 
         throw new KernelException(
             KernelException.ErrorCodes.BackendNotFound,
-            $"Embeddings backend not found: {label}. No default backend available.");
+            $"Embeddings backend not found with label: {label} and no default embeddings backend is available.");
     }
 
     /// <summary>
     /// Get all completion backends.
     /// </summary>
     /// <returns>IEnumerable of all completion backends in the kernel configuration.</returns>
-    public IEnumerable<BackendConfig> GetAllCompletionBackends()
+    public IEnumerable<IBackendConfig> GetAllCompletionBackends()
     {
         return this.CompletionBackends.Select(x => x.Value);
     }
@@ -336,7 +321,7 @@ public sealed class KernelConfig
     /// Get all embeddings backends.
     /// </summary>
     /// <returns>IEnumerable of all embeddings backends in the kernel configuration.</returns>
-    public IEnumerable<BackendConfig> GetAllEmbeddingsBackends()
+    public IEnumerable<IBackendConfig> GetAllEmbeddingsBackends()
     {
         return this.EmbeddingsBackends.Select(x => x.Value);
     }
@@ -408,8 +393,8 @@ public sealed class KernelConfig
 
     #region private
 
-    private Dictionary<string, BackendConfig> CompletionBackends { get; set; } = new();
-    private Dictionary<string, BackendConfig> EmbeddingsBackends { get; set; } = new();
+    private Dictionary<string, IBackendConfig> CompletionBackends { get; set; } = new();
+    private Dictionary<string, IBackendConfig> EmbeddingsBackends { get; set; } = new();
     private string? _defaultCompletionBackend;
     private string? _defaultEmbeddingsBackend;
     private IRetryMechanism _retryMechanism = new PassThroughWithoutRetry();

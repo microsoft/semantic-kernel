@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -16,7 +15,6 @@ using Xunit.Abstractions;
 
 namespace SemanticKernelTests.Orchestration;
 
-[SuppressMessage("", "CA1812:internal class apparently never instantiated", Justification = "Classes required by tests")]
 public sealed class SKFunctionTests2 : IDisposable
 {
     private readonly RedirectOutput _testOutputHelper;
