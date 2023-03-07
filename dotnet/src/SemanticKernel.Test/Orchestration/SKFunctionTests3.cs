@@ -88,7 +88,7 @@ public sealed class SKFunctionTests3 : IDisposable
     }
 
     [Fact]
-    public async Task ItErrorsFornInvalidHttpTimeoutAsync()
+    public async Task ItErrorsForInvalidHttpTimeoutAsync()
     {
         // Arrange
         var templateConfig = new PromptTemplateConfig();
