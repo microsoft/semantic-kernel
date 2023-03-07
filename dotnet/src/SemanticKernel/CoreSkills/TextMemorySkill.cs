@@ -90,7 +90,15 @@ public class TextMemorySkill
         if (await memories.AnyAsync())
         {
             context.Log.LogTrace("Memories found (collection: {0})", collection);
-            return string.Join(JoinParam, memories.Select(m => m.Text).ToEnumerable());
+            var resultString = string.Join(JoinParam, memories.Select(m => m.Text).ToEnumerable());
+
+            if (resultString.Length > 8000)
+            {
+                context.Log.LogWarning(
+                    "Recalled memories may exceed the token limit of your completions backend. Consider chunking the result if you plan to use it in a completion.");
+            }
+
+            return resultString;
         }
         else
         {
