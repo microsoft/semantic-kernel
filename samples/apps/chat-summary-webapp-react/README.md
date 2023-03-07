@@ -13,7 +13,7 @@ Watch the [Chat Summary Quick Start Video](https://aka.ms/SK-Samples-SimChat-Vid
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample.
 2. Ensure the service API is already running `http://localhost:7071`. If not learn
-   how to start it [here](../../dotnet/api-azure-function/README.md).
+   how to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. **Run** the following command `yarn install` (if you have never run the sample before)
    and/or `yarn start` from the command line.
 4. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
@@ -47,9 +47,9 @@ of semantic functions can be used in your app.
 -   View `loadSummarySkill`, `loadActionItemsSkill` and `loadTopicsSkill` in
     [ChatInteraction.tsx](src/components/chat/ChatInteraction.tsx)
     to see `fetch` requests that POST skills to the Semantic Kernel hosted by the
-    [Azure Function](../../dotnet/api-azure-function/SemanticKernelEndpoint.cs)
+    [Azure Function](../../dotnet/KernelHttpServer/SemanticKernelEndpoint.cs)
 -   Notice how [AISummary.tsx](src/components/AISummary.tsx) makes POST requests
-    to the [Azure Function](../../dotnet/api-azure-function/SemanticKernelEndpoint.cs) to
+    to the [Azure Function](../../dotnet/KernelHttpServer/SemanticKernelEndpoint.cs) to
     invoke skills that were previously added. Also take note of the Skill
     definition and configuration in Skills.ts - these skills were copied from the
     skills folder and added into the project to create a simple first run experience.
