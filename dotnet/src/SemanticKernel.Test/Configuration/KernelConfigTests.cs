@@ -148,19 +148,19 @@ public class KernelConfigTests
         Assert.False(target.HasEmbeddingsBackend("oai"));
 
         Assert.True(target.HasCompletionBackend("azure",
-            x => x is AzureOpenAIConfig));
+            x => x is AzureAIBackendConfig));
         Assert.False(target.HasCompletionBackend("azure",
-            x => x is OpenAIConfig));
+            x => x is OpenAIBackendConfig));
 
         Assert.False(target.HasEmbeddingsBackend("oai2",
-            x => x is AzureOpenAIConfig));
+            x => x is AzureAIBackendConfig));
         Assert.True(target.HasEmbeddingsBackend("oai2",
-            x => x is OpenAIConfig));
+            x => x is OpenAIBackendConfig));
 
         Assert.True(target.HasCompletionBackend("azure",
-            x => x is AzureOpenAIConfig azureConfig && azureConfig.DeploymentName == "depl"));
+            x => x is AzureAIBackendConfig azureConfig && azureConfig.DeploymentName == "depl"));
         Assert.False(target.HasCompletionBackend("azure",
-            x => x is AzureOpenAIConfig azureConfig && azureConfig.DeploymentName == "nope"));
+            x => x is AzureAIBackendConfig azureConfig && azureConfig.DeploymentName == "nope"));
     }
 
     [Fact]
@@ -298,7 +298,7 @@ public class KernelConfigTests
         var result = target.GetEmbeddingsBackend("test");
 
         // Assert
-        Assert.IsType<AzureOpenAIConfig>(result);
+        Assert.IsType<AzureAIBackendConfig>(result);
         Assert.Equal(defaultBackendLabel, result.Label);
     }
 
@@ -317,7 +317,7 @@ public class KernelConfigTests
         var result = target.GetEmbeddingsBackend(specificBackendLabel);
 
         // Assert
-        Assert.IsType<OpenAIConfig>(result);
+        Assert.IsType<OpenAIBackendConfig>(result);
         Assert.Equal(specificBackendLabel, result.Label);
     }
 
@@ -335,7 +335,7 @@ public class KernelConfigTests
         var result = target.GetEmbeddingsBackend();
 
         // Assert
-        Assert.IsType<AzureOpenAIConfig>(result);
+        Assert.IsType<AzureAIBackendConfig>(result);
         Assert.Equal(defaultBackendLabel, result.Label);
     }
 
@@ -353,7 +353,7 @@ public class KernelConfigTests
         var result = target.GetCompletionBackend("test");
 
         // Assert
-        Assert.IsType<AzureOpenAIConfig>(result);
+        Assert.IsType<AzureAIBackendConfig>(result);
         Assert.Equal(defaultBackendLabel, result.Label);
     }
 
@@ -372,7 +372,7 @@ public class KernelConfigTests
         var result = target.GetCompletionBackend(specificBackendLabel);
 
         // Assert
-        Assert.IsType<OpenAIConfig>(result);
+        Assert.IsType<OpenAIBackendConfig>(result);
         Assert.Equal(specificBackendLabel, result.Label);
     }
 
@@ -390,7 +390,7 @@ public class KernelConfigTests
         var result = target.GetCompletionBackend();
 
         // Assert
-        Assert.IsType<AzureOpenAIConfig>(result);
+        Assert.IsType<AzureAIBackendConfig>(result);
         Assert.Equal(defaultBackendLabel, result.Label);
     }
 }

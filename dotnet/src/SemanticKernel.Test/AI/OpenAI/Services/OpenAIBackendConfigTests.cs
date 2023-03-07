@@ -7,9 +7,9 @@ using Xunit;
 namespace SemanticKernelTests.AI.OpenAI.Services;
 
 /// <summary>
-/// Unit tests of <see cref="OpenAIConfig"/>
+/// Unit tests of <see cref="OpenAIBackendConfig"/>
 /// </summary>
-public class OpenAIConfigTests
+public class OpenAIBackendConfigTests
 {
     [Fact]
     public void ConstructorWithValidParametersSetsProperties()
@@ -21,7 +21,7 @@ public class OpenAIConfigTests
         string orgId = "testOrgId";
 
         // Act
-        var config = new OpenAIConfig(label, modelId, apiKey, orgId);
+        var config = new OpenAIBackendConfig(label, modelId, apiKey, orgId);
 
         // Assert
         Assert.Equal(label, config.Label);
@@ -38,7 +38,7 @@ public class OpenAIConfigTests
         string label, string modelId, string apiKey, string orgId)
     {
         // Act + Assert
-        var exception = Assert.Throws<ValidationException>(() => new OpenAIConfig(label, modelId, apiKey, orgId));
+        var exception = Assert.Throws<ValidationException>(() => new OpenAIBackendConfig(label, modelId, apiKey, orgId));
 
         Assert.Equal(ValidationException.ErrorCodes.EmptyValue, exception?.ErrorCode);
     }
@@ -52,7 +52,7 @@ public class OpenAIConfigTests
         string apiKey = "testApiKey";
 
         // Act
-        var config = new OpenAIConfig(label, modelId, apiKey, null);
+        var config = new OpenAIBackendConfig(label, modelId, apiKey, null);
 
         // Assert
         Assert.Null(config.OrgId);

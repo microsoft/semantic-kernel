@@ -262,7 +262,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         switch (backend)
         {
-            case AzureOpenAIConfig azureBackendConfig:
+            case AzureAIBackendConfig azureBackendConfig:
                 func.SetAIBackend(() => new AzureTextCompletion(
                     azureBackendConfig.DeploymentName,
                     azureBackendConfig.Endpoint,
@@ -271,7 +271,7 @@ public sealed class Kernel : IKernel, IDisposable
                     this._log));
                 break;
 
-            case OpenAIConfig openAiConfig:
+            case OpenAIBackendConfig openAiConfig:
                 func.SetAIBackend(() => new OpenAITextCompletion(
                     openAiConfig.ModelId,
                     openAiConfig.APIKey,
