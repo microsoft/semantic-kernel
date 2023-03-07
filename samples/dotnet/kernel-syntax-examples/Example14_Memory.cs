@@ -26,7 +26,7 @@ public static class Example14_Memory
                 = "Sample demonstrating how to create a chat skill interfacing with ChatGPT",
             ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/Volatile/VolatileEmbeddingStore.cs"]
                 = "C# class that defines a volatile embedding store",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/starter-api-azure-function/README.md"]
+            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/dotnet/KernelHttpServer/README.md"]
                 = "README: How to set up a Semantic Kernel Service API using Azure Function Runtime v4",
             ["https://github.com/microsoft/semantic-kernel/blob/main/samples/starter-webapp-react/README.md"]
                 = "README: README associated with a sample starter react-based webapp",

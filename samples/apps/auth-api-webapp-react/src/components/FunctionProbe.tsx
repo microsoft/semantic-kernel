@@ -28,7 +28,7 @@ const FunctionProbe: FC<IData> = ({ uri, onFunctionFound }) => {
             <Title3>Looking for your function</Title3>
             <Spinner />
             <Body1>
-                This sample expects to find the Azure Function from <strong>samples/starter-api-azure-function</strong>{' '}
+                This sample expects to find the Azure Function from <strong>samples/dotnet/KernelHttpServer</strong>{' '}
                 running at <strong>{uri}</strong>
             </Body1>
             <Body1>
