@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.Clients;
 /// <summary>
 /// An abstract Azure OpenAI Client.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "OpenAI users use strings")]
 public abstract class AzureOpenAIClientAbstract : OpenAIClientAbstract
 {
     /// <summary>
