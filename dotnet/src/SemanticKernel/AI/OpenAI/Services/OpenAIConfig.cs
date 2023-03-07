@@ -25,7 +25,7 @@ public sealed class OpenAIConfig : BackendConfig
     public string? OrgId { get; }
 
     /// <summary>
-    /// Creates a new OpenAIBackendConfig with supplied values.
+    /// Creates a new <see cref="OpenAIConfig" /> with supplied values.
     /// </summary>
     /// <param name="label">An identifier used to map semantic functions to backend,
     /// decoupling prompts configurations from the actual model used.</param>

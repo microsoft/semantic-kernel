@@ -12,6 +12,10 @@ public abstract class BackendConfig : IBackendConfig
     /// </summary>
     public string Label { get; }
 
+    /// <summary>
+    /// Creates a new <see cref="BackendConfig" /> with supplied values.
+    /// </summary>
+    /// <param name="label">An identifier used to map semantic functions to backend,
     protected BackendConfig(string label)
     {
         Verify.NotEmpty(label, "The configuration label is empty");

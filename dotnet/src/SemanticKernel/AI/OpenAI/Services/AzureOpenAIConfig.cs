@@ -30,7 +30,7 @@ public sealed class AzureOpenAIConfig : BackendConfig
     public string APIVersion { get; set; }
 
     /// <summary>
-    /// Creates a new AzureAIBackendConfig with supplied values.
+    /// Creates a new <see cref="AzureOpenAIConfig" /> with supplied values.
     /// </summary>
     /// <param name="label">An identifier used to map semantic functions to backend,
     /// decoupling prompts configurations from the actual model used</param>
