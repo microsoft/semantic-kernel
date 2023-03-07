@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelSyntaxExamples", "..\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsGraphSkillsExample", "..\samples\dotnet\graph-api-skills\MsGraphSkillsExample.csproj", "{3EB61E99-C39B-4620-9482-F8DA18E48525}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernelFunction", "..\samples\dotnet\api-azure-function\SemanticKernelFunction.csproj", "{34A7F1EF-D243-4160-A413-D713FEABCD94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelHttpServer", "..\samples\dotnet\KernelHttpServer\KernelHttpServer.csproj", "{34A7F1EF-D243-4160-A413-D713FEABCD94}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "src\IntegrationTest\IntegrationTests.csproj", "{E4B777A1-28E1-41BE-96AE-7F3EC61FD5D4}"
 EndProject
