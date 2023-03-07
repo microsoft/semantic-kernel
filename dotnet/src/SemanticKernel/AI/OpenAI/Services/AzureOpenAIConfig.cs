@@ -41,7 +41,6 @@ public sealed class AzureOpenAIConfig : BackendConfig
     public AzureOpenAIConfig(string label, string deploymentName, string endpoint, string apiKey, string apiVersion)
         : base(label)
     {
-        Verify.NotEmpty(label, "The configuration label is empty");
         Verify.NotEmpty(deploymentName, "The deployment name is empty");
         Verify.NotEmpty(endpoint, "The endpoint is empty");
         Verify.StartsWith(endpoint, "https://", "The endpoint URL must start with https://");

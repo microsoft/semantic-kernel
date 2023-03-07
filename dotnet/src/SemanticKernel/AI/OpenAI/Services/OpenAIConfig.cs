@@ -35,7 +35,6 @@ public sealed class OpenAIConfig : BackendConfig
     public OpenAIConfig(string label, string modelId, string apiKey, string? orgId)
         : base(label)
     {
-        Verify.NotEmpty(label, "The configuration label is empty");
         Verify.NotEmpty(modelId, "The model ID is empty");
         Verify.NotEmpty(apiKey, "The API key is empty");
 
