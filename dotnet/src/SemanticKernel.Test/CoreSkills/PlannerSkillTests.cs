@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.SkillDefinition;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -38,10 +39,10 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
 
         // Act - Assert no exception occurs
-        var _ = new PlannerSkill(kernel);
+        _ = new PlannerSkill(kernel);
     }
 
     [Fact]
@@ -49,10 +50,10 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportSkill(new PlannerSkill(kernel), "planner");
+        _ = kernel.ImportSkill(new PlannerSkill(kernel), "planner");
     }
 
     [Fact]
@@ -60,7 +61,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = new PlannerSkill(kernel);
         var planner = kernel.ImportSkill(plannerSkill, "planner");
 
@@ -80,7 +81,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
         // Act
@@ -101,7 +102,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         Plan createdPlan = new()
         {
@@ -111,7 +112,7 @@ Solve the equation x^2 = 2.
 
         // Act
         var variables = new ContextVariables();
-        variables.UpdateWithPlanEntry(createdPlan);
+        _ = variables.UpdateWithPlanEntry(createdPlan);
         var context = await kernel.RunAsync(variables, plannerSkill["ExecutePlan"]);
 
         // Assert
@@ -126,7 +127,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
         // Act
@@ -145,7 +146,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         Plan createdPlan = new()
         {
@@ -168,7 +169,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
         // Act
@@ -190,7 +191,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
         // Act
@@ -205,5 +206,288 @@ Solve the equation x^2 = 2.
         Assert.False(plan.IsSuccessful);
         Assert.True(plan.IsComplete);
         Assert.Contains("Failed to parse plan xml.", plan.Result, StringComparison.OrdinalIgnoreCase);
+    }
+
+    //
+    // Advanced tests for ExecutePlan that use mock sk functions to test the flow
+    //
+    [Theory]
+    [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
+<plan>
+<function.MockSkill.Echo input=""Hello World"" />
+</plan>")]
+    public async Task ExecutePlanCanCallFunctionAsync(string goalText, string planText)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
+        _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
+        Plan createdPlan = new()
+        {
+            Goal = goalText,
+            PlanString = planText
+        };
+
+        // Act
+        var context = await kernel.RunAsync(createdPlan.ToJson(), plannerSkill["ExecutePlan"]);
+
+        // Assert
+        var plan = context.Variables.ToPlan();
+        Assert.NotNull(plan);
+        Assert.NotNull(plan.Id);
+        Assert.Equal(goalText, plan.Goal);
+        Assert.True(plan.IsSuccessful);
+        Assert.True(plan.IsComplete);
+        Assert.Equal("Echo Result: Hello World", plan.Result, true);
+    }
+
+    // Test that contains a #text node in the plan
+    [Theory]
+    [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
+<plan>
+<function.MockSkill.Echo input=""Hello World"" />
+This is some text
+</plan>")]
+    public async Task ExecutePlanCanCallFunctionWithTextAsync(string goalText, string planText)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
+        _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
+        Plan createdPlan = new()
+        {
+            Goal = goalText,
+            PlanString = planText
+        };
+
+        // Act
+        var context = await kernel.RunAsync(createdPlan.ToJson(), plannerSkill["ExecutePlan"]);
+
+        // Assert
+        var plan = context.Variables.ToPlan();
+        Assert.NotNull(plan);
+        Assert.NotNull(plan.Id);
+        Assert.Equal(goalText, plan.Goal);
+        Assert.True(plan.IsSuccessful);
+        Assert.True(plan.IsComplete);
+        Assert.Equal("Echo Result: Hello World", plan.Result, true);
+    }
+
+    // use SplitInput after Echo
+    [Theory]
+    [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
+<plan>
+<function.MockSkill.Echo input=""Hello World"" />
+<function.MockSkill.SplitInput />
+<function.MockSkill.Echo input=""$Second"" />
+<function.MockSkill.Echo input=""$First"" />
+</plan>")]
+    public async Task ExecutePlanCanCallFunctionWithVariablesAsync(string goalText, string planText)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
+        _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
+        Plan createdPlan = new()
+        {
+            Goal = goalText,
+            PlanString = planText
+        };
+
+        // Act - run the plan 4 times to run all steps
+        var context = await kernel.RunAsync(createdPlan.ToJson(), plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+
+        // Assert
+        var plan = context.Variables.ToPlan();
+        Assert.NotNull(plan);
+        Assert.NotNull(plan.Id);
+        Assert.Equal(goalText, plan.Goal);
+        Assert.True(plan.IsSuccessful);
+        Assert.True(plan.IsComplete);
+        Assert.Equal("Echo Result: Echo Result", plan.Result, true);
+    }
+
+    [Theory]
+    [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
+<plan>
+<function.MockSkill.Echo input=""Hello World"" />
+<function.MockSkill.SplitInput />
+<function.MockSkill.Echo input=""$Second"" setContextVariable=""ECHO_SECOND""/>
+<function.MockSkill.Echo input=""$First"" setContextVariable=""ECHO_FIRST""/>
+<function.MockSkill.Echo input=""$ECHO_FIRST"" appendToResult=""RESULT__1""/>
+<function.MockSkill.Echo input=""$ECHO_SECOND"" appendToResult=""RESULT__2""/>
+</plan>")]
+    public async Task ExecutePlanCanCallFunctionWithVariablesAndResultAsync(string goalText, string planText)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
+        _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
+        Plan createdPlan = new()
+        {
+            Goal = goalText,
+            PlanString = planText
+        };
+
+        // Act - run the plan 6 times to run all steps
+        var context = await kernel.RunAsync(createdPlan.ToJson(), plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+
+        // Assert
+        var plan = context.Variables.ToPlan();
+        Assert.NotNull(plan);
+        Assert.NotNull(plan.Id);
+        Assert.Equal(goalText, plan.Goal);
+        Assert.True(plan.IsSuccessful);
+        Assert.True(plan.IsComplete);
+        var separator = Environment.NewLine + Environment.NewLine;
+        Assert.Equal($"RESULT__1{separator}Echo Result: Echo Result: Echo Result{separator}RESULT__2{separator}Echo Result: Echo Result:  Hello World",
+            plan.Result, true);
+    }
+
+    [Theory]
+    [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
+<plan>
+<function.MockSkill.Echo input=""Hello World"" />
+<function.MockSkill.SplitInput />
+<function.MockSkill.Echo input=""$Second"" setContextVariable=""ECHO_SECOND""/>
+<function.MockSkill.Echo input=""$First"" setContextVariable=""ECHO_FIRST""/>
+<function.MockSkill.Echo input=""$ECHO_SECOND;$ECHO_FIRST"" />
+</plan>")]
+    public async Task ExecutePlanCanCallFunctionWithChainedVariablesAsync(string goalText, string planText)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
+        _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
+        Plan createdPlan = new()
+        {
+            Goal = goalText,
+            PlanString = planText
+        };
+
+        // Act - run the plan 5 times to run all steps
+        var context = await kernel.RunAsync(createdPlan.ToJson(), plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+
+        // Assert
+        var plan = context.Variables.ToPlan();
+        Assert.NotNull(plan);
+        Assert.NotNull(plan.Id);
+        Assert.Equal(goalText, plan.Goal);
+        Assert.True(plan.IsSuccessful);
+        Assert.True(plan.IsComplete);
+        Assert.Equal("Echo Result: Echo Result:  Hello WorldEcho Result: Echo Result", plan.Result, true);
+    }
+
+    // test that a <tag> that is not <function> will just get skipped
+    [Theory]
+    [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
+<plan>
+<function.MockSkill.Echo input=""Hello World"" />
+<tag>Some other tag</tag>
+<function.MockSkill.Echo />
+</plan>")]
+    public async Task ExecutePlanCanSkipTagsAsync(string goalText, string planText)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
+        _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
+        Plan createdPlan = new()
+        {
+            Goal = goalText,
+            PlanString = planText
+        };
+
+        // Act - run the plan 2 times to run all steps
+        var context = await kernel.RunAsync(createdPlan.ToJson(), plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+
+        // Assert
+        var plan = context.Variables.ToPlan();
+        Assert.NotNull(plan);
+        Assert.NotNull(plan.Id);
+        Assert.Equal(goalText, plan.Goal);
+        Assert.True(plan.IsSuccessful);
+        Assert.True(plan.IsComplete);
+        Assert.Equal("Echo Result: Echo Result: Hello World", plan.Result, true);
+    }
+
+    [Theory]
+    [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
+<plan>
+<function.MockSkill.Echo input=""Hello World""/>
+<function.MockSkill.Echo input=""$output""/>
+</plan>")]
+    public async Task ExecutePlanCanSkipOutputAsync(string goalText, string planText)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
+        _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
+        Plan createdPlan = new()
+        {
+            Goal = goalText,
+            PlanString = planText
+        };
+
+        // Act - run the plan 2 times to run all steps
+        var context = await kernel.RunAsync(createdPlan.ToJson(), plannerSkill["ExecutePlan"]);
+        context = await kernel.RunAsync(context.Variables, plannerSkill["ExecutePlan"]);
+
+        // Assert
+        var plan = context.Variables.ToPlan();
+        Assert.NotNull(plan);
+        Assert.NotNull(plan.Id);
+        Assert.Equal(goalText, plan.Goal);
+        Assert.True(plan.IsSuccessful);
+        Assert.True(plan.IsComplete);
+        Assert.Equal("Echo Result: Echo Result: Hello World", plan.Result, true);
+    }
+
+    public class MockSkill
+    {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public MockSkill(ITestOutputHelper testOutputHelper)
+        {
+            this._testOutputHelper = testOutputHelper;
+        }
+
+        [SKFunction("Split the input into two parts")]
+        [SKFunctionInput(Description = "The input text to split")]
+        public Task<SKContext> SplitInput(string input, SKContext context)
+        {
+            var parts = input.Split(':');
+            context.Variables.Set("First", parts[0]);
+            context.Variables.Set("Second", parts[1]);
+            return Task.FromResult(context);
+        }
+
+        [SKFunction("Echo the input text")]
+        public Task<SKContext> Echo(string text, SKContext context)
+        {
+            this._testOutputHelper.WriteLine(text);
+            _ = context.Variables.Update("Echo Result: " + text);
+            return Task.FromResult(context);
+        }
     }
 }
