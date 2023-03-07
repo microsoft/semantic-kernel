@@ -128,13 +128,13 @@
       }
     },
     {
-      "label": "Run - Starter API Azure Function",
+      "label": "Run - Kernel HTTP Server",
       "command": "func",
       "type": "shell",
       "args": ["start", "--csharp"],
       "group": "test",
       "options": {
-        "cwd": "${workspaceFolder}/samples/starter-api-azure-function"
+        "cwd": "${workspaceFolder}/samples/dotnet/KernelHttpServer"
       },
       "presentation": {
         "reveal": "always",
