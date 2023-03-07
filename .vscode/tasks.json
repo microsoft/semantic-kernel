@@ -134,7 +134,7 @@
       "args": ["start", "--csharp"],
       "group": "test",
       "options": {
-        "cwd": "${workspaceFolder}/samples/starter-api-azure-function"
+        "cwd": "${workspaceFolder}/samples/dotnet/api-azure-function"
       },
       "presentation": {
         "reveal": "always",
