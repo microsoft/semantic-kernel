@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,8 +42,6 @@ internal class FunctionFlowRunner
     /// The attribute tag used in the plan xml for appending the output of a function to the final result for a plan.
     /// </summary>
     internal const string AppendToResultTag = "appendToResult";
-
-    internal const string OutputTag = "output";
 
     private readonly IKernel _kernel;
 
@@ -88,7 +87,7 @@ internal class FunctionFlowRunner
 
             // Prepare content for the new plan xml
             var solutionContent = new StringBuilder();
-            solutionContent.AppendLine($"<{SolutionTag}>");
+            _ = solutionContent.AppendLine($"<{SolutionTag}>");
 
             // Use goal as default function {{INPUT}} -- check and see if it's a plan in Input, if so, use goalTxt, otherwise, use the input.
             if (!context.Variables.Get("PLAN__INPUT", out var planInput))
@@ -115,7 +114,7 @@ internal class FunctionFlowRunner
             // Process the solution nodes
             string stepResults = await this.ProcessNodeListAsync(solution, functionInput, context);
             // Add the solution and variable updates to the new plan xml
-            solutionContent.Append(stepResults)
+            _ = solutionContent.Append(stepResults)
                 .AppendLine($"</{SolutionTag}>");
             // Update the plan xml
             var updatedPlan = goalXmlString + solutionContent.Replace("\r\n", "\n");
@@ -140,11 +139,6 @@ internal class FunctionFlowRunner
         const string INDENT = "  ";
         foreach (XmlNode o in nodeList)
         {
-            if (o == null)
-            {
-                continue;
-            }
-
             var parentNodeName = o.Name;
 
             context.Log.LogTrace("{0}: found node", parentNodeName);
@@ -155,7 +149,7 @@ internal class FunctionFlowRunner
                     context.Log.LogTrace("{0}: appending text node", parentNodeName);
                     if (o2.Value != null)
                     {
-                        stepAndTextResults.AppendLine(o2.Value.Trim());
+                        _ = stepAndTextResults.AppendLine(o2.Value.Trim());
                     }
 
                     continue;
@@ -182,14 +176,24 @@ internal class FunctionFlowRunner
                                 context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
                                 if (attr.InnerText.StartsWith("$", StringComparison.InvariantCultureIgnoreCase))
                                 {
-                                    // TODO support lists of parameters like $param1,$param2 or $param1;$param2
-                                    if (context.Variables.Get(attr.InnerText[1..], out var variableReplacement))
+                                    // Split the attribute value on the comma or ; character
+                                    var attrValues = attr.InnerText.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+                                    if (attrValues.Length > 0)
                                     {
-                                        functionVariables.Set(attr.Name, variableReplacement);
-                                    }
-                                    else if (attr.InnerText[1..].Equals(OutputTag, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        // skip
+                                        // If there are multiple values, create a list of the values
+                                        var attrValueList = new List<string>();
+                                        foreach (var attrValue in attrValues)
+                                        {
+                                            if (context.Variables.Get(attrValue[1..], out var variableReplacement))
+                                            {
+                                                attrValueList.Add(variableReplacement);
+                                            }
+                                        }
+
+                                        if (attrValueList.Count > 0)
+                                        {
+                                            functionVariables.Set(attr.Name, string.Concat(attrValueList));
+                                        }
                                     }
                                 }
                                 else if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
@@ -212,21 +216,16 @@ internal class FunctionFlowRunner
 
                         var result = await this._kernel.RunAsync(functionVariables, skillFunction);
 
-                        // If skillFunction is BucketOutputsAsync result
-                        // we need to pass those things back out to context.Variables
-                        if (skillFunctionName.Contains("BucketOutputs", StringComparison.InvariantCultureIgnoreCase))
+                        // copy all values for VariableNames in functionVariables not in keysToIgnore to context.Variables
+                        foreach (var (key, _) in functionVariables)
                         {
-                            // copy all values for VariableNames in functionVariables not in keysToIgnore to context.Variables
-                            foreach (var (key, _) in functionVariables)
+                            if (!keysToIgnore.Contains(key, StringComparer.InvariantCultureIgnoreCase) && functionVariables.Get(key, out var value))
                             {
-                                if (!keysToIgnore.Contains(key, StringComparer.InvariantCultureIgnoreCase) && functionVariables.Get(key, out var value))
-                                {
-                                    context.Variables.Set(key, value);
-                                }
+                                context.Variables.Set(key, value);
                             }
                         }
 
-                        context.Variables.Update(result.ToString());
+                        _ = context.Variables.Update(result.ToString());
                         if (!string.IsNullOrEmpty(variableTargetName))
                         {
                             context.Variables.Set(variableTargetName, result.ToString());
@@ -234,9 +233,9 @@ internal class FunctionFlowRunner
 
                         if (!string.IsNullOrEmpty(appendToResultName))
                         {
-                            context.Variables.Get(Plan.ResultKey, out var resultsSoFar);
+                            _ = context.Variables.Get(Plan.ResultKey, out var resultsSoFar);
                             context.Variables.Set(Plan.ResultKey,
-                                string.Join(Environment.NewLine + Environment.NewLine, resultsSoFar, appendToResultName, result.ToString()));
+                                string.Join(Environment.NewLine + Environment.NewLine, resultsSoFar, appendToResultName, result.ToString()).Trim());
                         }
 
                         processFunctions = false;
@@ -244,13 +243,13 @@ internal class FunctionFlowRunner
                     else
                     {
                         context.Log.LogTrace("{0}: appending function node {1}", parentNodeName, skillFunctionName);
-                        stepAndTextResults.Append(INDENT).AppendLine(o2.OuterXml);
+                        _ = stepAndTextResults.Append(INDENT).AppendLine(o2.OuterXml);
                     }
 
                     continue;
                 }
 
-                stepAndTextResults.Append(INDENT).AppendLine(o2.OuterXml);
+                _ = stepAndTextResults.Append(INDENT).AppendLine(o2.OuterXml);
             }
         }
 
@@ -267,7 +266,7 @@ internal class FunctionFlowRunner
 
         string goalTxt = goal[0]!.FirstChild!.Value ?? string.Empty;
         var goalContent = new StringBuilder();
-        goalContent.Append($"<{GoalTag}>")
+        _ = goalContent.Append($"<{GoalTag}>")
             .Append(goalTxt)
             .AppendLine($"</{GoalTag}>");
         return (goalTxt.Trim(), goalContent.Replace("\r\n", "\n").ToString().Trim());

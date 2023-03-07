@@ -133,6 +133,15 @@ public class KernelTests
         Assert.True(kernel.Skills.HasNativeFunction("GetAnyValue"));
     }
 
+    [Fact]
+    public void ItFailsIfCompletionBackendConfigIsNotSet()
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+
+        var exception = Assert.Throws<KernelException>(() => kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun"));
+    }
+
     public class MySkill
     {
         [SKFunction("Return any value.")]

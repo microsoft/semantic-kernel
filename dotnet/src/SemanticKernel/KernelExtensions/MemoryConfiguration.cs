@@ -29,43 +29,43 @@ public static class MemoryConfiguration
     /// Set the semantic memory to use the given memory storage and embeddings backend.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
-    /// <param name="embeddingsBackendName">Kernel backend for embedding generation</param>
+    /// <param name="embeddingsBackendLabel">Kernel backend label for embedding generation</param>
     /// <param name="storage">Memory storage</param>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The embeddingGenerator object is disposed by the kernel")]
-    public static void UseMemory(this IKernel kernel, string? embeddingsBackendName, IMemoryStore<float> storage)
+    public static void UseMemory(this IKernel kernel, string? embeddingsBackendLabel, IMemoryStore<float> storage)
     {
-        Verify.NotEmpty(embeddingsBackendName, "The embedding backend name is empty");
+        Verify.NotEmpty(embeddingsBackendLabel, "The embedding backend label is empty");
 
-        BackendConfig embeddingsBackendCfg = kernel.Config.GetEmbeddingsBackend(embeddingsBackendName);
+        IBackendConfig embeddingsBackendCfg = kernel.Config.GetEmbeddingsBackend(embeddingsBackendLabel);
+
+        Verify.NotNull(embeddingsBackendCfg, $"AI configuration is missing for label: {embeddingsBackendLabel}");
 
         IEmbeddingGenerator<string, float>? embeddingGenerator;
 
-        switch (embeddingsBackendCfg.BackendType)
+        switch (embeddingsBackendCfg)
         {
-            case BackendTypes.AzureOpenAI:
-                Verify.NotNull(embeddingsBackendCfg.AzureOpenAI, "Azure OpenAI configuration is missing");
+            case AzureOpenAIConfig azureAIConfig:
                 embeddingGenerator = new AzureTextEmbeddings(
-                    embeddingsBackendCfg.AzureOpenAI.DeploymentName,
-                    embeddingsBackendCfg.AzureOpenAI.Endpoint,
-                    embeddingsBackendCfg.AzureOpenAI.APIKey,
-                    embeddingsBackendCfg.AzureOpenAI.APIVersion,
+                    azureAIConfig.DeploymentName,
+                    azureAIConfig.Endpoint,
+                    azureAIConfig.APIKey,
+                    azureAIConfig.APIVersion,
                     kernel.Log);
                 break;
 
-            case BackendTypes.OpenAI:
-                Verify.NotNull(embeddingsBackendCfg.OpenAI, "OpenAI configuration is missing");
+            case OpenAIConfig openAIConfig:
                 embeddingGenerator = new OpenAITextEmbeddings(
-                    embeddingsBackendCfg.OpenAI.ModelId,
-                    embeddingsBackendCfg.OpenAI.APIKey,
-                    embeddingsBackendCfg.OpenAI.OrgId,
+                    openAIConfig.ModelId,
+                    openAIConfig.APIKey,
+                    openAIConfig.OrgId,
                     kernel.Log);
                 break;
 
             default:
                 throw new AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    $"Unknown/unsupported backend type {embeddingsBackendCfg.BackendType:G}, unable to prepare semantic memory");
+                    $"Unknown/unsupported backend type {embeddingsBackendCfg.GetType():G}, unable to prepare semantic memory");
         }
 
         UseMemory(kernel, embeddingGenerator, storage);
