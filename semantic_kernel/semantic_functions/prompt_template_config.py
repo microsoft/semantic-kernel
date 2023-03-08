@@ -30,9 +30,13 @@ class PromptTemplateConfig:
     schema: int = 1
     type: str = "completion"
     description: str = ""
-    completion: "PromptTemplateConfig.CompletionConfig" = CompletionConfig()
+    completion: "PromptTemplateConfig.CompletionConfig" = field(
+        default_factory=CompletionConfig
+    )
     default_backends: List[str] = field(default_factory=list)
-    input: "PromptTemplateConfig.InputConfig" = InputConfig()
+    input: "PromptTemplateConfig.InputConfig" = field(
+        default_factory=InputConfig
+    )
 
     @staticmethod
     def from_dict(data: dict) -> "PromptTemplateConfig":
