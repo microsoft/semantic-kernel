@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import List
+
 from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord

@@ -111,7 +111,10 @@ async def chat(
         human_input = input("Human:>")
         context["human_input"] = human_input
     except KeyboardInterrupt:
-        print("Exiting chat...")
+        print("\n\nExiting chat...")
+        return False
+    except EOFError:
+        print("\n\nExiting chat...")
         return False
 
     if human_input == "exit":

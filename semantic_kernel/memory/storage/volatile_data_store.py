@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Dict, List, Optional
 from datetime import datetime
+from typing import Dict, List, Optional
 
-from semantic_kernel.memory.storage.data_store_base import DataStoreBase
-from semantic_kernel.memory.storage.data_entry import DataEntry
 from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.memory.storage.data_entry import DataEntry
+from semantic_kernel.memory.storage.data_store_base import DataStoreBase
 
 
 class VolatileDataStore(DataStoreBase):

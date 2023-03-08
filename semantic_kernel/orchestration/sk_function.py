@@ -12,6 +12,7 @@ from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
+from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
@@ -63,8 +64,7 @@ class SKFunction(SKFunctionBase):
             parameters = [input_param] + parameters
 
         return SKFunction(
-            delegate_type=DelegateTypes.InStringAndContextOutTaskString,
-            # TODO: ^^^ infer this
+            delegate_type=DelegateInference.infer_delegate_type(method),
             delegate_function=method,
             parameters=parameters,
             description=method.__sk_function_description__,
