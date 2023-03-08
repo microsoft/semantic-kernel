@@ -50,7 +50,7 @@ public static class Example15_MemorySkill
 
         // ========= Test memory remember =========
         Console.WriteLine("========= Example: Remembering a Memory =========");
-        
+
         context[TextMemorySkill.KeyParam] = "info1";
         var answer = await memorySkill.RememberAsync(context);
         Console.WriteLine("Memory associated with 'info1': {0}", answer);
@@ -68,7 +68,7 @@ public static class Example15_MemorySkill
         answer = await memorySkill.RecallAsync(ask, context);
         Console.WriteLine("Ask: {0}", ask);
         Console.WriteLine("Answer:\n{0}", answer);
-        
+
         ask = "where do I live?";
         answer = await memorySkill.RecallAsync(ask, context);
         Console.WriteLine("Ask: {0}", ask);
@@ -135,7 +135,7 @@ Answer:
 
         Console.WriteLine(context["query"] + "\n");
         Console.WriteLine(result);
-        
+
         /*
         Output:
             Tell me a bit about myself
@@ -161,7 +161,7 @@ Answer:
         // ========= Forget an idea =========
         Console.WriteLine("========= Example: Forgetting an Idea =========");
         await memorySkill.ForgetIdeaAsync("my location", context);
-        
+
         context["fact1"] = "where did I grow up?";
         context["fact2"] = "where do I live?";
         context["query"] = "Do I live in the same town where I grew up?";
