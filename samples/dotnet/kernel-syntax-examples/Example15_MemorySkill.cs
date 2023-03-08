@@ -52,7 +52,7 @@ public static class Example15_MemorySkill
         Console.WriteLine("========= Example: Recalling a Memory =========");
 
         context[TextMemorySkill.KeyParam] = "info1";
-        var answer = await memorySkill.RecallAsync(context);
+        var answer = await memorySkill.RecallMemoryAsync(context);
         Console.WriteLine("Memory associated with 'info1': {0}", answer);
         /*
         Output:
@@ -145,7 +145,7 @@ Answer:
         */
 
         context[TextMemorySkill.KeyParam] = "info1";
-        await memorySkill.ForgetAsync(context);
+        await memorySkill.ForgetMemoryAsync(context);
 
         result = await aboutMeOracle.InvokeAsync(context);
 

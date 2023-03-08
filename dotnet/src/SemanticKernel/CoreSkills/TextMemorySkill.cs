@@ -58,15 +58,15 @@ public class TextMemorySkill
     /// </summary>
     /// <example>
     /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
-    /// {{memory.recall }}
+    /// {{memory.recallmemory }}
     /// </example>
     /// <param name="context">Contains the 'collection' containing the memory to recall and the `key` associated with it.</param>
     [SKFunction("Recall a specific memory")]
-    [SKFunctionName("Recall")]
+    [SKFunctionName("RecallMemory")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the memory to recall",
         DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated with the memory to recall")]
-    public async Task<string> RecallAsync(SKContext context)
+    public async Task<string> RecallMemoryAsync(SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
         Verify.NotEmpty(collection, "Memory collection not defined");
@@ -163,7 +163,7 @@ public class TextMemorySkill
     /// </summary>
     /// <example>
     /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
-    /// {{memory.forget }}
+    /// {{memory.forgetmemory }}
     /// </example>
     /// <param name="context">Contains the 'collection' containing the memory to forget.</param>
     [SKFunction("Forget specific memory")]
@@ -171,7 +171,7 @@ public class TextMemorySkill
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the memory to forget",
         DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated with the memory to forget")]
-    public async Task ForgetAsync(SKContext context)
+    public async Task ForgetMemoryAsync(SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
         Verify.NotEmpty(collection, "Memory collection not defined");
