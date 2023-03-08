@@ -2,18 +2,17 @@
 
 from typing import Optional
 
-from semantic_kernel.configuration.backend_types import BackendType
-from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
-    OpenAITextEmbedding,
-)
-from semantic_kernel.ai.open_ai.services.open_ai_config import OpenAIConfig
-from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
-from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
-from semantic_kernel.memory.storage.memory_storage_base import MemoryStorageBase
+from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
+    OpenAITextEmbedding,
+)
+from semantic_kernel.configuration.backend_types import BackendType
 from semantic_kernel.diagnostics.verify import Verify
+from semantic_kernel.kernel_base import KernelBase
+from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
+from semantic_kernel.memory.storage.memory_storage_base import MemoryStorageBase
 
 
 def use_memory(

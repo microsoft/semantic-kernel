@@ -7,13 +7,13 @@ from semantic_kernel.configuration.kernel_config import KernelConfig
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_base import KernelBase
+from semantic_kernel.kernel_extensions import KernelExtensions
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.memory.storage.memory_storage_base import MemoryStorageBase
 from semantic_kernel.skill_definition.skill_collection import SkillCollection
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 from semantic_kernel.utils.null_logger import NullLogger
-from semantic_kernel.kernel_extensions import KernelExtensions
 
 
 class KernelBuilder:

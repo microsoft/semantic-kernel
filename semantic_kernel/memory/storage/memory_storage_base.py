@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from typing import List, Any
+from typing import Any, List
 
 
 class MemoryStorageBase(ABC):
@@ -32,5 +32,3 @@ class MemoryStorageBase(ABC):
     @abstractmethod
     async def put_value_async(self, collection: str, key: str, value: Any) -> None:
         pass
-
-    

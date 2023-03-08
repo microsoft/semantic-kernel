@@ -4,10 +4,6 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
-from semantic_kernel.memory.storage.memory_storage_base import MemoryStorageBase
-from semantic_kernel.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
 
 
 class SemanticTextMemoryBase(ABC):

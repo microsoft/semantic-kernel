@@ -2,14 +2,14 @@
 
 from typing import TYPE_CHECKING, List, Optional
 
+from semantic_kernel.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_extensions.inline_function_definitions import (
     create_semantic_function,
 )
 from semantic_kernel.kernel_extensions.memory_configuration import use_memory
-from semantic_kernel.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
 from semantic_kernel.memory.storage.memory_storage_base import MemoryStorageBase
 
 if TYPE_CHECKING:

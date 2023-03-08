@@ -1,5 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import List
+
+from numpy import ndarray
 
 from semantic_kernel.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
@@ -7,5 +10,5 @@ from semantic_kernel.ai.embeddings.embedding_generator_base import (
 
 
 class OpenAITextEmbedding(EmbeddingGeneratorBase):
-    pass
-    # TODO: this
+    async def generate_embeddings_async(self, texts: List[str]) -> ndarray:
+        raise NotImplementedError()

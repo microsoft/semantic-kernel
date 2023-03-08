@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from numpy import ndarray
 from abc import ABC, abstractmethod
-from typing import List, Any
+from typing import List
+
+from numpy import ndarray
 
 
 class EmbeddingGeneratorBase(ABC):

@@ -7,7 +7,9 @@ from semantic_kernel.core_skills import TextMemorySkill
 
 
 def build_kernel() -> sk.KernelBase:
-    kernel = sk.kernel_builder().with_memory_storage(sk.memory.VolatileMemoryStore()).build()
+    kernel = (
+        sk.kernel_builder().with_memory_storage(sk.memory.VolatileMemoryStore()).build()
+    )
 
     # Setup kernel with OpenAI completion and embedding backends
     api_key, org_id = sk.openai_settings_from_dot_env()
@@ -45,7 +47,7 @@ async def search_memory_examples(kernel: sk.KernelBase) -> None:
         "what's my name",
         "where do I live?",
         "where's my family from?",
-        "where have I travelled?",
+        "where have I traveled?",
         "what do I do for work",
     ]
 
@@ -58,7 +60,8 @@ async def search_memory_examples(kernel: sk.KernelBase) -> None:
 async def setup_chat_with_memory(kernel: sk.KernelBase) -> None:
     sk_prompt = """
     ChatBot can have a conversation with you about any topic.
-    It can give explicit instructions or say 'I don't know' if it does not have an answer.
+    It can give explicit instructions or say 'I don't know' if
+    it does not have an answer.
 
     Information about me, from previous conversations:
     - {{$fact1}} {{recall $fact1}}

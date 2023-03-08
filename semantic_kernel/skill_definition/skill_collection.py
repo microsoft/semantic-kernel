@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING, Dict, Literal, Optional, Tuple
 
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_exception import KernelException
-from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
 from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.read_only_skill_collection import (
     ReadOnlySkillCollection,
 )
+from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.static_property import static_property
 
