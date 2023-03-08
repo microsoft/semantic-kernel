@@ -3,13 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using KernelHttpServer.Config;
+using KernelHttpServer.Utils;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using SemanticKernelFunction.Config;
-using SemanticKernelFunction.Utils;
 
-namespace SemanticKernelFunction;
+namespace KernelHttpServer;
 
 internal static class SemanticKernelFactory
 {
