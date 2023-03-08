@@ -217,4 +217,3 @@ to argue over :) I've also been using `flake8` to lint the code.
 I have a basic `Makefile` that is setup to do `poetry install` and also 
 use a tool called `pre-commit` to run linting/formatting on all the files.
 Configuration for those things are in the `./conf/` directory.
-
