@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT License.
 
 using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
+using KernelHttpServer.Model;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
-using SemanticKernelFunction.Model;
 
-namespace SemanticKernelFunction;
+namespace KernelHttpServer;
 
 public class SemanticKernelEndpoint
 {
