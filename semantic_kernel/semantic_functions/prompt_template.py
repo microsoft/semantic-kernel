@@ -9,6 +9,7 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 )
 from semantic_kernel.skill_definition.parameter_view import ParameterView
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.template_engine.prompt_template_engine_base import (
     PromptTemplateEngineBase,
 )
@@ -56,12 +57,14 @@ class PromptTemplate(PromptTemplateBase):
                 continue
             if block is None:
                 continue
-            if block.name in seen:
+
+            var_block: VarBlock = block  # type: ignore
+            if var_block.name in seen:
                 continue
 
-            result.append(ParameterView(block.name, "", ""))
+            result.append(ParameterView(var_block.name, "", ""))
 
-            seen.add(block.name)
+            seen.add(var_block.name)
 
         return result
 

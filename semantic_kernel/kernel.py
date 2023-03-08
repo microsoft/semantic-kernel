@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from semantic_kernel.ai.ai_exception import AIException
 from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
@@ -15,6 +15,7 @@ from semantic_kernel.configuration.backend_types import BackendType
 from semantic_kernel.configuration.kernel_config import KernelConfig
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_base import KernelBase
+from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -164,8 +165,47 @@ class Kernel(KernelBase):
             self._log,
         )
 
-    def import_skill(self, skill_instance: Any, skill_name: str = "") -> None:
-        raise NotImplementedError("Not implemented yet.")
+    def import_skill(
+        self, skill_instance: Any, skill_name: str = ""
+    ) -> Dict[str, SKFunctionBase]:
+        if skill_name.strip() == "":
+            skill_name = SkillCollection.GLOBAL_SKILL
+            self._log.debug(f"Importing skill {skill_name} into the global namespace")
+        else:
+            self._log.debug(f"Importing skill {skill_name}")
+
+        functions = []
+        # Read every method from the skill instance
+        for candidate in skill_instance.__dict__.values():
+            # We're looking for a @staticmethod
+            if not isinstance(candidate, staticmethod):
+                continue
+            candidate = candidate.__func__
+
+            # If the method is a semantic function, register it
+            if hasattr(candidate, "__sk_function_name__"):
+                functions.append(
+                    SKFunction.from_native_method(candidate, skill_name, self.logger)
+                )
+
+        self.logger.debug(f"Methods imported: {len(functions)}")
+
+        # Uniqueness check on function names
+        function_names = [f.name for f in functions]
+        if len(function_names) != len(set(function_names)):
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionOverloadNotSupported,
+                "Overloaded functions are not supported, "
+                "please differentiate function names.",
+            )
+
+        skill = {}
+        for function in functions:
+            function.set_default_skill_collection(self.skills)
+            self._skill_collection.add_native_function(function)
+            skill[function.name] = function
+
+        return skill
 
     def _create_semantic_function(
         self,

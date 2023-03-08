@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from functools import wraps
 from typing import Optional
 
 
@@ -17,13 +16,16 @@ def sk_function_context_parameter(
     """
 
     def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
+        if not hasattr(func, "__sk_function_context_parameters__"):
+            func.__sk_function_context_parameters__ = []
 
-        wrapper.__sk_function_context_parameter_name__ = name
-        wrapper.__sk_function_context_parameter_description__ = description
-        wrapper.__sk_function_context_parameter_default_value__ = default_value
-        return wrapper
+        func.__sk_function_context_parameters__.append(
+            {
+                "name": name,
+                "description": description,
+                "default_value": default_value,
+            }
+        )
+        return func
 
     return decorator

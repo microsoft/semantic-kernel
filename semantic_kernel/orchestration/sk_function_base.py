@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Callable, Optional
 
 from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
 from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition.function_view import FunctionView
 
@@ -104,6 +106,29 @@ class SKFunctionBase(ABC):
             input {str} -- The explicit string input (default: {None})
             context {SKContext} -- The context to use
             settings {CompleteRequestSettings} -- LLM completion settings
+            log {Logger} -- Application logger
+
+        Returns:
+            SKContext -- The updated context, potentially a new one if
+            context switching is implemented.
+        """
+        pass
+
+    @abstractmethod
+    async def invoke_with_custom_input_async(
+        self,
+        input: ContextVariables,
+        memory: SemanticTextMemoryBase,
+        skills: "ReadOnlySkillCollectionBase",
+        log: Optional[Logger] = None,
+    ) -> SKContext:
+        """
+        Invokes the function with a custom input
+
+        Arguments:
+            input {ContextVariables} -- The custom input
+            memory {SemanticTextMemoryBase} -- The memory to use
+            skills {ReadOnlySkillCollectionBase} -- The skill collection to use
             log {Logger} -- Application logger
 
         Returns:

@@ -1,12 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import Any, List, Optional
+
+from semantic_kernel.memory.storage.data_entry import DataEntry
 
 
-class MemoryStorageBase(ABC):
+class DataStoreBase(ABC):
     @abstractmethod
-    async def get_collection_async(self) -> List[str]:
+    async def get_collections_async(self) -> List[str]:
         pass
 
     @abstractmethod
@@ -14,11 +16,11 @@ class MemoryStorageBase(ABC):
         pass
 
     @abstractmethod
-    async def get_async(self, collection: str, key: str) -> Any:
+    async def get_async(self, collection: str, key: str) -> Optional[DataEntry]:
         pass
 
     @abstractmethod
-    async def put_async(self, collection: str, value: Any) -> Any:
+    async def put_async(self, collection: str, value: Any) -> DataEntry:
         pass
 
     @abstractmethod

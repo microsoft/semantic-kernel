@@ -11,13 +11,13 @@ from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
 from semantic_kernel.configuration.backend_types import BackendType
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_base import KernelBase
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
-from semantic_kernel.memory.storage.memory_storage_base import MemoryStorageBase
 
 
 def use_memory(
     kernel: KernelBase,
-    storage: MemoryStorageBase,
+    storage: MemoryStoreBase,
     embeddings_generator: Optional[EmbeddingGeneratorBase] = None,
 ) -> None:
     if embeddings_generator is None:
@@ -31,6 +31,7 @@ def use_memory(
         )
 
         if embeddings_backend_config.backend_type == BackendType.OpenAI:
+            assert embeddings_backend_config.open_ai is not None  # for mypy
             embeddings_generator = OpenAITextEmbedding(
                 embeddings_backend_config.open_ai.model_id,
                 embeddings_backend_config.open_ai.api_key,

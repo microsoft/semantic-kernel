@@ -7,16 +7,16 @@ from semantic_kernel.ai.embeddings.embedding_generator_base import (
 )
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-from semantic_kernel.memory.storage.memory_storage_base import MemoryStorageBase
 
 
 class SemanticTextMemory(SemanticTextMemoryBase):
-    _storage: MemoryStorageBase
+    _storage: MemoryStoreBase
     _embeddings_generator: EmbeddingGeneratorBase
 
     def __init__(
-        self, storage: MemoryStorageBase, embeddings_generator: EmbeddingGeneratorBase
+        self, storage: MemoryStoreBase, embeddings_generator: EmbeddingGeneratorBase
     ) -> None:
         self._storage = storage
         self._embeddings_generator = embeddings_generator
@@ -57,7 +57,14 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         limit: int = 1,
         min_relevance_score: float = 0.7,
     ) -> List[MemoryQueryResult]:
-        raise NotImplementedError()
+        query_embedding = await self._embeddings_generator.generate_embeddings_async(
+            [query]
+        )
+        results = await self._storage.get_nearest_matches_async(
+            collection, query_embedding, limit, min_relevance_score
+        )
+
+        return [MemoryQueryResult.from_memory_record(r[0], r[1]) for r in results]
 
     async def get_collections_async(self) -> List[str]:
         return []

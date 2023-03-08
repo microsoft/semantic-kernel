@@ -18,10 +18,10 @@ class SKContext:
     _error_occurred: bool = False
     _last_exception: Optional[Exception] = None
     _last_error_description: str = ""
-    _logger: Optional[Logger] = None
-    _memory: Optional[SemanticTextMemoryBase] = None
-    _skill_collection: Optional[ReadOnlySkillCollectionBase] = None
-    _variables: Optional[ContextVariables] = None
+    _logger: Logger
+    _memory: SemanticTextMemoryBase
+    _skill_collection: ReadOnlySkillCollectionBase
+    _variables: ContextVariables
 
     def __init__(
         self,
@@ -103,7 +103,7 @@ class SKContext:
         return self._last_exception
 
     @property
-    def variables(self) -> Optional[ContextVariables]:
+    def variables(self) -> ContextVariables:
         """
         User variables.
 
@@ -113,7 +113,7 @@ class SKContext:
         return self._variables
 
     @property
-    def memory(self) -> Optional[SemanticTextMemoryBase]:
+    def memory(self) -> SemanticTextMemoryBase:
         """
         The semantic text memory.
 
@@ -123,7 +123,7 @@ class SKContext:
         return self._memory
 
     @property
-    def skills(self) -> Optional[ReadOnlySkillCollectionBase]:
+    def skills(self) -> ReadOnlySkillCollectionBase:
         """
         Read only skills collection.
 
@@ -133,7 +133,7 @@ class SKContext:
         return self._skill_collection
 
     @property
-    def log(self) -> Optional[Logger]:
+    def log(self) -> Logger:
         """
         The logger.
 
@@ -141,6 +141,28 @@ class SKContext:
             Logger -- The logger.
         """
         return self._logger
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        """
+        Sets a context variable.
+
+        Arguments:
+            key {str} -- The variable name.
+            value {Any} -- The variable value.
+        """
+        self._variables[key] = value
+
+    def __getitem__(self, key: str) -> Any:
+        """
+        Gets a context variable.
+
+        Arguments:
+            key {str} -- The variable name.
+
+        Returns:
+            Any -- The variable value.
+        """
+        return self._variables[key]
 
     def func(self, skill_name: str, function_name: str):
         """

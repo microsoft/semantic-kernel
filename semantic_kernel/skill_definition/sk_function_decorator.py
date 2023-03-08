@@ -1,22 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from functools import wraps
 
-
-def sk_function(name: str):
+def sk_function(description: str):
     """
     Decorator for SK functions.
 
     Args:
-        name -- The name of the function
+        description -- The description of the function
     """
 
     def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
-
-        wrapper.__sk_function_name__ = name
-        return wrapper
+        func.__sk_function__ = True
+        func.__sk_function_description__ = description
+        return func
 
     return decorator

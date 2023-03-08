@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from functools import wraps
 
-
-def sk_function_input(*, description: str):
+def sk_function_input(*, description: str, default_value: str = ""):
     """
     Decorator for SK function inputs.
 
@@ -12,11 +10,8 @@ def sk_function_input(*, description: str):
     """
 
     def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
-
-        wrapper.__sk_function_input_description__ = description
-        return wrapper
+        func.__sk_function_input_description__ = description
+        func.__sk_function_input_default_value__ = default_value
+        return func
 
     return decorator

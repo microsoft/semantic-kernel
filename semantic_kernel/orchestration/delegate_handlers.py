@@ -141,8 +141,10 @@ class DelegateHandlers:
     @staticmethod
     def get_handler(delegate_type):
         for name, value in DelegateHandlers.__dict__.items():
-            if name.startswith("handle_") and hasattr(value, "_delegate_type"):
-                if value._delegate_type == delegate_type:
+            if name.startswith("handle_") and hasattr(
+                value.__wrapped__, "_delegate_type"
+            ):
+                if value.__wrapped__._delegate_type == delegate_type:
                     return value
 
         return DelegateHandlers.handle_unknown

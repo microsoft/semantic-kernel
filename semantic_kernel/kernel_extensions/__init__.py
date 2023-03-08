@@ -10,7 +10,7 @@ from semantic_kernel.kernel_extensions.inline_function_definitions import (
     create_semantic_function,
 )
 from semantic_kernel.kernel_extensions.memory_configuration import use_memory
-from semantic_kernel.memory.storage.memory_storage_base import MemoryStorageBase
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
@@ -48,7 +48,7 @@ class KernelExtensions:
     @staticmethod
     def use_memory(
         kernel: KernelBase,
-        storage: MemoryStorageBase,
+        storage: MemoryStoreBase,
         embeddings_generator: Optional[EmbeddingGeneratorBase] = None,
     ) -> None:
         use_memory(kernel, storage, embeddings_generator)
