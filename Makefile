@@ -46,3 +46,9 @@ recreate-env:
 
 pre-commit:
 	poetry run pre-commit run --all-files -c .conf/.pre-commit-config.yaml
+
+.ONESHELL:
+install-pre-commit:
+	poetry run pre-commit install
+	# Edit the pre-commit config file to change the config path
+	sed -i 's|\.pre-commit-config\.yaml|\.conf/\.pre-commit-config\.yaml|g' .git/hooks/pre-commit
