@@ -49,10 +49,10 @@ public static class Example15_MemorySkill
         await memorySaver.InvokeAsync(context);
 
         // ========= Test memory remember =========
-        Console.WriteLine("========= Example: Remembering a Memory =========");
+        Console.WriteLine("========= Example: Recalling a Memory =========");
 
         context[TextMemorySkill.KeyParam] = "info1";
-        var answer = await memorySkill.RememberAsync(context);
+        var answer = await memorySkill.RecallAsync(context);
         Console.WriteLine("Memory associated with 'info1': {0}", answer);
         /*
         Output:
@@ -60,17 +60,17 @@ public static class Example15_MemorySkill
         */
 
         // ========= Test memory recall =========
-        Console.WriteLine("========= Example: Recalling Memories =========");
+        Console.WriteLine("========= Example: Recalling an Idea =========");
 
         context[TextMemorySkill.LimitParam] = "2";
         context[TextMemorySkill.JoinParam] = "\n";
         string ask = "where did I grow up?";
-        answer = await memorySkill.RecallAsync(ask, context);
+        answer = await memorySkill.RecallIdeaAsync(ask, context);
         Console.WriteLine("Ask: {0}", ask);
         Console.WriteLine("Answer:\n{0}", answer);
 
         ask = "where do I live?";
-        answer = await memorySkill.RecallAsync(ask, context);
+        answer = await memorySkill.RecallIdeaAsync(ask, context);
         Console.WriteLine("Ask: {0}", ask);
         Console.WriteLine("Answer:\n{0}", answer);
 
@@ -95,8 +95,8 @@ public static class Example15_MemorySkill
         const string RECALL_FUNCTION_DEFINITION = @"
 Consider only the facts below when answering questions.
 
-About me: {{recall $fact1}}
-About me: {{recall $fact2}}
+About me: {{recallidea $fact1}}
+About me: {{recallidea $fact2}}
 
 Question: {{$query}}
 
@@ -140,11 +140,12 @@ Answer:
         Output:
             Tell me a bit about myself
 
-            I am Andrea and I come from a family from New York. I currently work as a tourist operator.
+            I am Andrea and I come from a family from New York. I work as a tourist operator,
+            helping people plan their trips and find the best places to visit.
         */
 
         context[TextMemorySkill.KeyParam] = "info1";
-        await memorySkill.ForgetMemoryAsync(context);
+        await memorySkill.ForgetAsync(context);
 
         result = await aboutMeOracle.InvokeAsync(context);
 
