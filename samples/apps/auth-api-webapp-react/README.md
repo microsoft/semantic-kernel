@@ -9,10 +9,12 @@
 
 ## Running the sample
 
+1. Create a new copy of `.env.development` and save it as `.env` next to the original. 
+   - The `.env` file will be ignored by git and will not be checked in by default.
 1. You will need an [Open AI Key](https://platform.openai.com/account/api-keys) or
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample
-1. Ensure the KernelHttpServer sample is already running `http://localhost:7071`. If not follow the steps 
+1. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps 
    how to start it [here](../../dotnet/KernelHttpServer/README.md).
 1. You will also need to
    [register your application](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)
@@ -20,8 +22,6 @@
    [here](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app).
     - Select **`Single-page application (SPA)`** as platform type, and the Redirect URI will be **`http://localhost:3000`**
     - Select **`Personal Microsoft accounts only`** as supported account types for this sample
-1. Create a new copy of `.env.development` and save it as `.env` next to the original. 
-   This `.env` file will be ignored by git preventing it to end up in pull requests, so it's safe for personal settings. Keep the file safe.
 1. Once registered, copy the **Application (client) ID** from the Azure Portal and paste
    the GUID into the new **[.env](.env)** file created next to `REACT_APP_GRAPH_CLIENT_ID=` (first line of the .env file).
 1. **Run** the following command `yarn install` (if you have never run the sample before)
