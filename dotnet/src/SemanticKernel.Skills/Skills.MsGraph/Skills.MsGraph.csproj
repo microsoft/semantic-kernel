@@ -9,7 +9,6 @@
     <AssemblyName>Microsoft.SemanticKernel.Skills.MsGraph</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Skills.MsGraph</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>

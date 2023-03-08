@@ -9,7 +9,6 @@
     <AssemblyName>Microsoft.SemanticKernel.Skills.Document</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Skills.Document</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>

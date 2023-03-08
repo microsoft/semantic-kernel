@@ -9,7 +9,6 @@
     <AssemblyName>Microsoft.SemanticKernel.Skills.Memory.Sqlite</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Skills.Memory.Sqlite</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
