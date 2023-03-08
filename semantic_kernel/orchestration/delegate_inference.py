@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from inspect import signature, Signature, iscoroutinefunction
+from inspect import Signature, iscoroutinefunction, signature
 from typing import NoReturn
 
 from semantic_kernel.kernel_exception import KernelException

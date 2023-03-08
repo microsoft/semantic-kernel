@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Tuple
 
 from numpy import ndarray
 
@@ -16,5 +16,5 @@ class EmbeddingIndexBase(ABC):
         embedding: ndarray,
         limit: int,
         min_relevance_score: float,
-    ) -> List[tuple[MemoryRecord, float]]:
+    ) -> List[Tuple[MemoryRecord, float]]:
         pass
