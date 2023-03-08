@@ -5,6 +5,10 @@ from semantic_kernel.kernel_builder import KernelBuilder
 from semantic_kernel.kernel_extensions import KernelExtensions as extensions
 from semantic_kernel.utils.settings import openai_settings_from_dot_env
 from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.configuration.kernel_config import KernelConfig
+from semantic_kernel.memory.null_memory import NullMemory
+from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
@@ -14,11 +18,15 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.semantic_functions.prompt_template import (
     PromptTemplate,
 )
-
+import semantic_kernel.memory as memory
 
 
 def create_kernel() -> KernelBase:
     return KernelBuilder.create_kernel()
+
+
+def kernel_builder() -> KernelBuilder:
+    return KernelBuilder(KernelConfig(), NullMemory(), NullLogger())
 
 
 __all__ = [
@@ -29,4 +37,6 @@ __all__ = [
     "PromptTemplate",
     "SemanticFunctionConfig",
     "ContextVariables",
+    "SKFunctionBase",
+    "memory"
 ]

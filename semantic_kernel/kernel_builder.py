@@ -9,14 +9,17 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.memory.storage.memory_storage_base import MemoryStorageBase
 from semantic_kernel.skill_definition.skill_collection import SkillCollection
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 from semantic_kernel.utils.null_logger import NullLogger
+from semantic_kernel.kernel_extensions import KernelExtensions
 
 
 class KernelBuilder:
     _config: KernelConfig
     _memory: SemanticTextMemoryBase
+    _memory_storage: Optional[MemoryStorageBase]
     _log: Logger
 
     def __init__(
@@ -36,6 +39,11 @@ class KernelBuilder:
         self._memory = memory
         return self
 
+    def with_memory_storage(self, storage: MemoryStorageBase) -> "KernelBuilder":
+        Verify.not_null(storage, "The memory storage instance provided is None")
+        self._memory_storage = storage
+        return self
+
     def with_logger(self, log: Logger) -> "KernelBuilder":
         Verify.not_null(log, "The logger instance provided is None")
         self._log = log
@@ -49,6 +57,9 @@ class KernelBuilder:
             self._config,
             self._log,
         )
+
+        if self._memory_storage is not None:
+            KernelExtensions.use_memory(instance, self._memory_storage)
 
         return instance
 

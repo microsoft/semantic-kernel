@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Dict, Literal, Optional, Tuple
 
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
 from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.read_only_skill_collection import (
     ReadOnlySkillCollection,
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
     )
 
 
-class SkillCollection:
+class SkillCollection(SkillCollectionBase):
     _skill_collection: Dict[str, Dict[str, "SKFunctionBase"]]
     _read_only_skill_collection: "ReadOnlySkillCollectionBase"
     _log: Logger
@@ -111,9 +112,9 @@ class SkillCollection:
         for skill in self._skill_collection.values():
             for function in skill.values():
                 if include_semantic and function.is_semantic:
-                    result.add(function.describe())
+                    result.add_function(function.describe())
                 elif include_native and function.is_native:
-                    result.add(function.describe())
+                    result.add_function(function.describe())
 
         return result
 
@@ -128,6 +129,7 @@ class SkillCollection:
             s_name = self.GLOBAL_SKILL
 
         Verify.not_null(s_name, "The skill name provided is None")
+        assert s_name is not None  # to make type checker happy
 
         s_name, f_name = s_name.lower(), f_name.lower()
         return s_name, f_name

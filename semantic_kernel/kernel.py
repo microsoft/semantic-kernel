@@ -26,6 +26,9 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
+from semantic_kernel.skill_definition.skill_collection_base import (
+    SkillCollectionBase,
+)
 from semantic_kernel.skill_definition.skill_collection import SkillCollection
 from semantic_kernel.template_engine.prompt_template_engine_base import (
     PromptTemplateEngineBase,
@@ -35,13 +38,13 @@ from semantic_kernel.template_engine.prompt_template_engine_base import (
 class Kernel(KernelBase):
     _log: Logger
     _config: KernelConfig
-    _skill_collection: ReadOnlySkillCollectionBase
+    _skill_collection: SkillCollectionBase
     _prompt_template_engine: PromptTemplateEngineBase
     _memory: SemanticTextMemoryBase
 
     def __init__(
         self,
-        skill_collection: ReadOnlySkillCollectionBase,
+        skill_collection: SkillCollectionBase,
         prompt_template_engine: PromptTemplateEngineBase,
         memory: SemanticTextMemoryBase,
         config: KernelConfig,
@@ -71,7 +74,7 @@ class Kernel(KernelBase):
 
     @property
     def skills(self) -> ReadOnlySkillCollectionBase:
-        return self._skill_collection
+        return self._skill_collection.read_only_skill_collection
 
     def register_semantic_function(
         self,
@@ -147,10 +150,10 @@ class Kernel(KernelBase):
         return context
 
     def func(self, skill_name: str, function_name: str) -> SKFunctionBase:
-        if self._skill_collection.has_native_function(skill_name, function_name):
-            return self._skill_collection.get_native_function(skill_name, function_name)
+        if self.skills.has_native_function(skill_name, function_name):
+            return self.skills.get_native_function(skill_name, function_name)
 
-        return self._skill_collection.get_semantic_function(skill_name, function_name)
+        return self.skills.get_semantic_function(skill_name, function_name)
 
     def register_memory(self, memory: SemanticTextMemoryBase) -> None:
         self._memory = memory
@@ -159,7 +162,7 @@ class Kernel(KernelBase):
         return SKContext(
             ContextVariables(),
             self._memory,
-            self._skill_collection.read_only_skill_collection,
+            self.skills,
             self._log,
         )
 
@@ -189,7 +192,7 @@ class Kernel(KernelBase):
         # Connect the function to the current kernel skill
         # collection, in case the function is invoked manually
         # without a context and without a way to find other functions.
-        function.set_default_skill_collection(self._skill_collection)
+        function.set_default_skill_collection(self.skills)
 
         # TODO: allow to postpone this (use lazy init)
         # allow to create semantic functions without
@@ -212,10 +215,10 @@ class Kernel(KernelBase):
             )
             function.set_ai_backend(
                 lambda: AzureTextCompletion(
-                    backend.azure_open_ai.deployment_name,
-                    backend.azure_open_ai.endpoint,
-                    backend.azure_open_ai.api_key,
-                    backend.azure_open_ai.api_version,
+                    backend.azure_open_ai.deployment_name,  # type: ignore
+                    backend.azure_open_ai.endpoint,  # type: ignore
+                    backend.azure_open_ai.api_key,  # type: ignore
+                    backend.azure_open_ai.api_version,  # type: ignore
                     self._log,
                 )
             )
@@ -223,9 +226,9 @@ class Kernel(KernelBase):
             Verify.not_null(backend.open_ai, "OpenAI configuration is missing")
             function.set_ai_backend(
                 lambda: OpenAITextCompletion(
-                    backend.open_ai.model_id,
-                    backend.open_ai.api_key,
-                    backend.open_ai.org_id,
+                    backend.open_ai.model_id,  # type: ignore
+                    backend.open_ai.api_key,  # type: ignore
+                    backend.open_ai.org_id,  # type: ignore
                     self._log,
                 )
             )
