@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using KernelHttpServer.Config;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
@@ -22,10 +23,9 @@ using Microsoft.SemanticKernel.Skills.Document.OpenXml;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.TemplateEngine;
-using SemanticKernelFunction.Config;
 using Directory = System.IO.Directory;
 
-namespace SemanticKernelFunction;
+namespace KernelHttpServer;
 
 internal static class Extensions
 {
