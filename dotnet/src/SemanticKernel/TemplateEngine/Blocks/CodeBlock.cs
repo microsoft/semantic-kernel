@@ -147,7 +147,7 @@ internal class CodeBlock : Block
     private bool _validated;
 
     private bool GetFunctionFromSkillCollection(IReadOnlySkillCollection skills, string functionName,
-        [NotNullWhen(true)] out ISKFunction? function)
+        out ISKFunction? function)
     {
         // Search in the global space (only native functions there)
         if (skills.HasNativeFunction(functionName))
@@ -157,7 +157,7 @@ internal class CodeBlock : Block
         }
 
         // If the function contains a skill name...
-        if (functionName.Contains('.', StringComparison.InvariantCulture))
+        if (functionName.Contains('.'))
         {
             var functionNameParts = functionName.Split('.');
             if (functionNameParts.Length > 2)

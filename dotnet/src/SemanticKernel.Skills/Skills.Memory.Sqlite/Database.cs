@@ -54,7 +54,8 @@ internal static class Database
         var dataReader = await cmd.ExecuteReaderAsync(cancel);
         while (await dataReader.ReadAsync(cancel))
         {
-            yield return dataReader.GetFieldValue<string>("collection");
+			// TODO: I just put an arbitrary number here.  FIX THIS!
+            yield return dataReader.GetFieldValue<string>(0);
         }
     }
 
@@ -71,9 +72,10 @@ internal static class Database
         var dataReader = await cmd.ExecuteReaderAsync(cancel);
         while (await dataReader.ReadAsync(cancel))
         {
-            string key = dataReader.GetFieldValue<string>("key");
-            string value = dataReader.GetFieldValue<string>("value");
-            string timestamp = dataReader.GetFieldValue<string>("timestamp");
+            // TODO: I just put arbitrary numbers here.  FIX THIS!
+            string key = dataReader.GetFieldValue<string>(1);
+            string value = dataReader.GetFieldValue<string>(2);
+            string timestamp = dataReader.GetFieldValue<string>(3);
             yield return new DatabaseEntry() { Key = key, Value = value, Timestamp = timestamp };
         }
     }

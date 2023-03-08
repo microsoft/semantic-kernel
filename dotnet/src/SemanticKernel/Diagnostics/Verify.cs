@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -13,7 +12,7 @@ namespace Microsoft.SemanticKernel.Diagnostics;
 internal static class Verify
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNull([NotNull] object? obj, string message)
+    internal static void NotNull(object? obj, string message)
     {
         if (obj != null) { return; }
 
@@ -21,7 +20,7 @@ internal static class Verify
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotEmpty([NotNull] string? str, string message)
+    internal static void NotEmpty(string? str, string message)
     {
         NotNull(str, message);
         if (!string.IsNullOrWhiteSpace(str)) { return; }
@@ -29,7 +28,7 @@ internal static class Verify
         throw new ValidationException(ValidationException.ErrorCodes.EmptyValue, message);
     }
 
-    internal static void ValidSkillName([NotNull] string? skillName)
+    internal static void ValidSkillName(string? skillName)
     {
         NotEmpty(skillName, "The skill name cannot be empty");
         Regex pattern = new("^[0-9A-Za-z_]*$");
@@ -42,7 +41,7 @@ internal static class Verify
         }
     }
 
-    internal static void ValidFunctionName([NotNull] string? functionName)
+    internal static void ValidFunctionName(string? functionName)
     {
         NotEmpty(functionName, "The function name cannot be empty");
         Regex pattern = new("^[0-9A-Za-z_]*$");
@@ -55,7 +54,7 @@ internal static class Verify
         }
     }
 
-    internal static void ValidFunctionParamName([NotNull] string? functionParamName)
+    internal static void ValidFunctionParamName(string? functionParamName)
     {
         NotEmpty(functionParamName, "The function parameter name cannot be empty");
         Regex pattern = new("^[0-9A-Za-z_]*$");

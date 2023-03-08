@@ -64,7 +64,7 @@ public sealed class FunctionsView
     /// <param name="skillName">Skill name</param>
     /// <param name="functionName">Function name</param>
     /// <returns>True if unique and semantic</returns>
-    /// <exception cref="AmbiguousImplementationException"></exception>
+    /// <exception cref="ApplicationException"></exception>
     public bool IsSemantic(string skillName, string functionName)
     {
         var sf = this.SemanticFunctions.ContainsKey(skillName)
@@ -77,7 +77,7 @@ public sealed class FunctionsView
 
         if (sf && nf)
         {
-            throw new AmbiguousImplementationException("There are 2 functions with the same name, one native and one semantic");
+            throw new ApplicationException("There are 2 functions with the same name, one native and one semantic");
         }
 
         return sf;
@@ -101,7 +101,7 @@ public sealed class FunctionsView
 
         if (sf && nf)
         {
-            throw new AmbiguousImplementationException("There are 2 functions with the same name, one native and one semantic");
+            throw new ApplicationException("There are 2 functions with the same name, one native and one semantic");
         }
 
         return nf;

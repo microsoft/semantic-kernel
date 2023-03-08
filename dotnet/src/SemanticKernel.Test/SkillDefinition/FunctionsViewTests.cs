@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime;
@@ -70,8 +71,8 @@ public class FunctionsViewTests
             .AddFunction(new FunctionView("f1", "s1", "", new List<ParameterView>(), false));
 
         // Assert
-        Assert.Throws<AmbiguousImplementationException>(() => target.IsSemantic("s1", "f1"));
-        Assert.Throws<AmbiguousImplementationException>(() => target.IsNative("s1", "f1"));
+        Assert.Throws<ApplicationException>(() => target.IsSemantic("s1", "f1"));
+        Assert.Throws<ApplicationException>(() => target.IsNative("s1", "f1"));
     }
 
     [Fact]

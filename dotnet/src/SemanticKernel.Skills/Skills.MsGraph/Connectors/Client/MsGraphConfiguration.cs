@@ -44,9 +44,9 @@ public class MsGraphConfiguration
     /// <param name="tenantId">The tenant id.</param>
     /// <param name="redirectUri">The redirect URI.</param>
     public MsGraphConfiguration(
-        [NotNull] string clientId,
-        [NotNull] string tenantId,
-        [NotNull] Uri redirectUri)
+        string clientId,
+        string tenantId,
+        Uri redirectUri)
     {
         this.ClientId = clientId;
         this.TenantId = tenantId;

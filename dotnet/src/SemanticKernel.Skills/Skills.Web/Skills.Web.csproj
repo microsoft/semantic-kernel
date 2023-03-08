@@ -8,7 +8,8 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel.Skills.Web</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Skills.Web</RootNamespace>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>

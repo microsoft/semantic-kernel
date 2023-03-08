@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -163,7 +164,7 @@ internal class FunctionFlowRunner
 
                 if (o2.Name.StartsWith(FunctionTag, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var skillFunctionName = o2.Name.Split(FunctionTag)?[1] ?? string.Empty;
+                    var skillFunctionName = o2.Name.Split(new string[] { FunctionTag }, StringSplitOptions.None)?[1] ?? string.Empty;
                     context.Log.LogTrace("{0}: found skill node {1}", parentNodeName, skillFunctionName);
                     GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
                     if (processFunctions && !string.IsNullOrEmpty(functionName) && context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
@@ -183,11 +184,11 @@ internal class FunctionFlowRunner
                                 if (attr.InnerText.StartsWith("$", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     // TODO support lists of parameters like $param1,$param2 or $param1;$param2
-                                    if (context.Variables.Get(attr.InnerText[1..], out var variableReplacement))
+                                    if (context.Variables.Get(attr.InnerText.Substring(1), out var variableReplacement))
                                     {
                                         functionVariables.Set(attr.Name, variableReplacement);
                                     }
-                                    else if (attr.InnerText[1..].Equals(OutputTag, StringComparison.OrdinalIgnoreCase))
+                                    else if (attr.InnerText.Substring(1).Equals(OutputTag, StringComparison.OrdinalIgnoreCase))
                                     {
                                         // skip
                                     }
@@ -214,14 +215,14 @@ internal class FunctionFlowRunner
 
                         // If skillFunction is BucketOutputsAsync result
                         // we need to pass those things back out to context.Variables
-                        if (skillFunctionName.Contains("BucketOutputs", StringComparison.InvariantCultureIgnoreCase))
+                        if (skillFunctionName.Contains("BucketOutputs"))
                         {
                             // copy all values for VariableNames in functionVariables not in keysToIgnore to context.Variables
-                            foreach (var (key, _) in functionVariables)
+                            foreach (KeyValuePair<string, string> kvp in functionVariables)
                             {
-                                if (!keysToIgnore.Contains(key, StringComparer.InvariantCultureIgnoreCase) && functionVariables.Get(key, out var value))
+                                if (!keysToIgnore.Contains(kvp.Key, StringComparer.InvariantCultureIgnoreCase) && functionVariables.Get(kvp.Key, out var value))
                                 {
-                                    context.Variables.Set(key, value);
+                                    context.Variables.Set(kvp.Key, value);
                                 }
                             }
                         }
@@ -275,7 +276,7 @@ internal class FunctionFlowRunner
 
     private static void GetSkillFunctionNames(string skillFunctionName, out string skillName, out string functionName)
     {
-        var skillFunctionNameParts = skillFunctionName.Split(".");
+        var skillFunctionNameParts = skillFunctionName.Split('.');
         skillName = skillFunctionNameParts?.Length > 0 ? skillFunctionNameParts[0] : string.Empty;
         functionName = skillFunctionNameParts?.Length > 1 ? skillFunctionNameParts[1] : skillFunctionName;
     }

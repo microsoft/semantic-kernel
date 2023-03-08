@@ -687,7 +687,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         object? instance,
         MethodInfo userMethod,
         Type delegateDefinition,
-        [NotNullWhen(true)] out Delegate? result)
+        out Delegate? result)
     {
         // Instance methods
         if (instance != null)

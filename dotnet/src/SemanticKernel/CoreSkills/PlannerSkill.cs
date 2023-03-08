@@ -130,8 +130,8 @@ public class PlannerSkill
         {
             // May need additional formatting here.
             var resultString = result.Result
-                .Replace("\\n", "\n", StringComparison.InvariantCultureIgnoreCase)
-                .Replace("\n", "\\n", StringComparison.InvariantCultureIgnoreCase);
+                .Replace("\\n", "\n")
+                .Replace("\n", "\\n");
 
             var resultObject = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(resultString);
 
@@ -206,10 +206,10 @@ public class PlannerSkill
             _ = executeResultContext.Variables.Get(Plan.PlanKey, out var planProgress);
             _ = executeResultContext.Variables.Get(Plan.ResultKey, out var results);
 
-            var isComplete = planProgress.Contains($"<{FunctionFlowRunner.SolutionTag}>", StringComparison.InvariantCultureIgnoreCase) &&
-                             !planProgress.Contains($"<{FunctionFlowRunner.FunctionTag}", StringComparison.InvariantCultureIgnoreCase);
+            var isComplete = planProgress.Contains($"<{FunctionFlowRunner.SolutionTag}>") &&
+                             !planProgress.Contains($"<{FunctionFlowRunner.FunctionTag}");
             var isSuccessful = !executeResultContext.ErrorOccurred &&
-                               planProgress.Contains($"<{FunctionFlowRunner.SolutionTag}>", StringComparison.InvariantCultureIgnoreCase);
+                               planProgress.Contains($"<{FunctionFlowRunner.SolutionTag}>");
 
             if (string.IsNullOrEmpty(results) && isComplete && isSuccessful)
             {

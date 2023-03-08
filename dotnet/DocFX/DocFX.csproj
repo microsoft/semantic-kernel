@@ -3,7 +3,8 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel.DocFX</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.DocFX</RootNamespace>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

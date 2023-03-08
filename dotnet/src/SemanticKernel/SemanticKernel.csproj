@@ -8,7 +8,8 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -21,12 +22,12 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <DocumentationFile>bin\Release\netstandard2.1\SemanticKernel.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\netstandard2.0\SemanticKernel.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugType>portable</DebugType>
-    <DocumentationFile>bin\Debug\netstandard2.1\SemanticKernel.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\netstandard2.0\SemanticKernel.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

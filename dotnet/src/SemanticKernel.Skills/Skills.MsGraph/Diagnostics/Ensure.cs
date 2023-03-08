@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Skills.MsGraph.Diagnostics;
 internal static class Ensure
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNullOrWhitespace([NotNull] string parameter, [NotNull] string parameterName)
+    internal static void NotNullOrWhitespace(string parameter, string parameterName)
     {
         if (string.IsNullOrWhiteSpace(parameter))
         {
@@ -18,7 +18,7 @@ internal static class Ensure
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNull([NotNull] object parameter, [NotNull] string parameterName)
+    internal static void NotNull(object parameter, string parameterName)
     {
         if (parameter == null)
         {

@@ -30,7 +30,7 @@ public class FileIOSkill
     [SKFunctionInput(Description = "Source file")]
     public Task<string?> ReadAsync(string path)
     {
-        return File.ReadAllTextAsync(path);
+        return Task.FromResult(File.ReadAllText(path));
     }
 
     /// <summary>
@@ -48,6 +48,8 @@ public class FileIOSkill
     [SKFunctionContextParameter(Name = "content", Description = "File content")]
     public Task WriteAsync(SKContext context)
     {
-        return File.WriteAllTextAsync(context["path"], context["content"]);
+        File.WriteAllText(context["path"], context["content"]);
+
+        return Task.CompletedTask;
     }
 }

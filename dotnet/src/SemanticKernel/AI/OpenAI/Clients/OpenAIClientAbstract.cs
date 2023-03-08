@@ -138,14 +138,8 @@ public abstract class OpenAIClientAbstract : IDisposable
 
         try
         {
-            using HttpContent content = new StringContent(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json);
-            HttpResponseMessage response = await this.HTTPClient.PostAsync(url, content);
-
-            if (response == null)
-            {
-                throw new AIException(AIException.ErrorCodes.NoResponse, "Empty response");
-            }
-
+            using HttpContent content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await this.HTTPClient.PostAsync(url, content) ?? throw new AIException(AIException.ErrorCodes.NoResponse, "Empty response");
             this.Log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
             responseJson = await response.Content.ReadAsStringAsync();
@@ -166,13 +160,13 @@ public abstract class OpenAIClientAbstract : IDisposable
                     case HttpStatusCode.UnsupportedMediaType:
                     case HttpStatusCode.RequestedRangeNotSatisfiable:
                     case HttpStatusCode.ExpectationFailed:
-                    case HttpStatusCode.MisdirectedRequest:
+                    /*case HttpStatusCode.MisdirectedRequest:
                     case HttpStatusCode.UnprocessableEntity:
                     case HttpStatusCode.Locked:
                     case HttpStatusCode.FailedDependency:
                     case HttpStatusCode.UpgradeRequired:
                     case HttpStatusCode.PreconditionRequired:
-                    case HttpStatusCode.RequestHeaderFieldsTooLarge:
+                    case HttpStatusCode.RequestHeaderFieldsTooLarge:*/
                     case HttpStatusCode.HttpVersionNotSupported:
                         throw new AIException(
                             AIException.ErrorCodes.InvalidRequest,
@@ -181,8 +175,8 @@ public abstract class OpenAIClientAbstract : IDisposable
                     case HttpStatusCode.Unauthorized:
                     case HttpStatusCode.Forbidden:
                     case HttpStatusCode.ProxyAuthenticationRequired:
-                    case HttpStatusCode.UnavailableForLegalReasons:
-                    case HttpStatusCode.NetworkAuthenticationRequired:
+                        /*case HttpStatusCode.UnavailableForLegalReasons:
+                        case HttpStatusCode.NetworkAuthenticationRequired:*/
                         throw new AIException(
                             AIException.ErrorCodes.AccessDenied,
                             $"The request is not authorized, HTTP status: {response.StatusCode:G}");
@@ -192,17 +186,17 @@ public abstract class OpenAIClientAbstract : IDisposable
                             AIException.ErrorCodes.RequestTimeout,
                             $"The request timed out, HTTP status: {response.StatusCode:G}");
 
-                    case HttpStatusCode.TooManyRequests:
+                    /*case HttpStatusCode.TooManyRequests:
                         throw new AIException(
                             AIException.ErrorCodes.Throttling,
-                            $"Too many requests, HTTP status: {response.StatusCode:G}");
+                            $"Too many requests, HTTP status: {response.StatusCode:G}");*/
 
                     case HttpStatusCode.InternalServerError:
                     case HttpStatusCode.NotImplemented:
                     case HttpStatusCode.BadGateway:
                     case HttpStatusCode.ServiceUnavailable:
                     case HttpStatusCode.GatewayTimeout:
-                    case HttpStatusCode.InsufficientStorage:
+                        //case HttpStatusCode.InsufficientStorage:
                         throw new AIException(
                             AIException.ErrorCodes.ServiceError,
                             $"The service failed to process the request, HTTP status: {response.StatusCode:G}");

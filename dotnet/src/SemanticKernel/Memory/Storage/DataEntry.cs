@@ -116,7 +116,11 @@ public struct DataEntry<TValue> : IEquatable<DataEntry<TValue>>
     /// <returns>A hash code for the current object.</returns>
     public override int GetHashCode()
     {
-        return HashCode.Combine(this.Key, this.Value, this.Timestamp);
+        int hash = this.Key.GetHashCode();
+        hash += this.Value.GetHashCode();
+        hash += this.Timestamp.GetHashCode();
+
+        return hash;
     }
 
     /// <summary>
@@ -137,7 +141,7 @@ public struct DataEntry<TValue> : IEquatable<DataEntry<TValue>>
     [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Parse type from string.")]
     [SuppressMessage("Design", "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",
         Justification = "Does not throw an exception by design.")]
-    public static bool TryParse(string json, [NotNullWhen(true)] out DataEntry<TValue>? entry)
+    public static bool TryParse(string json, out DataEntry<TValue>? entry)
     {
         try
         {
@@ -217,7 +221,7 @@ public static class DataEntry
     /// <param name="json">A JSON serialized string representing a <see cref="DataEntry{TValue}"/>.</param>
     /// <param name="entry">Receives a <see cref="DataEntry{TValue}"/> object if successfully parsed. Null otherwise.</param>
     /// <returns><c>true</c> if parsing is successful; <c>false</c> otherwise</returns>
-    public static bool TryParse<TValue>(string json, [NotNullWhen(true)] out DataEntry<TValue>? entry)
+    public static bool TryParse<TValue>(string json, out DataEntry<TValue>? entry)
     {
         return DataEntry<TValue>.TryParse(json, out entry);
     }

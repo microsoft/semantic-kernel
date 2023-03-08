@@ -83,6 +83,6 @@ internal class VarBlock : Block
 
     private string VarName()
     {
-        return this.Content.Length < 2 ? "" : this.Content[1..];
+        return this.Content.Length < 2 ? "" : this.Content.Substring(1);
     }
 }

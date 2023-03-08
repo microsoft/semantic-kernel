@@ -17,7 +17,7 @@ internal static class Ensure
     /// </summary>
     /// <exception cref="ArgumentException"></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNullOrWhitespace([NotNull] string parameter, [NotNull] string parameterName)
+    internal static void NotNullOrWhitespace(string parameter, string parameterName)
     {
         if (string.IsNullOrWhiteSpace(parameter))
         {
@@ -31,7 +31,7 @@ internal static class Ensure
     /// </summary>
     /// <exception cref="ArgumentNullException"></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNull([NotNull] object parameter, [NotNull] string parameterName)
+    internal static void NotNull(object parameter, string parameterName)
     {
         if (parameter == null)
         {

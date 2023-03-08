@@ -65,7 +65,7 @@ public class VolatileDataStore<TValue> : IDataStore<TValue>
     {
         if (this.TryGetCollection(collection, out var collectionDict))
         {
-            collectionDict.Remove(key, out DataEntry<TValue> _);
+            collectionDict.TryRemove(key, out DataEntry<TValue> _);
         }
 
         return Task.CompletedTask;
@@ -73,7 +73,7 @@ public class VolatileDataStore<TValue> : IDataStore<TValue>
 
     #region protected ================================================================================
 
-    protected bool TryGetCollection(string name, [NotNullWhen(true)] out ConcurrentDictionary<string, DataEntry<TValue>>? collection, bool create = false)
+    protected bool TryGetCollection(string name, out ConcurrentDictionary<string, DataEntry<TValue>>? collection, bool create = false)
     {
         if (this._store.TryGetValue(name, out collection))
         {

@@ -110,6 +110,6 @@ public class DocumentSkill
         this._logger.LogInformation("Writing text to {0}", filePath);
         this._documentConnector.AppendText(stream, text);
 
-        await stream.DisposeAsync();
+        stream.Dispose();
     }
 }
