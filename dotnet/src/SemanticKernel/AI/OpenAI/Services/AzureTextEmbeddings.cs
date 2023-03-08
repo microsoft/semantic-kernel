@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -47,8 +48,15 @@ public sealed class AzureTextEmbeddings : AzureOpenAIClientAbstract, IEmbeddingG
     {
         var deploymentName = await this.GetDeploymentNameAsync(this._modelId);
         var url = $"{this.Endpoint}/openai/deployments/{deploymentName}/embeddings?api-version={this.AzureOpenAIApiVersion}";
-        var requestBody = Json.Serialize(new AzureEmbeddingRequest { Input = data });
 
-        return await this.ExecuteEmbeddingRequestAsync(url, requestBody);
+        var embeddings = new List<Embedding<float>>(data.Count);
+
+        for (int i = 0; i < data.Count; i++)
+        {
+            var requestBody = Json.Serialize(new AzureEmbeddingRequest { Input = new List<string> { data[i] } });
+            embeddings.AddRange(await this.ExecuteEmbeddingRequestAsync(url, requestBody));
+        }
+
+        return embeddings;
     }
 }
