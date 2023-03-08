@@ -441,3 +441,7 @@ global.json
 **/bin/
 **/obj/
 _site
+
+# Yarn
+.yarn
+.yarnrc.yml
