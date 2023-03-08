@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -40,7 +39,7 @@ public sealed class SKFunctionTests1 : IDisposable
         var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
 
         // Assert
-        Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        Assert.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings);
         Assert.Equal(0, skFunction.AIRequestSettings.CompleteRequestSettings.Temperature);
         Assert.Equal(100, skFunction.AIRequestSettings.CompleteRequestSettings.MaxTokens);
     }
@@ -52,7 +51,7 @@ public sealed class SKFunctionTests1 : IDisposable
         var templateConfig = new PromptTemplateConfig();
         var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
         var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
-        Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        Assert.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings);
 
         var settings = new AIRequestSettings
         {
