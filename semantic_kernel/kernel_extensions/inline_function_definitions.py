@@ -37,9 +37,13 @@ def create_semantic_function(
     )
 
     config = PromptTemplateConfig(
-        description if description is not None else "Generic function, unknown purpose",
-        "completion",
-        PromptTemplateConfig.CompletionConfig(
+        description=(
+            description
+            if description is not None
+            else "Generic function, unknown purpose"
+        ),
+        type="completion",
+        completion=PromptTemplateConfig.CompletionConfig(
             temperature,
             top_p,
             presence_penalty,

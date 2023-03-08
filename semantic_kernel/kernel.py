@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from semantic_kernel.ai.ai_exception import AIException
 from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
@@ -15,6 +15,7 @@ from semantic_kernel.configuration.backend_types import BackendType
 from semantic_kernel.configuration.kernel_config import KernelConfig
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_base import KernelBase
+from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -27,6 +28,7 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
 from semantic_kernel.skill_definition.skill_collection import SkillCollection
+from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
 from semantic_kernel.template_engine.prompt_template_engine_base import (
     PromptTemplateEngineBase,
 )
@@ -35,13 +37,13 @@ from semantic_kernel.template_engine.prompt_template_engine_base import (
 class Kernel(KernelBase):
     _log: Logger
     _config: KernelConfig
-    _skill_collection: ReadOnlySkillCollectionBase
+    _skill_collection: SkillCollectionBase
     _prompt_template_engine: PromptTemplateEngineBase
     _memory: SemanticTextMemoryBase
 
     def __init__(
         self,
-        skill_collection: ReadOnlySkillCollectionBase,
+        skill_collection: SkillCollectionBase,
         prompt_template_engine: PromptTemplateEngineBase,
         memory: SemanticTextMemoryBase,
         config: KernelConfig,
@@ -71,7 +73,7 @@ class Kernel(KernelBase):
 
     @property
     def skills(self) -> ReadOnlySkillCollectionBase:
-        return self._skill_collection
+        return self._skill_collection.read_only_skill_collection
 
     def register_semantic_function(
         self,
@@ -147,10 +149,10 @@ class Kernel(KernelBase):
         return context
 
     def func(self, skill_name: str, function_name: str) -> SKFunctionBase:
-        if self._skill_collection.has_native_function(skill_name, function_name):
-            return self._skill_collection.get_native_function(skill_name, function_name)
+        if self.skills.has_native_function(skill_name, function_name):
+            return self.skills.get_native_function(skill_name, function_name)
 
-        return self._skill_collection.get_semantic_function(skill_name, function_name)
+        return self.skills.get_semantic_function(skill_name, function_name)
 
     def register_memory(self, memory: SemanticTextMemoryBase) -> None:
         self._memory = memory
@@ -159,12 +161,51 @@ class Kernel(KernelBase):
         return SKContext(
             ContextVariables(),
             self._memory,
-            self._skill_collection.read_only_skill_collection,
+            self.skills,
             self._log,
         )
 
-    def import_skill(self, skill_instance: Any, skill_name: str = "") -> None:
-        raise NotImplementedError("Not implemented yet.")
+    def import_skill(
+        self, skill_instance: Any, skill_name: str = ""
+    ) -> Dict[str, SKFunctionBase]:
+        if skill_name.strip() == "":
+            skill_name = SkillCollection.GLOBAL_SKILL
+            self._log.debug(f"Importing skill {skill_name} into the global namespace")
+        else:
+            self._log.debug(f"Importing skill {skill_name}")
+
+        functions = []
+        # Read every method from the skill instance
+        for candidate in skill_instance.__dict__.values():
+            # We're looking for a @staticmethod
+            if not isinstance(candidate, staticmethod):
+                continue
+            candidate = candidate.__func__
+
+            # If the method is a semantic function, register it
+            if hasattr(candidate, "__sk_function_name__"):
+                functions.append(
+                    SKFunction.from_native_method(candidate, skill_name, self.logger)
+                )
+
+        self.logger.debug(f"Methods imported: {len(functions)}")
+
+        # Uniqueness check on function names
+        function_names = [f.name for f in functions]
+        if len(function_names) != len(set(function_names)):
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionOverloadNotSupported,
+                "Overloaded functions are not supported, "
+                "please differentiate function names.",
+            )
+
+        skill = {}
+        for function in functions:
+            function.set_default_skill_collection(self.skills)
+            self._skill_collection.add_native_function(function)
+            skill[function.name] = function
+
+        return skill
 
     def _create_semantic_function(
         self,
@@ -189,7 +230,7 @@ class Kernel(KernelBase):
         # Connect the function to the current kernel skill
         # collection, in case the function is invoked manually
         # without a context and without a way to find other functions.
-        function.set_default_skill_collection(self._skill_collection)
+        function.set_default_skill_collection(self.skills)
 
         # TODO: allow to postpone this (use lazy init)
         # allow to create semantic functions without
@@ -212,10 +253,10 @@ class Kernel(KernelBase):
             )
             function.set_ai_backend(
                 lambda: AzureTextCompletion(
-                    backend.azure_open_ai.deployment_name,
-                    backend.azure_open_ai.endpoint,
-                    backend.azure_open_ai.api_key,
-                    backend.azure_open_ai.api_version,
+                    backend.azure_open_ai.deployment_name,  # type: ignore
+                    backend.azure_open_ai.endpoint,  # type: ignore
+                    backend.azure_open_ai.api_key,  # type: ignore
+                    backend.azure_open_ai.api_version,  # type: ignore
                     self._log,
                 )
             )
@@ -223,9 +264,9 @@ class Kernel(KernelBase):
             Verify.not_null(backend.open_ai, "OpenAI configuration is missing")
             function.set_ai_backend(
                 lambda: OpenAITextCompletion(
-                    backend.open_ai.model_id,
-                    backend.open_ai.api_key,
-                    backend.open_ai.org_id,
+                    backend.open_ai.model_id,  # type: ignore
+                    backend.open_ai.api_key,  # type: ignore
+                    backend.open_ai.org_id,  # type: ignore
                     self._log,
                 )
             )

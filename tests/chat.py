@@ -23,9 +23,7 @@ ChatBot:>
 """.strip()
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.4
+    max_tokens=2000, temperature=0.7, top_p=0.4
 )
 
 prompt_template = sk.PromptTemplate(
@@ -39,8 +37,19 @@ context["chat_history"] = ""
 
 
 async def chat() -> None:
-    human_input = input("Human:>")
-    context["human_input"] = human_input
+    try:
+        human_input = input("Human:>")
+        context["human_input"] = human_input
+    except KeyboardInterrupt:
+        print("\n\nExiting chat...")
+        return
+    except EOFError:
+        print("\n\nExiting chat...")
+        return
+
+    if human_input == "exit":
+        print("\n\nExiting chat...")
+        return
 
     answer = await kernel.run_on_vars_async(context, chat_function)
     context["chat_history"] += f"\nHuman:>{human_input}\nChatBot:>{answer}\n"

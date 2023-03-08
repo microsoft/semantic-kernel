@@ -121,7 +121,7 @@ class CodeBlock(Block):
         if result.error_occurred:
             self._log.error(
                 "Semantic function references a function `{function_name}` "
-                f"of incompatible type `{function.get_type()}`"
+                f"of incompatible type `{function.__class__.__name__}`"
             )
             return ""
 

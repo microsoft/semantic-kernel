@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-import numpy as np
+from numpy import ndarray
 
 
 class MemoryRecord:
@@ -11,7 +11,7 @@ class MemoryRecord:
     id: str
     description: Optional[str]
     text: Optional[str]
-    _embedding: np.ndarray
+    _embedding: ndarray
 
     def __init__(
         self,
@@ -20,7 +20,7 @@ class MemoryRecord:
         id: str,
         description: Optional[str],
         text: Optional[str],
-        embedding: np.ndarray,
+        embedding: ndarray,
     ) -> None:
         self.is_reference = is_reference
         self.external_source_name = external_source_name
@@ -30,7 +30,7 @@ class MemoryRecord:
         self._embedding = embedding
 
     @property
-    def embedding(self) -> np.ndarray:
+    def embedding(self) -> ndarray:
         return self._embedding
 
     @staticmethod
@@ -38,7 +38,7 @@ class MemoryRecord:
         external_id: str,
         source_name: str,
         description: Optional[str],
-        embedding: np.ndarray,
+        embedding: ndarray,
     ) -> "MemoryRecord":
         return MemoryRecord(
             is_reference=True,
@@ -51,7 +51,7 @@ class MemoryRecord:
 
     @staticmethod
     def local_record(
-        id: str, text: str, description: Optional[str], embedding: np.ndarray
+        id: str, text: str, description: Optional[str], embedding: ndarray
     ) -> "MemoryRecord":
         return MemoryRecord(
             is_reference=False,

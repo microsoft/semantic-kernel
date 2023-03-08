@@ -2,10 +2,15 @@
 
 from typing import TYPE_CHECKING, List, Optional
 
+from semantic_kernel.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_extensions.inline_function_definitions import (
     create_semantic_function,
 )
+from semantic_kernel.kernel_extensions.memory_configuration import use_memory
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
@@ -39,3 +44,11 @@ class KernelExtensions:
             frequency_penalty,
             stop_sequences,
         )
+
+    @staticmethod
+    def use_memory(
+        kernel: KernelBase,
+        storage: MemoryStoreBase,
+        embeddings_generator: Optional[EmbeddingGeneratorBase] = None,
+    ) -> None:
+        use_memory(kernel, storage, embeddings_generator)

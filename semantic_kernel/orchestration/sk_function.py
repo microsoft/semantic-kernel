@@ -9,8 +9,10 @@ from semantic_kernel.ai.text_completion_client_base import TextCompletionClientB
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.null_memory import NullMemory
+from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
+from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
@@ -29,16 +31,48 @@ class SKFunction(SKFunctionBase):
     _parameters: List[ParameterView]
     _delegate_type: DelegateTypes
     _function: Callable[..., Any]
-    _skill_collection: ReadOnlySkillCollectionBase
+    _skill_collection: Optional[ReadOnlySkillCollectionBase]
     _log: Logger
-    _ai_backend: TextCompletionClientBase
+    _ai_backend: Optional[TextCompletionClientBase]
     _ai_request_settings: CompleteRequestSettings
 
     @staticmethod
-    def from_native_method(
-        method, method_container_instance=None, skill_name="", log=None
-    ):
-        pass  # TODO: tricky...
+    def from_native_method(method, skill_name="", log=None) -> "SKFunction":
+        Verify.not_null(method, "Method is empty")
+
+        assert method.__sk_function__ is not None, "Method is not a SK function"
+        assert method.__sk_function_name__ is not None, "Method name is empty"
+
+        parameters = []
+        for param in method.__sk_function_context_parameters__:
+            assert "name" in param, "Parameter name is empty"
+            assert "description" in param, "Parameter description is empty"
+            assert "default_value" in param, "Parameter default value is empty"
+
+            parameters.append(
+                ParameterView(
+                    param["name"], param["description"], param["default_value"]
+                )
+            )
+
+        if hasattr(method, "__sk_function_input_description__"):
+            input_param = ParameterView(
+                "input",
+                method.__sk_function_input_description__,
+                method.__sk_function_input_default_value__,
+            )
+            parameters = [input_param] + parameters
+
+        return SKFunction(
+            delegate_type=DelegateInference.infer_delegate_type(method),
+            delegate_function=method,
+            parameters=parameters,
+            description=method.__sk_function_description__,
+            skill_name=skill_name,
+            function_name=method.__sk_function_name__,
+            is_semantic=False,
+            log=log,
+        )
 
     @staticmethod
     def from_semantic_config(
@@ -60,7 +94,7 @@ class SKFunction(SKFunctionBase):
                 context.variables.update(completion)
             except Exception as e:
                 # TODO: "critical exceptions"
-                context.fail(e.message, e)
+                context.fail(str(e), e)
 
             return context
 
@@ -113,7 +147,7 @@ class SKFunction(SKFunctionBase):
         function_name: str,
         is_semantic: bool,
         log: Optional[Logger] = None,
-    ):
+    ) -> None:
         self._delegate_type = delegate_type
         self._function = delegate_function
         self._parameters = parameters
@@ -161,13 +195,16 @@ class SKFunction(SKFunctionBase):
         context: Optional[SKContext] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
-    ):
+    ) -> SKContext:
         if context is None:
+            Verify.not_null(self._skill_collection, "Skill collection is empty")
+            assert self._skill_collection is not None
+
             context = SKContext(
                 ContextVariables(""),
                 NullMemory.instance,  # type: ignore
                 self._skill_collection,
-                log,
+                log if log is not None else self._log,
                 # TODO: ctoken?
             )
 
@@ -178,6 +215,26 @@ class SKFunction(SKFunctionBase):
             return await self._invoke_semantic_async(context, settings)
         else:
             return await self._invoke_native_async(context)
+
+    async def invoke_with_custom_input_async(
+        self,
+        input: ContextVariables,
+        memory: SemanticTextMemoryBase,
+        skills: ReadOnlySkillCollectionBase,
+        log: Optional[Logger] = None,
+    ) -> SKContext:
+        tmp_context = SKContext(
+            input,
+            memory,
+            skills,
+            log if log is not None else self._log,
+        )
+
+        try:
+            return await self.invoke_async(input=None, context=tmp_context, log=log)
+        except Exception as e:
+            tmp_context.fail(str(e), e)
+            return tmp_context
 
     async def _invoke_semantic_async(self, context, settings):
         self._verify_is_semantic()
@@ -208,7 +265,7 @@ class SKFunction(SKFunctionBase):
         self._log.error("The function is not semantic")
         raise KernelException(
             KernelException.ErrorCodes.InvalidFunctionType,
-            "Invalid operation, the moethod requires a semantic function",
+            "Invalid operation, the method requires a semantic function",
         )
 
     def _verify_is_native(self) -> None:
@@ -218,7 +275,7 @@ class SKFunction(SKFunctionBase):
         self._log.error("The function is not native")
         raise KernelException(
             KernelException.ErrorCodes.InvalidFunctionType,
-            "Invalid operation, the moethod requires a native function",
+            "Invalid operation, the method requires a native function",
         )
 
     def _ensure_context_has_skills(self, context) -> None:
