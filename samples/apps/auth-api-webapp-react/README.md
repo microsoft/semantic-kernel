@@ -9,24 +9,22 @@
 
 ## Running the sample
 
-1. Create a new copy of `.env.development` and save it as `.env` next to the original. 
-   - The `.env` file will be ignored by git and will not be checked in by default.
-2. You will need an [Open AI Key](https://platform.openai.com/account/api-keys) or
+1. You will need an [Open AI Key](https://platform.openai.com/account/api-keys) or
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample
-3. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps 
+2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps 
    how to start it [here](../../dotnet/KernelHttpServer/README.md).
-4. You will also need to
+3. You will also need to
    [register your application](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)
    in the Azure Portal. Follow the steps to register your app
    [here](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app).
     - Select **`Single-page application (SPA)`** as platform type, and the Redirect URI will be **`http://localhost:3000`**
     - Select **`Personal Microsoft accounts only`** as supported account types for this sample
-5. Once registered, copy the **Application (client) ID** from the Azure Portal and paste
+4. Once registered, copy the **Application (client) ID** from the Azure Portal and paste
    the GUID into the new **[.env](.env)** file created next to `REACT_APP_GRAPH_CLIENT_ID=` (first line of the .env file).
-6. **Run** the following command `yarn install` (if you have never run the sample before)
+5. **Run** the following command `yarn install` (if you have never run the sample before)
    and/or `yarn start` from the command line.
-7. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
+6. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
 
 ## About the Authenticated API’s Sample
 
@@ -49,3 +47,5 @@ Each function will call Microsoft Graph and/or Open AI to perform the tasks.
 1. Ensure in your Application Manifest that **`Personal Microsoft accounts`** are allowed to sign in.
    - `"signInAudience": "PersonalMicrosoftAccount"` or
    - `"signInAudience": "AzureADandPersonalMicrosoftAccount"`
+
+2. If you are not able to change the manifest, create a new Application using [Running the sample](#running-the-sample) step 3 instructions.
