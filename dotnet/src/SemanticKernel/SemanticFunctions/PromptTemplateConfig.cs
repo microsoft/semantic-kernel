@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.AI.OpenAI.Clients;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 
@@ -71,7 +72,7 @@ public class PromptTemplateConfig
         /// </summary>
         [JsonPropertyName("http_timeout_in_seconds")]
         [JsonPropertyOrder(7)]
-        public int HttpTimeoutInSeconds { get; set; } = 100;
+        public int HttpTimeoutInSeconds { get; set; } = OpenAIClientAbstract.DEFAULT_HTTP_TIMEOUT_IN_SECONDS;
     }
 
     /// <summary>

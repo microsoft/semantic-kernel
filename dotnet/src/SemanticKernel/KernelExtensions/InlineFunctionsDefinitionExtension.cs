@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.AI.OpenAI.Clients;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -44,7 +45,7 @@ public static class InlineFunctionsDefinitionExtension
         double presencePenalty = 0,
         double frequencyPenalty = 0,
         IEnumerable<string>? stopSequences = null,
-        int http_timeout_in_seconds = 100)
+        int http_timeout_in_seconds = OpenAIClientAbstract.DEFAULT_HTTP_TIMEOUT_IN_SECONDS)
     {
         functionName ??= RandomFunctionName();
 

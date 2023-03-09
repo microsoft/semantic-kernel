@@ -38,7 +38,7 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <summary>
     /// The default timeout for the http client if the caller doesn't supply one.
     /// </summary>
-    protected const int DEFAULT_HTTP_TIMEOUT_IN_SECONDS = 100;
+    public const int DEFAULT_HTTP_TIMEOUT_IN_SECONDS = 100;
 
     internal OpenAIClientAbstract(ILogger? log = null)
     {
