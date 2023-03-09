@@ -51,6 +51,11 @@ public class AIException : Exception<AIException.ErrorCodes>
         RequestTimeout,
 
         /// <summary>
+        /// The request is cancelled.
+        /// </summary>
+        RequestCancelled,
+
+        /// <summary>
         /// There was an error in the service.
         /// </summary>
         ServiceError,

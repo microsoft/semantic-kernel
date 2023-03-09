@@ -236,7 +236,7 @@ public abstract class OpenAIClientAbstract : IDisposable
         catch (TaskCanceledException e)
         {
             throw new AIException(
-                AIException.ErrorCodes.UnknownError,
+                AIException.ErrorCodes.RequestCancelled,
                 "Request was cancelled. This could be a manual cancellation or due to a cancellation token timeout.", e);
         }
         catch (Exception e) when (e is not AIException)
