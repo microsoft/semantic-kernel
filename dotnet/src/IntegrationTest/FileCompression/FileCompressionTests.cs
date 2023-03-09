@@ -10,11 +10,11 @@ using Microsoft.SemanticKernel.Skills.Web;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTests.Compression;
+namespace IntegrationTests.FileCompression;
 
-public class CompressionTests : IDisposable
+public class FileCompressionTests : IDisposable
 {
-    public CompressionTests(ITestOutputHelper output)
+    public FileCompressionTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<Kernel>(output);
         this._output = output;
