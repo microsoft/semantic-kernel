@@ -58,15 +58,15 @@ public class TextMemorySkill
     /// </summary>
     /// <example>
     /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
-    /// {{memory.recallmemory }}
+    /// {{memory.recall_specific }}
     /// </example>
     /// <param name="context">Contains the 'collection' containing the memory to recall and the `key` associated with it.</param>
     [SKFunction("Recall a specific memory")]
-    [SKFunctionName("RecallMemory")]
+    [SKFunctionName("Recall_Specific")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the memory to recall",
         DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated with the memory to recall")]
-    public async Task<string> RecallMemoryAsync(SKContext context)
+    public async Task<string> RecallSpecificAsync(SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
         Verify.NotEmpty(collection, "Memory collection not defined");
@@ -81,23 +81,23 @@ public class TextMemorySkill
     }
 
     /// <summary>
-    /// Recall an idea - a set of related memories
+    /// Recall up to N memories related to the input
     /// </summary>
     /// <example>
     /// SKContext["input"] = "what is the capital of France?"
-    /// {{memory.recallidea $input }} => "Paris"
+    /// {{memory.recall $input }} => "Paris"
     /// </example>
-    /// <param name="ask">The idea to retrieve</param>
-    /// <param name="context">Contains the 'collection' to search for the idea and 'relevance' score</param>
-    [SKFunction("Recall an idea from the long term memory")]
-    [SKFunctionName("RecallIdea")]
-    [SKFunctionInput(Description = "The idea to recall")]
-    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection where to search for the idea", DefaultValue = DefaultCollection)]
+    /// <param name="text">The input text to compare memories to</param>
+    /// <param name="context">Contains the 'collection' to search for the topic and 'relevance' score</param>
+    [SKFunction("Recall up to N memories related to the input")]
+    [SKFunctionName("Recall")]
+    [SKFunctionInput(Description = "The input text to compare memories to")]
+    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection to search", DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = RelevanceParam, Description = "The relevance score, from 0.0 to 1.0, where 1.0 means perfect match",
         DefaultValue = DefaultRelevance)]
     [SKFunctionContextParameter(Name = LimitParam, Description = "The maximum number of relevant memories to recall", DefaultValue = DefaultLimit)]
     [SKFunctionContextParameter(Name = JoinParam, Description = "String used to separate multiple memories", DefaultValue = DefaultJoiner)]
-    public string RecallIdeaAsync(string ask, SKContext context)
+    public string RecallAsync(string text, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
         Verify.NotEmpty(collection, "Memories collection not defined");
@@ -108,11 +108,11 @@ public class TextMemorySkill
         var limit = context.Variables.ContainsKey(LimitParam) ? context[LimitParam] : LimitParam;
         if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultLimit; }
 
-        context.Log.LogTrace("Searching memories for '{0}', collection '{1}', relevance '{2}'", ask, collection, relevance);
+        context.Log.LogTrace("Searching memories for '{0}', collection '{1}', relevance '{2}'", text, collection, relevance);
 
         // TODO: support locales, e.g. "0.7" and "0,7" must both work
         IAsyncEnumerable<MemoryQueryResult> memories = context.Memory
-            .SearchAsync(collection, ask, limit: int.Parse(limit, CultureInfo.InvariantCulture), minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture));
+            .SearchAsync(collection, text, limit: int.Parse(limit, CultureInfo.InvariantCulture), minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture));
 
         context.Log.LogTrace("Memories found (collection: {0})", collection);
         var resultString = string.Join(context[JoinParam], memories.Select(m => m.Text).ToEnumerable());
@@ -163,15 +163,15 @@ public class TextMemorySkill
     /// </summary>
     /// <example>
     /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
-    /// {{memory.forgetmemory }}
+    /// {{memory.forget_specific }}
     /// </example>
     /// <param name="context">Contains the 'collection' containing the memory to forget.</param>
     [SKFunction("Forget specific memory")]
-    [SKFunctionName("ForgetMemory")]
+    [SKFunctionName("Forget_Specific")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the memory to forget",
         DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated with the memory to forget")]
-    public async Task ForgetMemoryAsync(SKContext context)
+    public async Task ForgetSpecificAsync(SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
         Verify.NotEmpty(collection, "Memory collection not defined");
@@ -185,22 +185,22 @@ public class TextMemorySkill
     }
 
     /// <summary>
-    /// Forget memories related to an idea
+    /// Forget up to N memories related to the input
     /// </summary>
     /// <example>
     /// SKContext["input"] = "Information about France"
-    /// {{memory.forgetidea $input }}
+    /// {{memory.forget $input }}
     /// </example>
-    /// <param name="idea">The idea to compare memories against</param>
+    /// <param name="text">The input text to compare memories to</param>
     /// <param name="context">Contains the 'collection' to search for relevant memories to remove and 'relevance' score</param>
-    [SKFunction("Forget memories related to an idea")]
-    [SKFunctionName("ForgetIdea")]
-    [SKFunctionInput(Description = "The idea to compare memories against")]
+    [SKFunction("Forget up to N memories related to the input")]
+    [SKFunctionName("Forget")]
+    [SKFunctionInput(Description = "The input text to compare memories to")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection where to search for memories", DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = RelevanceParam, Description = "The relevance score, from 0.0 to 1.0, where 1.0 means perfect match",
         DefaultValue = DefaultRelevance)]
     [SKFunctionContextParameter(Name = LimitParam, Description = "The maximum number of relevant memories to forget", DefaultValue = DefaultLimit)]
-    public async Task ForgetIdeaAsync(string idea, SKContext context)
+    public async Task ForgetAsync(string text, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
         Verify.NotEmpty(collection, "Memories collection not defined");
@@ -211,11 +211,11 @@ public class TextMemorySkill
         var limit = context.Variables.ContainsKey(LimitParam) ? context[LimitParam] : LimitParam;
         if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultLimit; }
 
-        context.Log.LogTrace("Searching memories for '{0}', collection '{1}', relevance '{2}'", idea, collection, relevance);
+        context.Log.LogTrace("Searching memories for '{0}', collection '{1}', relevance '{2}'", text, collection, relevance);
 
         // TODO: support locales, e.g. "0.7" and "0,7" must both work
         IAsyncEnumerable<MemoryQueryResult> memories = context.Memory
-            .SearchAsync(collection, idea, limit: int.Parse(limit, CultureInfo.InvariantCulture), minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture));
+            .SearchAsync(collection, text, limit: int.Parse(limit, CultureInfo.InvariantCulture), minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture));
 
         await foreach (var memory in memories)
         {

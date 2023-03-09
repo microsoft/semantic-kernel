@@ -52,7 +52,7 @@ public static class Example15_MemorySkill
         Console.WriteLine("========= Example: Recalling a Memory =========");
 
         context[TextMemorySkill.KeyParam] = "info1";
-        var answer = await memorySkill.RecallMemoryAsync(context);
+        var answer = await memorySkill.RecallSpecificAsync(context);
         Console.WriteLine("Memory associated with 'info1': {0}", answer);
         /*
         Output:
@@ -65,12 +65,12 @@ public static class Example15_MemorySkill
         context[TextMemorySkill.LimitParam] = "2";
         context[TextMemorySkill.JoinParam] = "\n";
         string ask = "where did I grow up?";
-        answer = await memorySkill.RecallIdeaAsync(ask, context);
+        answer = memorySkill.RecallAsync(ask, context);
         Console.WriteLine("Ask: {0}", ask);
         Console.WriteLine("Answer:\n{0}", answer);
 
         ask = "where do I live?";
-        answer = await memorySkill.RecallIdeaAsync(ask, context);
+        answer = memorySkill.RecallAsync(ask, context);
         Console.WriteLine("Ask: {0}", ask);
         Console.WriteLine("Answer:\n{0}", answer);
 
@@ -95,8 +95,8 @@ public static class Example15_MemorySkill
         const string RECALL_FUNCTION_DEFINITION = @"
 Consider only the facts below when answering questions.
 
-About me: {{recallidea $fact1}}
-About me: {{recallidea $fact2}}
+About me: {{recall $fact1}}
+About me: {{recall $fact2}}
 
 Question: {{$query}}
 
@@ -145,7 +145,7 @@ Answer:
         */
 
         context[TextMemorySkill.KeyParam] = "info1";
-        await memorySkill.ForgetMemoryAsync(context);
+        await memorySkill.ForgetSpecificAsync(context);
 
         result = await aboutMeOracle.InvokeAsync(context);
 
@@ -161,7 +161,7 @@ Answer:
 
         // ========= Forget an idea =========
         Console.WriteLine("========= Example: Forgetting an Idea =========");
-        await memorySkill.ForgetIdeaAsync("my location", context);
+        await memorySkill.ForgetAsync("my location", context);
 
         context["fact1"] = "where did I grow up?";
         context["fact2"] = "where do I live?";
