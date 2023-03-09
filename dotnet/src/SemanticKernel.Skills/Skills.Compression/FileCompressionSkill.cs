@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -13,12 +14,12 @@ namespace Microsoft.SemanticKernel.Skills.Compression;
 //**********************************************************************************************************************
 // EXAMPLE USAGE
 //
+// ISemanticKernel kernel = SemanticKernel.Build();
 // var zipCompressor = new ZipFileCompressor();
 // var skill = new FileCompressionSkill(zipCompressor);
 // var fileCompression = kernel.ImportSkill(skill, "FileCompression");
 // string sourceFilePath = "FileToCompress.txt";
 // string destinationFilePath = "CompressedFile.zip";
-// ISemanticKernel kernel = SemanticKernel.Build();
 // var variables = new ContextVariables(sourceFilePath);
 // variables.Set(FileCompressionSkill.Parameters.DestinationFilePath, destinationFilePath);
 // await kernel.RunAsync(variables, fileCompression["CompressFileAsync"]);
@@ -112,6 +113,11 @@ public class FileCompressionSkill
             context.Fail(errorMessage);
 
             return Task.FromException(new KeyNotFoundException(errorMessage));
+        }
+
+        if (!Directory.Exists(destinationDirectoryPath))
+        {
+            Directory.CreateDirectory(destinationDirectoryPath);
         }
 
         return this._fileCompressor.DecompressFileAsync(sourceFilePath, destinationDirectoryPath, context.CancellationToken);
