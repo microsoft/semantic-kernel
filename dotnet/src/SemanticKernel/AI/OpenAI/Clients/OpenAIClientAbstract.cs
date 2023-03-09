@@ -38,7 +38,7 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <summary>
     /// The default timeout for the http client if the caller doesn't supply one.
     /// </summary>
-    public const int DEFAULT_HTTP_TIMEOUT_IN_SECONDS = 100;
+    public const int DefaultHttpTimeoutInSeconds = 100;
 
     internal OpenAIClientAbstract(ILogger? log = null)
     {
@@ -61,7 +61,7 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <param name="httpTimeoutInSeconds">Number of seconds to wait before the request times out</param>
     /// <returns>The completed text</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
-    protected async Task<string> ExecuteCompleteRequestAsync(string url, string requestBody, int httpTimeoutInSeconds = DEFAULT_HTTP_TIMEOUT_IN_SECONDS)
+    protected async Task<string> ExecuteCompleteRequestAsync(string url, string requestBody, int httpTimeoutInSeconds = DefaultHttpTimeoutInSeconds)
     {
         try
         {
@@ -93,7 +93,7 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <param name="httpTimeoutInSeconds">Number of seconds to wait before the request times out</param>
     /// <returns></returns>
     /// <exception cref="AIException"></exception>
-    protected async Task<IList<Embedding<float>>> ExecuteEmbeddingRequestAsync(string url, string requestBody, int httpTimeoutInSeconds = DEFAULT_HTTP_TIMEOUT_IN_SECONDS)
+    protected async Task<IList<Embedding<float>>> ExecuteEmbeddingRequestAsync(string url, string requestBody, int httpTimeoutInSeconds = DefaultHttpTimeoutInSeconds)
     {
         try
         {

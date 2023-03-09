@@ -242,11 +242,12 @@ public sealed class Kernel : IKernel, IDisposable
         string functionName,
         SemanticFunctionConfig functionConfig)
     {
-        if (!functionConfig.PromptTemplateConfig.Type.EqualsIgnoreCase("completion"))
+        var promptTemplateConfig = functionConfig.PromptTemplateConfig;
+        if (!promptTemplateConfig.Type.EqualsIgnoreCase("completion"))
         {
             throw new AIException(
                 AIException.ErrorCodes.FunctionTypeNotSupported,
-                $"Function type not supported: {functionConfig.PromptTemplateConfig}");
+                $"Function type not supported: {promptTemplateConfig}");
         }
 
         ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig);
@@ -255,10 +256,13 @@ public sealed class Kernel : IKernel, IDisposable
         // is invoked manually without a context and without a way to find other functions.
         func.SetDefaultSkillCollection(this.Skills);
 
-        func.SetAIConfiguration(AIRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
+        func.SetAIConfiguration(AIRequestSettings.FromCompletionConfig(
+            promptTemplateConfig.Completion,
+            promptTemplateConfig.HttpTimeoutInSeconds)
+        );
 
         // TODO: allow to postpone this (e.g. use lazy init), allow to create semantic functions without a default backend
-        var backend = this._config.GetCompletionBackend(functionConfig.PromptTemplateConfig.DefaultBackends.FirstOrDefault());
+        var backend = this._config.GetCompletionBackend(promptTemplateConfig.DefaultBackends.FirstOrDefault());
 
         switch (backend)
         {
@@ -283,7 +287,7 @@ public sealed class Kernel : IKernel, IDisposable
                 throw new AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
                     $"Unknown/unsupported backend configuration type {backend.GetType():G}, unable to prepare semantic function. " +
-                    $"Function description: {functionConfig.PromptTemplateConfig.Description}");
+                    $"Function description: {promptTemplateConfig.Description}");
         }
 
         return func;

@@ -108,7 +108,7 @@ public abstract class AzureOpenAIClientAbstract : OpenAIClientAbstract
     protected async Task CacheDeploymentsAsync()
     {
         CancellationTokenSource cancellationSource = new CancellationTokenSource();
-        cancellationSource.CancelAfter(TimeSpan.FromSeconds(DEFAULT_HTTP_TIMEOUT_IN_SECONDS));
+        cancellationSource.CancelAfter(TimeSpan.FromSeconds(DefaultHttpTimeoutInSeconds));
 
         var url = $"{this.Endpoint}/openai/deployments?api-version={this.AzureOpenAIApiVersion}";
         HttpResponseMessage response = await this.HTTPClient.GetAsync(url, cancellationSource.Token);

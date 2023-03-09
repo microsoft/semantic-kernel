@@ -30,8 +30,8 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="topP">Top P parameter passed to LLM</param>
     /// <param name="presencePenalty">Presence Penalty parameter passed to LLM</param>
     /// <param name="frequencyPenalty">Frequency Penalty parameter passed to LLM</param>
-    /// <param name="http_timeout_in_seconds">The number of seconds to wait before the request to the completion backend times out</param>
     /// <param name="stopSequences">Strings the LLM will detect to stop generating (before reaching max tokens)</param>
+    /// <param name="httpTimeoutInSeconds">Number of seconds to wait before the request from the function to the backend times out</param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunction(
         this IKernel kernel,
@@ -45,7 +45,7 @@ public static class InlineFunctionsDefinitionExtension
         double presencePenalty = 0,
         double frequencyPenalty = 0,
         IEnumerable<string>? stopSequences = null,
-        int http_timeout_in_seconds = OpenAIClientAbstract.DEFAULT_HTTP_TIMEOUT_IN_SECONDS)
+        int httpTimeoutInSeconds = OpenAIClientAbstract.DefaultHttpTimeoutInSeconds)
     {
         functionName ??= RandomFunctionName();
 
@@ -61,8 +61,8 @@ public static class InlineFunctionsDefinitionExtension
                 FrequencyPenalty = frequencyPenalty,
                 MaxTokens = maxTokens,
                 StopSequences = stopSequences?.ToList() ?? new List<string>(),
-                HttpTimeoutInSeconds = http_timeout_in_seconds,
-            }
+            },
+            HttpTimeoutInSeconds = httpTimeoutInSeconds,
         };
 
         return kernel.CreateSemanticFunction(

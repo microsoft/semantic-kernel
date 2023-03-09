@@ -66,13 +66,6 @@ public class PromptTemplateConfig
         [JsonPropertyOrder(6)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<string> StopSequences { get; set; } = new();
-
-        /// <summary>
-        /// The number of seconds to wait before the request to the completion backend times out.
-        /// </summary>
-        [JsonPropertyName("http_timeout_in_seconds")]
-        [JsonPropertyOrder(7)]
-        public int HttpTimeoutInSeconds { get; set; } = OpenAIClientAbstract.DEFAULT_HTTP_TIMEOUT_IN_SECONDS;
     }
 
     /// <summary>
@@ -159,6 +152,13 @@ public class PromptTemplateConfig
     [JsonPropertyOrder(6)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public InputConfig Input { get; set; } = new();
+
+    /// <summary>
+    /// The number of seconds to wait before the request to the completion backend times out.
+    /// </summary>
+    [JsonPropertyName("http_timeout_in_seconds")]
+    [JsonPropertyOrder(7)]
+    public int HttpTimeoutInSeconds { get; set; } = OpenAIClientAbstract.DefaultHttpTimeoutInSeconds;
 
     /// <summary>
     /// Remove some default properties to reduce the JSON complexity.

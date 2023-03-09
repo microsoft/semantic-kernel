@@ -23,9 +23,10 @@ public class AIRequestSettings
     /// Create a new settings object containing a <see cref="CompleteRequestSettings"/> instance
     /// with the values from another settings object.
     /// </summary>
-    /// <param name="config"></param>
+    /// <param name="config">The completion config</param>
+    /// <param name="httpTimeoutInSeconds">Number of seconds to wait before the request to the backend times out</param>
     /// <returns>An instance of <see cref="AIRequestSettings"/> </returns>
-    public static AIRequestSettings FromCompletionConfig(PromptTemplateConfig.CompletionConfig config)
+    public static AIRequestSettings FromCompletionConfig(PromptTemplateConfig.CompletionConfig config, int httpTimeoutInSeconds)
     {
         return new AIRequestSettings
         {
@@ -38,7 +39,7 @@ public class AIRequestSettings
                 MaxTokens = config.MaxTokens,
                 StopSequences = config.StopSequences,
             },
-            HttpTimeoutInSeconds = config.HttpTimeoutInSeconds
+            HttpTimeoutInSeconds = httpTimeoutInSeconds
         };
     }
 }
