@@ -15,7 +15,7 @@ namespace IntegrationTests.AI;
 public sealed class OpenAIEmbeddingTests : IDisposable
 {
     private readonly IConfigurationRoot _configuration;
-    private const int ADA_VECTOR_LENGTH = 1536;
+    private const int AdaVectorLength = 1536;
 
     public OpenAIEmbeddingTests(ITestOutputHelper output)
     {
@@ -46,7 +46,7 @@ public sealed class OpenAIEmbeddingTests : IDisposable
         var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
 
         // Assert
-        Assert.Equal(ADA_VECTOR_LENGTH, singleResult.Count);
+        Assert.Equal(AdaVectorLength, singleResult.Count);
         Assert.Equal(3, batchResult.Count);
 
         embeddingGenerator.Dispose();
@@ -70,7 +70,7 @@ public sealed class OpenAIEmbeddingTests : IDisposable
         var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
 
         // Assert
-        Assert.Equal(ADA_VECTOR_LENGTH, singleResult.Count);
+        Assert.Equal(AdaVectorLength, singleResult.Count);
         Assert.Equal(3, batchResult.Count);
 
         embeddingGenerator.Dispose();
