@@ -112,6 +112,8 @@ public abstract class AzureOpenAIClientAbstract : OpenAIClientAbstract
 
         var url = $"{this.Endpoint}/openai/deployments?api-version={this.AzureOpenAIApiVersion}";
         HttpResponseMessage response = await this.HTTPClient.GetAsync(url, cancellationSource.Token);
+        cancellationSource.Dispose();
+
         if (!response.IsSuccessStatusCode)
         {
             throw new AIException(
