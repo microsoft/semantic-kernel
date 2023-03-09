@@ -9,7 +9,7 @@ Watch the [Chat Summary Quick Start Video](https://aka.ms/SK-Samples-SimChat-Vid
 
 ## Running the sample
 
-1. Create a new copy of `.env.development` and save it as `.env` next to the original. 
+1. Create a new copy of `.env.development` and save it as `.env` next to the original.
    - The `.env` file will be ignored by git and will not be checked in by default.
 2. You will need an [Open AI Key](https://platform.openai.com/account/api-keys) or
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
