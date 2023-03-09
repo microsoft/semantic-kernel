@@ -84,17 +84,17 @@ public sealed class SKFunctionTests3 : IDisposable
 
     private class InvalidSkill
     {
-        [SKFunction("one")]
+        [SKFunction(Description = "one")]
         public void Invalid1(string x, string y)
         {
         }
 
-        [SKFunction("two")]
+        [SKFunction(Description = "two")]
         public void Invalid2(SKContext cx, string y)
         {
         }
 
-        [SKFunction("three")]
+        [SKFunction(Description = "three")]
         public void Invalid3(string y, int n)
         {
         }
@@ -102,158 +102,158 @@ public sealed class SKFunctionTests3 : IDisposable
 
     private class LocalExampleSkill
     {
-        [SKFunction("one")]
+        [SKFunction(Description = "one")]
         public void Type01()
         {
         }
 
-        [SKFunction("two")]
+        [SKFunction(Description = "two")]
         public string Type02()
         {
             return "";
         }
 
-        [SKFunction("two2")]
+        [SKFunction(Description = "two2")]
         public string? Type02Nullable()
         {
             return null;
         }
 
-        [SKFunction("three")]
+        [SKFunction(Description = "three")]
         public async Task<string> Type03Async()
         {
             await Task.Delay(0);
             return "";
         }
 
-        [SKFunction("three2")]
+        [SKFunction(Description = "three2")]
         public async Task<string?> Type03NullableAsync()
         {
             await Task.Delay(0);
             return null;
         }
 
-        [SKFunction("four")]
+        [SKFunction(Description = "four")]
         public void Type04(SKContext context)
         {
         }
 
-        [SKFunction("four2")]
+        [SKFunction(Description = "four2")]
         public void Type04Nullable(SKContext? context)
         {
         }
 
-        [SKFunction("five")]
+        [SKFunction(Description = "five")]
         public string Type05(SKContext context)
         {
             return "";
         }
 
-        [SKFunction("five2")]
+        [SKFunction(Description = "five2")]
         public string? Type05Nullable(SKContext? context)
         {
             return null;
         }
 
-        [SKFunction("six")]
+        [SKFunction(Description = "six")]
         public async Task<string> Type06Async(SKContext context)
         {
             await Task.Delay(0);
             return "";
         }
 
-        [SKFunction("seven")]
+        [SKFunction(Description = "seven")]
         public async Task<SKContext> Type07Async(SKContext context)
         {
             await Task.Delay(0);
             return context;
         }
 
-        [SKFunction("eight")]
+        [SKFunction(Description = "eight")]
         public void Type08(string x)
         {
         }
 
-        [SKFunction("eight2")]
+        [SKFunction(Description = "eight2")]
         public void Type08Nullable(string? x)
         {
         }
 
-        [SKFunction("nine")]
+        [SKFunction(Description = "nine")]
         public string Type09(string x)
         {
             return "";
         }
 
-        [SKFunction("nine2")]
+        [SKFunction(Description = "nine2")]
         public string? Type09Nullable(string? x = null)
         {
             return "";
         }
 
-        [SKFunction("ten")]
+        [SKFunction(Description = "ten")]
         public async Task<string> Type10Async(string x)
         {
             await Task.Delay(0);
             return "";
         }
 
-        [SKFunction("ten2")]
+        [SKFunction(Description = "ten2")]
         public async Task<string?> Type10NullableAsync(string? x)
         {
             await Task.Delay(0);
             return "";
         }
 
-        [SKFunction("eleven")]
+        [SKFunction(Description = "eleven")]
         public void Type11(string x, SKContext context)
         {
         }
 
-        [SKFunction("eleven2")]
+        [SKFunction(Description = "eleven2")]
         public void Type11Nullable(string? x = null, SKContext? context = null)
         {
         }
 
-        [SKFunction("twelve")]
+        [SKFunction(Description = "twelve")]
         public string Type12(string x, SKContext context)
         {
             return "";
         }
 
-        [SKFunction("thirteen")]
+        [SKFunction(Description = "thirteen")]
         public async Task<string> Type13Async(string x, SKContext context)
         {
             await Task.Delay(0);
             return "";
         }
 
-        [SKFunction("fourteen")]
+        [SKFunction(Description = "fourteen")]
         public async Task<SKContext> Type14Async(string x, SKContext context)
         {
             await Task.Delay(0);
             return context;
         }
 
-        [SKFunction("fifteen")]
+        [SKFunction(Description = "fifteen")]
         public async Task Type15Async(string x)
         {
             await Task.Delay(0);
         }
 
-        [SKFunction("sixteen")]
+        [SKFunction(Description = "sixteen")]
         public async Task Type16Async(SKContext context)
         {
             await Task.Delay(0);
         }
 
-        [SKFunction("seventeen")]
+        [SKFunction(Description = "seventeen")]
         public async Task Type17Async(string x, SKContext context)
         {
             await Task.Delay(0);
         }
 
-        [SKFunction("eighteen")]
+        [SKFunction(Description = "eighteen")]
         public async Task Type18Async()
         {
             await Task.Delay(0);

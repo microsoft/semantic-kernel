@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -13,17 +14,23 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public sealed class SKFunctionAttribute : Attribute
 {
+    private string? _name = null;
+
+    /// <summary>
+    /// Function name, to be used to identify the function in a collection.
+    /// </summary>
+    public string? Name
+    {
+        get { return this._name; }
+        set
+        {
+            Verify.ValidFunctionName(value);
+            this._name = value;
+        }
+    }
+
     /// <summary>
     /// Function description, to be used by the planner to auto-discover functions.
     /// </summary>
-    public string Description { get; }
-
-    /// <summary>
-    /// Tag a C# function as a native function available to SK.
-    /// </summary>
-    /// <param name="description">Function description, to be used by the planner to auto-discover functions.</param>
-    public SKFunctionAttribute(string description)
-    {
-        this.Description = description;
-    }
+    public string? Description { get; set; } = null;
 }

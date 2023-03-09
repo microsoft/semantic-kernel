@@ -18,7 +18,7 @@ public class WebSearchEngineSkill
         this._connector = connector;
     }
 
-    [SKFunction("Perform a web search.")]
+    [SKFunction(Description = "Perform a web search.")]
     [SKFunctionInput(Description = "Text to search for")]
     public async Task<string> SearchAsync(string query, SKContext context)
     {

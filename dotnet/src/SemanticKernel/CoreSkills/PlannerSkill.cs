@@ -103,8 +103,7 @@ public class PlannerSkill
     /// <param name="input"> The input from a function that needs to be parse into buckets. </param>
     /// <param name="context"> The context to use </param>
     /// <returns> The context with the bucketed results </returns>
-    [SKFunction("Given an output of a function, parse the output into a number of buckets.")]
-    [SKFunctionName("BucketOutputs")]
+    [SKFunction(Name = "BucketOutputs", Description = "Given an output of a function, parse the output into a number of buckets.")]
     [SKFunctionInput(Description = "The output from a function that needs to be parse into buckets.")]
     [SKFunctionContextParameter(Name = "bucketCount", Description = "The number of buckets.", DefaultValue = "")]
     [SKFunctionContextParameter(
@@ -165,8 +164,7 @@ public class PlannerSkill
     /// <remarks>
     /// The plan is stored in the context as a string. The plan is also stored in the context as a Plan object.
     /// </remarks>
-    [SKFunction("Create a plan using registered functions to accomplish a goal.")]
-    [SKFunctionName("CreatePlan")]
+    [SKFunction(Name = "CreatePlan", Description = "Create a plan using registered functions to accomplish a goal.")]
     public async Task<SKContext> CreatePlanAsync(SKContext context)
     {
         var goal = context.Variables.Input;
@@ -195,8 +193,7 @@ public class PlannerSkill
     /// <remarks>
     /// The plan is stored in the context as a string. The plan is also stored in the context as a Plan object.
     /// </remarks>
-    [SKFunction("Execute a plan that uses registered functions to accomplish a goal.")]
-    [SKFunctionName("ExecutePlan")]
+    [SKFunction(Name = "ExecutePlan", Description = "Execute a plan that uses registered functions to accomplish a goal.")]
     public async Task<SKContext> ExecutePlanAsync(SKContext context)
     {
         var planToExecute = context.Variables.ToPlan();

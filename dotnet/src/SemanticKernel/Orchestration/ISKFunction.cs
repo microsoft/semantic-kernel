@@ -42,6 +42,12 @@ public interface ISKFunction
     public CompleteRequestSettings RequestSettings { get; }
 
     /// <summary>
+    /// Returns the name of the delegate held by the function.
+    /// </summary>
+    /// <returns>The name of the delegate held by the function</returns>
+    string DelegateName();
+
+    /// <summary>
     /// Returns a description of the function, including parameters.
     /// </summary>
     /// <returns>An instance of <see cref="FunctionView"/> describing the function</returns>

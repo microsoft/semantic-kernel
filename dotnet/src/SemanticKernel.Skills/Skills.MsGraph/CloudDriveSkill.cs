@@ -40,7 +40,7 @@ public class CloudDriveSkill
     /// <summary>
     /// Get the contents of a file stored in a cloud drive.
     /// </summary>
-    [SKFunction("Get the contents of a file in a cloud drive.")]
+    [SKFunction(Description = "Get the contents of a file in a cloud drive.")]
     [SKFunctionInput(Description = "Path to file")]
     public async Task<string> GetFileContentAsync(string filePath, SKContext context)
     {
@@ -56,7 +56,7 @@ public class CloudDriveSkill
     /// <summary>
     /// Upload a small file to OneDrive (less than 4MB).
     /// </summary>
-    [SKFunction("Upload a small file to OneDrive (less than 4MB).")]
+    [SKFunction(Description = "Upload a small file to OneDrive (less than 4MB).")]
     public async Task UploadFileAsync(string filePath, SKContext context)
     {
         if (!context.Variables.Get(Parameters.DestinationPath, out string destinationPath))
@@ -82,7 +82,7 @@ public class CloudDriveSkill
     /// <summary>
     /// Create a sharable link to a file stored in a cloud drive.
     /// </summary>
-    [SKFunction("Create a sharable link to a file stored in a cloud drive.")]
+    [SKFunction(Description = "Create a sharable link to a file stored in a cloud drive.")]
     [SKFunctionInput(Description = "Path to file")]
     public async Task<string> CreateLinkAsync(string filePath, SKContext context)
     {

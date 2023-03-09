@@ -31,7 +31,7 @@ public class TextSkill
     /// </example>
     /// <param name="text"> The string to trim. </param>
     /// <returns> The trimmed string. </returns>
-    [SKFunction("Trim whitespace from the start and end of a string.")]
+    [SKFunction(Description = "Trim whitespace from the start and end of a string.")]
     public string Trim(string text)
     {
         return text.Trim();
@@ -46,7 +46,7 @@ public class TextSkill
     /// </example>
     /// <param name="text"> The string to trim. </param>
     /// <returns> The trimmed string. </returns>
-    [SKFunction("Trim whitespace from the start of a string.")]
+    [SKFunction(Description = "Trim whitespace from the start of a string.")]
     public string TrimStart(string text)
     {
         return text.TrimStart();
@@ -61,7 +61,7 @@ public class TextSkill
     /// </example>
     /// <param name="text"> The string to trim. </param>
     /// <returns> The trimmed string. </returns>
-    [SKFunction("Trim whitespace from the end of a string.")]
+    [SKFunction(Description = "Trim whitespace from the end of a string.")]
     public string TrimEnd(string text)
     {
         return text.TrimEnd();
@@ -76,7 +76,7 @@ public class TextSkill
     /// </example>
     /// <param name="text"> The string to convert. </param>
     /// <returns> The converted string. </returns>
-    [SKFunction("Convert a string to uppercase.")]
+    [SKFunction(Description = "Convert a string to uppercase.")]
     public string Uppercase(string text)
     {
         return text.ToUpper(System.Globalization.CultureInfo.CurrentCulture);
@@ -91,7 +91,7 @@ public class TextSkill
     /// </example>
     /// <param name="text"> The string to convert. </param>
     /// <returns> The converted string. </returns>
-    [SKFunction("Convert a string to lowercase.")]
+    [SKFunction(Description = "Convert a string to lowercase.")]
     public string Lowercase(string text)
     {
         return text.ToLower(System.Globalization.CultureInfo.CurrentCulture);

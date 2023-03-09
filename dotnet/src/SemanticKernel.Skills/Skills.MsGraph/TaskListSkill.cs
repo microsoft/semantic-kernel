@@ -64,7 +64,7 @@ public class TaskListSkill
     /// <summary>
     /// Add a task to a To-Do list with an optional reminder.
     /// </summary>
-    [SKFunction("Add a task to a task list with an optional reminder.")]
+    [SKFunction(Description = "Add a task to a task list with an optional reminder.")]
     [SKFunctionInput(Description = "Title of the task.")]
     [SKFunctionContextParameter(Name = Parameters.Reminder, Description = "Reminder for the task in DateTimeOffset (optional)")]
     public async Task AddTaskAsync(string title, SKContext context)

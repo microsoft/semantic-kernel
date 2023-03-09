@@ -134,6 +134,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
+    public string DelegateName()
+    {
+        return this._function.GetMethodInfo().Name;
+    }
+
+    /// <inheritdoc/>
     public FunctionView Describe()
     {
         return new FunctionView
@@ -494,6 +500,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         var result = new MethodDetails
         {
+            // Function name is default to the delegate method name
             Name = methodSignature.Name,
             Parameters = new List<ParameterView>(),
         };
@@ -515,17 +522,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         result.HasSkFunctionAttribute = true;
 
         (result.Type, result.Function, bool hasStringParam) = GetDelegateInfo(methodContainerInstance, methodSignature);
-
-        // SKFunctionName attribute
-        SKFunctionNameAttribute? skFunctionNameAttribute = methodSignature
-            .GetCustomAttributes(typeof(SKFunctionNameAttribute), true)
-            .Cast<SKFunctionNameAttribute>()
-            .FirstOrDefault();
-
-        if (skFunctionNameAttribute != null)
-        {
-            result.Name = skFunctionNameAttribute.Name;
-        }
 
         // SKFunctionInput attribute
         SKFunctionInputAttribute? skMainParam = methodSignature
@@ -563,6 +559,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
         // Note: the name "input" is reserved for the main parameter
         Verify.ParametersUniqueness(result.Parameters);
 
+        // Overriding the function name if one is specified in the function attribute
+        result.Name = skFunctionAttribute.Name ?? result.Name;
         result.Description = skFunctionAttribute.Description ?? "";
 
         log?.LogTrace("Method {0} found", result.Name);

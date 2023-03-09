@@ -50,14 +50,14 @@ public class EmailSkill
     /// <summary>
     /// Get my email address.
     /// </summary>
-    [SKFunction("Gets the email address for me.")]
+    [SKFunction(Description = "Gets the email address for me.")]
     public async Task<string> GetMyEmailAddressAsync()
         => await this._connector.GetMyEmailAddressAsync();
 
     /// <summary>
     /// Send an email using <see cref="ContextVariables.Input"/> as the body.
     /// </summary>
-    [SKFunction("Send an email to one or more recipients.")]
+    [SKFunction(Description = "Send an email to one or more recipients.")]
     [SKFunctionInput(Description = "Email content/body")]
     [SKFunctionContextParameter(Name = Parameters.Recipients, Description = "Recipients of the email, separated by ',' or ';'.")]
     [SKFunctionContextParameter(Name = Parameters.Subject, Description = "Subject of the email")]

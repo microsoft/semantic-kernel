@@ -26,7 +26,7 @@ public class FileIOSkill
     /// </example>
     /// <param name="path"> Source file </param>
     /// <returns> File content </returns>
-    [SKFunction("Read a file")]
+    [SKFunction(Description = "Read a file")]
     [SKFunctionInput(Description = "Source file")]
     public Task<string?> ReadAsync(string path)
     {
@@ -43,7 +43,7 @@ public class FileIOSkill
     /// Contains the 'path' for the Destination file and 'content' of the file to write.
     /// </param>
     /// <returns> An awaitable task </returns>
-    [SKFunction("Write a file")]
+    [SKFunction(Description = "Write a file")]
     [SKFunctionContextParameter(Name = "path", Description = "Destination file")]
     [SKFunctionContextParameter(Name = "content", Description = "File content")]
     public Task WriteAsync(SKContext context)

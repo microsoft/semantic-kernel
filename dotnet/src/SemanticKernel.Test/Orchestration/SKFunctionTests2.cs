@@ -40,8 +40,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType1Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static void Test()
         {
             s_canary = s_expected;
@@ -64,8 +63,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType2Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static string Test()
         {
             s_canary = s_expected;
@@ -91,8 +89,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType3Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static Task<string> Test()
         {
             s_canary = s_expected;
@@ -118,8 +115,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType4Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static void Test(SKContext cx)
         {
             s_canary = s_expected;
@@ -145,8 +141,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType5Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static string Test(SKContext cx)
         {
             s_canary = cx["someVar"];
@@ -172,8 +167,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType5NullableAsync()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         string? Test(SKContext cx)
         {
             s_canary = cx["someVar"];
@@ -199,8 +193,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType6Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         Task<string> Test(SKContext cx)
         {
             s_canary = s_expected;
@@ -227,8 +220,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType7Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         Task<SKContext> Test(SKContext cx)
         {
             s_canary = s_expected;
@@ -256,8 +248,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType8Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         void Test(string input)
         {
             s_canary = s_expected + input;
@@ -280,8 +271,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType9Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         string Test(string input)
         {
             s_canary = s_expected;
@@ -306,8 +296,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType10Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         Task<string> Test(string input)
         {
             s_canary = s_expected;
@@ -332,8 +321,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType11Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         void Test(string input, SKContext cx)
         {
             s_canary = s_expected;
@@ -360,8 +348,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType12Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static string Test(string input, SKContext cx)
         {
             s_canary = s_expected;
@@ -390,8 +377,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType13Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static Task<string> Test(string input, SKContext cx)
         {
             s_canary = s_expected;
@@ -420,8 +406,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType14Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static Task<SKContext> Test(string input, SKContext cx)
         {
             s_canary = s_expected;
@@ -476,8 +461,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType15Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static Task Test(string input)
         {
             s_canary = s_expected;
@@ -501,8 +485,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType16Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static Task Test(SKContext cx)
         {
             s_canary = s_expected;
@@ -530,8 +513,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType17Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static Task Test(string input, SKContext cx)
         {
             s_canary = s_expected;
@@ -559,8 +541,7 @@ public sealed class SKFunctionTests2 : IDisposable
     public async Task ItSupportsType18Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
+        [SKFunction(Name = "Test", Description = "Test")]
         static Task Test()
         {
             s_canary = s_expected;

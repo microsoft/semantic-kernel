@@ -67,7 +67,7 @@ public class CalendarSkill
     /// <summary>
     /// Add an event to my calendar using <see cref="ContextVariables.Input"/> as the subject.
     /// </summary>
-    [SKFunction("Add an event to my calendar.")]
+    [SKFunction(Description = "Add an event to my calendar.")]
     [SKFunctionInput(Description = "Event subject")]
     [SKFunctionContextParameter(Name = Parameters.Start, Description = "Event start date/time as DateTimeOffset")]
     [SKFunctionContextParameter(Name = Parameters.End, Description = "Event end date/time as DateTimeOffset")]

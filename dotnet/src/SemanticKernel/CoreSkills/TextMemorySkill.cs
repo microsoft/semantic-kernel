@@ -49,8 +49,7 @@ public class TextMemorySkill
     /// </example>
     /// <param name="ask">The information to retrieve</param>
     /// <param name="context">Contains the 'collection' to search for information and 'relevance' score</param>
-    [SKFunction("Recall a fact from the long term memory")]
-    [SKFunctionName("Recall")]
+    [SKFunction(Name = "Recall", Description = "Recall a fact from the long term memory")]
     [SKFunctionInput(Description = "The information to retrieve")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection where to search for information", DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = RelevanceParam, Description = "The relevance score, from 0.0 to 1.0, where 1.0 means perfect match",
@@ -92,8 +91,7 @@ public class TextMemorySkill
     /// </example>
     /// <param name="text">The information to save</param>
     /// <param name="context">Contains the 'collection' to save the information and unique 'key' to associate it with.</param>
-    [SKFunction("Save information to semantic memory")]
-    [SKFunctionName("Save")]
+    [SKFunction(Name = "Save", Description = "Save information to semantic memory")]
     [SKFunctionInput(Description = "The information to save")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection where to save the information", DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = KeyParam, Description = "The key to save the information")]
