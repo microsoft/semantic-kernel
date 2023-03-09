@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Compression;
+namespace Microsoft.SemanticKernel.Skills.FileCompression;
 
 //**********************************************************************************************************************
 // EXAMPLE USAGE
@@ -61,58 +61,87 @@ public class FileCompressionSkill
         this._logger = logger ?? new NullLogger<FileCompressionSkill>();
     }
 
+    /// <summary>
+    /// Compresses an input file to an output file.
+    /// </summary>
+    /// <param name="sourceFilePath">Path of file to compress</param>
+    /// <param name="context">Semantic Kernel context</param>
+    /// <returns>Path of created compressed file</returns>
+    /// <exception cref="KeyNotFoundException"></exception>
     [SKFunction("Compresses an input file to an output file")]
     [SKFunctionInput(Description = "Path of file to compress")]
     [SKFunctionContextParameter(Name = Parameters.DestinationFilePath, Description = "Path of compressed file to create")]
-    public Task CompressFileAsync(string sourceFilePath, SKContext context)
+    public async Task<string> CompressFileAsync(string sourceFilePath, SKContext context)
     {
         this._logger.LogDebug($"{nameof(CompressFileAsync)} got called");
 
         if (!context.Variables.Get(Parameters.DestinationFilePath, out string destinationFilePath))
         {
-            this._logger.LogError($"Missing context variable in {nameof(CompressFileAsync)}");
-            string errorMessage = $"Missing variable {Parameters.DestinationFilePath}";
+            const string errorMessage = $"Missing context variable {Parameters.DestinationFilePath} in {nameof(CompressFileAsync)}";
+            this._logger.LogError(errorMessage);
             context.Fail(errorMessage);
 
-            return Task.FromException(new KeyNotFoundException(errorMessage));
+            throw new KeyNotFoundException(errorMessage);
         }
 
-        return this._fileCompressor.CompressFileAsync(sourceFilePath, destinationFilePath, context.CancellationToken);
+        await this._fileCompressor.CompressFileAsync(Environment.ExpandEnvironmentVariables(sourceFilePath),
+                                                     Environment.ExpandEnvironmentVariables(destinationFilePath),
+                                                     context.CancellationToken);
+
+        return destinationFilePath;
     }
 
+    /// <summary>
+    /// Compresses a directory to an output file.
+    /// </summary>
+    /// <param name="sourceDirectoryPath">Path of directory to compress</param>
+    /// <param name="context">Semantic Kernel context</param>
+    /// <returns>Path of created compressed file</returns>
+    /// <exception cref="KeyNotFoundException"></exception>
     [SKFunction("Compresses a directory to an output file")]
     [SKFunctionInput(Description = "Path of directory to compress")]
     [SKFunctionContextParameter(Name = Parameters.DestinationFilePath, Description = "Path of compressed file to create")]
-    public Task CompressDirectoryAsync(string sourceDirectoryPath, SKContext context)
+    public async Task<string> CompressDirectoryAsync(string sourceDirectoryPath, SKContext context)
     {
         this._logger.LogDebug($"{nameof(CompressDirectoryAsync)} got called");
 
         if (!context.Variables.Get(Parameters.DestinationFilePath, out string destinationFilePath))
         {
-            this._logger.LogError($"Missing context variable in {nameof(CompressDirectoryAsync)}");
-            string errorMessage = $"Missing variable {Parameters.DestinationFilePath}";
+            const string errorMessage = $"Missing context variable {Parameters.DestinationFilePath} in {nameof(CompressDirectoryAsync)}";
+            this._logger.LogError(errorMessage);
             context.Fail(errorMessage);
 
-            return Task.FromException(new KeyNotFoundException(errorMessage));
+            throw new KeyNotFoundException(errorMessage);
         }
 
-        return this._fileCompressor.CompressDirectoryAsync(sourceDirectoryPath, destinationFilePath, context.CancellationToken);
+        await this._fileCompressor.CompressDirectoryAsync(Environment.ExpandEnvironmentVariables(sourceDirectoryPath),
+                                                          Environment.ExpandEnvironmentVariables(destinationFilePath),
+                                                          context.CancellationToken);
+
+        return destinationFilePath;
     }
 
+    /// <summary>
+    /// Decompresses an input file.
+    /// </summary>
+    /// <param name="sourceFilePath">Path of file to decompress</param>
+    /// <param name="context">Semantic Kernel context</param>
+    /// <returns>Path of created compressed file</returns>
+    /// <exception cref="KeyNotFoundException"></exception>
     [SKFunction("Decompresses an input file")]
-    [SKFunctionInput(Description = "Path of file to decompress")]
+    [SKFunctionInput(Description = "Path of directory into which decompressed content was extracted")]
     [SKFunctionContextParameter(Name = Parameters.DestinationDirectoryPath, Description = "Directory into which to extract the decompressed content")]
-    public Task DecompressFileAsync(string sourceFilePath, SKContext context)
+    public async Task<string> DecompressFileAsync(string sourceFilePath, SKContext context)
     {
         this._logger.LogDebug($"{nameof(DecompressFileAsync)} got called");
 
         if (!context.Variables.Get(Parameters.DestinationDirectoryPath, out string destinationDirectoryPath))
         {
-            this._logger.LogError($"Missing context variable in {nameof(DecompressFileAsync)}");
-            string errorMessage = $"Missing variable {Parameters.DestinationDirectoryPath}";
+            const string errorMessage = $"Missing context variable {Parameters.DestinationDirectoryPath} in {nameof(DecompressFileAsync)}";
+            this._logger.LogError(errorMessage);
             context.Fail(errorMessage);
 
-            return Task.FromException(new KeyNotFoundException(errorMessage));
+            throw new KeyNotFoundException(errorMessage);
         }
 
         if (!Directory.Exists(destinationDirectoryPath))
@@ -120,6 +149,10 @@ public class FileCompressionSkill
             Directory.CreateDirectory(destinationDirectoryPath);
         }
 
-        return this._fileCompressor.DecompressFileAsync(sourceFilePath, destinationDirectoryPath, context.CancellationToken);
+        await this._fileCompressor.DecompressFileAsync(Environment.ExpandEnvironmentVariables(sourceFilePath),
+                                                       Environment.ExpandEnvironmentVariables(destinationDirectoryPath),
+                                                       context.CancellationToken);
+
+        return destinationDirectoryPath;
     }
 }
