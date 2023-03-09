@@ -65,12 +65,12 @@ public static class Example15_MemorySkill
         context[TextMemorySkill.LimitParam] = "2";
         context[TextMemorySkill.JoinParam] = "\n";
         string ask = "where did I grow up?";
-        answer = memorySkill.RecallAsync(ask, context);
+        answer = memorySkill.Recall(ask, context);
         Console.WriteLine("Ask: {0}", ask);
         Console.WriteLine("Answer:\n{0}", answer);
 
         ask = "where do I live?";
-        answer = memorySkill.RecallAsync(ask, context);
+        answer = memorySkill.Recall(ask, context);
         Console.WriteLine("Ask: {0}", ask);
         Console.WriteLine("Answer:\n{0}", answer);
 
