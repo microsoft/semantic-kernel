@@ -100,7 +100,7 @@ public sealed class SKFunctionTests3 : IDisposable
         skFunction.AIRequestSettings.HttpTimeoutInSeconds = 0;
 
         var result = await skFunction.InvokeAsync();
-        Assert.True(result.ToString().Contains("Invalid http timeout"));
+        Assert.Contains("Invalid http timeout", result.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public sealed class SKFunctionTests3 : IDisposable
         aiRequestSettings.CompleteRequestSettings = new();
         aiRequestSettings.HttpTimeoutInSeconds = 0;
         var result = await skFunction.InvokeAsync(settings: aiRequestSettings);
-        Assert.True(result.ToString().Contains("Invalid http timeout"));
+        Assert.Contains("Invalid http timeout", result.ToString(), StringComparison.Ordinal);
     }
 
     public void Dispose()
