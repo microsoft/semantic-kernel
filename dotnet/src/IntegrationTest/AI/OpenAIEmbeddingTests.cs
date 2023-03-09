@@ -14,8 +14,8 @@ namespace IntegrationTests.AI;
 
 public sealed class OpenAIEmbeddingTests : IDisposable
 {
-    private readonly IConfigurationRoot _configuration;
     private const int AdaVectorLength = 1536;
+    private readonly IConfigurationRoot _configuration;
 
     public OpenAIEmbeddingTests(ITestOutputHelper output)
     {
