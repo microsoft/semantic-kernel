@@ -1,4 +1,5 @@
-# Feature Parity Matrix
+# Achieving Feature Parity in Python and C#
+
 This is a high-level overview of where things stand towards reaching feature parity with the main
  [C# codebase](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/SemanticKernel).
 
