@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernelFunction.Config;
+namespace KernelHttpServer.Config;
 
 public class ApiKeyConfig
 {

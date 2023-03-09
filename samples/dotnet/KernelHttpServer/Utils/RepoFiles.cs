@@ -3,7 +3,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace SemanticKernelFunction.Utils;
+namespace KernelHttpServer.Utils;
 
 internal static class RepoFiles
 {
