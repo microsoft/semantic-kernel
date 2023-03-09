@@ -174,7 +174,37 @@
       "args": ["start"],
       "group": "test",
       "options": {
-        "cwd": "${workspaceFolder}/samples/starter-chat-webapp-react"
+        "cwd": "${workspaceFolder}/samples/apps/chat-summary-webapp-react"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "Run-Samples"
+      }
+    },
+    {
+      "label": "Run - Book Creator WebApp React",
+      "command": "yarn",
+      "type": "shell",
+      "args": ["start"],
+      "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/samples/apps/book-creator-webapp-react"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "Run-Samples"
+      }
+    },
+    {
+      "label": "Run - Auth API WebApp React",
+      "command": "yarn",
+      "type": "shell",
+      "args": ["start"],
+      "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/samples/apps/auth-api-webapp-react"
       },
       "presentation": {
         "reveal": "always",
