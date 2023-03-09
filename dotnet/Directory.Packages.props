@@ -29,7 +29,7 @@
 
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    
+
     <!-- Skills -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.19.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.3" />
