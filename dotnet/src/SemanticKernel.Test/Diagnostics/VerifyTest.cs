@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -140,9 +140,9 @@ public class VerifyTests
     [Fact]
     public void WithinRangeInclusivePassesWhenValueIsWithinRange()
     {
-        Verify.WithinRange<int>(-1, -1, 0);
-        Verify.WithinRange<double>(0.1, -0.1, 0.1);
-        Verify.WithinRange<TimeSpan>(TimeSpan.FromDays(1), TimeSpan.MinValue, TimeSpan.MaxValue);
+        Verify.WithinRangeInclusive<int>(-1, -1, 0);
+        Verify.WithinRangeInclusive<double>(0.1, -0.1, 0.1);
+        Verify.WithinRangeInclusive<TimeSpan>(TimeSpan.FromDays(1), TimeSpan.MinValue, TimeSpan.MaxValue);
     }
     #endregion
 }
