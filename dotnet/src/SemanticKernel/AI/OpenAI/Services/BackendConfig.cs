@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
+
 public abstract class BackendConfig : IBackendConfig
 {
     /// <summary>

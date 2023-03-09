@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Xunit;
 
 namespace SemanticKernelTests.AI.OpenAI.Services;
+
 public class BackendConfigTests
 {
     [Fact]

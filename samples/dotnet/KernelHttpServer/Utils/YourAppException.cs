@@ -2,7 +2,7 @@
 
 using System;
 
-namespace SemanticKernelFunction.Utils;
+namespace KernelHttpServer.Utils;
 
 public class YourAppException : Exception
 {

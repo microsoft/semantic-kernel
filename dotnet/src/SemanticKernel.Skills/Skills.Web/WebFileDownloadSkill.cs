@@ -56,11 +56,11 @@ public class WebFileDownloadSkill : IDisposable
     [SKFunctionContextParameter(Name = Parameters.FilePath, Description = "Path where to save file locally")]
     public async Task DownloadToFileAsync(string source, SKContext context)
     {
-        this._logger.LogDebug($"{nameof(DownloadToFileAsync)} got called");
+        this._logger.LogDebug($"{nameof(this.DownloadToFileAsync)} got called");
 
         if (!context.Variables.Get(Parameters.FilePath, out string filePath))
         {
-            this._logger.LogError($"Missing context variable in {nameof(DownloadToFileAsync)}");
+            this._logger.LogError($"Missing context variable in {nameof(this.DownloadToFileAsync)}");
             string errorMessage = $"Missing variable {Parameters.FilePath}";
             context.Fail(errorMessage);
 
