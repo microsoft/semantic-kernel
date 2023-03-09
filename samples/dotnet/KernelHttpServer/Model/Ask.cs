@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SemanticKernelFunction.Model;
+namespace KernelHttpServer.Model;
 
 public class Ask
 {
