@@ -474,7 +474,7 @@ This is some text
 
         [SKFunction("Split the input into two parts")]
         [SKFunctionInput(Description = "The input text to split")]
-        public Task<SKContext> SplitInput(string input, SKContext context)
+        public Task<SKContext> SplitInputAsync(string input, SKContext context)
         {
             var parts = input.Split(':');
             context.Variables.Set("First", parts[0]);
@@ -483,7 +483,7 @@ This is some text
         }
 
         [SKFunction("Echo the input text")]
-        public Task<SKContext> Echo(string text, SKContext context)
+        public Task<SKContext> EchoAsync(string text, SKContext context)
         {
             this._testOutputHelper.WriteLine(text);
             _ = context.Variables.Update("Echo Result: " + text);
