@@ -42,24 +42,26 @@ async def chat() -> None:
         context["human_input"] = human_input
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
-        return
+        return False
     except EOFError:
         print("\n\nExiting chat...")
-        return
+        return False
 
     if human_input == "exit":
         print("\n\nExiting chat...")
-        return
+        return False
 
     answer = await kernel.run_on_vars_async(context, chat_function)
     context["chat_history"] += f"\nHuman:>{human_input}\nChatBot:>{answer}\n"
 
     print(answer)
+    return True
 
 
 async def main() -> None:
-    while True:
-        await chat()
+    chatting = True
+    while chatting:
+        chatting = await chat()
 
 
 if __name__ == "__main__":

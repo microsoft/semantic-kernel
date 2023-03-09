@@ -212,7 +212,7 @@ class SKContext:
             function_name {str} -- The function name.
 
         Returns:
-            tuple[bool, SKFunctionBase] -- A tuple with a boolean indicating
+            Tuple[bool, SKFunctionBase] -- A tuple with a boolean indicating
             whether the function is registered and the function itself (or None).
         """
         self.throw_if_skill_collection_not_set()
