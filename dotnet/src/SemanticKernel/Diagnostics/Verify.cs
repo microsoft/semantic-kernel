@@ -106,4 +106,91 @@ internal static class Verify
             x.Add(p.Name);
         }
     }
+
+    /// <summary>
+    /// Make sure value is greater than some threshold.
+    /// </summary>
+    /// <param name="value">The value to be compared</param>
+    /// <param name="lower">The lower bound</param>
+    /// <param name="valueName">The name of the value. Will use it in the error message</param>
+    internal static void GreaterThan<T>(T value, T lower, string? valueName = null) where T : IComparable<T>
+    {
+        if (value.CompareTo(lower) > 0) { return; }
+
+        throw new ValidationException(
+            ValidationException.ErrorCodes.OutOfRange, $"{valueName ?? "Value"} of {value} is not greater than {lower})");
+    }
+
+    /// <summary>
+    /// Make sure value is greater than or equal to some threshold.
+    /// </summary>
+    /// <param name="value">The value to be compared</param>
+    /// <param name="lower">The lower bound</param>
+    /// <param name="valueName">The name of the value. Will use it in the error message</param>
+    internal static void GreaterThanOrEqualTo<T>(T value, T lower, string? valueName = null) where T : IComparable<T>, IEquatable<T>
+    {
+        if (value.CompareTo(lower) > 0 || value.Equals(lower)) { return; }
+
+        throw new ValidationException(
+            ValidationException.ErrorCodes.OutOfRange, $"{valueName ?? "Value"} of {value} is less than {lower})");
+    }
+
+    /// <summary>
+    /// Make sure value is less than some threshold.
+    /// </summary>
+    /// <param name="value">The value to be compared</param>
+    /// <param name="upper">The upper bound</param>
+    /// <param name="valueName">The name of the value. Will use it in the error message</param>
+    internal static void LessThan<T>(T value, T upper, string? valueName = null) where T : IComparable<T>
+    {
+        if (value.CompareTo(upper) < 0) { return; }
+
+        throw new ValidationException(
+            ValidationException.ErrorCodes.OutOfRange, $"{valueName ?? "Value"} of {value} is not less than {upper})");
+    }
+
+    /// <summary>
+    /// Make sure value is less than or equal to some threshold.
+    /// </summary>
+    /// <param name="value">The value to be compared</param>
+    /// <param name="upper">The upper bound</param>
+    /// <param name="valueName">The name of the value. Will use it in the error message</param>
+    internal static void LessThanOrEqualTo<T>(T value, T upper, string? valueName = null) where T : IComparable<T>, IEquatable<T>
+    {
+        if (value.CompareTo(upper) < 0 || value.Equals(upper)) { return; }
+
+        throw new ValidationException(
+            ValidationException.ErrorCodes.OutOfRange, $"{valueName ?? "Value"} of {value} is greater than {upper})");
+    }
+
+    /// <summary>
+    /// Make sure value is within range (non-inclusive).
+    /// </summary>
+    /// <param name="value">The value to be compared</param>
+    /// <param name="lower">The lower bound</param>
+    /// <param name="upper">The upper bound</param>
+    /// <param name="valueName">The name of the value. Will use it in the error message</param>
+    internal static void WithinRange<T>(T value, T lower, T upper, string? valueName = null) where T : IComparable<T>
+    {
+        if (value.CompareTo(lower) > 0 && value.CompareTo(upper) < 0) { return; }
+
+        throw new ValidationException(
+            ValidationException.ErrorCodes.OutOfRange, $"{valueName ?? "Value"} of {value} is out of range ({lower}, {upper})");
+    }
+
+    /// <summary>
+    /// Make sure value is within range (inclusive).
+    /// </summary>
+    /// <param name="value">The value to be compared</param>
+    /// <param name="lower">The lower bound</param>
+    /// <param name="upper">The upper bound</param>
+    /// <param name="valueName">The name of the value. Will use it in the error message</param>
+    internal static void WithinRangeInclusive<T>(T value, T lower, T upper, string? valueName = null) where T : IComparable<T>, IEquatable<T>
+    {
+        if ((value.CompareTo(lower) > 0 || value.Equals(lower)) &&
+            (value.CompareTo(upper) < 0 || value.Equals(upper))) { return; }
+
+        throw new ValidationException(
+            ValidationException.ErrorCodes.OutOfRange, $"Value {value} is out of range [{lower}, {upper}]");
+    }
 }

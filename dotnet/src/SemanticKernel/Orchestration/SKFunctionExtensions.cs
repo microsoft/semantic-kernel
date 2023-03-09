@@ -24,6 +24,7 @@ public static class SKFunctionExtensions
     public static ISKFunction UseMaxTokens(this ISKFunction skFunction, int maxTokens)
     {
         Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        Verify.GreaterThan<int>(maxTokens, 0, "maxTokens");
         skFunction.AIRequestSettings.CompleteRequestSettings.MaxTokens = maxTokens;
         return skFunction;
     }
@@ -37,6 +38,7 @@ public static class SKFunctionExtensions
     public static ISKFunction UseTemperature(this ISKFunction skFunction, double temperature)
     {
         Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        Verify.WithinRangeInclusive<double>(temperature, 0.0, 1.0, "temperature");
         skFunction.AIRequestSettings.CompleteRequestSettings.Temperature = temperature;
         return skFunction;
     }
@@ -50,6 +52,7 @@ public static class SKFunctionExtensions
     public static ISKFunction UseTopP(this ISKFunction skFunction, double topP)
     {
         Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        Verify.WithinRangeInclusive<double>(topP, 0.0, 1.0, "topP");
         skFunction.AIRequestSettings.CompleteRequestSettings.TopP = topP;
         return skFunction;
     }
@@ -63,6 +66,7 @@ public static class SKFunctionExtensions
     public static ISKFunction UsePresencePenalty(this ISKFunction skFunction, double presencePenalty)
     {
         Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        Verify.WithinRangeInclusive<double>(presencePenalty, 0.0, 2.0, "presencePenalty");
         skFunction.AIRequestSettings.CompleteRequestSettings.PresencePenalty = presencePenalty;
         return skFunction;
     }
@@ -76,6 +80,7 @@ public static class SKFunctionExtensions
     public static ISKFunction UseFrequencyPenalty(this ISKFunction skFunction, double frequencyPenalty)
     {
         Verify.NotNull(skFunction.AIRequestSettings.CompleteRequestSettings, "Completion request settings cannot be empty");
+        Verify.WithinRangeInclusive<double>(frequencyPenalty, 0.0, 2.0, "frequencyPenalty");
         skFunction.AIRequestSettings.CompleteRequestSettings.FrequencyPenalty = frequencyPenalty;
         return skFunction;
     }
