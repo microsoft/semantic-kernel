@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.Compression;
+using Microsoft.SemanticKernel.Skills.FileCompression;
 using Microsoft.SemanticKernel.Skills.Web;
 using Xunit;
 using Xunit.Abstractions;

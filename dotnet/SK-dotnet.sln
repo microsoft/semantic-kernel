@@ -52,7 +52,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{F4243136
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelBuilder", "..\samples\dotnet\KernelBuilder\KernelBuilder.csproj", "{A52818AC-57FB-495F-818F-9E1E7BC5618C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Compression", "src\SemanticKernel.Skills\Skills.Compression\Skills.Compression.csproj", "{5D9466B9-6E9F-4337-AC70-1CE8F08385F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.FileCompression", "src\SemanticKernel.Skills\Skills.FileCompression\Skills.FileCompression.csproj", "{5D9466B9-6E9F-4337-AC70-1CE8F08385F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
