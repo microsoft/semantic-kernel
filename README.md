@@ -6,6 +6,10 @@
 
 > ℹ️ **NOTE**: This project is in early alpha and, just like AI, will evolve quickly.
 > We invite you to join us in developing the Semantic Kernel together!
+> Please contribute by
+> using GitHub [Discussions](https://github.com/microsoft/semantic-kernel/discussions),
+> opening GitHub [Issues](https://github.com/microsoft/semantic-kernel/issues/new/choose),
+> sending us [PRs](https://github.com/microsoft/semantic-kernel/pulls).
 
 **Semantic Kernel (SK)** is a lightweight SDK enabling integration of AI Large
 Language Models (LLMs) with conventional programming languages. The SK extensible
