@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using IntegrationTests.TestSettings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
@@ -89,6 +90,35 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Empty(actual.LastErrorDescription);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?",
+        "Error executing action [attempt 1 of 1]. Reason: Unauthorized. Will retry after 2000ms")]
+    public async Task OpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
+    {
+        // Arrange
+        var retryConfig = new KernelConfig.HttpRetryConfig();
+        retryConfig.RetryableStatusCodes.Add(System.Net.HttpStatusCode.Unauthorized);
+        IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Configure(c => c.SetDefaultHttpRetryConfig(retryConfig)).Build();
+
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+
+        target.Config.AddOpenAICompletionBackend(
+            label: openAIConfiguration.Label,
+            modelId: openAIConfiguration.ModelId,
+            apiKey: "INVALID_KEY");
+
+        target.Config.SetDefaultCompletionBackend(openAIConfiguration.Label);
+
+        IDictionary<string, ISKFunction> skill = GetSkill("SummarizeSkill", target);
+
+        // Act
+        await target.RunAsync(prompt, skill["Summarize"]);
+
+        // Assert
+        Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.InvariantCultureIgnoreCase);
     }
 
     private static IDictionary<string, ISKFunction> GetSkill(string skillName, IKernel target)
