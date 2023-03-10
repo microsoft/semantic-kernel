@@ -13,7 +13,7 @@
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample
 2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps 
-   how to start it [here](../../dotnet/KernelHttpServer/README.md).
+   to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. You will also need to
    [register your application](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)
    in the Azure Portal. Follow the steps to register your app
@@ -48,4 +48,4 @@ Each function will call Microsoft Graph and/or Open AI to perform the tasks.
    - `"signInAudience": "PersonalMicrosoftAccount"` or
    - `"signInAudience": "AzureADandPersonalMicrosoftAccount"`
 
-2. If you are not able to change the manifest, create a new Application using [Running the sample](#running-the-sample) step 3 instructions.
+2. If you are not able to change the manifest, create a new Application following the instructions in [Running the sample](#running-the-sample), step 3.
