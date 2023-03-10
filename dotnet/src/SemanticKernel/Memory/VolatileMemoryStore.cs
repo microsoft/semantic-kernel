@@ -119,6 +119,9 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
             {
                 int compareResult = Comparer<double>.Default.Compare(x, y);
 
+                // Equality means greater to support dublicates.
+                compareResult = compareResult == 0 ? 1 : compareResult;
+
                 // Invert the result for descending order.
                 return 0 - compareResult;
             }
