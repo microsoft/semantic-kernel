@@ -39,34 +39,40 @@ class PromptTemplateConfig:
     @staticmethod
     def from_dict(data: dict) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
-        config.schema = data["schema"]
-        config.type = data["type"]
-        config.description = data["description"]
+        config.schema = data.get("schema")
+        config.type = data.get("type)")
+        config.description = data.get("description")
+
+        # Some skills may not have all completion parameters defined
         config.completion = PromptTemplateConfig.CompletionConfig()
-        config.completion.temperature = data["completion"]["temperature"]
-        config.completion.top_p = data["completion"]["top_p"]
-        config.completion.presence_penalty = data["completion"]["presence_penalty"]
-        config.completion.frequency_penalty = data["completion"]["frequency_penalty"]
-        config.completion.max_tokens = data["completion"]["max_tokens"]
-        config.completion.stop_sequences = data["completion"]["stop_sequences"]
-        config.default_backends = data["default_backends"]
+        completition_dict = data["completion"]
+        config.completion.temperature = completition_dict.get("temperature")
+        config.completion.top_p = completition_dict.get("top_p")
+        config.completion.presence_penalty = completition_dict.get("presence_penalty")
+        config.completion.frequency_penalty = completition_dict.get("frequency_penalty")
+        config.completion.max_tokens = completition_dict.get("max_tokens")
+        config.completion.stop_sequences = completition_dict.get("stop_sequences")
+        config.default_backends = data.get("default_backends")
+
+        # Some skills may not have input parameters defined
         config.input = PromptTemplateConfig.InputConfig()
         config.input.parameters = []
-        for parameter in data["input"]["parameters"]:
-            config.input.parameters.append(
-                PromptTemplateConfig.InputParameter(
-                    parameter["name"],
-                    parameter["description"],
-                    parameter["default_value"],
+        if data.get("input") is not None:
+            for parameter in data["input"]["parameters"]:
+                config.input.parameters.append(
+                    PromptTemplateConfig.InputParameter(
+                        parameter["name"],
+                        parameter["description"],
+                        parameter["default_value"],
+                    )
                 )
-            )
         return config
 
     @staticmethod
-    def from_json(json: str) -> "PromptTemplateConfig":
+    def from_json(json_str: str) -> "PromptTemplateConfig":
         import json
 
-        return PromptTemplateConfig.from_dict(json.loads(json))
+        return PromptTemplateConfig.from_dict(json.loads(json_str))
 
     @staticmethod
     def from_completion_parameters(

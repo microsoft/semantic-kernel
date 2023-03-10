@@ -1,0 +1,25 @@
+Parse OpenAPI json and create C# "SKFunctions" to call them. The SKFunction boilerplate looks like this:
+  
+public static class <NameOfAPI>APISkill
+    {
+        [SKFunction(description: "<Description of the API call")]
+        public static SKContext <NameOfAPI>API(SKContext context)
+        {
+            // call the API using input from context variables
+        }
+    }
+Use context.variables.Input to get input
+Use context.variables.Update(<string>) to update the input
+Use context.Fail(<string>, <exception>) if something goes wrong
+Use context.variables.Set(string name, string value) to set a variable in memory
+Use context.variables.Get(string name, string value) to fetch a variable from memory
+Use HttpClient to call the API
+Do not assume the component objects referenced in json will be existing C# objects. 
+
+This is the API defined in openapi.json:
++++
+{{$input}}
++++
+Write a C# SKFunction that uses the API:
+
+// Start with "public static class":

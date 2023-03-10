@@ -22,6 +22,14 @@ Make sure you have an
   [Open AI API Key](https://openai.com/api/) or
   [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
+Copy those keys into a `.env` file in this repo
+```
+OPENAI_API_KEY=""
+OPENAI_ORG_ID=""
+AZURE_OPENAI_API_KEY=""
+AZURE_OPENAI_ENDPOINT=""
+```
+
 ### Quickstart ⚡
 
 ```python
