@@ -15,7 +15,7 @@ interface ServiceRequest {
 
 export class SemanticKernel {
     // eslint-disable-next-line @typescript-eslint/space-before-function-paren
-    constructor(private readonly serviceUrl: string) {}
+    constructor(private readonly serviceUrl: string) { }
 
     public invokeAsync = async (
         keyConfig: IKeyConfig,
@@ -25,6 +25,16 @@ export class SemanticKernel {
     ): Promise<IAskResult> => {
         const result = await this.getResponseAsync<IAskResult>({
             commandPath: `/api/skills/${skillName}/invoke/${functionName}`,
+            method: 'POST',
+            body: ask,
+            keyConfig: keyConfig,
+        });
+        return result;
+    };
+
+    public executePlanAsync = async (keyConfig: IKeyConfig, ask: IAsk, maxSteps: number = 10): Promise<IAskResult> => {
+        const result = await this.getResponseAsync<IAskResult>({
+            commandPath: `/api/planner/execute/${maxSteps}`,
             method: 'POST',
             body: ask,
             keyConfig: keyConfig,
