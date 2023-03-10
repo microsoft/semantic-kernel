@@ -3,6 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.OpenAI.Services;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
@@ -15,9 +18,76 @@ namespace Microsoft.SemanticKernel.Configuration;
 public sealed class KernelConfig
 {
     /// <summary>
-    /// Global retry logic used for all the backends
+    /// Retry configuration for IHttpRetryPolicy that uses RetryAfter header when present.
     /// </summary>
-    public IRetryMechanism RetryMechanism { get => this._retryMechanism; }
+    public sealed class HttpRetryConfig
+    {
+        /// <summary>
+        /// Maximum number of retries.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when value is negative.</exception>
+        public int MaxRetryCount
+        {
+            get { return this._maxRetryCount; }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(this.MaxRetryCount), "Max retry count cannot be negative.");
+                }
+
+                this._maxRetryCount = value;
+            }
+        }
+
+        /// <summary>
+        /// Minimum delay between retries.
+        /// </summary>
+        public TimeSpan MinRetryDelay { get; set; } = TimeSpan.FromSeconds(2);
+
+        /// <summary>
+        /// Maximum delay between retries.
+        /// </summary>
+        public TimeSpan MaxRetryDelay { get; set; } = TimeSpan.FromSeconds(60);
+
+        /// <summary>
+        /// Maximum total time spent retrying.
+        /// </summary>
+        public TimeSpan MaxTotalRetryTime { get; set; } = TimeSpan.FromMinutes(2);
+
+        /// <summary>
+        /// Whether to use exponential backoff or not.
+        /// </summary>
+        public bool UseExponentialBackoff { get; set; }
+
+        /// <summary>
+        /// List of status codes that should be retried.
+        /// </summary>
+        public List<HttpStatusCode> RetryableStatusCodes { get; set; } = new()
+        {
+            HttpStatusCode.RequestTimeout,
+            HttpStatusCode.ServiceUnavailable,
+            HttpStatusCode.GatewayTimeout,
+            HttpStatusCode.TooManyRequests
+        };
+
+        /// <summary>
+        /// List of exception types that should be retried.
+        /// </summary>
+        public List<Type> RetryableExceptionTypes { get; set; } = new()
+        {
+            typeof(HttpRequestException)
+        };
+
+        private int _maxRetryCount = 1;
+    }
+
+    /// <summary>
+    /// Global retry logic used for all the backends http calls
+    /// </summary>
+    public IDelegatingHandlerFactory HttpHandlerFactory { get; private set; } = new DefaultHttpRetryHandlerFactory(new HttpRetryConfig());
+
+    public HttpRetryConfig DefaultHttpRetryConfig { get; private set; } = new();
 
     /// <summary>
     /// Adds an Azure OpenAI backend to the list.
@@ -180,13 +250,27 @@ public sealed class KernelConfig
     }
 
     /// <summary>
-    /// Set the retry mechanism to use for the kernel.
+    /// Set the http retry handler factory to use for the kernel.
     /// </summary>
-    /// <param name="retryMechanism">Retry mechanism to use.</param>
+    /// <param name="httpHandlerFactory">Http retry handler factory to use.</param>
     /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig SetRetryMechanism(IRetryMechanism? retryMechanism = null)
+    public KernelConfig SetHttpRetryHandlerFactory(IDelegatingHandlerFactory? httpHandlerFactory = null)
     {
-        this._retryMechanism = retryMechanism ?? new PassThroughWithoutRetry();
+        if (httpHandlerFactory != null)
+        {
+            this.HttpHandlerFactory = httpHandlerFactory;
+        }
+
+        return this;
+    }
+
+    public KernelConfig SetDefaultHttpRetryConfig(HttpRetryConfig? httpRetryConfig)
+    {
+        if (httpRetryConfig != null)
+        {
+            this.DefaultHttpRetryConfig = httpRetryConfig;
+        }
+
         return this;
     }
 
@@ -397,7 +481,6 @@ public sealed class KernelConfig
     private Dictionary<string, IBackendConfig> EmbeddingsBackends { get; set; } = new();
     private string? _defaultCompletionBackend;
     private string? _defaultEmbeddingsBackend;
-    private IRetryMechanism _retryMechanism = new PassThroughWithoutRetry();
 
     #endregion
 }

@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.AI.OpenAI.Clients;
@@ -25,7 +26,7 @@ public abstract class AzureOpenAIClientAbstract : OpenAIClientAbstract
     /// </summary>
     protected string AzureOpenAIApiVersion
     {
-        get { return this._azureOpenAIApiVersion; }
+        get => this._azureOpenAIApiVersion;
         set
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -48,7 +49,8 @@ public abstract class AzureOpenAIClientAbstract : OpenAIClientAbstract
     /// Construct an AzureOpenAIClientAbstract object
     /// </summary>
     /// <param name="log">Logger</param>
-    protected AzureOpenAIClientAbstract(ILogger? log = null) : base(log)
+    /// <param name="handlerFactory">Retry handler factory</param>
+    protected AzureOpenAIClientAbstract(ILogger? log = null, IDelegatingHandlerFactory? handlerFactory = null) : base(log, handlerFactory)
     {
     }
 
@@ -161,5 +163,5 @@ public abstract class AzureOpenAIClientAbstract : OpenAIClientAbstract
 
     private string _azureOpenAIApiVersion = DefaultAzureAPIVersion;
 
-    #endregion
+    #endregion private ================================================================================
 }
