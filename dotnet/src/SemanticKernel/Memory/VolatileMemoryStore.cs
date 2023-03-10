@@ -23,6 +23,11 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
         int limit = 1,
         double minRelevanceScore = 0)
     {
+        if (limit <= 0)
+        {
+            return AsyncEnumerable.Empty<(IEmbeddingWithMetadata<TEmbedding>, double)>();
+        }
+
         IEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>>? embeddingCollection = null;
         if (this.TryGetCollection(collection, out var collectionDict))
         {
