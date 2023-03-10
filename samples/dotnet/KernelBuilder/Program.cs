@@ -104,15 +104,33 @@ kernel7.Config
 // AI requests (when using the kernel).
 
 var kernel8 = Kernel.Builder
-    .Configure(c => c.SetRetryMechanism(new RetryThreeTimes()))
+    .Configure(c => c.SetHttpRetryHandlerFactory(new RetryThreeTimesFactory()))
     .Build();
 
-public class RetryThreeTimes : IRetryMechanism
+public class RetryThreeTimesFactory : IDelegatingHandlerFactory
 {
-    public Task ExecuteWithRetryAsync(Func<Task> action, ILogger log, CancellationToken cancellationToken = default)
+    public DelegatingHandler Create(ILogger log)
     {
-        var policy = GetPolicy(log);
-        return policy.ExecuteAsync((_) => action(), cancellationToken);
+        return new RetryThreeTimes(log);
+    }
+}
+
+public class RetryThreeTimes : DelegatingHandler
+{
+    private readonly AsyncRetryPolicy _policy;
+
+    public RetryThreeTimes(ILogger log = null)
+    {
+        this._policy = GetPolicy(log ?? NullLogger.Instance);
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        return await this._policy.ExecuteAsync(async () =>
+        {
+            var response = await base.SendAsync(request, cancellationToken);
+            return response;
+        });
     }
 
     private static AsyncRetryPolicy GetPolicy(ILogger log)
@@ -126,7 +144,7 @@ public class RetryThreeTimes : IRetryMechanism
                     TimeSpan.FromSeconds(8)
                 },
                 (ex, timespan, retryCount, _) => log.LogWarning(ex,
-                    "Error executing action [attempt {0} of ], pausing {1} msecs",
+                    "Error executing action [attempt {0} of 3], pausing {1}ms",
                     retryCount, timespan.TotalMilliseconds));
     }
 }
