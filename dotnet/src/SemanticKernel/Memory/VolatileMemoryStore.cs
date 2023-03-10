@@ -42,7 +42,8 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
 
         EmbeddingReadOnlySpan<TEmbedding> embeddingSpan = new(embedding.AsReadOnlySpan());
 
-        TopNSortedList<IEmbeddingWithMetadata<TEmbedding>> sortedEmbeddings = new(limit);
+        TopNCollection<IEmbeddingWithMetadata<TEmbedding>> embeddings = new(limit);
+
         foreach (var item in embeddingCollection)
         {
             if (item.Value != null)
@@ -51,12 +52,14 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
                 double similarity = embeddingSpan.CosineSimilarity(itemSpan);
                 if (similarity >= minRelevanceScore)
                 {
-                    sortedEmbeddings.Add(similarity, item.Value);
+                    embeddings.Add(new(item.Value, similarity));
                 }
             }
         }
 
-        return sortedEmbeddings.ToTuples().ToAsyncEnumerable();
+        embeddings.SortByScore();
+
+        return embeddings.Select(x => (x.Value, x.Score.Value)).ToAsyncEnumerable();
     }
 
     #region private ================================================================================
