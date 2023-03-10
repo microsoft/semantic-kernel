@@ -76,3 +76,11 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
 
     #endregion
 }
+
+/// <summary>
+/// Default constructor for a simple volatile memory embeddings store for embeddings.
+/// The default embedding type is <see cref="float"/>.
+/// </summary>
+public class VolatileMemoryStore : VolatileMemoryStore<float>
+{
+}

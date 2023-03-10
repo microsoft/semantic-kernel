@@ -36,7 +36,7 @@ var kernelX3 = builderX.Build();
 
 // Manually setup all the dependencies used internally by the kernel
 var logger = NullLogger.Instance;
-var memoryStorage = new DefaultVolatileMemoryStore();
+var memoryStorage = new VolatileMemoryStore();
 var embeddingGenerator = new AzureTextEmbeddings("modelId", "https://...", "apiKey", "2022-12-01", logger);
 var memory = new SemanticTextMemory(memoryStorage, embeddingGenerator);
 var skills = new SkillCollection();
