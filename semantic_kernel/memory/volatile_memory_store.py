@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import List, Tuple
+
 from numpy import array, linalg, ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -17,7 +19,7 @@ class VolatileMemoryStore(VolatileDataStore, MemoryStoreBase):
         embedding: ndarray,
         limit: int = 1,
         min_relevance_score: float = 0.7,
-    ) -> list[tuple[MemoryRecord, float]]:
+    ) -> List[Tuple[MemoryRecord, float]]:
         if collection not in self._store:
             return []
 
