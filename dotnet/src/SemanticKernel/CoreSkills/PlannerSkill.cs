@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -25,19 +26,45 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 public class PlannerSkill
 {
     /// <summary>
+    /// Parameter names.
+    /// <see cref="ContextVariables"/>
+    /// </summary>
+    public static class Parameters
+    {
+        /// <summary>
+        /// The number of buckets to create
+        /// </summary>
+        public const string BucketCount = "bucketCount";
+
+        /// <summary>
+        /// The prefix to use for the bucket labels
+        /// </summary>
+        public const string BucketLabelPrefix = "bucketLabelPrefix";
+
+        public const string RelevancyThreshold = "relevancyThreshold";
+
+        public const string MaxFunctions = "maxFunctions";
+
+        public const string ExcludedSkills = "excludedSkills";
+
+        public const string ExcludedFunctions = "excludedFunctions";
+
+        public const string IncludedFunctions = "includedFunctions";
+    }
+
+    internal sealed class PlannerSkillConfig
+    {
+        public double RelevancyThreshold { get; set; } = 0.78;
+        public int MaxFunctions { get; set; } = 10;
+        public List<string> ExcludedSkills { get; set; } = new() { RestrictedSkillName };
+        public List<string> ExcludedFunctions { get; set; } = new() { "CreatePlan", "ExecutePlan" };
+        public List<string> IncludedFunctions { get; set; } = new() { "BucketOutputs" };
+    }
+
+    /// <summary>
     /// The name to use when creating semantic functions that are restricted from the PlannerSkill plans
     /// </summary>
     private const string RestrictedSkillName = "PlannerSkill_Excluded";
-
-    /// <summary>
-    /// the skills to exclude from the skill collection
-    /// </summary>
-    private static readonly List<string> s_excludedSkills = new() { RestrictedSkillName };
-
-    /// <summary>
-    /// the functions to exclude from the skill collection
-    /// </summary>
-    private static readonly List<string> s_excludedFunctions = new() { "CreatePlan", "ExecutePlan" };
 
     /// <summary>
     /// the function flow runner, which executes plans that leverage functions
@@ -106,9 +133,9 @@ public class PlannerSkill
     [SKFunction("Given an output of a function, parse the output into a number of buckets.")]
     [SKFunctionName("BucketOutputs")]
     [SKFunctionInput(Description = "The output from a function that needs to be parse into buckets.")]
-    [SKFunctionContextParameter(Name = "bucketCount", Description = "The number of buckets.", DefaultValue = "")]
+    [SKFunctionContextParameter(Name = Parameters.BucketCount, Description = "The number of buckets.", DefaultValue = "")]
     [SKFunctionContextParameter(
-        Name = "bucketLabelPrefix",
+        Name = Parameters.BucketLabelPrefix,
         Description = "The target label prefix for the resulting buckets. " +
                       "Result will have index appended e.g. bucketLabelPrefix='Result' => Result_1, Result_2, Result_3",
         DefaultValue = "Result")]
@@ -117,9 +144,9 @@ public class PlannerSkill
         var bucketsAdded = 0;
 
         var bucketVariables = new ContextVariables(input);
-        if (context.Variables.Get("bucketCount", out var bucketCount))
+        if (context.Variables.Get(Parameters.BucketCount, out var bucketCount))
         {
-            bucketVariables.Set("bucketCount", bucketCount);
+            bucketVariables.Set(Parameters.BucketCount, bucketCount);
         }
 
         // {'buckets': ['Result 1\nThis is the first result.', 'Result 2\nThis is the second result. It's doubled!', 'Result 3\nThis is the third and final result. Truly astonishing.']}
@@ -135,7 +162,7 @@ public class PlannerSkill
 
             var resultObject = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(resultString);
 
-            if (context.Variables.Get("bucketLabelPrefix", out var bucketLabelPrefix) &&
+            if (context.Variables.Get(Parameters.BucketLabelPrefix, out var bucketLabelPrefix) &&
                 resultObject?.ContainsKey("buckets") == true)
             {
                 foreach (var item in resultObject["buckets"])
@@ -168,11 +195,54 @@ public class PlannerSkill
     /// </remarks>
     [SKFunction("Create a plan using registered functions to accomplish a goal.")]
     [SKFunctionName("CreatePlan")]
+    [SKFunctionInput(Description = "The goal to accomplish.")]
+    [SKFunctionContextParameter(Name = Parameters.RelevancyThreshold, Description = "The relevancy threshold when filtering registered functions.", DefaultValue = "0.78")]
+    [SKFunctionContextParameter(Name = Parameters.MaxFunctions, Description = "", DefaultValue = "10")]
+    [SKFunctionContextParameter(Name = Parameters.ExcludedFunctions, Description = "A list of functions to exclude from the plan.", DefaultValue = "")]
+    [SKFunctionContextParameter(Name = Parameters.ExcludedSkills, Description = "A list of skills to exclude from the plan.", DefaultValue = "")]
+    [SKFunctionContextParameter(Name = Parameters.IncludedFunctions, Description = "A list of functions to include in the plan.", DefaultValue = "")]
     public async Task<SKContext> CreatePlanAsync(SKContext context)
     {
         var goal = context.Variables.Input;
 
-        string relevantFunctionsManual = context.GetFunctionsManual(s_excludedSkills, s_excludedFunctions);
+        var config = new PlannerSkillConfig();
+
+        if (context.Variables.Get(Parameters.RelevancyThreshold, out var threshold) && double.TryParse(threshold, out var parsedValue))
+        {
+            config.RelevancyThreshold = parsedValue;
+        }
+
+        if (context.Variables.Get(Parameters.MaxFunctions, out var maxFunctions) && int.TryParse(maxFunctions, out var parsedMaxFunctions))
+        {
+            config.MaxFunctions = parsedMaxFunctions;
+        }
+
+        if (context.Variables.Get(Parameters.ExcludedFunctions, out var excludedFunctions))
+        {
+            var excludedFunctionsList = excludedFunctions.Split(',').Select(x => x.Trim()).ToList();
+
+            // Excluded functions and excluded skills from context.Variables should be additive to the default excluded functions and skills.
+            config.ExcludedFunctions = config.ExcludedFunctions.Union(excludedFunctionsList).ToList();
+        }
+
+        if (context.Variables.Get(Parameters.ExcludedSkills, out var excludedSkills))
+        {
+            var excludedSkillsList = excludedSkills.Split(',').Select(x => x.Trim()).ToList();
+
+            // Excluded functions and excluded skills from context.Variables should be additive to the default excluded functions and skills.
+            config.ExcludedSkills = config.ExcludedSkills.Union(excludedSkillsList).ToList();
+        }
+
+        if (context.Variables.Get(Parameters.IncludedFunctions, out var includedFunctions))
+        {
+            var includedFunctionsList = includedFunctions.Split(',').Select(x => x.Trim()).ToList();
+
+            // Included functions from context.Variables should not override the default excluded functions.
+            var includedFunctionsListMinusExcludedFunctionsList = includedFunctionsList.Except(config.ExcludedFunctions).ToList();
+            config.IncludedFunctions = includedFunctionsListMinusExcludedFunctionsList;
+        }
+
+        string relevantFunctionsManual = await context.GetFunctionsManualAsync(goal, config);
         context.Variables.Set("available_functions", relevantFunctionsManual);
 
         var plan = await this._functionFlowFunction.InvokeAsync(context);
