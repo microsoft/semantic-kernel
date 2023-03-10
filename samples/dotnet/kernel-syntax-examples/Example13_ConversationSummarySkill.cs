@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
-using Reliability;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -179,12 +178,11 @@ Jane: Goodbye!
     private static IKernel InitializeKernel()
     {
         IKernel kernel = Kernel.Builder.WithLogger(ConsoleLogger.Log).Build();
-        _ = kernel.Config.AddAzureOpenAICompletionBackend(
+        kernel.Config.AddAzureOpenAICompletionBackend(
             Env.Var("AZURE_OPENAI_DEPLOYMENT_LABEL"),
             Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
             Env.Var("AZURE_OPENAI_ENDPOINT"),
             Env.Var("AZURE_OPENAI_KEY"));
-        _ = kernel.Config.SetRetryMechanism(new RetryThreeTimesWithBackoff());
 
         return kernel;
     }
