@@ -41,7 +41,9 @@ jobs:
         AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
         AzureOpenAIEmbedding__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
         AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+        AzureOpenAIEmbedding__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
         AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+        AzureOpenAIEmbedding__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
         Bing__ApiKey: ${{ secrets.BING__APIKEY }}
         OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
       run: |
