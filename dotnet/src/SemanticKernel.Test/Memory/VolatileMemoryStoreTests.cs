@@ -273,6 +273,8 @@ public class VolatileMemoryStoreTests
         var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToEnumerable().ToArray();
 
         // Assert
+        Assert.Equal(topN, topNResults.Length);
+
         for (int i = 0; i < topNResults.Length; i++)
         {
             int compare = topNResults[i].Item2.CompareTo(0.75);
