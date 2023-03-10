@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+from typing import Tuple
 
 import semantic_kernel as sk
 from semantic_kernel.core_skills import TextMemorySkill
@@ -67,7 +68,7 @@ async def search_memory_examples(kernel: sk.KernelBase) -> None:
 
 async def setup_chat_with_memory(
     kernel: sk.KernelBase,
-) -> tuple[sk.SKFunctionBase, sk.SKContext]:
+) -> Tuple[sk.SKFunctionBase, sk.SKContext]:
     sk_prompt = """
     ChatBot can have a conversation with you about any topic.
     It can give explicit instructions or say 'I don't know' if
