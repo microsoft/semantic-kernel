@@ -48,4 +48,4 @@ Each function will call Microsoft Graph and/or Open AI to perform the tasks.
    - `"signInAudience": "PersonalMicrosoftAccount"` or
    - `"signInAudience": "AzureADandPersonalMicrosoftAccount"`
 
-2. If you are not able to change the manifest, create a new Application using [Running the sample](#running-the-sample) step 3 instructions.
+2. If you are not able to change the manifest, create a new Application following the instructions in [Running the sample](#running-the-sample), step 3.
