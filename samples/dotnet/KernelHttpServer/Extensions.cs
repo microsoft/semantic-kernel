@@ -53,7 +53,7 @@ internal static class Extensions
 
         if (req.Headers.TryGetValues(SKHttpHeaders.CompletionKey, out var completionKey))
         {
-            apiConfig.EmbeddingConfig.Key = completionKey.First();
+            apiConfig.CompletionConfig.Key = completionKey.First();
         }
 
         // embedding values
