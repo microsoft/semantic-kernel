@@ -18,22 +18,22 @@ internal static class SemanticKernelFactory
         HttpRequestData req,
         ILogger logger,
         IEnumerable<string>? skillsToLoad = null,
-        VolatileMemoryStore? memoryStore = null)
+        IMemoryStore<float>? memoryStore = null)
     {
         var apiConfig = req.ToApiKeyConfig();
 
-        //must have a completion backend (embedding is optional)
+        //must have a completion backend
         if (!apiConfig.CompletionConfig.IsValid())
         {
-            logger.LogWarning("Completion backend has not been supplied.");
+            logger.LogError("Completion backend has not been supplied.");
             return null;
         }
 
+        //embedding backend is optional, don't fail if we were not given the config
         if (memoryStore != null &&
             !apiConfig.EmbeddingConfig.IsValid())
         {
             logger.LogWarning("Embedding backend has not been supplied.");
-            return null;
         }
 
         KernelBuilder builder = Kernel.Builder;
@@ -41,7 +41,7 @@ internal static class SemanticKernelFactory
         return _CompleteKernelSetup(req, builder, logger, skillsToLoad);
     }
 
-    private static KernelBuilder _ConfigureKernelBuilder(ApiKeyConfig config, KernelBuilder builder, VolatileMemoryStore? memoryStore)
+    private static KernelBuilder _ConfigureKernelBuilder(ApiKeyConfig config, KernelBuilder builder, IMemoryStore<float>? memoryStore)
     {
         builder = builder
             .Configure(c =>
@@ -56,15 +56,15 @@ internal static class SemanticKernelFactory
                         break;
                 }
 
-                if (memoryStore != null)
+                if (memoryStore != null && config.EmbeddingConfig.IsValid())
                 {
                     switch (config.EmbeddingConfig.AIService)
                     {
                         case AIService.OpenAI:
-                            c.AddOpenAICompletionBackend(config.EmbeddingConfig.Label, config.EmbeddingConfig.DeploymentOrModelId, config.EmbeddingConfig.Key);
+                            c.AddOpenAIEmbeddingsBackend(config.EmbeddingConfig.Label, config.EmbeddingConfig.DeploymentOrModelId, config.EmbeddingConfig.Key);
                             break;
                         case AIService.AzureOpenAI:
-                            c.AddAzureOpenAICompletionBackend(config.EmbeddingConfig.Label, config.EmbeddingConfig.DeploymentOrModelId, config.EmbeddingConfig.Endpoint, config.EmbeddingConfig.Key);
+                            c.AddAzureOpenAIEmbeddingsBackend(config.EmbeddingConfig.Label, config.EmbeddingConfig.DeploymentOrModelId, config.EmbeddingConfig.Endpoint, config.EmbeddingConfig.Key);
                             break;
                     }
 
