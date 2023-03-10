@@ -22,7 +22,7 @@ public static class Example15_MemorySkill
                 c.AddOpenAICompletionBackend("davinci", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
                 c.AddOpenAIEmbeddingsBackend("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
             })
-            .WithMemoryStorage(new VolatileMemoryStore())
+            .WithMemoryStorage(new DefaultVolatileMemoryStore())
             .Build();
 
         // ========= Store memories using the kernel =========

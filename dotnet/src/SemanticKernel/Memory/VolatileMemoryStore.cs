@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+using Microsoft.SemanticKernel.Memory.Collections;
 using Microsoft.SemanticKernel.Memory.Storage;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -55,7 +56,7 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
             }
         }
 
-        return sortedEmbeddings.Select(x => (x.Value, x.Key)).ToAsyncEnumerable();
+        return sortedEmbeddings.ToTuples().ToAsyncEnumerable();
     }
 
     #region private ================================================================================
@@ -73,68 +74,5 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
         return (embeddingWithData, similarity);
     }
 
-    /// <summary>
-    /// A sorted list that only keeps the top N items.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    private class TopNSortedList<T> : SortedList<double, T>
-    {
-        /// <summary>
-        /// Creates an instance of the <see cref="TopNSortedList{T}"/> class.
-        /// </summary>
-        /// <param name="maxSize"></param>
-        public TopNSortedList(int maxSize)
-            : base(new DescendingDoubleComparer())
-        {
-            this._maxSize = maxSize;
-        }
-
-        /// <summary>
-        /// Adds a new item to the list.
-        /// </summary>
-        /// <param name="score">The item's score</param>
-        /// <param name="value">The item's value</param>
-        public new void Add(double score, T value)
-        {
-            if (this.Count >= this._maxSize)
-            {
-                if (score < this.Keys.Last())
-                {
-                    // If the key is less than the smallest key in the list, then we don't need to add it.
-                    return;
-                }
-
-                // Remove the smallest key.
-                this.RemoveAt(this.Count - 1);
-            }
-
-            base.Add(score, value);
-        }
-
-        private readonly int _maxSize;
-
-        private class DescendingDoubleComparer : IComparer<double>
-        {
-            public int Compare(double x, double y)
-            {
-                int compareResult = Comparer<double>.Default.Compare(x, y);
-
-                // Equality means greater to support duplicates.
-                compareResult = compareResult == 0 ? 1 : compareResult;
-
-                // Invert the result for descending order.
-                return 0 - compareResult;
-            }
-        }
-    }
-
     #endregion
-}
-
-/// <summary>
-/// Default constructor for a simple volatile memory embeddings store for embeddings.
-/// The default embedding type is <see cref="float"/>.
-/// </summary>
-public class VolatileMemoryStore : VolatileMemoryStore<float>
-{
 }
