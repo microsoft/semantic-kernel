@@ -21,7 +21,7 @@
     - Select **`Single-page application (SPA)`** as platform type, and the Redirect URI will be **`http://localhost:3000`**
     - Select **`Personal Microsoft accounts only`** as supported account types for this sample
 4. Once registered, copy the **Application (client) ID** from the Azure Portal and paste
-   the GUID into the new **[.env](.env)** file created next to `REACT_APP_GRAPH_CLIENT_ID=` (first line of the .env file).
+   the GUID into the **[.env](.env)** file next to `REACT_APP_GRAPH_CLIENT_ID=` (first line of the .env file).
 5. **Run** the following command `yarn install` (if you have never run the sample before)
    and/or `yarn start` from the command line.
 6. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
