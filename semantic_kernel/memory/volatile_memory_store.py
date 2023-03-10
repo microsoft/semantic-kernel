@@ -2,7 +2,6 @@
 
 from typing import List, Tuple
 from numpy import array, linalg, ndarray
-
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.storage.volatile_data_store import VolatileDataStore
