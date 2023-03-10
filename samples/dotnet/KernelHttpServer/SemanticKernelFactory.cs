@@ -48,10 +48,10 @@ internal static class SemanticKernelFactory
             {
                 switch (config.CompletionConfig.AIService)
                 {
-                    case AIService.AzureOpenAI:
+                    case AIService.OpenAI:
                         c.AddOpenAICompletionBackend(config.CompletionConfig.Label, config.CompletionConfig.DeploymentOrModelId, config.CompletionConfig.Key);
                         break;
-                    case AIService.OpenAI:
+                    case AIService.AzureOpenAI:
                         c.AddAzureOpenAICompletionBackend(config.CompletionConfig.Label, config.CompletionConfig.DeploymentOrModelId, config.CompletionConfig.Endpoint, config.CompletionConfig.Key);
                         break;
                 }
@@ -60,10 +60,10 @@ internal static class SemanticKernelFactory
                 {
                     switch (config.EmbeddingConfig.AIService)
                     {
-                        case AIService.AzureOpenAI:
+                        case AIService.OpenAI:
                             c.AddOpenAICompletionBackend(config.EmbeddingConfig.Label, config.EmbeddingConfig.DeploymentOrModelId, config.EmbeddingConfig.Key);
                             break;
-                        case AIService.OpenAI:
+                        case AIService.AzureOpenAI:
                             c.AddAzureOpenAICompletionBackend(config.EmbeddingConfig.Label, config.EmbeddingConfig.DeploymentOrModelId, config.EmbeddingConfig.Endpoint, config.EmbeddingConfig.Key);
                             break;
                     }
