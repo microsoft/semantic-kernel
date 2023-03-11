@@ -74,10 +74,10 @@
       "detail": "Runs tasks to validate changes before checking in.",
       "group": "test",
       "dependsOn": [
+        "R# cleanup",
         "Build - Semantic-Kernel",
         "Test - Semantic-Kernel",
-        "Run - Kernel-Demo",
-        "R# cleanup"
+        "Run - Kernel-Demo"
       ],
       "dependsOrder": "sequence"
     },
