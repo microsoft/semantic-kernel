@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Configuration;
 
 namespace Microsoft.SemanticKernel.Reliability;
 
@@ -19,14 +18,12 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
     /// </summary>
     /// <param name="config">The retry configuration.</param>
     /// <param name="log">The logger.</param>
-    public DefaultHttpRetryHandler(KernelConfig.HttpRetryConfig? config = null, ILogger? log = null) : this(config ?? new KernelConfig.HttpRetryConfig(), log,
+    public DefaultHttpRetryHandler(HttpRetryConfig? config = null, ILogger? log = null) : this(config ?? new HttpRetryConfig(), log,
         null, null)
     {
     }
 
-    public readonly Guid Id = Guid.NewGuid();
-
-    internal DefaultHttpRetryHandler(KernelConfig.HttpRetryConfig config, ILogger? log = null, IDelayProvider? delayProvider = null,
+    internal DefaultHttpRetryHandler(HttpRetryConfig config, ILogger? log = null, IDelayProvider? delayProvider = null,
         ITimeProvider? timeProvider = null)
     {
         this._config = config;
@@ -223,7 +220,7 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         return newRequest;
     }
 
-    private readonly KernelConfig.HttpRetryConfig _config;
+    private readonly HttpRetryConfig _config;
     private readonly ILogger _log;
     private readonly IDelayProvider _delayProvider;
     private readonly ITimeProvider _timeProvider;

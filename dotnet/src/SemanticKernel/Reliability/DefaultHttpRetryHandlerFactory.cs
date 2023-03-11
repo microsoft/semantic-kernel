@@ -2,13 +2,12 @@
 
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Configuration;
 
 namespace Microsoft.SemanticKernel.Reliability;
 
 public class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
 {
-    internal DefaultHttpRetryHandlerFactory(KernelConfig.HttpRetryConfig? config = null)
+    internal DefaultHttpRetryHandlerFactory(HttpRetryConfig? config = null)
     {
         this._config = config;
     }
@@ -18,5 +17,5 @@ public class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
         return new DefaultHttpRetryHandler(this._config, log);
     }
 
-    private readonly KernelConfig.HttpRetryConfig? _config;
+    private readonly HttpRetryConfig? _config;
 }

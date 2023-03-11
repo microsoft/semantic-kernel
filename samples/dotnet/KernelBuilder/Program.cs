@@ -104,7 +104,7 @@ kernel7.Config
 // AI requests (when using the kernel).
 
 var kernel8 = Kernel.Builder
-    .Configure(c => c.SetDefaultHttpRetryConfig(new KernelConfig.HttpRetryConfig
+    .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
     {
         MaxRetryCount = 3,
         UseExponentialBackoff = true,

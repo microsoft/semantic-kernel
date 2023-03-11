@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Reliability;
 using Moq;
 using Moq.Protected;
 using Xunit;
-using static Microsoft.SemanticKernel.Configuration.KernelConfig;
 
 namespace SemanticKernel.UnitTests.Reliability;
 

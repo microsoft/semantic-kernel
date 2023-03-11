@@ -3,9 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.OpenAI.Services;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
@@ -17,71 +14,6 @@ namespace Microsoft.SemanticKernel.Configuration;
 /// </summary>
 public sealed class KernelConfig
 {
-    /// <summary>
-    /// Retry configuration for IHttpRetryPolicy that uses RetryAfter header when present.
-    /// </summary>
-    public sealed class HttpRetryConfig
-    {
-        /// <summary>
-        /// Maximum number of retries.
-        /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when value is negative.</exception>
-        public int MaxRetryCount
-        {
-            get { return this._maxRetryCount; }
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(this.MaxRetryCount), "Max retry count cannot be negative.");
-                }
-
-                this._maxRetryCount = value;
-            }
-        }
-
-        /// <summary>
-        /// Minimum delay between retries.
-        /// </summary>
-        public TimeSpan MinRetryDelay { get; set; } = TimeSpan.FromSeconds(2);
-
-        /// <summary>
-        /// Maximum delay between retries.
-        /// </summary>
-        public TimeSpan MaxRetryDelay { get; set; } = TimeSpan.FromSeconds(60);
-
-        /// <summary>
-        /// Maximum total time spent retrying.
-        /// </summary>
-        public TimeSpan MaxTotalRetryTime { get; set; } = TimeSpan.FromMinutes(2);
-
-        /// <summary>
-        /// Whether to use exponential backoff or not.
-        /// </summary>
-        public bool UseExponentialBackoff { get; set; }
-
-        /// <summary>
-        /// List of status codes that should be retried.
-        /// </summary>
-        public List<HttpStatusCode> RetryableStatusCodes { get; set; } = new()
-        {
-            HttpStatusCode.RequestTimeout,
-            HttpStatusCode.ServiceUnavailable,
-            HttpStatusCode.GatewayTimeout,
-            HttpStatusCode.TooManyRequests
-        };
-
-        /// <summary>
-        /// List of exception types that should be retried.
-        /// </summary>
-        public List<Type> RetryableExceptionTypes { get; set; } = new()
-        {
-            typeof(HttpRequestException)
-        };
-
-        private int _maxRetryCount = 1;
-    }
-
     /// <summary>
     /// Global retry logic used for all the backends http calls
     /// </summary>
@@ -336,7 +268,7 @@ public sealed class KernelConfig
             {
                 throw new KernelException(
                     KernelException.ErrorCodes.BackendNotFound,
-                    $"A label was not provided and no default completion backend is available.");
+                    "A label was not provided and no default completion backend is available.");
             }
 
             return this.CompletionBackends[this._defaultCompletionBackend];
@@ -371,7 +303,7 @@ public sealed class KernelConfig
             {
                 throw new KernelException(
                     KernelException.ErrorCodes.BackendNotFound,
-                    $"A label was not provided and no default embeddings backend is available.");
+                    "A label was not provided and no default embeddings backend is available.");
             }
 
             return this.EmbeddingsBackends[this._defaultEmbeddingsBackend];
@@ -477,8 +409,8 @@ public sealed class KernelConfig
 
     #region private
 
-    private Dictionary<string, IBackendConfig> CompletionBackends { get; set; } = new();
-    private Dictionary<string, IBackendConfig> EmbeddingsBackends { get; set; } = new();
+    private Dictionary<string, IBackendConfig> CompletionBackends { get; } = new();
+    private Dictionary<string, IBackendConfig> EmbeddingsBackends { get; } = new();
     private string? _defaultCompletionBackend;
     private string? _defaultEmbeddingsBackend;
 
