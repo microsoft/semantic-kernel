@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Configuration;
 
 namespace Microsoft.SemanticKernel.Reliability;
 
-internal sealed class DefaultHttpRetryHandler : DelegatingHandler
+public sealed class DefaultHttpRetryHandler : DelegatingHandler
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultHttpRetryHandler"/> class.
