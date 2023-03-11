@@ -54,20 +54,20 @@ public sealed class HttpRetryConfig
     /// List of status codes that should be retried.
     /// </summary>
     public List<HttpStatusCode> RetryableStatusCodes { get; set; } = new()
-        {
-            HttpStatusCode.RequestTimeout,
-            HttpStatusCode.ServiceUnavailable,
-            HttpStatusCode.GatewayTimeout,
-            HttpStatusCode.TooManyRequests
-        };
+    {
+        HttpStatusCode.RequestTimeout,
+        HttpStatusCode.ServiceUnavailable,
+        HttpStatusCode.GatewayTimeout,
+        HttpStatusCode.TooManyRequests
+    };
 
     /// <summary>
     /// List of exception types that should be retried.
     /// </summary>
     public List<Type> RetryableExceptionTypes { get; set; } = new()
-        {
-            typeof(HttpRequestException)
-        };
+    {
+        typeof(HttpRequestException)
+    };
 
     private int _maxRetryCount = 1;
 }
