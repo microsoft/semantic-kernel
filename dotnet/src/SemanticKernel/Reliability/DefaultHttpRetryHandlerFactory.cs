@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Configuration;
 
 namespace Microsoft.SemanticKernel.Reliability;
 
-internal class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
+public class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
 {
     internal DefaultHttpRetryHandlerFactory(KernelConfig.HttpRetryConfig? config = null)
     {
