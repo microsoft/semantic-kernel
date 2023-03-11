@@ -69,7 +69,7 @@ internal static class SKContextExtensions
                 // catalog functions to memory
                 foreach (var function in availableFunctions)
                 {
-                    var functionName = function.ToFunctionName(); // todo function view extension
+                    var functionName = function.ToFunctionName();
                     var key = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
 
                     // It'd be nice if there were a saveIfNotExists method on the memory interface
@@ -98,7 +98,7 @@ internal static class SKContextExtensions
                 {
                     if (!result.Any(x => x.Name == function))
                     {
-                        var functionView = availableFunctions.Find(x => x.ToFunctionName() == function);
+                        var functionView = availableFunctions.Find(x => x.Name == function);
                         if (functionView != null)
                         {
                             result.Add(functionView);
