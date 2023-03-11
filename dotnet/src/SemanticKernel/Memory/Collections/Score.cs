@@ -13,7 +13,6 @@ internal struct Score : IComparable<Score>, IEquatable<Score>
     public double Value { get; set; }
 
     public static Score Min => double.MinValue;
-    public static Score Max => double.MaxValue;
 
     public static implicit operator Score(double score)
     {
