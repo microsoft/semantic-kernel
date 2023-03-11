@@ -13,6 +13,8 @@ This is a high-level overview of where things stand towards reaching feature par
 |`./diagnostics` | ✅ | Direct port of custom exceptions and validation helpers |
 |`./kernel_extensions` | 🔄 | Extensions take kernel as first argument and are exposed via `sk.extensions.*`
 |`./memory`| 🔄 | Can simplify by relying on Numpy NDArray
+|`./planning`| ❌ | Not yet implemented
+|`./semantic_functions/partitioning`| ❌ | Not yet implemented
 
 
 ## Status of the Port

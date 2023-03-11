@@ -33,7 +33,6 @@ AZURE_OPENAI_ENDPOINT=""
 ### Quickstart ⚡
 
 ```python
-import asyncio
 import semantic_kernel as sk
 
 kernel = sk.create_kernel()
@@ -41,7 +40,7 @@ kernel = sk.create_kernel()
 api_key, org_id = sk.openai_settings_from_dot_env()
 
 kernel.config.add_openai_completion_backend(
-    "davinci-003", "text-davinci-003", api_key, org_id
+    "davinci-002", "text-davinci-002", api_key, org_id
 )
 
 sk_prompt = """
@@ -69,12 +68,11 @@ tldr_function = sk.extensions.create_semantic_function(
     top_p=0.5,
 )
 
-summary = asyncio.run(kernel.run_on_str_async(text_to_summarize, tldr_function))
+summary = await kernel.run_on_str_async(text_to_summarize, tldr_function)
 output = str(summary.variables).strip()
 print("Output: " + output)
 
 # Output: Protect humans, follow orders, survive.
-
 ```
 
 ## How does this compare to the main C# repo?
