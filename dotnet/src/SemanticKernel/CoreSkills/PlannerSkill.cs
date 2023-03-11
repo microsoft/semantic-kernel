@@ -188,6 +188,7 @@ public class PlannerSkill
     /// <summary>
     /// Create a plan using registered functions to accomplish a goal.
     /// </summary>
+    /// <param name="goal"> The goal to accomplish. </param>
     /// <param name="context"> The context to use </param>
     /// <returns> The context with the plan </returns>
     /// <remarks>
@@ -201,10 +202,8 @@ public class PlannerSkill
     [SKFunctionContextParameter(Name = Parameters.ExcludedFunctions, Description = "A list of functions to exclude from the plan.", DefaultValue = "")]
     [SKFunctionContextParameter(Name = Parameters.ExcludedSkills, Description = "A list of skills to exclude from the plan.", DefaultValue = "")]
     [SKFunctionContextParameter(Name = Parameters.IncludedFunctions, Description = "A list of functions to include in the plan.", DefaultValue = "")]
-    public async Task<SKContext> CreatePlanAsync(SKContext context)
+    public async Task<SKContext> CreatePlanAsync(string goal, SKContext context)
     {
-        var goal = context.Variables.Input;
-
         var config = new PlannerSkillConfig();
 
         if (context.Variables.Get(Parameters.RelevancyThreshold, out var threshold) && double.TryParse(threshold, out var parsedValue))
