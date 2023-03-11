@@ -160,7 +160,7 @@ double check my work there.
 Love the prompt templates! Have tried some basic prompts, prompts w/ vars,
 and prompts that call native functions. Seems to be working.
 
-**NOTE:** this module definitely needs some good tests. I could see some
+**NOTE:** this module definitely needs some good tests. There can be see some
 subtle errors sneaking into the prompt tokenization/rendering code here.
 
 ### `./text` (TODO: nothing yet)
@@ -183,3 +183,17 @@ We also are missing any _testing_. We should figure out how we want to test
 
 Finally, we are missing a lot of examples. It'd be great to have Python notebooks
 that show off many of the features, many of the core skills, etc.
+
+
+## Design Choices
+
+We want the overall design of the kernel to be as similar as possible to C#.
+We also want to minimize the number of external dependencies to make the Kernel as lightweight as possible. 
+
+Right now, compared to C# there are two key differences:
+
+1. Use `numpy` to store embeddings and do things like vector/matrix ops
+2. Use `openai` to interface with (Azure) OpenAI 
+
+There's also a lot of more subtle differences that come with moving to Python,
+things like static properties, no method overloading, no extension methods, etc.

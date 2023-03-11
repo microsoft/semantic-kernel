@@ -79,15 +79,12 @@ print("Output: " + output)
 Refer to the [FEATURE_PARITY.md](./FEATURE_PARITY.md) doc to see where things stand
 in matching the features and functionality of the main SK repo.
 
+## Why Python?
+We believe that enabling Python is key to engaging with the great work being done by the open source community in ML. From researchers writing state of the art ML papers to app developers looking to quickly bring AI into their projects, we see that the nexus of AI activity centers around Python due to the rich open source ecosystem and tooling found in the language. 
+
 ## Contributing and Community
 
-We welcome your contributions and suggestions to SK community! One of the easiest
-ways to participate is to engage in discussions in the GitHub repository.
-Bug reports and fixes are welcome!
-
-For new features, components, or extensions, please open an issue and discuss with
-us before sending a PR. This is to avoid rejection as we might be taking the core
-in a different direction, but also to consider the impact on the larger ecosystem.
+We invite you to join us in developing the Semantic Kernel together! Please contribute by using GitHub Discussions, opening GitHub Issues, sending us PRs.
 
 ## Code of Conduct
 
