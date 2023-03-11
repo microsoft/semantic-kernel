@@ -105,12 +105,11 @@ public sealed class OpenAICompletionTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
+        // Use an invalid API key to force a 401 Unauthorized response
         target.Config.AddOpenAICompletionBackend(
             label: openAIConfiguration.Label,
             modelId: openAIConfiguration.ModelId,
             apiKey: "INVALID_KEY");
-
-        target.Config.SetDefaultCompletionBackend(openAIConfiguration.Label);
 
         IDictionary<string, ISKFunction> skill = GetSkill("SummarizeSkill", target);
 

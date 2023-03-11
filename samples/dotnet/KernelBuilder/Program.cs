@@ -99,14 +99,30 @@ kernel7.Config
     .SetDefaultEmbeddingsBackend("myName3");
 
 // ==========================================================================================================
-// When invoking AI, by default the kernel will not retry on transient errors, such as throttling
-// and timeouts. This behavior can be customized injecting a retry strategy that applies to all
+// When invoking AI, by default the kernel will retry on transient errors, such as throttling and timeouts.
+// The default behavior can be configured or a custom retry handler can be injected that will apply to all
 // AI requests (when using the kernel).
 
 var kernel8 = Kernel.Builder
-    .Configure(c => c.SetHttpRetryHandlerFactory(new RetryThreeTimesFactory()))
+    .Configure(c => c.SetDefaultHttpRetryConfig(new KernelConfig.HttpRetryConfig
+    {
+        MaxRetryCount = 3,
+        UseExponentialBackoff = true,
+        //  MinRetryDelay = TimeSpan.FromSeconds(2),
+        //  MaxRetryDelay = TimeSpan.FromSeconds(8),
+        //  MaxTotalRetryTime = TimeSpan.FromSeconds(30),
+        //  RetryableStatusCodes = new[] { HttpStatusCode.TooManyRequests, HttpStatusCode.RequestTimeout },
+        //  RetryableExceptions = new[] { typeof(HttpRequestException) }
+    }))
     .Build();
 
+var kernel9 = Kernel.Builder
+    .Configure(c => c.SetHttpRetryHandlerFactory(new NullHttpRetryHandlerFactory()))
+    .Build();
+
+var kernel10 = Kernel.Builder.WithRetryHandlerFactory(new RetryThreeTimesFactory()).Build();
+
+// Example of a basic custom retry handler
 public class RetryThreeTimesFactory : IDelegatingHandlerFactory
 {
     public DelegatingHandler Create(ILogger log)
