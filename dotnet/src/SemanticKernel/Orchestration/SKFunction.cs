@@ -112,13 +112,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 string completion = await client.CompleteAsync(prompt, requestSettings);
                 context.Variables.Update(completion);
             }
-#pragma warning disable CA1031 // We need to catch all exceptions to handle the execution state
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 log?.LogError(ex, "Something went wrong loading semantic function from config: {0}.{1}. Error: {2}", skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
-#pragma warning restore CA1031
 
             return context;
         }

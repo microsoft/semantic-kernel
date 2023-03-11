@@ -3,6 +3,7 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -20,16 +21,18 @@ public sealed class TemplateEngineTests : IDisposable
     private readonly IPromptTemplateEngine _target;
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlySkillCollection> _skills;
-    private readonly RedirectOutput _testOutputHelper;
+    private readonly RedirectOutput _redirectOutput;
+    private readonly ILogger _logger;
 
     public TemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
-        this._testOutputHelper = new RedirectOutput(testOutputHelper);
-        this._target = new PromptTemplateEngine(ConsoleLogger.Log);
+        this._redirectOutput = new RedirectOutput(testOutputHelper);
+        this._logger = ConsoleLogger.Log;
+        this._target = new PromptTemplateEngine(this._logger);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._skills = new Mock<IReadOnlySkillCollection>();
 
-        Console.SetOut(this._testOutputHelper);
+        Console.SetOut(this._redirectOutput);
     }
 
     [Fact]
@@ -239,7 +242,7 @@ public sealed class TemplateEngineTests : IDisposable
         [SKFunctionName("test")]
         string MyFunctionAsync(SKContext cx)
         {
-            this._testOutputHelper.WriteLine($"MyFunction call received, input: {cx.Variables.Input}");
+            this._logger.LogTrace("MyFunction call received, input: {0}", cx.Variables.Input);
             return $"F({cx.Variables.Input})";
         }
 
@@ -267,7 +270,7 @@ public sealed class TemplateEngineTests : IDisposable
         [SKFunctionName("test")]
         string MyFunctionAsync(SKContext cx)
         {
-            this._testOutputHelper.WriteLine($"MyFunction call received, input: {cx.Variables.Input}");
+            this._logger.LogTrace("MyFunction call received, input: {0}", cx.Variables.Input);
             return $"F({cx.Variables.Input})";
         }
 
@@ -296,7 +299,7 @@ public sealed class TemplateEngineTests : IDisposable
         Task<string> MyFunctionAsync(SKContext cx)
         {
             // Input value should be "BAR" because the variable $myVar is passed in
-            this._testOutputHelper.WriteLine($"MyFunction call received, input: {cx.Variables.Input}");
+            this._logger.LogTrace("MyFunction call received, input: {0}", cx.Variables.Input);
             return Task.FromResult(cx.Variables.Input);
         }
 
@@ -327,11 +330,11 @@ public sealed class TemplateEngineTests : IDisposable
             this._variables,
             NullMemory.Instance,
             this._skills.Object,
-            ConsoleLogger.Log);
+            this._logger);
     }
 
     public void Dispose()
     {
-        this._testOutputHelper.Dispose();
+        this._redirectOutput.Dispose();
     }
 }

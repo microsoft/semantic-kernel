@@ -183,14 +183,12 @@ public sealed class Kernel : IKernel, IDisposable
                     return context;
                 }
             }
-#pragma warning disable CA1031 // We need to catch all exceptions to handle the execution state
             catch (Exception e) when (!e.IsCriticalException())
             {
                 this._log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}", pipelineStepCount, f.SkillName, f.Name, e.Message);
                 context.Fail(e.Message, e);
                 return context;
             }
-#pragma warning restore CA1031
         }
 
         return context;
