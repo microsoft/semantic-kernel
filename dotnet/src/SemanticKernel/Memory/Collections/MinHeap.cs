@@ -11,9 +11,10 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// Implements the classic 'heap' data structure. By default, the item with the lowest value is at the top of the heap.
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
-public class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
+internal class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 {
     private const int DefaultCapacity = 7;
+    private const int MinCapacity = 0;
 
     private static readonly T[] s_emptyBuffer = Array.Empty<T>();
 
@@ -27,7 +28,8 @@ public class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
     public MinHeap(T minValue, int capacity)
     {
-        Verify.GreaterThan(capacity, 0, nameof(capacity));
+        Verify.GreaterThan(capacity, MinCapacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+
         this._items = new T[capacity + 1];
         //
         // The 0'th item is a sentinal entry that simplies the code
@@ -108,7 +110,7 @@ public class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
         int newItemCount = items.Count;
 
-        Verify.LessThan(startAt, newItemCount, nameof(startAt));
+        Verify.LessThan(startAt, newItemCount, $"{nameof(startAt)} value must be less than {nameof(items)} count.");
 
         this.EnsureCapacity(this._count + (newItemCount - startAt));
         for (int i = startAt; i < newItemCount; ++i)
@@ -127,7 +129,7 @@ public class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     {
         if (this._count == 0)
         {
-            throw new InvalidOperationException("Queue empty");
+            throw new InvalidOperationException("MinHeap is empty.");
         }
 
         T item = this._items[1];
@@ -146,7 +148,8 @@ public class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
     public void EnsureCapacity(int capacity)
     {
-        Verify.GreaterThan(capacity, 0, nameof(capacity));
+        Verify.GreaterThan(capacity, MinCapacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+
         // 0th item is always a sentinal
         capacity++;
         if (capacity > this._items.Length)
