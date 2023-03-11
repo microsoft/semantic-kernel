@@ -25,11 +25,11 @@ public sealed class TemplateEngineTests : IDisposable
     public TemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
         this._testOutputHelper = new RedirectOutput(testOutputHelper);
-        Console.SetOut(this._testOutputHelper);
-
         this._target = new PromptTemplateEngine(ConsoleLogger.Log);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._skills = new Mock<IReadOnlySkillCollection>();
+
+        Console.SetOut(this._testOutputHelper);
     }
 
     [Fact]
@@ -237,13 +237,13 @@ public sealed class TemplateEngineTests : IDisposable
         // Arrange
         [SKFunction("test")]
         [SKFunctionName("test")]
-        static string MyFunctionAsync(SKContext cx)
+        string MyFunctionAsync(SKContext cx)
         {
-            Console.WriteLine($"MyFunction call received, input: {cx.Variables.Input}");
+            this._testOutputHelper.WriteLine($"MyFunction call received, input: {cx.Variables.Input}");
             return $"F({cx.Variables.Input})";
         }
 
-        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync));
+        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Update("INPUT-BAR");
@@ -265,13 +265,13 @@ public sealed class TemplateEngineTests : IDisposable
         // Arrange
         [SKFunction("test")]
         [SKFunctionName("test")]
-        static string MyFunctionAsync(SKContext cx)
+        string MyFunctionAsync(SKContext cx)
         {
-            Console.WriteLine($"MyFunction call received, input: {cx.Variables.Input}");
+            this._testOutputHelper.WriteLine($"MyFunction call received, input: {cx.Variables.Input}");
             return $"F({cx.Variables.Input})";
         }
 
-        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync));
+        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
@@ -293,14 +293,14 @@ public sealed class TemplateEngineTests : IDisposable
         // Arrange
         [SKFunction("test")]
         [SKFunctionName("test")]
-        static Task<string> MyFunctionAsync(SKContext cx)
+        Task<string> MyFunctionAsync(SKContext cx)
         {
             // Input value should be "BAR" because the variable $myVar is passed in
-            Console.WriteLine($"MyFunction call received, input: {cx.Variables.Input}");
+            this._testOutputHelper.WriteLine($"MyFunction call received, input: {cx.Variables.Input}");
             return Task.FromResult(cx.Variables.Input);
         }
 
-        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync));
+        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
