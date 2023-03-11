@@ -16,14 +16,24 @@ public class TemplateException : Exception<TemplateException.ErrorCodes>
     public enum ErrorCodes
     {
         /// <summary>
-        /// Unknown.
+        /// Unknown/undefined error type. Don't use this value.
         /// </summary>
         Unknown = -1,
 
         /// <summary>
-        /// Syntax error.
+        /// Syntax error, the template syntax used is not valid.
         /// </summary>
         SyntaxError = 0,
+
+        /// <summary>
+        /// The template requires an unknown function.
+        /// </summary>
+        FunctionNotFound = 1,
+
+        /// <summary>
+        /// The template execution failed, e.g. a function call threw an exception.
+        /// </summary>
+        RuntimeError = 2,
     }
 
     /// <summary>
@@ -48,7 +58,7 @@ public class TemplateException : Exception<TemplateException.ErrorCodes>
     /// <param name="errCode">Error code of the exception.</param>
     /// <param name="message">Message of the exception.</param>
     /// <param name="e">An exception that was thrown.</param>
-    public TemplateException(ErrorCodes errCode, string message, Exception e) : base(errCode, message, e)
+    public TemplateException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
     {
         this.ErrorCode = errCode;
     }
