@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Reliability;
@@ -28,13 +27,13 @@ public static class Example08_RetryHandler
         await RunRetryPolicyBuilderAsync(typeof(NullHttpRetryHandlerFactory));
 
         ConsoleLogger.Log.LogInformation("=============================== DefaultHttpRetryHandler ================================");
-        await RunRetryHandlerConfigAsync(new KernelConfig.HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
+        await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
 
         ConsoleLogger.Log.LogInformation("======= DefaultHttpRetryConfig [MaxRetryCount = 3, UseExponentialBackoff = true] =======");
-        await RunRetryHandlerConfigAsync(new KernelConfig.HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
+        await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
     }
 
-    private static async Task RunRetryHandlerConfigAsync(KernelConfig.HttpRetryConfig? config = null)
+    private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? config = null)
     {
         var kernelBuilder = Kernel.Builder.WithLogger(ConsoleLogger.Log);
         if (config != null)

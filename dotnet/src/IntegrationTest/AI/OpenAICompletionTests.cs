@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using IntegrationTests.TestSettings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Reliability;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -98,7 +98,7 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task OpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
         // Arrange
-        var retryConfig = new KernelConfig.HttpRetryConfig();
+        var retryConfig = new HttpRetryConfig();
         retryConfig.RetryableStatusCodes.Add(System.Net.HttpStatusCode.Unauthorized);
         IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Configure(c => c.SetDefaultHttpRetryConfig(retryConfig)).Build();
 
