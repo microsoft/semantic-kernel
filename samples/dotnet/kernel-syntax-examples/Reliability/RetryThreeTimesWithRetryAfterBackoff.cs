@@ -11,6 +11,9 @@ using Polly.Retry;
 
 namespace Reliability;
 
+/// <summary>
+/// A factory for creating a retry handler.
+/// </summary>
 public class RetryThreeTimesWithRetryAfterBackoffFactory : IDelegatingHandlerFactory
 {
     public DelegatingHandler Create(ILogger log)
