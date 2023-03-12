@@ -153,6 +153,7 @@ public class PlannerSkill
                 NotSupportedException or
                 ArgumentNullException)
         {
+            context.Log.LogWarning("Error parsing bucket outputs: {0}", e.Message);
             return context.Fail($"Error parsing bucket outputs: {e.Message}");
         }
     }

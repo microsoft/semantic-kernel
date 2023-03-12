@@ -1,28 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
-using SemanticKernelTests.XunitHelpers;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernelTests.Orchestration;
 
-public sealed class SKFunctionTests1 : IDisposable
+public sealed class SKFunctionTests1
 {
-    private readonly RedirectOutput _testOutputHelper;
     private readonly Mock<IPromptTemplate> _promptTemplate;
 
-    public SKFunctionTests1(ITestOutputHelper testOutputHelper)
+    public SKFunctionTests1()
     {
-        this._testOutputHelper = new RedirectOutput(testOutputHelper);
-        Console.SetOut(this._testOutputHelper);
-
         this._promptTemplate = new Mock<IPromptTemplate>();
         this._promptTemplate.Setup(x => x.RenderAsync(It.IsAny<SKContext>())).ReturnsAsync("foo");
         this._promptTemplate.Setup(x => x.GetParameters()).Returns(new List<ParameterView>());
@@ -76,10 +69,5 @@ public sealed class SKFunctionTests1 : IDisposable
         // Assert
         Assert.Equal(settings.Temperature, skFunction.RequestSettings.Temperature);
         Assert.Equal(settings.MaxTokens, skFunction.RequestSettings.MaxTokens);
-    }
-
-    public void Dispose()
-    {
-        this._testOutputHelper.Dispose();
     }
 }

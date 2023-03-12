@@ -112,6 +112,8 @@ public static class SKFunctionExtensions
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
+            log.LogError(ex, "Something went wrong when invoking function with custom input: {0}.{1}. Error: {2}", function.SkillName,
+                function.Name, ex.Message);
             tmpContext.Fail(ex.Message, ex);
         }
 

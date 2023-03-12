@@ -3,22 +3,12 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
-using SemanticKernelTests.XunitHelpers;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernelTests.SemanticFunctions.Partitioning;
 
-public sealed class SemanticTextPartitionerTests : IDisposable
+public sealed class SemanticTextPartitionerTests
 {
-    private readonly RedirectOutput _testOutputHelper;
-
-    public SemanticTextPartitionerTests(ITestOutputHelper testOutputHelper)
-    {
-        this._testOutputHelper = new RedirectOutput(testOutputHelper);
-        Console.SetOut(this._testOutputHelper);
-    }
-
     [Fact]
     public void CanSplitPlainTextLines()
     {
@@ -418,9 +408,4 @@ public sealed class SemanticTextPartitionerTests : IDisposable
     }
 
     // a markdown example that does not have any of the above characters
-
-    public void Dispose()
-    {
-        this._testOutputHelper.Dispose();
-    }
 }
