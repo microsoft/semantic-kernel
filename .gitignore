@@ -409,7 +409,8 @@ FodyWeavers.xsd
 *.crt
 *.key
 
-
+.env
+launchSettings.json
 appsettings.development.json
 testsettings.development.json
 config.development.yaml
