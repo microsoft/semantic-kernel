@@ -73,7 +73,7 @@ public class WebFileDownloadSkill : IDisposable
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
         using Stream webStream = await response.Content.ReadAsStreamAsync();
-        using FileStream outputFileStream = new FileStream(filePath, FileMode.Create);
+        using FileStream outputFileStream = new FileStream(Environment.ExpandEnvironmentVariables(filePath), FileMode.Create);
 
         await webStream.CopyToAsync(outputFileStream, context.CancellationToken);
     }
