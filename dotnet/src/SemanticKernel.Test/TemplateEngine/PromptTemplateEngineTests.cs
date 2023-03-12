@@ -235,8 +235,7 @@ public sealed class TemplateEngineTests : IDisposable
     public async Task ItRendersCodeUsingInputAsync()
     {
         // Arrange
-        [SKFunction("test")]
-        [SKFunctionName("test")]
+        [SKFunction(Name = "test", Description = "test")]
         static string MyFunctionAsync(SKContext cx)
         {
             Console.WriteLine($"MyFunction call received, input: {cx.Variables.Input}");
@@ -263,8 +262,7 @@ public sealed class TemplateEngineTests : IDisposable
     public async Task ItRendersCodeUsingVariablesAsync()
     {
         // Arrange
-        [SKFunction("test")]
-        [SKFunctionName("test")]
+        [SKFunction(Name = "test", Description = "test")]
         static string MyFunctionAsync(SKContext cx)
         {
             Console.WriteLine($"MyFunction call received, input: {cx.Variables.Input}");
@@ -291,8 +289,7 @@ public sealed class TemplateEngineTests : IDisposable
     public async Task ItRendersAsyncCodeUsingVariablesAsync()
     {
         // Arrange
-        [SKFunction("test")]
-        [SKFunctionName("test")]
+        [SKFunction(Name = "test", Description = "test")]
         static Task<string> MyFunctionAsync(SKContext cx)
         {
             // Input value should be "BAR" because the variable $myVar is passed in

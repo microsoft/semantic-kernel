@@ -10,14 +10,14 @@ namespace Skills;
     Justification = "Static classes are not currently supported by the semantic kernel.")]
 public class StaticTextSkill
 {
-    [SKFunction("Change all string chars to uppercase")]
+    [SKFunction(Description = "Change all string chars to uppercase")]
     [SKFunctionInput(Description = "Text to uppercase")]
     public static string Uppercase(string input)
     {
         return input.ToUpperInvariant();
     }
 
-    [SKFunction("Append the day variable")]
+    [SKFunction(Description = "Append the day variable")]
     [SKFunctionInput(Description = "Text to append to")]
     [SKFunctionContextParameter(Name = "day", Description = "Value of the day to append")]
     public static string AppendDay(string input, SKContext context)

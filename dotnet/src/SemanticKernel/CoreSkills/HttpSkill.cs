@@ -51,7 +51,7 @@ public class HttpSkill : IDisposable
     /// </summary>
     /// <param name="uri">URI of the request</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction("Makes a GET request to a uri")]
+    [SKFunction(Description = "Makes a GET request to a uri")]
     public async Task<string> GetAsync(string uri)
     {
         var response = await this._client.GetAsync(uri);
@@ -65,7 +65,7 @@ public class HttpSkill : IDisposable
     /// <param name="uri">URI of the request</param>
     /// <param name="context">Contains the body of the request</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction("Makes a POST request to a uri")]
+    [SKFunction(Description = "Makes a POST request to a uri")]
     [SKFunctionContextParameter(Name = "body", Description = "The body of the request")]
     public async Task<string> PostAsync(string uri, SKContext context)
     {
@@ -81,7 +81,7 @@ public class HttpSkill : IDisposable
     /// <param name="uri">URI of the request</param>
     /// <param name="context">Contains the body of the request</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction("Makes a PUT request to a uri")]
+    [SKFunction(Description = "Makes a PUT request to a uri")]
     [SKFunctionContextParameter(Name = "body", Description = "The body of the request")]
     public async Task<string> PutAsync(string uri, SKContext context)
     {
@@ -96,7 +96,7 @@ public class HttpSkill : IDisposable
     /// </summary>
     /// <param name="uri">URI of the request</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction("Makes a DELETE request to a uri")]
+    [SKFunction(Description = "Makes a DELETE request to a uri")]
     public async Task<string> DeleteAsync(string uri)
     {
         var response = await this._client.DeleteAsync(uri);

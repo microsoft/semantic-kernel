@@ -64,8 +64,7 @@ public class ConversationSummarySkill
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="context">The SKContext for function execution.</param>
-    [SKFunction("Given a long conversation transcript, summarize the conversation.")]
-    [SKFunctionName("SummarizeConversation")]
+    [SKFunction(Name = "SummarizeConversation", Description = "Given a long conversation transcript, summarize the conversation.")]
     [SKFunctionInput(Description = "A long conversation transcript.")]
     public Task<SKContext> SummarizeConversationAsync(string input, SKContext context)
     {
@@ -81,8 +80,7 @@ public class ConversationSummarySkill
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="context">The SKContext for function execution.</param>
-    [SKFunction("Given a long conversation transcript, identify action items.")]
-    [SKFunctionName("GetConversationActionItems")]
+    [SKFunction(Name = "GetConversationActionItems", Description = "Given a long conversation transcript, identify action items.")]
     [SKFunctionInput(Description = "A long conversation transcript.")]
     public Task<SKContext> GetConversationActionItemsAsync(string input, SKContext context)
     {
@@ -98,8 +96,7 @@ public class ConversationSummarySkill
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="context">The SKContext for function execution.</param>
-    [SKFunction("Given a long conversation transcript, identify topics worth remembering.")]
-    [SKFunctionName("GetConversationTopics")]
+    [SKFunction(Name = "GetConversationTopics", Description = "Given a long conversation transcript, identify topics worth remembering.")]
     [SKFunctionInput(Description = "A long conversation transcript.")]
     public Task<SKContext> GetConversationTopicsAsync(string input, SKContext context)
     {

@@ -66,7 +66,7 @@ public class SKContextTests
 
     private class Parrot
     {
-        [SKFunction("say something")]
+        [SKFunction(Description = "say something")]
         // ReSharper disable once UnusedMember.Local
         public string Say(string text)
         {

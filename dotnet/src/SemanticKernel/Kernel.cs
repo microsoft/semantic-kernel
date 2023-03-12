@@ -115,6 +115,7 @@ public sealed class Kernel : IKernel, IDisposable
             f.SetDefaultSkillCollection(this.Skills);
             this._skillCollection.AddNativeFunction(f);
             skill.Add(f.Name, f);
+            this._log.LogTrace("Method {0} is imported as {1}", f.DelegateName(), f.Name);
         }
 
         return skill;

@@ -24,14 +24,14 @@ public class OrganizationHierarchySkill
     /// <summary>
     /// Get the email of the manager of the current user.
     /// </summary>
-    [SKFunction("Get my manager's email address.")]
+    [SKFunction(Description = "Get my manager's email address.")]
     public async Task<string> GetMyManagerEmailAsync(SKContext context)
         => await this._connector.GetManagerEmailAsync(context.CancellationToken);
 
     /// <summary>
     /// Get the name of the manager of the current user.
     /// </summary>
-    [SKFunction("Get my manager's name.")]
+    [SKFunction(Description = "Get my manager's name.")]
     public async Task<string> GetMyManagerNameAsync(SKContext context)
         => await this._connector.GetManagerNameAsync(context.CancellationToken);
 }

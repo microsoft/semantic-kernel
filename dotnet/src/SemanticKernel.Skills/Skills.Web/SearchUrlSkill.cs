@@ -18,7 +18,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for Amazon
     /// </summary>
-    [SKFunction("Return URL for Amazon search query")]
+    [SKFunction(Description = "Return URL for Amazon search query")]
     public string AmazonSearchUrl(string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -31,7 +31,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for Bing
     /// </summary>
-    [SKFunction("Return URL for Bing search query.")]
+    [SKFunction(Description = "Return URL for Bing search query.")]
     [SKFunctionInput(Description = "Text to search for")]
     public string BingSearchUrl(string query)
     {
@@ -42,7 +42,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for Bing Images
     /// </summary>
-    [SKFunction("Return URL for Bing Images search query.")]
+    [SKFunction(Description = "Return URL for Bing Images search query.")]
     [SKFunctionInput(Description = "Text to search for")]
     public string BingImagesSearchUrl(string query)
     {
@@ -53,7 +53,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for Bing Maps
     /// </summary>
-    [SKFunction("Return URL for Bing Maps search query.")]
+    [SKFunction(Description = "Return URL for Bing Maps search query.")]
     [SKFunctionInput(Description = "Text to search for")]
     public string BingMapsSearchUrl(string query)
     {
@@ -64,7 +64,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for Bing Shopping
     /// </summary>
-    [SKFunction("Return URL for Bing Shopping search query.")]
+    [SKFunction(Description = "Return URL for Bing Shopping search query.")]
     [SKFunctionInput(Description = "Text to search for")]
     public string BingShoppingSearchUrl(string query)
     {
@@ -75,7 +75,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for Bing News
     /// </summary>
-    [SKFunction("Return URL for Bing News search query.")]
+    [SKFunction(Description = "Return URL for Bing News search query.")]
     [SKFunctionInput(Description = "Text to search for")]
     public string BingNewsSearchUrl(string query)
     {
@@ -86,7 +86,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for Bing Travel
     /// </summary>
-    [SKFunction("Return URL for Bing Travel search query.")]
+    [SKFunction(Description = "Return URL for Bing Travel search query.")]
     [SKFunctionInput(Description = "Text to search for")]
     public string BingTravelSearchUrl(string query)
     {
@@ -100,7 +100,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for Facebook
     /// </summary>
-    [SKFunction("Return URL for Facebook search query.")]
+    [SKFunction(Description = "Return URL for Facebook search query.")]
     [SKFunctionInput(Description = "Text to search for")]
     public string FacebookSearchUrl(string query)
     {
@@ -114,7 +114,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for GitHub
     /// </summary>
-    [SKFunction("Return URL for GitHub search query.")]
+    [SKFunction(Description = "Return URL for GitHub search query.")]
     [SKFunctionInput(Description = "Text to search for")]
     public string GitHubSearchUrl(string query)
     {
@@ -128,7 +128,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for LinkedIn
     /// </summary>
-    [SKFunction("Return URL for LinkedIn search query.")]
+    [SKFunction(Description = "Return URL for LinkedIn search query.")]
     [SKFunctionInput(Description = "Text to search for")]
     public string LinkedInSearchUrl(string query)
     {
@@ -142,7 +142,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for Twitter
     /// </summary>
-    [SKFunction("Return URL for Twitter search query.")]
+    [SKFunction(Description = "Return URL for Twitter search query.")]
     [SKFunctionInput(Description = "Text to search for")]
     public string TwitterSearchUrl(string query)
     {
@@ -156,7 +156,7 @@ public class SearchUrlSkill
     /// <summary>
     /// Get search URL for Wikipedia
     /// </summary>
-    [SKFunction("Return URL for Wikipedia search query.")]
+    [SKFunction(Description = "Return URL for Wikipedia search query.")]
     [SKFunctionInput(Description = "Text to search for")]
     public string WikipediaSearchUrl(string query)
     {

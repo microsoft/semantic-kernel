@@ -68,7 +68,7 @@ public class DocumentSkill
     /// <summary>
     /// Read all text from a document, using <see cref="ContextVariables.Input"/> as the file path.
     /// </summary>
-    [SKFunction("Read all text from a document")]
+    [SKFunction(Description = "Read all text from a document")]
     [SKFunctionInput(Description = "Path to the file to read")]
     public async Task<string> ReadTextAsync(string filePath, SKContext context)
     {
@@ -80,7 +80,7 @@ public class DocumentSkill
     /// <summary>
     /// Append the text in <see cref="ContextVariables.Input"/> to a document. If the document doesn't exist, it will be created.
     /// </summary>
-    [SKFunction("Append text to a document. If the document doesn't exist, it will be created.")]
+    [SKFunction(Description = "Append text to a document. If the document doesn't exist, it will be created.")]
     [SKFunctionInput(Description = "Text to append")]
     [SKFunctionContextParameter(Name = Parameters.FilePath, Description = "Destination file path")]
     public async Task AppendTextAsync(string text, SKContext context)
