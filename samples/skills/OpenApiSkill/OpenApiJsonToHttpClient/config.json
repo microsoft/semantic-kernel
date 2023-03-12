@@ -1,0 +1,9 @@
+{
+    "schema": 1,
+    "description": "Given an OpenAPI json string containing one API path, return a C# Http Client within an SKFunction.",
+    "type": "completion",
+    "completion": {
+        "max_tokens": 2000,
+        "temperature": 0
+    }
+}

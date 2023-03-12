@@ -41,7 +41,8 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         external_source_name: str,
         description: Optional[str] = None,
     ) -> None:
-        raise NotImplementedError()
+        embedding = await self._embeddings_generator.generate_embeddings_async([text])
+        data = MemoryRecord.reference_record(external_id, external_source_name, description, embedding)
 
     async def get_async(
         self,
@@ -67,4 +68,4 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         return [MemoryQueryResult.from_memory_record(r[0], r[1]) for r in results]
 
     async def get_collections_async(self) -> List[str]:
-        return []
+        raise NotImplementedError()

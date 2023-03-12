@@ -14,39 +14,26 @@ from semantic_kernel.utils.static_property import static_property
 
 
 class TextMemorySkill:
-    @static_property
-    def COLLECTION_PARAM() -> Literal["collection"]:
-        return "collection"
 
-    @static_property
-    def RELEVANCE_PARAM() -> Literal["relevance"]:
-        return "relevance"
+    COLLECTION_PARAM = "collection"
+    RELEVANCE_PARAM = "relevance"
+    KEY_PARAM = "key"
+    DEFAULT_COLLECTION = "generic"
+    DEFAULT_RELEVANCE = 0.75
 
-    @static_property
-    def KEY_PARAM() -> Literal["key"]:
-        return "key"
-
-    @static_property
-    def DEFAULT_COLLECTION() -> Literal["generic"]:
-        return "generic"
-
-    @static_property
-    def DEFAULT_RELEVANCE() -> float:
-        return 0.75
-
-    @staticmethod
+    #@staticmethod
     @sk_function("Recall a fact from the long term memory")
     @sk_function_name("recall")
     @sk_function_input(description="The information to retrieve")
     @sk_function_context_parameter(
-        name=COLLECTION_PARAM(),
+        name=COLLECTION_PARAM,
         description="The collection to search for information",
-        default_value=DEFAULT_COLLECTION(),
+        default_value=DEFAULT_COLLECTION,
     )
     @sk_function_context_parameter(
-        name=RELEVANCE_PARAM(),
+        name=RELEVANCE_PARAM,
         description="The relevance score, from 0.0 to 1.0; 1.0 means perfect match",
-        default_value=DEFAULT_RELEVANCE(),
+        default_value=DEFAULT_RELEVANCE,
     )
     async def recall_async(ask: str, context: SKContext) -> str:
         """
@@ -96,17 +83,17 @@ class TextMemorySkill:
 
         return results[0].text if results[0].text is not None else ""
 
-    @staticmethod
+    #@staticmethod
     @sk_function("Save information to semantic memory")
     @sk_function_name("save")
     @sk_function_input(description="The information to save")
     @sk_function_context_parameter(
-        name=COLLECTION_PARAM(),
+        name=COLLECTION_PARAM,
         description="The collection to save the information",
-        default_value=DEFAULT_COLLECTION(),
+        default_value=DEFAULT_COLLECTION,
     )
     @sk_function_context_parameter(
-        name=KEY_PARAM(),
+        name=KEY_PARAM,
         description="The unique key to associate with the information",
     )
     async def save_async(text: str, context: SKContext):
