@@ -15,14 +15,14 @@ using Xunit;
 
 namespace SemanticKernelTests.TemplateEngine;
 
-public sealed class TemplateEngineTests
+public sealed class PromptTemplateEngineTests
 {
     private readonly IPromptTemplateEngine _target;
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlySkillCollection> _skills;
     private readonly ILogger _logger;
 
-    public TemplateEngineTests()
+    public PromptTemplateEngineTests()
     {
         this._logger = ConsoleLogger.Log;
         this._target = new PromptTemplateEngine(this._logger);

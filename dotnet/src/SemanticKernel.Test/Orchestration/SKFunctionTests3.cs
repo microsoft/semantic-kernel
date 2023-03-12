@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -12,7 +11,6 @@ using Xunit;
 
 namespace SemanticKernelTests.Orchestration;
 
-[SuppressMessage("", "CA1812:internal class apparently never instantiated", Justification = "Classes required by tests")]
 public sealed class SKFunctionTests3
 {
     [Fact]
