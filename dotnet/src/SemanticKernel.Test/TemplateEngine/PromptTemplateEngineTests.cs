@@ -12,27 +12,22 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
 using SemanticKernelTests.XunitHelpers;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernelTests.TemplateEngine;
 
-public sealed class TemplateEngineTests : IDisposable
+public sealed class TemplateEngineTests
 {
     private readonly IPromptTemplateEngine _target;
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlySkillCollection> _skills;
-    private readonly RedirectOutput _redirectOutput;
     private readonly ILogger _logger;
 
-    public TemplateEngineTests(ITestOutputHelper testOutputHelper)
+    public TemplateEngineTests()
     {
-        this._redirectOutput = new RedirectOutput(testOutputHelper);
         this._logger = ConsoleLogger.Log;
         this._target = new PromptTemplateEngine(this._logger);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._skills = new Mock<IReadOnlySkillCollection>();
-
-        Console.SetOut(this._redirectOutput);
     }
 
     [Fact]
@@ -235,7 +230,7 @@ public sealed class TemplateEngineTests : IDisposable
     }
 
     [Fact]
-    public async Task ItRendersCodeUsingInputAsync()
+    public async Task ItRendersCodeUsingInputInstanceAsync()
     {
         // Arrange
         [SKFunction("test")]
@@ -263,7 +258,35 @@ public sealed class TemplateEngineTests : IDisposable
     }
 
     [Fact]
-    public async Task ItRendersCodeUsingVariablesAsync()
+    public async Task ItRendersCodeUsingInputStaticAsync()
+    {
+        // Arrange
+        [SKFunction("test")]
+        [SKFunctionName("test")]
+        static string MyFunctionAsync(SKContext cx)
+        {
+            ConsoleLogger.Log.LogTrace("MyFunction call received, input: {0}", cx.Variables.Input);
+            return $"F({cx.Variables.Input})";
+        }
+
+        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync));
+        Assert.NotNull(func);
+
+        this._variables.Update("INPUT-BAR");
+        var template = "foo-{{function}}-baz";
+        this._skills.Setup(x => x.HasNativeFunction("function")).Returns(true);
+        this._skills.Setup(x => x.GetNativeFunction("function")).Returns(func);
+        var context = this.MockContext();
+
+        // Act
+        var result = await this._target.RenderAsync(template, context);
+
+        // Assert
+        Assert.Equal("foo-F(INPUT-BAR)-baz", result);
+    }
+
+    [Fact]
+    public async Task ItRendersCodeUsingVariablesInstanceAsync()
     {
         // Arrange
         [SKFunction("test")]
@@ -275,6 +298,34 @@ public sealed class TemplateEngineTests : IDisposable
         }
 
         var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        Assert.NotNull(func);
+
+        this._variables.Set("myVar", "BAR");
+        var template = "foo-{{function $myVar}}-baz";
+        this._skills.Setup(x => x.HasNativeFunction("function")).Returns(true);
+        this._skills.Setup(x => x.GetNativeFunction("function")).Returns(func);
+        var context = this.MockContext();
+
+        // Act
+        var result = await this._target.RenderAsync(template, context);
+
+        // Assert
+        Assert.Equal("foo-F(BAR)-baz", result);
+    }
+
+    [Fact]
+    public async Task ItRendersCodeUsingVariablesStaticAsync()
+    {
+        // Arrange
+        [SKFunction("test")]
+        [SKFunctionName("test")]
+        static string MyFunctionAsync(SKContext cx)
+        {
+            ConsoleLogger.Log.LogTrace("MyFunction call received, input: {0}", cx.Variables.Input);
+            return $"F({cx.Variables.Input})";
+        }
+
+        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync));
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
@@ -331,10 +382,5 @@ public sealed class TemplateEngineTests : IDisposable
             NullMemory.Instance,
             this._skills.Object,
             this._logger);
-    }
-
-    public void Dispose()
-    {
-        this._redirectOutput.Dispose();
     }
 }

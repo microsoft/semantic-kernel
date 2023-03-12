@@ -114,7 +114,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                log?.LogError(ex, "Something went wrong loading semantic function from config: {0}.{1}. Error: {2}", skillName, functionName, ex.Message);
+                log?.LogWarning(ex, "Something went wrong when creating a native function instance with a given a semantic function configuration: {0}.{1}. Error: {2}", skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
 
