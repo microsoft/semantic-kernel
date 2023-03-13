@@ -34,19 +34,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 /// </summary>
 internal class CodeTokenizer
 {
-    // Values must be delimited by single or double quotes
-    private const char DblQuoteDelimiter = '"';
-    private const char SglQuoteDelimiter = '\'';
-
-    // Char used to escape quotes
-    private const char EscapeChar = '\\';
-
-    // Blank spaces
-    private const char Space = ' ';
-    private const char Tab = '\t';
-    private const char NewLine = '\n';
-    private const char CarriageReturn = '\r';
-
     private enum TokenTypes
     {
         None = 0,
@@ -94,13 +81,15 @@ internal class CodeTokenizer
         {
             switch (nextChar)
             {
-                case '$':
+                case Symbols.VarPrefix:
                     blocks.Add(new VarBlock(text, this._log));
                     break;
-                case '"':
-                case '\'':
+
+                case Symbols.DblQuote:
+                case Symbols.SglQuote:
                     blocks.Add(new ValBlock(text, this._log));
                     break;
+
                 default:
                     blocks.Add(new FunctionIdBlock(text, this._log));
                     break;
@@ -149,7 +138,7 @@ internal class CodeTokenizer
                 // - skip the current char (escape char)
                 // - add the next (special char)
                 // - jump to the one after (to handle "\\" properly)
-                if (currentChar == EscapeChar && CanBeEscaped(nextChar))
+                if (currentChar == Symbols.EscapeChar && CanBeEscaped(nextChar))
                 {
                     currentTokenContent.Append(nextChar);
                     skipNextChar = true;
@@ -247,21 +236,21 @@ internal class CodeTokenizer
 
     private static bool IsVarPrefix(char c)
     {
-        return (c == VarBlock.Prefix);
+        return (c == Symbols.VarPrefix);
     }
 
     private static bool IsBlankSpace(char c)
     {
-        return c is Space or NewLine or CarriageReturn or Tab;
+        return c is Symbols.Space or Symbols.NewLine or Symbols.CarriageReturn or Symbols.Tab;
     }
 
     private static bool IsQuote(char c)
     {
-        return c is DblQuoteDelimiter or SglQuoteDelimiter;
+        return c is Symbols.DblQuote or Symbols.SglQuote;
     }
 
     private static bool CanBeEscaped(char c)
     {
-        return c is DblQuoteDelimiter or SglQuoteDelimiter or EscapeChar;
+        return c is Symbols.DblQuote or Symbols.SglQuote or Symbols.EscapeChar;
     }
 }

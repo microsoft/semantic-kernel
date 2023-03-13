@@ -94,7 +94,7 @@ internal class TemplateTokenizer
 
             // When "{{" is found outside a value
             // Note: "{{ {{x}}" => ["{{ ", "{{x}}"]
-            if (!insideTextValue && currentChar == Starter && nextChar == Starter)
+            if (!insideTextValue && currentChar == Symbols.BlockStarter && nextChar == Symbols.BlockStarter)
             {
                 // A block starts at the first "{"
                 blockStartPos = currentCharPos;
@@ -107,7 +107,7 @@ internal class TemplateTokenizer
                 // While inside a text value, when the end quote is found
                 if (insideTextValue)
                 {
-                    if (currentChar == EscapeChar && CanBeEscaped(nextChar))
+                    if (currentChar == Symbols.EscapeChar && CanBeEscaped(nextChar))
                     {
                         skipNextChar = true;
                         continue;
@@ -127,7 +127,7 @@ internal class TemplateTokenizer
                         textValueDelimiter = currentChar;
                     }
                     // If the block ends here
-                    else if (currentChar == Ender && nextChar == Ender)
+                    else if (currentChar == Symbols.BlockEnder && nextChar == Symbols.BlockEnder)
                     {
                         // If there is plain text between the current var/val/code block and the previous one, capture that as a TextBlock
                         if (blockStartPos > endOfLastBlock)
@@ -211,17 +211,6 @@ internal class TemplateTokenizer
 
     #region private ================================================================================
 
-    // Blocks delimitation
-    private const char Starter = '{';
-    private const char Ender = '}';
-
-    // Values must be delimited by single or double quotes
-    private const char DblQuoteDelimiter = '"';
-    private const char SglQuoteDelimiter = '\'';
-
-    // Char used to escape quotes
-    private const char EscapeChar = '\\';
-
     private readonly ILogger _log;
     private readonly CodeTokenizer _codeTokenizer;
 
@@ -232,12 +221,12 @@ internal class TemplateTokenizer
 
     private static bool IsQuote(char c)
     {
-        return c is DblQuoteDelimiter or SglQuoteDelimiter;
+        return c is Symbols.DblQuote or Symbols.SglQuote;
     }
 
     private static bool CanBeEscaped(char c)
     {
-        return c is DblQuoteDelimiter or SglQuoteDelimiter or EscapeChar;
+        return c is Symbols.DblQuote or Symbols.SglQuote or Symbols.EscapeChar;
     }
 
     #endregion

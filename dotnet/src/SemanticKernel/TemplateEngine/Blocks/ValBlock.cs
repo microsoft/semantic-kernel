@@ -7,10 +7,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 internal class ValBlock : Block
 {
-    // Values must be delimited by single or double quotes
-    private const char DblQuoteDelimiter = '"';
-    private const char SglQuoteDelimiter = '\'';
-
     // Cache the first and last char
     private readonly char _first = '\0';
     private readonly char _last = '\0';
@@ -76,6 +72,6 @@ internal class ValBlock : Block
     {
         return !string.IsNullOrEmpty(text)
                && text.Length > 0
-               && (text[0] is DblQuoteDelimiter or SglQuoteDelimiter);
+               && (text[0] is Symbols.DblQuote or Symbols.SglQuote);
     }
 }

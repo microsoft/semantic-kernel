@@ -8,8 +8,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 internal class VarBlock : Block
 {
-    internal const char Prefix = '$';
-
     internal override BlockTypes Type => BlockTypes.Variable;
 
     internal override bool? SynchronousRendering => true;
@@ -35,14 +33,14 @@ internal class VarBlock : Block
 
         if (string.IsNullOrEmpty(this.Content))
         {
-            error = $"A variable must start with the symbol {Prefix} and have a name";
+            error = $"A variable must start with the symbol {Symbols.VarPrefix} and have a name";
             this.Log.LogError(error);
             return false;
         }
 
-        if (this.Content[0] != Prefix)
+        if (this.Content[0] != Symbols.VarPrefix)
         {
-            error = $"A variable must start with the symbol {Prefix}";
+            error = $"A variable must start with the symbol {Symbols.VarPrefix}";
             this.Log.LogError(error);
             return false;
         }
@@ -78,7 +76,7 @@ internal class VarBlock : Block
         }
 
         var exists = variables.Get(this.Name, out string value);
-        if (!exists) { this.Log.LogWarning("Variable `{0}{1}` not found", Prefix, this.Name); }
+        if (!exists) { this.Log.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name); }
 
         return exists ? value : "";
     }
