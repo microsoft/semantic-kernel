@@ -461,7 +461,7 @@ public class DefaultHttpRetryHandlerTests
         var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
-        mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(6)); // one for the initial call, and one for each of 5 attempts
+        mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(6));
         mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(50), It.IsAny<CancellationToken>()), Times.Exactly(5));
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(6), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
@@ -507,11 +507,53 @@ public class DefaultHttpRetryHandlerTests
         var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
-        mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(3)); // one for the initial call, and one for each of 5 attempts
+        mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(3));
         mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(50), It.IsAny<CancellationToken>()), Times.Exactly(1));
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
         Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ItRetriesFewerWithMaxTotalDelayOnExceptionAsync()
+    {
+        // Arrange
+        var HttpRetryConfig = new HttpRetryConfig
+        {
+            MaxRetryCount = 5,
+            MinRetryDelay = TimeSpan.FromMilliseconds(50),
+            MaxRetryDelay = TimeSpan.FromMilliseconds(50),
+            MaxTotalRetryTime = TimeSpan.FromMilliseconds(100)
+        };
+
+        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
+        var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
+
+        var currentTime = DateTimeOffset.UtcNow;
+        mockTimeProvider.SetupSequence(x => x.GetCurrentTime())
+            .Returns(() => currentTime)
+            .Returns(() => currentTime + TimeSpan.FromMilliseconds(5))
+            .Returns(() => currentTime + TimeSpan.FromMilliseconds(55))
+            .Returns(() => currentTime + TimeSpan.FromMilliseconds(110))
+            .Returns(() => currentTime + TimeSpan.FromMilliseconds(165))
+            .Returns(() => currentTime + TimeSpan.FromMilliseconds(220))
+            .Returns(() => currentTime + TimeSpan.FromMilliseconds(275))
+            .Returns(() => currentTime + TimeSpan.FromMilliseconds(330));
+
+        using var retry = ConfigureRetryHandler(HttpRetryConfig, mockTimeProvider, mockDelayProvider);
+        var mockHandler = GetHttpMessageHandlerMock(typeof(HttpRequestException));
+
+        retry.InnerHandler = mockHandler.Object;
+        using var httpClient = new HttpClient(retry);
+
+        // Act
+        await Assert.ThrowsAsync<HttpRequestException>(() => httpClient.GetAsync(new Uri("https://www.microsoft.com"), CancellationToken.None));
+
+        // Assert
+        mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(3));
+        mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(50), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        mockHandler.Protected()
+            .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
     }
 
     [Fact]
