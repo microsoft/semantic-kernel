@@ -22,7 +22,7 @@ expressed with text.
 The language supports three basic features that allow you to (**#1**) include
 variables, (**#2**) call external functions, and (**#3**) pass parameters to functions.
 
-You don't need to write any code or import any external libraries, just use the
+It is not required to write any code or import any external libraries, just use the
 curly braces `{{...}}` to embed expressions in your prompts.
 Semantic Kernel will parse your template and execute the logic behind it.
 This way, you can easily integrate AI into your apps with minimal effort and
