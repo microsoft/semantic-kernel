@@ -82,7 +82,7 @@ public class KernelException : Exception<KernelException.ErrorCodes>
     /// <param name="errCode">Error code to put in KernelException.</param>
     /// <param name="message">Message to put in KernelException.</param>
     /// <param name="e">Exception to embed in KernelException.</param>
-    public KernelException(ErrorCodes errCode, string message, Exception e) : base(errCode, message, e)
+    public KernelException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
     {
         this.ErrorCode = errCode;
     }
