@@ -49,7 +49,7 @@ public sealed class AzureOpenAIServiceClient : IAzureOpenAIServiceClient
 
         var uri = this.GetAzureOpenAIRequestURI(endpoint);
 
-        this._logger.LogDebug("Sending OpenAI embedding request to {0}", uri);
+        this._logger.LogDebug("Sending Azure OpenAI embedding request to {0}", uri);
 
         return await this.PostAsync<EmbeddingResponse, EmbeddingRequest>(uri, request, cancellationToken);
     }
