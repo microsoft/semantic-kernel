@@ -45,8 +45,8 @@ const TaskButton: FC<IData> = ({
 
         try {
             await taskRunner.runTask(taskDescription, taskResponseFormat, skills, onPlanCreated, onTaskCompleted);
-        } catch {
-            alert('Unable to complete task, please check the azure function is online');
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
 
         setIsBusy(false);

@@ -10,19 +10,6 @@ using Xunit;
 
 namespace SemanticKernelTests.Memory;
 
-internal class DoubleEmbeddingWithBasicMetadata : IEmbeddingWithMetadata<double>
-{
-    public Embedding<double> Embedding { get; }
-
-    public string Metadata { get; }
-
-    public DoubleEmbeddingWithBasicMetadata(Embedding<double> embedding, string metadata)
-    {
-        this.Embedding = embedding;
-        this.Metadata = metadata;
-    }
-}
-
 public class VolatileMemoryStoreTests
 {
     private readonly VolatileMemoryStore<double> _db;
@@ -246,6 +233,52 @@ public class VolatileMemoryStoreTests
         {
             int compare = topNResults[i].Item2.CompareTo(0.75);
             Assert.True(compare >= 0);
+        }
+    }
+
+    [Fact]
+    public async Task GetNearestAsyncDifferentiatesIdenticalVectorsByKeyAsync()
+    {
+        // Arrange
+        var compareEmbedding = new Embedding<double>(new double[] { 1, 1, 1 });
+        int rand = Random.Shared.Next();
+        string collection = "collection" + rand;
+        int topN = 4;
+
+        string key = "key" + Random.Shared.Next();
+        var memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 1, 1 }), "1 ,2 ,3");
+        await this._db.PutValueAsync(collection, key, memory);
+
+        for (int i = 0; i < 10; i++)
+        {
+            key = "key" + Random.Shared.Next();
+            memory = new DoubleEmbeddingWithBasicMetadata(compareEmbedding, "1 ,1 ,1");
+            await this._db.PutValueAsync(collection, key, memory);
+        }
+
+        // Act
+        var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToEnumerable().ToArray();
+
+        // Assert
+        Assert.Equal(topN, topNResults.Length);
+
+        for (int i = 0; i < topNResults.Length; i++)
+        {
+            int compare = topNResults[i].Item2.CompareTo(0.75);
+            Assert.True(compare >= 0);
+        }
+    }
+
+    internal class DoubleEmbeddingWithBasicMetadata : IEmbeddingWithMetadata<double>
+    {
+        public Embedding<double> Embedding { get; }
+
+        public string Metadata { get; }
+
+        public DoubleEmbeddingWithBasicMetadata(Embedding<double> embedding, string metadata)
+        {
+            this.Embedding = embedding;
+            this.Metadata = metadata;
         }
     }
 }

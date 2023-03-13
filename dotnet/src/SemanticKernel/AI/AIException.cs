@@ -92,7 +92,7 @@ public class AIException : Exception<AIException.ErrorCodes>
     /// <param name="errCode">Error code of the exception.</param>
     /// <param name="message">Message of the exception.</param>
     /// <param name="e">An exception that was thrown.</param>
-    public AIException(ErrorCodes errCode, string message, Exception e) : base(errCode, message, e)
+    public AIException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
     {
         this.ErrorCode = errCode;
     }
