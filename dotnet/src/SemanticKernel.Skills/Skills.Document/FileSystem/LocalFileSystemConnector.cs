@@ -72,4 +72,10 @@ public class LocalFileSystemConnector : IFileSystemConnector
     {
         return Task.FromResult(File.Exists(Environment.ExpandEnvironmentVariables(filePath)));
     }
+
+    /// <inheritdoc/>
+    public Task<string[]> RecursivelyListFilesUnderDirectoryAsync(string directoryPath, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Directory.GetFiles(directoryPath, "*.*", SearchOption.AllDirectories));
+    }
 }

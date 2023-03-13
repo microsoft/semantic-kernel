@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -111,5 +112,20 @@ public class DocumentSkill
         this._documentConnector.AppendText(stream, text);
 
         await stream.DisposeAsync();
+    }
+
+    /// <summary>
+    /// Recursively list all documents under a directory.
+    /// </summary>
+    /// <param name="directoryPath">Path of directory under which to list documents.</param>
+    /// <param name="context">Semantic kernel context</param>
+    /// <returns>An array of the paths of the documents under the given directory</returns>
+    [SKFunction("Recursively list all documents under a directory.")]
+    [SKFunctionInput(Description = "Path of directory under which to list documents.")]
+    public Task<string[]> RecursivelyListDocumentsUnderDirectoryAsync(string directoryPath, SKContext context)
+    {
+        this._logger.LogInformation("Listing documents under {0}", directoryPath);
+
+        return this._fileSystemConnector.RecursivelyListFilesUnderDirectoryAsync(directoryPath, context.CancellationToken);
     }
 }
