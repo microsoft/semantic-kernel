@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
-using Reliability;
 using RepoUtils;
 using Skills;
 
@@ -46,7 +45,7 @@ internal static class Example12_Planning
         Console.WriteLine("Original plan:");
         Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
 
-        _ = await ExecutePlanAsync(kernel, planner, originalPlan, 5);
+        await ExecutePlanAsync(kernel, planner, originalPlan, 5);
     }
 
     private static async Task EmailSamplesAsync()
@@ -87,7 +86,7 @@ internal static class Example12_Planning
             "and the kingdom was at peace once again. The king was so grateful to Mira that he asked her to marry him and she agreed. " +
             "They ruled the kingdom together, ruling with fairness and compassion, just as Arjun had done before. They lived " +
             "happily ever after, with the people of the kingdom remembering Mira as the brave young woman who saved them from the dragon.");
-        _ = await ExecutePlanAsync(kernel, planner, executionResults, 5);
+        await ExecutePlanAsync(kernel, planner, executionResults, 5);
     }
 
     private static async Task BookSamplesAsync()
@@ -118,7 +117,7 @@ internal static class Example12_Planning
 
         Stopwatch sw = new();
         sw.Start();
-        _ = await ExecutePlanAsync(kernel, planner, originalPlan);
+        await ExecutePlanAsync(kernel, planner, originalPlan);
     }
 
     private static IKernel InitializeKernelAndPlanner(out IDictionary<string, ISKFunction> planner)
@@ -129,7 +128,6 @@ internal static class Example12_Planning
             Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
             Env.Var("AZURE_OPENAI_ENDPOINT"),
             Env.Var("AZURE_OPENAI_KEY"));
-        kernel.Config.SetRetryMechanism(new RetryThreeTimesWithBackoff());
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
         planner = kernel.ImportSkill(new PlannerSkill(kernel), "planning");

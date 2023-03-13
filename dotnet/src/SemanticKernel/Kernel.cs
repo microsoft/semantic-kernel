@@ -172,10 +172,7 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await this._config.RetryMechanism.ExecuteWithRetryAsync(
-                    async () => { context = await f.InvokeAsync(context); },
-                    this._log,
-                    cancellationToken);
+                context = await f.InvokeAsync(context);
 
                 if (context.ErrorOccurred)
                 {
@@ -268,7 +265,8 @@ public sealed class Kernel : IKernel, IDisposable
                     azureBackendConfig.Endpoint,
                     azureBackendConfig.APIKey,
                     azureBackendConfig.APIVersion,
-                    this._log));
+                    this._log,
+                    this._config.HttpHandlerFactory));
                 break;
 
             case OpenAIConfig openAiConfig:
@@ -276,7 +274,8 @@ public sealed class Kernel : IKernel, IDisposable
                     openAiConfig.ModelId,
                     openAiConfig.APIKey,
                     openAiConfig.OrgId,
-                    this._log));
+                    this._log,
+                    this._config.HttpHandlerFactory));
                 break;
 
             default:
