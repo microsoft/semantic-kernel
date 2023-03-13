@@ -6,7 +6,7 @@
   },
   "AzureOpenAI": {
     "Label": "azure-text-davinci-002",
-    "DeploymentName": "",
+    "DeploymentName": "text-davinci-002",
     "Endpoint": "",
     "ApiKey": ""
   },
@@ -17,7 +17,7 @@
   },
   "AzureOpenAIEmbeddings": {
     "Label": "azure-text-embedding-ada-002",
-    "DeploymentName": "",
+    "DeploymentName": "text-embedding-ada-002",
     "Endpoint": "",
     "ApiKey": ""
   },

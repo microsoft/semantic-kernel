@@ -11,8 +11,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-// ReSharper disable TemplateIsNotCompileTimeConstantProblem
-
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 internal class CodeBlock : Block
@@ -25,6 +23,7 @@ internal class CodeBlock : Block
     }
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
+    // ReSharper disable TemplateIsNotCompileTimeConstantProblem
     internal override bool IsValid(out string error)
     {
         error = "";
@@ -42,6 +41,7 @@ internal class CodeBlock : Block
                 if (VarBlock.HasVarPrefix(part))
                 {
                     error = $"Variables cannot be used as function names [`{part}`]";
+
                     this.Log.LogError(error);
                     return false;
                 }
@@ -82,6 +82,7 @@ internal class CodeBlock : Block
 
         return true;
     }
+    // ReSharper restore TemplateIsNotCompileTimeConstantProblem
 #pragma warning restore CA2254
 
     internal override string Render(ContextVariables? variables)
@@ -90,6 +91,8 @@ internal class CodeBlock : Block
             "Code blocks rendering requires IReadOnlySkillCollection. Incorrect method call.");
     }
 
+#pragma warning disable CA2254 // error strings are used also internally, not just for logging
+    // ReSharper disable TemplateIsNotCompileTimeConstantProblem
     internal override async Task<string> RenderCodeAsync(SKContext context)
     {
         if (!this._validated && !this.IsValid(out var error))
@@ -107,8 +110,9 @@ internal class CodeBlock : Block
         context.ThrowIfSkillCollectionNotSet();
         if (!this.GetFunctionFromSkillCollection(context.Skills!, functionName, out ISKFunction? function))
         {
-            this.Log.LogWarning("Function not found `{0}`", functionName);
-            return "";
+            var errorMsg = $"Function not found `{functionName}`";
+            this.Log.LogError(errorMsg);
+            throw new TemplateException(TemplateException.ErrorCodes.FunctionNotFound, errorMsg);
         }
 
         // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
@@ -133,14 +137,15 @@ internal class CodeBlock : Block
 
         if (result.ErrorOccurred)
         {
-            this.Log.LogError(
-                "Semantic function references a function `{0}` of incompatible type `{1}`: defaulting to an empty result",
-                functionName, function.GetType());
-            return "";
+            var errorMsg = $"Function `{functionName}` execution failed. {result.LastException?.GetType().FullName}: {result.LastErrorDescription}";
+            this.Log.LogError(errorMsg);
+            throw new TemplateException(TemplateException.ErrorCodes.RuntimeError, errorMsg, result.LastException);
         }
 
         return result.Result;
     }
+    // ReSharper restore TemplateIsNotCompileTimeConstantProblem
+#pragma warning restore CA2254
 
     #region private ================================================================================
 

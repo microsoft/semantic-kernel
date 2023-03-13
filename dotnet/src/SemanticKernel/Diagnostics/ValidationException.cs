@@ -66,7 +66,7 @@ public class ValidationException : Exception<ValidationException.ErrorCodes>
     /// <param name="errCode">The error code.</param>
     /// <param name="message">The message.</param>
     /// <param name="e">The inner exception.</param>
-    public ValidationException(ErrorCodes errCode, string message, Exception e) : base(errCode, message, e)
+    public ValidationException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
     {
         this.ErrorCode = errCode;
     }

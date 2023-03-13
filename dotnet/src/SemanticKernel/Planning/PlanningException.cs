@@ -52,7 +52,7 @@ public class PlanningException : Exception<PlanningException.ErrorCodes>
     /// <param name="errCode">The error code.</param>
     /// <param name="message">The message.</param>
     /// <param name="e">The inner exception.</param>
-    public PlanningException(ErrorCodes errCode, string message, Exception e) : base(errCode, message, e)
+    public PlanningException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
     {
         this.ErrorCode = errCode;
     }
