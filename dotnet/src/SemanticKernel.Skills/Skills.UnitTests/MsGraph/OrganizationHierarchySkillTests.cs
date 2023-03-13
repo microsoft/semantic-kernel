@@ -10,7 +10,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernelSkills.Test.MsGraph;
+namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
 public class OrganizationHierarchySkillTests : IDisposable
 {

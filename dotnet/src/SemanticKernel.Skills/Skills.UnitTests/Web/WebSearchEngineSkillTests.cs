@@ -10,7 +10,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernelSkills.Test.Web;
+namespace SemanticKernel.Skills.UnitTests.Web;
 
 public sealed class WebSearchEngineSkillTests : IDisposable
 {

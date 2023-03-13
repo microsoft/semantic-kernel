@@ -4,7 +4,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace SemanticKernelSkills.Test;
+namespace SemanticKernel.Skills.UnitTests;
 
 /// <summary>
 /// A logger that writes to the Xunit test output

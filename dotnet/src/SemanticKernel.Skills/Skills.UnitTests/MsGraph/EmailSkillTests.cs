@@ -11,7 +11,7 @@ using Moq;
 using Xunit;
 using static Microsoft.SemanticKernel.Skills.MsGraph.EmailSkill;
 
-namespace SemanticKernelSkills.Test.MsGraph;
+namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
 public class EmailSkillTests
 {

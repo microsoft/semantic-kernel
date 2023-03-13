@@ -13,7 +13,7 @@ using Moq;
 using Xunit;
 using static Microsoft.SemanticKernel.Skills.Document.DocumentSkill;
 
-namespace SemanticKernelSkills.Test.Document;
+namespace SemanticKernel.Skills.UnitTests.Document;
 
 public class DocumentSkillTests
 {

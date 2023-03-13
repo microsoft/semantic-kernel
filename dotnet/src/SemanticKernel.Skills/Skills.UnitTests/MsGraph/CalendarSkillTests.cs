@@ -13,7 +13,7 @@ using Xunit;
 using Xunit.Abstractions;
 using static Microsoft.SemanticKernel.Skills.MsGraph.CalendarSkill;
 
-namespace SemanticKernelSkills.Test.MsGraph;
+namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
 public class CalendarSkillTests : IDisposable
 {

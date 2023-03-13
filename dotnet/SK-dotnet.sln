@@ -41,7 +41,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Memory.Sqlite", "src
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Test", "src\SemanticKernel.Skills\Skills.Test\Skills.Test.csproj", "{107156B4-5A8B-45C7-97A2-4544D7FA19DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.UnitTests", "src\SemanticKernel.Skills\Skills.UnitTests\Skills.UnitTests.csproj", "{107156B4-5A8B-45C7-97A2-4544D7FA19DE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{F4243136-252A-4459-A7C4-EE8C056D6B0B}"
 	ProjectSection(SolutionItems) = preProject

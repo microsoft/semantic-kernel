@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Skills.Web;
 using Xunit;
 
-namespace SemanticKernelSkills.Test.Web;
+namespace SemanticKernel.Skills.UnitTests.Web;
 
 public class SearchUrlSkillTests
 {
