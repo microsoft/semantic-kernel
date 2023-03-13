@@ -1,4 +1,4 @@
-Prompts are the inputs or queries that a user or a program gives to an LLM AI,
+Prompts are the inputs or queries that a user or a program gives to an Large Learning Model ([LLM](https://en.wikipedia.org/wiki/Wikipedia:Large_language_models)) AI,
 in order to elicit a specific response from the model.
 
 Prompts can be natural
@@ -22,7 +22,7 @@ expressed with text.
 The language supports three basic features that allow you to (**#1**) include
 variables, (**#2**) call external functions, and (**#3**) pass parameters to functions.
 
-You don't need to write any code or import any external libraries, just use the
+It is not required to write any code or import any external libraries, just use the
 curly braces `{{...}}` to embed expressions in your prompts.
 Semantic Kernel will parse your template and execute the logic behind it.
 This way, you can easily integrate AI into your apps with minimal effort and
@@ -83,8 +83,7 @@ external dependencies, resulting in a fast and memory efficient processing.
 
 ## Semantic function example
 
-Here's a very simple example of a semantic function defined with a prompt
-template, using the syntax described.
+Semantic Function is a function expressed (written) in natural language in a text file (i.E.: "skprompt.txt") using SK's Prompt Template language. Following is a  simple example of a semantic function defined with a prompt template, using the syntax described.
 
 `== File: skprompt.txt ==`
 
