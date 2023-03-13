@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace KernelHttpServer.Config;
+
 public class BackendConfig
 {
     public AIService AIService { get; set; }

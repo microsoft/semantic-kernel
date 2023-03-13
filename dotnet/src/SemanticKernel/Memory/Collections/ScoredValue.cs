@@ -53,8 +53,8 @@ internal struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredV
     public bool Equals(ScoredValue<T> other)
     {
         return (other != null)
-            && (this.Value?.Equals(other.Value) == true)
-            && (this.Score.Equals(other.Score));
+               && (this.Value?.Equals(other.Value) == true)
+               && (this.Score.Equals(other.Score));
     }
 
     public override int GetHashCode()
