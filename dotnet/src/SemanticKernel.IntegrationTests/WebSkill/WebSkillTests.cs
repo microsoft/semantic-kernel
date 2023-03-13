@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Skills.Web.Bing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTests.WebSkill;
+namespace SemanticKernel.IntegrationTests.WebSkill;
 
 public sealed class WebSkillTests : IDisposable
 {

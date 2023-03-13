@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using Xunit.Abstractions;
 
-namespace IntegrationTests;
+namespace SemanticKernel.IntegrationTests;
 
 public class RedirectOutput : TextWriter
 {

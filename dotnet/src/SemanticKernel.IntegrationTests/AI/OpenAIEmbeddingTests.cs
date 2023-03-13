@@ -3,14 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using IntegrationTests.TestSettings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.OpenAI.Services;
+using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTests.AI;
+namespace SemanticKernel.IntegrationTests.AI;
 
 public sealed class OpenAIEmbeddingTests : IDisposable
 {
