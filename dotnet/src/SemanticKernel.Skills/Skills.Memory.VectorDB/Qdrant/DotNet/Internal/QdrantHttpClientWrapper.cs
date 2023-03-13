@@ -40,7 +40,7 @@ internal class QdrantHttpClientWrapper
             dynamic tmp = JObject.Parse(responseContent);
             if (tmp != null && this._log.IsEnabled(LogLevel.Debug))
             {
-                this._log.LogDebug("Qdrant response time: {0}", (double)tmp.time);
+                this._log.LogDebug("Qdrant response time: {0}", (double)tmp!.time);
             }
 
             this._log.LogTrace("Qdrant response: {0}", responseContent);
@@ -67,8 +67,9 @@ internal class QdrantHttpClientWrapper
     private static Uri SanitizeEndpoint(string endpoint, int port)
     {
         UriBuilder builder = new UriBuilder(SanitizeEndpoint(endpoint))
-            { Port = port };
+        { Port = port };
         return builder.Uri;
+
     }
 
     #endregion

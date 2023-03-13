@@ -20,4 +20,8 @@ public class VectorDbException : Exception<VectorDbException.ErrorCodes>
         : base(error, message)
     {
     }
+
+    public VectorDbException()
+    {
+    }
 }

@@ -18,5 +18,9 @@ public class Exception<TErrorType> : Exception where TErrorType : Enum
         return message != null ? $"{errorType.ToString("G")}: {message}" : errorType.ToString("G");
     }
 
+    public Exception()
+    {
+    }
+
     #endregion
 }
