@@ -9,26 +9,20 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
-using SemanticKernelTests.XunitHelpers;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernelTests.Orchestration;
 
-public sealed class SKFunctionTests2 : IDisposable
+public sealed class SKFunctionTests2
 {
-    private readonly RedirectOutput _testOutputHelper;
     private readonly Mock<ILogger> _log;
     private readonly Mock<IReadOnlySkillCollection> _skills;
 
     private static string s_expected = string.Empty;
     private static string s_canary = string.Empty;
 
-    public SKFunctionTests2(ITestOutputHelper testOutputHelper)
+    public SKFunctionTests2()
     {
-        this._testOutputHelper = new RedirectOutput(testOutputHelper);
-        Console.SetOut(this._testOutputHelper);
-
         this._log = new Mock<ILogger>();
         this._skills = new Mock<IReadOnlySkillCollection>();
 
@@ -578,11 +572,6 @@ public sealed class SKFunctionTests2 : IDisposable
         Assert.False(result.ErrorOccurred);
         this.VerifyFunctionTypeMatch(18);
         Assert.Equal(s_expected, s_canary);
-    }
-
-    public void Dispose()
-    {
-        this._testOutputHelper.Dispose();
     }
 
     private static MethodInfo Method(Delegate method)

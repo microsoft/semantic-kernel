@@ -3,13 +3,9 @@
     { "pattern": "/github/" },
     { "pattern": "./actions" },
     { "pattern": "./blob" },
-    { "pattern": "./issues" }
-  ],
-  "replacementPatterns": [
-    {
-      "pattern": "https://github.com/microsoft/semantic-kernel",
-      "replacement": "."
-    }
+    { "pattern": "./issues" },
+    { "pattern": "./discussions" },
+    { "pattern": "./pulls" }
   ],
   "timeout": "20s",
   "retryOn429": true,

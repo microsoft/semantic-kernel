@@ -112,12 +112,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 string completion = await client.CompleteAsync(prompt, requestSettings);
                 context.Variables.Update(completion);
             }
-#pragma warning disable CA1031 // We need to catch all exceptions to handle the execution state
-            catch (Exception e) when (!e.IsCriticalException())
+            catch (Exception ex) when (!ex.IsCriticalException())
             {
-                context.Fail(e.Message, e);
+                log?.LogWarning(ex, "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}", skillName, functionName, ex.Message);
+                context.Fail(ex.Message, ex);
             }
-#pragma warning restore CA1031
 
             return context;
         }
