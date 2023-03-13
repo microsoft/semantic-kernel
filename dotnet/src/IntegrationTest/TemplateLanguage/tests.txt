@@ -1,13 +1,13 @@
 # About this file:
-# - The file is used by TemplateEngineTests.cs to test SK template language.
+# - The file is used by PromptTemplateEngineTests.cs to test SK template language.
 # - By using a TXT file there is no ambiguity caused by C#/Python escaping syntax.
 # - Empty lines and lines starting with "#" are ignored.
-# - Values are NOT trimmed.
-# - The file contains test cases.
+# - Lines are NOT trimmed, there might be empty spaces at the end on purpose.
+# - The file contains multiple test cases.
 # - Each test case consists of two lines:
 #   - line 1: the template to render
 #   - line 2: the expected result after rendering
-# - If a template is invalid, line 2 contains the value "ERROR"
+# - If a template is invalid, line 2 contains the value "ERROR", e.g. a TemplateException is expected.
 
 ""
 ""
