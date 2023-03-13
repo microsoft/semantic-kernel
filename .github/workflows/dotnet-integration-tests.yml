@@ -8,6 +8,10 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
+    paths:
+      - "dotnet/**"
+      - "**.cs"
+      - "**.csproj"
 
 permissions:
   contents: read

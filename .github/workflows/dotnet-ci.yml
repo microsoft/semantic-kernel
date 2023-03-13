@@ -8,6 +8,11 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'samples/apps'
+      - 'samples/skills/**'
+      - 'samples/notebooks/**'
 
 permissions:
   contents: read

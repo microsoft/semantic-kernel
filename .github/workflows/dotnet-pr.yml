@@ -8,6 +8,8 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
 
 permissions:
   contents: read
