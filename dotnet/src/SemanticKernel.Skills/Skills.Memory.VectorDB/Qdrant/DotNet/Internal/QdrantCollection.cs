@@ -31,21 +31,22 @@ internal class QdrantCollection : IVectorDbCollection
         this._log = log ?? NullLogger.Instance;
     }
 
+
     public async Task<DataEntry<VectorRecordData<float>>?> GetVectorAsync(string id)
     {
         var point = await this.FindQdrantPointByExternalIdAsync(id);
         if (point == null) { return null; }
 
         var result = new DataEntry<VectorRecordData<float>>(key: point.ExternalId,
-            value: new VectorRecordData<float>(
-                new Embedding<float>(point.Vector),
-                point.ExternalPayload,
-                point.ExternalTags));
+                                               value: new VectorRecordData<float>(
+                                                            new Embedding<float>(point.Vector),
+                                                            point.ExternalPayload,
+                                                            point.ExternalTags));
 
         return result;
     }
 
-    public async Task<IAsyncEnumerable<DataEntry<VectorRecordData<float>>>> GetAllVectorsAsync()
+    public async IAsyncEnumerable<DataEntry<VectorRecordData<float>>> GetAllVectorsAsync()
     {
         HttpRequestMessage vectorRequest = FetchVectorsRequest
             .Fetch(this.Name)
@@ -54,7 +55,19 @@ internal class QdrantCollection : IVectorDbCollection
         var (response, responseContent) = await this._vectorHttp.ExecuteHttpRequestAsync(vectorRequest);
         response.EnsureSuccessStatusCode();
 
-        return null;
+        var data = new FetchVectorsResponse(responseContent);
+        Verify.Equals("ok", data.Status, $"Something went wrong while getting vectors for {this.Name}");
+
+        foreach (var point in data.VectorPointCollection)
+        {
+            var record = new DataEntry<VectorRecordData<float>>(key: point.VectorId!,
+                                                   value: new VectorRecordData<float>(
+                                                                new Embedding<float>(point.Vector!),
+                                                                point.Payload!,
+                                                                new List<string>()));
+
+            yield return record;
+        }
     }
 
     public Task UpsertVectorAsync(DataEntry<VectorRecordData<float>> record)
@@ -74,14 +87,13 @@ internal class QdrantCollection : IVectorDbCollection
         await this.DeleteVectorInternalAsync(qdrantId);
     }
 
-    public async IAsyncEnumerable<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> FindClosestAsync(float[] target, int top = 1,
-        string[]? requiredTags = null)
+    public async IAsyncEnumerable<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> FindClosestAsync(float[] target, int top = 1, string[]? requiredTags = null)
     {
         this._log.Debug("Searching top {0} closest vectors in {1}", top);
 
         Verify.NotNull(target, "The given vector is NULL");
 
-        HttpRequestMessage request = SearchVectorsRequest
+        using HttpRequestMessage request = SearchVectorsRequest
             .Create(this.Name)
             .SimilarTo(target)
             .HavingTags(requiredTags)
@@ -107,10 +119,10 @@ internal class QdrantCollection : IVectorDbCollection
         foreach (var v in data.Vectors)
         {
             var record = new DataEntry<VectorRecordData<float>>(key: v.ExternalId,
-                value: new VectorRecordData<float>(
-                    new Embedding<float>(v.Vector),
-                    v.ExternalPayload,
-                    v.ExternalTags));
+                                                   value: new VectorRecordData<float>(
+                                                                new Embedding<float>(v.Vector),
+                                                                v.ExternalPayload,
+                                                                v.ExternalTags));
 
             result.Add(new KeyValuePair<DataEntry<VectorRecordData<float>>, double>(record, v.Score ?? 0));
         }
@@ -125,8 +137,7 @@ internal class QdrantCollection : IVectorDbCollection
 
     #region private ================================================================================
 
-    private static List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> SortSearchResultByScore(
-        List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> list)
+    private static List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> SortSearchResultByScore(List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> list)
     {
         return (from entry in list orderby entry.Value descending select entry).ToList();
     }
@@ -141,7 +152,7 @@ internal class QdrantCollection : IVectorDbCollection
     {
         this._log.Debug("Searching vector by external ID {0}", externalId);
 
-        HttpRequestMessage request = SearchVectorsRequest
+        using HttpRequestMessage request = SearchVectorsRequest
             .Create(this.Name, this.VectorSize)
             .HavingExternalId(externalId)
             .IncludePayLoad()
@@ -189,7 +200,7 @@ internal class QdrantCollection : IVectorDbCollection
         if (response.StatusCode == HttpStatusCode.UnprocessableEntity
             && responseContent.Contains("data did not match any variant of untagged enum ExtendedPointId"))
         {
-            throw new Exception("The vector ID must be a GUID string");
+            throw new VectorDbException("The vector ID must be a GUID string");
         }
 
         try
@@ -216,6 +227,8 @@ internal class QdrantCollection : IVectorDbCollection
             .Build();
         await this._vectorHttp.ExecuteHttpRequestAsync(request);
     }
+
+
 
     #endregion
 }

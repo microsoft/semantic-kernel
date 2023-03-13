@@ -26,7 +26,7 @@ internal class CreateVectorsRequest : IValidatable
     public CreateVectorsRequest UpsertVector(string pointId, DataEntry<VectorRecordData<float>> vector)
     {
         this.Batch.Ids.Add(pointId);
-        this.Batch.Vectors.Add(vector.Value.Embedding.Vector.ToArray());
+        this.Batch.Vectors.Add(vector.Value!.Embedding.Vector.ToArray());
         this.Batch.Payloads.Add(PointPayloadDataMapper.PreparePointPayload(vector));
         return this;
     }

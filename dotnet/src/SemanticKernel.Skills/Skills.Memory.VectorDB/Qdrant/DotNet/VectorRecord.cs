@@ -18,4 +18,6 @@ public class VectorRecordData<TEmbedding> : IEmbeddingWithMetadata<TEmbedding>
         this.Payload = payload;
         this.Tags = tags;
     }
+
 }
+
