@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -43,15 +44,9 @@ public class TextMemorySkill
     /// </summary>
     public const string LimitParam = "limit";
 
-    /// <summary>
-    /// Name of the context variable used to specify string separating multiple recalled memories
-    /// </summary>
-    public const string JoinParam = "join";
-
     private const string DefaultCollection = "generic";
     private const string DefaultRelevance = "0.75";
     private const string DefaultLimit = "1";
-    private const string DefaultJoiner = ";";
 
     /// <summary>
     /// Recall a specific memory
@@ -96,7 +91,6 @@ public class TextMemorySkill
     [SKFunctionContextParameter(Name = RelevanceParam, Description = "The relevance score, from 0.0 to 1.0, where 1.0 means perfect match",
         DefaultValue = DefaultRelevance)]
     [SKFunctionContextParameter(Name = LimitParam, Description = "The maximum number of relevant memories to recall", DefaultValue = DefaultLimit)]
-    [SKFunctionContextParameter(Name = JoinParam, Description = "String used to separate multiple memories", DefaultValue = DefaultJoiner)]
     public string Recall(string text, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
@@ -111,11 +105,12 @@ public class TextMemorySkill
         context.Log.LogTrace("Searching memories for '{0}', collection '{1}', relevance '{2}'", text, collection, relevance);
 
         // TODO: support locales, e.g. "0.7" and "0,7" must both work
-        IAsyncEnumerable<MemoryQueryResult> memories = context.Memory
-            .SearchAsync(collection, text, limit: int.Parse(limit, CultureInfo.InvariantCulture), minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture));
+        var memories = context.Memory
+            .SearchAsync(collection, text, limit: int.Parse(limit, CultureInfo.InvariantCulture), minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture))
+            .ToEnumerable();
 
         context.Log.LogTrace("Memories found (collection: {0})", collection);
-        var resultString = string.Join(context[JoinParam], memories.Select(m => m.Text).ToEnumerable());
+        var resultString = JsonSerializer.Serialize(memories.Select(x => x.Text));
 
         if (resultString.Length > 8000)
         {
@@ -159,19 +154,19 @@ public class TextMemorySkill
     }
 
     /// <summary>
-    /// Forget specific memory
+    /// Remove specific memory
     /// </summary>
     /// <example>
     /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
-    /// {{memory.forget_specific }}
+    /// {{memory.remove_specific }}
     /// </example>
-    /// <param name="context">Contains the 'collection' containing the memory to forget.</param>
-    [SKFunction("Forget specific memory")]
-    [SKFunctionName("Forget_Specific")]
-    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the memory to forget",
+    /// <param name="context">Contains the 'collection' containing the memory to remove.</param>
+    [SKFunction("Remove specific memory")]
+    [SKFunctionName("Remove_Specific")]
+    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the memory to remove",
         DefaultValue = DefaultCollection)]
-    [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated with the memory to forget")]
-    public async Task ForgetSpecificAsync(SKContext context)
+    [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated with the memory to remove")]
+    public async Task RemoveSpecificAsync(SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
         Verify.NotEmpty(collection, "Memory collection not defined");
@@ -179,48 +174,8 @@ public class TextMemorySkill
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
         Verify.NotEmpty(key, "Memory key not defined");
 
-        context.Log.LogTrace("Forgetting memory from collection '{0}'", collection);
+        context.Log.LogTrace("Removing memory from collection '{0}'", collection);
 
         await context.Memory.RemoveAsync(collection, key);
-    }
-
-    /// <summary>
-    /// Forget up to N memories related to the input
-    /// </summary>
-    /// <example>
-    /// SKContext["input"] = "Information about France"
-    /// {{memory.forget $input }}
-    /// </example>
-    /// <param name="text">The input text to compare memories to</param>
-    /// <param name="context">Contains the 'collection' to search for relevant memories to remove and 'relevance' score</param>
-    [SKFunction("Forget up to N memories related to the input")]
-    [SKFunctionName("Forget")]
-    [SKFunctionInput(Description = "The input text to compare memories to")]
-    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection where to search for memories", DefaultValue = DefaultCollection)]
-    [SKFunctionContextParameter(Name = RelevanceParam, Description = "The relevance score, from 0.0 to 1.0, where 1.0 means perfect match",
-        DefaultValue = DefaultRelevance)]
-    [SKFunctionContextParameter(Name = LimitParam, Description = "The maximum number of relevant memories to forget", DefaultValue = DefaultLimit)]
-    public async Task ForgetAsync(string text, SKContext context)
-    {
-        var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
-        Verify.NotEmpty(collection, "Memories collection not defined");
-
-        var relevance = context.Variables.ContainsKey(RelevanceParam) ? context[RelevanceParam] : DefaultRelevance;
-        if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultRelevance; }
-
-        var limit = context.Variables.ContainsKey(LimitParam) ? context[LimitParam] : LimitParam;
-        if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultLimit; }
-
-        context.Log.LogTrace("Searching memories for '{0}', collection '{1}', relevance '{2}'", text, collection, relevance);
-
-        // TODO: support locales, e.g. "0.7" and "0,7" must both work
-        IAsyncEnumerable<MemoryQueryResult> memories = context.Memory
-            .SearchAsync(collection, text, limit: int.Parse(limit, CultureInfo.InvariantCulture), minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture));
-
-        await foreach (var memory in memories)
-        {
-            context.Log.LogTrace("Forgetting memory '{0}' from collection '{1}'", memory.Id, collection);
-            await context.Memory.RemoveAsync(collection, memory.Id);
-        }
     }
 }

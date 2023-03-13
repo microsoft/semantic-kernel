@@ -63,7 +63,6 @@ public static class Example15_MemorySkill
         Console.WriteLine("========= Example: Recalling an Idea =========");
 
         context[TextMemorySkill.LimitParam] = "2";
-        context[TextMemorySkill.JoinParam] = "\n";
         string ask = "where did I grow up?";
         answer = memorySkill.Recall(ask, context);
         Console.WriteLine("Ask: {0}", ask);
@@ -79,13 +78,11 @@ public static class Example15_MemorySkill
 
             Ask: where did I grow up?
             Answer:
-            My family is from New York
-            I've been living in Seattle since 2005 
+                ["My family is from New York","I\u0027ve been living in Seattle since 2005"]
 
             Ask: where do I live?
             Answer:
-            I've been living in Seattle since 200
-            My family is from New York
+                ["I\u0027ve been living in Seattle since 2005","My family is from New York"]
         */
 
         // ========= Use memory in a semantic function =========
@@ -123,7 +120,7 @@ Answer:
             No, I do not live in the same town where I grew up since my family is from New York and I have been living in Seattle since 2005.
         */
 
-        // ========= Forget a memory =========
+        // ========= Remove a memory =========
         Console.WriteLine("========= Example: Forgetting a Memory =========");
 
         context["fact1"] = "What is my name?";
@@ -137,48 +134,25 @@ Answer:
         Console.WriteLine(result);
 
         /*
-        Output:
+        Approximate Output:
             Tell me a bit about myself
 
-            I am Andrea and I come from a family from New York. I work as a tourist operator,
-            helping people plan their trips and find the best places to visit.
+            My name is Andrea and my family is from New York. I work as a tourist operator.
         */
 
         context[TextMemorySkill.KeyParam] = "info1";
-        await memorySkill.ForgetSpecificAsync(context);
+        await memorySkill.RemoveSpecificAsync(context);
 
         result = await aboutMeOracle.InvokeAsync(context);
 
         Console.WriteLine(context["query"] + "\n");
         Console.WriteLine(result);
+
         /*
-        Output:
+        Approximate Output:
             Tell me a bit about myself
 
-            I'm originally from New York and have been living in Seattle since 2005. I currently work as a
-            tourist operator, helping people plan their trips and find the best places to visit.
-        */
-
-        // ========= Forget an idea =========
-        Console.WriteLine("========= Example: Forgetting an Idea =========");
-        await memorySkill.ForgetAsync("my location", context);
-
-        context["fact1"] = "where did I grow up?";
-        context["fact2"] = "where do I live?";
-        context["query"] = "Do I live in the same town where I grew up?";
-        context[TextMemorySkill.RelevanceParam] = "0.8";
-
-        result = await aboutMeOracle.InvokeAsync(context);
-
-        Console.WriteLine(context["query"] + "\n");
-        Console.WriteLine(result);
-
-        /*
-        Output:
-
-            Do I live in the same town where I grew up?
-
-            No, since I have been living in Seattle since 2005, it is likely that I did not grow up in Seattle.
+            I'm from a family originally from New York and I work as a tourist operator. I've been living in Seattle since 2005.
         */
     }
 }
