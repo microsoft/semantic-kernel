@@ -196,7 +196,8 @@ public class PlannerSkill
     [SKFunction("Create a plan using registered functions to accomplish a goal.")]
     [SKFunctionName("CreatePlan")]
     [SKFunctionInput(Description = "The goal to accomplish.")]
-    [SKFunctionContextParameter(Name = Parameters.RelevancyThreshold, Description = "The relevancy threshold when filtering registered functions.", DefaultValue = "0.78")]
+    [SKFunctionContextParameter(Name = Parameters.RelevancyThreshold, Description = "The relevancy threshold when filtering registered functions.",
+        DefaultValue = "0.78")]
     [SKFunctionContextParameter(Name = Parameters.MaxFunctions, Description = "", DefaultValue = "10")]
     [SKFunctionContextParameter(Name = Parameters.ExcludedFunctions, Description = "A list of functions to exclude from the plan.", DefaultValue = "")]
     [SKFunctionContextParameter(Name = Parameters.ExcludedSkills, Description = "A list of skills to exclude from the plan.", DefaultValue = "")]

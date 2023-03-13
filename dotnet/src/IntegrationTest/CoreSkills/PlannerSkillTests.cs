@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -53,21 +53,21 @@ public sealed class PlannerSkillTests : IDisposable
         IKernel target = Kernel.Builder
             .WithLogger(this._logger)
             .Configure(config =>
-                {
-                    config.AddAzureOpenAICompletionBackend(
-                        label: azureOpenAIConfiguration.Label,
-                        deploymentName: azureOpenAIConfiguration.DeploymentName,
-                        endpoint: azureOpenAIConfiguration.Endpoint,
-                        apiKey: azureOpenAIConfiguration.ApiKey);
+            {
+                config.AddAzureOpenAICompletionBackend(
+                    label: azureOpenAIConfiguration.Label,
+                    deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
 
-                    config.AddAzureOpenAIEmbeddingsBackend(
-                        label: azureOpenAIEmbeddingsConfiguration.Label,
-                        deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                        endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                        apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+                config.AddAzureOpenAIEmbeddingsBackend(
+                    label: azureOpenAIEmbeddingsConfiguration.Label,
+                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
 
-                    config.SetDefaultCompletionBackend(azureOpenAIConfiguration.Label);
-                })
+                config.SetDefaultCompletionBackend(azureOpenAIConfiguration.Label);
+            })
             .WithMemoryStorage(memoryStorage)
             .Build();
 

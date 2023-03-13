@@ -78,11 +78,13 @@ internal static class SKContextExtensions
                     {
                         // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                         // As folks may want to tune their functions to be more or less relevant.
-                        await context.Memory.SaveInformationAsync(MemoryCollectionName, key, functionName, function.ToManualString(), context.CancellationToken);
+                        await context.Memory.SaveInformationAsync(MemoryCollectionName, key, functionName, function.ToManualString(),
+                            context.CancellationToken);
                     }
                 }
 
-                var memories = context.Memory.SearchAsync(MemoryCollectionName, semanticQuery, config.MaxFunctions, config.RelevancyThreshold, context.CancellationToken);
+                var memories = context.Memory.SearchAsync(MemoryCollectionName, semanticQuery, config.MaxFunctions, config.RelevancyThreshold,
+                    context.CancellationToken);
 
                 result = new List<FunctionView>();
                 await foreach (var memoryEntry in memories)
