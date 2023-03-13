@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.OpenAI.Services;
+using Microsoft.SemanticKernel.AI.OpenAI.Configuration;
 using Microsoft.SemanticKernel.Diagnostics;
 using Xunit;
 

@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
+namespace Microsoft.SemanticKernel.AI.OpenAI.Configuration;
 
 /// <summary>
 /// Azure OpenAI configuration.
 /// </summary>
-public sealed class AzureOpenAIConfig : BackendConfig
+public sealed class AzureOpenAIConfig : BackendConfig, ICompletionBackendConfig, IEmbeddingsBackendConfig
 {
     /// <summary>
     /// Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource

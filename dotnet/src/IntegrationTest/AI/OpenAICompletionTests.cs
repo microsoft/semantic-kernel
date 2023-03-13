@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using IntegrationTests.TestSettings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.OpenAI.Configuration;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Xunit;

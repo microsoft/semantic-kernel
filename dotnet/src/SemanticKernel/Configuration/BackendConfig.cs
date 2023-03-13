@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
+namespace Microsoft.SemanticKernel.Configuration;
 
 public abstract class BackendConfig : IBackendConfig
 {

@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
+namespace Microsoft.SemanticKernel.AI.OpenAI.Configuration;
 
 /// <summary>
 /// OpenAI configuration.
 /// </summary>
-public sealed class OpenAIConfig : BackendConfig
+public sealed class OpenAIConfig : BackendConfig, ICompletionBackendConfig, IEmbeddingsBackendConfig
 {
     /// <summary>
     /// OpenAI model name, see https://platform.openai.com/docs/models
