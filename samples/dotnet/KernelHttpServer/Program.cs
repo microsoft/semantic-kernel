@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.SemanticKernel.Memory;
 
 namespace KernelHttpServer;
 
@@ -23,6 +24,8 @@ public static class Program
             })
             .ConfigureServices(services =>
             {
+                services.AddSingleton<IMemoryStore<float>>(new VolatileMemoryStore());
+
                 // return JSON with expected lowercase naming
                 services.Configure<JsonSerializerOptions>(options =>
                 {

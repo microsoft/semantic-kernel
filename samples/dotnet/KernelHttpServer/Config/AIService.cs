@@ -2,7 +2,7 @@
 
 namespace KernelHttpServer.Config;
 
-public enum CompletionService
+public enum AIService
 {
     AzureOpenAI = 0,
 
