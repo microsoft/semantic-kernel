@@ -1,58 +1,50 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.OpenAI.Clients;
 using Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
+using Microsoft.SemanticKernel.AI.OpenAI.Services.Deployments;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
 
 /// <summary>
 /// Azure OpenAI text completion client.
 /// </summary>
-public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextCompletionClient
+public sealed class AzureTextCompletion : ITextCompletionClient
 {
     /// <summary>
-    /// Creates a new AzureTextCompletion client instance
+    /// Initializes a new instance of the <see cref="AzureTextCompletion"/> class.
     /// </summary>
-    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
-    /// <param name="log">Application logger</param>
-    public AzureTextCompletion(string modelId, string endpoint, string apiKey, string apiVersion, ILogger? log = null)
-        : base(log)
+    /// <param name="serviceClient">Azure OpenAI service client.</param>
+    /// <param name="deploymentProvider">Azure OpenAI deployment provider.</param>
+    /// <param name="modelId">Azure OpenAI model id or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    public AzureTextCompletion(IAzureOpenAIServiceClient serviceClient, IAzureOpenAIDeploymentProvider deploymentProvider, string modelId)
     {
-        Verify.NotEmpty(modelId, "The ID cannot be empty, you must provide a Model ID or a Deployment name.");
+        Verify.NotNull(serviceClient, "AzureOpenAI service client is not set to an instance of an object.");
+        Verify.NotNull(deploymentProvider, "AzureOpenAI deployment provider is not set to an instance of an object.");
+        Verify.NotEmpty(modelId, "The model id cannot be empty, you must provide a model id or a deployment name.");
+
+        this._serviceClient = serviceClient;
+        this._deploymentProvider = deploymentProvider;
         this._modelId = modelId;
-
-        Verify.NotEmpty(endpoint, "The Azure endpoint cannot be empty");
-        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
-        this.Endpoint = endpoint.TrimEnd('/');
-
-        Verify.NotEmpty(apiKey, "The Azure API key cannot be empty");
-        this.HTTPClient.DefaultRequestHeaders.Add("api-key", apiKey);
-
-        this.AzureOpenAIApiVersion = apiVersion;
     }
 
     /// <summary>
     /// Creates a completion for the provided prompt and parameters
     /// </summary>
-    /// <param name="text">Text to complete</param>
-    /// <param name="requestSettings">Request settings for the completion API</param>
+    /// <param name="text">Text to complete - prompt.</param>
+    /// <param name="requestSettings">Request settings for the completion API.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The completed text.</returns>
     /// <exception cref="AIException">AIException thrown during the request</exception>
-    public async Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings)
+    public async Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
     {
+        Verify.NotEmpty(text, "Text cannot be empty");
         Verify.NotNull(requestSettings, "Completion settings cannot be empty");
-
-        var deploymentName = await this.GetDeploymentNameAsync(this._modelId);
-        var url = $"{this.Endpoint}/openai/deployments/{deploymentName}/completions?api-version={this.AzureOpenAIApiVersion}";
-
-        this.Log.LogDebug("Sending Azure OpenAI completion request to {0}", url);
 
         if (requestSettings.MaxTokens < 1)
         {
@@ -61,7 +53,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
                 $"MaxTokens {requestSettings.MaxTokens} is not valid, the value must be greater than zero");
         }
 
-        var requestBody = Json.Serialize(new AzureCompletionRequest
+        var request = new AzureCompletionRequest
         {
             Prompt = text,
             Temperature = requestSettings.Temperature,
@@ -70,13 +62,37 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
             FrequencyPenalty = requestSettings.FrequencyPenalty,
             MaxTokens = requestSettings.MaxTokens,
             Stop = requestSettings.StopSequences is { Count: > 0 } ? requestSettings.StopSequences : null,
-        });
+        };
 
-        return await this.ExecuteCompleteRequestAsync(url, requestBody);
+        var deploymentName = await this._deploymentProvider.GetDeploymentNameAsync(this._modelId, cancellationToken);
+
+        var response = await this._serviceClient.ExecuteCompletionAsync(request, deploymentName, cancellationToken);
+
+        if (!response.Completions.Any())
+        {
+            throw new AIException(
+                AIException.ErrorCodes.InvalidResponseContent,
+                "Completions not found");
+        }
+
+        return response.Completions.First().Text;
     }
 
     #region private ================================================================================
 
+    /// <summary>
+    /// Azure OpenAI service client.
+    /// </summary>
+    private readonly IAzureOpenAIServiceClient _serviceClient;
+
+    /// <summary>
+    /// Azure OpenAI deployment provider.
+    /// </summary>
+    private readonly IAzureOpenAIDeploymentProvider _deploymentProvider;
+
+    /// <summary>
+    /// Azure OpenAI model id. 
+    /// </summary>
     private readonly string _modelId;
 
     #endregion

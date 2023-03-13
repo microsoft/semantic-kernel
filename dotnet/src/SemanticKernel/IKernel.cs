@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.OpenAI.Services;
 using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -156,4 +158,14 @@ public interface IKernel
     /// </summary>
     /// <returns>SK context</returns>
     SKContext CreateNewContext();
+
+    /// <summary>
+    /// The HttpClient factory.
+    /// </summary>
+    internal IHttpClientFactory HttpClientFactory { get; }
+
+    /// <summary>
+    /// The BackendServiceFactory factory.
+    /// </summary>
+    internal IBackendServiceFactory BackendServiceFactory { get; }
 }

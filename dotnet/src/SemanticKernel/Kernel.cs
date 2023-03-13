@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.OpenAI.Services;
 using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -39,6 +40,12 @@ public sealed class Kernel : IKernel, IDisposable
 
     /// <inheritdoc/>
     public ILogger Log => this._log;
+
+    /// <inheritdoc/>
+    IHttpClientFactory IKernel.HttpClientFactory => this._httpClientFactory;
+
+    /// <inheritdoc/>
+    IBackendServiceFactory IKernel.BackendServiceFactory => this._backendServiceFactory;
 
     /// <inheritdoc/>
     public ISemanticTextMemory Memory => this._memory;
@@ -74,6 +81,8 @@ public sealed class Kernel : IKernel, IDisposable
         this._memory = memory;
         this._promptTemplateEngine = promptTemplateEngine;
         this._skillCollection = skillCollection;
+        this._httpClientFactory = new HttpClientFactory();
+        this._backendServiceFactory = new BackendServiceFactory(this._httpClientFactory, this._log);
     }
 
     /// <inheritdoc/>
@@ -236,6 +245,8 @@ public sealed class Kernel : IKernel, IDisposable
     private readonly ISkillCollection _skillCollection;
     private ISemanticTextMemory _memory;
     private readonly IPromptTemplateEngine _promptTemplateEngine;
+    private readonly IBackendServiceFactory _backendServiceFactory;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     private ISKFunction CreateSemanticFunction(
         string skillName,
@@ -258,33 +269,9 @@ public sealed class Kernel : IKernel, IDisposable
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
         // TODO: allow to postpone this (e.g. use lazy init), allow to create semantic functions without a default backend
-        var backend = this._config.GetCompletionBackend(functionConfig.PromptTemplateConfig.DefaultBackends.FirstOrDefault());
+        var backendConfig = this._config.GetCompletionBackend(functionConfig.PromptTemplateConfig.DefaultBackends.FirstOrDefault());
 
-        switch (backend)
-        {
-            case AzureOpenAIConfig azureBackendConfig:
-                func.SetAIBackend(() => new AzureTextCompletion(
-                    azureBackendConfig.DeploymentName,
-                    azureBackendConfig.Endpoint,
-                    azureBackendConfig.APIKey,
-                    azureBackendConfig.APIVersion,
-                    this._log));
-                break;
-
-            case OpenAIConfig openAiConfig:
-                func.SetAIBackend(() => new OpenAITextCompletion(
-                    openAiConfig.ModelId,
-                    openAiConfig.APIKey,
-                    openAiConfig.OrgId,
-                    this._log));
-                break;
-
-            default:
-                throw new AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    $"Unknown/unsupported backend configuration type {backend.GetType():G}, unable to prepare semantic function. " +
-                    $"Function description: {functionConfig.PromptTemplateConfig.Description}");
-        }
+        func.SetAIBackend(() => this._backendServiceFactory.CreateTextCompletionClient(backendConfig, functionConfig.PromptTemplateConfig.Description));
 
         return func;
     }

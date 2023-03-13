@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.OpenAI.Services;
 using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
@@ -41,32 +39,7 @@ public static class MemoryConfiguration
 
         Verify.NotNull(embeddingsBackendCfg, $"AI configuration is missing for label: {embeddingsBackendLabel}");
 
-        IEmbeddingGenerator<string, float>? embeddingGenerator;
-
-        switch (embeddingsBackendCfg)
-        {
-            case AzureOpenAIConfig azureAIConfig:
-                embeddingGenerator = new AzureTextEmbeddings(
-                    azureAIConfig.DeploymentName,
-                    azureAIConfig.Endpoint,
-                    azureAIConfig.APIKey,
-                    azureAIConfig.APIVersion,
-                    kernel.Log);
-                break;
-
-            case OpenAIConfig openAIConfig:
-                embeddingGenerator = new OpenAITextEmbeddings(
-                    openAIConfig.ModelId,
-                    openAIConfig.APIKey,
-                    openAIConfig.OrgId,
-                    kernel.Log);
-                break;
-
-            default:
-                throw new AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    $"Unknown/unsupported backend type {embeddingsBackendCfg.GetType():G}, unable to prepare semantic memory");
-        }
+        var embeddingGenerator = kernel.BackendServiceFactory.CreateEmbeddingGenerator(embeddingsBackendCfg);
 
         UseMemory(kernel, embeddingGenerator, storage);
     }

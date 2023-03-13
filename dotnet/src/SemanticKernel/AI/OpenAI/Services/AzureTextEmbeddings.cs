@@ -1,61 +1,77 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.OpenAI.Clients;
 using Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
+using Microsoft.SemanticKernel.AI.OpenAI.Services.Deployments;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
+using static Microsoft.SemanticKernel.AI.OpenAI.HttpSchema.EmbeddingResponse;
 
 namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
 
 /// <summary>
 /// Azure OpenAI text embedding service.
 /// </summary>
-public sealed class AzureTextEmbeddings : AzureOpenAIClientAbstract, IEmbeddingGenerator<string, float>
+public sealed class AzureTextEmbeddings : IEmbeddingGenerator<string, float>
 {
-    private readonly string _modelId;
-
     /// <summary>
-    /// Creates a new AzureTextEmbeddings client instance
+    /// Initializes a new instance of the <see cref="AzureTextEmbeddings"/> class.
     /// </summary>
-    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
-    /// <param name="log">Application logger</param>
-    public AzureTextEmbeddings(string modelId, string endpoint, string apiKey, string apiVersion, ILogger? log = null)
-        : base(log)
+    /// <param name="serviceClient">Azure OpenAI service client.</param>
+    /// <param name="deploymentProvider">Azure OpenAI deployment provider.</param>
+    /// <param name="modelId">Azure OpenAI model id or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    public AzureTextEmbeddings(IAzureOpenAIServiceClient serviceClient, IAzureOpenAIDeploymentProvider deploymentProvider, string modelId)
     {
-        Verify.NotEmpty(modelId, "The ID cannot be empty, you must provide a Model ID or a Deployment name.");
+        Verify.NotNull(serviceClient, "AzureOpenAI service client is not set to an instance of an object.");
+        Verify.NotNull(deploymentProvider, "AzureOpenAI deployment provider is not set to an instance of an object.");
+        Verify.NotEmpty(modelId, "The model id cannot be empty, you must provide a model id or a deployment name.");
+
+        this._serviceClient = serviceClient;
+        this._deploymentProvider = deploymentProvider;
         this._modelId = modelId;
-
-        Verify.NotEmpty(endpoint, "The Azure endpoint cannot be empty");
-        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
-        this.Endpoint = endpoint.TrimEnd('/');
-
-        Verify.NotEmpty(apiKey, "The Azure API key cannot be empty");
-        this.HTTPClient.DefaultRequestHeaders.Add("api-key", apiKey);
-
-        this.AzureOpenAIApiVersion = apiVersion;
     }
 
     /// <inheritdoc/>
-    public async Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(IList<string> data)
+    public async Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken = default)
     {
-        var deploymentName = await this.GetDeploymentNameAsync(this._modelId);
-        var url = $"{this.Endpoint}/openai/deployments/{deploymentName}/embeddings?api-version={this.AzureOpenAIApiVersion}";
+        Verify.NotNull(data, "List o strings is not set to an instance of an object.");
 
-        var embeddings = new List<Embedding<float>>(data.Count);
+        var deploymentName = await this._deploymentProvider.GetDeploymentNameAsync(this._modelId, cancellationToken);
+
+        var result = new List<EmbeddingResponseIndex>(data.Count);
 
         for (int i = 0; i < data.Count; i++)
         {
-            var requestBody = Json.Serialize(new AzureEmbeddingRequest { Input = new List<string> { data[i] } });
-            embeddings.AddRange(await this.ExecuteEmbeddingRequestAsync(url, requestBody));
+            var request = new AzureEmbeddingRequest { Input = new List<string> { data[i] } };
+
+            var response = await this._serviceClient.CreateEmbeddingAsync(request, deploymentName, cancellationToken);
+
+            result.AddRange(response.Embeddings);
         }
 
-        return embeddings;
+        return result.Select(e => new Embedding<float>(e.Values.ToArray())).ToList(); ;
     }
+
+    #region private ================================================================================
+
+    /// <summary>
+    /// Azure OpenAI service client.
+    /// </summary>
+    private readonly IAzureOpenAIServiceClient _serviceClient;
+
+    /// <summary>
+    /// Azure OpenAI deployment provider.
+    /// </summary>
+    private readonly IAzureOpenAIDeploymentProvider _deploymentProvider;
+
+    /// <summary>
+    /// Azure OpenAI model id. 
+    /// </summary>
+    private readonly string _modelId;
+
+    #endregion
 }

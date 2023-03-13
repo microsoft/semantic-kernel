@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 
@@ -19,8 +20,9 @@ public interface IEmbeddingGenerator<TValue, TEmbedding>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
     /// <param name="data">List of strings to generate embeddings for</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>List of embeddings</returns>
-    Task<IList<Embedding<TEmbedding>>> GenerateEmbeddingsAsync(IList<TValue> data);
+    Task<IList<Embedding<TEmbedding>>> GenerateEmbeddingsAsync(IList<TValue> data, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

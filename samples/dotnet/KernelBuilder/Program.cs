@@ -4,6 +4,9 @@
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
 // You can access the builder using either Kernel.Builder or KernelBuilder.
 
+using Microsoft.SemanticKernel.AI.OpenAI.Clients;
+using Microsoft.SemanticKernel.AI.OpenAI.Services.Deployments;
+
 IKernel kernel1 = KernelBuilder.Create();
 
 IKernel kernel2 = Kernel.Builder.Build();
@@ -37,7 +40,13 @@ var kernelX3 = builderX.Build();
 // Manually setup all the dependencies used internally by the kernel
 var logger = NullLogger.Instance;
 var memoryStorage = new VolatileMemoryStore();
-var embeddingGenerator = new AzureTextEmbeddings("modelId", "https://...", "apiKey", "2022-12-01", logger);
+
+var httpClient = new HttpClient();
+var azureOpenAIServiceClient = new AzureOpenAIServiceClient(httpClient, "api-key");
+
+var azureOpenAIDeploymentProvider = new AzureOpenAIDeploymentProvider(azureOpenAIServiceClient, "modelNamespace");
+var embeddingGenerator = new AzureTextEmbeddings(azureOpenAIServiceClient, azureOpenAIDeploymentProvider, "modelId");
+
 var memory = new SemanticTextMemory(memoryStorage, embeddingGenerator);
 var skills = new SkillCollection();
 var templateEngine = new PromptTemplateEngine(logger);
