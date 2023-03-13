@@ -68,7 +68,7 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                 }
 
                 // Drain response content to free connections. Need to perform this
-                // before retry attempt and before the TooManyRetries ServiceException.
+                // before retry attempt and before re-throwing.
                 if (response.Content != null)
                 {
 #if NET5_0_OR_GREATER
@@ -80,6 +80,8 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
 
                 reason = response.StatusCode.ToString();
 
+                // If the retry count is greater than the max retry count then we'll
+                // just return
                 if (retryCount >= this._config.MaxRetryCount)
                 {
                     this._log.LogError(
@@ -96,11 +98,21 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                     return response;
                 }
             }
-            catch (Exception e) when ((this.ShouldRetry(e) || this.ShouldRetry(e.InnerException)) &&
-                                      retryCount < this._config.MaxRetryCount &&
-                                      this.HasTimeForRetry(start, retryCount, response, out waitFor))
+            catch (Exception e) when (this.ShouldRetry(e) || this.ShouldRetry(e.InnerException))
             {
                 reason = e.GetType().ToString();
+                if (retryCount >= this._config.MaxRetryCount)
+                {
+                    this._log.LogError(e,
+                        "Error executing request, max retry count reached. Reason: {0}", reason);
+                    throw;
+                }
+                else if (!this.HasTimeForRetry(start, retryCount, response, out waitFor))
+                {
+                    this._log.LogError(e,
+                        "Error executing request, max total retry time reached. Reason: {0}", reason);
+                    throw;
+                }
             }
 
             // If the request requires a retry then we'll retry
@@ -125,19 +137,28 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         }
     }
 
+    /// <summary>
+    /// Get the wait time for the next retry.
+    /// </summary>
+    /// <param name="retryCount">Current retry count</param>
+    /// <param name="response">The response message that potentially contains RetryAfter header.</param>
     private TimeSpan GetWaitTime(int retryCount, HttpResponseMessage? response)
     {
+        // If the response contains a RetryAfter header, use that value
+        // Otherwise, use the configured min retry delay
         var retryAfter = response?.Headers.RetryAfter?.Date.HasValue == true
-            ? response?.Headers.RetryAfter?.Date - DateTimeOffset.Now
+            ? response?.Headers.RetryAfter?.Date - this._timeProvider.GetCurrentTime()
             : (response?.Headers.RetryAfter?.Delta) ?? this._config.MinRetryDelay;
         retryAfter ??= this._config.MinRetryDelay;
 
+        // If the retry delay is longer than the max retry delay, use the max retry delay
         var timeToWait = retryAfter > this._config.MaxRetryDelay
             ? this._config.MaxRetryDelay
             : retryAfter < this._config.MinRetryDelay
                 ? this._config.MinRetryDelay
                 : retryAfter ?? default;
 
+        // If exponential backoff is enabled, double the delay for each retry
         if (this._config.UseExponentialBackoff)
         {
             for (var backoffRetryCount = 1; backoffRetryCount < retryCount + 1; backoffRetryCount++)
@@ -149,6 +170,14 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         return timeToWait;
     }
 
+    /// <summary>
+    /// Determines if there is time left for a retry.
+    /// </summary>
+    /// <param name="start">The start time of the original request.</param>
+    /// <param name="retryCount">The current retry count.</param>
+    /// <param name="response">The response message that potentially contains RetryAfter header.</param>
+    /// <param name="waitFor">The wait time for the next retry.</param>
+    /// <returns>True if there is time left for a retry, false otherwise.</returns>
     private bool HasTimeForRetry(DateTimeOffset start, int retryCount, HttpResponseMessage? response, out TimeSpan waitFor)
     {
         waitFor = this.GetWaitTime(retryCount, response);
@@ -163,8 +192,13 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         return this._config.RetryableStatusCodes.Contains(statusCode);
     }
 
-    private bool ShouldRetry(Exception exception)
+    private bool ShouldRetry(Exception? exception)
     {
+        if (exception == null)
+        {
+            return false;
+        }
+
         return this._config.RetryableExceptionTypes.Contains(exception.GetType());
     }
 
@@ -177,7 +211,7 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
     /// <remarks>
     /// Re-issue a new HTTP request with the previous request's headers and properties
     /// </remarks>
-    internal static async Task<HttpRequestMessage> CloneAsync(HttpRequestMessage originalRequest)
+    private static async Task<HttpRequestMessage> CloneAsync(HttpRequestMessage originalRequest)
     {
         var newRequest = new HttpRequestMessage(originalRequest.Method, originalRequest.RequestUri);
 
@@ -225,6 +259,9 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
     private readonly IDelayProvider _delayProvider;
     private readonly ITimeProvider _timeProvider;
 
+    /// <summary>
+    /// Interface for a delay provider, primarily to enable unit testing.
+    /// </summary>
     internal interface IDelayProvider
     {
         Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken);
@@ -238,6 +275,9 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         }
     }
 
+    /// <summary>
+    /// Interface for a time provider, primarily to enable unit testing.
+    /// </summary>
     internal interface ITimeProvider
     {
         DateTimeOffset GetCurrentTime();
