@@ -3,7 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.AI.OpenAI.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
 
@@ -20,134 +21,75 @@ public sealed class KernelConfig
     public IRetryMechanism RetryMechanism { get => this._retryMechanism; }
 
     /// <summary>
-    /// Adds an Azure OpenAI backend to the list.
-    /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
+    /// Add backend configuration for completion and or embeddings.
     /// </summary>
-    /// <param name="label">An identifier used to map semantic functions to backend,
-    /// decoupling prompts configurations from the actual model used</param>
-    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
-    /// <param name="overwrite">Whether to overwrite an existing configuration if the same name exists</param>
-    /// <returns>Self instance</returns>
-    public KernelConfig AddAzureOpenAICompletionBackend(
-        string label, string deploymentName, string endpoint, string apiKey, string apiVersion = "2022-12-01", bool overwrite = false)
+    /// <param name="config">Backend configuration data</param>
+    /// <param name="createClientFunc">Delegate to create an instance of completion client</param>
+    /// <param name="overwrite">Allow override of a preexisting configuration</param>
+    /// <returns>The updated kernel configuration.</returns>
+    /// <exception cref="KernelException"></exception>
+    public KernelConfig AddBackendConfig(IBackendConfig config, Func<ILogger, ITextCompletionClient>? createClientFunc = null, bool overwrite = false)
     {
-        Verify.NotEmpty(label, "The backend label is empty");
-
-        if (!overwrite && this.CompletionBackends.ContainsKey(label))
+        if (config is not ICompletionBackendConfig and not IEmbeddingsBackendConfig)
         {
             throw new KernelException(
                 KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"A completion backend already exists for the label: {label}");
+                $"Unsupported backend configuration: {config.Label}, {config.GetType()}");
         }
 
-        this.CompletionBackends[label] = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
+        if (config is ICompletionBackendConfig completionConfig)
+        {
+            this.AddCompletionBackendConfig(completionConfig, createClientFunc, overwrite);
+        }
+
+        if (config is IEmbeddingsBackendConfig embeddingsConfig)
+        {
+            this.AddEmbeddingsBackendConfig(embeddingsConfig, overwrite);
+        }
+
+        return this;
+    }
+
+    public KernelConfig AddCompletionBackendConfig(ICompletionBackendConfig completionConfig, Func<ILogger, ITextCompletionClient>? createClientFunc, bool overwrite = false)
+    {
+        Verify.NotEmpty(completionConfig.Label, "The completion backend label is empty");
+        Verify.NotNull(createClientFunc, "Create completion backend client delegate was not provided");
+
+        if (!overwrite && this.CompletionBackends.ContainsKey(completionConfig.Label))
+        {
+            throw new KernelException(
+                KernelException.ErrorCodes.InvalidBackendConfiguration,
+                $"A completion backend already exists for the label: {completionConfig.Label}");
+        }
+
+        this.CompletionBackends[completionConfig.Label] = completionConfig;
 
         if (this.CompletionBackends.Count == 1)
         {
-            this._defaultCompletionBackend = label;
+            this._defaultCompletionBackend = completionConfig.Label;
         }
+
+        this.AddCompletionBackendCreateClient(completionConfig, createClientFunc);
 
         return this;
     }
 
-    /// <summary>
-    /// Adds the OpenAI completion backend to the list.
-    /// See https://platform.openai.com/docs for service details.
-    /// </summary>
-    /// <param name="label">An identifier used to map semantic functions to backend,
-    /// decoupling prompts configurations from the actual model used</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
-    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
-    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="overwrite">Whether to overwrite an existing configuration if the same name exists</param>
-    /// <returns>Self instance</returns>
-    public KernelConfig AddOpenAICompletionBackend(
-        string label, string modelId, string apiKey, string? orgId = null, bool overwrite = false)
+    public KernelConfig AddEmbeddingsBackendConfig(IEmbeddingsBackendConfig embeddingsConfig, bool overwrite = false)
     {
-        Verify.NotEmpty(label, "The backend label is empty");
+        Verify.NotEmpty(embeddingsConfig.Label, "The embedding backend label is empty");
 
-        if (!overwrite && this.CompletionBackends.ContainsKey(label))
+        if (!overwrite && this.EmbeddingsBackends.ContainsKey(embeddingsConfig.Label))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"A completion backend already exists for the label: {label}");
+                $"An embeddings backend already exists for the label: {embeddingsConfig.Label}");
         }
 
-        this.CompletionBackends[label] = new OpenAIConfig(label, modelId, apiKey, orgId);
-
-        if (this.CompletionBackends.Count == 1)
-        {
-            this._defaultCompletionBackend = label;
-        }
-
-        return this;
-    }
-
-    /// <summary>
-    /// Adds an Azure OpenAI embeddings backend to the list.
-    /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
-    /// </summary>
-    /// <param name="label">An identifier used to map semantic functions to backend,
-    /// decoupling prompts configurations from the actual model used</param>
-    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
-    /// <param name="overwrite">Whether to overwrite an existing configuration if the same name exists</param>
-    /// <returns>Self instance</returns>
-    public KernelConfig AddAzureOpenAIEmbeddingsBackend(
-        string label, string deploymentName, string endpoint, string apiKey, string apiVersion = "2022-12-01", bool overwrite = false)
-    {
-        Verify.NotEmpty(label, "The backend label is empty");
-
-        if (!overwrite && this.EmbeddingsBackends.ContainsKey(label))
-        {
-            throw new KernelException(
-                KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"An embeddings backend already exists for the label: {label}");
-        }
-
-        this.EmbeddingsBackends[label] = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
+        this.EmbeddingsBackends[embeddingsConfig.Label] = embeddingsConfig;
 
         if (this.EmbeddingsBackends.Count == 1)
         {
-            this._defaultEmbeddingsBackend = label;
-        }
-
-        return this;
-    }
-
-    /// <summary>
-    /// Adds the OpenAI embeddings backend to the list.
-    /// See https://platform.openai.com/docs for service details.
-    /// </summary>
-    /// <param name="label">An identifier used to map semantic functions to backend,
-    /// decoupling prompts configurations from the actual model used</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
-    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
-    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="overwrite">Whether to overwrite an existing configuration if the same name exists</param>
-    /// <returns>Self instance</returns>
-    public KernelConfig AddOpenAIEmbeddingsBackend(
-        string label, string modelId, string apiKey, string? orgId = null, bool overwrite = false)
-    {
-        Verify.NotEmpty(label, "The backend label is empty");
-
-        if (!overwrite && this.EmbeddingsBackends.ContainsKey(label))
-        {
-            throw new KernelException(
-                KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"An embeddings backend already exists for the label: {label}");
-        }
-
-        this.EmbeddingsBackends[label] = new OpenAIConfig(label, modelId, apiKey, orgId);
-
-        if (this.EmbeddingsBackends.Count == 1)
-        {
-            this._defaultEmbeddingsBackend = label;
+            this._defaultEmbeddingsBackend = embeddingsConfig.Label;
         }
 
         return this;
@@ -244,7 +186,7 @@ public sealed class KernelConfig
     /// <param name="label">Optional label of the desired backend.</param>
     /// <returns>The completion backend configuration matching the given label or the default.</returns>
     /// <exception cref="KernelException">Thrown when no suitable backend is found.</exception>
-    public IBackendConfig GetCompletionBackend(string? label = null)
+    public ICompletionBackendConfig GetCompletionBackend(string? label = null)
     {
         if (string.IsNullOrEmpty(label))
         {
@@ -258,7 +200,7 @@ public sealed class KernelConfig
             return this.CompletionBackends[this._defaultCompletionBackend];
         }
 
-        if (this.CompletionBackends.TryGetValue(label, out IBackendConfig value))
+        if (this.CompletionBackends.TryGetValue(label, out ICompletionBackendConfig value))
         {
             return value;
         }
@@ -293,7 +235,7 @@ public sealed class KernelConfig
             return this.EmbeddingsBackends[this._defaultEmbeddingsBackend];
         }
 
-        if (this.EmbeddingsBackends.TryGetValue(label, out IBackendConfig value))
+        if (this.EmbeddingsBackends.TryGetValue(label, out IEmbeddingsBackendConfig value))
         {
             return value;
         }
@@ -390,14 +332,33 @@ public sealed class KernelConfig
         this.RemoveAllEmbeddingBackends();
         return this;
     }
+    
+    internal Func<ILogger, ITextCompletionClient>? TryGetCompletionBackendCreateClient<T>(T config) where T : ICompletionBackendConfig
+    {
+        if (this.CompletionBackendCreateClients.TryGetValue(config.GetType(), out var completionFactory))
+        {
+            return completionFactory;
+        }
+
+        return null;
+    }
 
     #region private
 
-    private Dictionary<string, IBackendConfig> CompletionBackends { get; set; } = new();
-    private Dictionary<string, IBackendConfig> EmbeddingsBackends { get; set; } = new();
+    private Dictionary<string, ICompletionBackendConfig> CompletionBackends { get; set; } = new();
+    private Dictionary<string, IEmbeddingsBackendConfig> EmbeddingsBackends { get; set; } = new();
+    private Dictionary<Type, Func<ILogger, ITextCompletionClient>> CompletionBackendCreateClients { get; set; } = new();
     private string? _defaultCompletionBackend;
     private string? _defaultEmbeddingsBackend;
     private IRetryMechanism _retryMechanism = new PassThroughWithoutRetry();
 
+    private void AddCompletionBackendCreateClient<T>(T config, Func<ILogger, ITextCompletionClient> createClientFunc) where T : ICompletionBackendConfig
+    {
+        if (!this.CompletionBackendCreateClients.ContainsKey(config.GetType()))
+        {
+            this.CompletionBackendCreateClients.Add(config.GetType(), createClientFunc);
+        }
+    }
+    
     #endregion
 }

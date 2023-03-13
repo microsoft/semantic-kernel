@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.OpenAI.Services;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.OpenAI.Configuration;
 using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
 using Moq;
 using Xunit;
@@ -392,5 +396,159 @@ public class KernelConfigTests
         // Assert
         Assert.IsType<AzureOpenAIConfig>(result);
         Assert.Equal(defaultBackendLabel, result.Label);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void AddCompletionBackendItFailsWhenConfigurationLabelIsNotProvided(string labelValue)
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var config = new CompletionBackendConfigFake { Label = labelValue };
+        var mockCompletionClient = new Mock<ITextCompletionClient>();
+        ITextCompletionClient CreateFunc(ILogger logger) => mockCompletionClient.Object;
+
+        // Act
+        var exception = Assert.Throws<ValidationException>(() =>
+        {
+            target.AddCompletionBackendConfig(config, CreateFunc);
+        });
+
+        // Assert
+        Assert.True(exception.ErrorCode is ValidationException.ErrorCodes.NullValue or ValidationException.ErrorCodes.EmptyValue);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void AddEmbeddingsBackendItFailsWhenConfigurationLabelIsNotProvided(string labelValue)
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var config = new EmbeddingsBackendConfigFake { Label = labelValue };
+
+        // Act
+        var exception = Assert.Throws<ValidationException>(() =>
+        {
+            target.AddEmbeddingsBackendConfig(config, false);
+        });
+
+        // Assert
+        Assert.True(exception.ErrorCode is ValidationException.ErrorCodes.NullValue or ValidationException.ErrorCodes.EmptyValue);
+    }
+
+    [Fact]
+    public void AddBackendConfigItFailsWhenBackendIsNotSupported()
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var config = new Mock<IBackendConfig>().Object;
+        var mockCompletionClient = new Mock<ITextCompletionClient>();
+        ITextCompletionClient CreateFunc(ILogger logger) => mockCompletionClient.Object;
+
+        // Act
+        var exception = Assert.Throws<KernelException>(() =>
+        {
+            target.AddBackendConfig(config, CreateFunc);
+        });
+
+        // Assert
+        Assert.Equal(KernelException.ErrorCodes.InvalidBackendConfiguration, exception.ErrorCode);
+    }
+
+    [Fact]
+    public void AddBackendConfigItAddBothCompletionAndEmbeddingsWhenSupported()
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var config = new MultiBackgroundConfigFake { Label = "test" };
+        var mockCompletionClient = new Mock<ITextCompletionClient>();
+        ITextCompletionClient CreateFunc(ILogger logger) => mockCompletionClient.Object;
+
+        // Act
+        target.AddBackendConfig(config, CreateFunc);
+
+        // Assert
+        var completionConfig = target.GetCompletionBackend(config.Label);
+        var embeddingConfig = target.GetEmbeddingsBackend(config.Label);
+
+        Assert.Equal(config, completionConfig);
+        Assert.Equal(config, embeddingConfig);
+    }
+
+    [Fact]
+    public void AddCompletionBackendCreateClientItAddForCustomConfig()
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var mockCompletionClient = new Mock<ITextCompletionClient>();
+        var mockLogger = new Mock<ILogger>();
+        var fakeClient = mockCompletionClient.Object;
+
+        ITextCompletionClient CreateFunc(ILogger logger) => fakeClient;
+        var fakeCompletion = new CompletionBackendConfigFake { Label = "test" };
+
+        // Act
+        target.AddCompletionBackendConfig(fakeCompletion, CreateFunc);
+        var createClientFunction = target.TryGetCompletionBackendCreateClient(fakeCompletion);
+        var createdClient = createClientFunction?.Invoke(mockLogger.Object);
+
+        Assert.Equal(fakeClient, createdClient);
+    }
+
+    [Fact]
+    public void TryGetCompletionBackendCreateClientItReturnsExpectedFunction()
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var mockCompletionClient = new Mock<ITextCompletionClient>();
+        var fakeClient = mockCompletionClient.Object;
+
+        ITextCompletionClient CreateFunc(ILogger logger) => fakeClient;
+        var fakeCompletion = new CompletionBackendConfigFake { Label = "test" };
+
+        // Act
+        target.AddCompletionBackendConfig(fakeCompletion, CreateFunc);
+        var createClientFunction = target.TryGetCompletionBackendCreateClient(fakeCompletion);
+
+        Assert.NotNull(createClientFunction);
+        Assert.Equal(CreateFunc, createClientFunction);
+    }
+
+    [Fact]
+    public void TryGetCompletionBackendCreateClientItReturnsNullWhenNotExists()
+    {
+        // Arrange
+        var target = new KernelConfig();
+        var mockCompletionClient = new Mock<ITextCompletionClient>();
+        var fakeClient = mockCompletionClient.Object;
+
+        ITextCompletionClient CreateFunc(ILogger logger) => fakeClient;
+        var fakeCompletion = new CompletionBackendConfigFake { Label = "test" };
+        var nonExistingCompletion = new MultiBackgroundConfigFake { Label = "test" };
+
+        // Act
+        target.AddCompletionBackendConfig(fakeCompletion, CreateFunc);
+        var createClientFunction = target.TryGetCompletionBackendCreateClient(nonExistingCompletion);
+
+        Assert.Null(createClientFunction);
+    }
+
+    private class CompletionBackendConfigFake : ICompletionBackendConfig
+    {
+        public string Label { get; set; } = string.Empty;
+    }
+
+    private class EmbeddingsBackendConfigFake : IEmbeddingsBackendConfig
+    {
+        public string Label { get; set; } = string.Empty;
+    }
+
+    private class MultiBackgroundConfigFake : ICompletionBackendConfig, IEmbeddingsBackendConfig
+    {
+        public string Label { get; set; } = string.Empty;
     }
 }

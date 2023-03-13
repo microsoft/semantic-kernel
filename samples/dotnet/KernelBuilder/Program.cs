@@ -4,6 +4,8 @@
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
 // You can access the builder using either Kernel.Builder or KernelBuilder.
 
+using Microsoft.SemanticKernel.AI.OpenAI.Configuration;
+
 IKernel kernel1 = KernelBuilder.Create();
 
 IKernel kernel2 = Kernel.Builder.Build();

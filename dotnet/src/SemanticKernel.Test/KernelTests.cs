@@ -5,10 +5,14 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.OpenAI.Configuration;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Moq;
 using Xunit;
 
 // ReSharper disable StringLiteralTypo
@@ -140,6 +144,41 @@ public class KernelTests
         var kernel = KernelBuilder.Create();
 
         var exception = Assert.Throws<KernelException>(() => kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun"));
+    }
+
+    [Fact]
+    public void ItUsesDelegateCompleteBackendCreateClientWhenRegisteringSmanticFunction()
+    {
+        var kernelConfig = new KernelConfig();
+        var fakeConfig = new CompletionBackendConfigFake { Label = "test" };
+        var completionClientFake = new TextCompletionClientFake();
+
+        kernelConfig.AddBackendConfig(fakeConfig, (logger) =>
+        {
+            completionClientFake.Invoked = true;
+            return completionClientFake;
+        }); 
+
+        var target = new KernelBuilder().WithConfiguration(kernelConfig).Build();
+
+        target.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
+
+        Assert.True(completionClientFake.Invoked);
+    }
+
+    private class TextCompletionClientFake : ITextCompletionClient
+    {
+        public bool Invoked { get; set; } = false;
+
+        public Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private class CompletionBackendConfigFake : ICompletionBackendConfig
+    {
+        public string Label { get; set; } = string.Empty;
     }
 
     public class MySkill

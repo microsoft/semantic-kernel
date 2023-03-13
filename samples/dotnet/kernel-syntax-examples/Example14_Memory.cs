@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.OpenAI.Configuration;
 using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 
