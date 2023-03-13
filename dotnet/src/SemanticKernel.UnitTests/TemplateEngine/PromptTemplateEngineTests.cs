@@ -30,6 +30,9 @@ public sealed class PromptTemplateEngineTests
         this._skills = new Mock<IReadOnlySkillCollection>();
     }
 
+#pragma warning disable VSTHRD103 // ok to use WriteLine synchronously
+#pragma warning disable CA1849 // ok to use WriteLine synchronously
+
     [Fact]
     public void ItRendersVariables()
     {
@@ -218,4 +221,7 @@ public sealed class PromptTemplateEngineTests
             this._skills.Object,
             ConsoleLogger.Log);
     }
+
+#pragma warning restore VSTHRD103
+#pragma warning restore CA1849
 }

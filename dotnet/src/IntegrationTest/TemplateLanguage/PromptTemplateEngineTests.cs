@@ -12,13 +12,16 @@ using Xunit.Abstractions;
 
 namespace IntegrationTests.TemplateLanguage;
 
-public class PromptTemplateEngineTests : IDisposable
+public sealed class PromptTemplateEngineTests : IDisposable
 {
     public PromptTemplateEngineTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
         this._target = new PromptTemplateEngine();
     }
+
+#pragma warning disable VSTHRD103 // ok to use WriteLine synchronously
+#pragma warning disable CA1849 // ok to use WriteLine synchronously
 
     [Fact]
     public async Task ItSupportsVariablesAsync()
@@ -37,7 +40,9 @@ public class PromptTemplateEngineTests : IDisposable
         var result = await this._target.RenderAsync(template, context);
 
         // Assert
-        var expected = template.Replace("{{$input}}", input).Replace("{{  $winner }}", winner);
+        var expected = template
+            .Replace("{{$input}}", input, StringComparison.OrdinalIgnoreCase)
+            .Replace("{{  $winner }}", winner, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(expected, result);
     }
 
@@ -136,7 +141,7 @@ public class PromptTemplateEngineTests : IDisposable
         // Act
         this._logger.WriteLine("template: " + template);
         this._logger.WriteLine("expected: " + expectedResult);
-        if (expectedResult.StartsWith("ERROR"))
+        if (expectedResult.StartsWith("ERROR", StringComparison.InvariantCultureIgnoreCase))
         {
             await Assert.ThrowsAsync<TemplateException>(
                 async () => await this._target.RenderAsync(template, kernel.CreateNewContext()));
@@ -202,22 +207,11 @@ public class PromptTemplateEngineTests : IDisposable
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~PromptTemplateEngineTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-        }
+        this._logger.Dispose();
     }
 
     #endregion
+
+#pragma warning restore VSTHRD103
+#pragma warning restore CA1849
 }
