@@ -6,7 +6,7 @@
           "files": [
             "**.csproj"
           ],
-          "exclude": ["**/bin/**", "**/obj/**", "**/*.Test*", "**/*.IntegrationTest*"],
+          "exclude": ["**/bin/**", "**/obj/**", "**/*.UnitTests*", "**/*.IntegrationTests*"],
           "src": ".."
         }
       ],

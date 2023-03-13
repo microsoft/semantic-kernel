@@ -37,7 +37,7 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernelTests</_Parameter1>
+      <_Parameter1>SemanticKernel.UnitTests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 </Project>
