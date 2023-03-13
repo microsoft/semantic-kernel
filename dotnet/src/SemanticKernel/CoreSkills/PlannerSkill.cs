@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -127,7 +126,7 @@ public class PlannerSkill
     /// <summary>
     /// Given an output of a function, parse the output into a number of buckets.
     /// </summary>
-    /// <param name="input"> The input from a function that needs to be parse into buckets. </param>
+    /// <param name="input"> The input from a function that needs to be parsed into buckets. </param>
     /// <param name="context"> The context to use </param>
     /// <returns> The context with the bucketed results </returns>
     [SKFunction("Given an output of a function, parse the output into a number of buckets.")]
@@ -204,45 +203,11 @@ public class PlannerSkill
     [SKFunctionContextParameter(Name = Parameters.IncludedFunctions, Description = "A list of functions to include in the plan.", DefaultValue = "")]
     public async Task<SKContext> CreatePlanAsync(string goal, SKContext context)
     {
-        var config = new PlannerSkillConfig();
-
-        if (context.Variables.Get(Parameters.RelevancyThreshold, out var threshold) && double.TryParse(threshold, out var parsedValue))
-        {
-            config.RelevancyThreshold = parsedValue;
-        }
-
-        if (context.Variables.Get(Parameters.MaxFunctions, out var maxFunctions) && int.TryParse(maxFunctions, out var parsedMaxFunctions))
-        {
-            config.MaxFunctions = parsedMaxFunctions;
-        }
-
-        if (context.Variables.Get(Parameters.ExcludedFunctions, out var excludedFunctions))
-        {
-            var excludedFunctionsList = excludedFunctions.Split(',').Select(x => x.Trim()).ToList();
-
-            // Excluded functions and excluded skills from context.Variables should be additive to the default excluded functions and skills.
-            config.ExcludedFunctions = config.ExcludedFunctions.Union(excludedFunctionsList).ToList();
-        }
-
-        if (context.Variables.Get(Parameters.ExcludedSkills, out var excludedSkills))
-        {
-            var excludedSkillsList = excludedSkills.Split(',').Select(x => x.Trim()).ToList();
-
-            // Excluded functions and excluded skills from context.Variables should be additive to the default excluded functions and skills.
-            config.ExcludedSkills = config.ExcludedSkills.Union(excludedSkillsList).ToList();
-        }
-
-        if (context.Variables.Get(Parameters.IncludedFunctions, out var includedFunctions))
-        {
-            var includedFunctionsList = includedFunctions.Split(',').Select(x => x.Trim()).ToList();
-
-            // Included functions from context.Variables should not override the default excluded functions.
-            var includedFunctionsListMinusExcludedFunctionsList = includedFunctionsList.Except(config.ExcludedFunctions).ToList();
-            config.IncludedFunctions = includedFunctionsListMinusExcludedFunctionsList;
-        }
+        PlannerSkillConfig config = context.GetPlannerSkillConfig();
 
         string relevantFunctionsManual = await context.GetFunctionsManualAsync(goal, config);
         context.Variables.Set("available_functions", relevantFunctionsManual);
+        // TODO - consider adding the relevancy score for functions added to manual
 
         var plan = await this._functionFlowFunction.InvokeAsync(context);
 

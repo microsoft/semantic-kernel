@@ -110,4 +110,51 @@ internal static class SKContextExtensions
 
         return result;
     }
+
+    /// <summary>
+    /// Gets the planner skill config from the SKContext.
+    /// </summary>
+    /// <param name="context">The SKContext to get the planner skill config from.</param>
+    /// <returns>The planner skill config.</returns>
+    internal static PlannerSkillConfig GetPlannerSkillConfig(this SKContext context)
+    {
+        var config = new PlannerSkillConfig();
+
+        if (context.Variables.Get(Parameters.RelevancyThreshold, out var threshold) && double.TryParse(threshold, out var parsedValue))
+        {
+            config.RelevancyThreshold = parsedValue;
+        }
+
+        if (context.Variables.Get(Parameters.MaxFunctions, out var maxFunctions) && int.TryParse(maxFunctions, out var parsedMaxFunctions))
+        {
+            config.MaxFunctions = parsedMaxFunctions;
+        }
+
+        if (context.Variables.Get(Parameters.ExcludedFunctions, out var excludedFunctions))
+        {
+            var excludedFunctionsList = excludedFunctions.Split(',').Select(x => x.Trim()).ToList();
+
+            // Excluded functions and excluded skills from context.Variables should be additive to the default excluded functions and skills.
+            config.ExcludedFunctions = config.ExcludedFunctions.Union(excludedFunctionsList).ToList();
+        }
+
+        if (context.Variables.Get(Parameters.ExcludedSkills, out var excludedSkills))
+        {
+            var excludedSkillsList = excludedSkills.Split(',').Select(x => x.Trim()).ToList();
+
+            // Excluded functions and excluded skills from context.Variables should be additive to the default excluded functions and skills.
+            config.ExcludedSkills = config.ExcludedSkills.Union(excludedSkillsList).ToList();
+        }
+
+        if (context.Variables.Get(Parameters.IncludedFunctions, out var includedFunctions))
+        {
+            var includedFunctionsList = includedFunctions.Split(',').Select(x => x.Trim()).ToList();
+
+            // Included functions from context.Variables should not override the default excluded functions.
+            var includedFunctionsListMinusExcludedFunctionsList = includedFunctionsList.Except(config.ExcludedFunctions).ToList();
+            config.IncludedFunctions = includedFunctionsListMinusExcludedFunctionsList;
+        }
+
+        return config;
+    }
 }
