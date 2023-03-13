@@ -35,7 +35,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.Test", "src\SemanticKernel.Test\SemanticKernel.Test.csproj", "{37E39C68-5A40-4E63-9D3C-0C66AD98DFCB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.UnitTests", "src\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj", "{37E39C68-5A40-4E63-9D3C-0C66AD98DFCB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Memory.Sqlite", "src\SemanticKernel.Skills\Skills.Memory.Sqlite\Skills.Memory.Sqlite.csproj", "{E23E7270-F13D-4620-A115-AA6A8619EE5A}"
 EndProject
