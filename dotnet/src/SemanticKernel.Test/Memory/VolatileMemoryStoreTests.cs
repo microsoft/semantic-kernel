@@ -10,19 +10,6 @@ using Xunit;
 
 namespace SemanticKernelTests.Memory;
 
-internal class DoubleEmbeddingWithBasicMetadata : IEmbeddingWithMetadata<double>
-{
-    public Embedding<double> Embedding { get; }
-
-    public string Metadata { get; }
-
-    public DoubleEmbeddingWithBasicMetadata(Embedding<double> embedding, string metadata)
-    {
-        this.Embedding = embedding;
-        this.Metadata = metadata;
-    }
-}
-
 public class VolatileMemoryStoreTests
 {
     private readonly VolatileMemoryStore<double> _db;
@@ -279,6 +266,19 @@ public class VolatileMemoryStoreTests
         {
             int compare = topNResults[i].Item2.CompareTo(0.75);
             Assert.True(compare >= 0);
+        }
+    }
+
+    internal class DoubleEmbeddingWithBasicMetadata : IEmbeddingWithMetadata<double>
+    {
+        public Embedding<double> Embedding { get; }
+
+        public string Metadata { get; }
+
+        public DoubleEmbeddingWithBasicMetadata(Embedding<double> embedding, string metadata)
+        {
+            this.Embedding = embedding;
+            this.Metadata = metadata;
         }
     }
 }
