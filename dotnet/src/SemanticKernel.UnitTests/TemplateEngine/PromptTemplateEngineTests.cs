@@ -139,8 +139,8 @@ public sealed class PromptTemplateEngineTests
 
         this._variables.Update("INPUT-BAR");
         var template = "foo-{{function}}-baz";
-        this._skills.Setup(x => x.HasNativeFunction("function")).Returns(true);
-        this._skills.Setup(x => x.GetNativeFunction("function")).Returns(func);
+        this._skills.Setup(x => x.HasFunction("function")).Returns(true);
+        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
         // Act
@@ -167,8 +167,8 @@ public sealed class PromptTemplateEngineTests
 
         this._variables.Set("myVar", "BAR");
         var template = "foo-{{function $myVar}}-baz";
-        this._skills.Setup(x => x.HasNativeFunction("function")).Returns(true);
-        this._skills.Setup(x => x.GetNativeFunction("function")).Returns(func);
+        this._skills.Setup(x => x.HasFunction("function")).Returns(true);
+        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
         // Act
