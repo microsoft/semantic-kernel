@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Moq;
 using Xunit;
 
 // ReSharper disable StringLiteralTypo
@@ -157,7 +156,7 @@ public class KernelTests
         {
             completionClientFake.Invoked = true;
             return completionClientFake;
-        }); 
+        });
 
         var target = new KernelBuilder().WithConfiguration(kernelConfig).Build();
 

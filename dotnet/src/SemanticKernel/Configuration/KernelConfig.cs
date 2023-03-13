@@ -332,7 +332,7 @@ public sealed class KernelConfig
         this.RemoveAllEmbeddingBackends();
         return this;
     }
-    
+
     internal Func<ILogger, ITextCompletionClient>? TryGetCompletionBackendCreateClient<T>(T config) where T : ICompletionBackendConfig
     {
         if (this.CompletionBackendCreateClients.TryGetValue(config.GetType(), out var completionFactory))
@@ -359,6 +359,6 @@ public sealed class KernelConfig
             this.CompletionBackendCreateClients.Add(config.GetType(), createClientFunc);
         }
     }
-    
+
     #endregion
 }

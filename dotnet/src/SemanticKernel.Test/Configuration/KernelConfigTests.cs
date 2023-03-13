@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
