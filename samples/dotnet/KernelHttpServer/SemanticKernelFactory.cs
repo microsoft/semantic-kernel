@@ -7,6 +7,7 @@ using KernelHttpServer.Utils;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.OpenAI.Configuration;
 using Microsoft.SemanticKernel.Memory;
 using static KernelHttpServer.Config.Constants;
 
