@@ -110,18 +110,20 @@ internal static class Verify
     internal static void GreaterThan<T>(T value, T min, string message) where T : IComparable<T>
     {
         int cmp = value.CompareTo(min);
+
         if (cmp <= 0)
         {
-            throw new ArgumentException(message);
+            throw new ValidationException(ValidationException.ErrorCodes.OutOfRange, message);
         }
     }
 
     public static void LessThan<T>(T value, T max, string message) where T : IComparable<T>
     {
         int cmp = value.CompareTo(max);
+
         if (cmp >= 0)
         {
-            throw new ArgumentException(message);
+            throw new ValidationException(ValidationException.ErrorCodes.OutOfRange, message);
         }
     }
 }
