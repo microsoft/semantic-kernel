@@ -4,8 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
-  pr:
+  pull_request:
     branches: [ "main" ]
+    paths:
+      - "**.md"
     
 permissions:
   contents: read
