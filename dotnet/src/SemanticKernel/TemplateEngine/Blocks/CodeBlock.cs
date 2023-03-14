@@ -23,7 +23,8 @@ internal class CodeBlock : Block
     {
     }
 
-    internal CodeBlock(List<Block> tokens, string? content, ILogger log) : base(content, log)
+    internal CodeBlock(List<Block> tokens, string? content, ILogger log)
+        : base(content?.Trim(), log)
     {
         this._tokens = tokens;
     }
@@ -142,20 +143,22 @@ internal class CodeBlock : Block
         FunctionIdBlock fBlock,
         [NotNullWhen(true)] out ISKFunction? function)
     {
-        switch (string.IsNullOrEmpty(fBlock.SkillName))
+        // Function in the global skill
+        if (string.IsNullOrEmpty(fBlock.SkillName) && skills.HasFunction(fBlock.FunctionName))
         {
-            case true when skills.HasFunction(fBlock.FunctionName):
-                function = skills.GetFunction(fBlock.FunctionName);
-                return true;
-
-            case false when skills.HasFunction(fBlock.SkillName, fBlock.FunctionName):
-                function = skills.GetFunction(fBlock.SkillName, fBlock.FunctionName);
-                return true;
-
-            default:
-                function = null;
-                return false;
+            function = skills.GetFunction(fBlock.FunctionName);
+            return true;
         }
+
+        // Function within a specific skill
+        if (!string.IsNullOrEmpty(fBlock.SkillName) && skills.HasFunction(fBlock.SkillName, fBlock.FunctionName))
+        {
+            function = skills.GetFunction(fBlock.SkillName, fBlock.FunctionName);
+            return true;
+        }
+
+        function = null;
+        return false;
     }
 
     #endregion

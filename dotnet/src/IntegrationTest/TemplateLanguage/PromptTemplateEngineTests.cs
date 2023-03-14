@@ -12,6 +12,9 @@ using Xunit.Abstractions;
 
 namespace IntegrationTests.TemplateLanguage;
 
+#pragma warning disable VSTHRD103 // ok to use WriteLine synchronously
+#pragma warning disable CA1849 // ok to use WriteLine synchronously
+
 public sealed class PromptTemplateEngineTests : IDisposable
 {
     public PromptTemplateEngineTests(ITestOutputHelper output)
@@ -19,9 +22,6 @@ public sealed class PromptTemplateEngineTests : IDisposable
         this._logger = new RedirectOutput(output);
         this._target = new PromptTemplateEngine();
     }
-
-#pragma warning disable VSTHRD103 // ok to use WriteLine synchronously
-#pragma warning disable CA1849 // ok to use WriteLine synchronously
 
     [Fact]
     public async Task ItSupportsVariablesAsync()
@@ -211,7 +211,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
     }
 
     #endregion
+}
 
 #pragma warning restore VSTHRD103
 #pragma warning restore CA1849
-}
