@@ -56,7 +56,7 @@ public class SKContextExtensionsTests
         functionsView.AddFunction(functionView);
         functionsView.AddFunction(nativeFunctionView);
 
-        var memoryQueryResult = new MemoryQueryResult(false, "sourceName", functionView.ToFunctionName(), "description", "text", 0.8);
+        var memoryQueryResult = new MemoryQueryResult(false, "sourceName", functionView.ToFullyQualifiedName(), "description", "text", 0.8);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);

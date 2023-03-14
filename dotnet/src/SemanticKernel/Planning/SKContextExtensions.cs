@@ -16,6 +16,8 @@ internal static class SKContextExtensions
 {
     internal const string MemoryCollectionName = "Planning.SKFunctionsManual";
 
+    internal const string ContextRegistrationKey = "Planning.SKFunctionsAreRemembered";
+
     /// <summary>
     /// Returns a string containing the manual for all available functions.
     /// </summary>
@@ -41,7 +43,7 @@ internal static class SKContextExtensions
     /// <param name="config">The planner skill config.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded skills and functions.</returns>
-    internal static async Task<List<FunctionView>?> GetAvailableFunctionsAsync(
+    internal static async Task<List<FunctionView>> GetAvailableFunctionsAsync(
         this SKContext context,
         PlannerSkillConfig config,
         string? semanticQuery = null)
@@ -60,58 +62,78 @@ internal static class SKContextExtensions
             .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
             .ToList();
 
-        List<FunctionView> result = availableFunctions;
-        if (!string.IsNullOrEmpty(semanticQuery))
+        List<FunctionView>? result = null;
+        if (string.IsNullOrEmpty(semanticQuery) || context.Memory is NullMemory)
         {
-            // If a Memory provider has not been registered, do not filter the functions.
-            if (context.Memory is not NullMemory)
+            // If no semantic query is provided, return all available functions.
+            // If a Memory provider has not been registered, return all available functions.
+            result = availableFunctions;
+        }
+        else
+        {
+            result = new List<FunctionView>();
+
+            // Remember functions in memory so that they can be searched.
+            await RememberFunctionsAsync(context, availableFunctions);
+
+            // Search for functions that match the semantic query.
+            var memories = context.Memory.SearchAsync(MemoryCollectionName, semanticQuery, config.MaxFunctions, config.RelevancyThreshold,
+                context.CancellationToken);
+
+            // Add functions that were found in the search results.
+            await foreach (var memoryEntry in memories)
             {
-                // catalog functions to memory
-                foreach (var function in availableFunctions)
+                var function = availableFunctions.Find(x => x.ToFullyQualifiedName() == memoryEntry.Id);
+                if (function != null)
                 {
-                    var functionName = function.ToFunctionName();
-                    var key = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
-
-                    // It'd be nice if there were a saveIfNotExists method on the memory interface
-                    var memoryEntry = await context.Memory.GetAsync(MemoryCollectionName, key, context.CancellationToken);
-                    if (memoryEntry == null)
-                    {
-                        // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
-                        // As folks may want to tune their functions to be more or less relevant.
-                        await context.Memory.SaveInformationAsync(MemoryCollectionName, key, functionName, function.ToManualString(),
-                            context.CancellationToken);
-                    }
-                }
-
-                var memories = context.Memory.SearchAsync(MemoryCollectionName, semanticQuery, config.MaxFunctions, config.RelevancyThreshold,
-                    context.CancellationToken);
-
-                result = new List<FunctionView>();
-                await foreach (var memoryEntry in memories)
-                {
-                    var function = availableFunctions.Find(x => x.ToFunctionName() == memoryEntry.Id);
-                    if (function != null)
-                    {
-                        context.Log.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance, function.ToFunctionName());
-                        result.Add(function);
-                    }
-                }
-
-                foreach (var function in includedFunctions)
-                {
-                    if (!result.Any(x => x.Name == function))
-                    {
-                        var functionView = availableFunctions.Find(x => x.Name == function);
-                        if (functionView != null)
-                        {
-                            result.Add(functionView);
-                        }
-                    }
+                    context.Log.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance,
+                        function.ToFullyQualifiedName());
+                    result.Add(function);
                 }
             }
+
+            // Add any missing functions that were included but not found in the search results.
+            var missingFunctions = includedFunctions
+                .Except(result.Select(x => x.Name))
+                .Join(availableFunctions, f => f, af => af.Name, (_, af) => af);
+
+            result.AddRange(missingFunctions);
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Saves all available functions to memory.
+    /// </summary>
+    /// <param name="context">The SKContext to save the functions to.</param>
+    /// <param name="availableFunctions">The available functions to save.</param>
+    internal static async Task RememberFunctionsAsync(SKContext context, List<FunctionView> availableFunctions)
+    {
+        // Check if the functions have already been saved to memory.
+        if (context.Variables.Get(ContextRegistrationKey, out var _))
+        {
+            return;
+        }
+
+        foreach (var function in availableFunctions)
+        {
+            var functionName = function.ToFullyQualifiedName();
+            var key = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
+
+            // It'd be nice if there were a saveIfNotExists method on the memory interface
+            var memoryEntry = await context.Memory.GetAsync(MemoryCollectionName, key, context.CancellationToken);
+            if (memoryEntry == null)
+            {
+                // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
+                // As folks may want to tune their functions to be more or less relevant.
+                await context.Memory.SaveInformationAsync(MemoryCollectionName, key, functionName, function.ToManualString(),
+                    context.CancellationToken);
+            }
+        }
+
+        // Set a flag to indicate that the functions have been saved to memory.
+        context.Variables.Set(ContextRegistrationKey, "true");
     }
 
     /// <summary>

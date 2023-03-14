@@ -10,10 +10,10 @@ internal static class FunctionViewExtensions
     internal static string ToManualString(this FunctionView function)
     {
         var inputs = string.Join("\n", function.Parameters.Select(p => $"    - {p.Name}: {p.Description}"));
-        return $"  {function.SkillName}.{function.Name}:\n    description: {function.Description}\n    inputs:\n{inputs}";
+        return $"  {function.ToFullyQualifiedName()}:\n    description: {function.Description}\n    inputs:\n{inputs}";
     }
 
-    internal static string ToFunctionName(this FunctionView function)
+    internal static string ToFullyQualifiedName(this FunctionView function)
     {
         return $"{function.SkillName}.{function.Name}";
     }
