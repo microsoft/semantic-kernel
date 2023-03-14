@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -81,16 +82,7 @@ internal static class SKContextExtensions
                 context.CancellationToken);
 
             // Add functions that were found in the search results.
-            await foreach (var memoryEntry in memories)
-            {
-                var function = availableFunctions.Find(x => x.ToFullyQualifiedName() == memoryEntry.Id);
-                if (function != null)
-                {
-                    context.Log.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance,
-                        function.ToFullyQualifiedName());
-                    result.Add(function);
-                }
-            }
+            result.AddRange(await GetRelevantFunctionsAsync(context, availableFunctions, memories));
 
             // Add any missing functions that were included but not found in the search results.
             var missingFunctions = includedFunctions
@@ -101,6 +93,22 @@ internal static class SKContextExtensions
         }
 
         return result;
+    }
+
+    internal static async Task<IEnumerable<FunctionView>> GetRelevantFunctionsAsync(SKContext context, IEnumerable<FunctionView> availableFunctions, IAsyncEnumerable<MemoryQueryResult> memories)
+    {
+        var relevantFunctions = new ConcurrentBag<FunctionView>();
+        await foreach (var memoryEntry in memories.WithCancellation(context.CancellationToken))
+        {
+            var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Id);
+            if (function != null)
+            {
+                context.Log.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance,
+                    function.ToFullyQualifiedName());
+                relevantFunctions.Add(function);
+            }
+        }
+        return relevantFunctions;
     }
 
     /// <summary>
