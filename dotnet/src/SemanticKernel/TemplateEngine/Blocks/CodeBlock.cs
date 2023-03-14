@@ -12,24 +12,22 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
 // ReSharper disable TemplateIsNotCompileTimeConstantProblem
-internal class CodeBlock : Block
+internal class CodeBlock : Block, ICodeRendering
 {
     internal override BlockTypes Type => BlockTypes.Code;
 
-    internal override bool? SynchronousRendering => false;
-
-    internal CodeBlock(string? content, ILogger log)
+    public CodeBlock(string? content, ILogger log)
         : this(new CodeTokenizer(log).Tokenize(content), content?.Trim(), log)
     {
     }
 
-    internal CodeBlock(List<Block> tokens, string? content, ILogger log)
+    public CodeBlock(List<Block> tokens, string? content, ILogger log)
         : base(content?.Trim(), log)
     {
         this._tokens = tokens;
     }
 
-    internal override bool IsValid(out string error)
+    public override bool IsValid(out string error)
     {
         error = "";
 
@@ -71,7 +69,7 @@ internal class CodeBlock : Block
         return true;
     }
 
-    internal override async Task<string> RenderCodeAsync(SKContext context)
+    public async Task<string> RenderCodeAsync(SKContext context)
     {
         if (!this._validated && !this.IsValid(out var error))
         {
@@ -84,7 +82,7 @@ internal class CodeBlock : Block
         {
             case BlockTypes.Value:
             case BlockTypes.Variable:
-                return this._tokens[0].Render(context.Variables);
+                return ((ITextRendering)this._tokens[0]).Render(context.Variables);
 
             case BlockTypes.FunctionId:
                 return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], context);
@@ -117,7 +115,7 @@ internal class CodeBlock : Block
         {
             // TODO: PII
             this.Log.LogTrace("Passing variable/value: `{0}`", this._tokens[1].Content);
-            string input = this._tokens[1].Render(variablesClone);
+            string input = ((ITextRendering)this._tokens[1]).Render(variablesClone);
             variablesClone.Update(input);
         }
 

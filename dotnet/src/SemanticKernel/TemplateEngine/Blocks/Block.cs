@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -15,7 +12,7 @@ public abstract class Block
 {
     internal virtual BlockTypes Type => BlockTypes.Undefined;
 
-    internal virtual bool? SynchronousRendering => null;
+    // internal virtual bool? SynchronousRendering => null;
 
     /// <summary>
     /// The block content
@@ -39,15 +36,5 @@ public abstract class Block
         this.Content = content ?? string.Empty;
     }
 
-    internal virtual Task<string> RenderCodeAsync(SKContext executionContext)
-    {
-        throw new NotImplementedException("This block doesn't support async code execution, use Render(ContextVariables) instead.");
-    }
-
-    internal virtual string Render(ContextVariables? variables)
-    {
-        throw new NotImplementedException("This block requires async code execution, use RenderCodeAsync(SKContext) instead.");
-    }
-
-    internal abstract bool IsValid(out string error);
+    public abstract bool IsValid(out string error);
 }

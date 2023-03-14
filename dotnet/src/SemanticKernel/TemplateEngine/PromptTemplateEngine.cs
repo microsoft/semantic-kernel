@@ -68,23 +68,20 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         var result = new StringBuilder();
         foreach (var block in blocks)
         {
-            if (!block.SynchronousRendering.HasValue)
+            switch (block)
             {
-#pragma warning disable CA2254 // error string is used also by the exception
-                // ReSharper disable TemplateIsNotCompileTimeConstantProblem
-                string error = $"Unexpected block type {block.Type:G}";
-                this._log.LogError(error);
-                throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, error);
-#pragma warning restore CA2254
-            }
+                case ITextRendering staticBlock:
+                    result.Append(staticBlock.Render(context.Variables));
+                    break;
 
-            if (block.SynchronousRendering.Value)
-            {
-                result.Append(block.Render(context.Variables));
-            }
-            else
-            {
-                result.Append(await block.RenderCodeAsync(context));
+                case ICodeRendering dynamicBlock:
+                    result.Append(await dynamicBlock.RenderCodeAsync(context));
+                    break;
+
+                default:
+                    const string error = "Unexpected block type, the block doesn't have a rendering method";
+                    this._log.LogError(error);
+                    throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, error);
             }
         }
 
@@ -99,7 +96,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         this._log.LogTrace("Rendering variables");
         return blocks.Select(block => block.Type != BlockTypes.Variable
             ? block
-            : new TextBlock(block.Render(variables), this._log)).ToList();
+            : new TextBlock(((ITextRendering)block).Render(variables), this._log)).ToList();
     }
 
     /// <inheritdoc/>
@@ -117,7 +114,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
             }
             else
             {
-                var codeResult = await block.RenderCodeAsync(executionContext);
+                var codeResult = await ((ICodeRendering)block).RenderCodeAsync(executionContext);
                 updatedBlocks.Add(new TextBlock(codeResult, this._log));
             }
         }

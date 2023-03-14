@@ -6,15 +6,13 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-internal class VarBlock : Block
+internal class VarBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.Variable;
 
-    internal override bool? SynchronousRendering => true;
-
     internal string Name { get; } = string.Empty;
 
-    internal VarBlock(string? content, ILogger? log = null) : base(content?.Trim(), log)
+    public VarBlock(string? content, ILogger? log = null) : base(content?.Trim(), log)
     {
         if (this.Content.Length < 2)
         {
@@ -27,7 +25,7 @@ internal class VarBlock : Block
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
     // ReSharper disable TemplateIsNotCompileTimeConstantProblem
-    internal override bool IsValid(out string error)
+    public override bool IsValid(out string error)
     {
         error = string.Empty;
 
@@ -64,7 +62,7 @@ internal class VarBlock : Block
     }
 #pragma warning restore CA2254
 
-    internal override string Render(ContextVariables? variables)
+    public string Render(ContextVariables? variables)
     {
         if (variables == null) { return string.Empty; }
 
@@ -78,6 +76,6 @@ internal class VarBlock : Block
         var exists = variables.Get(this.Name, out string value);
         if (!exists) { this.Log.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name); }
 
-        return exists ? value : "";
+        return exists ? value : string.Empty;
     }
 }

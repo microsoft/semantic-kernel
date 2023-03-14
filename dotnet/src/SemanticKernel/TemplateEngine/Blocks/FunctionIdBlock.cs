@@ -7,17 +7,15 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-internal class FunctionIdBlock : Block
+internal class FunctionIdBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.FunctionId;
-
-    internal override bool? SynchronousRendering => true;
 
     internal string SkillName { get; } = string.Empty;
 
     internal string FunctionName { get; } = string.Empty;
 
-    internal FunctionIdBlock(string? text, ILogger? log = null)
+    public FunctionIdBlock(string? text, ILogger? log = null)
         : base(text?.Trim(), log)
     {
         var functionNameParts = this.Content.Split('.');
@@ -38,7 +36,7 @@ internal class FunctionIdBlock : Block
         this.FunctionName = this.Content;
     }
 
-    internal override bool IsValid(out string error)
+    public override bool IsValid(out string error)
     {
         if (!Regex.IsMatch(this.Content, "^[a-zA-Z0-9_.]*$"))
         {
@@ -56,7 +54,7 @@ internal class FunctionIdBlock : Block
         return true;
     }
 
-    internal override string Render(ContextVariables? variables)
+    public string Render(ContextVariables? variables)
     {
         return this.Content;
     }

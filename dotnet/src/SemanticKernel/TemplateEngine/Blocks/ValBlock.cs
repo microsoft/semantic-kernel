@@ -5,8 +5,10 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-internal class ValBlock : Block
+internal class ValBlock : Block, ITextRendering
 {
+    internal override BlockTypes Type => BlockTypes.Value;
+
     // Cache the first and last char
     private readonly char _first = '\0';
     private readonly char _last = '\0';
@@ -14,16 +16,12 @@ internal class ValBlock : Block
     // Content, excluding start/end quote chars
     private readonly string _value = string.Empty;
 
-    internal override BlockTypes Type => BlockTypes.Value;
-
-    internal override bool? SynchronousRendering => true;
-
     /// <summary>
     /// Create an instance
     /// </summary>
     /// <param name="quotedValue">Block content, including the delimiting chars</param>
     /// <param name="log">Optional logger</param>
-    internal ValBlock(string? quotedValue, ILogger? log = null)
+    public ValBlock(string? quotedValue, ILogger? log = null)
         : base(quotedValue?.Trim(), log)
     {
         if (this.Content.Length < 2)
@@ -39,7 +37,7 @@ internal class ValBlock : Block
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
     // ReSharper disable TemplateIsNotCompileTimeConstantProblem
-    internal override bool IsValid(out string error)
+    public override bool IsValid(out string error)
     {
         error = string.Empty;
 
@@ -63,12 +61,12 @@ internal class ValBlock : Block
     }
 #pragma warning restore CA2254
 
-    internal override string Render(ContextVariables? variables)
+    public string Render(ContextVariables? variables)
     {
         return this._value;
     }
 
-    internal static bool HasValPrefix(string? text)
+    public static bool HasValPrefix(string? text)
     {
         return !string.IsNullOrEmpty(text)
                && text.Length > 0
