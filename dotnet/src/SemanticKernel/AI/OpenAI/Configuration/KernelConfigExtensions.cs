@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.Configuration;
 public static class KernelConfigExtensions
 {
     /// <summary>
-    /// Adds an Azure OpenAI backend to the list.
+    /// Adds an Azure OpenAI completion backend to the config.
     /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
     /// </summary>
     /// <param name="kernelConfig">Sponsored class instance reference</param>
@@ -25,7 +25,7 @@ public static class KernelConfigExtensions
         string deploymentName,
         string endpoint,
         string apiKey,
-        string apiVersion = "2022-12-01",
+        string apiVersion,
         bool overwrite = false)
     {
         var config = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
@@ -43,7 +43,7 @@ public static class KernelConfigExtensions
     }
 
     /// <summary>
-    /// Adds an Azure OpenAI embeddings backend to the list.
+    /// Adds an Azure OpenAI embeddings backend to the config.
     /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
     /// </summary>
     /// <param name="kernelConfig">Sponsored class instance reference</param>
@@ -60,7 +60,7 @@ public static class KernelConfigExtensions
         string deploymentName,
         string endpoint,
         string apiKey,
-        string apiVersion = "2022-12-01",
+        string apiVersion,
         bool overwrite = false)
     {
         var config = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
@@ -71,7 +71,7 @@ public static class KernelConfigExtensions
     }
 
     /// <summary>
-    /// Adds the OpenAI completion backend to the list.
+    /// Adds the OpenAI completion backend to the config.
     /// See https://platform.openai.com/docs for service details.
     /// </summary>
     /// <param name="kernelConfig">Sponsored class instance reference</param>
@@ -103,7 +103,7 @@ public static class KernelConfigExtensions
     }
 
     /// <summary>
-    /// Adds the OpenAI embeddings backend to the list.
+    /// Adds the OpenAI embeddings backend to the config.
     /// See https://platform.openai.com/docs for service details.
     /// </summary>
     /// <param name="kernelConfig">Sponsored class instance reference</param>

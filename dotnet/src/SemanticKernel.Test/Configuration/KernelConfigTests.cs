@@ -65,30 +65,34 @@ public class KernelConfigTests
         // Arrange
         var config = new KernelConfig();
 
-        // Act
-        // Assert
+        // Act + Assert
         Assert.IsType<PassThroughWithoutRetry>(config.RetryMechanism);
     }
 
     [Fact]
     public void ItFailsWhenAddingCompletionBackendsWithSameLabel()
     {
+        // Arrange
         var target = new KernelConfig();
         target.AddAzureOpenAICompletionBackend("azure", "depl", "https://url", "key");
 
+        // Act + Assert
         var exception = Assert.Throws<KernelException>(() =>
         {
             target.AddAzureOpenAICompletionBackend("azure", "depl2", "https://url", "key");
         });
+
         Assert.Equal(KernelException.ErrorCodes.InvalidBackendConfiguration, exception.ErrorCode);
     }
 
     [Fact]
     public void ItFailsWhenAddingEmbeddingsBackendsWithSameLabel()
     {
+        // Arrange
         var target = new KernelConfig();
         target.AddAzureOpenAIEmbeddingsBackend("azure", "depl", "https://url", "key");
 
+        // Act + Assert
         var exception = Assert.Throws<KernelException>(() =>
         {
             target.AddAzureOpenAIEmbeddingsBackend("azure", "depl2", "https://url", "key");
@@ -99,10 +103,14 @@ public class KernelConfigTests
     [Fact]
     public void ItSucceedsWhenAddingDifferentBackendTypeWithSameLabel()
     {
+        // Arrange
         var target = new KernelConfig();
+
+        // Act
         target.AddAzureOpenAICompletionBackend("azure", "depl", "https://url", "key");
         target.AddAzureOpenAIEmbeddingsBackend("azure", "depl2", "https://url", "key");
 
+        // Assert
         Assert.True(target.HasCompletionBackend("azure"));
         Assert.True(target.HasEmbeddingsBackend("azure"));
     }
@@ -110,7 +118,10 @@ public class KernelConfigTests
     [Fact]
     public void ItFailsWhenSetNonExistentCompletionBackend()
     {
+        // Arrange
         var target = new KernelConfig();
+
+        // Act + Assert
         var exception = Assert.Throws<KernelException>(() =>
         {
             target.SetDefaultCompletionBackend("azure");
@@ -122,6 +133,8 @@ public class KernelConfigTests
     public void ItFailsWhenSetNonExistentEmbeddingBackend()
     {
         var target = new KernelConfig();
+
+        // Act + Assert
         var exception = Assert.Throws<KernelException>(() =>
         {
             target.SetDefaultEmbeddingsBackend("azure");
@@ -134,6 +147,8 @@ public class KernelConfigTests
     {
         // Arrange
         var target = new KernelConfig();
+
+        // Act
         target.AddAzureOpenAICompletionBackend("azure", "depl", "https://url", "key");
         target.AddOpenAICompletionBackend("oai", "model", "apikey");
         target.AddAzureOpenAIEmbeddingsBackend("azure", "depl2", "https://url2", "key");
@@ -172,7 +187,7 @@ public class KernelConfigTests
         // Arrange
         var target = new KernelConfig();
 
-        // Act - Assert no exception occurs
+        // Act + Assert no exception occurs
         target.AddAzureOpenAICompletionBackend("one", "dep", "https://localhost", "key", overwrite: true);
         target.AddAzureOpenAICompletionBackend("one", "dep", "https://localhost", "key", overwrite: true);
         target.AddOpenAICompletionBackend("one", "model", "key", overwrite: true);
@@ -259,7 +274,7 @@ public class KernelConfigTests
         target.AddOpenAICompletionBackend("3", "model", "key");
         Assert.Equal("1", target.DefaultCompletionBackend);
 
-        // Act - Assert
+        // Act + Assert
         target.RemoveCompletionBackend("1");
         Assert.Equal("2", target.DefaultCompletionBackend);
         target.RemoveCompletionBackend("2");
@@ -278,7 +293,7 @@ public class KernelConfigTests
         target.AddOpenAIEmbeddingsBackend("3", "model", "key");
         Assert.Equal("1", target.DefaultEmbeddingsBackend);
 
-        // Act - Assert
+        // Act + Assert
         target.RemoveEmbeddingsBackend("1");
         Assert.Equal("2", target.DefaultEmbeddingsBackend);
         target.RemoveEmbeddingsBackend("2");
@@ -474,6 +489,7 @@ public class KernelConfigTests
         var completionConfig = target.GetCompletionBackend(config.Label);
         var embeddingConfig = target.GetEmbeddingsBackend(config.Label);
 
+        // Assert
         Assert.Equal(config, completionConfig);
         Assert.Equal(config, embeddingConfig);
     }
@@ -495,6 +511,7 @@ public class KernelConfigTests
         var createClientFunction = target.TryGetCompletionBackendCreateClient(fakeCompletion);
         var createdClient = createClientFunction?.Invoke(mockLogger.Object);
 
+        // Assert
         Assert.Equal(fakeClient, createdClient);
     }
 
@@ -513,6 +530,7 @@ public class KernelConfigTests
         target.AddCompletionBackendConfig(fakeCompletion, CreateFunc);
         var createClientFunction = target.TryGetCompletionBackendCreateClient(fakeCompletion);
 
+        // Assert
         Assert.NotNull(createClientFunction);
         Assert.Equal(CreateFunc, createClientFunction);
     }
@@ -533,6 +551,7 @@ public class KernelConfigTests
         target.AddCompletionBackendConfig(fakeCompletion, CreateFunc);
         var createClientFunction = target.TryGetCompletionBackendCreateClient(nonExistingCompletion);
 
+        // Assert
         Assert.Null(createClientFunction);
     }
 

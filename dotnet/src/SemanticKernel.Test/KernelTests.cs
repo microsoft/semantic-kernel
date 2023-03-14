@@ -78,7 +78,7 @@ public class KernelTests
         var nativeSkill = new MySkill();
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
-        using CancellationTokenSource cts = new CancellationTokenSource();
+        using CancellationTokenSource cts = new();
         cts.Cancel();
 
         // Act
@@ -98,7 +98,7 @@ public class KernelTests
         var nativeSkill = new MySkill();
         kernel.ImportSkill(nativeSkill, "mySk");
 
-        using CancellationTokenSource cts = new CancellationTokenSource();
+        using CancellationTokenSource cts = new();
 
         // Act
         SKContext result = await kernel.RunAsync(cts.Token, kernel.Func("mySk", "GetAnyValue"));
@@ -145,8 +145,11 @@ public class KernelTests
         var exception = Assert.Throws<KernelException>(() => kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun"));
     }
 
+    /// <summary>
+    /// Confirms that when a completion backend config is added and a semantic function is created the Kernel uses the delegate to create the client.
+    /// </summary>
     [Fact]
-    public void ItUsesDelegateCompleteBackendCreateClientWhenRegisteringSmanticFunction()
+    public void ItUsesDelegateCompleteBackendCreateClientWhenRegisteringSemanticFunction()
     {
         var kernelConfig = new KernelConfig();
         var fakeConfig = new CompletionBackendConfigFake { Label = "test" };

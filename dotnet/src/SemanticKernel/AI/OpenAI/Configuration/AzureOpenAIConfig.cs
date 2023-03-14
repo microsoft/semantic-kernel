@@ -28,7 +28,7 @@ public sealed class AzureOpenAIConfig : BackendConfig, ICompletionBackendConfig,
     /// <summary>
     /// Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference
     /// </summary>
-    public string APIVersion { get; set; }
+    public string APIVersion { get; set; } = "2022-12-01";
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAIConfig" /> with supplied values.
