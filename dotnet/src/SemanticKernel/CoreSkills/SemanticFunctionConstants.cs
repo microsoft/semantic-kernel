@@ -5,89 +5,90 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 internal static class SemanticFunctionConstants
 {
     internal const string FunctionFlowFunctionDefinition =
-        @"Create a plan as a list, step by step, to answer the request or goal given.
+        @"Create an XML plan step by step, to satisfy the goal given.
 To create a plan, follow these steps:
-1. From a GOAL create a <plan> as a series of <functions>.
-2. Use only the [AVAILABLE FUNCTIONS] - do not create new functions or inputs values.
-3. The $output from each function is automatically passed as $input to the subsequent function.
-4. $input does not need to be specified if it consumes the output of the previous function.
-5. To save an $output from a function, to pass into a future fuction, use <function.{FunctionName} ... setContextVariable: ""$<UNIQUE_VARIABLE_KEY>""/>
-6. To save an $output from a function, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
-7. Append an ""END"" comment at the end of the plan.
+1. From a <goal> create a <plan> as a series of <functions>.
+2. Use only the [AVAILABLE FUNCTIONS] - do not create new functions, inputs or attribute values.
+3. Only use functions that are required for the given goal.
+4. A function has an $input and an $output.
+5. The $output from each function is automatically passed as $input to the subsequent <function>.
+6. $input does not need to be specified if it consumes the $output of the previous function.
+7. To save an $output from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""$<UNIQUE_VARIABLE_KEY>""/>
+8. To save an $output from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
+9. Append an ""END"" XML comment at the end of the plan.
 
 Here are some good examples:
 
 [AVAILABLE FUNCTIONS]
-  Summarize :
+  WriterSkill.Summarize:
     description: summarize input text
     inputs:
     - $input: the text to summarize
-  TranslateTo:
+  LanguageHelpers.TranslateTo:
     description: translate the input to another language
     inputs:
     - $input: the text to translate
     - $translate_to_language: the language to translate to
-  LookupContactEmail:
+  EmailConnector.LookupContactEmail:
     description: looks up the a contact and retrieves their email address
     inputs:
     - $input: the name to look up
-  EmailTo:
-    decription: email the input text to a recipient
+  EmailConnector.EmailTo:
+    description: email the input text to a recipient
     inputs:
     - $input: the text to email
     - $recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
 [END AVAILABLE FUNCTIONS]
 
-<goal>Summarize the input, then translate to japanese and email it to Martin""</goal>
+<goal>Summarize the input, then translate to japanese and email it to Martin</goal>
 <plan>
-  <function.Summarize/>
-  <function.TranslateTo lanugage=""Japanese"" setContextVariable=""TRANSLATED_TEXT"" />
-  <function.LookupContactEmail name=""Martin"" setContextVariable=""CONTACT_RESULT"" />
-  <function.EmailTo input=""$TRANSLATED_TEXT"" recipient=""$CONTACT_RESULT""/>
+  <function.WriterSkill.Summarize/>
+  <function.LanguageHelpers.TranslateTo translate_to_language=""Japanese"" setContextVariable=""TRANSLATED_TEXT"" />
+  <function.EmailConnector.LookupContactEmail input=""Martin"" setContextVariable=""CONTACT_RESULT"" />
+  <function.EmailConnector.EmailTo input=""$TRANSLATED_TEXT"" recipient=""$CONTACT_RESULT""/>
 </plan><!-- END -->
 
 [AVAILABLE FUNCTIONS]
-  Summarize :
-    description: summarize input text
+  AuthorAbility.Summarize:
+    description: summarizes the input text
     inputs:
     - $input: the text to summarize
-  TranslateTo:
+  Magician.TranslateTo:
     description: translate the input to another language
     inputs:
     - $input: the text to translate
     - $translate_to_language: the language to translate to
-  LookupContactEmail:
-    description: looks up the a contact and retrieves their email address
+  _GLOBAL_FUNCTIONS_.GetEmailAddress:
+    description: Gets email address for given contact
     inputs:
     - $input: the name to look up
-  EmailTo:
-    decription: email the input text to a recipient
+  _GLOBAL_FUNCTIONS_.SendEmail:
+    description: email the input text to a recipient
     inputs:
     - $input: the text to email
     - $recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
 [END AVAILABLE FUNCTIONS]
 
-<goal>
-Summarize an input, translate to French, and e-mail to John Doe
-</goal>
+<goal>Summarize an input, translate to french, and e-mail to John Doe</goal>
 <plan>
-    <function.SummarizeSkill.Summarize/>
-    <function.WriterSkill.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
-    <function.email.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
-    <function.email.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
+    <function.AuthorAbility.Summarize/>
+    <function.Magician.TranslateTo translate_to_language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
+    <function._GLOBAL_FUNCTIONS_.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
+    <function._GLOBAL_FUNCTIONS_.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
 </plan><!-- END -->
 
 [AVAILABLE FUNCTIONS]
-  Summarize :
+  Everything.Summarize:
     description: summarize input text
     inputs:
     - $input: the text to summarize
-  NovelOutline :
-    description: summarize input text
+  _GLOBAL_FUNCTIONS_.NovelOutline :
+    description: Outlines the input text as if it were a novel
     inputs:
-    - $input: the text to summarize
-  EmailTo:
-    decription: email the input text to a recipient
+    - $input: the title of the novel to outline
+    - $chapterCount: the number of chapters to outline
+  Emailer.EmailTo:
+    description: email the input text to a recipient
     inputs:
     - $input: the text to email
     - $recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
@@ -95,28 +96,8 @@ Summarize an input, translate to French, and e-mail to John Doe
 
 <goal>Create an outline for a children's book with 3 chapters about a group of kids in a club and then summarize it.</goal>
 <plan>
-  <function.NovelOutline input=""A group of kids in a club called 'The Thinking Caps' solve mysteries and puzzles using their creativity and logic."" chapterCount=""3"" endMarker=""***"" />
-  <function.Summarize/>
-</plan><!-- END -->
-
-The following is an incorrect example, because it creates a new input value for both NovelOutline and EmailTo that is not directly sourced from the goal.
-
-[AVAILABLE FUNCTIONS]
-  NovelOutline :
-    description: summarize input text
-    inputs:
-    - $input: the text to summarize
-  EmailTo:
-    decription: email the input text to a recipient
-    inputs:
-    - $input: the text to email
-    - $recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
-[END AVAILABLE FUNCTIONS]
-
-<goal>Create an outline for a children's book with 3 chapters about a group of kids in a club.</goal>
-<plan>
-  <function.WriterSkill.NovelOutline input=""A group of kids in a club called 'The Thinking Caps' solve mysteries and puzzles using their creativity and logic."" chapterCount=""3"" endMarker=""***"" setContextVariable=""OUTLINE"" />
-  <function.WriterSkill.EmailTo to=""editor@publishing.com"" input=""Dear Editor, Can you take at the outline I've attached?"" />
+  <function._GLOBAL_FUNCTIONS_.NovelOutline input=""A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic."" chapterCount=""3"" />
+  <function.Everything.Summarize/>
 </plan><!-- END -->
 
 End of examples.

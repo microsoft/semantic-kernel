@@ -77,7 +77,7 @@
         "Build - Semantic-Kernel",
         "Test - Semantic-Kernel",
         "Run - Kernel-Demo",
-        "R# check"
+        "R# cleanup"
       ],
       "dependsOrder": "sequence"
     },
@@ -103,16 +103,36 @@
       "label": "Test - Semantic-Kernel",
       "command": "dotnet",
       "type": "process",
-      "args": [
-        "test",
-        "${workspaceFolder}/dotnet/src/SemanticKernel.Test/SemanticKernel.Test.csproj"
-      ],
+      "args": ["test", "SemanticKernel.Test.csproj"],
       "problemMatcher": "$msCompile",
       "group": "test",
       "presentation": {
         "reveal": "always",
         "panel": "shared",
         "group": "PR-Validate"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.Test/"
+      }
+    },
+    {
+      "label": "Test - Semantic-Kernel (Code Coverage)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "--collect",
+        "XPlat Code Coverage;Format=lcov",
+        "SemanticKernel.Test.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.Test/"
       }
     },
     {
@@ -133,13 +153,13 @@
       }
     },
     {
-      "label": "Run - Starter API Azure Function",
+      "label": "Run - Kernel HTTP Server",
       "command": "func",
       "type": "shell",
       "args": ["start", "--csharp"],
       "group": "test",
       "options": {
-        "cwd": "${workspaceFolder}/samples/starter-api-azure-function"
+        "cwd": "${workspaceFolder}/samples/dotnet/KernelHttpServer"
       },
       "presentation": {
         "reveal": "always",
@@ -154,7 +174,37 @@
       "args": ["start"],
       "group": "test",
       "options": {
-        "cwd": "${workspaceFolder}/samples/starter-chat-webapp-react"
+        "cwd": "${workspaceFolder}/samples/apps/chat-summary-webapp-react"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "Run-Samples"
+      }
+    },
+    {
+      "label": "Run - Book Creator WebApp React",
+      "command": "yarn",
+      "type": "shell",
+      "args": ["start"],
+      "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/samples/apps/book-creator-webapp-react"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "Run-Samples"
+      }
+    },
+    {
+      "label": "Run - Auth API WebApp React",
+      "command": "yarn",
+      "type": "shell",
+      "args": ["start"],
+      "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/samples/apps/auth-api-webapp-react"
       },
       "presentation": {
         "reveal": "always",

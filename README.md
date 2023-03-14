@@ -1,6 +1,15 @@
 # Semantic Kernel
 
+[![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)
+[![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
 [![dotnet](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci.yml)
+
+> ℹ️ **NOTE**: This project is in early alpha and, just like AI, will evolve quickly.
+> We invite you to join us in developing the Semantic Kernel together!
+> Please contribute by
+> using GitHub [Discussions](https://github.com/microsoft/semantic-kernel/discussions),
+> opening GitHub [Issues](https://github.com/microsoft/semantic-kernel/issues/new/choose),
+> sending us [PRs](https://github.com/microsoft/semantic-kernel/pulls).
 
 **Semantic Kernel (SK)** is a lightweight SDK enabling integration of AI Large
 Language Models (LLMs) with conventional programming languages. The SK extensible

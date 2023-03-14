@@ -13,12 +13,12 @@
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample
 2. Ensure the service API is already running `http://localhost:7071`. If not learn
-   how to start it [here](../../dotnet/api-azure-function/README.md).
+   how to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. You will also need to
    [register your application](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)
    in the Azure Portal. Follow the steps to register your app
    [here](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app).
-    - Select **`single-page application (SPA)`** as platform type, and the Redirect URI will be **`http://localhost:3000`**
+    - Select **`Single-page application (SPA)`** as platform type, and the Redirect URI will be **`http://localhost:3000`**
     - It is recommended you use the **`Personal Microsoft accounts`** account type for this sample.
 4. Once registered, copy the **Application (client) ID** from the Azure Portal and paste
    the GUID into the **[.env](.env)** file next to `REACT_APP_GRAPH_CLIENT_ID=` (first line of the .env file).
