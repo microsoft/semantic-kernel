@@ -40,7 +40,6 @@ internal static class SKContextExtensions
     /// <param name="context">The SKContext</param>
     /// <param name="config">The planner skill config.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
-    /// <remarks>TODO: support includedSkills and includedFunctions that override sematicQuery results</remarks>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded skills and functions.</returns>
     internal static async Task<List<FunctionView>?> GetAvailableFunctionsAsync(
         this SKContext context,
