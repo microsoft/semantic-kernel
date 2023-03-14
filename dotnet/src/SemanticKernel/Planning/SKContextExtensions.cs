@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
@@ -92,6 +93,7 @@ internal static class SKContextExtensions
                     var function = availableFunctions.Find(x => x.ToFunctionName() == memoryEntry.Id);
                     if (function != null)
                     {
+                        context.Log.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance, function.ToFunctionName());
                         result.Add(function);
                     }
                 }
