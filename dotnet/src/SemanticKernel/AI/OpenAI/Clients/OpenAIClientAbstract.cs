@@ -35,13 +35,13 @@ public abstract class OpenAIClientAbstract : IDisposable
     protected HttpClient HTTPClient { get; }
 
     private readonly HttpClientHandler _httpClientHandler;
-    private readonly IDelegatingHandlerFactory _handlerFactory = new DefaultHttpRetryHandlerFactory();
+    private readonly IDelegatingHandlerFactory _handlerFactory;
     private readonly DelegatingHandler _retryHandler;
 
     internal OpenAIClientAbstract(ILogger? log = null, IDelegatingHandlerFactory? handlerFactory = null)
     {
         this.Log = log ?? this.Log;
-        this._handlerFactory = handlerFactory ?? this._handlerFactory;
+        this._handlerFactory = handlerFactory ?? new DefaultHttpRetryHandlerFactory();
 
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
         this._retryHandler = this._handlerFactory.Create(this.Log);
