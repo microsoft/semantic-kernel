@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -54,8 +53,8 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            TimeSpan waitFor = default;
-            string reason = string.Empty;
+            TimeSpan waitFor;
+            string reason;
             HttpResponseMessage? response = null;
             try
             {
@@ -86,17 +85,6 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                         "Error executing request, max total retry time reached. Reason: {0}", reason);
                     return response;
                 }
-
-                // Drain response content to free connections. Need to perform this
-                // before retry attempt and before re-throwing.
-                if (response.Content != null)
-                {
-#if NET5_0_OR_GREATER
-                    await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-#else
-                    await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-#endif
-                }
             }
             catch (Exception e) when (this.ShouldRetry(e) || this.ShouldRetry(e.InnerException))
             {
@@ -123,14 +111,10 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                 reason,
                 waitFor.TotalMilliseconds);
 
-            // Clone request with CloneAsync before retrying
-            // Do not dispose this request as that breaks the request cloning
-#pragma warning disable CA2000
-            request = await CloneAsync(request);
-#pragma warning restore CA2000
-
             // Increase retryCount
             retryCount++;
+
+            response?.Dispose();
 
             // Delay
             await this._delayProvider.DelayAsync(waitFor, cancellationToken).ConfigureAwait(false);
@@ -200,58 +184,6 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         }
 
         return this._config.RetryableExceptionTypes.Contains(exception.GetType());
-    }
-
-    /// <summary>
-    /// Create a new HTTP request by copying previous HTTP request's headers and properties from response's request message.
-    /// Copied from: https://github.com/microsoftgraph/msgraph-sdk-dotnet-core/blob/dev/src/Microsoft.Graph.Core/Extensions/HttpRequestMessageExtensions.cs
-    /// </summary>
-    /// <param name="originalRequest">The previous <see cref="HttpRequestMessage"/> needs to be copy.</param>
-    /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
-    /// <remarks>
-    /// Re-issue a new HTTP request with the previous request's headers and properties
-    /// </remarks>
-    private static async Task<HttpRequestMessage> CloneAsync(HttpRequestMessage originalRequest)
-    {
-        var newRequest = new HttpRequestMessage(originalRequest.Method, originalRequest.RequestUri);
-
-        // Copy request headers.
-        foreach (var header in originalRequest.Headers)
-        {
-            newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
-        }
-
-        // Copy request properties.
-        foreach (var property in originalRequest.Properties)
-        {
-            newRequest.Properties.Add(property);
-        }
-
-        // Set Content if previous request had one.
-        if (originalRequest.Content != null)
-        {
-            // HttpClient doesn't rewind streams and we have to explicitly do so.
-            await originalRequest.Content.ReadAsStreamAsync().ContinueWith(t =>
-            {
-                if (t.Result.CanSeek)
-                {
-                    t.Result.Seek(0, SeekOrigin.Begin);
-                }
-
-                newRequest.Content = new StreamContent(t.Result);
-            }, TaskScheduler.Current).ConfigureAwait(false);
-
-            // Copy content headers.
-            if (originalRequest.Content.Headers != null)
-            {
-                foreach (var contentHeader in originalRequest.Content.Headers)
-                {
-                    newRequest.Content.Headers.TryAddWithoutValidation(contentHeader.Key, contentHeader.Value);
-                }
-            }
-        }
-
-        return newRequest;
     }
 
     private readonly HttpRetryConfig _config;
