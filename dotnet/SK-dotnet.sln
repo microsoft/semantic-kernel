@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsGraphSkillsExample", "..\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelHttpServer", "..\samples\dotnet\KernelHttpServer\KernelHttpServer.csproj", "{34A7F1EF-D243-4160-A413-D713FEABCD94}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "src\IntegrationTest\IntegrationTests.csproj", "{E4B777A1-28E1-41BE-96AE-7F3EC61FD5D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.IntegrationTests", "src\SemanticKernel.IntegrationTests\SemanticKernel.IntegrationTests.csproj", "{E4B777A1-28E1-41BE-96AE-7F3EC61FD5D4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Document", "src\SemanticKernel.Skills\Skills.Document\Skills.Document.csproj", "{F94D1938-9DB7-4B24-9FF3-166DDFD96330}"
 EndProject
@@ -35,13 +35,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.Test", "src\SemanticKernel.Test\SemanticKernel.Test.csproj", "{37E39C68-5A40-4E63-9D3C-0C66AD98DFCB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.UnitTests", "src\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj", "{37E39C68-5A40-4E63-9D3C-0C66AD98DFCB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Memory.Sqlite", "src\SemanticKernel.Skills\Skills.Memory.Sqlite\Skills.Memory.Sqlite.csproj", "{E23E7270-F13D-4620-A115-AA6A8619EE5A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Test", "src\SemanticKernel.Skills\Skills.Test\Skills.Test.csproj", "{107156B4-5A8B-45C7-97A2-4544D7FA19DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.UnitTests", "src\SemanticKernel.Skills\Skills.UnitTests\Skills.UnitTests.csproj", "{107156B4-5A8B-45C7-97A2-4544D7FA19DE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{F4243136-252A-4459-A7C4-EE8C056D6B0B}"
 	ProjectSection(SolutionItems) = preProject
