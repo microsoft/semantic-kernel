@@ -55,9 +55,9 @@ public class PlannerSkill
     {
         public double RelevancyThreshold { get; set; } = 0.78;
         public int MaxFunctions { get; set; } = 10;
-        public List<string> ExcludedSkills { get; set; } = new() { RestrictedSkillName };
-        public List<string> ExcludedFunctions { get; set; } = new() { "CreatePlan", "ExecutePlan" };
-        public List<string> IncludedFunctions { get; set; } = new() { "BucketOutputs" };
+        public HashSet<string> ExcludedSkills { get; } = new() { RestrictedSkillName };
+        public HashSet<string> ExcludedFunctions { get; } = new() { "CreatePlan", "ExecutePlan" };
+        public HashSet<string> IncludedFunctions { get; } = new() { "BucketOutputs" };
     }
 
     /// <summary>

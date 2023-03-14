@@ -157,27 +157,27 @@ internal static class SKContextExtensions
 
         if (context.Variables.Get(Parameters.ExcludedFunctions, out var excludedFunctions))
         {
-            var excludedFunctionsList = excludedFunctions.Split(',').Select(x => x.Trim()).ToList();
+            var excludedFunctionsList = excludedFunctions.Split(',').Select(x => x.Trim());
 
             // Excluded functions and excluded skills from context.Variables should be additive to the default excluded functions and skills.
-            config.ExcludedFunctions = config.ExcludedFunctions.Union(excludedFunctionsList).ToList();
+            config.ExcludedFunctions.UnionWith(excludedFunctionsList.Except(config.ExcludedFunctions));
         }
 
         if (context.Variables.Get(Parameters.ExcludedSkills, out var excludedSkills))
         {
-            var excludedSkillsList = excludedSkills.Split(',').Select(x => x.Trim()).ToList();
+            var excludedSkillsList = excludedSkills.Split(',').Select(x => x.Trim());
 
             // Excluded functions and excluded skills from context.Variables should be additive to the default excluded functions and skills.
-            config.ExcludedSkills = config.ExcludedSkills.Union(excludedSkillsList).ToList();
+            config.ExcludedSkills.UnionWith(excludedSkillsList.Except(config.ExcludedSkills));
         }
 
         if (context.Variables.Get(Parameters.IncludedFunctions, out var includedFunctions))
         {
-            var includedFunctionsList = includedFunctions.Split(',').Select(x => x.Trim()).ToList();
+            var includedFunctionsList = includedFunctions.Split(',').Select(x => x.Trim());
 
             // Included functions from context.Variables should not override the default excluded functions.
-            var includedFunctionsListMinusExcludedFunctionsList = includedFunctionsList.Except(config.ExcludedFunctions).ToList();
-            config.IncludedFunctions = includedFunctionsListMinusExcludedFunctionsList;
+            config.IncludedFunctions.UnionWith(includedFunctionsList.Except(config.ExcludedFunctions));
+            config.IncludedFunctions.ExceptWith(config.ExcludedFunctions);
         }
 
         return config;

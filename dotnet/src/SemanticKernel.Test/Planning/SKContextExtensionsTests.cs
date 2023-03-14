@@ -79,7 +79,7 @@ public class SKContextExtensionsTests
         Assert.Single(result);
         Assert.Equal(functionView, result[0]);
 
-        config.IncludedFunctions = new List<string> { "nativeFunctionName" };
+        config.IncludedFunctions.UnionWith(new List<string> { "nativeFunctionName" });
         result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
         Assert.NotNull(result);
         Assert.Equal(2, result.Count);
