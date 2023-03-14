@@ -23,12 +23,64 @@ using Microsoft.SemanticKernel.Skills.Document.OpenXml;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.TemplateEngine;
+using static KernelHttpServer.Config.Constants;
 using Directory = System.IO.Directory;
 
 namespace KernelHttpServer;
 
 internal static class Extensions
 {
+    internal static ApiKeyConfig ToApiKeyConfig(this HttpRequestData req)
+    {
+        var apiConfig = new ApiKeyConfig();
+
+        // completion values
+        if (req.Headers.TryGetValues(SKHttpHeaders.CompletionBackend, out var completionAIService))
+        {
+            apiConfig.CompletionConfig.AIService = Enum.Parse<AIService>(completionAIService.First());
+        }
+
+        if (req.Headers.TryGetValues(SKHttpHeaders.CompletionModel, out var completionModelValue))
+        {
+            apiConfig.CompletionConfig.DeploymentOrModelId = completionModelValue.First();
+            apiConfig.CompletionConfig.Label = apiConfig.CompletionConfig.DeploymentOrModelId;
+        }
+
+        if (req.Headers.TryGetValues(SKHttpHeaders.CompletionEndpoint, out var completionEndpoint))
+        {
+            apiConfig.CompletionConfig.Endpoint = completionEndpoint.First();
+        }
+
+        if (req.Headers.TryGetValues(SKHttpHeaders.CompletionKey, out var completionKey))
+        {
+            apiConfig.CompletionConfig.Key = completionKey.First();
+        }
+
+        // embedding values
+        if (req.Headers.TryGetValues(SKHttpHeaders.EmbeddingBackend, out var embeddingAIService))
+        {
+            apiConfig.EmbeddingConfig.AIService = Enum.Parse<AIService>(embeddingAIService.First());
+        }
+
+        if (req.Headers.TryGetValues(SKHttpHeaders.EmbeddingModel, out var embeddingModelValue))
+        {
+            apiConfig.EmbeddingConfig.DeploymentOrModelId = embeddingModelValue.First();
+            apiConfig.EmbeddingConfig.Label = apiConfig.EmbeddingConfig.DeploymentOrModelId;
+        }
+
+        if (req.Headers.TryGetValues(SKHttpHeaders.EmbeddingEndpoint, out var embeddingEndpoint))
+        {
+            apiConfig.EmbeddingConfig.Endpoint = embeddingEndpoint.First();
+        }
+
+        if (req.Headers.TryGetValues(SKHttpHeaders.EmbeddingKey, out var embeddingKey))
+        {
+            apiConfig.EmbeddingConfig.Key = embeddingKey.First();
+        }
+
+        return apiConfig;
+    }
+
     internal static async Task<HttpResponseData> CreateResponseWithMessageAsync(this HttpRequestData req, HttpStatusCode statusCode, string message)
     {
         HttpResponseData response = req.CreateResponse(statusCode);
@@ -91,6 +143,11 @@ internal static class Extensions
         _ = kernel.ImportSkill(planner, nameof(PlannerSkill));
     }
 
+    internal static void RegisterTextMemory(this IKernel kernel)
+    {
+        _ = kernel.ImportSkill(new TextMemorySkill(), nameof(TextMemorySkill));
+    }
+
     internal static void RegisterNativeSkills(this IKernel kernel, IEnumerable<string>? skillsToLoad = null)
     {
         if (_ShouldLoad(nameof(DocumentSkill), skillsToLoad))
@@ -133,33 +190,6 @@ internal static class Extensions
                     logger.LogWarning("Could not load skill from {0} with error: {1}", currentFolder.Name, e.Message);
                 }
             }
-        }
-    }
-
-    internal static void ConfigureCompletionBackend(this IKernel kernel, ApiKeyConfig apiConfig)
-    {
-        // The Semantic Kernel supports both Azure OpenAI and OpenAI completion backends (and both can exist concurrently)
-        // Each Skill can determine which model it needs which via internal orchestration, the kernel will delegate to the appropriate backend
-
-        switch (apiConfig.CompletionBackend)
-        {
-            case CompletionService.AzureOpenAI:
-                _ = kernel.Config.AddAzureOpenAICompletionBackend(
-                    apiConfig.Label,
-                    apiConfig.DeploymentOrModelId,
-                    apiConfig.Endpoint,
-                    apiConfig.Key);
-
-                break;
-            case CompletionService.OpenAI:
-                _ = kernel.Config.AddOpenAICompletionBackend(
-                    apiConfig.Label,
-                    apiConfig.DeploymentOrModelId,
-                    apiConfig.Key);
-
-                break;
-            default:
-                break;
         }
     }
 }

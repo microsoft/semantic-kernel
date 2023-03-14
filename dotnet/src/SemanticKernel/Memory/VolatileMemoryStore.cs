@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+using Microsoft.SemanticKernel.Memory.Collections;
 using Microsoft.SemanticKernel.Memory.Storage;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -23,6 +24,11 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
         int limit = 1,
         double minRelevanceScore = 0)
     {
+        if (limit <= 0)
+        {
+            return AsyncEnumerable.Empty<(IEmbeddingWithMetadata<TEmbedding>, double)>();
+        }
+
         IEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>>? embeddingCollection = null;
         if (this.TryGetCollection(collection, out var collectionDict))
         {
@@ -36,7 +42,8 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
 
         EmbeddingReadOnlySpan<TEmbedding> embeddingSpan = new(embedding.AsReadOnlySpan());
 
-        TopNSortedList<IEmbeddingWithMetadata<TEmbedding>> sortedEmbeddings = new(limit);
+        TopNCollection<IEmbeddingWithMetadata<TEmbedding>> embeddings = new(limit);
+
         foreach (var item in embeddingCollection)
         {
             if (item.Value != null)
@@ -45,12 +52,14 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
                 double similarity = embeddingSpan.CosineSimilarity(itemSpan);
                 if (similarity >= minRelevanceScore)
                 {
-                    sortedEmbeddings.Add(similarity, item.Value);
+                    embeddings.Add(new(item.Value, similarity));
                 }
             }
         }
 
-        return sortedEmbeddings.Select(x => (x.Value, x.Key)).ToAsyncEnumerable();
+        embeddings.SortByScore();
+
+        return embeddings.Select(x => (x.Value, x.Score.Value)).ToAsyncEnumerable();
     }
 
     #region private ================================================================================
@@ -66,58 +75,6 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
     {
         var similarity = embedding.Vector.ToArray().CosineSimilarity(embeddingWithData.Embedding.Vector.ToArray());
         return (embeddingWithData, similarity);
-    }
-
-    /// <summary>
-    /// A sorted list that only keeps the top N items.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    private class TopNSortedList<T> : SortedList<double, T>
-    {
-        /// <summary>
-        /// Creates an instance of the <see cref="TopNSortedList{T}"/> class.
-        /// </summary>
-        /// <param name="maxSize"></param>
-        public TopNSortedList(int maxSize)
-            : base(new DescendingDoubleComparer())
-        {
-            this._maxSize = maxSize;
-        }
-
-        /// <summary>
-        /// Adds a new item to the list.
-        /// </summary>
-        /// <param name="score">The item's score</param>
-        /// <param name="value">The item's value</param>
-        public new void Add(double score, T value)
-        {
-            if (this.Count >= this._maxSize)
-            {
-                if (score < this.Keys.Last())
-                {
-                    // If the key is less than the smallest key in the list, then we don't need to add it.
-                    return;
-                }
-
-                // Remove the smallest key.
-                this.RemoveAt(this.Count - 1);
-            }
-
-            base.Add(score, value);
-        }
-
-        private readonly int _maxSize;
-
-        private class DescendingDoubleComparer : IComparer<double>
-        {
-            public int Compare(double x, double y)
-            {
-                int compareResult = Comparer<double>.Default.Compare(x, y);
-
-                // Invert the result for descending order.
-                return 0 - compareResult;
-            }
-        }
     }
 
     #endregion

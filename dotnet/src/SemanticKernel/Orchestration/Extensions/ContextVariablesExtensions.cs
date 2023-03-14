@@ -37,7 +37,6 @@ public static class ContextVariablesExtensions
         vars.Set(Plan.IsCompleteKey, plan.IsComplete.ToString());
         vars.Set(Plan.IsSuccessfulKey, plan.IsSuccessful.ToString());
         vars.Set(Plan.ResultKey, plan.Result);
-        vars.Set(Plan.ArgumentsKey, plan.Arguments);
 
         return vars;
     }
