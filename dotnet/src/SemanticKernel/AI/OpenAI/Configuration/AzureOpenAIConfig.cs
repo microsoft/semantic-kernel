@@ -11,6 +11,11 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.Configuration;
 public sealed class AzureOpenAIConfig : BackendConfig, ICompletionBackendConfig, IEmbeddingsBackendConfig
 {
     /// <summary>
+    /// Azure OpenAI latest version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference
+    /// </summary>
+    internal const string SupportedVersion = "2022-12-01";
+
+    /// <summary>
     /// Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource
     /// </summary>
     public string DeploymentName { get; set; }
@@ -28,7 +33,7 @@ public sealed class AzureOpenAIConfig : BackendConfig, ICompletionBackendConfig,
     /// <summary>
     /// Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference
     /// </summary>
-    public string APIVersion { get; set; } = "2022-12-01";
+    public string APIVersion { get; set; } = SupportedVersion;
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAIConfig" /> with supplied values.

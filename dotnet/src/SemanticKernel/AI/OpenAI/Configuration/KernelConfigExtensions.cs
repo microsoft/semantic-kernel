@@ -25,7 +25,7 @@ public static class KernelConfigExtensions
         string deploymentName,
         string endpoint,
         string apiKey,
-        string apiVersion,
+        string apiVersion = AzureOpenAIConfig.SupportedVersion,
         bool overwrite = false)
     {
         var config = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
@@ -35,7 +35,7 @@ public static class KernelConfigExtensions
                 config.DeploymentName,
                 config.Endpoint,
                 config.APIKey,
-                config.APIVersion,
+                config.APIVersion = AzureOpenAIConfig.SupportedVersion,
                 logger
             ), overwrite);
 
@@ -60,7 +60,7 @@ public static class KernelConfigExtensions
         string deploymentName,
         string endpoint,
         string apiKey,
-        string apiVersion,
+        string apiVersion = AzureOpenAIConfig.SupportedVersion,
         bool overwrite = false)
     {
         var config = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);

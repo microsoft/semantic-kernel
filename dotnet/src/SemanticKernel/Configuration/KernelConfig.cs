@@ -46,7 +46,7 @@ public sealed class KernelConfig
         {
             this.AddEmbeddingsBackendConfig(embeddingsConfig, overwrite);
         }
-        
+
         return this;
     }
 
