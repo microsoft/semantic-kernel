@@ -1,0 +1,45 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.AI.Embeddings;
+
+namespace Qdrant.DotNet;
+
+public class VectorRecordMetadata 
+{
+    /// <summary>
+    /// An ID that allows to map the vector to some external resource
+    /// </summary>
+    // [JsonPropertyName("id")]
+    // public string Id { get; set; } = string.Empty;
+
+
+
+    /// <summary>
+    /// Optional payload to include
+    /// </summary>
+    [JsonPropertyName("payload")]
+    public Dictionary<string, object> Payload { get; set; } = new Dictionary<string, object>();
+
+    /// <summary>
+    /// Optional tags to allow filtering, e.g. "email", "message", "photo"
+    /// </summary>
+    [JsonPropertyName("tags")]
+    public List<string> Tags { get; set; } = new();
+}
+
+public class VectorRecord : VectorRecordMetadata, DataEntry<IEmbeddingWithMetadata<TEmbedding>>
+{
+    /// <summary>
+    /// Vector data
+    /// </summary>
+    [JsonPropertyName("vector")]
+    public Embedding<TEmbedding> Vector; //= Array.Empty<float>();
+
+    
+//public Embedding<float> Embedding => new(this.Vector);
+
+
+}

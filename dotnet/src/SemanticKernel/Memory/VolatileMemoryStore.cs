@@ -1,3 +1,4 @@
+<<<<<<< sk-connector-vectordb
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
@@ -130,3 +131,5 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
 public class VolatileMemoryStore : VolatileMemoryStore<float>
 {
 }
+=======
+>>>>>>> local
