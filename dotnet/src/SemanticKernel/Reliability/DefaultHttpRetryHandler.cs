@@ -67,17 +67,6 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                     return response;
                 }
 
-                // Drain response content to free connections. Need to perform this
-                // before retry attempt and before re-throwing.
-                if (response.Content != null)
-                {
-#if NET5_0_OR_GREATER
-                    await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-#else
-                    await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-#endif
-                }
-
                 reason = response.StatusCode.ToString();
 
                 // If the retry count is greater than the max retry count then we'll
@@ -96,6 +85,17 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                     this._log.LogError(
                         "Error executing request, max total retry time reached. Reason: {0}", reason);
                     return response;
+                }
+
+                // Drain response content to free connections. Need to perform this
+                // before retry attempt and before re-throwing.
+                if (response.Content != null)
+                {
+#if NET5_0_OR_GREATER
+                    await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+#else
+                    await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+#endif
                 }
             }
             catch (Exception e) when (this.ShouldRetry(e) || this.ShouldRetry(e.InnerException))
