@@ -25,7 +25,12 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
     /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
     /// <param name="log">Application logger</param>
     /// <param name="handlerFactory">Retry handler factory for HTTP requests.</param>
-    public AzureTextCompletion(string modelId, string endpoint, string apiKey, string apiVersion, ILogger? log = null,
+    public AzureTextCompletion(
+        string modelId,
+        string endpoint,
+        string apiKey,
+        string apiVersion,
+        ILogger? log = null,
         IDelegatingHandlerFactory? handlerFactory = null)
         : base(log, handlerFactory)
     {
