@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using IntegrationTests.AI;
-using IntegrationTests.TestSettings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -15,10 +13,12 @@ using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using SemanticKernel.IntegrationTests.AI;
+using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTests.CoreSkills;
+namespace SemanticKernel.IntegrationTests.CoreSkills;
 
 public sealed class PlannerSkillTests : IDisposable
 {
@@ -54,19 +54,19 @@ public sealed class PlannerSkillTests : IDisposable
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                config.AddAzureOpenAICompletionBackend(
+                _ = config.AddAzureOpenAICompletionBackend(
                     label: azureOpenAIConfiguration.Label,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
 
-                config.AddAzureOpenAIEmbeddingsBackend(
+                _ = config.AddAzureOpenAIEmbeddingsBackend(
                     label: azureOpenAIEmbeddingsConfiguration.Label,
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
 
-                config.SetDefaultCompletionBackend(azureOpenAIConfiguration.Label);
+                _ = config.SetDefaultCompletionBackend(azureOpenAIConfiguration.Label);
             })
             .WithMemoryStorage(memoryStorage)
             .Build();
@@ -146,7 +146,7 @@ public sealed class PlannerSkillTests : IDisposable
         [SKFunctionContextParameter(Name = "email_address", Description = "The email address to send email to.")]
         public Task<SKContext> SendEmailAsync(string input, SKContext context)
         {
-            context.Variables.Update($"Sent email to: {context.Variables["email_address"]}. Body: {input}");
+            _ = context.Variables.Update($"Sent email to: {context.Variables["email_address"]}. Body: {input}");
             return Task.FromResult(context);
         }
 
@@ -155,7 +155,7 @@ public sealed class PlannerSkillTests : IDisposable
         public Task<SKContext> GetEmailAddressAsync(string input, SKContext context)
         {
             context.Log.LogDebug("Returning hard coded email for {0}", input);
-            context.Variables.Update("johndoe1234@example.com");
+            _ = context.Variables.Update("johndoe1234@example.com");
             return Task.FromResult(context);
         }
 
@@ -163,7 +163,7 @@ public sealed class PlannerSkillTests : IDisposable
         [SKFunctionInput(Description = "The topic of the poem.")]
         public Task<SKContext> WritePoemAsync(string input, SKContext context)
         {
-            context.Variables.Update($"Roses are red, violets are blue, {input} is hard, so is this test.");
+            _ = context.Variables.Update($"Roses are red, violets are blue, {input} is hard, so is this test.");
             return Task.FromResult(context);
         }
     }
