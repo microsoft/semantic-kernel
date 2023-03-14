@@ -73,7 +73,7 @@ public class FileCompressionSkill
     [SKFunctionContextParameter(Name = Parameters.DestinationFilePath, Description = "Path of compressed file to create")]
     public async Task<string> CompressFileAsync(string sourceFilePath, SKContext context)
     {
-        this._logger.LogDebug($"{nameof(CompressFileAsync)} got called");
+        this._logger.LogTrace($"{nameof(CompressFileAsync)} got called");
 
         if (!context.Variables.Get(Parameters.DestinationFilePath, out string destinationFilePath))
         {
@@ -103,7 +103,7 @@ public class FileCompressionSkill
     [SKFunctionContextParameter(Name = Parameters.DestinationFilePath, Description = "Path of compressed file to create")]
     public async Task<string> CompressDirectoryAsync(string sourceDirectoryPath, SKContext context)
     {
-        this._logger.LogDebug($"{nameof(CompressDirectoryAsync)} got called");
+        this._logger.LogTrace($"{nameof(CompressDirectoryAsync)} got called");
 
         if (!context.Variables.Get(Parameters.DestinationFilePath, out string destinationFilePath))
         {
@@ -133,7 +133,7 @@ public class FileCompressionSkill
     [SKFunctionContextParameter(Name = Parameters.DestinationDirectoryPath, Description = "Directory into which to extract the decompressed content")]
     public async Task<string> DecompressFileAsync(string sourceFilePath, SKContext context)
     {
-        this._logger.LogDebug($"{nameof(DecompressFileAsync)} got called");
+        this._logger.LogTrace($"{nameof(DecompressFileAsync)} got called");
 
         if (!context.Variables.Get(Parameters.DestinationDirectoryPath, out string destinationDirectoryPath))
         {
