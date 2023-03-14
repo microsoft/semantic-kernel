@@ -95,7 +95,8 @@ internal static class SKContextExtensions
         return result;
     }
 
-    internal static async Task<IEnumerable<FunctionView>> GetRelevantFunctionsAsync(SKContext context, IEnumerable<FunctionView> availableFunctions, IAsyncEnumerable<MemoryQueryResult> memories)
+    internal static async Task<IEnumerable<FunctionView>> GetRelevantFunctionsAsync(SKContext context, IEnumerable<FunctionView> availableFunctions,
+        IAsyncEnumerable<MemoryQueryResult> memories)
     {
         var relevantFunctions = new ConcurrentBag<FunctionView>();
         await foreach (var memoryEntry in memories.WithCancellation(context.CancellationToken))
@@ -108,6 +109,7 @@ internal static class SKContextExtensions
                 relevantFunctions.Add(function);
             }
         }
+
         return relevantFunctions;
     }
 
