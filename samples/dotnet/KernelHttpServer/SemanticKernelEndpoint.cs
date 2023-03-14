@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using KernelHttpServer.Model;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
 
@@ -15,6 +16,14 @@ namespace KernelHttpServer;
 
 public class SemanticKernelEndpoint
 {
+    private readonly IMemoryStore<float> _memoryStore;
+
+    public SemanticKernelEndpoint(IMemoryStore<float> memoryStore)
+    {
+        this._memoryStore = memoryStore;
+    }
+
+
     [Function("InvokeFunction")]
     public async Task<HttpResponseData> InvokeFunctionAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "skills/{skillName}/invoke/{functionName}")]
@@ -35,7 +44,8 @@ public class SemanticKernelEndpoint
         var kernel = SemanticKernelFactory.CreateForRequest(
             req,
             executionContext.GetLogger<SemanticKernelEndpoint>(),
-            ask.Skills);
+            ask.Skills,
+            this._memoryStore);
 
         if (kernel == null)
         {

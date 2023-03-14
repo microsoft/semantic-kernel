@@ -1,31 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernelTests.XunitHelpers;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernelTests.Orchestration;
 
-[SuppressMessage("", "CA1812:internal class apparently never instantiated", Justification = "Classes required by tests")]
-public sealed class SKFunctionTests3 : IDisposable
+public sealed class SKFunctionTests3
 {
-    private readonly RedirectOutput _testOutputHelper;
-
-    public SKFunctionTests3(ITestOutputHelper testOutputHelper)
-    {
-        this._testOutputHelper = new RedirectOutput(testOutputHelper);
-        Console.SetOut(this._testOutputHelper);
-    }
-
     [Fact]
     public void ItDoesntThrowForValidFunctions()
     {
@@ -75,11 +62,6 @@ public sealed class SKFunctionTests3 : IDisposable
 
         // Assert
         Assert.Equal(3, count);
-    }
-
-    public void Dispose()
-    {
-        this._testOutputHelper.Dispose();
     }
 
     private class InvalidSkill

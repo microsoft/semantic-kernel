@@ -28,6 +28,9 @@
       "problemMatcher": "$msCompile",
       "group": "build"
     },
+    // If R# commands fails run:
+    // - dotnet new tool-manifest
+    // - dotnet tool install JetBrains.ReSharper.GlobalTools
     {
       // r# inspect - dotnet jb inspectcode -o="inspectcode.log" --no-build -s=".\SK-dotnet.sln.DotSettings" -f=Text ".\SK-dotnet.sln"
       "label": "R# check",
@@ -37,10 +40,10 @@
       "args": [
         "jb",
         "inspectcode",
-        "-o=inspectcode.log",
+        "--output=inspectcode.log",
         "--no-build",
-        "-s=SK-dotnet.sln.DotSettings",
-        "-f=Text",
+        "--settings=SK-dotnet.sln.DotSettings",
+        "--format=Text",
         "SK-dotnet.sln"
       ],
       "options": {
@@ -57,7 +60,9 @@
         "jb",
         "cleanupcode",
         "--no-build",
-        "-s=SK-dotnet.sln.DotSettings",
+        "--verbosity=WARN",
+        "--profile=Built-in: Reformat Code",
+        "--settings=SK-dotnet.sln.DotSettings",
         "SK-dotnet.sln"
       ],
       "options": {
@@ -72,7 +77,7 @@
         "Build - Semantic-Kernel",
         "Test - Semantic-Kernel",
         "Run - Kernel-Demo",
-        "R# check"
+        "R# cleanup"
       ],
       "dependsOrder": "sequence"
     },
@@ -98,16 +103,36 @@
       "label": "Test - Semantic-Kernel",
       "command": "dotnet",
       "type": "process",
-      "args": [
-        "test",
-        "${workspaceFolder}/dotnet/src/SemanticKernel.Test/SemanticKernel.Test.csproj"
-      ],
+      "args": ["test", "SemanticKernel.Test.csproj"],
       "problemMatcher": "$msCompile",
       "group": "test",
       "presentation": {
         "reveal": "always",
         "panel": "shared",
         "group": "PR-Validate"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.Test/"
+      }
+    },
+    {
+      "label": "Test - Semantic-Kernel (Code Coverage)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "--collect",
+        "XPlat Code Coverage;Format=lcov",
+        "SemanticKernel.Test.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.Test/"
       }
     },
     {
@@ -149,7 +174,37 @@
       "args": ["start"],
       "group": "test",
       "options": {
-        "cwd": "${workspaceFolder}/samples/starter-chat-webapp-react"
+        "cwd": "${workspaceFolder}/samples/apps/chat-summary-webapp-react"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "Run-Samples"
+      }
+    },
+    {
+      "label": "Run - Book Creator WebApp React",
+      "command": "yarn",
+      "type": "shell",
+      "args": ["start"],
+      "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/samples/apps/book-creator-webapp-react"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "Run-Samples"
+      }
+    },
+    {
+      "label": "Run - Auth API WebApp React",
+      "command": "yarn",
+      "type": "shell",
+      "args": ["start"],
+      "group": "test",
+      "options": {
+        "cwd": "${workspaceFolder}/samples/apps/auth-api-webapp-react"
       },
       "presentation": {
         "reveal": "always",

@@ -8,6 +8,9 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "dotnet/**"
+      - "samples/dotnet/**"
 
 permissions:
   contents: read
