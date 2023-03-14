@@ -70,13 +70,13 @@ public sealed class OpenAIServiceClient : IOpenAIServiceClient
     /// <summary>
     /// Send a POST request to the specified Uri.
     /// </summary>
-    /// <typeparam name="TR">The result type.</typeparam>
-    /// <typeparam name="TI">The request type.</typeparam>
+    /// <typeparam name="TResponse">The response type.</typeparam>
+    /// <typeparam name="TRequest">The request type.</typeparam>
     /// <param name="uri">The Uri to send the POST request to.</param>
     /// <param name="request">The request to send.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The response.</returns>
-    private async Task<TR> PostAsync<TR, TI>(string uri, TI request, CancellationToken cancellationToken)
+    private async Task<TResponse> PostAsync<TResponse, TRequest>(string uri, TRequest request, CancellationToken cancellationToken)
     {
         Verify.NotNull(uri, "The uri is not provided.");
         Verify.NotNull(request, "The request is not provided.");
@@ -94,7 +94,7 @@ public sealed class OpenAIServiceClient : IOpenAIServiceClient
 
         using var responseMessage = await this._httpClient.SendAsync(requestMessage, cancellationToken);
 
-        return await responseMessage.HandleResponseAsync<TR>();
+        return await responseMessage.HandleResponseAsync<TResponse>();
     }
 
     /// <summary>
