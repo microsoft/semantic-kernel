@@ -16,55 +16,55 @@ namespace SemanticKernel.UnitTests.Configuration;
 public class KernelConfigTests
 {
     [Fact]
-    public void RetryMechanismIsSet()
+    public void HttpRetryHandlerFactoryIsSet()
     {
         // Arrange
-        var retry = new PassThroughWithoutRetry();
+        var retry = new NullHttpRetryHandlerFactory();
         var config = new KernelConfig();
 
         // Act
-        config.SetRetryMechanism(retry);
+        config.SetHttpRetryHandlerFactory(retry);
 
         // Assert
-        Assert.Equal(retry, config.RetryMechanism);
+        Assert.Equal(retry, config.HttpHandlerFactory);
     }
 
     [Fact]
-    public void RetryMechanismIsSetWithCustomImplementation()
+    public void HttpRetryHandlerFactoryIsSetWithCustomImplementation()
     {
         // Arrange
-        var retry = new Mock<IRetryMechanism>();
+        var retry = new Mock<IDelegatingHandlerFactory>();
         var config = new KernelConfig();
 
         // Act
-        config.SetRetryMechanism(retry.Object);
+        config.SetHttpRetryHandlerFactory(retry.Object);
 
         // Assert
-        Assert.Equal(retry.Object, config.RetryMechanism);
+        Assert.Equal(retry.Object, config.HttpHandlerFactory);
     }
 
     [Fact]
-    public void RetryMechanismIsSetToPassThroughWithoutRetryIfNull()
+    public void HttpRetryHandlerFactoryIsSetToDefaultHttpRetryHandlerFactoryIfNull()
     {
         // Arrange
         var config = new KernelConfig();
 
         // Act
-        config.SetRetryMechanism(null);
+        config.SetHttpRetryHandlerFactory(null);
 
         // Assert
-        Assert.IsType<PassThroughWithoutRetry>(config.RetryMechanism);
+        Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
     }
 
     [Fact]
-    public void RetryMechanismIsSetToPassThroughWithoutRetryIfNotSet()
+    public void HttpRetryHandlerFactoryIsSetToDefaultHttpRetryHandlerFactoryIfNotSet()
     {
         // Arrange
         var config = new KernelConfig();
 
         // Act
         // Assert
-        Assert.IsType<PassThroughWithoutRetry>(config.RetryMechanism);
+        Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
     }
 
     [Fact]
