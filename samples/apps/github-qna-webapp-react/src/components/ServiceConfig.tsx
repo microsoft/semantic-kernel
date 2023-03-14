@@ -44,14 +44,28 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
     }
 
     useEffect(() => {
-        setKeyConfig(keyConfig => ({
+        console.log(keyConfig);
+    }, [keyConfig]);
+
+    useEffect(() => {
+        setKeyConfig((keyConfig) => ({
             ...keyConfig,
-            key: isOpenAI ? openAiKey : azureOpenAiKey,
-            completionDeploymentOrModelId: isOpenAI ? openAiCompletionModel : azureOpenAiCompletionDeployment,
-            embeddingDeploymentOrModelId: isOpenAI ? openAiEmbeddingsModel : azureOpenAiEmbeddingDeployment,
-            endpoint: isOpenAI ? '' : azureOpenAiEndpoint,
-            completionBackend: isOpenAI ? 1 : 0,
-            embeddingBackend: isOpenAI ? 1 : 0
+            completionConfig: {
+                ...keyConfig.completionConfig,
+                backend: isOpenAI ? 1 : 0,
+                endpoint: isOpenAI ? '' : azureOpenAiEndpoint,
+                key: isOpenAI ? openAiKey : azureOpenAiKey,
+                deploymentOrModelId: isOpenAI ? openAiCompletionModel : azureOpenAiCompletionDeployment,
+                label: isOpenAI ? openAiCompletionModel : azureOpenAiCompletionDeployment
+            },
+            embeddingConfig: {
+                ...keyConfig.embeddingConfig,
+                backend: isOpenAI ? 1 : 0,
+                endpoint: isOpenAI ? '' : azureOpenAiEndpoint,
+                key: isOpenAI ? openAiKey : azureOpenAiKey,
+                deploymentOrModelId: isOpenAI ? openAiEmbeddingsModel : azureOpenAiEmbeddingDeployment,
+                label: isOpenAI ? openAiEmbeddingsModel : azureOpenAiEmbeddingDeployment
+            }
         }));
     }, [isOpenAI, openAiKey, openAiCompletionModel, openAiEmbeddingsModel, azureOpenAiKey, azureOpenAiCompletionDeployment, azureOpenAiEmbeddingDeployment, azureOpenAiEndpoint]);
 
@@ -69,21 +83,115 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
                 isOpenAI ?
                     <>
                         <Label htmlFor='openaikey'>OpenAI Key</Label>
-                        <Input id='openaikey' type='password' value={openAiKey} onChange={(e, d) => { setOpenAiKey(d.value); setKeyConfig({ ...keyConfig, key: d.value }) }} placeholder='Enter your OpenAI key here' />
+                        <Input id='openaikey'
+                            type='password'
+                            value={openAiKey}
+                            onChange={(e, d) => {
+                                setOpenAiKey(d.value);
+                                setKeyConfig({
+                                    ...keyConfig,
+                                    completionConfig: {
+                                        ...keyConfig.completionConfig, key: d.value
+                                    },
+                                    embeddingConfig: {
+                                        ...keyConfig.embeddingConfig, key: d.value
+                                    }
+                                })
+                            }}
+                            placeholder='Enter your OpenAI key here' />
                         <Label htmlFor='oaicompletionmodel'>Completion Model</Label>
-                        <Input id='oaicompletionmodel' value={openAiCompletionModel} onChange={(e, d) => { setOpenAiCompletionModel(d.value); setKeyConfig({ ...keyConfig, completionDeploymentOrModelId: d.value, label: d.value }) }} placeholder='Enter the model id here, ie: text-davinci-003' />
+                        <Input id='oaicompletionmodel'
+                            value={openAiCompletionModel}
+                            onChange={(e, d) => {
+                                setOpenAiCompletionModel(d.value);
+                                setKeyConfig({
+                                    ...keyConfig,
+                                    completionConfig: {
+                                        ...keyConfig.completionConfig,
+                                        deploymentOrModelId: d.value,
+                                        label: d.value
+                                    }
+                                })
+                            }} placeholder='Enter the model id here, ie: text-davinci-003' />
                         <Label htmlFor='oaiembeddingsmodel'>Embeddings Model</Label>
-                        <Input id='oaiembeddingsmodel' value={openAiEmbeddingsModel} onChange={(e, d) => { setOpenAiEmbeddingsModel(d.value); setKeyConfig({ ...keyConfig, embeddingDeploymentOrModelId: d.value, label: d.value }) }} placeholder='Enter the embeddings model id here, ie: text-embedding-ada-002' />
+                        <Input id='oaiembeddingsmodel'
+                            value={openAiEmbeddingsModel}
+                            onChange={(e, d) => {
+                                setOpenAiEmbeddingsModel(d.value);
+                                setKeyConfig({
+                                    ...keyConfig, embeddingConfig: {
+                                        ...keyConfig.embeddingConfig,
+                                        deploymentOrModelId: d.value,
+                                        label: d.value
+                                    }
+                                })
+                            }} placeholder='Enter the embeddings model id here, ie: text-embedding-ada-002' />
                     </> :
                     <>
                         <Label htmlFor='azureopenaikey'>Azure OpenAI Key</Label>
-                        <Input id='azureopenaikey' type='password' value={azureOpenAiKey} onChange={(e, d) => { setAzureOpenAiKey(d.value); setKeyConfig({ ...keyConfig, key: d.value }) }} placeholder='Enter your Azure OpenAI key here' />
+                        <Input id='azureopenaikey'
+                            type='password'
+                            value={azureOpenAiKey}
+                            onChange={(e, d) => {
+                                setAzureOpenAiKey(d.value);
+                                setKeyConfig({
+                                    ...keyConfig,
+                                    completionConfig: {
+                                        ...keyConfig.completionConfig,
+                                        key: d.value
+                                    },
+                                    embeddingConfig: {
+                                        ...keyConfig.embeddingConfig,
+                                        key: d.value
+                                    }
+                                })
+                            }}
+                            placeholder='Enter your Azure OpenAI key here' />
                         <Label htmlFor='aoaicompletionmodel'>Completion Model</Label>
-                        <Input id='aoaicompletiondeployment' value={azureOpenAiCompletionDeployment} onChange={(e, d) => { setAzureOpenAiCompletionDeployment(d.value); setKeyConfig({ ...keyConfig, completionDeploymentOrModelId: d.value, label: d.value }) }} placeholder='Enter your deployment id here, ie: my-deployment' />
+                        <Input id='aoaicompletiondeployment'
+                            value={azureOpenAiCompletionDeployment}
+                            onChange={(e, d) => {
+                                setAzureOpenAiCompletionDeployment(d.value);
+                                setKeyConfig({
+                                    ...keyConfig,
+                                    completionConfig: {
+                                        ...keyConfig.completionConfig,
+                                        deploymentOrModelId: d.value,
+                                        label: d.value
+                                    }
+                                })
+                            }} placeholder='Enter your deployment id here, ie: my-deployment' />
                         <Label htmlFor='aoaiembeddingmodel'>Embedding Model</Label>
-                        <Input id='aoaiebeddingdeployment' value={azureOpenAiEmbeddingDeployment} onChange={(e, d) => { setAzureOpenAiEmbeddingDeployment(d.value); setKeyConfig({ ...keyConfig, embeddingDeploymentOrModelId: d.value, label: d.value }) }} placeholder='Enter your deployment id here, ie: my-deployment' />
+                        <Input id='aoaiebeddingdeployment'
+                            value={azureOpenAiEmbeddingDeployment}
+                            onChange={(e, d) => {
+                                setAzureOpenAiEmbeddingDeployment(d.value);
+                                setKeyConfig({
+                                    ...keyConfig,
+                                    embeddingConfig: {
+                                        ...keyConfig.embeddingConfig,
+                                        deploymentOrModelId: d.value,
+                                        label: d.value
+                                    }
+                                })
+                            }} placeholder='Enter your deployment id here, ie: my-deployment' />
                         <Label htmlFor='aoaiendpoint'>Endpoint</Label>
-                        <Input id='aoaiendpoint' value={azureOpenAiEndpoint} onChange={(e, d) => { setAzureOpenAiEndpoint(d.value); setKeyConfig({ ...keyConfig, endpoint: d.value }) }} placeholder='Enter the endpoint here, ie: https://my-resource.openai.azure.com' />
+                        <Input id='aoaiendpoint'
+                            value={azureOpenAiEndpoint}
+                            onChange={(e, d) => {
+                                setAzureOpenAiEndpoint(d.value);
+                                setKeyConfig({
+                                    ...keyConfig,
+                                    completionConfig: {
+                                        ...keyConfig.completionConfig,
+                                        endpoint: d.value
+                                    },
+                                    embeddingConfig: {
+                                        ...keyConfig.embeddingConfig,
+                                        endpoint: d.value
+                                    }
+                                })
+                            }} placeholder='Enter the endpoint here, ie: https://my-resource.openai.azure.com' />
                     </>
             }
 
