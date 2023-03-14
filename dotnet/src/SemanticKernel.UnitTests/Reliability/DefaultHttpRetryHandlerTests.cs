@@ -507,7 +507,7 @@ public class DefaultHttpRetryHandlerTests
         var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
-        mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(3));
+        mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(4)); // 1 intial, 2 retries, 1 for logging time taken.
         mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(50), It.IsAny<CancellationToken>()), Times.Exactly(1));
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
@@ -550,7 +550,7 @@ public class DefaultHttpRetryHandlerTests
         await Assert.ThrowsAsync<HttpRequestException>(() => httpClient.GetAsync(new Uri("https://www.microsoft.com"), CancellationToken.None));
 
         // Assert
-        mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(3));
+        mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(4));  // 1 intial, 2 retries, 1 for logging time taken.
         mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(50), It.IsAny<CancellationToken>()), Times.Exactly(1));
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());

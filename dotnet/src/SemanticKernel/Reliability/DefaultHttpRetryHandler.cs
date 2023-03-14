@@ -85,7 +85,7 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                 if (!this.HasTimeForRetry(start, retryCount, response, out waitFor))
                 {
                     this._log.LogError(
-                        "Error executing request, max total retry time reached. Reason: {0}", reason);
+                        "Error executing request, max total retry time reached. Reason: {0}. Time spent: {1}", reason, this._timeProvider.GetCurrentTime() - start);
                     return response;
                 }
             }
@@ -101,7 +101,7 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                 else if (!this.HasTimeForRetry(start, retryCount, response, out waitFor))
                 {
                     this._log.LogError(e,
-                        "Error executing request, max total retry time reached. Reason: {0}", reason);
+                        "Error executing request, max total retry time reached. Reason: {0}. Time spent: {1}", reason, this._timeProvider.GetCurrentTime() - start);
                     throw;
                 }
             }
