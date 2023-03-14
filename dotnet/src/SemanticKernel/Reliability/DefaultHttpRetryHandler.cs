@@ -17,12 +17,15 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
     /// </summary>
     /// <param name="config">The retry configuration.</param>
     /// <param name="log">The logger.</param>
-    public DefaultHttpRetryHandler(HttpRetryConfig? config = null, ILogger? log = null) : this(config ?? new HttpRetryConfig(), log,
-        null, null)
+    public DefaultHttpRetryHandler(HttpRetryConfig? config = null, ILogger? log = null)
+        : this(config ?? new HttpRetryConfig(), log, null, null)
     {
     }
 
-    internal DefaultHttpRetryHandler(HttpRetryConfig config, ILogger? log = null, IDelayProvider? delayProvider = null,
+    internal DefaultHttpRetryHandler(
+        HttpRetryConfig config,
+        ILogger? log = null,
+        IDelayProvider? delayProvider = null,
         ITimeProvider? timeProvider = null)
     {
         this._config = config;
