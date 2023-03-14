@@ -22,10 +22,17 @@ Make sure you have an
   [Open AI API Key](https://openai.com/api/) or
   [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
+Copy those keys into a `.env` file in this repo
+```
+OPENAI_API_KEY=""
+OPENAI_ORG_ID=""
+AZURE_OPENAI_API_KEY=""
+AZURE_OPENAI_ENDPOINT=""
+```
+
 ### Quickstart ⚡
 
 ```python
-import asyncio
 import semantic_kernel as sk
 
 kernel = sk.create_kernel()
@@ -33,7 +40,7 @@ kernel = sk.create_kernel()
 api_key, org_id = sk.openai_settings_from_dot_env()
 
 kernel.config.add_openai_completion_backend(
-    "davinci-003", "text-davinci-003", api_key, org_id
+    "davinci-002", "text-davinci-002", api_key, org_id
 )
 
 sk_prompt = """
@@ -61,27 +68,23 @@ tldr_function = sk.extensions.create_semantic_function(
     top_p=0.5,
 )
 
-summary = asyncio.run(kernel.run_on_str_async(text_to_summarize, tldr_function))
+summary = await kernel.run_on_str_async(text_to_summarize, tldr_function)
 output = str(summary.variables).strip()
 print("Output: " + output)
 
 # Output: Protect humans, follow orders, survive.
-
 ```
 
 ## How does this compare to the main C# repo?
 Refer to the [FEATURE_PARITY.md](./FEATURE_PARITY.md) doc to see where things stand
 in matching the features and functionality of the main SK repo.
 
+## Why Python?
+We believe that enabling Python is key to engaging with the great work being done by the open source community in ML. From researchers writing state of the art ML papers to app developers looking to quickly bring AI into their projects, we see that the nexus of AI activity centers around Python due to the rich open source ecosystem and tooling found in the language. 
+
 ## Contributing and Community
 
-We welcome your contributions and suggestions to SK community! One of the easiest
-ways to participate is to engage in discussions in the GitHub repository.
-Bug reports and fixes are welcome!
-
-For new features, components, or extensions, please open an issue and discuss with
-us before sending a PR. This is to avoid rejection as we might be taking the core
-in a different direction, but also to consider the impact on the larger ecosystem.
+We invite you to join us in developing the Semantic Kernel together! Please contribute by using GitHub Discussions, opening GitHub Issues, sending us PRs.
 
 ## Code of Conduct
 
