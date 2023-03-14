@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Reliability;
 
 public class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
 {
-    internal DefaultHttpRetryHandlerFactory(HttpRetryConfig? config = null)
+    public DefaultHttpRetryHandlerFactory(HttpRetryConfig? config = null)
     {
         this._config = config;
     }

@@ -15,10 +15,13 @@ namespace Microsoft.SemanticKernel.Configuration;
 public sealed class KernelConfig
 {
     /// <summary>
-    /// Global retry logic used for all the backends http calls
+    /// Factory for creating HTTP handlers.
     /// </summary>
     public IDelegatingHandlerFactory HttpHandlerFactory { get; private set; } = new DefaultHttpRetryHandlerFactory(new HttpRetryConfig());
 
+    /// <summary>
+    /// Default HTTP retry configuration for built-in HTTP handler factory.
+    /// </summary>
     public HttpRetryConfig DefaultHttpRetryConfig { get; private set; } = new();
 
     /// <summary>
@@ -201,6 +204,7 @@ public sealed class KernelConfig
         if (httpRetryConfig != null)
         {
             this.DefaultHttpRetryConfig = httpRetryConfig;
+            this.SetHttpRetryHandlerFactory(new DefaultHttpRetryHandlerFactory(httpRetryConfig));
         }
 
         return this;
