@@ -116,6 +116,11 @@ public sealed class KernelBuilder
         return this;
     }
 
+    /// <summary>
+    /// Add a retry handler factory to the kernel to be built.
+    /// </summary>
+    /// <param name="httpHandlerFactory">Retry handler factory to add.</param>
+    /// <returns>Updated kernel builder including the retry handler factory.</returns>
     public KernelBuilder WithRetryHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
     {
         Verify.NotNull(httpHandlerFactory, "The retry handler factory instance provided is NULL");
