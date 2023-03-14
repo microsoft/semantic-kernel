@@ -20,10 +20,16 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
     const [isLoaded, setIsLoaded] = useState<boolean>(false);
     const [isLoadError, setIsLoadError] = useState<boolean>(false);
     const sk = useSemanticKernel(uri);
-    
+
     const download = async () => {
-        const url = `${project}/archive/refs/heads${branch}.zip`;
-        const path = `%temp%\\${project}-${branch}.zip`;
+        let cleanProjectUri = project?.trim();
+
+        if (!cleanProjectUri?.endsWith('/')) {
+            cleanProjectUri = `${cleanProjectUri}/`
+        }
+
+        const url = `${cleanProjectUri}archive/refs/heads/${branch}.zip`;
+        const path = `%temp%\\${branch}_${new Date().getTime()}.zip`;
 
         try {
             var result = await sk.invokeAsync(keyConfig, { value: url, inputs: [{ key: 'filePath', value: path }] }, 'WebFileDownloadSkill', 'DownloadToFile');
@@ -41,12 +47,12 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
             <br></br>
             <Label><strong>GitHub Repository URL</strong></Label>
             <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
-                <Input style={{ width: '100%' }} type="text" value={project} onChange={(e) => setProject(e.target.value)} placeholder="https://github.com/microsoft/semantic-kernel"/>
+                <Input style={{ width: '100%' }} type="text" value={project} onChange={(e) => setProject(e.target.value)} placeholder="https://github.com/microsoft/semantic-kernel" />
             </div>
             <Label><strong>Branch Name</strong></Label>
             <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
                 <Input style={{ width: '100%' }} type="text" value={branch} onChange={(e) => setBranch(e.target.value)} placeholder="main" />
-                <Button disabled={project === undefined || branch === undefined} appearance='transparent' icon={<ArrowDownload16Regular />} onClick={() => download()}/>
+                <Button disabled={project === undefined || branch === undefined} appearance='transparent' icon={<ArrowDownload16Regular />} onClick={() => download()} />
             </div>
             {isLoading ?
                 <div>
@@ -59,7 +65,7 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
                 <></>
             }
             {isLoaded ?
-            <div>
+                <div>
                     <CheckmarkCircle20Filled />
                     <Body1>
                         Repository downloaded. You can ask questions about it on the next page.
