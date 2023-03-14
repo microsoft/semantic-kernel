@@ -24,8 +24,8 @@ public sealed class AzureOpenAIServiceClient : IAzureOpenAIServiceClient
     /// Initializes a new instance of the <see cref="AzureOpenAIServiceClient"/> class.
     /// </summary>
     /// <param name="httpClient">The HTTP client.</param>
-    /// <param name="apiKey">The AzureOPenAI API key</param>
-    /// <param name="apiVersion">The AzureOPenAI API version.</param>
+    /// <param name="apiKey">The AzureOpenAI API key</param>
+    /// <param name="apiVersion">The AzureOpenAI API version.</param>
     /// <param name="logger">The logger.</param>
     public AzureOpenAIServiceClient(HttpClient httpClient, string apiKey, string apiVersion = DefaultAzureAPIVersion, ILogger? logger = null)
     {
@@ -84,13 +84,13 @@ public sealed class AzureOpenAIServiceClient : IAzureOpenAIServiceClient
     /// <summary>
     /// Send a POST request to the specified Uri.
     /// </summary>
-    /// <typeparam name="TR">The result type.</typeparam>
-    /// <typeparam name="TI">The request type.</typeparam>
+    /// <typeparam name="TResponse">The response type.</typeparam>
+    /// <typeparam name="TRequest">The request type.</typeparam>
     /// <param name="uri">The Uri to send the POST request to.</param>
     /// <param name="request">The request to send.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The response.</returns>
-    private async Task<TR> PostAsync<TR, TI>(string uri, TI request, CancellationToken cancellationToken)
+    private async Task<TResponse> PostAsync<TResponse, TRequest>(string uri, TRequest request, CancellationToken cancellationToken)
     {
         Verify.NotNull(uri, "The uri is not provided.");
         Verify.NotNull(request, "The request is not provided.");
@@ -103,7 +103,7 @@ public sealed class AzureOpenAIServiceClient : IAzureOpenAIServiceClient
 
         using var responseMessage = await this._httpClient.SendAsync(requestMessage, cancellationToken);
 
-        return await responseMessage.HandleResponseAsync<TR>();
+        return await responseMessage.HandleResponseAsync<TResponse>();
     }
 
     /// <summary>
