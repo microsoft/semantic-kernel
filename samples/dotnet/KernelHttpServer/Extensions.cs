@@ -22,6 +22,7 @@ using Microsoft.SemanticKernel.Skills.Document.FileSystem;
 using Microsoft.SemanticKernel.Skills.Document.OpenXml;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
+using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.TemplateEngine;
 using static KernelHttpServer.Config.Constants;
 using Directory = System.IO.Directory;
@@ -148,6 +149,8 @@ internal static class Extensions
         _ = kernel.ImportSkill(new TextMemorySkill(), nameof(TextMemorySkill));
     }
 
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+       Justification = "The caller invokes native skills during a request and the skill instances must remain alive for those requests to be successful.")]
     internal static void RegisterNativeSkills(this IKernel kernel, IEnumerable<string>? skillsToLoad = null)
     {
         if (_ShouldLoad(nameof(DocumentSkill), skillsToLoad))
@@ -160,6 +163,12 @@ internal static class Extensions
         {
             ConversationSummarySkill conversationSummarySkill = new(kernel);
             _ = kernel.ImportSkill(conversationSummarySkill, nameof(ConversationSummarySkill));
+        }
+
+        if (_ShouldLoad(nameof(WebFileDownloadSkill), skillsToLoad))
+        {
+            WebFileDownloadSkill webFileDownloadSkill = new WebFileDownloadSkill();
+            _ = kernel.ImportSkill(webFileDownloadSkill, nameof(WebFileDownloadSkill));
         }
     }
 
