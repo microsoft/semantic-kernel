@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
-namespace SemanticKernelTests.TemplateEngine;
+namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public class TemplateTokenizerTests
 {

@@ -19,9 +19,9 @@ internal class TextBlock : Block, ITextRendering
     {
     }
 
-    public override bool IsValid(out string error)
+    public override bool IsValid(out string errorMsg)
     {
-        error = "";
+        errorMsg = "";
         return true;
     }
 

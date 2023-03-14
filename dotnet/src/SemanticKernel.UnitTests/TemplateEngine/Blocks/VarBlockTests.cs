@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
-namespace SemanticKernelTests.TemplateEngine.Blocks;
+namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 public class VarBlockTests
 {

@@ -36,21 +36,21 @@ internal class FunctionIdBlock : Block, ITextRendering
         this.FunctionName = this.Content;
     }
 
-    public override bool IsValid(out string error)
+    public override bool IsValid(out string errorMsg)
     {
         if (!Regex.IsMatch(this.Content, "^[a-zA-Z0-9_.]*$"))
         {
-            error = "The function identifier is empty";
+            errorMsg = "The function identifier is empty";
             return false;
         }
 
         if (HasMoreThanOneDot(this.Content))
         {
-            error = "The function identifier can contain max one '.' char separating skill name from function name";
+            errorMsg = "The function identifier can contain max one '.' char separating skill name from function name";
             return false;
         }
 
-        error = "";
+        errorMsg = "";
         return true;
     }
 

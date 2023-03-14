@@ -37,23 +37,23 @@ internal class ValBlock : Block, ITextRendering
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
     // ReSharper disable TemplateIsNotCompileTimeConstantProblem
-    public override bool IsValid(out string error)
+    public override bool IsValid(out string errorMsg)
     {
-        error = string.Empty;
+        errorMsg = string.Empty;
 
         // Content includes the quotes, so it must be at least 2 chars long
         if (this.Content.Length < 2)
         {
-            error = "A value must have single quotes or double quotes on both sides";
-            this.Log.LogError(error);
+            errorMsg = "A value must have single quotes or double quotes on both sides";
+            this.Log.LogError(errorMsg);
             return false;
         }
 
         // Check if delimiting chars are consistent
         if (this._first != this._last)
         {
-            error = "A value must be defined using either single quotes or double quotes, not both";
-            this.Log.LogError(error);
+            errorMsg = "A value must be defined using either single quotes or double quotes, not both";
+            this.Log.LogError(errorMsg);
             return false;
         }
 

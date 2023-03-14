@@ -25,36 +25,36 @@ internal class VarBlock : Block, ITextRendering
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
     // ReSharper disable TemplateIsNotCompileTimeConstantProblem
-    public override bool IsValid(out string error)
+    public override bool IsValid(out string errorMsg)
     {
-        error = string.Empty;
+        errorMsg = string.Empty;
 
         if (string.IsNullOrEmpty(this.Content))
         {
-            error = $"A variable must start with the symbol {Symbols.VarPrefix} and have a name";
-            this.Log.LogError(error);
+            errorMsg = $"A variable must start with the symbol {Symbols.VarPrefix} and have a name";
+            this.Log.LogError(errorMsg);
             return false;
         }
 
         if (this.Content[0] != Symbols.VarPrefix)
         {
-            error = $"A variable must start with the symbol {Symbols.VarPrefix}";
-            this.Log.LogError(error);
+            errorMsg = $"A variable must start with the symbol {Symbols.VarPrefix}";
+            this.Log.LogError(errorMsg);
             return false;
         }
 
         if (this.Content.Length < 2)
         {
-            error = "The variable name is empty";
-            this.Log.LogError(error);
+            errorMsg = "The variable name is empty";
+            this.Log.LogError(errorMsg);
             return false;
         }
 
         if (!Regex.IsMatch(this.Name, "^[a-zA-Z0-9_]*$"))
         {
-            error = $"The variable name '{this.Name}' contains invalid characters. " +
+            errorMsg = $"The variable name '{this.Name}' contains invalid characters. " +
                     "Only alphanumeric chars and underscore are allowed.";
-            this.Log.LogError(error);
+            this.Log.LogError(errorMsg);
             return false;
         }
 

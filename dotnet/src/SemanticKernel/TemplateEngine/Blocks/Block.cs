@@ -36,5 +36,10 @@ public abstract class Block
         this.Content = content ?? string.Empty;
     }
 
-    public abstract bool IsValid(out string error);
+    /// <summary>
+    /// Check if the block content is valid.
+    /// </summary>
+    /// <param name="errorMsg">Error message in case the content is not valid</param>
+    /// <returns>True if the block content is valid</returns>
+    public abstract bool IsValid(out string errorMsg);
 }

@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTests.TemplateLanguage;
+namespace SemanticKernel.IntegrationTests.TemplateLanguage;
 
 #pragma warning disable VSTHRD103 // ok to use WriteLine synchronously
 #pragma warning disable CA1849 // ok to use WriteLine synchronously

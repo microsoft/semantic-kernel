@@ -27,15 +27,15 @@ internal class CodeBlock : Block, ICodeRendering
         this._tokens = tokens;
     }
 
-    public override bool IsValid(out string error)
+    public override bool IsValid(out string errorMsg)
     {
-        error = "";
+        errorMsg = "";
 
         foreach (Block token in this._tokens)
         {
-            if (!token.IsValid(out error))
+            if (!token.IsValid(out errorMsg))
             {
-                this.Log.LogError(error);
+                this.Log.LogError(errorMsg);
                 return false;
             }
         }
@@ -44,23 +44,23 @@ internal class CodeBlock : Block, ICodeRendering
         {
             if (this._tokens[0].Type != BlockTypes.FunctionId)
             {
-                error = $"Unexpected second token found: {this._tokens[1].Content}";
-                this.Log.LogError(error);
+                errorMsg = $"Unexpected second token found: {this._tokens[1].Content}";
+                this.Log.LogError(errorMsg);
                 return false;
             }
 
             if (this._tokens[1].Type != BlockTypes.Value && this._tokens[1].Type != BlockTypes.Variable)
             {
-                error = "Functions support only one parameter";
-                this.Log.LogError(error);
+                errorMsg = "Functions support only one parameter";
+                this.Log.LogError(errorMsg);
                 return false;
             }
         }
 
         if (this._tokens.Count > 2)
         {
-            error = $"Unexpected second token found: {this._tokens[1].Content}";
-            this.Log.LogError(error);
+            errorMsg = $"Unexpected second token found: {this._tokens[1].Content}";
+            this.Log.LogError(errorMsg);
             return false;
         }
 
