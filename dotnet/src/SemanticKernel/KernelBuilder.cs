@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -8,6 +9,7 @@ using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -23,6 +25,7 @@ public sealed class KernelBuilder
     private ISemanticTextMemory _memory = NullMemory.Instance;
     private ILogger _log = NullLogger.Instance;
     private IMemoryStore<float>? _memoryStorage = null;
+    private IDelegatingHandlerFactory? _httpHandlerFactory = null;
 
     /// <summary>
     /// Create a new kernel instance
@@ -40,6 +43,11 @@ public sealed class KernelBuilder
     /// <returns>Kernel instance</returns>
     public IKernel Build()
     {
+        if (this._httpHandlerFactory != null)
+        {
+            this._config.SetHttpRetryHandlerFactory(this._httpHandlerFactory);
+        }
+
         var instance = new Kernel(
             new SkillCollection(this._log),
             new PromptTemplateEngine(this._log),
@@ -105,6 +113,18 @@ public sealed class KernelBuilder
         Verify.NotNull(storage, "The memory instance provided is NULL");
         Verify.NotNull(embeddingGenerator, "The embedding generator instance provided is NULL");
         this._memory = new SemanticTextMemory(storage, embeddingGenerator);
+        return this;
+    }
+
+    /// <summary>
+    /// Add a retry handler factory to the kernel to be built.
+    /// </summary>
+    /// <param name="httpHandlerFactory">Retry handler factory to add.</param>
+    /// <returns>Updated kernel builder including the retry handler factory.</returns>
+    public KernelBuilder WithRetryHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
+    {
+        Verify.NotNull(httpHandlerFactory, "The retry handler factory instance provided is NULL");
+        this._httpHandlerFactory = httpHandlerFactory;
         return this;
     }
 
