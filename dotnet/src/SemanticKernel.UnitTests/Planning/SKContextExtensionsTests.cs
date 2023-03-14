@@ -9,55 +9,64 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
-using SemanticKernelTests.XunitHelpers;
+using SemanticKernel.UnitTests.XunitHelpers;
 using Xunit;
 using static Microsoft.SemanticKernel.CoreSkills.PlannerSkill;
 
-namespace SemanticKernelTests.Planning;
+namespace SemanticKernel.UnitTests.Planning;
 
 public class SKContextExtensionsTests
 {
     [Fact]
     public async Task CanCallGetAvailableFunctionsWithNoFunctionsAsync()
     {
-        // mock the SKContext components
+        // Arrange
         var variables = new ContextVariables();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new SkillCollection();
         var logger = ConsoleLogger.Log;
         var cancellationToken = default(CancellationToken);
 
+        // Arrange Mock Memory and Result
+        var memory = new Mock<ISemanticTextMemory>();
         var memoryQueryResult = new MemoryQueryResult(false, "sourceName", "id", "description", "text", 0.8);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
+        // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(variables, memory.Object, skills.ReadOnlySkillCollection, logger, cancellationToken);
         var config = new PlannerSkillConfig();
         var semanticQuery = "test";
+
+        // Act
         var result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
+
+        // Assert
         Assert.NotNull(result);
     }
 
     [Fact]
     public async Task CanCallGetAvailableFunctionsWithFunctionsAsync()
     {
+        // Arrange
         var variables = new ContextVariables();
-        var memory = new Mock<ISemanticTextMemory>();
-        var skills = new Mock<ISkillCollection>();
         var logger = ConsoleLogger.Log;
         var cancellationToken = default(CancellationToken);
+
+        // Arrange FunctionView
         var mockSemanticFunction = new Mock<ISKFunction>();
         var mockNativeFunction = new Mock<ISKFunction>();
-
         var functionsView = new FunctionsView();
         var functionView = new FunctionView("functionName", "skillName", "description", new List<ParameterView>(), true, false);
         var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description", new List<ParameterView>(), false, false);
         functionsView.AddFunction(functionView);
         functionsView.AddFunction(nativeFunctionView);
 
+        // Arrange Mock Memory and Result
+        var skills = new Mock<ISkillCollection>();
         var memoryQueryResult = new MemoryQueryResult(false, "sourceName", functionView.ToFullyQualifiedName(), "description", "text", 0.8);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
+        var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
@@ -69,20 +78,28 @@ public class SKContextExtensionsTests
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
         skills.SetupGet(x => x.ReadOnlySkillCollection).Returns(skills.Object);
 
+        // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(variables, memory.Object, skills.Object, logger, cancellationToken);
         var config = new PlannerSkillConfig();
         var semanticQuery = "test";
+
+        // Act
         var result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
+
+        //Assert
         Assert.NotNull(result);
-        // Verify result is just 1 match
-        // Verify the function is the one we expect
         Assert.Single(result);
         Assert.Equal(functionView, result[0]);
 
+        // Arrange update IncludedFunctions
         config.IncludedFunctions.UnionWith(new List<string> { "nativeFunctionName" });
+
+        // Act
         result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
+
+        // Assert
         Assert.NotNull(result);
-        Assert.Equal(2, result.Count);
+        Assert.Equal(2, result.Count); // IncludedFunctions should be added to the result
         Assert.Equal(functionView, result[0]);
         Assert.Equal(nativeFunctionView, result[1]);
     }
