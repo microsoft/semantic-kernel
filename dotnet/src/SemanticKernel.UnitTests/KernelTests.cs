@@ -1,0 +1,228 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.OpenAI.Configuration;
+using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.KernelExtensions;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Orchestration.Extensions;
+using Microsoft.SemanticKernel.SkillDefinition;
+using Xunit;
+
+// ReSharper disable StringLiteralTypo
+
+namespace SemanticKernel.UnitTests;
+
+public class KernelTests
+{
+    [Fact]
+    public void ItProvidesAccessToFunctionsViaSkillCollection()
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        kernel.Config.AddOpenAICompletionBackend("x", "y", "z");
+
+        var nativeSkill = new MySkill();
+        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
+        kernel.ImportSkill(nativeSkill, "mySk");
+
+        // Act
+        FunctionsView data = kernel.Skills.GetFunctionsView();
+
+        // Assert - 3 functions, var name is not case sensitive
+        Assert.True(data.IsSemantic("jk", "joker"));
+        Assert.True(data.IsSemantic("JK", "JOKER"));
+        Assert.False(data.IsNative("jk", "joker"));
+        Assert.False(data.IsNative("JK", "JOKER"));
+        Assert.True(data.IsNative("mySk", "sayhello"));
+        Assert.True(data.IsNative("MYSK", "SayHello"));
+        Assert.True(data.IsNative("mySk", "ReadSkillCollectionAsync"));
+        Assert.True(data.IsNative("MYSK", "readskillcollectionasync"));
+        Assert.Single(data.SemanticFunctions["Jk"]);
+        Assert.Equal(3, data.NativeFunctions["mySk"].Count);
+    }
+
+    [Fact]
+    public async Task ItProvidesAccessToFunctionsViaSKContextAsync()
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        kernel.Config.AddOpenAICompletionBackend("x", "y", "z");
+
+        var nativeSkill = new MySkill();
+        kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
+        var skill = kernel.ImportSkill(nativeSkill, "mySk");
+
+        // Act
+        SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]);
+
+        // Assert - 3 functions, var name is not case sensitive
+        Assert.Equal("Nice fun", result["jk.joker"]);
+        Assert.Equal("Nice fun", result["JK.JOKER"]);
+        Assert.Equal("Just say hello", result["mySk.sayhello"]);
+        Assert.Equal("Just say hello", result["mySk.SayHello"]);
+        Assert.Equal("Export info.", result["mySk.ReadSkillCollectionAsync"]);
+        Assert.Equal("Export info.", result["mysk.readskillcollectionasync"]);
+    }
+
+    [Fact]
+    public async Task RunAsyncDoesNotRunWhenCancelledAsync()
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        var nativeSkill = new MySkill();
+        var skill = kernel.ImportSkill(nativeSkill, "mySk");
+
+        using CancellationTokenSource cts = new();
+        cts.Cancel();
+
+        // Act
+        SKContext result = await kernel.RunAsync(cts.Token, skill["GetAnyValue"]);
+
+        // Assert
+        Assert.True(string.IsNullOrEmpty(result.Result));
+        Assert.True(result.ErrorOccurred);
+        Assert.True(result.LastException is OperationCanceledException);
+    }
+
+    [Fact]
+    public async Task RunAsyncRunsWhenNotCancelledAsync()
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        var nativeSkill = new MySkill();
+        kernel.ImportSkill(nativeSkill, "mySk");
+
+        using CancellationTokenSource cts = new();
+
+        // Act
+        SKContext result = await kernel.RunAsync(cts.Token, kernel.Func("mySk", "GetAnyValue"));
+
+        // Assert
+        Assert.False(string.IsNullOrEmpty(result.Result));
+        Assert.False(result.ErrorOccurred);
+        Assert.False(result.LastException is OperationCanceledException);
+    }
+
+    [Fact]
+    public void ItImportsSkillsNotCaseSensitive()
+    {
+        // Act
+        IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportSkill(new MySkill(), "test");
+
+        // Assert
+        Assert.Equal(3, skill.Count);
+        Assert.True(skill.ContainsKey("GetAnyValue"));
+        Assert.True(skill.ContainsKey("getanyvalue"));
+        Assert.True(skill.ContainsKey("GETANYVALUE"));
+    }
+
+    [Fact]
+    public void ItAllowsToImportSkillsInTheGlobalNamespace()
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+
+        // Act
+        IDictionary<string, ISKFunction> skill = kernel.ImportSkill(new MySkill());
+
+        // Assert
+        Assert.Equal(3, skill.Count);
+        Assert.True(kernel.Skills.HasNativeFunction("GetAnyValue"));
+    }
+
+    [Fact]
+    public void ItFailsIfCompletionBackendConfigIsNotSet()
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+
+        var exception = Assert.Throws<KernelException>(() => kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun"));
+    }
+
+    /// <summary>
+    /// Confirms that when a completion backend config is added and a semantic function is created the Kernel uses the delegate to create the client.
+    /// </summary>
+    [Fact]
+    public void ItUsesDelegateCompleteBackendCreateClientWhenRegisteringSemanticFunction()
+    {
+        var kernelConfig = new KernelConfig();
+        var fakeConfig = new CompletionBackendConfigFake { Label = "test" };
+        var completionClientFake = new TextCompletionClientFake();
+
+        kernelConfig.AddBackendConfig(fakeConfig, (logger) =>
+        {
+            completionClientFake.Invoked = true;
+            return completionClientFake;
+        });
+
+        var target = new KernelBuilder().WithConfiguration(kernelConfig).Build();
+
+        target.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
+
+        Assert.True(completionClientFake.Invoked);
+    }
+
+    private class TextCompletionClientFake : ITextCompletionClient
+    {
+        public bool Invoked { get; set; } = false;
+
+        public Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private class CompletionBackendConfigFake : ICompletionBackendConfig
+    {
+        public string Label { get; set; } = string.Empty;
+    }
+
+    public class MySkill
+    {
+        [SKFunction("Return any value.")]
+        public string GetAnyValue()
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        [SKFunction("Just say hello")]
+        public void SayHello()
+        {
+            Console.WriteLine("Hello folks!");
+        }
+
+        [SKFunction("Export info.")]
+        public async Task<SKContext> ReadSkillCollectionAsync(SKContext context)
+        {
+            await Task.Delay(0);
+
+            context.ThrowIfSkillCollectionNotSet();
+
+            FunctionsView procMem = context.Skills!.GetFunctionsView();
+
+            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.SemanticFunctions)
+            {
+                foreach (FunctionView f in list.Value)
+                {
+                    context[$"{list.Key}.{f.Name}"] = f.Description;
+                }
+            }
+
+            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.NativeFunctions)
+            {
+                foreach (FunctionView f in list.Value)
+                {
+                    context[$"{list.Key}.{f.Name}"] = f.Description;
+                }
+            }
+
+            return context;
+        }
+    }
+}

@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.OpenAI.Clients;
 using Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
@@ -30,8 +31,10 @@ public sealed class OpenAITextEmbeddings : OpenAIClientAbstract, IEmbeddingGener
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">Optional OpenAI organization ID, usually required only if your account belongs to multiple organizations</param>
     /// <param name="log">Application logger</param>
-    public OpenAITextEmbeddings(string modelId, string apiKey, string? organization = null, ILogger? log = null)
-        : base(log)
+    /// <param name="handlerFactory">Retry handler factory for HTTP requests.</param>
+    public OpenAITextEmbeddings(string modelId, string apiKey, string? organization = null, ILogger? log = null,
+        IDelegatingHandlerFactory? handlerFactory = null)
+        : base(log, handlerFactory)
     {
         Verify.NotEmpty(modelId, "The OpenAI model ID cannot be empty");
         this._modelId = modelId;

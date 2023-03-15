@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.OpenAI.Clients;
 using Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
@@ -22,8 +24,15 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
     /// <param name="log">Application logger</param>
-    public AzureTextCompletion(string modelId, string endpoint, string apiKey, string apiVersion, ILogger? log = null)
-        : base(log)
+    /// <param name="handlerFactory">Retry handler factory for HTTP requests.</param>
+    public AzureTextCompletion(
+        string modelId,
+        string endpoint,
+        string apiKey,
+        string apiVersion,
+        ILogger? log = null,
+        IDelegatingHandlerFactory? handlerFactory = null)
+        : base(log, handlerFactory)
     {
         Verify.NotEmpty(modelId, "The ID cannot be empty, you must provide a Model ID or a Deployment name.");
         this._modelId = modelId;
@@ -43,9 +52,10 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
     /// </summary>
     /// <param name="text">Text to complete</param>
     /// <param name="requestSettings">Request settings for the completion API</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The completed text.</returns>
     /// <exception cref="AIException">AIException thrown during the request</exception>
-    public async Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings)
+    public async Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(requestSettings, "Completion settings cannot be empty");
 
@@ -72,7 +82,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
             Stop = requestSettings.StopSequences is { Count: > 0 } ? requestSettings.StopSequences : null,
         });
 
-        return await this.ExecuteCompleteRequestAsync(url, requestBody);
+        return await this.ExecuteCompleteRequestAsync(url, requestBody, cancellationToken);
     }
 
     #region private ================================================================================

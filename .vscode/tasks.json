@@ -74,10 +74,10 @@
       "detail": "Runs tasks to validate changes before checking in.",
       "group": "test",
       "dependsOn": [
+        "R# cleanup",
         "Build - Semantic-Kernel",
         "Test - Semantic-Kernel",
-        "Run - Kernel-Demo",
-        "R# cleanup"
+        "Run - Kernel-Demo"
       ],
       "dependsOrder": "sequence"
     },
@@ -103,7 +103,7 @@
       "label": "Test - Semantic-Kernel",
       "command": "dotnet",
       "type": "process",
-      "args": ["test", "SemanticKernel.Test.csproj"],
+      "args": ["test", "SemanticKernel.UnitTests.csproj"],
       "problemMatcher": "$msCompile",
       "group": "test",
       "presentation": {
@@ -112,7 +112,7 @@
         "group": "PR-Validate"
       },
       "options": {
-        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.Test/"
+        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.UnitTests/"
       }
     },
     {
@@ -123,7 +123,7 @@
         "test",
         "--collect",
         "XPlat Code Coverage;Format=lcov",
-        "SemanticKernel.Test.csproj"
+        "SemanticKernel.UnitTests.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",
@@ -132,7 +132,7 @@
         "panel": "shared"
       },
       "options": {
-        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.Test/"
+        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.UnitTests/"
       }
     },
     {

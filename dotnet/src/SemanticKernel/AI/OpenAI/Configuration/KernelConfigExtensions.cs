@@ -35,8 +35,9 @@ public static class KernelConfigExtensions
                 config.DeploymentName,
                 config.Endpoint,
                 config.APIKey,
-                config.APIVersion = AzureOpenAIConfig.SupportedVersion,
-                logger
+                config.APIVersion,
+                logger,
+                kernelConfig.HttpHandlerFactory
             ), overwrite);
 
         return kernelConfig;
@@ -96,7 +97,8 @@ public static class KernelConfigExtensions
                 config.ModelId,
                 config.APIKey,
                 config.OrgId,
-                logger
+                logger,
+                kernelConfig.HttpHandlerFactory
             ), overwrite);
 
         return kernelConfig;

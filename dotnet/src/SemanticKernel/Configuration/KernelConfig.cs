@@ -16,9 +16,14 @@ namespace Microsoft.SemanticKernel.Configuration;
 public sealed class KernelConfig
 {
     /// <summary>
-    /// Global retry logic used for all the backends
+    /// Factory for creating HTTP handlers.
     /// </summary>
-    public IRetryMechanism RetryMechanism { get => this._retryMechanism; }
+    public IDelegatingHandlerFactory HttpHandlerFactory { get; private set; } = new DefaultHttpRetryHandlerFactory(new HttpRetryConfig());
+
+    /// <summary>
+    /// Default HTTP retry configuration for built-in HTTP handler factory.
+    /// </summary>
+    public HttpRetryConfig DefaultHttpRetryConfig { get; private set; } = new();
 
     /// <summary>
     /// Add backend configuration for completion and or embeddings.
@@ -122,13 +127,28 @@ public sealed class KernelConfig
     }
 
     /// <summary>
-    /// Set the retry mechanism to use for the kernel.
+    /// Set the http retry handler factory to use for the kernel.
     /// </summary>
-    /// <param name="retryMechanism">Retry mechanism to use.</param>
+    /// <param name="httpHandlerFactory">Http retry handler factory to use.</param>
     /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig SetRetryMechanism(IRetryMechanism? retryMechanism = null)
+    public KernelConfig SetHttpRetryHandlerFactory(IDelegatingHandlerFactory? httpHandlerFactory = null)
     {
-        this._retryMechanism = retryMechanism ?? new PassThroughWithoutRetry();
+        if (httpHandlerFactory != null)
+        {
+            this.HttpHandlerFactory = httpHandlerFactory;
+        }
+
+        return this;
+    }
+
+    public KernelConfig SetDefaultHttpRetryConfig(HttpRetryConfig? httpRetryConfig)
+    {
+        if (httpRetryConfig != null)
+        {
+            this.DefaultHttpRetryConfig = httpRetryConfig;
+            this.SetHttpRetryHandlerFactory(new DefaultHttpRetryHandlerFactory(httpRetryConfig));
+        }
+
         return this;
     }
 
@@ -194,7 +214,7 @@ public sealed class KernelConfig
             {
                 throw new KernelException(
                     KernelException.ErrorCodes.BackendNotFound,
-                    $"A label was not provided and no default completion backend is available.");
+                    "A label was not provided and no default completion backend is available.");
             }
 
             return this.CompletionBackends[this._defaultCompletionBackend];
@@ -229,7 +249,7 @@ public sealed class KernelConfig
             {
                 throw new KernelException(
                     KernelException.ErrorCodes.BackendNotFound,
-                    $"A label was not provided and no default embeddings backend is available.");
+                    "A label was not provided and no default embeddings backend is available.");
             }
 
             return this.EmbeddingsBackends[this._defaultEmbeddingsBackend];
@@ -350,7 +370,6 @@ public sealed class KernelConfig
     private Dictionary<Type, Func<ILogger, ITextCompletionClient>> CompletionBackendCreateClients { get; set; } = new();
     private string? _defaultCompletionBackend;
     private string? _defaultEmbeddingsBackend;
-    private IRetryMechanism _retryMechanism = new PassThroughWithoutRetry();
 
     private void AddCompletionBackendCreateClient<T>(T config, Func<ILogger, ITextCompletionClient> createClientFunc) where T : ICompletionBackendConfig
     {

@@ -52,7 +52,8 @@ public static class MemoryConfiguration
                     azureAIConfig.Endpoint,
                     azureAIConfig.APIKey,
                     azureAIConfig.APIVersion,
-                    kernel.Log);
+                    kernel.Log,
+                    kernel.Config.HttpHandlerFactory);
                 break;
 
             case OpenAIConfig openAIConfig:
@@ -60,7 +61,8 @@ public static class MemoryConfiguration
                     openAIConfig.ModelId,
                     openAIConfig.APIKey,
                     openAIConfig.OrgId,
-                    kernel.Log);
+                    kernel.Log,
+                    kernel.Config.HttpHandlerFactory);
                 break;
 
             default:
