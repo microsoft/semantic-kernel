@@ -82,11 +82,11 @@ public class TextMemorySkill
     /// SKContext["input"] = "what is the capital of France?"
     /// {{memory.recall $input }} => "Paris"
     /// </example>
-    /// <param name="text">The input text to compare memories to</param>
+    /// <param name="text">The input text to find related memories for</param>
     /// <param name="context">Contains the 'collection' to search for the topic and 'relevance' score</param>
-    [SKFunction("Semantica search and return up to N memories related to the input text")]
+    [SKFunction("Semantic search and return up to N memories related to the input text")]
     [SKFunctionName("Recall")]
-    [SKFunctionInput(Description = "The input text to compare memories to")]
+    [SKFunctionInput(Description = "The input text to find related memories for")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection to search", DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = RelevanceParam, Description = "The relevance score, from 0.0 to 1.0, where 1.0 means perfect match",
         DefaultValue = DefaultRelevance)]
