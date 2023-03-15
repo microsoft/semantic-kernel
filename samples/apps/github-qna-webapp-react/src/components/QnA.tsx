@@ -2,10 +2,10 @@
 
 import { Button, Label, Slider, SliderOnChangeData, Subtitle2, Title3 } from '@fluentui/react-components';
 import React, { FC, useCallback, useState } from 'react';
+import { ChatHistoryItem, IChatMessage } from './chat/ChatHistoryItem';
+
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
 import { IKeyConfig } from '../model/KeyConfig';
-
-import { ChatHistoryItem, IChatMessage } from './chat/ChatHistoryItem';
 import { ChatInput } from './chat/ChatInput';
 
 interface IData {
@@ -37,6 +37,32 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
     const onSliderChange = useCallback((_e: any, sliderData: SliderOnChangeData) => {
         setRelevance(sliderData.value);
     }, []);
+
+    const getResponse = async (m: IChatMessage) => {
+        try {
+            var result = await sk.invokeAsync(
+                keyConfig,
+                {
+                    value: m.content,
+                    inputs: [
+                        { key: 'relevance', value: '0.2' },
+                        { key: 'collection', value: 'CodeSkillMemory' },
+                    ],
+                },
+                'QASkill',
+                'MemoryQuery',
+            );
+            const response: IChatMessage = {
+                content: result.value,
+                author: 'GitHub Repo Bot',
+                timestamp: new Date().toISOString(),
+                mine: false,
+            };
+            return response;
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
+        }
+    };
 
     React.useEffect(() => {
         chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -72,9 +98,10 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                 <div style={{ gridArea: 'footer', padding: '1rem 0', borderTop: '1px solid #ccc' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                         <ChatInput
-                            onSubmit={(m) => {
+                            onSubmit={async (m) => {
                                 setIsBusy(true);
-                                setChatHistory([...chatHistory, m]);
+                                const response = await getResponse(m);
+                                setChatHistory([...chatHistory, m, response!]);
                                 setIsBusy(false);
                             }}
                         />

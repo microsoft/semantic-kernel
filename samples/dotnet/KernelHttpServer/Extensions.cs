@@ -17,6 +17,7 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.Code;
 using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Document.FileSystem;
 using Microsoft.SemanticKernel.Skills.Document.OpenXml;
@@ -169,6 +170,14 @@ internal static class Extensions
         {
             WebFileDownloadSkill webFileDownloadSkill = new WebFileDownloadSkill();
             _ = kernel.ImportSkill(webFileDownloadSkill, nameof(WebFileDownloadSkill));
+        }
+
+        if (_ShouldLoad(nameof(CodeSkill), skillsToLoad))
+        {
+            DocumentSkill documentSkill = new(new WordDocumentConnector(), new LocalFileSystemConnector());
+            WebFileDownloadSkill downloadSkill = new WebFileDownloadSkill();
+            CodeSkill codeSkill = new CodeSkill(kernel, downloadSkill, documentSkill);
+            _ = kernel.ImportSkill(codeSkill, nameof(CodeSkill));
         }
     }
 
