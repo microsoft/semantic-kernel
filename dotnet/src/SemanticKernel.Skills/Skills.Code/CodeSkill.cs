@@ -105,12 +105,12 @@ BEGIN SUMMARY:
 
         if (code != null && code.Length > 0)
         {
-            // TODO should I create a new SKContext
+            // TODO should we create a new SKContext here?
             context.Variables.Update(code);
             await this._summarizeCodeFunction.InvokeAsync(context);
 
             var result = context.Variables.ToString();
-            // await this._kernel.Memory.SaveReferenceAsync(MemoryCollectionName, text: result, externalId: filePath, externalSourceName: filePath);
+            // TODO Include the file URI in the text
             await this._kernel.Memory.SaveInformationAsync(MemoryCollectionName, text: result, id: filePath);
         }
     }
@@ -123,7 +123,8 @@ BEGIN SUMMARY:
     /// <returns>Task</returns>
     public async Task SummarizeCodeDirectoryAsync(string directoryPath, SKContext context)
     {
-        // string[] filePaths = await this._documentSkill.RecursivelyListDocumentsUnderDirectoryAsync(directoryPath, context);
+        // TODO Use the document skill for recursion
+        // TODO Allow the wildcard match to be configurable
         string[] filePaths = await Task.FromResult(Directory.GetFiles(directoryPath, "*.md", SearchOption.AllDirectories));
 
         if (filePaths != null && filePaths.Length > 0)
@@ -151,16 +152,21 @@ BEGIN SUMMARY:
     [SKFunctionInput(Description = "URL of repository to summarize")]
     public async Task SummarizeRepositoryAsync(string source, SKContext context)
     {
+        // TODO Accept the repo uri and branch as separate parameters
+        // 1. Down URI would be calculated in the Skill rather than the client
+        // 2. We cna compute file URI's so the responses can include a link to the relevant file
         string filePath = Environment.ExpandEnvironmentVariables($"%temp%\\SK-{Guid.NewGuid()}.zip");
         string directoryPath = Environment.ExpandEnvironmentVariables($"%temp%\\SK-{Guid.NewGuid()}");
 
         try
         {
+            // TODO should we create a new SKContext here?
             context.Variables.Set(Parameters.FilePath, filePath);
             await this._downloadSkill.DownloadToFileAsync(source, context);
             context.Variables.Set(Parameters.FilePath, null);
 
             filePath = Environment.ExpandEnvironmentVariables(filePath);
+            // TODO Use the file compression skill
             ZipFile.ExtractToDirectory(filePath, directoryPath);
 
             await this.SummarizeCodeDirectoryAsync(directoryPath, context);
