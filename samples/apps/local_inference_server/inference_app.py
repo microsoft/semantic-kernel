@@ -106,4 +106,4 @@ if __name__ == '__main__':
     host_ip = args.ip
     port = args.port
 
-    app.run(host=host_ip, debug=True, ssl_context='adhoc', port=port)
+    app.run(host=host_ip, debug=True, port=port)
