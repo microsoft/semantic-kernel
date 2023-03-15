@@ -32,7 +32,7 @@ internal class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
         this._items = new T[capacity + 1];
         //
-        // The 0'th item is a sentinal entry that simplies the code
+        // The 0'th item is a sentinel entry that simplifies the code
         //
         this._items[0] = minValue;
     }
@@ -53,7 +53,7 @@ internal class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         }
     }
 
-    public int Capacity => this._items.Length - 1; // 0'th item is always a sentinal to simplify code
+    public int Capacity => this._items.Length - 1; // 0'th item is always a sentinel to simplify code
 
     public T this[int index]
     {
@@ -87,7 +87,7 @@ internal class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     public void Add(T item)
     {
         //
-        // the 0'th item is always a sentinal and not included in this._count. 
+        // the 0'th item is always a sentinel and not included in this._count.
         // The length of the buffer is always this._count + 1
         //
         this._count++;
@@ -116,7 +116,7 @@ internal class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         for (int i = startAt; i < newItemCount; ++i)
         {
             //
-            // the 0'th item is always a sentinal and not included in this._count. 
+            // the 0'th item is always a sentinel and not included in this._count.
             // The length of the buffer is always this._count + 1
             //
             this._count++;
@@ -150,7 +150,7 @@ internal class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     {
         Verify.GreaterThan(capacity, MinCapacity, $"MinHeap capacity must be greater than {MinCapacity}.");
 
-        // 0th item is always a sentinal
+        // 0th item is always a sentinel
         capacity++;
         if (capacity > this._items.Length)
         {
@@ -221,7 +221,7 @@ internal class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
     public virtual IEnumerator<T> GetEnumerator()
     {
-        // The 0'th item in the queue is a sentinal. i is 1 based.
+        // The 0'th item in the queue is a sentinel. i is 1 based.
         for (int i = 1; i <= this._count; ++i)
         {
             yield return this._items[i];
@@ -234,19 +234,19 @@ internal class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     }
 
     /// <summary>
-    /// Heap Sort in-place. 
-    /// This is destructive. Once you do this, the heap order is lost. 
+    /// Heap Sort in-place.
+    /// This is destructive. Once you do this, the heap order is lost.
     /// The advantage on in-place is that we don't need to do another allocation
     /// </summary>
     public void SortDescending()
     {
         int count = this._count;
-        int i = count; // remember that the 0'th item in the queue is always a sentinal. So i is 1 based
+        int i = count; // remember that the 0'th item in the queue is always a sentinel. So i is 1 based
 
         while (this._count > 0)
         {
             //
-            // this deques the item with the current LOWEST relevancy
+            // this dequeues the item with the current LOWEST relevancy
             // We take that and place it at the 'back' of the array - thus inverting it
             //
             T item = this.RemoveTop();
