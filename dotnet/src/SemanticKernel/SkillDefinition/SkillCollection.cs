@@ -97,6 +97,32 @@ public class SkillCollection : ISkillCollection
     }
 
     /// <inheritdoc/>
+    public ISKFunction GetFunction(string functionName)
+    {
+        return this.GetFunction(GlobalSkill, functionName);
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction GetFunction(string skillName, string functionName)
+    {
+        if (this.HasFunction(skillName, functionName))
+        {
+            return this._skillCollection[skillName][functionName];
+        }
+
+        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        throw new KernelException(
+            KernelException.ErrorCodes.FunctionNotAvailable,
+            $"Function not available {skillName}.{functionName}");
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction GetSemanticFunction(string functionName)
+    {
+        return this.GetSemanticFunction(GlobalSkill, functionName);
+    }
+
+    /// <inheritdoc/>
     public ISKFunction GetSemanticFunction(string skillName, string functionName)
     {
         if (this.HasSemanticFunction(skillName, functionName))

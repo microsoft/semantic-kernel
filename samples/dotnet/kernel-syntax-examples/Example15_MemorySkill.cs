@@ -70,8 +70,8 @@ public static class Example15_MemorySkill
         const string RECALL_FUNCTION_DEFINITION = @"
 Consider only the facts below when answering questions.
 
-About me: {{recall $fact1}}
-About me: {{recall $fact2}}
+About me: {{recall 'where did I grow up?'}}
+About me: {{recall 'where do I live?'}}
 
 Question: {{$query}}
 
@@ -80,8 +80,6 @@ Answer:
 
         var aboutMeOracle = kernel.CreateSemanticFunction(RECALL_FUNCTION_DEFINITION, maxTokens: 100);
 
-        context["fact1"] = "where did I grow up?";
-        context["fact2"] = "where do I live?";
         context["query"] = "Do I live in the same town where I grew up?";
         context[TextMemorySkill.RelevanceParam] = "0.8";
 
