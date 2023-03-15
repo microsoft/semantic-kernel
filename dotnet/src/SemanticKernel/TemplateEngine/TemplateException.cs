@@ -26,14 +26,19 @@ public class TemplateException : Exception<TemplateException.ErrorCodes>
         SyntaxError = 0,
 
         /// <summary>
+        /// The block type produced be the tokenizer was not expected
+        /// </summary>
+        UnexpectedBlockType = 1,
+
+        /// <summary>
         /// The template requires an unknown function.
         /// </summary>
-        FunctionNotFound = 1,
+        FunctionNotFound = 2,
 
         /// <summary>
         /// The template execution failed, e.g. a function call threw an exception.
         /// </summary>
-        RuntimeError = 2,
+        RuntimeError = 3,
     }
 
     /// <summary>

@@ -23,7 +23,6 @@ public class SemanticKernelEndpoint
         this._memoryStore = memoryStore;
     }
 
-
     [Function("InvokeFunction")]
     public async Task<HttpResponseData> InvokeFunctionAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "skills/{skillName}/invoke/{functionName}")]

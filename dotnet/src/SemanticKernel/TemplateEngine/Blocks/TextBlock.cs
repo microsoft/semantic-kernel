@@ -5,29 +5,27 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-internal class TextBlock : Block
+internal class TextBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.Text;
 
-    internal TextBlock(string content, ILogger? log = null)
-        : base(log)
+    public TextBlock(string? text, ILogger? log = null)
+        : base(text, log)
     {
-        this.Content = content;
     }
 
-    internal TextBlock(string text, int startIndex, int stopIndex, ILogger log)
-        : base(log)
+    public TextBlock(string text, int startIndex, int stopIndex, ILogger log)
+        : base(text.Substring(startIndex, stopIndex - startIndex), log)
     {
-        this.Content = text.Substring(startIndex, stopIndex - startIndex);
     }
 
-    internal override bool IsValid(out string error)
+    public override bool IsValid(out string errorMsg)
     {
-        error = "";
+        errorMsg = "";
         return true;
     }
 
-    internal override string Render(ContextVariables? variables)
+    public string Render(ContextVariables? variables)
     {
         return this.Content;
     }

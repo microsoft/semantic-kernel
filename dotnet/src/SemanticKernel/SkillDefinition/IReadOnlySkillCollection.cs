@@ -50,6 +50,28 @@ public interface IReadOnlySkillCollection
     bool HasNativeFunction(string functionName);
 
     /// <summary>
+    /// Return the function delegate stored in the collection, regardless of the function type
+    /// </summary>
+    /// <param name="functionName">Function name</param>
+    /// <returns>Function delegate</returns>
+    ISKFunction GetFunction(string functionName);
+
+    /// <summary>
+    /// Return the function delegate stored in the collection, regardless of the function type
+    /// </summary>
+    /// <param name="functionName">Function name</param>
+    /// <param name="skillName">Skill name</param>
+    /// <returns>Function delegate</returns>
+    ISKFunction GetFunction(string skillName, string functionName);
+
+    /// <summary>
+    /// Return the semantic function delegate stored in the collection
+    /// </summary>
+    /// <param name="functionName">Function name</param>
+    /// <returns>Semantic function delegate</returns>
+    ISKFunction GetSemanticFunction(string functionName);
+
+    /// <summary>
     /// Return the semantic function delegate stored in the collection
     /// </summary>
     /// <param name="functionName">Function name</param>

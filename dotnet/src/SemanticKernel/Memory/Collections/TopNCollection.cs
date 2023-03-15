@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// <summary>
 /// A collector for Top N matches. Keeps only the best N matches by Score.
 /// Automatically flushes out any not in the top N.
-/// By default, items are not sorted by score untily you call <see cref="TopNCollection{T}.SortByScore"/>.
+/// By default, items are not sorted by score until you call <see cref="TopNCollection{T}.SortByScore"/>.
 /// </summary>
 internal class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 {

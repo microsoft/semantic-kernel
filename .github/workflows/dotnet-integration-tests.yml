@@ -33,7 +33,7 @@ jobs:
 
     - name: Find projects
       shell: bash
-      run: echo "projects=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+      run: echo "projects=$(find ./dotnet -type f -name "*.IntegrationTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
 
     - name: Integration Tests
       shell: bash
