@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import React, { FC } from 'react';
-import { Input } from "@fluentui/react-components";
+import { Button, Input } from '@fluentui/react-components';
+import { Send24Regular } from '@fluentui/react-icons';
+import React, { FC, useCallback } from 'react';
 import { IChatMessage } from './ChatHistoryItem';
 
 interface ChatInputProps {
@@ -18,6 +19,13 @@ export const ChatInput: FC<ChatInputProps> = (props) => {
         setPreviousValue(text);
         setValue('');
     };
+
+    const onSendClick = useCallback(
+        (_e: any) => {
+            if (value && value.length > 0) handleSubmit(value);
+        },
+        [value],
+    );
 
     return (
         <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
@@ -37,6 +45,7 @@ export const ChatInput: FC<ChatInputProps> = (props) => {
                     }
                 }}
             />
+            <Button icon={<Send24Regular />} appearance="subtle" onClick={onSendClick} />
         </div>
     );
 };
