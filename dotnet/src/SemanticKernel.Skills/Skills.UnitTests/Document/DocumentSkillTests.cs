@@ -138,4 +138,31 @@ public class DocumentSkillTests
         fileSystemConnectorMock.Verify(mock => mock.GetWriteableFileStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
         documentConnectorMock.Verify(mock => mock.AppendText(It.IsAny<Stream>(), It.IsAny<string>()), Times.Never());
     }
+
+    [Fact]
+    public async Task ListDocumentsUnderDirectoryAsync()
+    {
+        // Arrange
+        const string anyDirectoryPath = @"C:\bogus\";
+        const string filePath1 = anyDirectoryPath + "file1.txt";
+        const string filePath2 = anyDirectoryPath + "file2.txt";
+        string[] cannedResponse = { filePath1, filePath2 };
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
+        var documentConnectorMock = new Mock<IDocumentConnector>();
+
+        fileSystemConnectorMock
+            .Setup(mock => mock.RecursivelyListFilesUnderDirectoryAsync(It.Is<string>(directoryPath => directoryPath.Equals(anyDirectoryPath, StringComparison.Ordinal)),
+                           It.IsAny<CancellationToken>()))
+            .ReturnsAsync(cannedResponse);
+
+        var target = new DocumentSkill(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+
+        // Act
+        string[] response = await target.RecursivelyListDocumentsUnderDirectoryAsync(anyDirectoryPath, this._context);
+
+        // Assert
+        Assert.False(this._context.ErrorOccurred);
+        Assert.Equal(cannedResponse, response);
+        fileSystemConnectorMock.Verify(mock => mock.RecursivelyListFilesUnderDirectoryAsync(anyDirectoryPath, It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

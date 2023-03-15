@@ -72,4 +72,11 @@ public class LocalFileSystemConnector : IFileSystemConnector
     {
         return Task.FromResult(File.Exists(Environment.ExpandEnvironmentVariables(filePath)));
     }
+
+    /// <inheritdoc/>
+    /// TODO: This will loop infinitely with recursive soft or hard links to directories.
+    public Task<string[]> RecursivelyListFilesUnderDirectoryAsync(string directoryPath, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Directory.GetFiles(directoryPath, "*.*", SearchOption.AllDirectories));
+    }
 }
