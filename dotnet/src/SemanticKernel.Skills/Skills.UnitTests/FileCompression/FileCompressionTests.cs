@@ -1,34 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.FileCompression;
-using Microsoft.SemanticKernel.Skills.Web;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace IntegrationTests.FileCompression;
 
-public class FileCompressionTests : IDisposable
+public class FileCompressionTests
 {
-    public FileCompressionTests(ITestOutputHelper output)
-    {
-        this._logger = new XunitLogger<Kernel>(output);
-        this._output = output;
-
-        this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
-    }
-
     [Fact]
     public async Task ZipFileCompressionAndDecompressionTestAsync()
     {
         // Arrange - Create objects
-        IKernel kernel = Kernel.Builder.WithLogger(this._logger).Build();
-        using XunitLogger<WebFileDownloadSkill> skillLogger = new(this._output);
+        IKernel kernel = Kernel.Builder.Build();
         var zipCompressor = new ZipFileCompressor();
         var skill = new FileCompressionSkill(zipCompressor);
         var fileCompression = kernel.ImportSkill(skill, "FileCompression");
@@ -69,8 +56,7 @@ public class FileCompressionTests : IDisposable
         // Arrange - Create objects
         const string File1 = "file1.txt";
         const string File2 = "file2.txt";
-        IKernel kernel = Kernel.Builder.WithLogger(this._logger).Build();
-        using XunitLogger<WebFileDownloadSkill> skillLogger = new(this._output);
+        IKernel kernel = Kernel.Builder.Build();
         var zipCompressor = new ZipFileCompressor();
         var skill = new FileCompressionSkill(zipCompressor);
         var fileCompression = kernel.ImportSkill(skill, "FileCompression");
@@ -108,32 +94,5 @@ public class FileCompressionTests : IDisposable
         File.Delete(destinationFilePath); // Zip file
         Directory.Delete(directoryToCompress, recursive: true);
         Directory.Delete(decompressedFilesDirectory, recursive: true);
-    }
-
-    private readonly XunitLogger<Kernel> _logger;
-    private readonly ITestOutputHelper _output;
-    private readonly RedirectOutput _testOutputHelper;
-
-    /// <summary>
-    /// Implementation of IDisposable.
-    /// </summary>
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Code that does the actual disposal of resources.
-    /// </summary>
-    /// <param name="disposing">Dispose of resources only if this is true.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-            this._testOutputHelper.Dispose();
-        }
     }
 }

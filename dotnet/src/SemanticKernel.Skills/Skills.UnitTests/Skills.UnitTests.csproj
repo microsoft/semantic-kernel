@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
     <ProjectReference Include="..\Skills.Document\Skills.Document.csproj" />
+    <ProjectReference Include="..\Skills.FileCompression\Skills.FileCompression.csproj" />
     <ProjectReference Include="..\Skills.Memory.Sqlite\Skills.Memory.Sqlite.csproj" />
     <ProjectReference Include="..\Skills.MsGraph\Skills.MsGraph.csproj" />
     <ProjectReference Include="..\Skills.Web\Skills.Web.csproj" />
