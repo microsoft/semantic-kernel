@@ -24,4 +24,8 @@ public class VectorDbException : Exception<VectorDbException.ErrorCodes>
     public VectorDbException()
     {
     }
+
+    public VectorDbException(string message, System.Exception innerException) : base(message, innerException)
+    {
+    }
 }

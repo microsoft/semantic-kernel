@@ -1,10 +1,8 @@
-<<<<<<< sk-connector-vectordb
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory.Collections;
 using Microsoft.SemanticKernel.Memory.Storage;
 
@@ -65,19 +63,6 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
 
     #region private ================================================================================
 
-    /// <summary>
-    /// Calculates the cosine similarity between an <see cref="Embedding{TEmbedding}"/> and an <see cref="IEmbeddingWithMetadata{TEmbedding}"/>
-    /// </summary>
-    /// <param name="embedding">The input <see cref="Embedding{TEmbedding}"/> to be compared.</param>
-    /// <param name="embeddingWithData">The input <see cref="IEmbeddingWithMetadata{TEmbedding}"/> to be compared.</param>
-    /// <returns>A tuple consisting of the <see cref="IEmbeddingWithMetadata{TEmbedding}"/> cosine similarity result.</returns>
-    private (IEmbeddingWithMetadata<TEmbedding>, double) PairEmbeddingWithSimilarity(Embedding<TEmbedding> embedding,
-        IEmbeddingWithMetadata<TEmbedding> embeddingWithData)
-    {
-        var similarity = embedding.Vector.ToArray().CosineSimilarity(embeddingWithData.Embedding.Vector.ToArray());
-        return (embeddingWithData, similarity);
-    }
-
     #endregion
 }
 
@@ -88,5 +73,3 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
 public class VolatileMemoryStore : VolatileMemoryStore<float>
 {
 }
-=======
->>>>>>> local

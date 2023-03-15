@@ -22,5 +22,9 @@ public class Exception<TErrorType> : Exception where TErrorType : Enum
     {
     }
 
+    public Exception(string message) : base(message)
+    {
+    }
+
     #endregion
 }

@@ -96,12 +96,12 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
 
     }
 
-    public Task RemoveAsync(string collection, string key, CancellationToken cancel = default)
+    public async Task RemoveAsync(string collection, string key, CancellationToken cancel = default)
     {
         bool result;
         try
         {
-            result = this._qdrantclient.DeleteVectorDataAsync(collection, key).Result;
+            result = await this._qdrantclient.DeleteVectorDataAsync(collection, key);
             if (result)
             {
                 if (this._qdrantdata.ContainsKey(collection) && this._qdrantdata[collection].ContainsKey(key))
@@ -114,7 +114,6 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
         {
             throw new VectorDbException($"Failed to remove vector data from Qdrant {ex.Message}");
         }
-        return Task.CompletedTask;
     }
 
     public async IAsyncEnumerable<(VectorRecordData<float>, double)> GetNearestMatchesAsync(string collection, Embedding<float> embedding, int limit = 1, double minRelevanceScore = 0)
