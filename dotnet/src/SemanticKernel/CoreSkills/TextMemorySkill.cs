@@ -49,19 +49,19 @@ public class TextMemorySkill
     private const string DefaultLimit = "1";
 
     /// <summary>
-    /// Recall a specific memory
+    /// Key-based lookup for a specific memory
     /// </summary>
     /// <example>
     /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
-    /// {{memory.recall_specific }}
+    /// {{memory.retrieve }}
     /// </example>
-    /// <param name="context">Contains the 'collection' containing the memory to recall and the `key` associated with it.</param>
-    [SKFunction("Recall a specific memory")]
-    [SKFunctionName("Recall_Specific")]
-    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the memory to recall",
+    /// <param name="context">Contains the 'collection' containing the memory to retrieve and the `key` associated with it.</param>
+    [SKFunction("Key-based lookup for a specific memory")]
+    [SKFunctionName("Retrieve")]
+    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the memory to retrieve",
         DefaultValue = DefaultCollection)]
-    [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated with the memory to recall")]
-    public async Task<string> RecallSpecificAsync(SKContext context)
+    [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated with the memory to retrieve")]
+    public async Task<string> RetrieveAsync(SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
         Verify.NotEmpty(collection, "Memory collection not defined");
@@ -76,7 +76,7 @@ public class TextMemorySkill
     }
 
     /// <summary>
-    /// Recall up to N memories related to the input
+    /// Semantic search and return up to N memories related to the input text
     /// </summary>
     /// <example>
     /// SKContext["input"] = "what is the capital of France?"
@@ -84,7 +84,7 @@ public class TextMemorySkill
     /// </example>
     /// <param name="text">The input text to compare memories to</param>
     /// <param name="context">Contains the 'collection' to search for the topic and 'relevance' score</param>
-    [SKFunction("Recall up to N memories related to the input")]
+    [SKFunction("Semantica search and return up to N memories related to the input text")]
     [SKFunctionName("Recall")]
     [SKFunctionInput(Description = "The input text to compare memories to")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection to search", DefaultValue = DefaultCollection)]
@@ -112,12 +112,7 @@ public class TextMemorySkill
         context.Log.LogTrace("Memories found (collection: {0})", collection);
         var resultString = JsonSerializer.Serialize(memories.Select(x => x.Text));
 
-        if (resultString.Length > 8000)
-        {
-            context.Log.LogWarning(
-                "Recalled memories may exceed the token limit of your completions backend. Consider chunking the result if you plan to use it in a completion.");
-        }
-        else if (resultString.Length == 0)
+        if (resultString.Length == 0)
         {
             context.Log.LogWarning("Memories not found in collection: {0}", collection);
         }
@@ -158,15 +153,15 @@ public class TextMemorySkill
     /// </summary>
     /// <example>
     /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
-    /// {{memory.remove_specific }}
+    /// {{memory.remove }}
     /// </example>
     /// <param name="context">Contains the 'collection' containing the memory to remove.</param>
     [SKFunction("Remove specific memory")]
-    [SKFunctionName("Remove_Specific")]
+    [SKFunctionName("Remove")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the memory to remove",
         DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated with the memory to remove")]
-    public async Task RemoveSpecificAsync(SKContext context)
+    public async Task RemoveAsync(SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
         Verify.NotEmpty(collection, "Memory collection not defined");
