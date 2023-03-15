@@ -74,7 +74,6 @@ BEGIN SUMMARY:
     /// <param name="kernel">Kernel instance</param>
     /// <param name="downloadSkill">Instance of WebFileDownloadSkill used to download web files</param>
     /// <param name="documentSkill">Instance of DocumentSkill used to read files</param>
-    /// <param name="fileCompressionSkill">Instance of FileCompressionSkill used to unzip files</param>
     /// <param name="logger">Optional logger</param>
     public CodeSkill(IKernel kernel, WebFileDownloadSkill downloadSkill, DocumentSkill documentSkill, ILogger<CodeSkill>? logger = null)
     {
