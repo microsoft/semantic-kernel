@@ -40,14 +40,29 @@ public class PlannerSkill
         /// </summary>
         public const string BucketLabelPrefix = "bucketLabelPrefix";
 
+        /// <summary>
+        /// The relevancy threshold when filtering registered functions.
+        /// </summary>
         public const string RelevancyThreshold = "relevancyThreshold";
 
+        /// <summary>
+        /// The maximum number of functions to include in the plan.
+        /// </summary>
         public const string MaxFunctions = "maxFunctions";
 
+        /// <summary>
+        /// The list of skills to exclude from the plan.
+        /// </summary>
         public const string ExcludedSkills = "excludedSkills";
 
+        /// <summary>
+        /// The list of functions to exclude from the plan.
+        /// </summary>
         public const string ExcludedFunctions = "excludedFunctions";
 
+        /// <summary>
+        /// The list of functions to include in the plan.
+        /// </summary>
         public const string IncludedFunctions = "includedFunctions";
     }
 
