@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -15,7 +12,12 @@ public abstract class Block
 {
     internal virtual BlockTypes Type => BlockTypes.Undefined;
 
-    internal string Content { get; set; } = string.Empty;
+    // internal virtual bool? SynchronousRendering => null;
+
+    /// <summary>
+    /// The block content
+    /// </summary>
+    internal string Content { get; }
 
     /// <summary>
     /// App logger
@@ -25,18 +27,19 @@ public abstract class Block
     /// <summary>
     /// Base constructor
     /// </summary>
+    /// <param name="content">Block content</param>
     /// <param name="log">App logger</param>
-    protected Block(ILogger? log = null)
+    protected Block(string? content, ILogger? log = null)
     {
         if (log != null) { this.Log = log; }
+
+        this.Content = content ?? string.Empty;
     }
 
-    internal virtual Task<string> RenderCodeAsync(SKContext executionContext)
-    {
-        throw new NotImplementedException("This block doesn't support code execution");
-    }
-
-    internal abstract bool IsValid(out string error);
-
-    internal abstract string Render(ContextVariables? variables);
+    /// <summary>
+    /// Check if the block content is valid.
+    /// </summary>
+    /// <param name="errorMsg">Error message in case the content is not valid</param>
+    /// <returns>True if the block content is valid</returns>
+    public abstract bool IsValid(out string errorMsg);
 }

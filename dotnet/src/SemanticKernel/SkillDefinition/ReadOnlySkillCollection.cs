@@ -47,6 +47,24 @@ internal class ReadOnlySkillCollection : IReadOnlySkillCollection
     }
 
     /// <inheritdoc/>
+    public ISKFunction GetFunction(string functionName)
+    {
+        return this._skillCollection.GetFunction(functionName);
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction GetFunction(string skillName, string functionName)
+    {
+        return this._skillCollection.GetFunction(skillName, functionName);
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction GetSemanticFunction(string functionName)
+    {
+        return this._skillCollection.GetSemanticFunction(functionName);
+    }
+
+    /// <inheritdoc/>
     public ISKFunction GetSemanticFunction(string skillName, string functionName)
     {
         return this._skillCollection.GetSemanticFunction(skillName, functionName);
