@@ -34,7 +34,6 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
         return AsyncEnumerable.Empty<string>();
     }
 
-
     public async Task<DataEntry<VectorRecordData<float>>?> GetAsync(string collection, string key, CancellationToken cancel = default)
     {
         DataEntry<VectorRecordData<float>> vectorResult = default;
@@ -68,7 +67,8 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
         return vectorResult;
     }
 
-    public async Task<DataEntry<VectorRecordData<float>>> PutAsync(string collection, DataEntry<VectorRecordData<float>> data, CancellationToken cancel = default)
+    public async Task<DataEntry<VectorRecordData<float>>> PutAsync(string collection, DataEntry<VectorRecordData<float>> data,
+        CancellationToken cancel = default)
     {
         DataEntry<VectorRecordData<float>> vectorData; //= new DataEntry<VectorRecordData<float>>(data.Key, data.Value);
         bool result = await this._qdrantClient.PutVectorDataAsync<DataEntry<VectorRecordData<float>>>(collection, data.Key, data, data.Value!.Payload);
@@ -83,8 +83,8 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
         {
             throw new VectorDbException("Failed to put and retrieve vector data from Qdrant");
         }
-        return vectorData;
 
+        return vectorData;
     }
 
     public async Task RemoveAsync(string collection, string key, CancellationToken cancel = default)
@@ -107,15 +107,14 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
         }
     }
 
-    public async IAsyncEnumerable<(VectorRecordData<float>, double)> GetNearestMatchesAsync(string collection, Embedding<float> embedding, int limit = 1, double minRelevanceScore = 0)
+    public async IAsyncEnumerable<(VectorRecordData<float>, double)> GetNearestMatchesAsync(string collection, Embedding<float> embedding, int limit = 1,
+        double minRelevanceScore = 0)
     {
-
         DataEntry<VectorRecordData<float>> vectorData = new DataEntry<VectorRecordData<float>>()
         {
             Value = new VectorRecordData<float>(embedding, new Dictionary<string, object>(), new List<string>()),
             Timestamp = DateTime.Now,
         };
-
 
         var result = await this._qdrantClient.SearchVectorBySimilarityAsync(collection, vectorData, minRelevanceScore);
         await foreach (var rd in result.ToAsyncEnumerable())
@@ -124,7 +123,8 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
         }
     }
 
-    async IAsyncEnumerable<(IEmbeddingWithMetadata<float>, double)> IEmbeddingIndex<float>.GetNearestMatchesAsync(string collection, Embedding<float> embedding, int limit, double minRelevanceScore)
+    async IAsyncEnumerable<(IEmbeddingWithMetadata<float>, double)> IEmbeddingIndex<float>.GetNearestMatchesAsync(string collection, Embedding<float> embedding,
+        int limit, double minRelevanceScore)
     {
         DataEntry<VectorRecordData<float>> vectorData = new DataEntry<VectorRecordData<float>>()
         {
@@ -136,10 +136,10 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
         {
             yield return (match.Key.Value!, match.Value);
         }
-
     }
 
-    public async IAsyncEnumerable<DataEntry<VectorRecordData<float>>> GetAllAsync(string collection, [EnumeratorCancellation] CancellationToken cancel = default)
+    public async IAsyncEnumerable<DataEntry<VectorRecordData<float>>> GetAllAsync(string collection,
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
         IAsyncEnumerable<DataEntry<VectorRecordData<float>>> vectorResult;
         IVectorDbCollection vectorCollection = await this._qdrantClient.GetCollectionDataAsync(collection);
@@ -150,19 +150,19 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
         {
             yield return v;
         }
-
     }
 
-    IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<float>>> IDataStore<IEmbeddingWithMetadata<float>>.GetAllAsync(string collection, CancellationToken cancel)
+    IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<float>>> IDataStore<IEmbeddingWithMetadata<float>>.GetAllAsync(string collection,
+        CancellationToken cancel)
     {
         IAsyncEnumerable<DataEntry<VectorRecordData<float>>> vectorResult = this.GetAllAsync(collection, CancellationToken.None);
         IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<float>>> result = vectorResult.Select(x =>
-                                            new DataEntry<IEmbeddingWithMetadata<float>>(x.Key, x.Value));
+            new DataEntry<IEmbeddingWithMetadata<float>>(x.Key, x.Value));
         return result;
-
     }
 
-    public async Task<DataEntry<IEmbeddingWithMetadata<float>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<float>> data, CancellationToken cancel = default)
+    public async Task<DataEntry<IEmbeddingWithMetadata<float>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<float>> data,
+        CancellationToken cancel = default)
     {
         VectorRecordData<float> vectorData = new VectorRecordData<float>(data.Value!.Embedding, new Dictionary<string, object>(), new List<string>());
         DataEntry<VectorRecordData<float>> dataEntry = new DataEntry<VectorRecordData<float>>(data.Key, vectorData);
@@ -172,7 +172,8 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
         return resultData;
     }
 
-    async Task<DataEntry<IEmbeddingWithMetadata<float>>?> IDataStore<IEmbeddingWithMetadata<float>>.GetAsync(string collection, string key, CancellationToken cancel)
+    async Task<DataEntry<IEmbeddingWithMetadata<float>>?> IDataStore<IEmbeddingWithMetadata<float>>.GetAsync(string collection, string key,
+        CancellationToken cancel)
     {
         DataEntry<VectorRecordData<float>>? result = await this.GetAsync(collection, key, CancellationToken.None);
         string datakey = result.Value.Key;
@@ -186,6 +187,6 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DataEntry<VectorRecordData<float>>>> _qdrantData = new();
     private QdrantVectorDb _qdrantClient;
-    #endregion
 
+    #endregion
 }

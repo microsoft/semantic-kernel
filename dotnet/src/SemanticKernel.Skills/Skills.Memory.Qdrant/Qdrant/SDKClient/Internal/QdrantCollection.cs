@@ -31,17 +31,16 @@ internal class QdrantCollection : IVectorDbCollection
         this._log = log ?? NullLogger.Instance;
     }
 
-
     public async Task<DataEntry<VectorRecordData<float>>?> GetVectorAsync(string id)
     {
         var point = await this.FindQdrantPointByExternalIdAsync(id);
         if (point == null) { return null; }
 
         var result = new DataEntry<VectorRecordData<float>>(key: point.ExternalId,
-                                               value: new VectorRecordData<float>(
-                                                            new Embedding<float>(point.Vector),
-                                                            point.ExternalPayload,
-                                                            point.ExternalTags));
+            value: new VectorRecordData<float>(
+                new Embedding<float>(point.Vector),
+                point.ExternalPayload,
+                point.ExternalTags));
 
         return result;
     }
@@ -61,10 +60,10 @@ internal class QdrantCollection : IVectorDbCollection
         foreach (var point in data.VectorPointCollection)
         {
             var record = new DataEntry<VectorRecordData<float>>(key: point.VectorId!,
-                                                   value: new VectorRecordData<float>(
-                                                                new Embedding<float>(point.Vector!),
-                                                                point.Payload!,
-                                                                new List<string>()));
+                value: new VectorRecordData<float>(
+                    new Embedding<float>(point.Vector!),
+                    point.Payload!,
+                    new List<string>()));
 
             yield return record;
         }
@@ -87,7 +86,8 @@ internal class QdrantCollection : IVectorDbCollection
         await this.DeleteVectorInternalAsync(qdrantId);
     }
 
-    public async IAsyncEnumerable<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> FindClosestAsync(float[] target, int top = 1, string[]? requiredTags = null)
+    public async IAsyncEnumerable<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> FindClosestAsync(float[] target, int top = 1,
+        string[]? requiredTags = null)
     {
         this._log.LogDebug("Searching top {0} closest vectors in {1}", top);
 
@@ -119,10 +119,10 @@ internal class QdrantCollection : IVectorDbCollection
         foreach (var v in data.Vectors)
         {
             var record = new DataEntry<VectorRecordData<float>>(key: v.ExternalId,
-                                                   value: new VectorRecordData<float>(
-                                                                new Embedding<float>(v.Vector),
-                                                                v.ExternalPayload,
-                                                                v.ExternalTags));
+                value: new VectorRecordData<float>(
+                    new Embedding<float>(v.Vector),
+                    v.ExternalPayload,
+                    v.ExternalTags));
 
             result.Add(new KeyValuePair<DataEntry<VectorRecordData<float>>, double>(record, v.Score ?? 0));
         }
@@ -137,7 +137,8 @@ internal class QdrantCollection : IVectorDbCollection
 
     #region private ================================================================================
 
-    private static List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> SortSearchResultByScore(List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> list)
+    private static List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> SortSearchResultByScore(
+        List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> list)
     {
         return (from entry in list orderby entry.Value descending select entry).ToList();
     }

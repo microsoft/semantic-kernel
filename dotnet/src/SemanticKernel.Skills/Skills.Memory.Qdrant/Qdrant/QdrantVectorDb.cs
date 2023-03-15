@@ -10,21 +10,17 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory.Storage;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient;
 
-
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 
 /// <summary>
 /// An implementation of a client for the Qdrant VectorDB. This class is used to
 /// connect, create, delete, and get embeddings data from a Qdrant VectorDB instance.
 /// </summary>
-
 public class QdrantVectorDb
 {
     public QdrantVectorDb(string endpoint, int port)
     {
-
         this._qdrantDbClient = this.ConnectVectorDB(endpoint, port);
-
     }
 
     public async Task<IVectorDbCollection> CreateCollectionAsync(string collectionname, int? vectorsize, string? distancetype)
@@ -40,7 +36,8 @@ public class QdrantVectorDb
         }
         catch (Exception ex)
         {
-            throw new Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics.VectorDbException($"Failed to create collection in Qdrant {ex.Message}");
+            throw new Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics.VectorDbException(
+                $"Failed to create collection in Qdrant {ex.Message}");
         }
 
         this._qdrantCollections.TryAdd(collectionname, collection);
@@ -82,7 +79,6 @@ public class QdrantVectorDb
 
         this._qdrantCollections[collectionname] = collection;
         return true;
-
     }
 
     public async Task<IVectorDbCollection> GetCollectionDataAsync(string collectionKey)
@@ -96,7 +92,8 @@ public class QdrantVectorDb
         }
         catch (Exception ex)
         {
-            throw new Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics.VectorDbException($"Failed to get collections from Qdrant, {ex.Message}");
+            throw new Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics.VectorDbException(
+                $"Failed to get collections from Qdrant, {ex.Message}");
         }
 
         return collection;
@@ -113,11 +110,11 @@ public class QdrantVectorDb
         }
         catch
         {
-            throw new Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics.VectorDbException($"Failed to get vectors by collection from Qdrant");
+            throw new Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics.VectorDbException(
+                $"Failed to get vectors by collection from Qdrant");
         }
 
         return vectors!;
-
     }
 
     public async Task<DataEntry<VectorRecordData<float>>> GetVectorDataAsync(string collectionname, string vectorId)
@@ -129,13 +126,12 @@ public class QdrantVectorDb
         {
             collection = await this._qdrantDbClient.GetCollectionAsync(collectionname);
             var record = await collection.GetVectorAsync(vectorId);
-            result = record != null ?
-                        (DataEntry<VectorRecordData<float>>)record :
-                        new DataEntry<VectorRecordData<float>>();
+            result = record != null ? (DataEntry<VectorRecordData<float>>)record : new DataEntry<VectorRecordData<float>>();
         }
         catch (Exception ex) //look up specific exece
         {
-            throw new Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics.VectorDbException($"Failed to get vector from Qdrant, {ex.Message}");
+            throw new Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics.VectorDbException(
+                $"Failed to get vector from Qdrant, {ex.Message}");
         }
 
         return result;
@@ -156,13 +152,12 @@ public class QdrantVectorDb
 
         _metadata = metadata == null ? _metadata : metadata;
 
-
         DataEntry<VectorRecordData<float>> vectorRecord =
             new DataEntry<VectorRecordData<float>>(key: vectorId,
-                                                        value: new VectorRecordData<float>(
-                                                            new Embedding<float>(vector!),
-                                                            _metadata,
-                                                            new List<string>()));
+                value: new VectorRecordData<float>(
+                    new Embedding<float>(vector!),
+                    _metadata,
+                    new List<string>()));
 
         try
         {
@@ -176,10 +171,10 @@ public class QdrantVectorDb
         }
 
         return true;
-
     }
 
-    public async Task<IEnumerable<KeyValuePair<DataEntry<VectorRecordData<float>>, double>>> SearchVectorBySimilarityAsync(string collectionname, DataEntry<VectorRecordData<float>> recordData, double minScore)
+    public async Task<IEnumerable<KeyValuePair<DataEntry<VectorRecordData<float>>, double>>> SearchVectorBySimilarityAsync(string collectionname,
+        DataEntry<VectorRecordData<float>> recordData, double minScore)
     {
         List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> matchresults = new List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>>();
         List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> vectorresults;
@@ -201,11 +196,11 @@ public class QdrantVectorDb
         }
         catch (Exception ex)
         {
-            throw new Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics.VectorDbException($"Error occurred, Failed to get nearest matches from Qdrant{ex.Message}");
+            throw new Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics.VectorDbException(
+                $"Error occurred, Failed to get nearest matches from Qdrant{ex.Message}");
         }
 
         return matchresults;
-
     }
 
     public QdrantDb ConnectVectorDB(string hostendpoint, int port)
@@ -215,12 +210,11 @@ public class QdrantVectorDb
     }
 
     #region private ================================================================================
+
     private readonly ConcurrentDictionary<string, IVectorDbCollection> _qdrantCollections = new();
     private QdrantDb _qdrantDbClient;
     private readonly int _defaultvectorsize = 1536; //output dimension size for OpenAI's text-emebdding-ada-002
     private readonly VectorDistanceType _defaultdistancetype = VectorDistanceType.Cosine;
 
     #endregion
-
-
 }
