@@ -54,19 +54,19 @@ public sealed class PlannerSkillTests : IDisposable
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                _ = config.AddAzureOpenAICompletionBackend(
+                config.AddAzureOpenAICompletionBackend(
                     label: azureOpenAIConfiguration.Label,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
 
-                _ = config.AddAzureOpenAIEmbeddingsBackend(
+                config.AddAzureOpenAIEmbeddingsBackend(
                     label: azureOpenAIEmbeddingsConfiguration.Label,
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
 
-                _ = config.SetDefaultCompletionBackend(azureOpenAIConfiguration.Label);
+                config.SetDefaultCompletionBackend(azureOpenAIConfiguration.Label);
             })
             .WithMemoryStorage(memoryStorage)
             .Build();
@@ -146,7 +146,7 @@ public sealed class PlannerSkillTests : IDisposable
         [SKFunctionContextParameter(Name = "email_address", Description = "The email address to send email to.")]
         public Task<SKContext> SendEmailAsync(string input, SKContext context)
         {
-            _ = context.Variables.Update($"Sent email to: {context.Variables["email_address"]}. Body: {input}");
+            context.Variables.Update($"Sent email to: {context.Variables["email_address"]}. Body: {input}");
             return Task.FromResult(context);
         }
 
@@ -155,7 +155,7 @@ public sealed class PlannerSkillTests : IDisposable
         public Task<SKContext> GetEmailAddressAsync(string input, SKContext context)
         {
             context.Log.LogDebug("Returning hard coded email for {0}", input);
-            _ = context.Variables.Update("johndoe1234@example.com");
+            context.Variables.Update("johndoe1234@example.com");
             return Task.FromResult(context);
         }
 
@@ -163,7 +163,7 @@ public sealed class PlannerSkillTests : IDisposable
         [SKFunctionInput(Description = "The topic of the poem.")]
         public Task<SKContext> WritePoemAsync(string input, SKContext context)
         {
-            _ = context.Variables.Update($"Roses are red, violets are blue, {input} is hard, so is this test.");
+            context.Variables.Update($"Roses are red, violets are blue, {input} is hard, so is this test.");
             return Task.FromResult(context);
         }
     }
