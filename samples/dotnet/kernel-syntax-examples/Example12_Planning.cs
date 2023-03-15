@@ -126,7 +126,6 @@ internal static class Example12_Planning
     {
         Console.WriteLine("======== Planning - Create and Execute Plan using Memory ========");
 
-        var memoryStorage = new VolatileMemoryStore();
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .Configure(
@@ -144,7 +143,7 @@ internal static class Example12_Planning
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"));
                 })
-            .WithMemoryStorage(memoryStorage)
+            .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
