@@ -3,7 +3,6 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -12,132 +11,26 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
 using SemanticKernel.UnitTests.XunitHelpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SemanticKernel.UnitTests.TemplateEngine;
+
+#pragma warning disable VSTHRD103 // ok to use WriteLine synchronously
+#pragma warning disable CA1849 // ok to use WriteLine synchronously
 
 public sealed class PromptTemplateEngineTests
 {
     private readonly IPromptTemplateEngine _target;
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlySkillCollection> _skills;
-    private readonly ILogger _logger;
+    private readonly ITestOutputHelper _logger;
 
-    public PromptTemplateEngineTests()
+    public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
-        this._logger = ConsoleLogger.Log;
-        this._target = new PromptTemplateEngine(this._logger);
+        this._logger = testOutputHelper;
+        this._target = new PromptTemplateEngine(ConsoleLogger.Log);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._skills = new Mock<IReadOnlySkillCollection>();
-    }
-
-    [Fact]
-    public void ItTokenizesEdgeCases1()
-    {
-        // Arrange
-        var template = "}}{{{ {$a}}}} {{b}}x}}";
-
-        // Act
-        var blocks = this._target.ExtractBlocks(template, false);
-
-        // Assert
-        Assert.Equal(5, blocks.Count);
-
-        Assert.Equal("}}{", blocks[0].Content);
-        Assert.Equal(BlockTypes.Text, blocks[0].Type);
-
-        Assert.Equal("{$a", blocks[1].Content);
-        Assert.Equal(BlockTypes.Code, blocks[1].Type);
-
-        Assert.Equal("}} ", blocks[2].Content);
-        Assert.Equal(BlockTypes.Text, blocks[2].Type);
-
-        Assert.Equal("b", blocks[3].Content);
-        Assert.Equal(BlockTypes.Code, blocks[3].Type);
-
-        Assert.Equal("x}}", blocks[4].Content);
-        Assert.Equal(BlockTypes.Text, blocks[4].Type);
-    }
-
-    [Fact]
-    public void ItTokenizesEdgeCases2()
-    {
-        // Arrange
-        var template = "}}{{{{$a}}}} {{b}}$x}}";
-
-        // Act
-        var blocks = this._target.ExtractBlocks(template);
-
-        // Assert
-        Assert.Equal(5, blocks.Count);
-
-        Assert.Equal("}}{{", blocks[0].Content);
-        Assert.Equal(BlockTypes.Text, blocks[0].Type);
-
-        Assert.Equal("$a", blocks[1].Content);
-        Assert.Equal(BlockTypes.Variable, blocks[1].Type);
-
-        Assert.Equal("}} ", blocks[2].Content);
-        Assert.Equal(BlockTypes.Text, blocks[2].Type);
-
-        Assert.Equal("b", blocks[3].Content);
-        Assert.Equal(BlockTypes.Code, blocks[3].Type);
-
-        Assert.Equal("$x}}", blocks[4].Content);
-        Assert.Equal(BlockTypes.Text, blocks[4].Type);
-    }
-
-    [Fact]
-    public void ItTokenizesAClassicPrompt()
-    {
-        // Arrange
-        var template = "this is a {{ $prompt }} with {{$some}} variables " +
-                       "and {{function $calls}} that {{ also $use $variables }}";
-
-        // Act
-        var blocks = this._target.ExtractBlocks(template, true);
-
-        // Assert
-        Assert.Equal(8, blocks.Count);
-
-        Assert.Equal("this is a ", blocks[0].Content);
-        Assert.Equal(BlockTypes.Text, blocks[0].Type);
-
-        Assert.Equal("$prompt", blocks[1].Content);
-        Assert.Equal(BlockTypes.Variable, blocks[1].Type);
-
-        Assert.Equal(" with ", blocks[2].Content);
-        Assert.Equal(BlockTypes.Text, blocks[2].Type);
-
-        Assert.Equal("$some", blocks[3].Content);
-        Assert.Equal(BlockTypes.Variable, blocks[3].Type);
-
-        Assert.Equal(" variables and ", blocks[4].Content);
-        Assert.Equal(BlockTypes.Text, blocks[4].Type);
-
-        Assert.Equal("function $calls", blocks[5].Content);
-        Assert.Equal(BlockTypes.Code, blocks[5].Type);
-
-        Assert.Equal(" that ", blocks[6].Content);
-        Assert.Equal(BlockTypes.Text, blocks[6].Type);
-
-        Assert.Equal("also $use $variables", blocks[7].Content);
-        Assert.Equal(BlockTypes.Code, blocks[7].Type);
-    }
-
-    [Theory]
-    [InlineData(null, 1)]
-    [InlineData("", 1)]
-    [InlineData("}}{{a}} {{b}}x", 5)]
-    [InlineData("}}{{ -a}} {{b}}x", 5)]
-    [InlineData("}}{{ -a\n}} {{b}}x", 5)]
-    [InlineData("}}{{ -a\n} } {{b}}x", 3)]
-    public void ItTokenizesTheRightTokenCount(string? template, int blockCount)
-    {
-        // Act
-        var blocks = this._target.ExtractBlocks(template, false);
-
-        // Assert
-        Assert.Equal(blockCount, blocks.Count);
     }
 
     [Fact]
@@ -230,24 +123,24 @@ public sealed class PromptTemplateEngineTests
     }
 
     [Fact]
-    public async Task ItRendersCodeUsingInputInstanceAsync()
+    public async Task ItRendersCodeUsingInputAsync()
     {
         // Arrange
         [SKFunction("test")]
         [SKFunctionName("test")]
         string MyFunctionAsync(SKContext cx)
         {
-            this._logger.LogTrace("MyFunction call received, input: {0}", cx.Variables.Input);
+            this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
             return $"F({cx.Variables.Input})";
         }
 
-        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction? func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Update("INPUT-BAR");
         var template = "foo-{{function}}-baz";
-        this._skills.Setup(x => x.HasNativeFunction("function")).Returns(true);
-        this._skills.Setup(x => x.GetNativeFunction("function")).Returns(func);
+        this._skills.Setup(x => x.HasFunction("function")).Returns(true);
+        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
         // Act
@@ -258,80 +151,24 @@ public sealed class PromptTemplateEngineTests
     }
 
     [Fact]
-    public async Task ItRendersCodeUsingInputStaticAsync()
-    {
-        // Arrange
-        [SKFunction("test")]
-        [SKFunctionName("test")]
-        static string MyFunctionAsync(SKContext cx)
-        {
-            ConsoleLogger.Log.LogTrace("MyFunction call received, input: {0}", cx.Variables.Input);
-            return $"F({cx.Variables.Input})";
-        }
-
-        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync));
-        Assert.NotNull(func);
-
-        this._variables.Update("INPUT-BAR");
-        var template = "foo-{{function}}-baz";
-        this._skills.Setup(x => x.HasNativeFunction("function")).Returns(true);
-        this._skills.Setup(x => x.GetNativeFunction("function")).Returns(func);
-        var context = this.MockContext();
-
-        // Act
-        var result = await this._target.RenderAsync(template, context);
-
-        // Assert
-        Assert.Equal("foo-F(INPUT-BAR)-baz", result);
-    }
-
-    [Fact]
-    public async Task ItRendersCodeUsingVariablesInstanceAsync()
+    public async Task ItRendersCodeUsingVariablesAsync()
     {
         // Arrange
         [SKFunction("test")]
         [SKFunctionName("test")]
         string MyFunctionAsync(SKContext cx)
         {
-            this._logger.LogTrace("MyFunction call received, input: {0}", cx.Variables.Input);
+            this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
             return $"F({cx.Variables.Input})";
         }
 
-        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction? func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
         var template = "foo-{{function $myVar}}-baz";
-        this._skills.Setup(x => x.HasNativeFunction("function")).Returns(true);
-        this._skills.Setup(x => x.GetNativeFunction("function")).Returns(func);
-        var context = this.MockContext();
-
-        // Act
-        var result = await this._target.RenderAsync(template, context);
-
-        // Assert
-        Assert.Equal("foo-F(BAR)-baz", result);
-    }
-
-    [Fact]
-    public async Task ItRendersCodeUsingVariablesStaticAsync()
-    {
-        // Arrange
-        [SKFunction("test")]
-        [SKFunctionName("test")]
-        static string MyFunctionAsync(SKContext cx)
-        {
-            ConsoleLogger.Log.LogTrace("MyFunction call received, input: {0}", cx.Variables.Input);
-            return $"F({cx.Variables.Input})";
-        }
-
-        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync));
-        Assert.NotNull(func);
-
-        this._variables.Set("myVar", "BAR");
-        var template = "foo-{{function $myVar}}-baz";
-        this._skills.Setup(x => x.HasNativeFunction("function")).Returns(true);
-        this._skills.Setup(x => x.GetNativeFunction("function")).Returns(func);
+        this._skills.Setup(x => x.HasFunction("function")).Returns(true);
+        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
         // Act
@@ -350,17 +187,18 @@ public sealed class PromptTemplateEngineTests
         Task<string> MyFunctionAsync(SKContext cx)
         {
             // Input value should be "BAR" because the variable $myVar is passed in
-            this._logger.LogTrace("MyFunction call received, input: {0}", cx.Variables.Input);
+            this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
             return Task.FromResult(cx.Variables.Input);
         }
 
-        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction? func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
+
         var template = "foo-{{function $myVar}}-baz";
-        this._skills.Setup(x => x.HasNativeFunction("function")).Returns(true);
-        this._skills.Setup(x => x.GetNativeFunction("function")).Returns(func);
+        this._skills.Setup(x => x.HasFunction("function")).Returns(true);
+        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
         // Act
@@ -381,6 +219,8 @@ public sealed class PromptTemplateEngineTests
             this._variables,
             NullMemory.Instance,
             this._skills.Object,
-            this._logger);
+            ConsoleLogger.Log);
     }
 }
+#pragma warning restore VSTHRD103
+#pragma warning restore CA1849
