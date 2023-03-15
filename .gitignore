@@ -441,3 +441,12 @@ global.json
 **/bin/
 **/obj/
 _site
+
+# Python Environments
+.env
+.venv
+.myenv
+env/
+venv/
+myvenv/
+ENV/

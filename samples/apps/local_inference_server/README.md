@@ -21,11 +21,16 @@ This will run the service at **`http://localhost:5000`**. Navigating to **`http:
 > Using this service to generate images can also take a very long time - a factor that scales with your hardware.
 
 ## Alternative: Bare-Metal
-Alternatively, the service can be started on bare-metal. To do this, you will need to have Python 3.6 installed. 
+Alternatively, the service can be started on bare-metal. To do this, you will need to have Python 3.9 installed. 
 
-Before proceeding, it is highly recommended that you create a Python 3.6 virtual environment.
+Before proceeding, it is highly recommended that you create a Python 3.9 virtual environment.
 
-Example: `python -m venv myvenv` or  `python3 -m venv myvenv` or  `python3.6 -m venv myvenv`
+Example: `python -m venv myvenv` or  `python3 -m venv myvenv`.
+
+Make sure your environment is activated:
+
+For Windows, run in PowerShell: `./myvenv/Scripts/Activate`.
+For Linux/macOS, run: `source myvenv/bin/activate`.
 
 Then, run `pip install -r requirements.txt`.
 
