@@ -9,15 +9,9 @@ from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryB
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.semantic_functions.semantic_function_config import (
-    SemanticFunctionConfig,
-)
-from semantic_kernel.skill_definition.read_only_skill_collection_base import (
-    ReadOnlySkillCollectionBase,
-)
-from semantic_kernel.template_engine.prompt_template_engine_base import (
-    PromptTemplateEngineBase,
-)
+from semantic_kernel.semantic_functions.semantic_function_config import (SemanticFunctionConfig)
+from semantic_kernel.skill_definition.read_only_skill_collection_base import (ReadOnlySkillCollectionBase)
+from semantic_kernel.template_engine.prompt_template_engine_base import (PromptTemplateEngineBase)
 
 
 class KernelBase(ABC):

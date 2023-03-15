@@ -31,6 +31,7 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     # It's okay if the org ID is not found (not required)
     return api_key, org_id
 
+
 def azure_openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     """
     Reads the Azure OpenAI API key and endpoint from the .env file.

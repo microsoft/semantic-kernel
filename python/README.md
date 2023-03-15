@@ -7,6 +7,7 @@
 ## Getting started
 
 ## Installation
+
 Install the Poetry package manager and create a project virtual environment.
 
 ```bash
@@ -19,10 +20,11 @@ poetry shell
 ```
 
 Make sure you have an
-  [Open AI API Key](https://openai.com/api/) or
-  [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
+[Open AI API Key](https://openai.com/api/) or
+[Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 Copy those keys into a `.env` file in this repo
+
 ```
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
@@ -76,15 +78,22 @@ print("Output: " + output)
 ```
 
 ## How does this compare to the main C# repo?
+
 Refer to the [FEATURE_PARITY.md](./FEATURE_PARITY.md) doc to see where things stand
 in matching the features and functionality of the main SK repo.
 
 ## Why Python?
-We believe that enabling Python is key to engaging with the great work being done by the open source community in ML. From researchers writing state of the art ML papers to app developers looking to quickly bring AI into their projects, we see that the nexus of AI activity centers around Python due to the rich open source ecosystem and tooling found in the language. 
+
+We believe that enabling Python is key to engaging with the great work being done
+by the open source community in ML. From researchers writing state of the art ML
+papers to app developers looking to quickly bring AI into their projects, we see
+that the nexus of AI activity centers around Python due to the rich open source
+ecosystem and tooling found in the language.
 
 ## Contributing and Community
 
-We invite you to join us in developing the Semantic Kernel together! Please contribute by using GitHub Discussions, opening GitHub Issues, sending us PRs.
+We invite you to join us in developing the Semantic Kernel together! Please contribute
+by using GitHub Discussions, opening GitHub Issues, sending us PRs.
 
 ## Code of Conduct
 

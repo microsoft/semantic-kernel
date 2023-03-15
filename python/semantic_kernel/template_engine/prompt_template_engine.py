@@ -10,9 +10,7 @@ from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
-from semantic_kernel.template_engine.prompt_template_engine_base import (
-    PromptTemplateEngineBase,
-)
+from semantic_kernel.template_engine.prompt_template_engine_base import (PromptTemplateEngineBase)
 from semantic_kernel.template_engine.template_exception import TemplateException
 from semantic_kernel.utils.null_logger import NullLogger
 
@@ -143,11 +141,11 @@ class PromptTemplateEngine(PromptTemplateEngineBase):
                 cursor += 1
 
                 # Extract raw block
-                content_with_delims = template[start_pos : cursor + 1]
+                content_with_delims = template[start_pos: cursor + 1]
 
                 # Remove the '{{' and '}}' delimiters and trim
                 content_without_delims = content_with_delims[
-                    len(STARTER + STARTER) : -len(ENDER + ENDER)
+                    len(STARTER + STARTER): -len(ENDER + ENDER)
                 ].strip()
 
                 if len(content_without_delims) == 0:
@@ -168,7 +166,7 @@ class PromptTemplateEngine(PromptTemplateEngineBase):
         # If there is plain text after the last block, capture that as a text block
         if end_of_last_block < len(template):
             blocks.append(
-                TextBlock(template[end_of_last_block : len(template)], self._log)
+                TextBlock(template[end_of_last_block: len(template)], self._log)
             )
 
         return blocks
