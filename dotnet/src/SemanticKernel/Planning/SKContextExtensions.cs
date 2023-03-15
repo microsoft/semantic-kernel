@@ -17,7 +17,7 @@ internal static class SKContextExtensions
 {
     internal const string MemoryCollectionName = "Planning.SKFunctionsManual";
 
-    internal const string ContextRegistrationKey = "Planning.SKFunctionsAreRemembered";
+    internal const string PlanSKFunctionsAreRemembered = "Planning.SKFunctionsAreRemembered";
 
     /// <summary>
     /// Returns a string containing the manual for all available functions.
@@ -121,7 +121,7 @@ internal static class SKContextExtensions
     internal static async Task RememberFunctionsAsync(SKContext context, List<FunctionView> availableFunctions)
     {
         // Check if the functions have already been saved to memory.
-        if (context.Variables.Get(ContextRegistrationKey, out var _))
+        if (context.Variables.Get(PlanSKFunctionsAreRemembered, out var _))
         {
             return;
         }
@@ -143,7 +143,7 @@ internal static class SKContextExtensions
         }
 
         // Set a flag to indicate that the functions have been saved to memory.
-        context.Variables.Set(ContextRegistrationKey, "true");
+        context.Variables.Set(PlanSKFunctionsAreRemembered, "true");
     }
 
     /// <summary>
