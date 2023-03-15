@@ -26,6 +26,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
+          cache-dependency-path: 'samples/**/yarn.lock'
 
       - name: Run yarn install & yarn build
         # This step uses a bash script to find all subfolders of /samples that contain a yarn.lock file
