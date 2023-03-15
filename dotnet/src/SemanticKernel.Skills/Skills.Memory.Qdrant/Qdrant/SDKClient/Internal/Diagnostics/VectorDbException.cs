@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Diagnostics;
+
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
 
 public class VectorDbException : Exception<VectorDbException.ErrorCodes>
@@ -21,7 +23,11 @@ public class VectorDbException : Exception<VectorDbException.ErrorCodes>
     {
     }
 
-    public VectorDbException()
+    private VectorDbException()
+    {
+    }
+
+    private VectorDbException(string message, System.Exception innerException) : base(message, innerException)
     {
     }
 }

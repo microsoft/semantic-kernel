@@ -1,13 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
     </PropertyGroup>
     <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
     <PropertyGroup>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <AssemblyName>Microsoft.SemanticKernel.Skills.Memory.VectorDB</AssemblyName>
         <RootNamespace>Microsoft.SemanticKernel.Skills.Memory.VectorDB</RootNamespace>
         <TargetFramework>netstandard2.1</TargetFramework>
@@ -15,7 +12,6 @@
 
     <PropertyGroup>
         <!-- NuGet Package Settings -->
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <PackageId>Microsoft.SemanticKernel.Skills.Memory.VectorDB</PackageId>
         <Title>Semantic Kernel - VectorDB Connector</Title>
     </PropertyGroup>
@@ -29,6 +25,4 @@
     <ItemGroup>
         <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
     </ItemGroup>
-
-
 </Project>

@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Memory.Storage;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "It is a collection")]
 public interface IVectorDbCollection
 {
     string Name { get; }

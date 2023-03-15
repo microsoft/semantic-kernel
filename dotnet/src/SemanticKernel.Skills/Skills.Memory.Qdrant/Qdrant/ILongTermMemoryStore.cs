@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Memory.Storage;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient;
+using Microsoft.SemanticKernel.Skills.Memory.VectorDB;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 

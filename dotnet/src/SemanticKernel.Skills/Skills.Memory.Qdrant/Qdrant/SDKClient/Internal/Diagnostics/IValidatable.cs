@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
@@ -58,6 +59,8 @@ internal static class ValidateExtensions
         item.ValidateRequired(arg);
     }
 
+    [SuppressMessage("Design", "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",
+        Justification = "Does not throw an exception by design.")]
     public static bool IsValid(this IValidatable target)
     {
         try

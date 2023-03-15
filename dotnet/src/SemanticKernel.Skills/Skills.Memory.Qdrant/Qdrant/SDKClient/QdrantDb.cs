@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Http;
@@ -21,7 +21,7 @@ public class QdrantDb : IVectorDb
         HttpClient? httpClient = null,
         ILogger<QdrantDb>? log = null)
     {
-        this._log = log.DefaultIfNull();
+        this._log = log ?? NullLogger<QdrantDb>.Instance;
 
         this._vectorHttp = new QdrantHttpClientWrapper(
             httpClient ?? new HttpClient(HttpHandlers.CheckCertificateRevocation),
@@ -72,9 +72,9 @@ public class QdrantDb : IVectorDb
 
     private async Task CreateCollectionInternalAsync(string collectionName, int vectorSize)
     {
-        this._log.Debug("Creating collection {0}", collectionName);
+        this._log.LogDebug("Creating collection {0}", collectionName);
 
-        var request = CreateCollectionRequest
+        using var request = CreateCollectionRequest
             .Create(collectionName)
             .WithVectorSize(vectorSize)
             .WithDistanceType(VectorDistanceType.Cosine)
@@ -84,7 +84,7 @@ public class QdrantDb : IVectorDb
         // Creation is idempotent, ignore error (and for now ignore vector size)
         if (response.StatusCode == HttpStatusCode.BadRequest)
         {
-            if (responseContent.Contains("already exists")) { return; }
+            if (responseContent.Contains("already exists", StringComparison.InvariantCultureIgnoreCase)) { return; }
         }
 
         try
@@ -93,16 +93,16 @@ public class QdrantDb : IVectorDb
         }
         catch (Exception e)
         {
-            this._log.Error(e, "Collection upsert failed: {0}, {1}", e.Message, responseContent);
+            this._log.LogError(e, "Collection upsert failed: {0}, {1}", e.Message, responseContent);
             throw;
         }
     }
 
     private async Task<FetchCollectionResponse?> FetchCollectionAsync(string collectionName)
     {
-        this._log.Debug("Fetching collection {0}", collectionName);
+        this._log.LogDebug("Fetching collection {0}", collectionName);
 
-        var request = FetchCollectionRequest.Fetch(collectionName).Build();
+        using var request = FetchCollectionRequest.Fetch(collectionName).Build();
         var (response, responseContent) = await this._vectorHttp.ExecuteHttpRequestAsync(request);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -116,14 +116,14 @@ public class QdrantDb : IVectorDb
             return collection;
         }
 
-        this._log.Error("Collection fetch failed: {0}, {1}", response.StatusCode, responseContent);
+        this._log.LogError("Collection fetch failed: {0}, {1}", response.StatusCode, responseContent);
         throw new VectorDbException($"Unexpected response: {response.StatusCode}");
     }
 
     private async Task DeleteCollectionInternalAsync(string collectionName)
     {
-        this._log.Debug("Deleting collection {0}", collectionName);
-        var request = DeleteCollectionRequest.Create(collectionName).Build();
+        this._log.LogDebug("Deleting collection {0}", collectionName);
+        using var request = DeleteCollectionRequest.Create(collectionName).Build();
         var (response, responseContent) = await this._vectorHttp.ExecuteHttpRequestAsync(request);
         response.EnsureSuccessStatusCode();
     }

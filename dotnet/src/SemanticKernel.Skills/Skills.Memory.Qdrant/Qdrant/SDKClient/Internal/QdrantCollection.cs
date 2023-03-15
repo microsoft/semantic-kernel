@@ -48,7 +48,7 @@ internal class QdrantCollection : IVectorDbCollection
 
     public async IAsyncEnumerable<DataEntry<VectorRecordData<float>>> GetAllVectorsAsync()
     {
-        HttpRequestMessage vectorRequest = FetchVectorsRequest
+        using HttpRequestMessage vectorRequest = FetchVectorsRequest
             .Fetch(this.Name)
             .Build();
 
@@ -80,7 +80,7 @@ internal class QdrantCollection : IVectorDbCollection
         var qdrantId = await this.FindQdrantPointIdByExternalIdAsync(id);
         if (qdrantId == null)
         {
-            this._log.Debug("Nothing to delete, the vector doesn't exist");
+            this._log.LogDebug("Nothing to delete, the vector doesn't exist");
             return;
         }
 
@@ -89,7 +89,7 @@ internal class QdrantCollection : IVectorDbCollection
 
     public async IAsyncEnumerable<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> FindClosestAsync(float[] target, int top = 1, string[]? requiredTags = null)
     {
-        this._log.Debug("Searching top {0} closest vectors in {1}", top);
+        this._log.LogDebug("Searching top {0} closest vectors in {1}", top);
 
         Verify.NotNull(target, "The given vector is NULL");
 
@@ -110,7 +110,7 @@ internal class QdrantCollection : IVectorDbCollection
 
         if (data.Vectors.Count == 0)
         {
-            this._log.Warn("Nothing found");
+            this._log.LogWarning("Nothing found");
             yield break;
         }
 
@@ -150,7 +150,7 @@ internal class QdrantCollection : IVectorDbCollection
 
     private async Task<SearchVectorsResponse.VectorFound?> FindQdrantPointByExternalIdAsync(string externalId)
     {
-        this._log.Debug("Searching vector by external ID {0}", externalId);
+        this._log.LogDebug("Searching vector by external ID {0}", externalId);
 
         using HttpRequestMessage request = SearchVectorsRequest
             .Create(this.Name, this.VectorSize)
@@ -167,17 +167,17 @@ internal class QdrantCollection : IVectorDbCollection
 
         if (data.Vectors.Count == 0)
         {
-            this._log.Warn("Vector not found: {0}", externalId);
+            this._log.LogWarning("Vector not found: {0}", externalId);
             return null;
         }
 
-        this._log.Debug("Vector {0} found, Qdrant point {1}", externalId, data.Vectors.First().QdrantId);
+        this._log.LogDebug("Vector {0} found, Qdrant point {1}", externalId, data.Vectors.First().QdrantId);
         return data.Vectors.First();
     }
 
     private async Task UpsertVectorInternalAsync(DataEntry<VectorRecordData<float>> vector)
     {
-        this._log.Debug("Upserting vector");
+        this._log.LogDebug("Upserting vector");
         Verify.NotNull(vector, "The vector is NULL");
 
         var pointId = string.Empty;
@@ -194,11 +194,11 @@ internal class QdrantCollection : IVectorDbCollection
             pointId = Guid.NewGuid().ToString("D");
         }
 
-        var request = CreateVectorsRequest.CreateIn(this.Name).UpsertVector(pointId, vector).Build();
+        using var request = CreateVectorsRequest.CreateIn(this.Name).UpsertVector(pointId, vector).Build();
         var (response, responseContent) = await this._vectorHttp.ExecuteHttpRequestAsync(request);
 
         if (response.StatusCode == HttpStatusCode.UnprocessableEntity
-            && responseContent.Contains("data did not match any variant of untagged enum ExtendedPointId"))
+            && responseContent.Contains("data did not match any variant of untagged enum ExtendedPointId", StringComparison.OrdinalIgnoreCase))
         {
             throw new VectorDbException("The vector ID must be a GUID string");
         }
@@ -209,26 +209,24 @@ internal class QdrantCollection : IVectorDbCollection
         }
         catch (Exception e)
         {
-            this._log.Error(e, "Vector upsert failed: {0}, {1}", e.Message, responseContent);
+            this._log.LogError(e, "Vector upsert failed: {0}, {1}", e.Message, responseContent);
             throw;
         }
     }
 
     private async Task DeleteVectorInternalAsync(string qdrantPointId)
     {
-        this._log.Debug("Deleting vector, point ID {0}", qdrantPointId);
+        this._log.LogDebug("Deleting vector, point ID {0}", qdrantPointId);
 
         Verify.NotNullOrEmpty(this.Name, "Collection name is empty");
         Verify.NotNullOrEmpty(qdrantPointId, "Qdrant point ID is empty");
 
-        var request = DeleteVectorsRequest
+        using var request = DeleteVectorsRequest
             .DeleteFrom(this.Name)
             .DeleteVector(qdrantPointId)
             .Build();
         await this._vectorHttp.ExecuteHttpRequestAsync(request);
     }
-
-
 
     #endregion
 }

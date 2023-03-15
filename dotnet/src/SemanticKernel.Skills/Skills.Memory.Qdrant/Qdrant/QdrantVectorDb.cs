@@ -3,18 +3,18 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory.Storage;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient;
 
 
-namespace Microsoft.SemanticKernel.Skills.Memory.VectorDB;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 
 /// <summary>
-/// An implementation of a client for the Qdrant VectorDB. This class is used to 
+/// An implementation of a client for the Qdrant VectorDB. This class is used to
 /// connect, create, delete, and get embeddings data from a Qdrant VectorDB instance.
 /// </summary>
 
@@ -23,7 +23,7 @@ public class QdrantVectorDb
     public QdrantVectorDb(string endpoint, int port)
     {
 
-        this._qdrantdbclient = this.ConnectVectorDB(endpoint, port);
+        this._qdrantDbClient = this.ConnectVectorDB(endpoint, port);
 
     }
 
@@ -35,25 +35,26 @@ public class QdrantVectorDb
 
         try
         {
-            await this._qdrantdbclient.CreateCollectionIfMissing(collectionname, vectorsize.Value);
-            collection = await this._qdrantdbclient.GetCollectionAsync(collectionname);
+            await this._qdrantDbClient.CreateCollectionIfMissing(collectionname, vectorsize.Value);
+            collection = await this._qdrantDbClient.GetCollectionAsync(collectionname);
         }
         catch (Exception ex)
         {
             throw new Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics.VectorDbException($"Failed to create collection in Qdrant {ex.Message}");
         }
 
-        this._qdrantcollections.TryAdd(collectionname, collection);
-        return this._qdrantcollections[collectionname];
+        this._qdrantCollections.TryAdd(collectionname, collection);
+        return this._qdrantCollections[collectionname];
     }
 
-
+    [SuppressMessage("Design", "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",
+        Justification = "Does not throw an exception by design.")]
     public async Task<bool> DeleteCollectionAsync(string collectionname)
     {
         try
         {
-            await this._qdrantdbclient.DeleteCollection(collectionname);
-            this._qdrantcollections.TryRemove(collectionname, out _);
+            await this._qdrantDbClient.DeleteCollection(collectionname);
+            this._qdrantCollections.TryRemove(collectionname, out _);
         }
         catch
         {
@@ -63,33 +64,35 @@ public class QdrantVectorDb
         return true;
     }
 
-    public async Task<bool> DeleteVectorDataAsync(string collectionname, string vectorid)
+    [SuppressMessage("Design", "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",
+        Justification = "Does not throw an exception by design.")]
+    public async Task<bool> DeleteVectorDataAsync(string collectionname, string vectorId)
     {
         IVectorDbCollection? collection = null;
 
         try
         {
-            collection = await this._qdrantdbclient.GetCollectionAsync(collectionname);
-            await collection.DeleteVectorAsync(vectorid.ToString());
+            collection = await this._qdrantDbClient.GetCollectionAsync(collectionname);
+            await collection.DeleteVectorAsync(vectorId.ToString());
         }
         catch
         {
             return false;
         }
 
-        this._qdrantcollections[collectionname] = collection;
+        this._qdrantCollections[collectionname] = collection;
         return true;
 
     }
 
-    public async Task<IVectorDbCollection> GetCollectionDataAsync(string collectionkey)
+    public async Task<IVectorDbCollection> GetCollectionDataAsync(string collectionKey)
     {
         //var collectionResult = new List<IVectorDbCollection>();
         IVectorDbCollection collection;
 
         try
         {
-            collection = await this._qdrantdbclient.GetCollectionAsync(collectionkey);
+            collection = await this._qdrantDbClient.GetCollectionAsync(collectionKey);
         }
         catch (Exception ex)
         {
@@ -105,7 +108,7 @@ public class QdrantVectorDb
         IAsyncEnumerable<DataEntry<VectorRecordData<float>>>? vectors = null;
         try
         {
-            collection = await this._qdrantdbclient.GetCollectionAsync(collectionname);
+            collection = await this._qdrantDbClient.GetCollectionAsync(collectionname);
             vectors = collection.GetAllVectorsAsync();
         }
         catch
@@ -117,15 +120,15 @@ public class QdrantVectorDb
 
     }
 
-    public async Task<DataEntry<VectorRecordData<float>>> GetVectorDataAsync(string collectionname, string vectorid)
+    public async Task<DataEntry<VectorRecordData<float>>> GetVectorDataAsync(string collectionname, string vectorId)
     {
         IVectorDbCollection collection;
         DataEntry<VectorRecordData<float>> result;
 
         try
         {
-            collection = await this._qdrantdbclient.GetCollectionAsync(collectionname);
-            var record = await collection.GetVectorAsync(vectorid);
+            collection = await this._qdrantDbClient.GetCollectionAsync(collectionname);
+            var record = await collection.GetVectorAsync(vectorId);
             result = record != null ?
                         (DataEntry<VectorRecordData<float>>)record :
                         new DataEntry<VectorRecordData<float>>();
@@ -138,7 +141,9 @@ public class QdrantVectorDb
         return result;
     }
 
-    public async Task<bool> PutVectorDataAsync<TVector>(string collectionname, string vectorid, TVector vectordata, Dictionary<string, object>? metadata)
+    [SuppressMessage("Design", "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",
+        Justification = "Does not throw an exception by design.")]
+    public async Task<bool> PutVectorDataAsync<TVector>(string collectionname, string vectorId, TVector vectordata, Dictionary<string, object>? metadata)
     {
         IVectorDbCollection collection;
         Dictionary<string, object> _metadata = new Dictionary<string, object>();
@@ -153,7 +158,7 @@ public class QdrantVectorDb
 
 
         DataEntry<VectorRecordData<float>> vectorRecord =
-            new DataEntry<VectorRecordData<float>>(key: vectorid,
+            new DataEntry<VectorRecordData<float>>(key: vectorId,
                                                         value: new VectorRecordData<float>(
                                                             new Embedding<float>(vector!),
                                                             _metadata,
@@ -161,9 +166,9 @@ public class QdrantVectorDb
 
         try
         {
-            collection = await this._qdrantdbclient.GetCollectionAsync(collectionname);
+            collection = await this._qdrantDbClient.GetCollectionAsync(collectionname);
             await collection.UpsertVectorAsync(vectorRecord);
-            this._qdrantcollections[collectionname] = collection;
+            this._qdrantCollections[collectionname] = collection;
         }
         catch
         {
@@ -180,7 +185,7 @@ public class QdrantVectorDb
         List<KeyValuePair<DataEntry<VectorRecordData<float>>, double>> vectorresults;
         try
         {
-            IVectorDbCollection collection = await this._qdrantdbclient.GetCollectionAsync(collectionname);
+            IVectorDbCollection collection = await this._qdrantDbClient.GetCollectionAsync(collectionname);
             vectorresults = await collection.FindClosestAsync(recordData).ToListAsync();
 
             if (vectorresults != null && vectorresults.Count > 0)
@@ -210,8 +215,8 @@ public class QdrantVectorDb
     }
 
     #region private ================================================================================
-    private readonly ConcurrentDictionary<string, IVectorDbCollection> _qdrantcollections = new();
-    private QdrantDb _qdrantdbclient;
+    private readonly ConcurrentDictionary<string, IVectorDbCollection> _qdrantCollections = new();
+    private QdrantDb _qdrantDbClient;
     private readonly int _defaultvectorsize = 1536; //output dimension size for OpenAI's text-emebdding-ada-002
     private readonly VectorDistanceType _defaultdistancetype = VectorDistanceType.Cosine;
 

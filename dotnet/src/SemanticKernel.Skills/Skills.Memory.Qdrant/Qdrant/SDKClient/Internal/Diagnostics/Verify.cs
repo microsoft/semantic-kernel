@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -78,14 +79,14 @@ internal class Verify
         NotNullOrEmpty(prefix, "The prefix to verify is empty");
         if (text.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase)) { return; }
 
-        throw new Exception(message);
+        throw new ArgumentException(message);
     }
 
     internal static void DirectoryExists(string path)
     {
         if (Directory.Exists(path)) { return; }
 
-        throw new Exception($"Directory not found: {path}");
+        throw new ArgumentException($"Directory not found: {path}");
     }
 
     internal static void NotNullOrEmpty<T>(IList<T> list, string message)
@@ -151,14 +152,14 @@ internal class Verify
     {
         static bool IsReservedIpAddress(string host)
         {
-            return host.StartsWith("0.") ||
-                   host.StartsWith("10.") ||
-                   host.StartsWith("127.") ||
-                   host.StartsWith("169.254.") ||
-                   host.StartsWith("192.0.0.") ||
-                   host.StartsWith("192.88.99.") ||
-                   host.StartsWith("192.168.") ||
-                   host.StartsWith("255.255.255.255");
+            return host.StartsWith("0.", true, CultureInfo.InvariantCulture) ||
+                   host.StartsWith("10.", true, CultureInfo.InvariantCulture) ||
+                   host.StartsWith("127.", true, CultureInfo.InvariantCulture) ||
+                   host.StartsWith("169.254.", true, CultureInfo.InvariantCulture) ||
+                   host.StartsWith("192.0.0.", true, CultureInfo.InvariantCulture) ||
+                   host.StartsWith("192.88.99.", true, CultureInfo.InvariantCulture) ||
+                   host.StartsWith("192.168.", true, CultureInfo.InvariantCulture) ||
+                   host.StartsWith("255.255.255.255", true, CultureInfo.InvariantCulture);
         }
 
         if (string.IsNullOrEmpty(url))
@@ -166,12 +167,12 @@ internal class Verify
             throw new ArgumentException($"The {name} is empty", name);
         }
 
-        if (requireHttps && url.ToLowerInvariant().StartsWith("http://"))
+        if (requireHttps && url.ToUpperInvariant().StartsWith("HTTP://", true, CultureInfo.InvariantCulture))
         {
             throw new ArgumentException($"The {name} `{url}` is not safe, it must start with https://", name);
         }
 
-        if (requireHttps && !url.ToLowerInvariant().StartsWith("https://"))
+        if (requireHttps && !url.ToUpperInvariant().StartsWith("HTTPS://", true, CultureInfo.InvariantCulture))
         {
             throw new ArgumentException($"The {name} `{url}` is incomplete, enter a valid URL starting with 'https://", name);
         }

@@ -55,7 +55,7 @@ internal static class PointPayloadDataMapper
     internal static object PreparePointPayload(DataEntry<VectorRecordData<float>> vector)
     {
         var tags = new List<string>();
-        if (vector.Value.Tags != null)
+        if (vector.Value?.Tags != null)
         {
             tags = vector.Value.Tags;
         }
@@ -64,7 +64,7 @@ internal static class PointPayloadDataMapper
         {
             externalId = vector.Key,
             externalTags = tags,
-            externalPayload = vector.Value.Payload
+            externalPayload = vector.Value?.Payload
         };
     }
 }

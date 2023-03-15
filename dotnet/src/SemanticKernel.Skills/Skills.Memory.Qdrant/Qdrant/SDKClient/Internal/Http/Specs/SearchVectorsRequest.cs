@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Http.Specs;
@@ -11,7 +10,7 @@ namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Http.
 internal class SearchVectorsRequest : IValidatable
 {
     [JsonPropertyName("vector")]
-    private float[] StartingVector { get; set; }
+    private float[] StartingVector { get; set; } = System.Array.Empty<float>();
 
     [JsonPropertyName("limit")]
     private int Limit { get; set; }

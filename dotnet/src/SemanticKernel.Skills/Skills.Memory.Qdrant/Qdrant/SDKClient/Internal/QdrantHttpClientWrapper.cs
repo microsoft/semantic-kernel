@@ -4,8 +4,8 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal;
 
