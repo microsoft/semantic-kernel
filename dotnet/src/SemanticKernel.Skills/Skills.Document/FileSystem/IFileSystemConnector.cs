@@ -39,12 +39,4 @@ public interface IFileSystemConnector
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if file exists, false otherwise.</returns>
     public Task<bool> FileExistsAsync(string filePath, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Returns an array of paths to files under a given directory and all its subdirectories.
-    /// </summary>
-    /// <param name="directoryPath">Path to directory.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Array of the file paths</returns>
-    public Task<string[]> RecursivelyListFilesUnderDirectoryAsync(string directoryPath, CancellationToken cancellationToken = default);
 }
