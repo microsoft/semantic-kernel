@@ -49,7 +49,6 @@ public sealed class PlannerSkillTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var memoryStorage = new VolatileMemoryStore();
         IKernel target = Kernel.Builder
             .WithLogger(this._logger)
             .Configure(config =>
@@ -68,7 +67,7 @@ public sealed class PlannerSkillTests : IDisposable
 
                 config.SetDefaultCompletionBackend(azureOpenAIConfiguration.Label);
             })
-            .WithMemoryStorage(memoryStorage)
+            .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
         var chatSkill = GetSkill("ChatSkill", target);
@@ -81,7 +80,6 @@ public sealed class PlannerSkillTests : IDisposable
         var funSkill = GetSkill("FunSkill", target);
         var intentDetectionSkill = GetSkill("IntentDetectionSkill", target);
         var miscSkill = GetSkill("MiscSkill", target);
-        var openApiSkill = GetSkill("OpenApiSkill", target);
         var qaSkill = GetSkill("QASkill", target);
         var emailSkill = target.ImportSkill(new EmailSkill());
 

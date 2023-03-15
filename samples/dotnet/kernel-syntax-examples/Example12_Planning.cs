@@ -160,7 +160,6 @@ internal static class Example12_Planning
         kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "IntentDetectionSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "MiscSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "OpenApiSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "QASkill");
 
         kernel.ImportSkill(new EmailSkill(), "email");
