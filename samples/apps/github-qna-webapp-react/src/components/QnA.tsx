@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Button, Label, Slider, SliderOnChangeData, Subtitle2, Title3 } from '@fluentui/react-components';
+import { Body1, Button, Label, Slider, SliderOnChangeData, Title3 } from '@fluentui/react-components';
 import React, { FC, useCallback, useState } from 'react';
 import { ChatHistoryItem, IChatMessage } from './chat/ChatHistoryItem';
 
@@ -79,10 +79,10 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
     return (
         <div style={{ paddingTop: 20, gap: 20, display: 'flex', flexDirection: 'column', alignItems: 'left' }}>
             <Title3>Ask questions about the repository</Title3>
-            <Subtitle2>
+            <Body1>
                 Now that the repository is in your local memory and embeddings are created for it, you can ask questions
                 about it.
-            </Subtitle2>
+            </Body1>
 
             <div
                 style={{
