@@ -31,7 +31,7 @@ public class QdrantVectorDBClient
 
         try
         {
-            await this._qdrantDbClient.CreateCollectionIfMissing(collectionname, vectorsize.Value);
+            await this._qdrantDbClient.CreateCollectionIfMissingAsync(collectionname, vectorsize.Value);
             collection = await this._qdrantDbClient.GetCollectionAsync(collectionname);
         }
         catch (Exception ex)
@@ -50,7 +50,7 @@ public class QdrantVectorDBClient
     {
         try
         {
-            await this._qdrantDbClient.DeleteCollection(collectionname);
+            await this._qdrantDbClient.DeleteCollectionAsync(collectionname);
             this._qdrantCollections.TryRemove(collectionname, out _);
         }
         catch
@@ -99,7 +99,7 @@ public class QdrantVectorDBClient
         return collection;
     }
 
-    public async Task<IAsyncEnumerable<DataEntry<VectorRecordData<float>>>> GetVectorsByCollection(string collectionname)
+    public async Task<IAsyncEnumerable<DataEntry<VectorRecordData<float>>>> GetVectorsByCollectionAsync(string collectionname)
     {
         IVectorDbCollection collection;
         IAsyncEnumerable<DataEntry<VectorRecordData<float>>>? vectors = null;

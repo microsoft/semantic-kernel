@@ -7,6 +7,6 @@ namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient;
 internal interface IVectorDb
 {
     public Task<IVectorDbCollection> GetCollectionAsync(string collectionName);
-    public Task CreateCollectionIfMissing(string collectionName, int vectorSize);
-    public Task DeleteCollection(string collectionName);
+    public Task CreateCollectionIfMissingAsync(string collectionName, int vectorSize);
+    public Task DeleteCollectionAsync(string collectionName);
 }

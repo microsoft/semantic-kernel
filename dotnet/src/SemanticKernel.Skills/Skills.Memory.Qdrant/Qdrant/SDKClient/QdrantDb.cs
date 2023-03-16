@@ -34,7 +34,7 @@ public class QdrantDb : IVectorDb
         }
     }
 
-    public Task CreateCollectionIfMissing(string collectionName, int vectorSize)
+    public Task CreateCollectionIfMissingAsync(string collectionName, int vectorSize)
     {
         return this.CreateCollectionInternalAsync(collectionName, vectorSize);
     }
@@ -60,7 +60,7 @@ public class QdrantDb : IVectorDb
         };
     }
 
-    public Task DeleteCollection(string collectionName)
+    public Task DeleteCollectionAsync(string collectionName)
     {
         return this.DeleteCollectionInternalAsync(collectionName);
     }
