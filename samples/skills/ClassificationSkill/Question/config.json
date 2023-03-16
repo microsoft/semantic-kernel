@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "type": "completion",
-  "description": "Tell you the urgency level of the given text",
+  "description": "Tells you the sentence type (i.e. Question or Statement) of a given sentence",
   "completion": {
     "max_tokens": 64,
     "temperature": 0.0,
