@@ -23,18 +23,20 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
     const sk = useSemanticKernel(uri);
 
     const download = async () => {
-        let cleanProjectUri = project?.trim();
-
-        if (!cleanProjectUri?.endsWith('/')) {
-            cleanProjectUri = `${cleanProjectUri}/`;
-        }
-
-        const url = `${cleanProjectUri}archive/refs/heads/${branch}.zip`;
         try {
+            setIsLoading(true);
+            setIsLoaded(false);
+            setIsLoadError(false);
             var result = await sk.invokeAsync(
                 keyConfig,
-                { value: url, inputs: [] },
-                'CodeSkill',
+                {
+                    value: project || '',
+                    inputs: [
+                        { key: 'repositoryBranch', value: branch || '' },
+                        { key: 'searchPattern', value: '*.md' },
+                    ],
+                },
+                'GitHubSkill',
                 'SummarizeRepository',
             );
             setIsLoaded(true);
@@ -42,6 +44,8 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
         } catch {
             setIsLoadError(true);
             alert('Something went wrong. Please check that the function is running and accessible from this location.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -77,7 +81,7 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
                     placeholder="main"
                 />
                 <Button
-                    disabled={project === undefined || branch === undefined}
+                    disabled={project === undefined || branch === undefined || isLoading}
                     appearance="transparent"
                     icon={<ArrowDownload16Regular />}
                     onClick={() => download()}
@@ -86,7 +90,10 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
             {isLoading ? (
                 <div>
                     <Spinner />
-                    <Body1>Downloading respository...</Body1>
+                    <Body1>
+                        Summarizing repository markdown files. Please wait, this can take several minutes depending on
+                        the number of files.
+                    </Body1>
                 </div>
             ) : (
                 <></>
@@ -94,14 +101,16 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
             {isLoaded ? (
                 <div>
                     <CheckmarkCircle20Filled />
-                    <Body1>Repository downloaded. You can ask questions about it on the next page.</Body1>
+                    <Body1>
+                        Repository markdown files summarized. You can ask questions about it on the next page.
+                    </Body1>
                 </div>
             ) : (
                 <></>
             )}
             {isLoadError ? (
                 <div>
-                    <Body1>There was an error downloading the repository. Please try again.</Body1>
+                    <Body1>There was an error summarizing the repository. Please try again.</Body1>
                 </div>
             ) : (
                 <></>
