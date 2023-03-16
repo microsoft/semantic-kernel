@@ -67,7 +67,7 @@ internal class QdrantHttpClientWrapper
     private static Uri SanitizeEndpoint(string endpoint, int port)
     {
         UriBuilder builder = new UriBuilder(SanitizeEndpoint(endpoint))
-            { Port = port };
+        { Port = port };
         return builder.Uri;
     }
 
