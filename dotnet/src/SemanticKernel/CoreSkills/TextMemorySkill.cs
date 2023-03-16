@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -110,8 +108,19 @@ public class TextMemorySkill
             .ToEnumerable();
 
         context.Log.LogTrace("Memories found (collection: {0})", collection);
-        var resultString = JsonSerializer.Serialize(memories.Select(x => x.Text));
 
+        string resultString;
+        
+        if (int.Parse(limit, CultureInfo.InvariantCulture) == 1)
+        {
+            var memory = memories.FirstOrDefault();
+            resultString = (memory != null) ? memory.Text : string.Empty;
+        }
+        else
+        {
+            resultString = JsonSerializer.Serialize(memories.Select(x => x.Text));
+        }
+        
         if (resultString.Length == 0)
         {
             context.Log.LogWarning("Memories not found in collection: {0}", collection);
