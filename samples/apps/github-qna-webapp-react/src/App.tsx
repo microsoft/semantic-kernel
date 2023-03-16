@@ -61,7 +61,7 @@ const App: FC = () => {
             items: [
                 {
                     title: 'Read Documentation',
-                    uri: 'https://aka.ms/SKDocBook',
+                    uri: 'https://aka.ms/sk/github-bot',
                 },
             ],
         },
@@ -70,11 +70,11 @@ const App: FC = () => {
             items: [
                 {
                     title: 'Q&A',
-                    uri: '#TODO',
+                    uri: 'https://aka.ms/sk/repo/githubbot/QA',
                 },
                 {
                     title: 'Pull Web Content',
-                    uri: '#TODO',
+                    uri: 'https://aka.ms/sk/repo/githubbot/pullwebcontent',
                 },
             ],
         },
@@ -83,11 +83,11 @@ const App: FC = () => {
             items: [
                 {
                     title: 'Memories',
-                    uri: '#TODO',
+                    uri: 'https://aka.ms/sk/memories',
                 },
                 {
                     title: 'Embeddings',
-                    uri: '#TODO',
+                    uri: 'https://aka.ms/sk/embeddings',
                 },
             ],
         },
