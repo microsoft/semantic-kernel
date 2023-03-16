@@ -39,9 +39,9 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
             );
             setIsLoaded(true);
             console.log(result);
-        } catch {
+        } catch (e) {
             setIsLoadError(true);
-            alert('Something went wrong. Please check that the function is running and accessible from this location.');
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
 
@@ -86,7 +86,7 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
             {isLoading ? (
                 <div>
                     <Spinner />
-                    <Body1>Downloading respository...</Body1>
+                    <Body1>Downloading repository...</Body1>
                 </div>
             ) : (
                 <></>
