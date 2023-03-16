@@ -5,15 +5,15 @@
     <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
     <PropertyGroup>
-        <AssemblyName>Microsoft.SemanticKernel.Skills.Memory.VectorDB</AssemblyName>
-        <RootNamespace>Microsoft.SemanticKernel.Skills.Memory.VectorDB</RootNamespace>
+        <AssemblyName>Microsoft.SemanticKernel.Skills.Memory.Qdrant</AssemblyName>
+        <RootNamespace>Microsoft.SemanticKernel.Skills.Memory.Qdrant</RootNamespace>
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
     <PropertyGroup>
         <!-- NuGet Package Settings -->
-        <PackageId>Microsoft.SemanticKernel.Skills.Memory.VectorDB</PackageId>
-        <Title>Semantic Kernel - VectorDB Connector</Title>
+        <PackageId>Microsoft.SemanticKernel.Skills.Memory.Qdrant</PackageId>
+        <Title>Semantic Kernel - Qdrant Connector</Title>
     </PropertyGroup>
 
     <ItemGroup>
