@@ -36,8 +36,8 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
             console.log(result);
             onConfigComplete(keyConfig);
         }
-        catch {
-            alert('Something went wrong, please check you have the function running and that it is accessible by the web app');
+        catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
 
         setIsBusy(false);
