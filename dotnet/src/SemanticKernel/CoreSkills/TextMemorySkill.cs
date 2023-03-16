@@ -110,7 +110,7 @@ public class TextMemorySkill
         context.Log.LogTrace("Memories found (collection: {0})", collection);
 
         string resultString;
-        
+
         if (int.Parse(limit, CultureInfo.InvariantCulture) == 1)
         {
             var memory = memories.FirstOrDefault();
@@ -120,7 +120,7 @@ public class TextMemorySkill
         {
             resultString = JsonSerializer.Serialize(memories.Select(x => x.Text));
         }
-        
+
         if (resultString.Length == 0)
         {
             context.Log.LogWarning("Memories not found in collection: {0}", collection);
