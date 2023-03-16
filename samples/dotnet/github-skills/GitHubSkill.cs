@@ -167,7 +167,7 @@ BEGIN SUMMARY:
         if (code != null && code.Length > 0)
         {
             string text;
-            if (code.Length < MaxFileSize)
+            if (code.Length > MaxFileSize)
             {
                 var context = await this._summarizeCodeFunction.InvokeAsync(code);
                 var result = context.Variables.ToString();
