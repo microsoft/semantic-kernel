@@ -26,7 +26,7 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
 {
     public QdrantMemoryStore(string host, int port)
     {
-        this._qdrantClient = new QdrantVectorDb(host, port);
+        this._qdrantClient = new QdrantVectorDBClient(host, port);
     }
 
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
@@ -186,7 +186,7 @@ public class QdrantMemoryStore : ILongTermMemoryStore<float>
     #region private ================================================================================
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DataEntry<VectorRecordData<float>>>> _qdrantData = new();
-    private QdrantVectorDb _qdrantClient;
+    private QdrantVectorDBClient _qdrantClient;
 
     #endregion
 }
