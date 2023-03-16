@@ -41,7 +41,7 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
             );
             setIsLoaded(true);
             console.log(result);
-        } catch {
+        } catch (e) {
             setIsLoadError(true);
             alert('Something went wrong. Please check that the function is running and accessible from this location.');
         } finally {
