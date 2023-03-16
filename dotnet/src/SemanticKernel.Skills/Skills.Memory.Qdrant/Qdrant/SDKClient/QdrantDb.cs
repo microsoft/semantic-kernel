@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Http;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Http.Specs;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.HttpSchema;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient;
 

@@ -3,13 +3,13 @@
 using System.Net.Http;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Http.Specs;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.HttpSchema;
 
-internal class DeleteCollectionRequest : IValidatable
+internal class FetchCollectionRequest : IValidatable
 {
-    public static DeleteCollectionRequest Create(string collectionName)
+    public static FetchCollectionRequest Fetch(string collectionName)
     {
-        return new DeleteCollectionRequest(collectionName);
+        return new FetchCollectionRequest(collectionName);
     }
 
     public void Validate()
@@ -20,14 +20,14 @@ internal class DeleteCollectionRequest : IValidatable
     public HttpRequestMessage Build()
     {
         this.Validate();
-        return HttpRequest.CreateDeleteRequest($"collections/{this._collectionName}?timeout=30");
+        return HttpRequest.CreateGetRequest($"collections/{this._collectionName}");
     }
 
     #region private ================================================================================
 
     private readonly string _collectionName;
 
-    private DeleteCollectionRequest(string collectionName)
+    private FetchCollectionRequest(string collectionName)
     {
         this._collectionName = collectionName;
     }
