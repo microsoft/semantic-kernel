@@ -127,8 +127,9 @@ BEGIN SUMMARY:
             searchPattern = "*.md";
         }
 
-        string filePath = Environment.ExpandEnvironmentVariables($"%temp%\\SK-{Guid.NewGuid()}.zip");
-        string directoryPath = Environment.ExpandEnvironmentVariables($"%temp%\\SK-{Guid.NewGuid()}");
+        string tempPath = Path.GetTempPath();
+        string directoryPath = Path.Combine(tempPath, $"SK-{Guid.NewGuid()}");
+        string filePath = Path.Combine(tempPath, $"SK-{Guid.NewGuid()}.zip");
 
         try
         {
