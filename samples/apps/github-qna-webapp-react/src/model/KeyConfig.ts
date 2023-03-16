@@ -23,6 +23,6 @@ export interface IBackendConfig {
 export interface IKeyConfig {
     graphToken?: string;
 
-    embeddingConfig: IBackendConfig;
-    completionConfig: IBackendConfig;
+    embeddingConfig?: IBackendConfig;
+    completionConfig?: IBackendConfig;
 }
