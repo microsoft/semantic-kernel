@@ -170,6 +170,14 @@ internal static class Extensions
             WebFileDownloadSkill webFileDownloadSkill = new WebFileDownloadSkill();
             _ = kernel.ImportSkill(webFileDownloadSkill, nameof(WebFileDownloadSkill));
         }
+
+        if (_ShouldLoad(nameof(GitHubSkill), skillsToLoad))
+        {
+            DocumentSkill documentSkill = new(new WordDocumentConnector(), new LocalFileSystemConnector());
+            WebFileDownloadSkill downloadSkill = new WebFileDownloadSkill();
+            GitHubSkill githubSkill = new GitHubSkill(kernel, downloadSkill, documentSkill);
+            _ = kernel.ImportSkill(githubSkill, nameof(GitHubSkill));
+        }
     }
 
     internal static void RegisterSemanticSkills(

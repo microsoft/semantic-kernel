@@ -53,9 +53,7 @@ const ServiceConfig: FC<IData> = ({
             console.log(result);
             onConfigComplete(completionOrEmbeddingConfig);
         } catch (e) {
-            alert(
-                `Something went wrong ${e}, please check you have the function running and that it is accessible by the web app`,
-            );
+            alert('Something went wrong.\n\nDetails:\n' + e);
         }
 
         setIsBusy(false);

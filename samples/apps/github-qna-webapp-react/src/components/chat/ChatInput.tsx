@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { Button, Input } from '@fluentui/react-components';
-import { Send24Regular } from '@fluentui/react-icons';
 import React, { FC, useCallback } from 'react';
+
+import { Send24Regular } from '@fluentui/react-icons';
 import { IChatMessage } from './ChatHistoryItem';
 
 interface ChatInputProps {
@@ -15,7 +16,7 @@ export const ChatInput: FC<ChatInputProps> = (props) => {
     const [previousValue, setPreviousValue] = React.useState<string>('');
 
     const handleSubmit = (text: string) => {
-        onSubmit({ timestamp: new Date().getTime().toString(), mine: true, author: '', content: text });
+        onSubmit({ timestamp: new Date().toISOString(), mine: true, author: '', content: text });
         setPreviousValue(text);
         setValue('');
     };
