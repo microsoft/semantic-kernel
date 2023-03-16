@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Memory.Storage;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.HttpSchema;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Http.Specs;
 
 internal class CreateVectorsRequest : IValidatable
 {

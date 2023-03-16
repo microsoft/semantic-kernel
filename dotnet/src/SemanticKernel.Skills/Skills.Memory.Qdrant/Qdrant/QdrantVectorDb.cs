@@ -16,9 +16,9 @@ namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 /// An implementation of a client for the Qdrant VectorDB. This class is used to
 /// connect, create, delete, and get embeddings data from a Qdrant VectorDB instance.
 /// </summary>
-public class QdrantVectorDBClient
+public class QdrantVectorDb
 {
-    public QdrantVectorDBClient(string endpoint, int port)
+    public QdrantVectorDb(string endpoint, int port)
     {
         this._qdrantDbClient = this.ConnectVectorDB(endpoint, port);
     }
