@@ -30,7 +30,7 @@ public static class Program
         await Example07_TemplateLanguage.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example08_RetryMechanism.RunAsync();
+        await Example08_RetryHandler.RunAsync();
         Console.WriteLine("== DONE ==");
 
         await Example09_FunctionTypes.RunAsync();

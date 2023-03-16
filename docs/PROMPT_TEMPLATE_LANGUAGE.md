@@ -38,6 +38,10 @@ you can write:
 
 This will produce a greeting with the user's name.
 
+Spaces are ignored, so if you find it more readable, you can also write:
+
+    Hello {{ $name }}, welcome to Semantic Kernel!
+
 ## Function calls
 
 To call an external function and embed the result in your text, use the
@@ -57,26 +61,31 @@ For instance, the code above is equivalent to:
 ## Function parameters
 
 To call an external function and pass a parameter to it, use the
-`{namespace.functionName $varName}` syntax.
+`{{namespace.functionName $varName}}` and
+`{{namespace.functionName "value"}}` syntax.
 For example, if you want to pass a different input to the weather forecast
 function, you can write:
 
-    The weather today in {{$city}} is {weather.getForecast $city}.
-    The weather today in {{$region}} is {weather.getForecast $region}.
+    The weather today in {{$city}} is {{weather.getForecast $city}}.
+    The weather today in Schio is {{weather.getForecast "Schio"}}.
 
 This will produce two sentences with the weather forecast for two different
-locations, using the city stored in the `city` variable and the region name
-stored in the `region` variable.
+locations, using the city stored in the _`city`_ **variable** and the _"Schio"_
+location **value** hardcoded in the prompt template.
 
 ## Design Principles
 
-The template language uses of the `$` symbol on purpose, to clearly distinguish
-between variables, which are retrieved from local temporary memory, and
-functions that retrieve content executing some code.
+The template language is designed to be simple and fast to render, allowing
+to create functions with a simple text editor, reducing special syntax to a
+minimum, and minimizing edge cases.
 
-Branching features such as "if", "for", and code blocks are not part of SK's
+The template language uses the **«`$`»** symbol on purpose, to clearly distinguish
+between function calls that retrieve content executing some code, from variables,
+which are replaced with data from the local temporary memory.
+
+Branching features such as _"if"_, _"for"_, and code blocks are not part of SK's
 template language. This reflects SK's design principle of using natural language
-as much as possible, with a clear separation from conventional programming code.
+as much as possible, with a clear separation from traditional programming code.
 
 By using a simple language, the kernel can also avoid complex parsing and
 external dependencies, resulting in a fast and memory efficient processing.
@@ -91,6 +100,7 @@ template, using the syntax described.
 ```
 My name: {{msgraph.GetMyName}}
 My email: {{msgraph.GetMyEmailAddress}}
+My hobbies: {{memory.recall "my hobbies"}}
 Recipient: {{$recipient}}
 Email to reply to:
 =========
@@ -132,3 +142,112 @@ async Task<string> GenResponseToEmailAsync(
     }
 }
 ```
+
+# Notes about special chars
+
+Semantic function templates are text files, so there is no need to escape special chars
+like new lines and tabs. However, there are two cases that require a special syntax:
+
+1. Including double curly braces in the prompt templates
+2. Passing to functions hardcoded values that include quotes
+
+## Prompts needing double curly braces
+
+Double curly braces have a special use case, they are used to inject variables,
+values, and functions into templates.
+
+If you need to include the **`{{`** and **`}}`** sequences in your prompts, which
+could trigger special rendering logic, the best solution is to use string values
+enclosed in quotes, like `{{ "{{" }}` and `{{ "}}" }}`
+
+For example:
+
+    {{ "{{" }} and {{ "}}" }} are special SK sequences.
+
+will render to:
+
+    {{ and }} are special SK sequences.
+
+## Values that include quotes, and escaping
+
+Values can be enclosed using **single quotes** and **double quotes**.
+
+To avoid the need for special syntax, when working with a value that contains
+_single quotes_, we recommend wrapping the value with _double quotes_. Similarly,
+when using a value that contains _double quotes_, wrap the value with _single quotes_.
+
+For example:
+
+    ...text... {{ functionName "one 'quoted' word" }} ...text...
+    ...text... {{ functionName 'one "quoted" word' }} ...text...
+
+For those cases where the value contains both single and double quotes, you will
+need _escaping_, using the special **«`\`»** symbol.
+
+When using double quotes around a value, use **«`\"`»** to include a double quote
+symbol inside the value:
+
+    ... {{ "quotes' \"escaping\" example" }} ...
+
+and similarly, when using single quotes, use **«`\'`»** to include a single quote
+inside the value:
+
+    ... {{ 'quotes\' "escaping" example' }} ...
+
+Both are rendered to:
+
+    ... quotes' "escaping" example ...
+
+Note that for consistency, the sequences **«`\'`»** and **«`\"`»** do always render
+to **«`'`»** and **«`"`»**, even when escaping might not be required.
+
+For instance:
+
+    ... {{ 'no need to \"escape" ' }} ...
+
+is equivalent to:
+
+    ... {{ 'no need to "escape" ' }} ...
+
+and both render to:
+
+    ... no need to "escape"  ...
+
+In case you may need to render a backslash in front of a quote, since **«`\`»**
+is a special char, you will need to escape it too, and use the special sequences
+**«`\\\'`»** and **«`\\\"`»**.
+
+For example:
+
+    {{ 'two special chars \\\' here' }}
+
+is rendered to:
+
+    two special chars \' here
+
+Similarly to single and double quotes, the symbol **«`\`»** doesn't always need
+to be escaped. However, for consistency, it can be escaped even when not required.
+
+For instance:
+
+    ... {{ 'c:\\documents\\ai' }} ...
+
+is equivalent to:
+
+    ... {{ 'c:\documents\ai' }} ...
+
+and both are rendered to:
+
+    ... c:\documents\ai ...
+
+Lastly, backslashes have a special meaning only when used in front of
+**«`'`»**, **«`"`»** and **«`\`»**.
+
+In all other cases, the backslash character has no impact and is rendered as is.
+For example:
+
+    {{ "nothing special about these sequences: \0 \n \t \r \foo" }}
+
+is rendered to:
+
+    nothing special about these sequences: \0 \n \t \r \foo

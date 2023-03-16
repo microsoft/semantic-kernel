@@ -172,10 +172,7 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await this._config.RetryMechanism.ExecuteWithRetryAsync(
-                    async () => { context = await f.InvokeAsync(context); },
-                    this._log,
-                    cancellationToken);
+                context = await f.InvokeAsync(context);
 
                 if (context.ErrorOccurred)
                 {
@@ -183,14 +180,12 @@ public sealed class Kernel : IKernel, IDisposable
                     return context;
                 }
             }
-#pragma warning disable CA1031 // We need to catch all exceptions to handle the execution state
             catch (Exception e) when (!e.IsCriticalException())
             {
                 this._log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}", pipelineStepCount, f.SkillName, f.Name, e.Message);
                 context.Fail(e.Message, e);
                 return context;
             }
-#pragma warning restore CA1031
         }
 
         return context;
@@ -268,7 +263,8 @@ public sealed class Kernel : IKernel, IDisposable
                     azureBackendConfig.Endpoint,
                     azureBackendConfig.APIKey,
                     azureBackendConfig.APIVersion,
-                    this._log));
+                    this._log,
+                    this._config.HttpHandlerFactory));
                 break;
 
             case OpenAIConfig openAiConfig:
@@ -276,7 +272,8 @@ public sealed class Kernel : IKernel, IDisposable
                     openAiConfig.ModelId,
                     openAiConfig.APIKey,
                     openAiConfig.OrgId,
-                    this._log));
+                    this._log,
+                    this._config.HttpHandlerFactory));
                 break;
 
             default:
