@@ -3,7 +3,6 @@
 import { Body1, Button, Input, Label, Spinner, Subtitle2, Title3 } from '@fluentui/react-components';
 import { ArrowDownload16Regular, CheckmarkCircle20Filled } from '@fluentui/react-icons';
 import { FC, useState } from 'react';
-
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
 import { IKeyConfig } from '../model/KeyConfig';
 
