@@ -171,11 +171,11 @@ BEGIN SUMMARY:
             {
                 var context = await this._summarizeCodeFunction.InvokeAsync(code);
                 var result = context.Variables.ToString();
-                text = $"{result} {repositoryUri}/blob/{repositoryBranch}/{fileUri}";
+                text = $"{result} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}";
             }
             else
             {
-                text = $"{code} {repositoryUri}/blob/{repositoryBranch}/{fileUri}";
+                text = $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}";
             }
             await this._kernel.Memory.SaveInformationAsync(MemoryCollectionName, text: text, id: fileUri);
         }
