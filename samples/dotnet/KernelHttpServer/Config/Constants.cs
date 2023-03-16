@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace KernelHttpServer.Config;
+
 internal class Constants
 {
     public class SKHttpHeaders
