@@ -39,13 +39,13 @@ const ModelConfig: FC<IData> = ({
     const [selectedModel, setSelectedModel] = useState(defaultModel);
 
     useEffect(() => {
+        setSelectedModel(defaultModel);
         if (
             backendConfig &&
             ((backendConfig?.backend === 1 && isOpenAI) || (backendConfig?.backend === 0 && !isOpenAI))
         ) {
             const getModels = async (isOpenAI: boolean, apiKey: string, aoaiEndpoint?: string) => {
                 setModelIds(undefined);
-                setSelectedModel(defaultModel);
                 const currentAoaiApiVersion = '2022-12-01';
 
                 const baseUrl = isOpenAI ? 'https://api.openai.com/v1/' : aoaiEndpoint;

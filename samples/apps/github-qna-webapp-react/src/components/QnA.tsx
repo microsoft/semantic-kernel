@@ -46,7 +46,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                 {
                     value: m.content,
                     inputs: [
-                        { key: 'relevance', value: '0.2' },
+                        { key: 'relevance', value: relevance.toString() },
                         { key: 'collection', value: 'GitHubSkillMemory' },
                     ],
                 },
