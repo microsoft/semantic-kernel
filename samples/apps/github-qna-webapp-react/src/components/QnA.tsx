@@ -32,6 +32,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
             mine: false,
         },
     ]);
+    const [response, setResponse] = useState<IChatMessage>();
 
     const [relevance, setRelevance] = useState(0.2);
     const onSliderChange = useCallback((_e: any, sliderData: SliderOnChangeData) => {
@@ -46,7 +47,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                     value: m.content,
                     inputs: [
                         { key: 'relevance', value: '0.2' },
-                        { key: 'collection', value: 'CodeSkillMemory' },
+                        { key: 'collection', value: 'GitHubSkillMemory' },
                     ],
                 },
                 'QASkill',
@@ -67,6 +68,13 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
     React.useEffect(() => {
         chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [isBusy]);
+
+    React.useEffect(() => {
+        if (response) {
+            setChatHistory([...chatHistory, response]);
+            setIsBusy(false);
+        }
+    }, [response]);
 
     return (
         <div style={{ paddingTop: 20, gap: 20, display: 'flex', flexDirection: 'column', alignItems: 'left' }}>
@@ -100,8 +108,9 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                         <ChatInput
                             onSubmit={async (m) => {
                                 setIsBusy(true);
+                                setChatHistory([...chatHistory, m]);
                                 const response = await getResponse(m);
-                                setChatHistory([...chatHistory, m, response!]);
+                                setResponse(response!);
                                 setIsBusy(false);
                             }}
                         />

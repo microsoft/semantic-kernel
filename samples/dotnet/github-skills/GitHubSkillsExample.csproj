@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>GitHubSkillsExample</AssemblyName>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.Document\Skills.Document.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.Web\Skills.Web.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
+</Project>
