@@ -142,14 +142,12 @@ For new features, components, or extensions, please open an issue and discuss wi
 us before sending a PR. This is to avoid rejection as we might be taking the core
 in a different direction, but also to consider the impact on the larger ecosystem.
 
-To learn more and get started, please read our [Contributing page](CONTRIBUTING.md)
-and check some of our documentation:
+To learn more and get started:
 
-- [SK Prompt Template Language](docs/PROMPT_TEMPLATE_LANGUAGE.md)
-- [SKills and Functions](docs/SKILLS.md)
-- [Embeddings and Semantic Memory](docs/EMBEDDINGS.md)
-- [SK Planner](docs/PLANNER.md)
-- [SK Notebooks](samples/notebooks/dotnet/README.md)
+- Read the [documentation](https://aka.ms/sk/learn)
+- Learn how to [contribute](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) to the project
+- Join the [Discord community](https://aka.ms/SKDiscord)
+- Hear from the team on our [blog](https://aka.ms/sk/blog)
 
 ## Code of Conduct
 
