@@ -149,7 +149,11 @@ To learn more and get started:
 - Read the [documentation](https://aka.ms/sk/learn)
 - Learn how to [contribute](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) to the project
 - Join the [Discord community](https://aka.ms/SKDiscord)
-- Hear from the team on our [blog](https://aka.ms/sk/blog)
+- Follow the team on our [blog](https://aka.ms/sk/blog)
+
+<img src="https://user-images.githubusercontent.com/36091529/225807182-22ad65e9-82c6-4727-bb77-d1c256736045.png" align="left" width="40px"/>
+<b>Python developers:</b> Semantic Kernel is coming to Python soon! Check out the work-in-progress and contribute in the <a href="https://github.com/microsoft/semantic-kernel/tree/python-preview"><b>python-preview</b></a> branch.
+<br clear="left"/>
 
 ## Code of Conduct
 
