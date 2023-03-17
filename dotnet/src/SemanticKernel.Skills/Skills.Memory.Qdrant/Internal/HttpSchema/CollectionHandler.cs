@@ -14,7 +14,8 @@ internal class CollectionHandler : IValidatable
     {
         Create,
         Get,
-        List
+        List, 
+        Delete
     }
 
     public static CollectionHandler Create(string collectionName, int vectorSize, QdrantDistanceType distanceType = QdrantDistanceType.Cosine)
@@ -50,8 +51,9 @@ internal class CollectionHandler : IValidatable
         return this;
     }
     
-    //TODO: Implement Get and List
-    public object Build(CollectionHandlerType requestType) 
+    //TODO: Implement Get, List, Delete
+    //TODO: Implement Generic for Build prevent boxing
+    public async Task<object> Build(CollectionHandlerType requestType) 
     {
         object responseHold = null!;
 
@@ -60,7 +62,8 @@ internal class CollectionHandler : IValidatable
         switch (requestType)
         {
             case CollectionHandlerType.Create:
-                var result = CreateQdrantCollectionAsync();
+                var result = await CreateQdrantCollectionAsync();
+                responseHold = (CollectionData)result; 
                 break;
 
             case CollectionHandlerType.Get:
@@ -69,6 +72,9 @@ internal class CollectionHandler : IValidatable
 
             case CollectionHandlerType.List:
                 //HttpRequest.CreateGetRequest(QdrantApiUrlConstants.ListCollectionsUrl());
+                break;
+
+            case CollectionHandlerType.Delete:
                 break;
 
             default:
