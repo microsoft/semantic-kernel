@@ -90,9 +90,9 @@ internal class CollectionHandler : IValidatable
     private CollectionHandler(string collectionName, QdrantDistanceType distanceType, int vectorSize)
     {
         this._collectionName = collectionName;
-        this.Settings = new VectorSettings();
-        this.Settings.DistanceType = distanceType;
-        this.Settings.Size = vectorSize;
+        this._settings = new VectorSettings();
+        this._settings.DistanceType = distanceType;
+        this._settings.Size = vectorSize;
 
     }
 

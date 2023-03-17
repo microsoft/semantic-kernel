@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
-using System.Net.Http.Json
+using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
@@ -50,7 +50,8 @@ public static async Task<TResult> SendHttpFromJsonAsync<TObject, TResult>(HttpCl
 { 
     //TODO: Clean this up-TEW
 
-    HttpResponseMessage httpResponse;  
+    HttpResponseMessage httpResponse;
+    TResult httpresult = default!;  
     
     switch (methodType.ToString())
     {
@@ -58,23 +59,27 @@ public static async Task<TResult> SendHttpFromJsonAsync<TObject, TResult>(HttpCl
             var getResult = await httpClient.GetFromJsonAsync<TObject>(qdranturl);
             break;
         case string mType when HttpMethod.Post.ToString() == methodType.ToString():
-            {using HttpResponseMessage response = await httpClient.PostAsJsonAsync<TObject>(
+            /*{using HttpResponseMessage response = await httpClient.PostAsJsonAsync<TObject>(
                     qdranturl);
                     response.EnsureSuccessStatusCode();
                     httpResponse = response;
-            }
+            }*/
             break;
         case string mType when HttpMethod.Put.ToString() == methodType.ToString():
-            var putResult = await httpClient.PutAsJsonAsync<TObject>(
-                qdranturl);
+            { 
+                using HttpResponseMessage response = await httpClient.PutAsJsonAsync(
+                qdranturl,
+                httpContentData);
+
+                httpResponse = response;
+            }
+            //var putResult = await httpClient.PutAsJsonAsync<TObject>(qdranturl);
             break;
         case string mType when HttpMethod.Patch.ToString() == methodType.ToString():
-            var pathResult = await httpClient.PatchAsync(
-                qdranturl);
+            //var pathResult = await httpClient.PatchAsync(qdranturl);
             break;
         case string mType when HttpMethod.Delete.ToString() == methodType.ToString():
-            var deleteResult = await httpClient.DeleteAsync(
-                qdranturl);
+           // var deleteResult = await httpClient.DeleteAsync(qdranturl);
             break;
         default:
             break;
