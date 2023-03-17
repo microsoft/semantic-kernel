@@ -1,0 +1,7 @@
+Someone wants to know the following about a GitHub repository:
+{{$input}}
+
+Please answer the above question given the following info:
+{{textmemoryskill.recall $input}}
+
+Answer:
