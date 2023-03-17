@@ -50,15 +50,6 @@ public sealed class NullMemory : ISemanticTextMemory
     }
 
     /// <inheritdoc/>
-    public Task RemoveAsync(
-        string collection,
-        string key,
-        CancellationToken cancel = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc/>
     public IAsyncEnumerable<MemoryQueryResult> SearchAsync(
         string collection,
         string query,

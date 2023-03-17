@@ -35,7 +35,6 @@ public static class Example15_MemorySkill
         // ========= Store memories using semantic function =========
 
         // Add Memory as a skill for other functions
-        var memorySkill = new TextMemorySkill();
         kernel.ImportSkill(new TextMemorySkill());
 
         // Build a semantic function that saves info to memory
@@ -48,45 +47,24 @@ public static class Example15_MemorySkill
         context["info"] = "My family is from New York";
         await memorySaver.InvokeAsync(context);
 
-        // ========= Test memory remember =========
-        Console.WriteLine("========= Example: Recalling a Memory =========");
+        // ========= Test memory =========
 
-        context[TextMemorySkill.KeyParam] = "info1";
-        var answer = await memorySkill.RetrieveAsync(context);
-        Console.WriteLine("Memory associated with 'info1': {0}", answer);
-        /*
-        Output:
-        "Memory associated with 'info1': My name is Andrea
-        */
-
-        // ========= Test memory recall =========
-        Console.WriteLine("========= Example: Recalling an Idea =========");
-
-        context[TextMemorySkill.LimitParam] = "2";
-        string ask = "where did I grow up?";
-        answer = memorySkill.Recall(ask, context);
-        Console.WriteLine("Ask: {0}", ask);
-        Console.WriteLine("Answer:\n{0}", answer);
-
-        ask = "where do I live?";
-        answer = memorySkill.Recall(ask, context);
-        Console.WriteLine("Ask: {0}", ask);
-        Console.WriteLine("Answer:\n{0}", answer);
+        await AnswerAsync("where did I grow up?", kernel);
+        await AnswerAsync("where do I live?", kernel);
 
         /*
         Output:
 
             Ask: where did I grow up?
-            Answer:
-                ["My family is from New York","I\u0027ve been living in Seattle since 2005"]
+              Fact 1: My family is from New York (relevance: 0.8202760217073308)
+              Fact 2: I've been living in Seattle since 2005 (relevance: 0.7923238361094278)
 
             Ask: where do I live?
-            Answer:
-                ["I\u0027ve been living in Seattle since 2005","My family is from New York"]
+              Fact 1: I've been living in Seattle since 2005 (relevance: 0.8010884368220728)
+              Fact 2: My family is from New York (relevance: 0.785718105747128)
         */
 
         // ========= Use memory in a semantic function =========
-        Console.WriteLine("========= Example: Using Recall in a Semantic Function =========");
 
         // Build a semantic function that uses memory to find facts
         const string RECALL_FUNCTION_DEFINITION = @"
@@ -117,40 +95,18 @@ Answer:
 
             No, I do not live in the same town where I grew up since my family is from New York and I have been living in Seattle since 2005.
         */
+    }
 
-        // ========= Remove a memory =========
-        Console.WriteLine("========= Example: Forgetting a Memory =========");
+    private static async Task AnswerAsync(string ask, IKernel kernel)
+    {
+        Console.WriteLine($"Ask: {ask}");
+        var memories = kernel.Memory.SearchAsync(MemoryCollectionName, ask, limit: 2, minRelevanceScore: 0.6);
+        var i = 0;
+        await foreach (MemoryQueryResult memory in memories)
+        {
+            Console.WriteLine($"  Fact {++i}: {memory.Text} (relevance: {memory.Relevance})");
+        }
 
-        context["fact1"] = "What is my name?";
-        context["fact2"] = "What do I do for a living?";
-        context["query"] = "Tell me a bit about myself";
-        context[TextMemorySkill.RelevanceParam] = ".75";
-
-        result = await aboutMeOracle.InvokeAsync(context);
-
-        Console.WriteLine(context["query"] + "\n");
-        Console.WriteLine(result);
-
-        /*
-        Approximate Output:
-            Tell me a bit about myself
-
-            My name is Andrea and my family is from New York. I work as a tourist operator.
-        */
-
-        context[TextMemorySkill.KeyParam] = "info1";
-        await memorySkill.RemoveAsync(context);
-
-        result = await aboutMeOracle.InvokeAsync(context);
-
-        Console.WriteLine(context["query"] + "\n");
-        Console.WriteLine(result);
-
-        /*
-        Approximate Output:
-            Tell me a bit about myself
-
-            I'm from a family originally from New York and I work as a tourist operator. I've been living in Seattle since 2005.
-        */
+        Console.WriteLine();
     }
 }

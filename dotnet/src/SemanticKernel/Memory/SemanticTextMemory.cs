@@ -72,15 +72,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task RemoveAsync(
-        string collection,
-        string key,
-        CancellationToken cancel = default)
-    {
-        await this._storage.RemoveAsync(collection, key, cancel);
-    }
-
-    /// <inheritdoc/>
     public async IAsyncEnumerable<MemoryQueryResult> SearchAsync(
         string collection,
         string query,
