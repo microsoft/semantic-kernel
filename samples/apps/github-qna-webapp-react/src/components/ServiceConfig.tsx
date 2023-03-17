@@ -174,7 +174,7 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
                                         label: d.value
                                     }
                                 })
-                            }} placeholder='Enter your deployment id here, ie: my-deployment' />
+                            }} placeholder='Enter the embeddings model id here, ie: text-embedding-ada-002' />
                         <Label htmlFor='aoaiendpoint'>Endpoint</Label>
                         <Input id='aoaiendpoint'
                             value={azureOpenAiEndpoint}
