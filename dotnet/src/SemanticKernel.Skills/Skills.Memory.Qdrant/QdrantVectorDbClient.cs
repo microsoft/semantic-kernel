@@ -60,7 +60,7 @@ where TEmbedding : unmanaged
 
         this._log.LogDebug("Searching vector by point ID {0}", pointId);
 
-        using HttpRequestMessage request = SearchVectorsRequest<TEmbedding>
+        /*using HttpRequestMessage request = SearchVectorsRequest<TEmbedding>
             .Create(collectionName, this._defaultVectorSize)
             .HavingExternalId(pointId)
             .IncludePayLoad()
@@ -77,15 +77,17 @@ where TEmbedding : unmanaged
         {
             this._log.LogWarning("Vector not found: {0}", pointId);
             return null;
-        }
+        } */
 
-        var record = new QdrantVectorRecord<TEmbedding>(
+        /*var record = new QdrantVectorRecord<TEmbedding>(
             new Embedding<TEmbedding>(data.Vectors.First().Vector.ToArray()),
             data.Vectors.First().ExternalPayload,
             data.Vectors.First().ExternalTags);
         this._log.LogDebug("Vector found}");
 
         return new DataEntry<QdrantVectorRecord<TEmbedding>>(Base64Decode(pointId), record);
+        */
+        return null; 
     }
 
     public async Task DeleteVectorAsync(string collectionName, string key)
@@ -96,11 +98,11 @@ where TEmbedding : unmanaged
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
         Verify.NotNullOrEmpty(pointId, "Qdrant point ID is empty");
 
-        using var request = DeleteVectorsRequest
+        /*using var request = DeleteVectorsRequest
             .DeleteFrom(collectionName)
             .DeleteVector(pointId)
             .Build();
-        await this.ExecuteHttpRequestAsync(request);
+        await this.ExecuteHttpRequestAsync(request);*/
     }
 
     public async Task UpsertVectorAsync(string collectionName, DataEntry<QdrantVectorRecord<TEmbedding>> vectorData)
@@ -108,7 +110,7 @@ where TEmbedding : unmanaged
         this._log.LogDebug("Upserting vector");
         Verify.NotNull(vectorData, "The vector is NULL");
 
-        DataEntry<QdrantVectorRecord<TEmbedding>>? existingRecord = await this.GetVectorByIdAsync(collectionName, vectorData.Key);
+        /*DataEntry<QdrantVectorRecord<TEmbedding>>? existingRecord = await this.GetVectorByIdAsync(collectionName, vectorData.Key);
 
         // Generate a new ID for the new vector
         if (existingRecord == null)
@@ -116,7 +118,7 @@ where TEmbedding : unmanaged
             return;
         }
 
-        /*using var request = CreateVectorsRequest<TEmbedding>
+        using var request = CreateVectorsRequest<TEmbedding>
             .CreateIn(collectionName)
             .UpsertVector(Base64Encode(vectorData.Key), vectorData.Value!).Build();
         var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
@@ -148,7 +150,7 @@ where TEmbedding : unmanaged
 
         Verify.NotNull(target, "The given vector is NULL");
 
-        using HttpRequestMessage request = SearchVectorsRequest<TEmbedding>
+        /*using HttpRequestMessage request = SearchVectorsRequest<TEmbedding>
             .Create(collectionName)
             .SimilarTo(target.Vector.ToArray())
             .HavingTags(requiredTags)
@@ -182,11 +184,14 @@ where TEmbedding : unmanaged
         }
 
         // Qdrant search results are currently sorted by id, alphabetically
-        result = SortSearchResultByScore(result);
-        foreach (var kv in result)
+        result = SortSearchResultByScore(result); */
+        //var result;
+        //foreach (var kv in result)
+        IAsyncEnumerable<(QdrantVectorRecord<TEmbedding>, double)> result = null;
+        await foreach (var kv in result)
         {
             yield return kv;
-        }
+        } 
     }
 
     public async Task CreateCollectionAsync(string collectionName)
@@ -221,7 +226,7 @@ where TEmbedding : unmanaged
     {
         this._log.LogDebug("Fetching collection {0}", collectionName);
 
-        using var request = FetchCollectionRequest.Fetch(collectionName).Build();
+        /*using var request = FetchCollectionRequest.Fetch(collectionName).Build();
         var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -233,14 +238,16 @@ where TEmbedding : unmanaged
         {
             return true;
         }
-
+        
         this._log.LogError("Collection fetch failed: {0}, {1}", response.StatusCode, responseContent);
         throw new VectorDbException($"Unexpected response: {response.StatusCode}");
+        */
+        return await Task.FromResult(false);
     }
 
     public async IAsyncEnumerable<string> ListCollectionsAsync()
     {
-        this._log.LogDebug("Listing collections");
+        /*this._log.LogDebug("Listing collections");
 
         using var request = ListCollectionsRequest.Create().Build();
         var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
@@ -250,7 +257,8 @@ where TEmbedding : unmanaged
         foreach (var collection in collections?.Collections ?? Enumerable.Empty<ListCollectionsResponse.CollectionDescription>())
         {
             yield return collection.Name;
-        }
+        }*/
+        yield break;
     }
 
     #region private ================================================================================
