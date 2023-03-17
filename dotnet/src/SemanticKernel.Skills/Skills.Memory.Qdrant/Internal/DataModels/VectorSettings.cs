@@ -39,4 +39,5 @@ internal class VectorSettings : IValidatable
                 _ => throw new NotSupportedException($"Distance type {Enum.GetName(typeof(QdrantDistanceType), x)} not supported")
             };
         }
+
     }

@@ -116,7 +116,7 @@ where TEmbedding : unmanaged
             return;
         }
 
-        using var request = CreateVectorsRequest<TEmbedding>
+        /*using var request = CreateVectorsRequest<TEmbedding>
             .CreateIn(collectionName)
             .UpsertVector(Base64Encode(vectorData.Key), vectorData.Value!).Build();
         var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
@@ -135,7 +135,7 @@ where TEmbedding : unmanaged
         {
             this._log.LogError(e, "Vector upsert failed: {0}, {1}", e.Message, responseContent);
             throw;
-        }
+        } */
     }
 
     public async IAsyncEnumerable<(QdrantVectorRecord<TEmbedding>, double)> FindNearesetInCollectionAsync(
