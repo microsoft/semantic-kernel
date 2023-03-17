@@ -76,7 +76,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
 
     React.useEffect(() => {
         chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [isBusy]);
+    }, [isBusy, response, chatHistory]);
 
     React.useEffect(() => {
         if (response) {
