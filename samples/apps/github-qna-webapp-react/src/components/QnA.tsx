@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Avatar, Body1, Button, Label, Slider, SliderOnChangeData, Title3 } from '@fluentui/react-components';
+import { Body1, Button, Label, Slider, SliderOnChangeData, Title3 } from '@fluentui/react-components';
 import React, { FC, useCallback, useState } from 'react';
-import { ChatHistoryItem, IChatMessage } from './chat/ChatHistoryItem';
+import { ChatHistoryItem, FetchState, IChatMessage } from './chat/ChatHistoryItem';
 
-import GithubAvatar from '../assets/icons8-github-512.png';
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
 import { IKeyConfig } from '../model/KeyConfig';
 import { ChatInput } from './chat/ChatInput';
@@ -27,7 +26,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
             content:
                 "Hi! I'm your GitHub Repo bot. Here's the repo you are interested in: <a href={project}>" +
                 project +
-                '</a>',
+                '</a>. How can I help you to learn more about this repo? ',
             author: 'GitHub Repo Bot',
             timestamp: new Date().toISOString(),
             mine: false,
@@ -42,7 +41,14 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
 
     const getResponse = async (m: IChatMessage) => {
         const projectUri = project.endsWith('/') ? project.substring(0, project.length - 1) : project;
-
+        const response: IChatMessage = {
+            content: '',
+            author: 'GitHub Repo Bot',
+            timestamp: new Date().toISOString(),
+            mine: false,
+            fetchState: FetchState.Fetching,
+        };
+        setChatHistory([...chatHistory, m, response]);
         try {
             var result = await sk.invokeAsync(
                 keyConfig,
@@ -56,15 +62,13 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                 'QASkill',
                 'MemoryQuery',
             );
-            const response: IChatMessage = {
-                content: result.value,
-                author: 'GitHub Repo Bot',
-                timestamp: new Date().toISOString(),
-                mine: false,
-            };
+            response.content = result.value;
+            response.fetchState = FetchState.Fetched;
             return response;
         } catch (e) {
-            alert('Something went wrong.\n\nDetails:\n' + e);
+            response.content = `Something went wrong. Please try again.\nDetails: {${e}}`;
+            response.fetchState = FetchState.Error;
+            return response;
         }
     };
 
@@ -74,7 +78,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
 
     React.useEffect(() => {
         if (response) {
-            setChatHistory([...chatHistory, response]);
+            chatHistory[chatHistory.length - 1] = response;
             setIsBusy(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,15 +116,9 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                         display: 'flex',
                         flexDirection: 'row',
                         gap: 10,
+                        marginBottom: 12,
                     }}
                 >
-                    <Avatar
-                        image={{
-                            src: GithubAvatar,
-                        }}
-                        color="neutral"
-                        badge={{ status: 'available' }}
-                    />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {chatHistory.map((m, idx) => (
                             <ChatHistoryItem key={idx} message={m} />
@@ -133,7 +131,6 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                         <ChatInput
                             onSubmit={async (m) => {
                                 setIsBusy(true);
-                                setChatHistory([...chatHistory, m]);
                                 const response = await getResponse(m);
                                 setResponse(response!);
                                 setIsBusy(false);
