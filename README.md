@@ -84,7 +84,7 @@ Here is a quick example of how to use Semantic Kernel from a C# console app.
 1.  Create a new project, targeting .NET 6 or newer, and add the
     `Microsoft.SemanticKernel` nuget package:
 
-        dotnet add package Microsoft.SemanticKernel --version <version number>
+        dotnet add package Microsoft.SemanticKernel --prerelease
 
     See [nuget.org](https://www.nuget.org/packages/Microsoft.SemanticKernel/) for
     the latest version and more instructions.
@@ -99,6 +99,8 @@ using Microsoft.SemanticKernel.KernelExtensions;
 
 var kernel = Kernel.Builder.Build();
 
+// For Azure Open AI service endpoint and keys please see
+// https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api
 kernel.Config.AddAzureOpenAICompletionBackend(
     "davinci-backend",                   // Alias used by the kernel
     "text-davinci-003",                  // Azure OpenAI *Deployment ID*
