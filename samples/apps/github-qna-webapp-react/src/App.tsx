@@ -38,8 +38,8 @@ const App: FC = () => {
     const [keyConfig, setKeyConfig] = useState<IKeyConfig>();
     const [appState, setAppState] = useState<AppState>(AppState.ProbeForFunction);
     const [selectedTabValue, setSelectedTabValue] = useState<string>('completion');
-    const [project, setProject] = useState<string>();
-    const [branch, setBranch] = useState<string>();
+    const [project, setProject] = useState<string>('');
+    const [branch, setBranch] = useState<string>('');
 
     useEffect(() => {
         changeAppState(appState);
@@ -187,6 +187,8 @@ const App: FC = () => {
                             <GitHubProjectSelection
                                 keyConfig={keyConfig!}
                                 uri={process.env.REACT_APP_FUNCTION_URI as string}
+                                prevProject={project}
+                                prevBranch={branch}
                                 onLoadProject={(project, branch) => {
                                     setProject(project);
                                     setBranch(branch);

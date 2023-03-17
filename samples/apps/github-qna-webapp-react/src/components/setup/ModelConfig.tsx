@@ -113,7 +113,7 @@ const ModelConfig: FC<IData> = ({
                 info={
                     <div style={{ maxWidth: 250 }}>
                         Please note this drop down lists all available models, but not all will work as{' '}
-                        {modelType === ModelType.Completion ? 'a ' : 'an ' + modelTitle[0]} model.{' '}
+                        {(modelType === ModelType.Completion ? 'a ' : 'an ') + modelTitle[0]} model.{' '}
                         <Link href="https://platform.openai.com/docs/models"> Click here to learn more </Link>
                         about the differences between completion and embedding models.
                     </div>
