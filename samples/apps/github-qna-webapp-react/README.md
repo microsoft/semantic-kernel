@@ -22,7 +22,9 @@ The GitHub Repo Q&A Bot sample allows you to pull in data from a public GitHub r
 
 ## Next Steps
 
-Create Skills and SK functions: Check out the [documentation](TODO link to documentation) for how to create Skills or watch the [video​](TODO Link to video)
-Join the community: Join our [Discord community](https://aka.ms/SKDiscord) to share ideas and get help​
-Contribute: We need your help to make this the best it can be.  Learn how you can [contribute](TODO Link to contribute) to this project.​
+Create Skills and SK functions: Check out the [documentation](https://aka.ms/sk/learn) for how to create Skills.
+
+Join the community: Join our [Discord community](https://aka.ms/SKDiscord) to share ideas and get help​.
+
+Contribute: We need your help to make this the best it can be.  Learn how you can [contribute](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) to this project.​
 ## Troubleshooting Steps

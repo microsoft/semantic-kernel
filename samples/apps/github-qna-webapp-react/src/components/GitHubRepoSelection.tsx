@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Body1, Button, Input, Label, Spinner, Subtitle2, Title3 } from '@fluentui/react-components';
+import { Body1, Button, Input, Label, Spinner, Title3 } from '@fluentui/react-components';
 import { ArrowDownload16Regular, CheckmarkCircle20Filled } from '@fluentui/react-icons';
 import { FC, useState } from 'react';
-
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
 import { IKeyConfig } from '../model/KeyConfig';
 
@@ -52,10 +51,10 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
     return (
         <div style={{ paddingTop: 20, gap: 20, display: 'flex', flexDirection: 'column', alignItems: 'left' }}>
             <Title3 style={{ alignItems: 'left' }}>Enter in the GitHub Project URL</Title3>
-            <Subtitle2>
+            <Body1>
                 Start by entering a GitHub Repository URL. We will pull the public repository into local memory so you
                 can ask any questions about the repository and get help.{' '}
-            </Subtitle2>
+            </Body1>
             <br></br>
             <Label>
                 <strong>GitHub Repository URL</strong>

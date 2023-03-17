@@ -79,9 +79,6 @@ Summary is in plain text, in complete sentences, with no markup or tags.
 BEGIN SUMMARY:
 ";
 
-    internal const string MemoryCollectionName = "GitHubSkillMemory"; // TODO Should this be configurable
-
-
     /// <summary>
     /// Initializes a new instance of the <see cref="GitHubSkill"/> class.
     /// </summary>
@@ -142,7 +139,7 @@ BEGIN SUMMARY:
 
             await this.SummarizeCodeDirectoryAsync(directoryPath, searchPattern, repositoryUri, repositoryBranch, context);
 
-            context.Variables.Set(Parameters.MemoryCollectionName, MemoryCollectionName);
+            context.Variables.Set(Parameters.MemoryCollectionName, $"{repositoryUri}-{repositoryBranch}");
         }
         finally
         {
@@ -178,7 +175,7 @@ BEGIN SUMMARY:
             {
                 text = $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}";
             }
-            await this._kernel.Memory.SaveInformationAsync(MemoryCollectionName, text: text, id: fileUri);
+            await this._kernel.Memory.SaveInformationAsync($"{repositoryUri}-{repositoryBranch}", text: text, id: fileUri);
         }
     }
 
