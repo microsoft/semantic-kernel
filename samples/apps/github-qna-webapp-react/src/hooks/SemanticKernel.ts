@@ -73,6 +73,7 @@ export class SemanticKernel {
             });
 
             if (!response.ok) {
+                // eslint-disable-next-line no-throw-literal
                 throw response.statusText + " => " + await response.text();
             }
 
@@ -83,6 +84,7 @@ export class SemanticKernel {
                 // fetch() will reject with a TypeError when a network error is encountered.
                 additional_error_msg = '\n\nPlease check you have the function running and that it is accessible by the app'
             }
+            // eslint-disable-next-line no-throw-literal
             throw e + additional_error_msg;
         }
     };

@@ -23,8 +23,8 @@ const ServiceConfig: FC<IData> = ({
         backendConfig?.backend !== undefined
             ? backendConfig.backend === 1
             : completionConfig?.backend !== undefined
-            ? completionConfig.backend === 1
-            : true,
+                ? completionConfig.backend === 1
+                : true,
     );
     const [completionOrEmbeddingConfig, setCompletionOrEmbeddingConfig] = useState<IBackendConfig>(backendConfig);
     const [isBusy, setIsBusy] = useState<boolean>(false);
@@ -66,13 +66,13 @@ const ServiceConfig: FC<IData> = ({
 
         const defaultId: string = isOpenAi
             ? // OpenAI
-              modelType === ModelType.Completion
+            modelType === ModelType.Completion
                 ? (process.env.REACT_APP_OPEN_AI_COMPLETION_MODEL as string)
                 : (process.env.REACT_APP_OPEN_AI_EMBEDDINGS_MODEL as string)
             : // Azure OpenAI
             modelType === ModelType.Completion
-            ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_DEPLOYMENT as string)
-            : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_DEPLOYMENT as string);
+                ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_DEPLOYMENT as string)
+                : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_DEPLOYMENT as string);
 
         if ((backendConfig?.backend === 1 && isOpenAi) || (backendConfig?.backend === 0 && !isOpenAi)) {
             setKey(backendConfig.key);
@@ -81,6 +81,7 @@ const ServiceConfig: FC<IData> = ({
             setKey(defaultKey ?? '');
             setDeploymentOrModelId(defaultId ?? '');
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -99,6 +100,7 @@ const ServiceConfig: FC<IData> = ({
             deploymentOrModelId: deploymentOrModelId,
             label: deploymentOrModelId,
         });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [azureOpenAiEndpoint, deploymentOrModelId, key]);
 
     return (

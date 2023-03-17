@@ -25,6 +25,7 @@ export const ChatInput: FC<ChatInputProps> = (props) => {
         (_e: any) => {
             if (value && value.length > 0) handleSubmit(value);
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [value],
     );
 

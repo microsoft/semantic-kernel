@@ -59,12 +59,14 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBr
         if (isSameProjectAndBranch()) {
             setDownloadState(DownloadState.Loaded);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [project]);
 
     useEffect(() => {
         if (isSameProjectAndBranch()) {
             setDownloadState(DownloadState.Loaded);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [branch]);
 
     return (

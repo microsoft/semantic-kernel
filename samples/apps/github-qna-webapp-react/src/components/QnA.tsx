@@ -77,6 +77,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
             setChatHistory([...chatHistory, response]);
             setIsBusy(false);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [response]);
 
     return (

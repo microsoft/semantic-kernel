@@ -2,7 +2,6 @@
 
 import { Dropdown, Link, Option, Spinner } from '@fluentui/react-components';
 import { InfoLabel } from '@fluentui/react-components/unstable';
-// import { Configuration, OpenAIApi } from 'openai';
 import { FC, useEffect, useState } from 'react';
 import '../../App.css';
 import { IBackendConfig } from '../../model/KeyConfig';
@@ -59,8 +58,8 @@ const ModelConfig: FC<IData> = ({
                     headers: isOpenAI
                         ? { Authorization: `Bearer ${apiKey}` }
                         : {
-                              'api-key': apiKey,
-                          },
+                            'api-key': apiKey,
+                        },
                 };
 
                 const onFailure = (errorMessage?: string) => {
@@ -105,6 +104,7 @@ const ModelConfig: FC<IData> = ({
                 });
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [backendConfig.key, backendConfig.endpoint]);
 
     return (
