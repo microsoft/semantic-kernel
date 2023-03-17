@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -158,7 +159,7 @@ BEGIN SUMMARY:
     /// <summary>
     /// Summarize a code file into an embedding
     /// </summary>
-    private async Task SummarizeCodeFileAsync(string filePath, string repositoryUri, string repositoryBranch, string fileUri)
+    private async Task SummarizeCodeFileAsync(string filePath, string repositoryUri, string repositoryBranch, string fileUri, SKContext context)
     {
         string code = File.ReadAllText(filePath);
 
@@ -167,7 +168,12 @@ BEGIN SUMMARY:
             string text;
             if (code.Length > MaxFileSize)
             {
-                var context = await this._summarizeCodeFunction.InvokeAsync(code);
+                System.Collections.Generic.List<string> lines = SemanticTextPartitioner.SplitPlainTextLines(code, MaxTokens);
+                System.Collections.Generic.List<string> paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, MaxTokens);
+
+                context = await this._summarizeCodeFunction
+                    .AggregatePartitionedResultsAsync(paragraphs, context);
+
                 var result = context.Variables.ToString();
                 text = $"{result} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}";
             }
@@ -193,7 +199,7 @@ BEGIN SUMMARY:
             foreach (string filePath in filePaths)
             {
                 var fileUri = this.BuildFileUri(directoryPath, filePath, repositoryUri, repositoryBranch);
-                await this.SummarizeCodeFileAsync(filePath, repositoryUri, repositoryBranch, fileUri);
+                await this.SummarizeCodeFileAsync(filePath, repositoryUri, repositoryBranch, fileUri, context);
             }
         }
     }
