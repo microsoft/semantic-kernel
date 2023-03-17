@@ -24,9 +24,9 @@ internal class PointsVectorHandler : IValidatable
     }
 
     #region private ================================================================================
-        private string _collectionName;
+        private string? _collectionName;
         
-        private HttpClient _client;
+        private HttpClient? _client;
     #endregion
     
 }

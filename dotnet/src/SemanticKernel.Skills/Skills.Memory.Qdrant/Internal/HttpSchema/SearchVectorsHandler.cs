@@ -22,7 +22,7 @@ internal class SearchVectorsHandler : IValidatable
     {}
 
     #region private ================================================================================
-    private HttpClient _client;
+    private HttpClient? _client;
     #endregion
 
 }
