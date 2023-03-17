@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -168,14 +167,8 @@ BEGIN SUMMARY:
             string text;
             if (code.Length > MaxFileSize)
             {
-                System.Collections.Generic.List<string> lines = SemanticTextPartitioner.SplitPlainTextLines(code, MaxTokens);
-                System.Collections.Generic.List<string> paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, MaxTokens);
-
-                context = await this._summarizeCodeFunction
-                    .AggregatePartitionedResultsAsync(paragraphs, context);
-
-                var result = context.Variables.ToString();
-                text = $"{result} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}";
+                this._logger.LogWarning("File with path {0} is longer than the maximum number of tokens.", filePath);
+                return;
             }
             else
             {
