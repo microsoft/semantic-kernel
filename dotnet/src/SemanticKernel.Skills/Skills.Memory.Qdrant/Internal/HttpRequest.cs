@@ -54,25 +54,25 @@ public static async Task SendHttpFromJsonAsync<TObject, TResult>(HttpClient http
     
     switch (methodType.ToString())
     {
-        case "GET":
+        case string mType when HttpMethod.Get.ToString() == methodType.ToString():
             var getResult = await httpClient.GetFromJsonAsync<TObject>(qdranturl);
             break;
-        case "POST":
+        case string mType when HttpMethod.Post.ToString() == methodType.ToString():
             {using HttpResponseMessage response = await httpClient.PostAsJsonAsync<TObject>(
                     qdranturl);
                     response.EnsureSuccessStatusCode();
                     httpResponse = response;
             }
             break;
-        case "PUT":
+        case string mType when HttpMethod.Put.ToString() == methodType.ToString():
             var putResult = await httpClient.PutAsJsonAsync<TObject>(
                 qdranturl);
             break;
-        case "PATCH":
+        case string mType when HttpMethod.Patch.ToString() == methodType.ToString():
             var pathResult = await httpClient.PatchAsync(
                 qdranturl);
             break;
-        case "DELETE":
+        case string mType when HttpMethod.Delete.ToString() == methodType.ToString():
             var deleteResult = await httpClient.DeleteAsync(
                 qdranturl);
             break;
