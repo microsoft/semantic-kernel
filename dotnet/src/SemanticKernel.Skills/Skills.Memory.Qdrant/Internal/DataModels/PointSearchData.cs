@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
+
 internal class PointSearchData<TEmbedding>
     where TEmbedding : unmanaged
     {

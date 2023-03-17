@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
+
     internal class BatchData<TEmbedding> : IValidatable
     where TEmbedding : unmanaged
     {
