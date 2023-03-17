@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { Body1, Button, Label, Slider, SliderOnChangeData, Title3 } from '@fluentui/react-components';
+import { InfoLabel } from '@fluentui/react-components/unstable';
 import React, { FC, useCallback, useState } from 'react';
 import { ChatHistoryItem, FetchState, IChatMessage } from './chat/ChatHistoryItem';
 
@@ -47,6 +48,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
             timestamp: new Date().toISOString(),
             mine: false,
             fetchState: FetchState.Fetching,
+            index: chatHistory.length + 1,
         };
         setChatHistory([...chatHistory, m, response]);
         try {
@@ -78,7 +80,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
 
     React.useEffect(() => {
         if (response) {
-            chatHistory[chatHistory.length - 1] = response;
+            if (response.index) chatHistory[response.index] = response;
             setIsBusy(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -159,7 +161,18 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                         <Slider min={0} max={1} step={0.1} value={relevance} onChange={onSliderChange} />
                         <Label size="small">1</Label>
                     </div>
-                    <Label size="medium">Relevance: {relevance}</Label>
+                    <InfoLabel
+                        info={
+                            <div style={{ maxWidth: 250 }}>
+                                'Relevance' is used in memory search and is a measure of the relevance score from 0.0 to
+                                1.0, where 1.0 means a perfect match. We encourage users to experiment with different
+                                values.
+                            </div>
+                        }
+                        htmlFor={`RelevanceTooltip`}
+                    >
+                        Relevance: {relevance}
+                    </InfoLabel>
                 </div>
             </div>
         </div>
