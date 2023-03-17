@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
@@ -26,38 +27,64 @@ internal class CollectionHandler : IValidatable
         Verify.NotNullOrEmpty(this._collectionName, "The collection name is empty");
     }
 
-    internal QdrantResponse CreateQdrantCollection()
+    internal async Task<CollectionData> CreateQdrantCollectionAsync()
     {
+        CollectionData response = null!;
+        string qdrantCreateUrl = QdrantApiUrlConstants.CreateCollectionUrl(this._collectionName);
+
         this.Validate();
         HttpRequest.CreatePutRequest(QdrantApiUrlConstants.CreateCollectionUrl(this._collectionName), payload: this); 
-
+        
+        response = await HttpRequest.SendHttpFromJsonAsync<VectorSettings, CollectionData>(
+                            this._client, 
+                            HttpMethod.Put, 
+                            qdrantCreateUrl, 
+                            this._settings);
+        return response!;
             
     }
 
-    //TODO: Implement Get and List
-    public object? Build(CollectionHandlerType requestType) 
+    public CollectionHandler Client(HttpClient client)
     {
+        this._client = client;
+        return this;
+    }
+    
+    //TODO: Implement Get and List
+    public object Build(CollectionHandlerType requestType) 
+    {
+        object responseHold = null!;
+
         this.Validate();
 
         switch (requestType)
         {
             case CollectionHandlerType.Create:
-                var result = CreateQdrantCollection();
-                return result;
+                var result = CreateQdrantCollectionAsync();
+                break;
+
             case CollectionHandlerType.Get:
-                return HttpRequest.CreateGetRequest(QdrantApiUrlConstants.GetCollectionUrl(this._collectionName));
+                //HttpRequest.CreateGetRequest(QdrantApiUrlConstants.GetCollectionUrl(this._collectionName));
+                break;
+
             case CollectionHandlerType.List:
-                return HttpRequest.CreateGetRequest(QdrantApiUrlConstants.ListCollectionsUrl());
+                //HttpRequest.CreateGetRequest(QdrantApiUrlConstants.ListCollectionsUrl());
+                break;
+
             default:
                 throw new ArgumentOutOfRangeException(nameof(requestType), requestType, null);
         }
+
+        return responseHold;
     }
         
 
     #region private ================================================================================
 
-    private readonly string _collectionName;
-    private readonly VectorSettings Settings;
+    private string _collectionName;
+    private VectorSettings _settings;
+    
+    private HttpClient _client;
     
 
     private CollectionHandler(string collectionName, QdrantDistanceType distanceType, int vectorSize)

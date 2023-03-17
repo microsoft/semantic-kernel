@@ -46,7 +46,7 @@ internal static class HttpRequest
         return new HttpRequestMessage(HttpMethod.Delete, url);
     }
 
-public static async Task SendHttpFromJsonAsync<TObject, TResult>(HttpClient httpClient, HttpMethod methodType, string qdranturl, TObject? httpContentData)
+public static async Task<TResult> SendHttpFromJsonAsync<TObject, TResult>(HttpClient httpClient, HttpMethod methodType, string qdranturl, TObject httpContentData)
 { 
     //TODO: Clean this up-TEW
 

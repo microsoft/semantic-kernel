@@ -4,14 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
-internal abstract class QdrantResponse<TResponse> 
-    where TResponse : class
+internal abstract class QdrantResponse 
 {
-    /// <summary>
-    /// Response class type: TResponse ex. CollectionData, Points
-    /// </summary>
-    public TResponse Response { get; set; } = default!;
-    
     /// <summary>
     /// Response status
     /// </summary>
@@ -25,4 +19,11 @@ internal abstract class QdrantResponse<TResponse>
     [JsonPropertyName("time")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? Time { get; set; }
+
+    /// <summary>
+    /// Response result
+    /// </summary>
+    [JsonPropertyName(name: "result")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? Result { get; set; }
 }
