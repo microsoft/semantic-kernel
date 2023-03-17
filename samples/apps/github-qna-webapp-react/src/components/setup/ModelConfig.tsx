@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Dropdown, Link, Option, Spinner } from '@fluentui/react-components';
+import { Dropdown, Link, Option, OptionGroup, Spinner } from '@fluentui/react-components';
 import { InfoLabel } from '@fluentui/react-components/unstable';
 import { FC, useEffect, useState } from 'react';
 import '../../App.css';
@@ -35,6 +35,7 @@ const ModelConfig: FC<IData> = ({
 }) => {
     const modelTitle = modelType === ModelType.Embeddings ? ['embeddings', 'Embeddings'] : ['completion', 'Completion'];
     const labelPrefix = `${isOpenAI ? 'oai' : 'aoai'}${modelTitle[0]}`;
+    const [suggestedModels, setSuggestedModels] = useState<ModelOption[] | undefined>();
     const [modelIds, setModelIds] = useState<ModelOption[] | undefined>();
     const [isBusy, setIsBusy] = useState(false);
     const [selectedModel, setSelectedModel] = useState(defaultModel);
@@ -58,8 +59,8 @@ const ModelConfig: FC<IData> = ({
                     headers: isOpenAI
                         ? { Authorization: `Bearer ${apiKey}` }
                         : {
-                            'api-key': apiKey,
-                        },
+                              'api-key': apiKey,
+                          },
                 };
 
                 const onFailure = (errorMessage?: string) => {
@@ -86,10 +87,23 @@ const ModelConfig: FC<IData> = ({
                         return body.data;
                     });
 
-                const ids: ModelOption[] = [];
+                const ids = {
+                    probableEmbeddingModels: [] as ModelOption[],
+                    otherModels: [] as ModelOption[],
+                };
                 for (const key in models) {
                     const model = models[key];
-                    ids.push({ id: model.id, disabled: model.status && model.status !== 'succeeded' });
+                    if (model.id.includes('embedding') || model.id.includes('search')) {
+                        ids.probableEmbeddingModels.push({
+                            id: model.id,
+                            disabled: model.status && model.status !== 'succeeded',
+                        });
+                    } else {
+                        ids.otherModels.push({
+                            id: model.id,
+                            disabled: model.status && model.status !== 'succeeded',
+                        });
+                    }
                 }
                 return ids;
             };
@@ -99,7 +113,17 @@ const ModelConfig: FC<IData> = ({
             if (fetchModels) {
                 setIsBusy(true);
                 getModels(isOpenAI, backendConfig.key, isOpenAI ? undefined : backendConfig.endpoint).then((value) => {
-                    setModelIds(value);
+                    const sortedOthersArray = value?.otherModels.sort((a, b) => a.id.localeCompare(b.id));
+                    const sortedEmbeddingsArray = value?.probableEmbeddingModels.sort((a, b) =>
+                        a.id.localeCompare(b.id),
+                    );
+                    if (modelType == ModelType.Embeddings) {
+                        setModelIds(sortedOthersArray);
+                        setSuggestedModels(sortedEmbeddingsArray);
+                    } else {
+                        setSuggestedModels(sortedOthersArray);
+                        setModelIds(sortedEmbeddingsArray);
+                    }
                     setIsBusy(false);
                 });
             }
@@ -112,10 +136,10 @@ const ModelConfig: FC<IData> = ({
             <InfoLabel
                 info={
                     <div style={{ maxWidth: 250 }}>
-                        Please note this drop down lists all available models, but not all will work as{' '}
-                        {(modelType === ModelType.Completion ? 'a ' : 'an ') + modelTitle[0]} model.{' '}
-                        <Link href="https://platform.openai.com/docs/models"> Click here to learn more </Link>
-                        about the differences between completion and embedding models.
+                        Please note this drop down lists all available models but not all models will work as{' '}
+                        {(modelType === ModelType.Completion ? 'a ' : 'an ') + modelTitle[0]} model. We've suggested
+                        some based on common naming patterns for these models.{' '}
+                        <Link href="https://platform.openai.com/docs/models">Learn more</Link>{' '}
                     </div>
                 }
                 htmlFor={`${labelPrefix}model`}
@@ -142,11 +166,24 @@ const ModelConfig: FC<IData> = ({
                         });
                     }}
                 >
-                    {modelIds?.map((option) => (
-                        <Option key={option.id} disabled={option.disabled}>
-                            {option.id}
-                        </Option>
-                    ))}
+                    {suggestedModels ? (
+                        <OptionGroup label={`Suggested ${modelTitle[1]} Models`}>
+                            {suggestedModels.map((option) => (
+                                <Option key={option.id} disabled={option.disabled}>
+                                    {option.id}
+                                </Option>
+                            ))}
+                        </OptionGroup>
+                    ) : null}
+                    {modelIds ? (
+                        <OptionGroup label={suggestedModels ? 'Other' : 'All models'}>
+                            {modelIds.map((option) => (
+                                <Option key={option.id} disabled={option.disabled}>
+                                    {option.id}
+                                </Option>
+                            ))}
+                        </OptionGroup>
+                    ) : null}
                 </Dropdown>
             </div>
         </div>
