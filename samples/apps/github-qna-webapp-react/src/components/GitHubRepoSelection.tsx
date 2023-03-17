@@ -2,24 +2,30 @@
 
 import { Body1, Button, Input, Label, Spinner, Title3 } from '@fluentui/react-components';
 import { ArrowDownload16Regular, CheckmarkCircle20Filled } from '@fluentui/react-icons';
-import { FC, useState } from 'react';
+import React, { FC, useState } from 'react';
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
 import { IKeyConfig } from '../model/KeyConfig';
 
 interface IData {
     uri: string;
     keyConfig: IKeyConfig;
+    prevProject: string;
+    prevBranch: string;
     onBack: () => void;
     onLoadProject: (project: string, branch: string) => void;
 }
 
-const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBack }) => {
-    const [project, setProject] = useState<string>();
-    const [branch, setBranch] = useState<string>();
+const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBranch, onLoadProject, onBack }) => {
+    const [project, setProject] = useState<string>(prevProject);
+    const [branch, setBranch] = useState<string>(prevBranch);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isLoaded, setIsLoaded] = useState<boolean>(false);
+    const [isLoaded, setIsLoaded] = useState<boolean>(project !== '' && branch !== '');
     const [isLoadError, setIsLoadError] = useState<boolean>(false);
     const sk = useSemanticKernel(uri);
+
+    const isSameProjectAndBranch = () => {
+        return project === prevProject && branch === prevBranch && project !== '' && branch !== '';
+    }
 
     const download = async () => {
         try {
@@ -48,6 +54,14 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
         }
     };
 
+    React.useEffect(() => {
+        setIsLoaded(isSameProjectAndBranch())
+    }, [project]);
+
+    React.useEffect(() => {
+        setIsLoaded(isSameProjectAndBranch())
+    }, [branch]);
+
     return (
         <div style={{ paddingTop: 20, gap: 20, display: 'flex', flexDirection: 'column', alignItems: 'left' }}>
             <Title3 style={{ alignItems: 'left' }}>Enter in the GitHub Project URL</Title3>
@@ -64,7 +78,9 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
                     style={{ width: '100%' }}
                     type="text"
                     value={project}
-                    onChange={(e) => setProject(e.target.value)}
+                    onChange={(e) => {
+                        setProject(e.target.value);
+                    }}
                     placeholder="https://github.com/microsoft/semantic-kernel"
                 />
             </div>
@@ -76,11 +92,13 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
                     style={{ width: '100%' }}
                     type="text"
                     value={branch}
-                    onChange={(e) => setBranch(e.target.value)}
+                    onChange={(e) => {
+                        setBranch(e.target.value);
+                    }}
                     placeholder="main"
                 />
                 <Button
-                    disabled={project === undefined || branch === undefined || isLoading}
+                    disabled={isLoading || isLoaded || project === '' || branch === '' }
                     appearance="transparent"
                     icon={<ArrowDownload16Regular />}
                     onClick={() => download()}
