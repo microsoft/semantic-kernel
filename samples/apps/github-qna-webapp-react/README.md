@@ -9,13 +9,13 @@
 
 1. You will need an [Open AI Key](https://openai.com/api/) or
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart) for this sample.
-2. Ensure the service API is already running `http://localhost:7071`. If not learn how to start it [here](../starter-api-azure-function/README.md).
+2. Ensure the service API is already running `http://localhost:7071`. If not learn how to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. **Run** the following command `yarn install` (if you have never run the sample before) and/or `yarn start` from the command line.
 4. A browser will open or you can navigate to `http://localhost:3000` to use the sample.
 
 ## About the GitHub Repo Q&A Bot Sample
 
-The GitHub Repo Q&A Bot sample allows you to pull in data from a public GitHub repo into a local memory store in order to ask questions about the project and to get answers about it.  The sample highlights how [memory](TODO Link to memory) and [embeddings](TODO Link to embeddings) work along with X SK Functions when the size of the data is larger than the allowed token limited.  Each SK function will call Open AI to perform the tasks you ask about.​
+The GitHub Repo Q&A Bot sample allows you to pull in data from a public GitHub repo into a local memory store in order to ask questions about the project and to get answers about it.  The sample highlights how [memory](https://aka.ms/sk/memories) and [embeddings](https://aka.ms/sk/embeddings) work along with X SK Functions when the size of the data is larger than the allowed token limited.  Each SK function will call Open AI to perform the tasks you ask about.​
 
 > [!CAUTION]
 > Each function will call Open AI which will use tokens that you will be billed for.
@@ -27,4 +27,3 @@ Create Skills and SK functions: Check out the [documentation](https://aka.ms/sk/
 Join the community: Join our [Discord community](https://aka.ms/SKDiscord) to share ideas and get help​.
 
 Contribute: We need your help to make this the best it can be.  Learn how you can [contribute](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) to this project.​
-## Troubleshooting Steps
