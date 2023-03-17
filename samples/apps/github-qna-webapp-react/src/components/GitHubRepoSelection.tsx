@@ -77,7 +77,7 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBr
 
     return (
         <div style={{ paddingTop: 20, gap: 20, display: 'flex', flexDirection: 'column', alignItems: 'left' }}>
-            <Title3 style={{ alignItems: 'left' }}>Enter in the GitHub Project URL</Title3>
+            <Title3 style={{ alignItems: 'left' }}>GitHub Repository</Title3>
             <Body1>
                 Start by entering a GitHub Repository URL. We will pull the public repository into local memory so you
                 can ask any questions about the repository and get help.{' '}
