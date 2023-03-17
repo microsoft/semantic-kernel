@@ -33,7 +33,7 @@ internal class CollectionHandler : IValidatable
         string qdrantCreateUrl = QdrantApiUrlConstants.CreateCollectionUrl(this._collectionName);
 
         this.Validate();
-        HttpRequest.CreatePutRequest(QdrantApiUrlConstants.CreateCollectionUrl(this._collectionName), payload: this); 
+        //HttpRequest.CreatePutRequest(qdrantCreateUrl, payload: this); 
         
         response = await HttpRequest.SendHttpFromJsonAsync<VectorSettings, CollectionData>(
                             this._client, 

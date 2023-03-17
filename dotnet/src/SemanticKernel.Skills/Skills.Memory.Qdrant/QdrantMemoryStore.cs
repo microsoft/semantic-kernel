@@ -9,11 +9,10 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Storage;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.VectorDB;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore{TEmbedding}"/> for Qdrant Vector database.
