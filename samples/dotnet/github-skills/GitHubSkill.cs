@@ -14,6 +14,8 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Web;
 
+namespace GitHubSkillsExample;
+
 /// <summary>
 /// Skill for interacting with a GitHub repository.
 /// </summary>
@@ -68,7 +70,7 @@ public class GitHubSkill
     private readonly ILogger<GitHubSkill> _logger;
 
     internal const string SummarizeCodeSnippetDefinition =
-    @"BEGIN CONTENT TO SUMMARIZE:
+        @"BEGIN CONTENT TO SUMMARIZE:
 {{$INPUT}}
 END CONTENT TO SUMMARIZE.
 
@@ -105,13 +107,14 @@ BEGIN SUMMARY:
     /// <summary>
     /// Summarize the code downloaded from the specified URI.
     /// </summary>
-    /// <param name="source">URI to download the respository content to be summarized</param>
-    /// <param name="context">Semantic kernal context</param>
+    /// <param name="source">URI to download the repository content to be summarized</param>
+    /// <param name="context">Semantic kernel context</param>
     /// <returns>Task</returns>
     [SKFunction("Downloads a repository and summarizes the content")]
     [SKFunctionName("SummarizeRepository")]
     [SKFunctionInput(Description = "URL of the GitHub repository to summarize")]
-    [SKFunctionContextParameter(Name = Parameters.RepositoryBranch, Description = "Name of the repository repositoryBranch which will be downloaded and summarized")]
+    [SKFunctionContextParameter(Name = Parameters.RepositoryBranch,
+        Description = "Name of the repository repositoryBranch which will be downloaded and summarized")]
     [SKFunctionContextParameter(Name = Parameters.SearchPattern, Description = "The search string to match against the names of files in the repository")]
     public async Task SummarizeRepositoryAsync(string source, SKContext context)
     {
@@ -119,6 +122,7 @@ BEGIN SUMMARY:
         {
             repositoryBranch = "main";
         }
+
         if (!context.Variables.Get(Parameters.SearchPattern, out string searchPattern) || string.IsNullOrEmpty(searchPattern))
         {
             searchPattern = "*.md";
@@ -148,6 +152,7 @@ BEGIN SUMMARY:
             {
                 File.Delete(filePath);
             }
+
             if (Directory.Exists(directoryPath))
             {
                 Directory.Delete(directoryPath, true);
@@ -158,7 +163,7 @@ BEGIN SUMMARY:
     /// <summary>
     /// Summarize a code file into an embedding
     /// </summary>
-    private async Task SummarizeCodeFileAsync(string filePath, string repositoryUri, string repositoryBranch, string fileUri, SKContext context)
+    private async Task SummarizeCodeFileAsync(string filePath, string repositoryUri, string repositoryBranch, string fileUri)
     {
         string code = File.ReadAllText(filePath);
 
@@ -167,13 +172,12 @@ BEGIN SUMMARY:
             string text;
             if (code.Length > MaxFileSize)
             {
-                this._logger.LogWarning("File with path {0} is longer than the maximum number of tokens.", filePath);
+                this._logger.LogWarning("File with path {0} is longer than the maximum number of tokens", filePath);
                 return;
             }
-            else
-            {
-                text = $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}";
-            }
+
+            text = $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}";
+
             await this._kernel.Memory.SaveInformationAsync($"{repositoryUri}-{repositoryBranch}", text: text, id: fileUri);
         }
     }
@@ -192,7 +196,7 @@ BEGIN SUMMARY:
             foreach (string filePath in filePaths)
             {
                 var fileUri = this.BuildFileUri(directoryPath, filePath, repositoryUri, repositoryBranch);
-                await this.SummarizeCodeFileAsync(filePath, repositoryUri, repositoryBranch, fileUri, context);
+                await this.SummarizeCodeFileAsync(filePath, repositoryUri, repositoryBranch, fileUri);
             }
         }
     }
