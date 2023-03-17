@@ -4,8 +4,14 @@ using System.Text.Json.Serialization;
 
 namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
-internal abstract class QdrantResponse
+internal abstract class QdrantResponse<TResponse> 
+    where TResponse : class
 {
+    /// <summary>
+    /// Response class type: TResponse ex. CollectionData, Points
+    /// </summary>
+    public TResponse Response { get; set; } = default!;
+    
     /// <summary>
     /// Response status
     /// </summary>
