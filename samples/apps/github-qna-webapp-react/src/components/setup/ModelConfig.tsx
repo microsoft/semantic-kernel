@@ -116,7 +116,7 @@ const ModelConfig: FC<IData> = ({
                     placeholder={
                         modelIds
                             ? 'Select a model id'
-                            : `Enter valid key ${isOpenAI ? '' : 'and endpoint to load'} models`
+                            : `Enter valid key ${isOpenAI ? '' : 'and endpoint'} to load models`
                     }
                     onOptionSelect={(_e, model) => {
                         setSelectedModel(model.optionValue ?? '');
