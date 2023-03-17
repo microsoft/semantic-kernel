@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Storage;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Internal;
-using Microsoft.SemanticKernel.Skills.Memory.VectorDB.Internal.Diagnostics;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
+namespace Microsoft.SemanticKernel.Skills.Memory.VectorDB;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore{TEmbedding}"/> for Qdrant Vector database.
@@ -58,7 +59,7 @@ where TEmbedding : unmanaged
 
         return new DataEntry<IEmbeddingWithMetadata<TEmbedding>>(
             key: key,
-            value: (IEmbeddingWithMetadata<TEmbedding>)vectorResult.Value);
+            value: (IEmbeddingWithMetadata<TEmbedding>)vectorResult.Value!);
     }
 
     public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data, CancellationToken cancel = default)

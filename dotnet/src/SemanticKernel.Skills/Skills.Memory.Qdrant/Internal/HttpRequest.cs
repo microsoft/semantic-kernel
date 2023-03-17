@@ -27,7 +27,7 @@ internal static class HttpRequest
 
     public static HttpRequestMessage CreatePutRequest(string url, object? payload = null)
     {
-        return new HttpRequestMessage(HttpMethod.Put, url)''
+        return new HttpRequestMessage(HttpMethod.Put, url);
         //{
         //    Content = GetJsonContent(payload)
         //};
@@ -46,24 +46,23 @@ internal static class HttpRequest
         return new HttpRequestMessage(HttpMethod.Delete, url);
     }
 
-public static async Task SendHttpFromJsonAsync<TObject>(HttpClient httpClient, HttpMethod methodType )
+public static async Task SendHttpFromJsonAsync<TObject>(HttpClient httpClient, HttpMethod methodType, string qdranturl, TObject httpContentData)
 { 
     //TODO: Clean this up-TEW
-    object? httpresult = null; 
+
+    HttpResponseMessage httpResponse;  
     
     switch (methodType.ToString())
     {
         case "GET":
-            var result = await httpClient.GetFromJsonAsync<TObject>(
-                "todos?userId=1&completed=false");
+            var result = await httpClient.GetFromJsonAsync<TObject>(qdranturl);
             break;
         case "POST":
-        {using HttpResponseMessage response = await httpClient.PostAsJsonAsync<TObject>(
-                "todos?userId=1&completed=false");
-                response.EnsureSuccessStatusCode();
-                result = await response.Content.ReadAsStringAsync();
-        }
-            httpresult = result;
+            {using HttpResponseMessage response = await httpClient.PostAsJsonAsync<TObject>(
+                    "todos?userId=1&completed=false");
+                    response.EnsureSuccessStatusCode();
+                    httpResponse = response;
+            }
             break;
         case "PUT":
             var result = await httpClient.PutAsJsonAsync<TObject>(

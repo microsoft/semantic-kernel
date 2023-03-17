@@ -11,10 +11,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory.Storage;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Internal;
-using Microsoft.SemanticKernel.Skills.Memory.VectorDB.Internal.Diagnostics;
-using Microsoft.SemanticKernel.Skills.Memory.VectorDB.Internal.HttpSchema;
-using Microsoft.SemanticKernel.Skills.Memory.VectorDB.Internal.HttpSchema.Specs;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
+using Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 
