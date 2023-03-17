@@ -225,6 +225,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <summary>
+    /// Returns the name and description of the function.
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString()
+    {
+        return $"{this.Name} - {this.Description}";
+    }
+
+    /// <summary>
     /// Finalizer.
     /// </summary>
     ~SKFunction()
