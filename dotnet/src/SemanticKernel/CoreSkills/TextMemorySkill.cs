@@ -67,10 +67,11 @@ public class TextMemorySkill
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
         Verify.NotEmpty(key, "Memory key not defined");
 
-        context.Log.LogTrace("Recalling memory from collection '{0}'", collection);
+        context.Log.LogTrace("Recalling memory with key '{0}' from collection '{1}'", key, collection);
 
         var memory = await context.Memory.GetAsync(collection, key);
-        return memory != null ? memory.Text : string.Empty;
+
+        return memory?.Text ?? string.Empty;
     }
 
     /// <summary>
@@ -97,21 +98,22 @@ public class TextMemorySkill
         var relevance = context.Variables.ContainsKey(RelevanceParam) ? context[RelevanceParam] : DefaultRelevance;
         if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultRelevance; }
 
-        var limit = context.Variables.ContainsKey(LimitParam) ? context[LimitParam] : LimitParam;
-        if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultLimit; }
+        var limit = context.Variables.ContainsKey(LimitParam) ? context[LimitParam] : DefaultLimit;
+        if (string.IsNullOrWhiteSpace(limit)) { relevance = DefaultLimit; }
 
-        context.Log.LogTrace("Searching memories for '{0}', collection '{1}', relevance '{2}'", text, collection, relevance);
+        context.Log.LogTrace("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
 
         // TODO: support locales, e.g. "0.7" and "0,7" must both work
+        int limitInt = int.Parse(limit, CultureInfo.InvariantCulture);
         var memories = context.Memory
-            .SearchAsync(collection, text, limit: int.Parse(limit, CultureInfo.InvariantCulture), minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture))
+            .SearchAsync(collection, text, limitInt, minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture))
             .ToEnumerable();
 
-        context.Log.LogTrace("Memories found (collection: {0})", collection);
+        context.Log.LogTrace("Done looking for memories in collection '{0}')", collection);
 
         string resultString;
 
-        if (int.Parse(limit, CultureInfo.InvariantCulture) == 1)
+        if (limitInt == 1)
         {
             var memory = memories.FirstOrDefault();
             resultString = (memory != null) ? memory.Text : string.Empty;
