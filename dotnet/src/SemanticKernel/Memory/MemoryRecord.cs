@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -10,36 +11,59 @@ namespace Microsoft.SemanticKernel.Memory;
 internal class MemoryRecord : IEmbeddingWithMetadata<float>
 {
     /// <summary>
-    /// Whether the source data used to calculate embeddings are stored in the local
-    /// storage provider or is available through and external service, such as web site, MS Graph, etc.
+    /// Nested class representing the metadata associated with a Semantic Kernel memory.
     /// </summary>
-    public bool IsReference { get; private set; }
+    public class MemoryRecordMetadata
+    {
+        /// <summary>
+        /// Whether the source data used to calculate embeddings are stored in the local
+        /// storage provider or is available through and external service, such as web site, MS Graph, etc.
+        /// </summary>
+        public bool IsReference { get; }
 
-    /// <summary>
-    /// A value used to understand which external service owns the data, to avoid storing the information
-    /// inside the URI. E.g. this could be "MSTeams", "WebSite", "GitHub", etc.
-    /// </summary>
-    public string ExternalSourceName { get; private set; } = string.Empty;
+        /// <summary>
+        /// A value used to understand which external service owns the data, to avoid storing the information
+        /// inside the URI. E.g. this could be "MSTeams", "WebSite", "GitHub", etc.
+        /// </summary>
+        public string ExternalSourceName { get; }
 
-    /// <summary>
-    /// Unique identifier. The format of the value is domain specific, so it can be a URL, a GUID, etc.
-    /// </summary>
-    public string Id { get; private set; } = string.Empty;
+        /// <summary>
+        /// Unique identifier. The format of the value is domain specific, so it can be a URL, a GUID, etc.
+        /// </summary>
+        public string Id { get; }
 
-    /// <summary>
-    /// Optional title describing the content. Note: the title is not indexed.
-    /// </summary>
-    public string Description { get; private set; } = string.Empty;
+        /// <summary>
+        /// Optional title describing the content. Note: the title is not indexed.
+        /// </summary>
+        public string Description { get; }
 
-    /// <summary>
-    /// Source text, available only when the memory is not an external source.
-    /// </summary>
-    public string Text { get; private set; } = string.Empty;
+        /// <summary>
+        /// Source text, available only when the memory is not an external source.
+        /// </summary>
+        public string Text { get; }
+
+        internal MemoryRecordMetadata(
+            bool isReference,
+            string id,
+            string? text = null,
+            string? description = null,
+            string? externalSource = null
+        )
+        {
+            this.IsReference = isReference;
+            this.ExternalSourceName = externalSource ?? string.Empty;
+            this.Id = id;
+            this.Text = text ?? string.Empty;
+            this.Description = description ?? string.Empty;
+        }
+    }
 
     /// <summary>
     /// Source content embeddings.
     /// </summary>
     public Embedding<float> Embedding { get; private set; }
+
+    public MemoryRecordMetadata Metadata { get; private set; }
 
     /// <summary>
     /// Prepare an instance about a memory which source is stored externally.
@@ -58,10 +82,13 @@ internal class MemoryRecord : IEmbeddingWithMetadata<float>
     {
         return new MemoryRecord
         {
-            IsReference = true,
-            ExternalSourceName = sourceName,
-            Id = externalId,
-            Description = description ?? string.Empty,
+            Metadata = new MemoryRecordMetadata
+            (
+                isReference: true,
+                externalSource: sourceName,
+                id: externalId,
+                description: description
+            ),
             Embedding = embedding
         };
     }
@@ -82,12 +109,41 @@ internal class MemoryRecord : IEmbeddingWithMetadata<float>
     {
         return new MemoryRecord
         {
-            IsReference = false,
-            Id = id,
-            Text = text,
-            Description = description ?? string.Empty,
+            Metadata = new MemoryRecordMetadata
+            (
+                isReference: false,
+                id: id,
+                text: text,
+                description: description
+            ),
             Embedding = embedding
         };
+    }
+
+    public static MemoryRecord FromJson(
+        string json,
+        Embedding<float> embedding)
+    {
+        var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
+        if (metadata != null)
+        {
+            return new MemoryRecord
+            {
+                Metadata = metadata,
+                Embedding = embedding
+            };
+        }
+        else
+        {
+            throw new MemoryException(
+                MemoryException.ErrorCodes.UnableToSerializeMetadata,
+                "Unable to create memory from serialized metadata");
+        }
+    }
+
+    public string JsonSerializeMetadata()
+    {
+        return JsonSerializer.Serialize(this.Metadata);
     }
 
     /// <summary>

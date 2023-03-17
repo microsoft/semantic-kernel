@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
+using Microsoft.SemanticKernel.Skills.Memory.VectorDB.Internal.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.HttpSchema;
+namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 internal class DeleteCollectionRequest : IValidatable
 {

@@ -5,7 +5,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.HttpSchema;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 internal static class HttpRequest
 {

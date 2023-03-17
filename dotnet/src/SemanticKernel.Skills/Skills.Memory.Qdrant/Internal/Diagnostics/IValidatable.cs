@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 
 public interface IValidatable
 {

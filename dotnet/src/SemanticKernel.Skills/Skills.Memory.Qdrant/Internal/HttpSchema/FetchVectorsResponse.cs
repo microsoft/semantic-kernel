@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.HttpSchema;
+namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 internal class FetchVectorsResponse
 {

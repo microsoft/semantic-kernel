@@ -3,7 +3,7 @@
 using System;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.HttpSchema;
+namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 internal class FetchCollectionResponse
 {

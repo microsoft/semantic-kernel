@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 
 public class VectorDbException : Exception<VectorDbException.ErrorCodes>
 {
@@ -11,6 +11,12 @@ public class VectorDbException : Exception<VectorDbException.ErrorCodes>
         UnknownError,
         CollectionDoesNotExist,
         InvalidCollectionState,
+        UnableToSerializeRecordPayload,
+        CollectionCreationFailed,
+        CollectionRetrievalFailed,
+        VectorRetrievalFailed,
+        SimilaritySearchFailed,
+        InvalidHttpResponseContent
     }
 
     public VectorDbException(string message)

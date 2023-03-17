@@ -2,16 +2,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Internal;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.HttpSchema;
+namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
-internal class SearchVectorsResponse
+internal class SearchVectorsResponse<TEmbedding>
+    where TEmbedding : unmanaged
 {
     internal class VectorFound
     {
         internal string QdrantId { get; set; } = string.Empty;
-        internal float[] Vector { get; set; } = Array.Empty<float>();
+        internal TEmbedding[] Vector { get; set; } = Array.Empty<TEmbedding>();
         internal int Version { get; set; }
         internal double? Score { get; set; }
         internal string ExternalId { get; set; } = string.Empty;

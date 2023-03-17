@@ -5,11 +5,11 @@ using Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnosti
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.HttpSchema;
 
-internal class FetchAllCollectionNameRequest
+internal class FetchCollectionNameRequest
 {
-    public static FetchAllCollectionNameRequest Fetch()
+    public static FetchCollectionNameRequest Fetch()
     {
-        return new FetchAllCollectionNameRequest();
+        return new FetchCollectionNameRequest();
     }
 
     public HttpRequestMessage Build()

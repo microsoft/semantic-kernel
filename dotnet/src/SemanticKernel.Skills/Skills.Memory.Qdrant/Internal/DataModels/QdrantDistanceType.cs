@@ -2,10 +2,10 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
-public enum VectorDistanceType
+public enum QdrantDistanceType
 {
     /// <summary>
     /// Cosine of the angle between vectors, aka dot product scaled by magnitude. Cares only about angle difference.

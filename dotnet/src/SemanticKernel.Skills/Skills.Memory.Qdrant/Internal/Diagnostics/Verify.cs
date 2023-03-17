@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Diagnostics;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 
 internal class Verify
 {
