@@ -25,7 +25,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
     const [chatHistory, setChatHistory] = useState<IChatMessage[]>([
         {
             content:
-                "Hi! I'm your GitHub Repo bot. Here's the GitHub repo you selected: <a href={project}>" +
+                "Hi! I'm your GitHub Repo bot. Here's the repo you are interested in: <a href={project}>" +
                 project +
                 '</a>',
             author: 'GitHub Repo Bot',
@@ -149,6 +149,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                     alignItems: 'left',
                     gap: '20',
                     justifyContent: 'space-between',
+                    marginTop: 20,
                 }}
             >
                 <Button onClick={() => onBack()} style={{ height: 'fit-content' }}>
