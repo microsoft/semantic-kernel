@@ -2,6 +2,9 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
+
 internal class Points
     {
         [JsonPropertyName("id")]
@@ -12,5 +15,8 @@ internal class Points
 
         [JsonPropertyName("vector")]
         internal float[]? Vector { get; set; }
+
+        [JsonPropertyName("status")]
+        internal string? Status { get; set; }
 
     }

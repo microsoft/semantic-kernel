@@ -10,23 +10,8 @@ namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 internal class FetchVectorsResponse
 {
-    internal class Points
-    {
-        [JsonPropertyName("id")]
-        internal string? VectorId { get; set; }
 
-        [JsonPropertyName("payload")]
-        internal Dictionary<string, object>? Payload { get; set; }
-
-        [JsonPropertyName("vector")]
-        internal float[]? Vector { get; set; }
-
-        internal Points()
-        {
-        }
-    }
-
-    internal string Status { get; set; }
+    
     internal List<Points> VectorPointCollection { get; set; }
 
     internal void ConvertFromJson(string json)

@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
-using Microsoft.SemanticKernel.Skills.Memory.VectorDB.Internal.Diagnostics;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 

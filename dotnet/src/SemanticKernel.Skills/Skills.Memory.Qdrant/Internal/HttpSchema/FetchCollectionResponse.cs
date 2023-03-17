@@ -7,15 +7,6 @@ namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 internal class FetchCollectionResponse
 {
-    internal string Status { get; set; } = string.Empty;
-    internal string OptimizerStatus { get; set; } = string.Empty;
-    internal int VectorsCount { get; set; }
-    internal int IndexedVectorsCount { get; set; }
-    internal int PointsCount { get; set; }
-    internal int SegmentsCount { get; set; }
-    internal int VectorsSize { get; set; }
-    internal string Distance { get; set; } = string.Empty;
-
     internal FetchCollectionResponse(string json)
     {
         // TODO: Replace with a System.Text.Json implementation
@@ -23,7 +14,14 @@ internal class FetchCollectionResponse
         FromDynamic(value);
     }
 
+    internal CollectionData CollectionInfo 
+    { 
+        get => _collectionData; 
+        set => _collectionData = value ?? throw new ArgumentNullException(nameof(value));; 
+    }
+
     #region private ================================================================================
+    private CollectionData _collectionData;
 
     private void FromDynamic(dynamic data)
     {
@@ -41,6 +39,7 @@ internal class FetchCollectionResponse
         this.VectorsSize = data.result.config.@params.vectors.size;
         this.Distance = data.result.config.@params.vectors.distance;
     }
+
 
     #endregion
 }

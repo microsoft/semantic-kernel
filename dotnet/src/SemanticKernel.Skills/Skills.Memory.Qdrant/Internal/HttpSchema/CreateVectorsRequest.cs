@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
@@ -47,11 +48,11 @@ where TEmbedding : unmanaged
     private CreateVectorsRequest(string collectionName)
     {
         this._collectionName = collectionName;
-        this.Batch = new BatchData();
+        this.Batch = new BatchData<TEmbedding>();
     }
 
     [JsonPropertyName("batch")]
-    private BatchData Batch { get; set; }
+    private BatchData<TEmbedding> Batch { get; set; }
 
     #endregion
 }

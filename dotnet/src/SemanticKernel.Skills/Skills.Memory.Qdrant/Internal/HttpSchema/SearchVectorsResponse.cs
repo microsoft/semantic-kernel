@@ -11,22 +11,6 @@ namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 internal class SearchVectorsResponse<TEmbedding>
     where TEmbedding : unmanaged
 {
-    internal class VectorFound
-    {
-        internal string QdrantId { get; set; } = string.Empty;
-        internal TEmbedding[] Vector { get; set; } = Array.Empty<TEmbedding>();
-        internal int Version { get; set; }
-        internal double? Score { get; set; }
-        internal string ExternalId { get; set; } = string.Empty;
-        internal Dictionary<string, object> ExternalPayload { get; set; } = new();
-        internal List<string> ExternalTags { get; set; } = new();
-
-        internal VectorFound()
-        {
-            this.Version = 0;
-            this.ExternalTags = new List<string>();
-        }
-    }
 
     internal string Status { get; set; }
     internal List<VectorFound> Vectors { get; set; }
