@@ -40,6 +40,8 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
     }, []);
 
     const getResponse = async (m: IChatMessage) => {
+        const projectUri = project.endsWith('/') ? project.substring(0, project.length - 1) : project;
+
         try {
             var result = await sk.invokeAsync(
                 keyConfig,
@@ -47,7 +49,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                     value: m.content,
                     inputs: [
                         { key: 'relevance', value: relevance.toString() },
-                        { key: 'collection', value: 'GitHubSkillMemory' },
+                        { key: 'collection', value: `${projectUri}-${branch}` },
                     ],
                 },
                 'QASkill',
