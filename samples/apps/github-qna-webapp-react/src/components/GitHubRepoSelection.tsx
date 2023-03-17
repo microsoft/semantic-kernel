@@ -2,7 +2,7 @@
 
 import { Body1, Button, Input, Label, Spinner, Title3 } from '@fluentui/react-components';
 import { ArrowDownload16Regular, CheckmarkCircle20Filled, ErrorCircle20Regular } from '@fluentui/react-icons';
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
 import { IKeyConfig } from '../model/KeyConfig';
 
@@ -48,41 +48,6 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, onLoadProject, onBa
             alert('Something went wrong.\n\nDetails:\n' + e);
         }
     };
-
-    let DownloadStatus = <></>;
-    useEffect(() => {
-        switch (downloadState) {
-            case DownloadState.Loading:
-                DownloadStatus = (
-                    <>
-                        <Spinner size="extra-small" />
-                        <Body1>
-                            Summarizing repository markdown files. Please wait, this can take several minutes depending
-                            on the number of files.
-                        </Body1>
-                    </>
-                );
-                break;
-            case DownloadState.Loaded:
-                DownloadStatus = (
-                    <>
-                        <CheckmarkCircle20Filled color="green" />
-                        <Body1>
-                            Repository markdown files summarized. You can ask questions about it on the next page.
-                        </Body1>
-                    </>
-                );
-                break;
-            case DownloadState.Error:
-                DownloadStatus = (
-                    <>
-                        <ErrorCircle20Regular color="red" />
-                        <Body1>There was an error summarizing the repository. Please try again.</Body1>
-                    </>
-                );
-                break;
-        }
-    }, [downloadState]);
 
     return (
         <div style={{ paddingTop: 20, gap: 20, display: 'flex', flexDirection: 'column', alignItems: 'left' }}>
