@@ -32,7 +32,7 @@ export const ChatInput: FC<ChatInputProps> = (props) => {
         <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
             <Input
                 style={{ width: '100%' }}
-                placeholder="Type your question here"
+                placeholder="Type a question you have for the repo"
                 value={value}
                 multiple
                 onChange={(e, d) => setValue(d.value)}

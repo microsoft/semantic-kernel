@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Body1, Button, Label, Slider, SliderOnChangeData, Title3 } from '@fluentui/react-components';
+import { Avatar, Body1, Button, Label, Slider, SliderOnChangeData, Title3 } from '@fluentui/react-components';
 import React, { FC, useCallback, useState } from 'react';
 import { ChatHistoryItem, IChatMessage } from './chat/ChatHistoryItem';
 
+import GithubAvatar from '../assets/icons8-github-512.png';
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
 import { IKeyConfig } from '../model/KeyConfig';
 import { ChatInput } from './chat/ChatInput';
@@ -24,7 +25,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
     const [chatHistory, setChatHistory] = useState<IChatMessage[]>([
         {
             content:
-                "Hi! I'm your GitHub Repo bot. Here's the GitHub repo you selected: <a href={project}>" +
+                "Hi! I'm your GitHub Repo bot. Here's the repo you are interested in: <a href={project}>" +
                 project +
                 '</a>',
             author: 'GitHub Repo Bot',
@@ -89,15 +90,36 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
             <div
                 style={{
                     position: 'relative',
-                    maxHeight: '70vh',
+                    maxHeight: '690px',
+                    maxWidth: '1052px',
                     display: 'grid',
                     gridTemplateColumns: 'minmax(300px, 800px)',
                     gridTemplateRows: 'auto 1fr auto',
                     gridTemplateAreas: "'menu' 'content' 'footer'",
                     justifyContent: 'center',
+                    boxShadow: '0 2px 4px 0 lightgray',
+                    padding: '2% 5% 2%',
                 }}
             >
-                <div style={{ gridArea: 'content', overflowY: 'auto', overflowX: 'hidden', padding: '1rem 0' }}>
+                <div
+                    style={{
+                        gridArea: 'content',
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        padding: '1rem 0',
+                        height: '500px',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        gap: 10,
+                    }}
+                >
+                    <Avatar
+                        image={{
+                            src: GithubAvatar,
+                        }}
+                        color="neutral"
+                        badge={{ status: 'available' }}
+                    />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {chatHistory.map((m, idx) => (
                             <ChatHistoryItem key={idx} message={m} />
@@ -127,6 +149,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                     alignItems: 'left',
                     gap: '20',
                     justifyContent: 'space-between',
+                    marginTop: 20,
                 }}
             >
                 <Button onClick={() => onBack()} style={{ height: 'fit-content' }}>

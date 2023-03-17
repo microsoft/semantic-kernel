@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Dropdown, Label, Option, Spinner } from '@fluentui/react-components';
+import { Dropdown, Link, Option, Spinner } from '@fluentui/react-components';
+import { InfoLabel } from '@fluentui/react-components/unstable';
 // import { Configuration, OpenAIApi } from 'openai';
 import { FC, useEffect, useState } from 'react';
+import '../../App.css';
 import { IBackendConfig } from '../../model/KeyConfig';
 
 interface IData {
@@ -32,7 +34,7 @@ const ModelConfig: FC<IData> = ({
     setBackendConfig,
     defaultModel = '',
 }) => {
-    const modelTitle = modelType === ModelType.Embeddings ? ['embedding', 'Embedding'] : ['completion', 'Completion'];
+    const modelTitle = modelType === ModelType.Embeddings ? ['embeddings', 'Embeddings'] : ['completion', 'Completion'];
     const labelPrefix = `${isOpenAI ? 'oai' : 'aoai'}${modelTitle[0]}`;
     const [modelIds, setModelIds] = useState<ModelOption[] | undefined>();
     const [isBusy, setIsBusy] = useState(false);
@@ -107,7 +109,19 @@ const ModelConfig: FC<IData> = ({
 
     return (
         <div style={{ paddingTop: 20, gap: 10, display: 'flex', flexDirection: 'column', alignItems: 'left' }}>
-            <Label htmlFor={`${labelPrefix}model`}>{modelTitle[1]} Model</Label>
+            <InfoLabel
+                info={
+                    <div style={{ maxWidth: 250 }}>
+                        Please note this drop down lists all available models, but not all will work as{' '}
+                        {(modelType === ModelType.Completion ? 'a ' : 'an ') + modelTitle[0]} model.{' '}
+                        <Link href="https://platform.openai.com/docs/models"> Click here to learn more </Link>
+                        about the differences between completion and embedding models.
+                    </div>
+                }
+                htmlFor={`${labelPrefix}model`}
+            >
+                {modelTitle[1]} Model
+            </InfoLabel>
             <div style={{ display: 'flex', gap: 10, flexDirection: 'row', alignItems: 'left' }}>
                 {isBusy ? <Spinner size="tiny" /> : null}
                 <Dropdown
@@ -116,7 +130,7 @@ const ModelConfig: FC<IData> = ({
                     placeholder={
                         modelIds
                             ? 'Select a model id'
-                            : `Enter valid key ${isOpenAI ? '' : 'and endpoint to load'} models`
+                            : `Enter valid key ${isOpenAI ? '' : 'and endpoint'} to load models`
                     }
                     onOptionSelect={(_e, model) => {
                         setSelectedModel(model.optionValue ?? '');

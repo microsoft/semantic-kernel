@@ -13,7 +13,7 @@ export const SK_HTTP_HEADER_EMBEDDING_KEY: string = 'x-ms-sk-embedding-key';
 export const SK_HTTP_HEADER_MSGRAPH: string = 'x-ms-sk-msgraph';
 
 export interface IBackendConfig {
-    backend: number; //OpenAI = 0, Azure OpenAI = 1
+    backend: number; //OpenAI = 1, Azure OpenAI = 0
     label: string;
     deploymentOrModelId: string;
     endpoint: string;
