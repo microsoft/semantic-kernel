@@ -118,7 +118,7 @@ where TEmbedding : unmanaged
 
         using var request = CreateVectorsRequest<TEmbedding>
             .CreateIn(collectionName)
-            .UpsertVector(Base64Encode(vectorData.Key), vectorData.Value).Build();
+            .UpsertVector(Base64Encode(vectorData.Key), vectorData.Value!).Build();
         var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
 
         if (response.StatusCode == HttpStatusCode.UnprocessableEntity

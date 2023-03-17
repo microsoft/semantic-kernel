@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;

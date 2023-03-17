@@ -46,7 +46,7 @@ internal static class HttpRequest
         return new HttpRequestMessage(HttpMethod.Delete, url);
     }
 
-public static async Task SendHttpFromJsonAsync<TObject>(HttpClient httpClient, HttpMethod methodType, string qdranturl, TObject httpContentData)
+public static async Task SendHttpFromJsonAsync<TObject, TResult>(HttpClient httpClient, HttpMethod methodType, string qdranturl, TObject? httpContentData)
 { 
     //TODO: Clean this up-TEW
 
@@ -55,26 +55,26 @@ public static async Task SendHttpFromJsonAsync<TObject>(HttpClient httpClient, H
     switch (methodType.ToString())
     {
         case "GET":
-            var result = await httpClient.GetFromJsonAsync<TObject>(qdranturl);
+            var getResult = await httpClient.GetFromJsonAsync<TObject>(qdranturl);
             break;
         case "POST":
             {using HttpResponseMessage response = await httpClient.PostAsJsonAsync<TObject>(
-                    "todos?userId=1&completed=false");
+                    qdranturl);
                     response.EnsureSuccessStatusCode();
                     httpResponse = response;
             }
             break;
         case "PUT":
-            var result = await httpClient.PutAsJsonAsync<TObject>(
-                "todos?userId=1&completed=false");
+            var putResult = await httpClient.PutAsJsonAsync<TObject>(
+                qdranturl);
             break;
         case "PATCH":
-            var result = await httpClient.PatchAsync(
-                "todos?userId=1&completed=false");
+            var pathResult = await httpClient.PatchAsync(
+                qdranturl);
             break;
         case "DELETE":
-            var result = await httpClient.DeleteAsync(
-                "todos?userId=1&completed=false");
+            var deleteResult = await httpClient.DeleteAsync(
+                qdranturl);
             break;
         default:
             break;
