@@ -130,7 +130,7 @@ BEGIN SUMMARY:
 
         try
         {
-            var repositoryUri = source.Trim(new char[] {' ', '/'});
+            var repositoryUri = source.Trim(new char[] { ' ', '/' });
             var context1 = new SKContext(new ContextVariables(), NullMemory.Instance, null, context.Log);
             context1.Variables.Set(Parameters.FilePath, filePath);
             await this._downloadSkill.DownloadToFileAsync($"{repositoryUri}/archive/refs/heads/{repositoryBranch}.zip", context1);
