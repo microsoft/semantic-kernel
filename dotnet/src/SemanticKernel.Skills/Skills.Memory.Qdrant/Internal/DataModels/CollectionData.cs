@@ -2,16 +2,13 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
+
 internal class CollectionData
 {
-    internal string CollectionStatus { get; set; } = string.Empty;
-    internal string OptimizerStatus { get; set; } = string.Empty;
-    internal int VectorsCount { get; set; }
-    internal int IndexedVectorsCount { get; set; }
-    internal int PointsCount { get; set; }
-    internal int SegmentsCount { get; set; }
-    internal int VectorsSize { get; set; }
-    internal string Distance { get; set; } = string.Empty;
+    public string? CollectionName {get; set;}
+    public QdrantResponse? CollectionResponse {get; set;}
+
 }
