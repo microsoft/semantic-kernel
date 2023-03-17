@@ -1,0 +1,23 @@
+{
+  "name": "semantic-kernel",
+  "version": "0.1.0",
+  "description": "The TypeScript SDK for Semantic Kernel",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "author": {
+    "name": "Microsoft Corp.",
+    "email": "SK-Support@microsoft.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "openai": "^3.2.1"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.4",
+    "typescript": "^5.0.2"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "packageManager": "yarn@3.5.0"
+}
