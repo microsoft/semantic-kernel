@@ -114,7 +114,7 @@ BEGIN SUMMARY:
     [SKFunctionName("SummarizeRepository")]
     [SKFunctionInput(Description = "URL of the GitHub repository to summarize")]
     [SKFunctionContextParameter(Name = Parameters.RepositoryBranch,
-        Description = "Name of the repository repositoryBranch which will be downloaded and summarized")]
+        Description = "Name of the repository branch which will be downloaded and summarized")]
     [SKFunctionContextParameter(Name = Parameters.SearchPattern, Description = "The search string to match against the names of files in the repository")]
     public async Task SummarizeRepositoryAsync(string source, SKContext context)
     {
@@ -169,14 +169,13 @@ BEGIN SUMMARY:
 
         if (code != null && code.Length > 0)
         {
-            string text;
             if (code.Length > MaxFileSize)
             {
                 this._logger.LogWarning("File with path {0} is longer than the maximum number of tokens", filePath);
                 return;
             }
 
-            text = $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}";
+            string text = $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}";
 
             await this._kernel.Memory.SaveInformationAsync($"{repositoryUri}-{repositoryBranch}", text: text, id: fileUri);
         }
