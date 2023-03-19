@@ -24,6 +24,8 @@
     "skipLibCheck": true,
     "alwaysStrict": true,
     "preserveConstEnums": true,
-    "types": []
+    "types": [
+      "node"
+    ]
   }
 }

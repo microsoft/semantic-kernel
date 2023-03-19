@@ -13,6 +13,7 @@
     "openai": "^3.2.1"
   },
   "devDependencies": {
+    "@types/node": "^18.15.3",
     "prettier": "^2.8.4",
     "typescript": "^5.0.2"
   },

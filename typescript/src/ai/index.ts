@@ -1,7 +1,5 @@
-/**
- * Copyright (c) Microsoft Corporation. All rights reserved.
- */
+// Copyright (c) Microsoft Corporation. All rights reserved.
 
-// export * from './openAI';
-// export * from './completeRequestSettings';
-// export * from './iTextCompletionClient';
+export * from './aiException';
+export * from './completeRequestSettings';
+export * from './iTextCompletionClient';

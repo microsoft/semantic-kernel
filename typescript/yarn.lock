@@ -5,6 +5,13 @@ __metadata:
   version: 6
   cacheKey: 8
 
+"@types/node@npm:^18.15.3":
+  version: 18.15.3
+  resolution: "@types/node@npm:18.15.3"
+  checksum: 31b1d92475a82c30de29aa6c0771b18a276552d191283b4423ba2d61b3f01159bf0d02576c0b7cc834b043997893800db6bb47f246083ed85aa45e79c80875d7
+  languageName: node
+  linkType: hard
+
 "asynckit@npm:^0.4.0":
   version: 0.4.0
   resolution: "asynckit@npm:0.4.0"
@@ -97,6 +104,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "semantic-kernel@workspace:."
   dependencies:
+    "@types/node": ^18.15.3
     openai: ^3.2.1
     prettier: ^2.8.4
     typescript: ^5.0.2
