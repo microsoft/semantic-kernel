@@ -35,8 +35,9 @@ export class CompleteRequestSettings {
 
     /**
      * Create a new settings object with the values from another settings object.
-     * @param config Completion configuration
-     * @returns Settings for completion request
+     *
+     * @param config Completion configuration.
+     * @returns Settings for completion request.
      */
     public static fromCompletionConfig(config: ICompletionConfig): ICompleteRequestSettings {
         return {

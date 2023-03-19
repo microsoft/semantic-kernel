@@ -19,12 +19,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^0.26.0":
-  version: 0.26.1
-  resolution: "axios@npm:0.26.1"
+"axios@npm:^1.3.4":
+  version: 1.3.4
+  resolution: "axios@npm:1.3.4"
   dependencies:
-    follow-redirects: ^1.14.8
-  checksum: d9eb58ff4bc0b36a04783fc9ff760e9245c829a5a1052ee7ca6013410d427036b1d10d04e7380c02f3508c5eaf3485b1ae67bd2adbfec3683704745c8d7a6e1a
+    follow-redirects: ^1.15.0
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: 7440edefcf8498bc3cdf39de00443e8101f249972c83b739c6e880d9d669fea9486372dbe8739e88b3bf8bb1ad15f6106693f206f078f4516fe8fd47b1c3093c
   languageName: node
   linkType: hard
 
@@ -44,7 +46,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.8":
+"follow-redirects@npm:^1.15.0":
   version: 1.15.2
   resolution: "follow-redirects@npm:1.15.2"
   peerDependenciesMeta:
@@ -81,16 +83,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^3.2.1":
-  version: 3.2.1
-  resolution: "openai@npm:3.2.1"
-  dependencies:
-    axios: ^0.26.0
-    form-data: ^4.0.0
-  checksum: ef3942e9b527cf27273c4355bb8fb9ebd94ae3a88c12eec0ac51c4ef0ad8c18864683759471597390816bcd822bdc9f2f1cea7a3eb1e432c9101f568f7c6d19a
-  languageName: node
-  linkType: hard
-
 "prettier@npm:^2.8.4":
   version: 2.8.4
   resolution: "prettier@npm:2.8.4"
@@ -100,12 +92,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"proxy-from-env@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "proxy-from-env@npm:1.1.0"
+  checksum: ed7fcc2ba0a33404958e34d95d18638249a68c430e30fcb6c478497d72739ba64ce9810a24f53a7d921d0c065e5b78e3822759800698167256b04659366ca4d4
+  languageName: node
+  linkType: hard
+
 "semantic-kernel@workspace:.":
   version: 0.0.0-use.local
   resolution: "semantic-kernel@workspace:."
   dependencies:
     "@types/node": ^18.15.3
-    openai: ^3.2.1
+    axios: ^1.3.4
     prettier: ^2.8.4
     typescript: ^5.0.2
   languageName: unknown

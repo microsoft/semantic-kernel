@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
 import { SKContext } from '../orchestration';
-import { ParameterView } from '../registry';
+import { ParameterView } from '../skillDefinition';
 
 /**
  * Interface for prompt template.

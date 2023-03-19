@@ -18,13 +18,16 @@ export abstract class AzureOpenAIClientAbstract extends OpenAIClientAbstract {
 
     // Default Azure OpenAI REST API version
     protected static readonly defaultAzureAPIVersion = '2022-12-01';
-    // Azure endpoint of your models
+
     protected get azureOpenAIApiVersion(): string {
         return this._azureOpenAIApiVersion;
     }
+
     protected set azureOpenAIApiVersion(value: string) {
         Verify.notEmpty(value, 'Invalid Azure OpenAI API version, the value is empty');
+        this._azureOpenAIApiVersion = value;
     }
+
     // Azure endpoint of your models
     protected endpoint: string = '';
 

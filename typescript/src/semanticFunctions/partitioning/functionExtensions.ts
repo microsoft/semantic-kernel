@@ -13,7 +13,11 @@ export class FunctionExtensions {
      * @param context Semantic Kernel context.
      * @returns Aggregated results.
      */
-    public static async aggregatePartitionedResults(func: ISKFunction, partitionedInput: string[], context: SKContext): Promise<string[]> {
+    public static async aggregatePartitionedResults(
+        func: ISKFunction,
+        partitionedInput: string[],
+        context: SKContext
+    ): Promise<string[]> {
         const results = [];
 
         for (const partition of partitionedInput) {

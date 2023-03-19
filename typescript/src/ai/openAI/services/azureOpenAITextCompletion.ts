@@ -4,7 +4,7 @@ import { ILogger } from '../../../utils/logger';
 import { Verify } from '../../../utils/verify';
 import { ICompleteRequestSettings } from '../../completeRequestSettings';
 import { ITextCompletionClient } from '../../iTextCompletionClient';
-import { AzureOpenAIClientAbstract } from '../clients/AzureOpenAIClientAbstract';
+import { AzureOpenAIClientAbstract } from '../clients/azureOpenAIClientAbstract';
 import { IAzureOpenAICompletionRequest } from '../httpSchema';
 
 /**
@@ -47,11 +47,7 @@ export class AzureOpenAITextCompletion extends AzureOpenAIClientAbstract impleme
      * @param cancellationToken Cancellation token
      * @returns The completed text
      */
-    public async complete(
-        text: string,
-        requestSettings: ICompleteRequestSettings,
-        _cancellationToken: unknown
-    ): Promise<string> {
+    public async complete(text: string, requestSettings: ICompleteRequestSettings): Promise<string> {
         if (!requestSettings) {
             throw new Error('Completion settings cannot be empty');
         }

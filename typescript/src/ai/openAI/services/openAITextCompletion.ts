@@ -10,6 +10,7 @@ import { IOpenAICompletionRequest } from '../httpSchema';
 export class OpenAITextCompletion extends OpenAIClientAbstract implements ITextCompletionClient {
     // 3P OpenAI REST API endpoint
     private static readonly openAIEndpoint = 'https://api.openai.com/v1';
+
     // Model ID
     private readonly _modelId: string;
 
@@ -46,11 +47,7 @@ export class OpenAITextCompletion extends OpenAIClientAbstract implements ITextC
      * @param cancellationToken Cancellation token
      * @returns The completed text
      */
-    public async complete(
-        text: string,
-        requestSettings: CompleteRequestSettings,
-        _cancellationToken: unknown
-    ): Promise<string> {
+    public async complete(text: string, requestSettings: CompleteRequestSettings): Promise<string> {
         if (!requestSettings) {
             throw new Error('Completion settings cannot be empty');
         }

@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
-import { ContextVariables } from './ContextVariables';
+import { ContextVariables } from './contextVariables';
 import { IFunctionRegistryReader } from '../Registry';
-import { ISKFunction } from './ISKFunction';
+import { ISKFunction } from './iSKFunction';
 import { Verify } from '../utils/verify';
-import { ILogger, NullLogger } from '../Logger';
+import { ILogger, NullLogger } from '../utils/logger';
 
 export class SKContext {
     private readonly _variables: ContextVariables;

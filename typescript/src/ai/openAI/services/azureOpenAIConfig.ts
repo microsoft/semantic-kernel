@@ -20,10 +20,13 @@ export interface IAzureOpenAIConfig {
 export class AzureOpenAIConfig extends BackendConfig implements IAzureOpenAIConfig {
     // Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource.
     public deploymentName: string;
+
     // Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart.
     public endpoint: string;
+
     // Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart.
     public apiKey: string;
+
     // Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference.
     public apiVersion: string;
 

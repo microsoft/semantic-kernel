@@ -4,18 +4,21 @@ import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { HttpStatusCode } from '../../../utils/httpStatusCode';
 import { ILogger, NullLogger } from '../../../utils/logger';
 import { Verify } from '../../../utils/verify';
-import { Embedding } from '../../Embeddings';
-import { ICompletionResponse, IEmbeddingResponse } from '../HttpSchema';
+import { Embedding } from '../../embeddings';
+import { ICompletionResponse, IEmbeddingResponse } from '../httpSchema';
 
 /**
  * An abstract OpenAI Client.
  */
 export abstract class OpenAIClientAbstract {
     private readonly _httpClientHandler: AxiosRequestConfig;
+
     // HTTP user agent sent to remote endpoints
     private readonly httpUserAgent: string = 'Microsoft Semantic Kernel';
+
     // Logger
     protected readonly log: ILogger;
+
     // HTTP client
     protected httpClient?: AxiosInstance;
 

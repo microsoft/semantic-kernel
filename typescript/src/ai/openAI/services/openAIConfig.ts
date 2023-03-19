@@ -18,8 +18,10 @@ export interface IOpenAIConfig {
 export class OpenAIConfig extends BackendConfig implements IOpenAIConfig {
     // OpenAI model name, see https://platform.openai.com/docs/models.
     public readonly modelId: string;
+
     // OpenAI API key, see https://platform.openai.com/account/api-keys.
     public readonly apiKey: string;
+
     // OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.
     public readonly orgId?: string;
 
