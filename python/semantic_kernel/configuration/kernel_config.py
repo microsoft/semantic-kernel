@@ -17,9 +17,66 @@ from semantic_kernel.reliability.retry_mechanism import RetryMechanism
 class KernelConfig:
     _completion_backends: Dict[str, BackendConfig] = {}
     _embeddings_backends: Dict[str, BackendConfig] = {}
+    _chat_backends: Dict[str, BackendConfig] = {}
     _default_completion_backend: Optional[str] = None
     _default_embeddings_backend: Optional[str] = None
+    _default_chat_backend: Optional[str] = None
     _retry_mechanism: RetryMechanism = PassThroughWithoutRetry()
+
+    def add_openai_chat_backend(
+        self,
+        name: str,
+        model_id: str,
+        api_key: str,
+        org_id: Optional[str] = None,
+        overwrite: bool = False,
+    ) -> "KernelConfig":
+        Verify.not_empty(name, "The backend name is empty")
+
+        if not overwrite and name in self._chat_backends:
+            raise KernelException(
+                KernelException.ErrorCodes.InvalidBackendConfiguration,
+                f"The chat backend cannot be added twice: {name}",
+            )
+
+        self._chat_backends[name] = BackendConfig(
+            backend_type=BackendType.OpenAI,
+            open_ai=OpenAIConfig(model_id, api_key, org_id),
+        )
+
+        if self._default_chat_backend is None:
+            self._default_chat_backend = name
+
+        return self
+
+    def add_azure_openai_chat_backend(
+        self,
+        name: str,
+        deployment_name: str,
+        endpoint: str,
+        api_key: str,
+        api_version: str = "2022-12-01",
+        overwrite: bool = False,
+    ) -> "KernelConfig":
+        Verify.not_empty(name, "The backend name is empty")
+
+        if not overwrite and name in self._chat_backends:
+            raise KernelException(
+                KernelException.ErrorCodes.InvalidBackendConfiguration,
+                f"The chat backend cannot be added twice: {name}",
+            )
+
+        self._chat_backends[name] = BackendConfig(
+            backend_type=BackendType.AzureOpenAI,
+            azure_open_ai=AzureOpenAIConfig(
+                deployment_name, endpoint, api_key, api_version
+            ),
+        )
+
+        if self._default_chat_backend is None:
+            self._default_chat_backend = name
+
+        return self
 
     def add_azure_openai_completion_backend(
         self,
@@ -151,6 +208,14 @@ class KernelConfig:
             [name == n and condition(v) for n, v in self._embeddings_backends.items()]
         )
 
+    def has_chat_backend(
+        self, name: str, condition: Optional[Callable[[BackendConfig], bool]] = None
+    ) -> bool:
+        if condition is None:
+            return name in self._chat_backends
+
+        return any([name == n and condition(v) for n, v in self._chat_backends.items()])
+
     def set_retry_mechanism(
         self, retry_mechanism: Optional[RetryMechanism]
     ) -> "KernelConfig":
@@ -188,6 +253,20 @@ class KernelConfig:
     @property
     def default_embeddings_backend(self) -> Optional[str]:
         return self._default_embeddings_backend
+
+    def set_default_chat_backend(self, name: str) -> "KernelConfig":
+        if name not in self._chat_backends:
+            raise KernelException(
+                KernelException.ErrorCodes.BackendNotFound,
+                f"The chat backend doesn't exist: {name}",
+            )
+
+        self._default_chat_backend = name
+        return self
+
+    @property
+    def default_chat_backend(self) -> Optional[str]:
+        return self._default_chat_backend
 
     def get_completion_backend(self, name: Optional[str]) -> BackendConfig:
         if name is None or name.strip() == "":
@@ -233,11 +312,36 @@ class KernelConfig:
             f"Embeddings backend not found: {name}. " f"No default backend available.",
         )
 
+    def get_chat_backend(self, name: Optional[str]) -> BackendConfig:
+        if name is None or name.strip() == "":
+            if self._default_chat_backend is None:
+                raise KernelException(
+                    KernelException.ErrorCodes.BackendNotFound,
+                    f"Chat backend not found: {name}. "
+                    f"No default backend available.",
+                )
+
+            return self._chat_backends[self._default_chat_backend]
+
+        if name in self._chat_backends:
+            return self._chat_backends[name]
+
+        if self._default_chat_backend is not None:
+            return self._chat_backends[self._default_chat_backend]
+
+        raise KernelException(
+            KernelException.ErrorCodes.BackendNotFound,
+            f"Chat backend not found: {name}. " f"No default backend available.",
+        )
+
     def get_all_completion_backends(self) -> List[BackendConfig]:
         return list(self._completion_backends.values())
 
     def get_all_embeddings_backends(self) -> List[BackendConfig]:
         return list(self._embeddings_backends.values())
+
+    def get_all_chat_backends(self) -> List[BackendConfig]:
+        return list(self._chat_backends.values())
 
     def remove_completion_backend(self, name: str) -> None:
         if name in self._completion_backends:
@@ -261,6 +365,17 @@ class KernelConfig:
                 else None
             )
 
+    def remove_chat_backend(self, name: str) -> None:
+        if name in self._chat_backends:
+            del self._chat_backends[name]
+
+        if name == self._default_chat_backend:
+            self._default_chat_backend = (
+                list(self._chat_backends.keys())[0]
+                if len(self._chat_backends) > 0
+                else None
+            )
+
     def remove_all_completion_backends(self) -> None:
         self._completion_backends.clear()
         self._default_completion_backend = None
@@ -269,6 +384,11 @@ class KernelConfig:
         self._embeddings_backends.clear()
         self._default_embeddings_backend = None
 
+    def remove_all_chat_backends(self) -> None:
+        self._chat_backends.clear()
+        self._default_chat_backend = None
+
     def remove_all_backends(self) -> None:
         self.remove_all_completion_backends()
         self.remove_all_embeddings_backends()
+        self.remove_all_chat_backends()
