@@ -1,6 +1,6 @@
 {
-  "name": "semantic-kernel",
-  "version": "0.1.0",
+  "name": "@microsoft/semantic-kernel",
+  "version": "0.1.0-preview.0",
   "description": "The TypeScript SDK for Semantic Kernel",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
