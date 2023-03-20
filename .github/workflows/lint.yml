@@ -24,4 +24,4 @@ jobs:
       - name: Install SemanticKernel
         run: pip install -e '.[all]'
       - name: Run lint
-        run: ruff check .
+        run: ruff check ./python/
