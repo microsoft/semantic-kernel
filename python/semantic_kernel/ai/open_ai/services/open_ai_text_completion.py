@@ -40,6 +40,15 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
 
+    def _setup_open_ai(self) -> Any:
+        import openai
+
+        openai.api_key = self._api_key
+        if self._org_id is not None:
+            openai.organization = self._org_id
+
+        return openai
+
     async def complete_simple_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> str:
@@ -54,8 +63,6 @@ class OpenAITextCompletion(TextCompletionClientBase):
         Returns:
             str -- The completed text.
         """
-        import openai
-
         Verify.not_empty(prompt, "The prompt is empty")
         Verify.not_null(request_settings, "The request settings cannot be empty")
 
@@ -80,13 +87,17 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 f"but logprobs={request_settings.logprobs} was requested",
             )
 
-        openai.api_key = self._api_key
-        if self._org_id is not None:
-            openai.organization = self._org_id
+        openai = self._setup_open_ai()
+
+        model_args = {}
+        if openai.api_type == "azure":
+            model_args["engine"] = self._model_id
+        else:
+            model_args["model"] = self._model_id
 
         try:
             response: Any = await openai.Completion.acreate(
-                model=self._model_id,
+                **model_args,
                 prompt=prompt,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
