@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.KernelExtensions;
 
 namespace SemanticKernel.IntegrationTests;
 
