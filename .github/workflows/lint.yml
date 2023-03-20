@@ -24,4 +24,4 @@ jobs:
       - name: Install SemanticKernel
         run: cd python && poetry install
       - name: Run lint
-        run: cd python && poetry run ruff check ./python/
+        run: cd python && poetry run ruff check .
