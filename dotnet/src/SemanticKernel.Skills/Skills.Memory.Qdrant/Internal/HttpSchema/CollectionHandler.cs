@@ -62,7 +62,7 @@ internal class CollectionHandler : IValidatable
         return qdrantResult!;
     }
 
-    internal async Task<IQdrantResult> CheckCollectionExistsAsync(string collectionName)
+    public async Task<IQdrantResult> CheckCollectionExistsAsync(string collectionName)
     {
         IQdrantResult? qdrantCheckResult = null;
         string getURL = QdrantApiUrlConstants.GetCollectionUrl(collectionName);
@@ -95,11 +95,11 @@ internal class CollectionHandler : IValidatable
 
         this.Validate();
 
-        /*response = await HttpRequest.SendHttpFromJsonAsync<VectorSettings>(
-                    this._client,
-                    HttpMethod.Put,
-                    qdrantCreateUrl,
-                    this._settings);*/
+        qdrantResult = await HttpRequest.SendHttpFromJsonAsync<CreateCollectionResult, VectorSettings>(
+                        this._client,
+                        HttpMethod.Put,
+                        qdrantCreateUrl,
+                        this._settings, null);
 
         return qdrantResult!;
     }
@@ -110,10 +110,10 @@ internal class CollectionHandler : IValidatable
        
         string qdrantListUrl = QdrantApiUrlConstants.GetCollectionsNamesUrl();
 
-        qdrantResult = await HttpRequest.SendHttpFromJsonAsync<IQdrantResult>(
+        qdrantResult = await HttpRequest.SendHttpFromJsonAsync<ListInfoResult, IQdrantResult>(
                     this._client,
                     HttpMethod.Get,
-                    qdrantListUrl, null);
+                    qdrantListUrl, null, null);
 
         return qdrantResult!;
     }
@@ -121,7 +121,17 @@ internal class CollectionHandler : IValidatable
     internal async Task<IQdrantResult> DeleteCollectionAsync(string collectionName)
     {
 
-        return null;
+        IQdrantResult? qdrantResult = null;
+
+        string qdrantListUrl = QdrantApiUrlConstants.DeleteCollectionUrl(collectionName);
+
+        qdrantResult = await HttpRequest.SendHttpFromJsonAsync<DeleteCollectionResult, IQdrantResult>(
+                    this._client,
+                    HttpMethod.Delete,
+                    qdrantListUrl, null, null);
+        
+        return qdrantResult!;
+
     }
 
 

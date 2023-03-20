@@ -47,7 +47,7 @@ internal static class HttpRequest
         return new HttpRequestMessage(HttpMethod.Delete, url);
     }
 
-    public static async Task<TResult> SendHttpFromJsonAsync<TResult>(HttpClient httpClient, HttpMethod methodType, string qdranturl, TResult? httpContentData)
+    public static async Task<TResult> SendHttpFromJsonAsync<TResult, TContent>(HttpClient httpClient, HttpMethod methodType, string qdranturl, TContent? httpContentData, TResult? qdrantData)
     {
         TResult httpResult = default!;
         
@@ -68,7 +68,7 @@ internal static class HttpRequest
             case nameof(HttpMethod.Post):
                 {
                     using HttpResponseMessage httpResponse = 
-                        await httpClient.PostAsJsonAsync<TResult>(qdranturl, httpContentData!);
+                        await httpClient.PostAsJsonAsync<TResult>(qdranturl, qdrantData!);
                     try
                     {
                         httpResponse.EnsureSuccessStatusCode();
@@ -86,7 +86,7 @@ internal static class HttpRequest
             case nameof(HttpMethod.Put):
                 {
                     using HttpResponseMessage httpResponse = 
-                        await httpClient.PutAsJsonAsync<TResult>(qdranturl, httpContentData!);
+                        await httpClient.PutAsJsonAsync<TResult>(qdranturl, qdrantData!);
                     
                     try
                     {
@@ -105,7 +105,7 @@ internal static class HttpRequest
             case nameof(HttpMethod.Patch):
                 {
                     using HttpResponseMessage httpResponse = 
-                        await httpClient.PatchAsJsonAsync<TResult>(qdranturl, httpContentData!);
+                        await httpClient.PatchAsJsonAsync<TResult>(qdranturl, qdrantData!);
 
                     try
                     {

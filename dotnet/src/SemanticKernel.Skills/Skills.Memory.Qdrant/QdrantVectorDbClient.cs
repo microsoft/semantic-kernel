@@ -37,6 +37,18 @@ where TEmbedding : unmanaged
         set { this._httpClient.BaseAddress = SanitizeEndpoint(this.BaseAddress, value); }
     }
 
+    public int VectorSize
+    {
+        get { return this._vectorSize > 0 ? this._vectorSize : this._defaultVectorSize; }
+        set { this._vectorSize = value ! > 0 ? value : this._defaultVectorSize; }
+    }
+
+    public QdrantDistanceType DistanceType
+    {
+        get { return this._distanceType; }
+        set { this._distanceType = value; }
+    }
+
     public QdrantVectorDbClient(
         string endpoint,
         int? port = null,
@@ -52,6 +64,8 @@ where TEmbedding : unmanaged
         {
             this.Port = port.Value;
         }
+
+
     }
 
     public bool IsExistingCollection(string collectionName)
@@ -59,11 +73,14 @@ where TEmbedding : unmanaged
         return false;
     }
     
-    public async Task GetCollectionAsync(string collectionName)
+    public async Task<bool> GetCollectionAsync(string collectionName)
     {
+        CollectionHandler getCollectionHandler = 
+            CollectionHandler.Init(this.VectorSize, this.DistanceType );
+        return false;
 
     }
-    
+
     public async Task CreateCollectionAsync(string collectionName)
     {
         this._log.LogDebug("Creating collection {0}", collectionName);
@@ -272,6 +289,9 @@ where TEmbedding : unmanaged
     }
 
     #region private ================================================================================
+
+    private int _vectorSize;
+    private QdrantDistanceType _distanceType = QdrantDistanceType.Cosine;
 
     private readonly ILogger<QdrantVectorDbClient<TEmbedding>> _log;
     private readonly HttpClient _httpClient;
