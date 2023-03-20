@@ -14,6 +14,7 @@ using Microsoft.SemanticKernel.Memory.Storage;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
+using Micrsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
 using Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
@@ -68,15 +69,27 @@ where TEmbedding : unmanaged
 
     }
 
-    public bool IsExistingCollection(string collectionName)
+    public async Task<bool> IsExistingCollection(string collectionName)
     {
         return false;
     }
     
-    public async Task<bool> GetCollectionAsync(string collectionName)
+    public async Task<bool> GetCollectionInfoAsync(string collectionName)
     {
-        CollectionHandler getCollectionHandler = 
-            CollectionHandler.Init(this.VectorSize, this.DistanceType );
+        IQdrantResult? qdrantResult = null;
+        
+        CollectionHandler getCollectionInfoHandler = 
+            CollectionHandler.Init(this.VectorSize, this.DistanceType )
+                .Client(this._httpClient)
+                .Build();
+
+        qdrantResult = await getCollectionInfoHandler.ExecuteRequest(CollectionHandler.CollectionHandlerType.GetInfo, collectionName);
+        
+        if (qdrantResult == null)
+        {
+            return false;
+        }
+        
         return false;
 
     }

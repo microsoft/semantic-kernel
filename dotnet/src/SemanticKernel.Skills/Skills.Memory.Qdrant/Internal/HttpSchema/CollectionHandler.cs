@@ -10,7 +10,7 @@ using Micrsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
 
 namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
-internal class CollectionHandler : IValidatable
+public class CollectionHandler : IValidatable
 {
     public enum CollectionHandlerType
     {
@@ -39,7 +39,14 @@ internal class CollectionHandler : IValidatable
         return this;
     }
 
-    public async Task<IQdrantResult> Build(CollectionHandlerType requestType, string? collectionName = null)
+    public CollectionHandler Build()
+    {
+        this.Validate();
+
+        return this;
+    }
+
+    public async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestType, string? collectionName = null)
     {
         IQdrantResult? qdrantResult = null;
 
