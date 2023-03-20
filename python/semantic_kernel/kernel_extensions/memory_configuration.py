@@ -5,6 +5,7 @@ from typing import Optional
 from semantic_kernel.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
+from semantic_kernel.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
 from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
 )
@@ -38,8 +39,16 @@ def use_memory(
                 embeddings_backend_config.open_ai.org_id,
                 kernel.logger,
             )
+        elif embeddings_backend_config.backend_type == BackendType.AzureOpenAI:
+            assert embeddings_backend_config.azure_open_ai is not None
+            embeddings_generator = AzureTextEmbedding(
+                embeddings_backend_config.azure_open_ai.deployment_name,
+                embeddings_backend_config.azure_open_ai.endpoint,
+                embeddings_backend_config.azure_open_ai.api_key,
+                embeddings_backend_config.azure_open_ai.api_version,
+                kernel.logger,
+            )
         else:
-            # TODO: this
             raise NotImplementedError(
                 f"Embeddings backend {embeddings_backend_config.backend_type} "
                 "is not yet implemented"
