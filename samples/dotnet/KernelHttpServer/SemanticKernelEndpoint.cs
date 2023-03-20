@@ -123,4 +123,5 @@ public class SemanticKernelEndpoint
         await r.WriteAsJsonAsync(new AskResult { Value = result.Variables.ToPlan().Result });
         return r;
     }
+
 }

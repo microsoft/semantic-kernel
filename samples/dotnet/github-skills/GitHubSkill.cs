@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
@@ -10,11 +11,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Web;
-
-namespace GitHubSkillsExample;
 
 /// <summary>
 /// Skill for interacting with a GitHub repository.
@@ -66,11 +65,10 @@ public class GitHubSkill
     private readonly ISKFunction _summarizeCodeFunction;
     private readonly IKernel _kernel;
     private readonly WebFileDownloadSkill _downloadSkill;
-    private readonly DocumentSkill _documentSkill;
     private readonly ILogger<GitHubSkill> _logger;
 
     internal const string SummarizeCodeSnippetDefinition =
-        @"BEGIN CONTENT TO SUMMARIZE:
+    @"BEGIN CONTENT TO SUMMARIZE:
 {{$INPUT}}
 END CONTENT TO SUMMARIZE.
 
@@ -86,13 +84,11 @@ BEGIN SUMMARY:
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="downloadSkill">Instance of WebFileDownloadSkill used to download web files</param>
-    /// <param name="documentSkill">Instance of DocumentSkill used to read files</param>
     /// <param name="logger">Optional logger</param>
-    public GitHubSkill(IKernel kernel, WebFileDownloadSkill downloadSkill, DocumentSkill documentSkill, ILogger<GitHubSkill>? logger = null)
+    public GitHubSkill(IKernel kernel, WebFileDownloadSkill downloadSkill, ILogger<GitHubSkill>? logger = null)
     {
         this._kernel = kernel;
         this._downloadSkill = downloadSkill;
-        this._documentSkill = documentSkill;
         this._logger = logger ?? NullLogger<GitHubSkill>.Instance;
 
         this._summarizeCodeFunction = kernel.CreateSemanticFunction(
@@ -113,8 +109,7 @@ BEGIN SUMMARY:
     [SKFunction("Downloads a repository and summarizes the content")]
     [SKFunctionName("SummarizeRepository")]
     [SKFunctionInput(Description = "URL of the GitHub repository to summarize")]
-    [SKFunctionContextParameter(Name = Parameters.RepositoryBranch,
-        Description = "Name of the repository branch which will be downloaded and summarized")]
+    [SKFunctionContextParameter(Name = Parameters.RepositoryBranch, Description = "Name of the repository repositoryBranch which will be downloaded and summarized")]
     [SKFunctionContextParameter(Name = Parameters.SearchPattern, Description = "The search string to match against the names of files in the repository")]
     public async Task SummarizeRepositoryAsync(string source, SKContext context)
     {
@@ -122,7 +117,6 @@ BEGIN SUMMARY:
         {
             repositoryBranch = "main";
         }
-
         if (!context.Variables.Get(Parameters.SearchPattern, out string searchPattern) || string.IsNullOrEmpty(searchPattern))
         {
             searchPattern = "*.md";
@@ -152,7 +146,6 @@ BEGIN SUMMARY:
             {
                 File.Delete(filePath);
             }
-
             if (Directory.Exists(directoryPath))
             {
                 Directory.Delete(directoryPath, true);
@@ -171,13 +164,44 @@ BEGIN SUMMARY:
         {
             if (code.Length > MaxFileSize)
             {
-                this._logger.LogWarning("File with path {0} is longer than the maximum number of tokens", filePath);
-                return;
+                var extension = new FileInfo(filePath).Extension;
+
+                List<string> lines;
+                List<string> paragraphs;
+
+                switch (extension)
+                {
+                    case ".md":
+                    {
+                        lines = SemanticTextPartitioner.SplitMarkDownLines(code, MaxTokens);
+                        paragraphs = SemanticTextPartitioner.SplitMarkdownParagraphs(lines, MaxTokens);
+
+                        break;
+                    }
+                    default:
+                    {
+                        lines = SemanticTextPartitioner.SplitPlainTextLines(code, MaxTokens);
+                        paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, MaxTokens);
+
+                        break;
+                    }
+                }
+
+                foreach (var paragraph in paragraphs)
+                {
+                    await this._kernel.Memory.SaveInformationAsync(
+                        $"{repositoryUri}-{repositoryBranch}",
+                        text: $"{paragraph} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
+                        id: fileUri);
+                }
             }
-
-            string text = $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}";
-
-            await this._kernel.Memory.SaveInformationAsync($"{repositoryUri}-{repositoryBranch}", text: text, id: fileUri);
+            else
+            {
+                await this._kernel.Memory.SaveInformationAsync(
+                    $"{repositoryUri}-{repositoryBranch}",
+                    text: $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
+                    id: fileUri);
+            }
         }
     }
 
