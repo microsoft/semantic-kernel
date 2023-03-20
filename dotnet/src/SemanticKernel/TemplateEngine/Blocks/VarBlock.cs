@@ -53,7 +53,7 @@ internal class VarBlock : Block, ITextRendering
         if (!Regex.IsMatch(this.Name, "^[a-zA-Z0-9_]*$"))
         {
             errorMsg = $"The variable name '{this.Name}' contains invalid characters. " +
-                    "Only alphanumeric chars and underscore are allowed.";
+                       "Only alphanumeric chars and underscore are allowed.";
             this.Log.LogError(errorMsg);
             return false;
         }
