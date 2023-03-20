@@ -6,4 +6,8 @@
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
+
 </Project>
