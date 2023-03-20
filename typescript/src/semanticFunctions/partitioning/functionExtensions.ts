@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
-import { SKContext } from '../orchestration';
+import { ISKFunction, SKContext } from '../../orchestration';
 
 /**
  * Class with extension methods for semantic functions.
@@ -17,12 +17,12 @@ export class FunctionExtensions {
         func: ISKFunction,
         partitionedInput: string[],
         context: SKContext
-    ): Promise<string[]> {
+    ): Promise<SKContext> {
         const results = [];
 
         for (const partition of partitionedInput) {
             context.variables.update(partition);
-            context = await func.invokeAsync(context);
+            context = await func.invoke(context);
             results.push(context.variables.toString());
         }
 
