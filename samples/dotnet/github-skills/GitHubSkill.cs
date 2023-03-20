@@ -84,7 +84,6 @@ BEGIN SUMMARY:
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="downloadSkill">Instance of WebFileDownloadSkill used to download web files</param>
-    /// <param name="documentSkill">Instance of DocumentSkill used to read files</param>
     /// <param name="logger">Optional logger</param>
     public GitHubSkill(IKernel kernel, WebFileDownloadSkill downloadSkill, ILogger<GitHubSkill>? logger = null)
     {
@@ -104,8 +103,8 @@ BEGIN SUMMARY:
     /// <summary>
     /// Summarize the code downloaded from the specified URI.
     /// </summary>
-    /// <param name="source">URI to download the respository content to be summarized</param>
-    /// <param name="context">Semantic kernal context</param>
+    /// <param name="source">URI to download the repository content to be summarized</param>
+    /// <param name="context">Semantic kernel context</param>
     /// <returns>Task</returns>
     [SKFunction("Downloads a repository and summarizes the content")]
     [SKFunctionName("SummarizeRepository")]
@@ -169,9 +168,9 @@ BEGIN SUMMARY:
 
                 List<string> lines;
                 List<string> paragraphs;
-                
+
                 switch (extension)
-                {                                    
+                {
                     case ".md":
                     {
                         lines = SemanticTextPartitioner.SplitMarkDownLines(code, MaxTokens);
@@ -189,7 +188,7 @@ BEGIN SUMMARY:
                 }
 
                 foreach (var paragraph in paragraphs)
-                {                   
+                {
                     await this._kernel.Memory.SaveInformationAsync(
                         $"{repositoryUri}-{repositoryBranch}",
                         text: $"{paragraph} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
@@ -202,7 +201,7 @@ BEGIN SUMMARY:
                     $"{repositoryUri}-{repositoryBranch}",
                     text: $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
                     id: fileUri);
-            }            
+            }
         }
     }
 
