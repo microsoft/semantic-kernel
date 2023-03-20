@@ -122,6 +122,18 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBr
                     onClick={() => download()}
                 />
             </div>
+            <Label>
+                <strong>Embedding Filetypes</strong>
+            </Label>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+                <Input
+                    readOnly
+                    disabled
+                    style={{ width: '100%' }}
+                    type="text"
+                    value="*.md"
+                />
+            </div>
             <div style={{ display: 'flex', flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                 {downloadState === DownloadState.Loading ? (
                     <>

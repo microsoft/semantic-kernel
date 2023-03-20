@@ -7,12 +7,6 @@
     "temperature": 0.8,
     "top_p": 0.0,
     "presence_penalty": 0.0,
-    "frequency_penalty": 0.0,
-    "stop_sequences": [
-      "[done]"
-    ]
-  },
-  "default_backends": [
-    "text-davinci-003"
-  ]
+    "frequency_penalty": 0.0
+  }
 }
