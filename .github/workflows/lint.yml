@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
-          cache-dependency-path: "pyproject.toml"
+          cache-dependency-path: "python/pyproject.toml"
       - name: Install SemanticKernel
         run: pip install -e '.[all]'
       - name: Run lint
