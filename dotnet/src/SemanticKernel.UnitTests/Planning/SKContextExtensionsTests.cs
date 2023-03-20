@@ -103,4 +103,81 @@ public class SKContextExtensionsTests
         Assert.Equal(functionView, result[0]);
         Assert.Equal(nativeFunctionView, result[1]);
     }
+
+    // Tests for GetPlannerSkillConfig
+    [Fact]
+    public void CanCallGetPlannerSkillConfig()
+    {
+        // Arrange
+        var variables = new ContextVariables();
+        var logger = ConsoleLogger.Log;
+        var cancellationToken = default(CancellationToken);
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+        var expectedDefault = new PlannerSkillConfig();
+
+        // Act
+        var context = new SKContext(variables, memory.Object, skills.Object, logger, cancellationToken);
+        var config = context.GetPlannerSkillConfig();
+
+        // Assert
+        Assert.NotNull(config);
+        Assert.Equal(expectedDefault.RelevancyThreshold, config.RelevancyThreshold);
+        Assert.Equal(expectedDefault.MaxFunctions, config.MaxFunctions);
+        Assert.Equal(expectedDefault.ExcludedFunctions, config.ExcludedFunctions);
+        Assert.Equal(expectedDefault.ExcludedSkills, config.ExcludedSkills);
+        Assert.Equal(expectedDefault.IncludedFunctions, config.IncludedFunctions);
+    }
+
+    [Fact]
+    public void CanCallGetPlannerSkillConfigWithExcludedFunctions()
+    {
+        // Arrange
+        var variables = new ContextVariables();
+        var logger = ConsoleLogger.Log;
+        var cancellationToken = default(CancellationToken);
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+        var expectedDefault = new PlannerSkillConfig();
+        var excludedFunctions = "test1,test2,test3";
+
+        // Act
+        variables.Set(Parameters.ExcludedFunctions, excludedFunctions);
+        var context = new SKContext(variables, memory.Object, skills.Object, logger, cancellationToken);
+        var config = context.GetPlannerSkillConfig();
+
+        // Assert
+        Assert.NotNull(config);
+        Assert.Equal(expectedDefault.RelevancyThreshold, config.RelevancyThreshold);
+        Assert.Equal(expectedDefault.MaxFunctions, config.MaxFunctions);
+        Assert.Equal(expectedDefault.ExcludedSkills, config.ExcludedSkills);
+        Assert.Equal(expectedDefault.IncludedFunctions, config.IncludedFunctions);
+        Assert.Equal(expectedDefault.ExcludedFunctions.Union(new HashSet<string> { "test1", "test2", "test3" }), config.ExcludedFunctions);
+    }
+
+    [Fact]
+    public void CanCallGetPlannerSkillConfigWithIncludedFunctions()
+    {
+        // Arrange
+        var variables = new ContextVariables();
+        var logger = ConsoleLogger.Log;
+        var cancellationToken = default(CancellationToken);
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+        var expectedDefault = new PlannerSkillConfig();
+        var includedFunctions = "test1,CreatePlan";
+
+        // Act
+        variables.Set(Parameters.IncludedFunctions, includedFunctions);
+        var context = new SKContext(variables, memory.Object, skills.Object, logger, cancellationToken);
+        var config = context.GetPlannerSkillConfig();
+
+        // Assert
+        Assert.NotNull(config);
+        Assert.Equal(expectedDefault.RelevancyThreshold, config.RelevancyThreshold);
+        Assert.Equal(expectedDefault.MaxFunctions, config.MaxFunctions);
+        Assert.Equal(expectedDefault.ExcludedSkills, config.ExcludedSkills);
+        Assert.Equal(expectedDefault.ExcludedFunctions, config.ExcludedFunctions);
+        Assert.Equal(expectedDefault.IncludedFunctions.Union(new HashSet<string> { "test1" }), config.IncludedFunctions);
+    }
 }
