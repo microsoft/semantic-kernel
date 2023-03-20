@@ -33,7 +33,7 @@ function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
 
-async def chat() -> None:
+async def chat() -> bool:
     context = sk.ContextVariables()
     context["chat_history"] = ""
 
