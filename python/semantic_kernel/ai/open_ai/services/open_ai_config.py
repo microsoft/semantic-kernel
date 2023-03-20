@@ -2,7 +2,6 @@
 
 from typing import Optional, List, Dict, Any
 from semantic_kernel.diagnostics.verify import Verify
-import json
 
 # TODO: allow for overriding endpoints
 
