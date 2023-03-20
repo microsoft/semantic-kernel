@@ -33,7 +33,7 @@
 
     <!-- Skills -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.19.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.3" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.4" />
     <PackageVersion Include="Microsoft.Graph" Version="4.51.0" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="2.26.0" />
 
