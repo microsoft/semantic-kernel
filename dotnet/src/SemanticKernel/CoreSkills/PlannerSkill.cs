@@ -68,6 +68,9 @@ public class PlannerSkill
 
     internal sealed class PlannerSkillConfig
     {
+        // 0.78 is a good value for our samples and demonstrations.
+        // Depending on the embeddings engine used, the user ask,
+        // and the functions available, this value may need to be adjusted.
         public double RelevancyThreshold { get; set; } = 0.78;
         public int MaxFunctions { get; set; } = 10;
         public HashSet<string> ExcludedSkills { get; } = new() { RestrictedSkillName };

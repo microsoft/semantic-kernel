@@ -18,8 +18,6 @@ namespace SemanticKernel.IntegrationTests.CoreSkills;
 
 public sealed class PlannerSkillTests : IDisposable
 {
-    private readonly IConfigurationRoot _configuration;
-
     public PlannerSkillTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<object>(output);
@@ -66,6 +64,7 @@ public sealed class PlannerSkillTests : IDisposable
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
+        // Import all sample skills available for demonstration purposes.
         TestHelpers.ImportSampleSkills(target);
 
         var emailSkill = target.ImportSkill(new EmailSkill());
@@ -89,6 +88,8 @@ public sealed class PlannerSkillTests : IDisposable
 
     private readonly XunitLogger<object> _logger;
     private readonly RedirectOutput _testOutputHelper;
+    private readonly IConfigurationRoot _configuration;
+
 
     public void Dispose()
     {
