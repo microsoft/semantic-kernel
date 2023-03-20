@@ -7,7 +7,7 @@ import { ILogger, NullLogger } from '../../utils/logger';
  */
 export abstract class Block {
     // The block content.
-    protected readonly content: string;
+    private readonly _content: string;
 
     // Application logger.
     protected readonly log: ILogger;
@@ -21,7 +21,7 @@ export abstract class Block {
      */
     protected constructor(content?: string, log?: ILogger) {
         this.log = log ?? new NullLogger();
-        this.content = content ?? '';
+        this._content = content ?? '';
     }
 
     /**

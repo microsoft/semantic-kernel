@@ -54,4 +54,11 @@ export interface ISemanticTextMemory {
      * @returns Memories found.
      */
     search(collection: string, query: string, limit: number, minRelevanceScore: number): Promise<MemoryQueryResult[]>;
+
+    /**
+     * Gets a group of all available collection names.
+     *
+     * @returns A group of collection names.
+     */
+    getCollections(): Promise<string[]>;
 }

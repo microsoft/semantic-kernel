@@ -5,25 +5,25 @@
  */
 export class Plan {
     // Internal constant string representing the ID key.
-    private readonly idKey: string = 'PLAN__ID';
+    private readonly _idKey: string = 'PLAN__ID';
 
     // Internal constant string representing the goal key.
-    private readonly goalKey: string = 'PLAN__GOAL';
+    private readonly _goalKey: string = 'PLAN__GOAL';
 
     // Internal constant string representing the plan key.
-    private readonly planKey: string = 'PLAN__PLAN';
+    private readonly _planKey: string = 'PLAN__PLAN';
 
     // Internal constant string representing the arguments key.
-    private readonly argumentsKey: string = 'PLAN__ARGUMENTS';
+    private readonly _argumentsKey: string = 'PLAN__ARGUMENTS';
 
     // Internal constant string representing the is complete key.
-    private readonly isCompleteKey: string = 'PLAN__ISCOMPLETE';
+    private readonly _isCompleteKey: string = 'PLAN__ISCOMPLETE';
 
     // Internal constant string representing the is successful key.
-    private readonly isSuccessfulKey: string = 'PLAN__ISSUCCESSFUL';
+    private readonly _isSuccessfulKey: string = 'PLAN__ISSUCCESSFUL';
 
     // Internal constant string representing the result key.
-    private readonly resultKey: string = 'PLAN__RESULT';
+    private readonly _resultKey: string = 'PLAN__RESULT';
 
     // The ID of the plan.
     // Can be used to track creation of a plan and execution over multiple steps.
