@@ -1,15 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -70,17 +66,8 @@ public sealed class PlannerSkillTests : IDisposable
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
-        var chatSkill = GetSkill("ChatSkill", target);
-        var summarizeSkill = GetSkill("SummarizeSkill", target);
-        var writerSkill = GetSkill("WriterSkill", target);
-        var calendarSkill = GetSkill("CalendarSkill", target);
-        var childrensBookSkill = GetSkill("ChildrensBookSkill", target);
-        var classificationSkill = GetSkill("ClassificationSkill", target);
-        var codingSkill = GetSkill("CodingSkill", target);
-        var funSkill = GetSkill("FunSkill", target);
-        var intentDetectionSkill = GetSkill("IntentDetectionSkill", target);
-        var miscSkill = GetSkill("MiscSkill", target);
-        var qaSkill = GetSkill("QASkill", target);
+        TestHelpers.ImportSampleSkills(target);
+
         var emailSkill = target.ImportSkill(new EmailSkill());
 
         var plannerSKill = target.ImportSkill(new PlannerSkill(target));
@@ -98,20 +85,6 @@ public sealed class PlannerSkillTests : IDisposable
         Assert.Empty(actual.LastErrorDescription);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.InvariantCultureIgnoreCase);
-    }
-
-    private static IDictionary<string, ISKFunction> GetSkill(string skillName, IKernel target)
-    {
-        string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
-        {
-            throw new InvalidOperationException("Unable to determine current assembly directory.");
-        }
-
-        string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/skills"));
-
-        IDictionary<string, ISKFunction> skill = target.ImportSemanticSkillFromDirectory(skillParentDirectory, skillName);
-        return skill;
     }
 
     private readonly XunitLogger<object> _logger;
