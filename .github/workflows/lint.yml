@@ -22,6 +22,6 @@ jobs:
           cache: "poetry"
           cache-dependency-path: "python/pyproject.toml"
       - name: Install SemanticKernel
-        run: cd python && pip install -e '.[all]'
+        run: cd python && poetry install
       - name: Run lint
         run: ruff check ./python/
