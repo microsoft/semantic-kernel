@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Planning;
 
 internal static class SKContextExtensions
 {
-    internal const string MemoryCollectionName = "Planning.SKFunctionsManual";
+    internal const string PlannerMemoryCollectionName = "Planning.SKFunctionsManual";
 
     internal const string PlanSKFunctionsAreRemembered = "Planning.SKFunctionsAreRemembered";
 
@@ -78,7 +78,7 @@ internal static class SKContextExtensions
             await RememberFunctionsAsync(context, availableFunctions);
 
             // Search for functions that match the semantic query.
-            var memories = context.Memory.SearchAsync(MemoryCollectionName, semanticQuery, config.MaxFunctions, config.RelevancyThreshold,
+            var memories = context.Memory.SearchAsync(PlannerMemoryCollectionName, semanticQuery, config.MaxFunctions, config.RelevancyThreshold,
                 context.CancellationToken);
 
             // Add functions that were found in the search results.
@@ -132,12 +132,12 @@ internal static class SKContextExtensions
             var key = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
-            var memoryEntry = await context.Memory.GetAsync(MemoryCollectionName, key, context.CancellationToken);
+            var memoryEntry = await context.Memory.GetAsync(PlannerMemoryCollectionName, key, context.CancellationToken);
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
-                await context.Memory.SaveInformationAsync(MemoryCollectionName, key, functionName, function.ToManualString(),
+                await context.Memory.SaveInformationAsync(PlannerMemoryCollectionName, key, functionName, function.ToManualString(),
                     context.CancellationToken);
             }
         }
