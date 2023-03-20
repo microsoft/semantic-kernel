@@ -60,7 +60,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                     ],
                 },
                 'QASkill',
-                'MemoryQuery',
+                'GitHubMemoryQuery',
             );
             response.content = result.value;
             response.fetchState = FetchState.Fetched;

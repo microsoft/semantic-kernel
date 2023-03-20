@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using GitHubSkillsExample;
 using KernelHttpServer.Config;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -151,7 +150,7 @@ internal static class Extensions
     }
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The caller invokes native skills during a request and the skill instances must remain alive for those requests to be successful.")]
+       Justification = "The caller invokes native skills during a request and the skill instances must remain alive for those requests to be successful.")]
     internal static void RegisterNativeSkills(this IKernel kernel, IEnumerable<string>? skillsToLoad = null)
     {
         if (_ShouldLoad(nameof(DocumentSkill), skillsToLoad))
@@ -174,9 +173,8 @@ internal static class Extensions
 
         if (_ShouldLoad(nameof(GitHubSkill), skillsToLoad))
         {
-            DocumentSkill documentSkill = new(new WordDocumentConnector(), new LocalFileSystemConnector());
             WebFileDownloadSkill downloadSkill = new WebFileDownloadSkill();
-            GitHubSkill githubSkill = new GitHubSkill(kernel, downloadSkill, documentSkill);
+            GitHubSkill githubSkill = new GitHubSkill(kernel, downloadSkill);
             _ = kernel.ImportSkill(githubSkill, nameof(GitHubSkill));
         }
     }
