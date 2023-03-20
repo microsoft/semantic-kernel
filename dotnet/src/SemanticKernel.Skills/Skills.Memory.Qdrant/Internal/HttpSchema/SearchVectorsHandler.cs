@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -14,15 +14,14 @@ internal class SearchVectorsHandler : IValidatable
     {
         Similarity,
         FilterbyScore,
-        KeyDataSearch, 
+        KeyDataSearch,
         Delete
     }
 
     public void Validate()
-    {}
+    { }
 
     #region private ================================================================================
-    private HttpClient? _client;
     #endregion
 
 }

@@ -2,9 +2,9 @@
 
 using System.Text.Json.Serialization;
 
-namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
+namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
 
-internal abstract class QdrantResponse 
+internal abstract class QdrantResponse
 {
     /// <summary>
     /// Response status
@@ -25,5 +25,6 @@ internal abstract class QdrantResponse
     /// </summary>
     [JsonPropertyName(name: "result")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public double? Result { get; set; }
+    public object? Result { get; set; }
 }
+

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
@@ -36,4 +37,31 @@ public enum QdrantDistanceType
     /// Generalization of Euclidean and Manhattan.
     /// </summary>
     Minkowski,
+}
+
+public static class QdrantDistanceUtils
+{
+    public static string DistanceTypeToString(QdrantDistanceType x)
+    {
+        return x switch
+        {
+            QdrantDistanceType.Cosine => "Cosine",
+            QdrantDistanceType.DotProduct => "DotProduct",
+            QdrantDistanceType.Euclidean => "Euclidean",
+            QdrantDistanceType.Manhattan => "Manhattan",
+            _ => throw new NotSupportedException($"Distance type {Enum.GetName(typeof(QdrantDistanceType), x)} not supported")
+        };
+    }
+
+    public static QdrantDistanceType DistanceStringToType(string distanceType)
+    {
+        return distanceType switch
+        {
+            "Cosine" => QdrantDistanceType.Cosine,
+            "DotProduct" => QdrantDistanceType.DotProduct,
+            "Euclidean" => QdrantDistanceType.Euclidean,
+            "Manhattan" => QdrantDistanceType.Manhattan,
+            _ => throw new NotSupportedException($"Distance type {distanceType} not supported")
+        };
+    }
 }

@@ -54,6 +54,45 @@ where TEmbedding : unmanaged
         }
     }
 
+    public bool IsExistingCollection(string collectionName)
+    {
+        return false;
+    }
+    
+    public async Task GetCollectionAsync(string collectionName)
+    {
+
+    }
+    
+    public async Task CreateCollectionAsync(string collectionName)
+    {
+        this._log.LogDebug("Creating collection {0}", collectionName);
+
+        using var request = CreateCollectionRequest
+            .Create(collectionName)
+            .WithVectorSize(this._defaultVectorSize)
+            .WithDistanceType(QdrantDistanceType.Cosine)
+            .Build();
+        var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
+
+        // Creation is idempotent, ignore error (and for now ignore vector size)
+        if (response.StatusCode == HttpStatusCode.BadRequest)
+        {
+            if (responseContent.Contains("already exists", StringComparison.InvariantCultureIgnoreCase)) { return; }
+        }
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            this._log.LogError(e, "Collection upsert failed: {0}, {1}", e.Message, responseContent);
+            throw;
+        }
+    }
+
+    
     public async Task<DataEntry<QdrantVectorRecord<TEmbedding>>?> GetVectorByIdAsync(string collectionName, string key)
     {
         var pointId = Base64Encode(key);
@@ -87,7 +126,7 @@ where TEmbedding : unmanaged
 
         return new DataEntry<QdrantVectorRecord<TEmbedding>>(Base64Decode(pointId), record);
         */
-        return null; 
+        return null;
     }
 
     public async Task DeleteVectorAsync(string collectionName, string key)
@@ -191,37 +230,8 @@ where TEmbedding : unmanaged
         await foreach (var kv in result)
         {
             yield return kv;
-        } 
-    }
-
-    public async Task CreateCollectionAsync(string collectionName)
-    {
-        this._log.LogDebug("Creating collection {0}", collectionName);
-
-        using var request = CreateCollectionRequest
-            .Create(collectionName)
-            .WithVectorSize(this._defaultVectorSize)
-            .WithDistanceType(QdrantDistanceType.Cosine)
-            .Build();
-        var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
-        
-        // Creation is idempotent, ignore error (and for now ignore vector size)
-        if (response.StatusCode == HttpStatusCode.BadRequest)
-        {
-            if (responseContent.Contains("already exists", StringComparison.InvariantCultureIgnoreCase)) { return; }
-        }
-
-        try
-        {
-            response.EnsureSuccessStatusCode();
-        }
-        catch (Exception e)
-        {
-            this._log.LogError(e, "Collection upsert failed: {0}, {1}", e.Message, responseContent);
-            throw;
         }
     }
-
     public async Task<bool> DoesCollectionExistAsync(string collectionName)
     {
         this._log.LogDebug("Fetching collection {0}", collectionName);

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Net.Mime;
@@ -46,47 +47,103 @@ internal static class HttpRequest
         return new HttpRequestMessage(HttpMethod.Delete, url);
     }
 
-public static async Task<TResult> SendHttpFromJsonAsync<TObject, TResult>(HttpClient httpClient, HttpMethod methodType, string qdranturl, TObject httpContentData)
-{ 
-    //TODO: Clean this up-TEW
-
-    HttpResponseMessage httpResponse;
-    TResult httpresult = default!;  
-    
-    switch (methodType.ToString())
+    public static async Task<TResult> SendHttpFromJsonAsync<TResult>(HttpClient httpClient, HttpMethod methodType, string qdranturl, TResult? httpContentData)
     {
-        case string mType when HttpMethod.Get.ToString() == methodType.ToString():
-            var getResult = await httpClient.GetFromJsonAsync<TObject>(qdranturl);
-            break;
-        case string mType when HttpMethod.Post.ToString() == methodType.ToString():
-            /*{using HttpResponseMessage response = await httpClient.PostAsJsonAsync<TObject>(
-                    qdranturl);
-                    response.EnsureSuccessStatusCode();
-                    httpResponse = response;
-            }*/
-            break;
-        case string mType when HttpMethod.Put.ToString() == methodType.ToString():
-            { 
-                using HttpResponseMessage response = await httpClient.PutAsJsonAsync(
-                qdranturl,
-                httpContentData);
+        TResult httpResult = default!;
+        
+        switch (methodType.ToString())
+        {
+            case nameof(HttpMethod.Get):
+                try
+                {
+                    var Result = await httpClient.GetFromJsonAsync<TResult>(qdranturl);
+                    httpResult = Result!;
+                }
+                catch (Exception ex)
+                {
+                    throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
+                }
+                break;
 
-                httpResponse = response;
-            }
-            //var putResult = await httpClient.PutAsJsonAsync<TObject>(qdranturl);
-            break;
-        case string mType when HttpMethod.Patch.ToString() == methodType.ToString():
-            //var pathResult = await httpClient.PatchAsync(qdranturl);
-            break;
-        case string mType when HttpMethod.Delete.ToString() == methodType.ToString():
-           // var deleteResult = await httpClient.DeleteAsync(qdranturl);
-            break;
-        default:
-            break;
+            case nameof(HttpMethod.Post):
+                {
+                    using HttpResponseMessage httpResponse = 
+                        await httpClient.PostAsJsonAsync<TResult>(qdranturl, httpContentData!);
+                    try
+                    {
+                        httpResponse.EnsureSuccessStatusCode();
+                        var Result = await httpResponse.Content.ReadFromJsonAsync<TResult>();
+                        httpResult = Result!;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
+                    }
+                               
+                }
+                break;
+
+            case nameof(HttpMethod.Put):
+                {
+                    using HttpResponseMessage httpResponse = 
+                        await httpClient.PutAsJsonAsync<TResult>(qdranturl, httpContentData!);
+                    
+                    try
+                    {
+                        httpResponse.EnsureSuccessStatusCode();
+                        var Result = await httpResponse.Content.ReadFromJsonAsync<TResult>();
+                        httpResult = Result!;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
+                    }                    
+                }
+            
+                break;
+
+            case nameof(HttpMethod.Patch):
+                {
+                    using HttpResponseMessage httpResponse = 
+                        await httpClient.PatchAsJsonAsync<TResult>(qdranturl, httpContentData!);
+
+                    try
+                    {
+                        httpResponse.EnsureSuccessStatusCode();
+                        var Result = await httpResponse.Content.ReadFromJsonAsync<TResult>();
+                        httpResult = Result!;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
+                    }
+                
+                }
+
+                break;
+
+            case nameof(HttpMethod.Delete):
+                {
+                    try
+                    {
+                        var Result = await httpClient.DeleteFromJsonAsync<TResult>(qdranturl);
+                        httpResult = Result!;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
+                    }
+                }
+
+                break;
+
+            default:
+                break;
+        }
+
+        return httpResult!;
     }
-    
-    return httpresult; 
-}
+       
     public static StringContent? GetJsonContent(object? payload)
     {
         if (payload != null)
@@ -101,5 +158,5 @@ public static async Task<TResult> SendHttpFromJsonAsync<TObject, TResult>(HttpCl
         }
 
         return null;
-    } 
+    }
 }

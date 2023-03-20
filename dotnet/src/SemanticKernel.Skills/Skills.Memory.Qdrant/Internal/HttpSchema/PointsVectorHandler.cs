@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -18,15 +18,13 @@ internal class PointsVectorHandler : IValidatable
         Delete,
     }
 
-     public void Validate()
+    public void Validate()
     {
         Verify.NotNullOrEmpty(this._collectionName, "The collection name is empty");
     }
 
     #region private ================================================================================
-        private string? _collectionName;
-        
-        private HttpClient? _client;
+    private string? _collectionName;
     #endregion
-    
+
 }

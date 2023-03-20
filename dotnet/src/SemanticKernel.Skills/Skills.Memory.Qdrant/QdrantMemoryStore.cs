@@ -68,7 +68,7 @@ where TEmbedding : unmanaged
         {
             await this._qdrantClient.CreateCollectionAsync(collection);
         }
-        
+
         var vectorData = new DataEntry<QdrantVectorRecord<TEmbedding>>(
             key: data.Key,
             value: QdrantVectorRecord<TEmbedding>.FromJson(data.Value!.Embedding, data.Value.JsonSerializeMetadata()));
