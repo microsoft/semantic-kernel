@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
 
-> ℹ️ **NOTE**: The TypeScript SDK for Semantic Kernel is currently in preview. While
+> ℹ️ **NOTE**: The TypeScript SDK for Semantic Kernel is currently experimental. While
 > part of the features available in the C# SDK have been ported, there may be bugs and
 > we're working on some features still - these will come into the repo soon. We are
 > also actively working on improving the code quality and developer experience,
