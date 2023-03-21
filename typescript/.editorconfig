@@ -1,0 +1,19 @@
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# The indent size used in the `package.json` file cannot be changed
+# https://github.com/npm/npm/pull/3180#issuecomment-16336516
+[{*.js,*.yml,*.yaml,package.json,tsconfig.json}]
+indent_size = 2
+
+[*.ts]
+indent_size = 4
+
+[*.md]
+trim_trailing_whitespace = false
