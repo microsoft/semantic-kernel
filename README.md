@@ -3,6 +3,7 @@
 [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
 [![dotnet](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci.yml)
+[![Discord](https://img.shields.io/discord/1063152441819942922)](https://aka.ms/SKDiscord)
 
 > ℹ️ **NOTE**: This project is in early alpha and, just like AI, will evolve quickly.
 > We invite you to join us in developing the Semantic Kernel together!
@@ -84,7 +85,7 @@ Here is a quick example of how to use Semantic Kernel from a C# console app.
 1.  Create a new project, targeting .NET 6 or newer, and add the
     `Microsoft.SemanticKernel` nuget package:
 
-        dotnet add package Microsoft.SemanticKernel --version <version number>
+        dotnet add package Microsoft.SemanticKernel --prerelease
 
     See [nuget.org](https://www.nuget.org/packages/Microsoft.SemanticKernel/) for
     the latest version and more instructions.
@@ -99,6 +100,8 @@ using Microsoft.SemanticKernel.KernelExtensions;
 
 var kernel = Kernel.Builder.Build();
 
+// For Azure Open AI service endpoint and keys please see
+// https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api
 kernel.Config.AddAzureOpenAICompletionBackend(
     "davinci-backend",                   // Alias used by the kernel
     "text-davinci-003",                  // Azure OpenAI *Deployment ID*
@@ -142,14 +145,16 @@ For new features, components, or extensions, please open an issue and discuss wi
 us before sending a PR. This is to avoid rejection as we might be taking the core
 in a different direction, but also to consider the impact on the larger ecosystem.
 
-To learn more and get started, please read our [Contributing page](CONTRIBUTING.md)
-and check some of our documentation:
+To learn more and get started:
 
-- [SK Prompt Template Language](docs/PROMPT_TEMPLATE_LANGUAGE.md)
-- [SKills and Functions](docs/SKILLS.md)
-- [Embeddings and Semantic Memory](docs/EMBEDDINGS.md)
-- [SK Planner](docs/PLANNER.md)
-- [SK Notebooks](samples/notebooks/dotnet/README.md)
+- Read the [documentation](https://aka.ms/sk/learn)
+- Learn how to [contribute](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) to the project
+- Join the [Discord community](https://aka.ms/SKDiscord)
+- Follow the team on our [blog](https://aka.ms/sk/blog)
+
+<img src="https://user-images.githubusercontent.com/36091529/225807182-22ad65e9-82c6-4727-bb77-d1c256736045.png" align="left" width="40px"/>
+<b>Python developers:</b> Semantic Kernel is coming to Python soon! Check out the work-in-progress and contribute in the <a href="https://github.com/microsoft/semantic-kernel/tree/python-preview"><b>python-preview</b></a> branch.
+<br clear="left"/>
 
 ## Code of Conduct
 

@@ -21,7 +21,10 @@ public class MinHeapTests
         // Arrange
         const int invalidCapacity = -1;
 
-        var action = () => { var minHeap = new MinHeap<int>(MinValue, invalidCapacity); };
+        var action = () =>
+        {
+            var minHeap = new MinHeap<int>(MinValue, invalidCapacity);
+        };
 
         // Act
         var exception = Assert.Throws<ValidationException>(() => action());
