@@ -65,6 +65,7 @@ class ContextVariables:
         return self._variables[self._main_key]
 
     def clone(self) -> "ContextVariables":
-        new_vars = ContextVariables()
+        main_content = self._variables.get(self._main_key, '')
+        new_vars = ContextVariables(main_content)
         new_vars._variables = self._variables.copy()
         return new_vars
