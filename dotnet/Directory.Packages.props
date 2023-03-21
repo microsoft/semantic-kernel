@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="7.0.2" />
+
     <!-- Microsoft.Extensions.Logging -->
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
@@ -15,7 +16,7 @@
 
     <!-- Microsoft.Extensions.Configuration -->
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
@@ -32,9 +33,9 @@
 
     <!-- Skills -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.19.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.3" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.4" />
     <PackageVersion Include="Microsoft.Graph" Version="4.51.0" />
-    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="2.26.0" />
+    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="2.27.0" />
 
     <!-- Analyzers -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
@@ -48,7 +49,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageVersion Include="xunit.analyzers" Version="1.1.0" />
-    <PackageReference Include="xunit.analyzers" />
+    <PackageReference Include="xunit.analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageVersion Include="Moq.Analyzers" Version="0.0.9" />
     <PackageReference Include="Moq.Analyzers">
       <PrivateAssets>all</PrivateAssets>
