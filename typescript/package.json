@@ -5,7 +5,7 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "author": {
-    "name": "Microsoft Corp.",
+    "name": "Microsoft",
     "email": "SK-Support@microsoft.com"
   },
   "license": "MIT",

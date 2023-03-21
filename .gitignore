@@ -399,6 +399,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+
 *.tmp
 *.log
 *.bck
@@ -408,6 +410,7 @@ FodyWeavers.xsd
 *.cer
 *.crt
 *.key
+.env
 
 
 appsettings.development.json
