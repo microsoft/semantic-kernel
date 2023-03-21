@@ -33,6 +33,11 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
     }
 
+    public HuggingFaceBackend(string baseUri, string model, HttpClientHandler httpClientHandler)
+        : this(new Uri(baseUri), model, httpClientHandler)
+    {
+    }
+
     public HuggingFaceBackend(Uri baseUri, string model)
         : this(baseUri, model, new HttpClientHandler())
     {
@@ -65,7 +70,7 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
     {
         try
         {
-            var completionsRequest = new CompletionRequest
+            var completionRequest = new CompletionRequest
             {
                 Prompt = text,
                 Model = _model
@@ -75,7 +80,7 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
             {
                 Method = HttpMethod.Post,
                 RequestUri = new Uri(CompletionEndpoint, UriKind.Relative),
-                Content = new StringContent(JsonSerializer.Serialize(completionsRequest)),
+                Content = new StringContent(JsonSerializer.Serialize(completionRequest)),
             };
 
             var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
