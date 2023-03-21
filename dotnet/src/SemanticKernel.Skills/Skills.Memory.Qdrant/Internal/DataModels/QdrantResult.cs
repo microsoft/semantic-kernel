@@ -18,19 +18,19 @@ internal class CollectionInfoResult : IQdrantResult
       set => this.ResponseInfo = value; }
       
     [JsonPropertyName("result")]
-    internal QdrantCollectionInfo? Result 
+    public QdrantCollectionInfo? Result 
     { get => this.Result;
       set => this.Result = value; }
 
-    internal class QdrantCollectionInfo
+    public class QdrantCollectionInfo
     {
-        internal CollectionInfo? InfoResult { get; set; }
+        public CollectionInfo? InfoResult { get; set; }
 
         [JsonPropertyName("config")]
-        internal CollectionConfig? ConfigResult { get; set; }
+        public CollectionConfig? ConfigResult { get; set; }
 
         [JsonPropertyName("payload_schema")]
-        internal PayloadInfo? PayloadProperty { get; set; }
+        public PayloadInfo? PayloadProperty { get; set; }
     }
 
 }

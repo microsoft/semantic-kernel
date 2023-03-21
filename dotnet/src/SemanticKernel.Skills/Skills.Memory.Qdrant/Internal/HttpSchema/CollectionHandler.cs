@@ -72,11 +72,9 @@ public class CollectionHandler : IValidatable
     public async Task<IQdrantResult> CheckCollectionExistsAsync(string collectionName)
     {
         IQdrantResult? qdrantCheckResult = null;
-        string getURL = QdrantApiUrlConstants.GetCollectionUrl(collectionName);
-
         Verify.NotNullOrEmpty(collectionName, "The collection name must be defined");
-
         
+        qdrantCheckResult = await this.GetCollectionInfoAsync(collectionName);
 
         return qdrantCheckResult!;
     }
@@ -84,11 +82,29 @@ public class CollectionHandler : IValidatable
     internal async Task<IQdrantResult> GetCollectionInfoAsync(string collectionName)
     {
         IQdrantResult? qdrantCollectionResult = null;
-        string getURL = QdrantApiUrlConstants.GetCollectionUrl(collectionName);
+        string qdrantGetUrl = QdrantApiUrlConstants.GetCollectionUrl(collectionName);
 
         Verify.NotNullOrEmpty(collectionName, "The collection name must be defined");
 
-        
+        try 
+        {
+            qdrantCollectionResult = await HttpRequest.SendHttpFromJsonAsync<CollectionInfoResult, IQdrantResult>(
+                this._client,
+                HttpMethod.Get,
+                qdrantGetUrl,
+                null, null);
+        }
+        catch (HttpRequestException ex)
+        {
+           
+            qdrantCollectionResult = new CollectionInfoResult();
+            qdrantCollectionResult.ResponseInfo!.Status = $"HTTP Request Error {ex.Message}: Collection Not Found";
+            
+        }
+        catch (Exception ex)
+        {
+            qdrantCollectionResult = new CollectionInfoResult();
+        }
 
         return qdrantCollectionResult!;
 
@@ -120,7 +136,8 @@ public class CollectionHandler : IValidatable
         qdrantResult = await HttpRequest.SendHttpFromJsonAsync<ListInfoResult, IQdrantResult>(
                     this._client,
                     HttpMethod.Get,
-                    qdrantListUrl, null, null);
+                    qdrantListUrl, 
+                    null, null);
 
         return qdrantResult!;
     }
