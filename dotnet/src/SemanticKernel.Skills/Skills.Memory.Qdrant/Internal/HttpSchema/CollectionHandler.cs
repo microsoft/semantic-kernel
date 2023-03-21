@@ -89,17 +89,15 @@ public class CollectionHandler : IValidatable
         try 
         {
             qdrantCollectionResult = await HttpRequest.SendHttpFromJsonAsync<CollectionInfoResult, IQdrantResult>(
-                this._client,
-                HttpMethod.Get,
-                qdrantGetUrl,
-                null, null);
+                        this._client,
+                        HttpMethod.Get,
+                        qdrantGetUrl,
+                        null, null);
         }
         catch (HttpRequestException ex)
         {
-           
             qdrantCollectionResult = new CollectionInfoResult();
-            qdrantCollectionResult.ResponseInfo!.Status = $"HTTP Request Error {ex.Message}: Collection Not Found";
-            
+            qdrantCollectionResult.ResponseInfo!.Status = $"HTTP Request Error {ex.Message}: Collection Not Found";   
         }
         catch (Exception ex)
         {
@@ -147,15 +145,16 @@ public class CollectionHandler : IValidatable
 
         IQdrantResult? qdrantResult = null;
 
-        string qdrantListUrl = QdrantApiUrlConstants.DeleteCollectionUrl(collectionName);
+        string qdrantDeleteUrl = QdrantApiUrlConstants.DeleteCollectionUrl(collectionName);
 
         qdrantResult = await HttpRequest.SendHttpFromJsonAsync<DeleteCollectionResult, IQdrantResult>(
                     this._client,
                     HttpMethod.Delete,
-                    qdrantListUrl, null, null);
+                    qdrantDeleteUrl, 
+                    null, null);
         
         return qdrantResult!;
-
+        
     }
 
 
