@@ -35,7 +35,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
     ]);
     const [response, setResponse] = useState<IChatMessage>();
 
-    const [relevance, setRelevance] = useState(0.2);
+    const [relevance, setRelevance] = useState(0.4);
     const onSliderChange = useCallback((_e: any, sliderData: SliderOnChangeData) => {
         setRelevance(sliderData.value);
     }, []);
@@ -157,21 +157,21 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                 </Button>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: '5%' }}>
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <Label size="small">0</Label>
+                        <Label size="small">No Threshold</Label>
                         <Slider min={0} max={1} step={0.1} value={relevance} onChange={onSliderChange} />
-                        <Label size="small">1</Label>
+                        <Label size="small">Perfect Match</Label>
                     </div>
                     <InfoLabel
                         info={
                             <div style={{ maxWidth: 250 }}>
-                                'Relevance' is used in memory search and is a measure of the relevance score from 0.0 to
-                                1.0, where 1.0 means a perfect match. We encourage users to experiment with different
-                                values.
+                                'Relevance' is used in memory search and is a measure from 0.0 to 1.0, where 1.0 means a
+                                perfect match. We encourage users to experiment with different values to see what the
+                                model thinks is most relevant to the query.
                             </div>
                         }
                         htmlFor={`RelevanceTooltip`}
                     >
-                        Relevance: {relevance}
+                        Relevance Threshold
                     </InfoLabel>
                 </div>
             </div>
