@@ -173,9 +173,8 @@ internal static class Extensions
 
         if (_ShouldLoad(nameof(GitHubSkill), skillsToLoad))
         {
-            DocumentSkill documentSkill = new(new WordDocumentConnector(), new LocalFileSystemConnector());
             WebFileDownloadSkill downloadSkill = new WebFileDownloadSkill();
-            GitHubSkill githubSkill = new GitHubSkill(kernel, downloadSkill, documentSkill);
+            GitHubSkill githubSkill = new GitHubSkill(kernel, downloadSkill);
             _ = kernel.ImportSkill(githubSkill, nameof(GitHubSkill));
         }
     }

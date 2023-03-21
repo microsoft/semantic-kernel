@@ -103,7 +103,7 @@ const ModelConfig: FC<IData> = ({ isOpenAI, modelType, setModel, backendConfig, 
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [keyConfig]);
+    }, [keyConfig, backendConfig.backend]);
 
     const onOptionSelect = (_e: any, model: { optionValue?: string; }) => {
         setSelectedModel(model.optionValue ?? '');

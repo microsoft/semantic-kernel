@@ -35,7 +35,9 @@ const ServiceConfig: FC<IData> = ({
 
     const [keyConfig, setKeyConfig] = useState<KeyConfig>({
         key: '',
-        endpoint: backendConfig?.endpoint ?? (process.env.REACT_APP_AZURE_OPEN_AI_ENDPOINT as string),
+        endpoint: backendConfig?.endpoint ?? modelType === ModelType.Completion ?
+            (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_ENDPOINT as string) :
+            (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_ENDPOINT as string),
     });
 
     const saveKey = async () => {
@@ -62,24 +64,39 @@ const ServiceConfig: FC<IData> = ({
 
     const setDefaults = useCallback((isOpenAi: boolean) => {
         const defaultKey: string = isOpenAi
-            ? (process.env.REACT_APP_OPEN_AI_KEY as string)
-            : (process.env.REACT_APP_AZURE_OPEN_AI_KEY as string);
+            ? // OpenAI
+            modelType === ModelType.Completion
+                ? (process.env.REACT_APP_OPEN_AI_COMPLETION_KEY as string)
+                : (process.env.REACT_APP_OPEN_AI_EMBEDDING_KEY as string)
+            : // Azure OpenAI
+            modelType === ModelType.Completion
+                ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_KEY as string)
+                : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_KEY as string);
+            
 
         const defaultId: string = isOpenAi
             ? // OpenAI
               modelType === ModelType.Completion
                 ? (process.env.REACT_APP_OPEN_AI_COMPLETION_MODEL as string)
-                : (process.env.REACT_APP_OPEN_AI_EMBEDDINGS_MODEL as string)
+                : (process.env.REACT_APP_OPEN_AI_EMBEDDING_MODEL as string)
             : // Azure OpenAI
             modelType === ModelType.Completion
-            ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_DEPLOYMENT as string)
-            : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_DEPLOYMENT as string);
-
+                ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_DEPLOYMENT as string)
+                : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_DEPLOYMENT as string);
+        
+        const defaultEndpoint: string = isOpenAi
+            ? // OpenAI
+           ''
+            : // Azure OpenAI
+            modelType === ModelType.Completion
+                ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_ENDPOINT as string)
+                : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_ENDPOINT as string);
+        console.log(defaultEndpoint);
         if ((backendConfig?.backend === 1 && isOpenAi) || (backendConfig?.backend === 0 && !isOpenAi)) {
-            setKeyConfig({ ...keyConfig, key: backendConfig.key });
+            setKeyConfig({ ...keyConfig, key: backendConfig.key, endpoint: backendConfig.endpoint });
             setDeploymentOrModelId(backendConfig.deploymentOrModelId);
         } else {
-            setKeyConfig({ ...keyConfig, key: defaultKey ?? '' });
+            setKeyConfig({ ...keyConfig, key: defaultKey ?? '', endpoint: defaultEndpoint });
             setDeploymentOrModelId(defaultId ?? '');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
