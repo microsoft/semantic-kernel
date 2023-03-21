@@ -23,7 +23,7 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
 
     private readonly string _model;
     private readonly HttpClient _httpClient;
-    private readonly HttpClientHandler _httpClientHandler;
+    private readonly HttpClientHandler? _httpClientHandler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceBackend"/> class.
@@ -35,7 +35,23 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
     {
         this._model = model;
 
-        this._httpClientHandler = httpClientHandler;
+        this._httpClient = new(httpClientHandler);
+
+        this._httpClient.BaseAddress = baseUri;
+        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HuggingFaceBackend"/> class.
+    /// Using default <see cref="HttpClientHandler"/> implementation.
+    /// </summary>
+    /// <param name="baseUri">Base URI to call for backend operations.</param>
+    /// <param name="model">Model to use for backend operations.</param>
+    public HuggingFaceBackend(Uri baseUri, string model)
+    {
+        this._model = model;
+
+        this._httpClientHandler = new();
         this._httpClient = new(this._httpClientHandler);
 
         this._httpClient.BaseAddress = baseUri;
@@ -50,17 +66,6 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
     public HuggingFaceBackend(string baseUri, string model, HttpClientHandler httpClientHandler)
         : this(new Uri(baseUri), model, httpClientHandler)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceBackend"/> class.
-    /// Using default <see cref="HttpClientHandler"/> implementation.
-    /// </summary>
-    /// <param name="baseUri">Base URI to call for backend operations.</param>
-    /// <param name="model">Model to use for backend operations.</param>
-    public HuggingFaceBackend(Uri baseUri, string model)
-        : this(baseUri, model, new HttpClientHandler())
     {
     }
 
@@ -91,7 +96,7 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
     public void Dispose()
     {
         this._httpClient.Dispose();
-        this._httpClientHandler.Dispose();
+        this._httpClientHandler?.Dispose();
     }
 
     #region private ================================================================================
