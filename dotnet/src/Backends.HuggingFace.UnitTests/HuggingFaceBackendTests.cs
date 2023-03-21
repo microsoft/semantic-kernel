@@ -16,6 +16,9 @@ using Xunit;
 
 namespace SemanticKernel.Backends.HuggingFace.UnitTests;
 
+/// <summary>
+/// Unit tests for <see cref="HuggingFaceBackend"/> class.
+/// </summary>
 public class HuggingFaceBackendTests : IDisposable
 {
     private const string BaseUri = "http://localhost:5000";
@@ -26,6 +29,10 @@ public class HuggingFaceBackendTests : IDisposable
         StatusCode = HttpStatusCode.OK,
     };
 
+    /// <summary>
+    /// Verifies that <see cref="HuggingFaceBackend.CompleteAsync(string, CompleteRequestSettings)"/>
+    /// returns expected completed text without errors.
+    /// </summary>
     [Fact]
     public async Task ItReturnsCompletionCorrectlyAsync()
     {
@@ -42,6 +49,10 @@ public class HuggingFaceBackendTests : IDisposable
         Assert.Equal("This is test completion response", completion);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="HuggingFaceBackend.GenerateEmbeddingsAsync(IList{string})"/>
+    /// returns expected list of generated embeddings without errors.
+    /// </summary>
     [Fact]
     public async Task ItReturnsEmbeddingsCorrectlyAsync()
     {
@@ -61,11 +72,19 @@ public class HuggingFaceBackendTests : IDisposable
         Assert.Equal(expectedVectorCount, embeddings.First().Count);
     }
 
+    /// <summary>
+    /// Reads test response from file for mocking purposes.
+    /// </summary>
+    /// <param name="fileName">Name of the file with test response.</param>
     private string GetTestResponse(string fileName)
     {
         return File.ReadAllText($"./TestData/{fileName}");
     }
 
+    /// <summary>
+    /// Initializes <see cref="HuggingFaceBackend"/> with mocked <see cref="HttpClientHandler"/>.
+    /// </summary>
+    /// <param name="testResponse">Test response for <see cref="HttpClientHandler"/> to return.</param>
     private HuggingFaceBackend CreateBackend(string testResponse)
     {
         var httpClientHandler = new Mock<HttpClientHandler>();
