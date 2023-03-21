@@ -4,7 +4,7 @@ import { Body1, Button, Input, Label, Spinner, Tab, TabList, Title3 } from '@flu
 import { FC, useCallback, useEffect, useState } from 'react';
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
 import { IBackendConfig, IKeyConfig } from '../model/KeyConfig';
-import ModelConfig, { ModelType } from './setup/ModelConfig';
+import ModelConfig, { KeyConfig, ModelType } from './setup/ModelConfig';
 
 interface IData {
     onConfigComplete: (backendConfig: IBackendConfig) => void;
@@ -29,10 +29,11 @@ const ServiceConfig: FC<IData> = ({
     const [completionOrEmbeddingConfig, setCompletionOrEmbeddingConfig] = useState<IBackendConfig>(backendConfig);
     const [isBusy, setIsBusy] = useState<boolean>(false);
     const sk = useSemanticKernel(process.env.REACT_APP_FUNCTION_URI as string);
+    const [isValidModel, setIsValidModel] = useState(true);
 
     const [deploymentOrModelId, setDeploymentOrModelId] = useState<string>('');
 
-    const [keyConfig, setKeyConfig] = useState({
+    const [keyConfig, setKeyConfig] = useState<KeyConfig>({
         key: '',
         endpoint: backendConfig?.endpoint ?? (process.env.REACT_APP_AZURE_OPEN_AI_ENDPOINT as string),
     });
@@ -43,13 +44,13 @@ const ServiceConfig: FC<IData> = ({
         //POST a simple ask to validate the key
         const ask = { value: 'clippy', inputs: [{ key: 'style', value: 'Bill & Ted' }] };
 
-        const keyConfig: IKeyConfig = {
+        const serviceConfig: IKeyConfig = {
             completionConfig: modelType === ModelType.Completion ? completionOrEmbeddingConfig : completionConfig,
             embeddingConfig: modelType === ModelType.Embeddings ? completionOrEmbeddingConfig : undefined,
         };
 
         try {
-            var result = await sk.invokeAsync(keyConfig, ask, 'funskill', 'joke');
+            var result = await sk.invokeAsync(serviceConfig, ask, 'funskill', 'joke');
             console.log(result);
             onConfigComplete(completionOrEmbeddingConfig);
         } catch (e) {
@@ -148,6 +149,7 @@ const ServiceConfig: FC<IData> = ({
                         modelType={modelType}
                         backendConfig={completionOrEmbeddingConfig}
                         setBackendConfig={setCompletionOrEmbeddingConfig}
+                        setIsValidModel={setIsValidModel}
                         setModel={setDeploymentOrModelId}
                         keyConfig={keyConfig}
                         defaultModel={deploymentOrModelId}
@@ -187,6 +189,7 @@ const ServiceConfig: FC<IData> = ({
                         modelType={modelType}
                         backendConfig={completionOrEmbeddingConfig}
                         setBackendConfig={setCompletionOrEmbeddingConfig}
+                        setIsValidModel={setIsValidModel}
                         setModel={setDeploymentOrModelId}
                         keyConfig={keyConfig}
                         defaultModel={deploymentOrModelId}
@@ -196,7 +199,7 @@ const ServiceConfig: FC<IData> = ({
 
             <Button
                 style={{ width: 70, height: 32, marginTop: 10 }}
-                disabled={isBusy}
+                disabled={isBusy || !isValidModel}
                 appearance="primary"
                 onClick={saveKey}
             >

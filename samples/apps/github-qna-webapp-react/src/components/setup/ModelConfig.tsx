@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Dropdown, Label, Link, Option, OptionGroup, Spinner } from '@fluentui/react-components';
+import { Dropdown, Link, Option, OptionGroup, Spinner, Text } from '@fluentui/react-components';
 import { InfoLabel } from '@fluentui/react-components/unstable';
 import { FC, useEffect, useState } from 'react';
 import '../../App.css';
@@ -11,22 +11,25 @@ interface IData {
     modelType: ModelType;
     backendConfig: IBackendConfig;
     setBackendConfig: React.Dispatch<React.SetStateAction<IBackendConfig>>;
-    keyConfig: {
-        key: string;
-        endpoint: string;
-    };
+    keyConfig: KeyConfig;
+    setIsValidModel: (value: React.SetStateAction<boolean>) => void;
     setModel: (value: React.SetStateAction<string>) => void;
     defaultModel?: string;
 }
 
 export enum ModelType {
-    Embeddings,
-    Completion,
+    Embeddings = "embedding",
+    Completion = "completion",
 }
 
 interface ModelOption {
     id: string;
     disabled: boolean;
+}
+
+export interface KeyConfig {
+    key: string;
+    endpoint: string;
 }
 
 type AzureOpenAIModels = {
@@ -40,19 +43,22 @@ type OpenAIModels = {
     probableEmbeddingsModels: ModelOption[];
 };
 
-const ModelConfig: FC<IData> = ({ isOpenAI, modelType, setModel, backendConfig, keyConfig, defaultModel = '' }) => {
+const ModelConfig: FC<IData> = ({ isOpenAI, modelType, setModel, backendConfig, keyConfig, setIsValidModel, defaultModel = '' }) => {
     const modelTitle = modelType === ModelType.Embeddings ? ['embeddings', 'Embeddings'] : ['completion', 'Completion'];
     const labelPrefix = `${isOpenAI ? 'oai' : 'aoai'}${modelTitle[0]}`;
     const [suggestedModels, setSuggestedModels] = useState<ModelOption[] | undefined>();
     const [modelIds, setModelIds] = useState<ModelOption[] | undefined>();
     const [isBusy, setIsBusy] = useState(false);
     const [selectedModel, setSelectedModel] = useState(defaultModel);
+    const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
     useEffect(() => {
         setSelectedModel(defaultModel);
         if (keyConfig && ((backendConfig?.backend === 1 && isOpenAI) || (backendConfig?.backend === 0 && !isOpenAI))) {
-            const onFailure = (errorMessage?: string) => {
-                alert(errorMessage);
+            const onFailure = (error?: string) => {
+                setSuggestedModels(undefined);
+                setModelIds(undefined);
+                setErrorMessage(error);
                 setIsBusy(false);
                 setSelectedModel('');
                 return undefined;
@@ -82,6 +88,7 @@ const ModelConfig: FC<IData> = ({ isOpenAI, modelType, setModel, backendConfig, 
 
             if (fetchModels) {
                 setIsBusy(true);
+                setErrorMessage(undefined);
                 if (isOpenAI) {
                     getOpenAiModels(keyConfig.key, onFailure).then((value) => setModels(value));
                 } else {
@@ -89,30 +96,60 @@ const ModelConfig: FC<IData> = ({ isOpenAI, modelType, setModel, backendConfig, 
                         setModels(value),
                     );
                 }
+            } else {
+                setSuggestedModels(undefined);
+                setModelIds(undefined);
+                setSelectedModel('');
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [keyConfig]);
 
+    const onOptionSelect = (_e: any, model: { optionValue?: string; }) => {
+        setSelectedModel(model.optionValue ?? '');
+
+        // We only need to validate Open AI models since we've already filtered for valid
+        // Azure Open AI models using the capabilities property when setting the Dropdown options
+        if (isOpenAI) {
+            setIsBusy(true);
+            setIsValidModel(false);
+            setErrorMessage(undefined);
+
+            isValidOpenAIConfig(keyConfig, model.optionValue ?? '', modelType, setErrorMessage).then((response) => {
+                setIsValidModel(response);
+                if (response) {
+                    setModel(model.optionValue ?? '');
+                }
+            }).catch((e) => {
+                setErrorMessage(e.message ?? `Something went wrong.\n\nDetails:\n' + ${e}`);
+            }).finally(() => {
+                setIsBusy(false);
+            });
+        } else {
+            setIsValidModel(true);
+            setModel(model.optionValue ?? '');
+        }
+    };
+
     return (
         <div style={{ paddingTop: 20, gap: 10, display: 'flex', flexDirection: 'column', alignItems: 'left' }}>
-            {isOpenAI ? (
-                <InfoLabel
-                    info={
-                        <div style={{ maxWidth: 250 }}>
-                            Please note this drop down lists all available models but not all models will work as{' '}
-                            {(modelType === ModelType.Completion ? 'a ' : 'an ') + modelTitle[0]} model. We've suggested
-                            some based on common naming patterns for these models.{' '}
-                            <Link href="https://platform.openai.com/docs/models">Learn more</Link>{' '}
-                        </div>
-                    }
-                    htmlFor={`${labelPrefix}model`}
-                >
-                    {modelTitle[1]} Model
-                </InfoLabel>
-            ) : (
-                <Label htmlFor={`${labelPrefix}model`}> {modelTitle[1]} Model</Label>
-            )}
+            <InfoLabel
+                info={ isOpenAI ? 
+                    <div style={{ maxWidth: 275 }}>
+                        This drop down lists all available models, but not all models support {modelTitle[0]}. We've suggested
+                        some based on common naming patterns for these models.{' '}
+                        <Link href="https://platform.openai.com/docs/models">Learn more</Link>{' '}
+                    </div>
+                    :  <div style={{ maxWidth: 275 }}>
+                        This drop down lists all deployments owned by the Azure OpenAI resource, but not all models support {modelTitle[0]}.
+                        We've disabled the models that don't have "{modelTitle[0] }" capability. <Link href="https://learn.microsoft.com/en-us/rest/api/cognitiveservices/azureopenaistable/models/list?tabs=HTTP#capabilities">Learn more</Link>{' '}
+                    </div>
+                }
+                htmlFor={`${labelPrefix}model`}
+            >
+                {modelTitle[1]} Model
+            </InfoLabel>
+            {!!errorMessage ? <Text style={{ color: 'rgb(163, 21, 21)' }}> {`${errorMessage}. Please select a different one.`}</Text>: null}
             <div style={{ display: 'flex', gap: 10, flexDirection: 'row', alignItems: 'left' }}>
                 {isBusy ? <Spinner size="tiny" /> : null}
                 <Dropdown
@@ -123,15 +160,12 @@ const ModelConfig: FC<IData> = ({ isOpenAI, modelType, setModel, backendConfig, 
                             ? 'Select a model id'
                             : `Enter valid key ${isOpenAI ? '' : 'and endpoint'} to load models`
                     }
-                    onOptionSelect={(_e, model) => {
-                        setSelectedModel(model.optionValue ?? '');
-                        setModel(model.optionValue ?? '');
-                    }}
+                    onOptionSelect={onOptionSelect}
                 >
                     {suggestedModels ? (
                         <OptionGroup label={`${isOpenAI ? 'Suggested ' : ''}${modelTitle[1]} Models`}>
-                            {suggestedModels.map((option) => (
-                                <Option key={option.id} disabled={option.disabled}>
+                            {suggestedModels.map((option, index) => (
+                                <Option key={index} disabled={option.disabled} text={option.id}>
                                     {option.id}
                                 </Option>
                             ))}
@@ -140,7 +174,7 @@ const ModelConfig: FC<IData> = ({ isOpenAI, modelType, setModel, backendConfig, 
                     {modelIds ? (
                         <OptionGroup label={suggestedModels ? 'Other' : 'All models'}>
                             {modelIds.map((option) => (
-                                <Option key={option.id} disabled={option.disabled}>
+                                <Option key={option.id} disabled={!isOpenAI || option.disabled}>
                                     {option.id}
                                 </Option>
                             ))}
@@ -181,7 +215,8 @@ const getAzureOpenAiDeployments = async (
     return fetch(modelsRequestUrl, init)
         .then(async (response) => {
             if (!response || !response.ok) {
-                throw new Error(await response?.clone().text());
+                const responseJson = await response?.clone().json();
+                throw new Error(responseJson.error.message);
             }
 
             const models = await response!
@@ -263,7 +298,8 @@ const getOpenAiModels = async (apiKey: string, onFailureCallback: (errorMessage?
         return onFailureCallback(e as string);
     }
     if (!response || !response.ok) {
-        return onFailureCallback(await response?.clone().text());
+        const responseJson = await response?.clone().json();
+        return onFailureCallback(responseJson.error.message);
     }
 
     const models = await response!
@@ -293,3 +329,34 @@ const getOpenAiModels = async (apiKey: string, onFailureCallback: (errorMessage?
     }
     return ids;
 };
+
+const isValidOpenAIConfig = async (keyConfig: KeyConfig, model: string, modelType: ModelType, setErrorMessage: (value: React.SetStateAction<string | undefined>) => void) => {
+    const modelObject = modelType === ModelType.Completion ? 'completions' : 'embeddings';
+    const inputText = 'Tell me a short joke.';
+    const bodyInput = modelType === ModelType.Completion ? { prompt: inputText }
+        : { input: inputText };
+
+    return fetch('https://api.openai.com/v1/' + modelObject, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${keyConfig.key}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            ...bodyInput,
+            model: model,
+            max_tokens: 100,
+        }),
+    }).then(async (response) => {
+        if (!response || !response.ok) {
+            const responseJson = await response?.clone().json();
+            let errorMessage = responseJson.error.message;
+            if (response.status === 404 || response.status === 500) {
+                errorMessage = `This is not a supported ${modelType} model`;
+            }
+            throw new Error(errorMessage);
+        }
+        
+        return true;
+    });
+}
