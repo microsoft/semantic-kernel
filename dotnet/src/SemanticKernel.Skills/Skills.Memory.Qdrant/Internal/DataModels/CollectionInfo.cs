@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
-internal class CollectionInfo
+
+public class CollectionInfo
 {
     [JsonPropertyName("status")]
     internal string CollectionStatus { get; set; } = string.Empty;

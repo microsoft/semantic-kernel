@@ -69,29 +69,35 @@ where TEmbedding : unmanaged
 
     }
 
-    public async Task<bool> IsExistingCollection(string collectionName)
+    public async Task<bool> IsExistingCollection(string collectionName )
     {
+        //Try/Get
         return false;
     }
     
-    public async Task<bool> GetCollectionInfoAsync(string collectionName)
+    public async Task<CollectionInfo> GetCollectionInfoAsync(string collectionName)
     {
         IQdrantResult? qdrantResult = null;
+        CollectionInfo? collectionInfo = null;
         
         CollectionHandler getCollectionInfoHandler = 
             CollectionHandler.Init(this.VectorSize, this.DistanceType )
                 .Client(this._httpClient)
                 .Build();
 
-        qdrantResult = await getCollectionInfoHandler.ExecuteRequest(CollectionHandler.CollectionHandlerType.GetInfo, collectionName);
-        
-        if (qdrantResult == null)
+        try
         {
-            return false;
+            qdrantResult = await getCollectionInfoHandler.ExecuteRequest(CollectionHandler.CollectionHandlerType.GetInfo, collectionName);
+            collectionInfo = ((CollectionInfoResult)qdrantResult).Result!.InfoResult!;
         }
-        
-        return false;
+        catch (Exception e)
+        {
+            this._log.LogError(e, "Get Collection information  failed: {0}", e.Message);
+            collectionInfo = null;
+        }
 
+        return collectionInfo!;
+        
     }
 
     public async Task CreateCollectionAsync(string collectionName)
