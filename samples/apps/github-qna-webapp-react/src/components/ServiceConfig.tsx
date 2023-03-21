@@ -23,19 +23,19 @@ const ServiceConfig: FC<IData> = ({
         backendConfig?.backend !== undefined
             ? backendConfig.backend === 1
             : completionConfig?.backend !== undefined
-                ? completionConfig.backend === 1
-                : true,
+            ? completionConfig.backend === 1
+            : true,
     );
     const [completionOrEmbeddingConfig, setCompletionOrEmbeddingConfig] = useState<IBackendConfig>(backendConfig);
     const [isBusy, setIsBusy] = useState<boolean>(false);
     const sk = useSemanticKernel(process.env.REACT_APP_FUNCTION_URI as string);
 
-    const [key, setKey] = useState<string>('');
     const [deploymentOrModelId, setDeploymentOrModelId] = useState<string>('');
 
-    const [azureOpenAiEndpoint, setAzureOpenAiEndpoint] = useState<string>(
-        backendConfig?.endpoint ?? (process.env.REACT_APP_AZURE_OPEN_AI_ENDPOINT as string),
-    );
+    const [keyConfig, setKeyConfig] = useState({
+        key: '',
+        endpoint: backendConfig?.endpoint ?? (process.env.REACT_APP_AZURE_OPEN_AI_ENDPOINT as string),
+    });
 
     const saveKey = async () => {
         setIsBusy(true);
@@ -66,19 +66,19 @@ const ServiceConfig: FC<IData> = ({
 
         const defaultId: string = isOpenAi
             ? // OpenAI
-            modelType === ModelType.Completion
+              modelType === ModelType.Completion
                 ? (process.env.REACT_APP_OPEN_AI_COMPLETION_MODEL as string)
                 : (process.env.REACT_APP_OPEN_AI_EMBEDDINGS_MODEL as string)
             : // Azure OpenAI
             modelType === ModelType.Completion
-                ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_DEPLOYMENT as string)
-                : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_DEPLOYMENT as string);
+            ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_DEPLOYMENT as string)
+            : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_DEPLOYMENT as string);
 
         if ((backendConfig?.backend === 1 && isOpenAi) || (backendConfig?.backend === 0 && !isOpenAi)) {
-            setKey(backendConfig.key);
+            setKeyConfig({ ...keyConfig, key: backendConfig.key });
             setDeploymentOrModelId(backendConfig.deploymentOrModelId);
         } else {
-            setKey(defaultKey ?? '');
+            setKeyConfig({ ...keyConfig, key: defaultKey ?? '' });
             setDeploymentOrModelId(defaultId ?? '');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -95,13 +95,13 @@ const ServiceConfig: FC<IData> = ({
     useEffect(() => {
         setCompletionOrEmbeddingConfig({
             backend: isOpenAI ? 1 : 0,
-            endpoint: isOpenAI ? '' : azureOpenAiEndpoint,
-            key: key,
+            endpoint: isOpenAI ? '' : keyConfig.endpoint,
+            key: keyConfig.key,
             deploymentOrModelId: deploymentOrModelId,
             label: deploymentOrModelId,
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [azureOpenAiEndpoint, deploymentOrModelId, key]);
+    }, [keyConfig, deploymentOrModelId]);
 
     return (
         <>
@@ -133,9 +133,9 @@ const ServiceConfig: FC<IData> = ({
                     <Input
                         id="openaikey"
                         type="password"
-                        value={key}
+                        value={keyConfig.key}
                         onChange={(_e, d) => {
-                            setKey(d.value);
+                            setKeyConfig({ ...keyConfig, key: d.value });
                             setCompletionOrEmbeddingConfig({
                                 ...completionOrEmbeddingConfig,
                                 key: d.value,
@@ -149,6 +149,7 @@ const ServiceConfig: FC<IData> = ({
                         backendConfig={completionOrEmbeddingConfig}
                         setBackendConfig={setCompletionOrEmbeddingConfig}
                         setModel={setDeploymentOrModelId}
+                        keyConfig={keyConfig}
                         defaultModel={deploymentOrModelId}
                     />
                 </>
@@ -158,9 +159,9 @@ const ServiceConfig: FC<IData> = ({
                     <Input
                         id="azureopenaikey"
                         type="password"
-                        value={key}
+                        value={keyConfig.key}
                         onChange={(_e, d) => {
-                            setKey(d.value);
+                            setKeyConfig({ ...keyConfig, key: d.value });
                             setCompletionOrEmbeddingConfig({
                                 ...completionOrEmbeddingConfig,
                                 key: d.value,
@@ -171,9 +172,9 @@ const ServiceConfig: FC<IData> = ({
                     <Label htmlFor="aoaiendpoint">Endpoint</Label>
                     <Input
                         id="aoaiendpoint"
-                        value={azureOpenAiEndpoint}
+                        value={keyConfig.endpoint}
                         onChange={(e, d) => {
-                            setAzureOpenAiEndpoint(d.value);
+                            setKeyConfig({ ...keyConfig, endpoint: d.value });
                             setCompletionOrEmbeddingConfig({
                                 ...completionOrEmbeddingConfig,
                                 endpoint: d.value,
@@ -187,6 +188,7 @@ const ServiceConfig: FC<IData> = ({
                         backendConfig={completionOrEmbeddingConfig}
                         setBackendConfig={setCompletionOrEmbeddingConfig}
                         setModel={setDeploymentOrModelId}
+                        keyConfig={keyConfig}
                         defaultModel={deploymentOrModelId}
                     />
                 </>

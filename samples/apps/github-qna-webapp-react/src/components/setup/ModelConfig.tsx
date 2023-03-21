@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Dropdown, Link, Option, OptionGroup, Spinner } from '@fluentui/react-components';
+import { Dropdown, Label, Link, Option, OptionGroup, Spinner } from '@fluentui/react-components';
 import { InfoLabel } from '@fluentui/react-components/unstable';
 import { FC, useEffect, useState } from 'react';
 import '../../App.css';
@@ -11,6 +11,10 @@ interface IData {
     modelType: ModelType;
     backendConfig: IBackendConfig;
     setBackendConfig: React.Dispatch<React.SetStateAction<IBackendConfig>>;
+    keyConfig: {
+        key: string;
+        endpoint: string;
+    };
     setModel: (value: React.SetStateAction<string>) => void;
     defaultModel?: string;
 }
@@ -25,14 +29,18 @@ interface ModelOption {
     disabled: boolean;
 }
 
-const ModelConfig: FC<IData> = ({
-    isOpenAI,
-    modelType,
-    setModel,
-    backendConfig,
-    setBackendConfig,
-    defaultModel = '',
-}) => {
+type AzureOpenAIModels = {
+    otherModels: ModelOption[];
+    completionModels: ModelOption[];
+    embeddingsModels: ModelOption[];
+};
+
+type OpenAIModels = {
+    otherModels: ModelOption[];
+    probableEmbeddingsModels: ModelOption[];
+};
+
+const ModelConfig: FC<IData> = ({ isOpenAI, modelType, setModel, backendConfig, keyConfig, defaultModel = '' }) => {
     const modelTitle = modelType === ModelType.Embeddings ? ['embeddings', 'Embeddings'] : ['completion', 'Completion'];
     const labelPrefix = `${isOpenAI ? 'oai' : 'aoai'}${modelTitle[0]}`;
     const [suggestedModels, setSuggestedModels] = useState<ModelOption[] | undefined>();
@@ -42,110 +50,69 @@ const ModelConfig: FC<IData> = ({
 
     useEffect(() => {
         setSelectedModel(defaultModel);
-        if (
-            backendConfig &&
-            ((backendConfig?.backend === 1 && isOpenAI) || (backendConfig?.backend === 0 && !isOpenAI))
-        ) {
-            const getModels = async (isOpenAI: boolean, apiKey: string, aoaiEndpoint?: string) => {
-                setModelIds(undefined);
-                const currentAoaiApiVersion = '2022-12-01';
-
-                const baseUrl = isOpenAI ? 'https://api.openai.com/v1/' : aoaiEndpoint;
-                const path = !isOpenAI ? `/openai/deployments?api-version=${currentAoaiApiVersion}` : 'models';
-                const requestUrl = baseUrl + path;
-
-                let init: RequestInit = {
-                    method: 'GET',
-                    headers: isOpenAI
-                        ? { Authorization: `Bearer ${apiKey}` }
-                        : {
-                              'api-key': apiKey,
-                          },
-                };
-
-                const onFailure = (errorMessage?: string) => {
-                    alert(errorMessage);
-                    setIsBusy(false);
-                    setSelectedModel('');
-                    return undefined;
-                };
-
-                let response: Response | undefined = undefined;
-                try {
-                    response = await fetch(requestUrl, init);
-                } catch (e) {
-                    return onFailure(e as string);
-                }
-                if (!response || !response.ok) {
-                    return onFailure(await response?.clone().text());
-                }
-
-                const models = await response!
-                    .clone()
-                    .json()
-                    .then((body) => {
-                        return body.data;
-                    });
-
-                const ids = {
-                    probableEmbeddingModels: [] as ModelOption[],
-                    otherModels: [] as ModelOption[],
-                };
-                for (const key in models) {
-                    const model = models[key];
-                    if (model.id.includes('embedding') || model.id.includes('search')) {
-                        ids.probableEmbeddingModels.push({
-                            id: model.id,
-                            disabled: model.status && model.status !== 'succeeded',
-                        });
-                    } else {
-                        ids.otherModels.push({
-                            id: model.id,
-                            disabled: model.status && model.status !== 'succeeded',
-                        });
-                    }
-                }
-                return ids;
+        if (keyConfig && ((backendConfig?.backend === 1 && isOpenAI) || (backendConfig?.backend === 0 && !isOpenAI))) {
+            const onFailure = (errorMessage?: string) => {
+                alert(errorMessage);
+                setIsBusy(false);
+                setSelectedModel('');
+                return undefined;
             };
 
-            const fetchModels = backendConfig.key && ((!isOpenAI && backendConfig.endpoint) || isOpenAI);
+            const fetchModels = keyConfig.key && ((!isOpenAI && keyConfig.endpoint) || isOpenAI);
+
+            const setModels = (backendModels?: AzureOpenAIModels | OpenAIModels) => {
+                const completionModels = isOpenAI
+                    ? backendModels?.otherModels
+                    : (backendModels as AzureOpenAIModels).completionModels;
+                const embeddingsModels = isOpenAI
+                    ? (backendModels as OpenAIModels).probableEmbeddingsModels
+                    : (backendModels as AzureOpenAIModels).embeddingsModels;
+
+                const sortedCompletionModelsArray = completionModels?.sort((a, b) => a.id.localeCompare(b.id));
+                const sortedEmbeddingsModelArray = embeddingsModels?.sort((a, b) => a.id.localeCompare(b.id));
+                if (modelType == ModelType.Embeddings) {
+                    setModelIds(sortedCompletionModelsArray);
+                    setSuggestedModels(sortedEmbeddingsModelArray);
+                } else {
+                    setSuggestedModels(sortedCompletionModelsArray);
+                    setModelIds(sortedEmbeddingsModelArray);
+                }
+                setIsBusy(false);
+            };
 
             if (fetchModels) {
                 setIsBusy(true);
-                getModels(isOpenAI, backendConfig.key, isOpenAI ? undefined : backendConfig.endpoint).then((value) => {
-                    const sortedOthersArray = value?.otherModels.sort((a, b) => a.id.localeCompare(b.id));
-                    const sortedEmbeddingsArray = value?.probableEmbeddingModels.sort((a, b) =>
-                        a.id.localeCompare(b.id),
+                if (isOpenAI) {
+                    getOpenAiModels(keyConfig.key, onFailure).then((value) => setModels(value));
+                } else {
+                    getAzureOpenAiDeployments(keyConfig.key, keyConfig.endpoint, onFailure).then((value) =>
+                        setModels(value),
                     );
-                    if (modelType == ModelType.Embeddings) {
-                        setModelIds(sortedOthersArray);
-                        setSuggestedModels(sortedEmbeddingsArray);
-                    } else {
-                        setSuggestedModels(sortedOthersArray);
-                        setModelIds(sortedEmbeddingsArray);
-                    }
-                    setIsBusy(false);
-                });
+                }
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [backendConfig.key, backendConfig.endpoint]);
+    }, [keyConfig]);
 
     return (
         <div style={{ paddingTop: 20, gap: 10, display: 'flex', flexDirection: 'column', alignItems: 'left' }}>
-            <InfoLabel
-                info={
-                    <div style={{ maxWidth: 250 }}>
-                        Please note this drop down lists all available models but not all models will work as{' '}
-                        {(modelType === ModelType.Completion ? 'a ' : 'an ') + modelTitle[0]} model. We've suggested
-                        some based on common naming patterns for these models.{' '}
-                        <Link href="https://platform.openai.com/docs/models">Learn more</Link>{' '}
-                    </div>
-                }
-                htmlFor={`${labelPrefix}model`}
-            >
-                {modelTitle[1]} Model
-            </InfoLabel>
+            {isOpenAI ? (
+                <InfoLabel
+                    info={
+                        <div style={{ maxWidth: 250 }}>
+                            Please note this drop down lists all available models but not all models will work as{' '}
+                            {(modelType === ModelType.Completion ? 'a ' : 'an ') + modelTitle[0]} model. We've suggested
+                            some based on common naming patterns for these models.{' '}
+                            <Link href="https://platform.openai.com/docs/models">Learn more</Link>{' '}
+                        </div>
+                    }
+                    htmlFor={`${labelPrefix}model`}
+                >
+                    {modelTitle[1]} Model
+                </InfoLabel>
+            ) : (
+                <Label htmlFor={`${labelPrefix}model`}> {modelTitle[1]} Model</Label>
+            )}
             <div style={{ display: 'flex', gap: 10, flexDirection: 'row', alignItems: 'left' }}>
                 {isBusy ? <Spinner size="tiny" /> : null}
                 <Dropdown
@@ -159,15 +126,10 @@ const ModelConfig: FC<IData> = ({
                     onOptionSelect={(_e, model) => {
                         setSelectedModel(model.optionValue ?? '');
                         setModel(model.optionValue ?? '');
-                        setBackendConfig({
-                            ...backendConfig,
-                            deploymentOrModelId: model.optionValue ?? '',
-                            label: model.optionValue ?? '',
-                        });
                     }}
                 >
                     {suggestedModels ? (
-                        <OptionGroup label={`Suggested ${modelTitle[1]} Models`}>
+                        <OptionGroup label={`${isOpenAI ? 'Suggested ' : ''}${modelTitle[1]} Models`}>
                             {suggestedModels.map((option) => (
                                 <Option key={option.id} disabled={option.disabled}>
                                     {option.id}
@@ -191,3 +153,143 @@ const ModelConfig: FC<IData> = ({
 };
 
 export default ModelConfig;
+
+/* Azure OpenAI Get Models API response includes capabilities as a property,
+ * allowing us to differentiate between model types
+ * See more: https://learn.microsoft.com/en-us/rest/api/cognitiveservices/azureopenaistable/models/list?tabs=HTTP#capabilities
+ */
+const getAzureOpenAiDeployments = async (
+    apiKey: string,
+    aoaiEndpoint: string,
+    onFailureCallback: (errorMessage?: string) => undefined,
+) => {
+    const currentAoaiApiVersion = '2022-12-01';
+
+    const aoaiCompletionModels = new Set();
+    const aoaiEmbeddingsModels = new Set();
+
+    const modelsPath = `/openai/models?api-version=${currentAoaiApiVersion}`;
+    const modelsRequestUrl = aoaiEndpoint + modelsPath;
+
+    let init: RequestInit = {
+        method: 'GET',
+        headers: {
+            'api-key': apiKey,
+        },
+    };
+
+    return fetch(modelsRequestUrl, init)
+        .then(async (response) => {
+            if (!response || !response.ok) {
+                throw new Error(await response?.clone().text());
+            }
+
+            const models = await response!
+                .clone()
+                .json()
+                .then((body) => {
+                    return body.data;
+                });
+
+            for (const key in models) {
+                const model = models[key];
+                if (model.capabilities?.completion === true) {
+                    aoaiCompletionModels.add(model.id);
+                } else if (model.capabilities?.embeddings === true) {
+                    aoaiEmbeddingsModels.add(model.id);
+                }
+            }
+
+            const deploymentsPath = `/openai/deployments?api-version=${currentAoaiApiVersion}`;
+            const deploymentsRequestUrl = aoaiEndpoint + deploymentsPath;
+
+            return await fetch(deploymentsRequestUrl, init).then(async (response) => {
+                const deployments = await response!
+                    .clone()
+                    .json()
+                    .then((body) => {
+                        return body.data;
+                    });
+
+                const ids = {
+                    embeddingsModels: [] as ModelOption[],
+                    completionModels: [] as ModelOption[],
+                    otherModels: [] as ModelOption[],
+                };
+                for (const key in deployments) {
+                    const deployment = deployments[key];
+                    if (aoaiEmbeddingsModels.has(deployment.model)) {
+                        ids.embeddingsModels.push({
+                            id: deployment.id,
+                            disabled: deployment.status && deployment.status !== 'succeeded',
+                        });
+                    } else if (aoaiCompletionModels.has(deployment.model)) {
+                        ids.completionModels.push({
+                            id: deployment.id,
+                            disabled: deployment.status && deployment.status !== 'succeeded',
+                        });
+                    } else {
+                        ids.otherModels.push({
+                            id: deployment.id,
+                            disabled: deployment.status && deployment.status !== 'succeeded',
+                        });
+                    }
+                }
+                return ids;
+            });
+        })
+        .catch((e) => {
+            return onFailureCallback(e);
+        });
+};
+
+/* OpenAI Get Models API response does not have any property differentiating model types
+ * so we have make inferences based on common naming patterns,
+ * where embedding models usually contain "embedding" or "search"
+ * See more: https://platform.openai.com/docs/models/model-endpoint-compatibility
+ */
+const getOpenAiModels = async (apiKey: string, onFailureCallback: (errorMessage?: string) => undefined) => {
+    const requestUrl = 'https://api.openai.com/v1/models';
+
+    let init: RequestInit = {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${apiKey}` },
+    };
+
+    let response: Response | undefined = undefined;
+    try {
+        response = await fetch(requestUrl, init);
+    } catch (e) {
+        return onFailureCallback(e as string);
+    }
+    if (!response || !response.ok) {
+        return onFailureCallback(await response?.clone().text());
+    }
+
+    const models = await response!
+        .clone()
+        .json()
+        .then((body) => {
+            return body.data;
+        });
+
+    const ids = {
+        probableEmbeddingsModels: [] as ModelOption[],
+        otherModels: [] as ModelOption[],
+    };
+    for (const key in models) {
+        const model = models[key];
+        if (model.id.includes('embedding') || model.id.includes('search')) {
+            ids.probableEmbeddingsModels.push({
+                id: model.id,
+                disabled: model.status && model.status !== 'succeeded',
+            });
+        } else {
+            ids.otherModels.push({
+                id: model.id,
+                disabled: model.status && model.status !== 'succeeded',
+            });
+        }
+    }
+    return ids;
+};
