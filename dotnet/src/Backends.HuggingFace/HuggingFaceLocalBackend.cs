@@ -118,15 +118,11 @@ public sealed class HuggingFaceLocalBackend : ITextCompletionClient, IEmbeddingG
                 Model = _model
             };
 
-            using var httpRequestMessage = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri(CompletionEndpoint, UriKind.Relative),
-                Content = new StringContent(JsonSerializer.Serialize(completionRequest)),
-            };
+            var requestUri = new Uri(CompletionEndpoint, UriKind.Relative);
+            var requestBody = JsonSerializer.Serialize(completionRequest);
 
             var completionResponse = await this._httpClient
-                .SendRequestAsync<CompletionResponse>(httpRequestMessage).ConfigureAwait(false);
+                .ExecutePostRequestAsync<CompletionResponse>(requestUri, requestBody).ConfigureAwait(false);
 
             return completionResponse?.Choices.First().Text!;
         }
@@ -154,15 +150,11 @@ public sealed class HuggingFaceLocalBackend : ITextCompletionClient, IEmbeddingG
                 Model = _model
             };
 
-            using var httpRequestMessage = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri(EmbeddingEndpoint, UriKind.Relative),
-                Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
-            };
+            var requestUri = new Uri(EmbeddingEndpoint, UriKind.Relative);
+            var requestBody = JsonSerializer.Serialize(embeddingRequest);
 
             var embeddingResponse = await this._httpClient
-                .SendRequestAsync<EmbeddingResponse>(httpRequestMessage).ConfigureAwait(false);
+                .ExecutePostRequestAsync<EmbeddingResponse>(requestUri, requestBody).ConfigureAwait(false);
 
             return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding.ToArray())).ToList()!;
         }

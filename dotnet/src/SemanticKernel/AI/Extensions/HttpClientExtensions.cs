@@ -5,6 +5,8 @@ using System.Net.Http;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Net.Mime;
+using System.Text;
 
 namespace Microsoft.SemanticKernel.AI.Extensions;
 
@@ -17,15 +19,18 @@ public static class HttpClientExtensions
     /// Sends HTTP request and handles response.
     /// </summary>
     /// <param name="httpClient">Instance of <see cref="HttpClient"/> to send request.</param>
-    /// <param name="httpRequestMessage">Instance of <see cref="HttpRequestMessage"/> to send.</param>
+    /// <param name="requestUri">URI to send request.</param>
+    /// <param name="requestBody">Request body in <see cref="string"/> format.</param>
     /// <returns>Returns deserialized response.</returns>
-    public static async Task<T> SendRequestAsync<T>(this HttpClient httpClient, HttpRequestMessage httpRequestMessage)
+    public static async Task<T> ExecutePostRequestAsync<T>(this HttpClient httpClient, Uri requestUri, string requestBody)
     {
         string responseJson;
 
         try
         {
-            HttpResponseMessage response = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            using HttpContent content = new StringContent(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json);
+
+            HttpResponseMessage response = await httpClient.PostAsync(requestUri, content).ConfigureAwait(false);
 
             if (response == null)
             {
