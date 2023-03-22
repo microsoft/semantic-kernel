@@ -17,9 +17,9 @@ using Xunit;
 namespace SemanticKernel.Backends.HuggingFace.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="HuggingFaceBackend"/> class.
+/// Unit tests for <see cref="HuggingFaceLocalBackend"/> class.
 /// </summary>
-public class HuggingFaceBackendTests : IDisposable
+public class HuggingFaceLocalBackendTests : IDisposable
 {
     private const string BaseUri = "http://localhost:5000";
     private const string Model = "gpt2";
@@ -30,7 +30,7 @@ public class HuggingFaceBackendTests : IDisposable
     };
 
     /// <summary>
-    /// Verifies that <see cref="HuggingFaceBackend.CompleteAsync(string, CompleteRequestSettings)"/>
+    /// Verifies that <see cref="HuggingFaceLocalBackend.CompleteAsync(string, CompleteRequestSettings)"/>
     /// returns expected completed text without errors.
     /// </summary>
     [Fact]
@@ -50,7 +50,7 @@ public class HuggingFaceBackendTests : IDisposable
     }
 
     /// <summary>
-    /// Verifies that <see cref="HuggingFaceBackend.GenerateEmbeddingsAsync(IList{string})"/>
+    /// Verifies that <see cref="HuggingFaceLocalBackend.GenerateEmbeddingsAsync(IList{string})"/>
     /// returns expected list of generated embeddings without errors.
     /// </summary>
     [Fact]
@@ -82,10 +82,10 @@ public class HuggingFaceBackendTests : IDisposable
     }
 
     /// <summary>
-    /// Initializes <see cref="HuggingFaceBackend"/> with mocked <see cref="HttpClientHandler"/>.
+    /// Initializes <see cref="HuggingFaceLocalBackend"/> with mocked <see cref="HttpClientHandler"/>.
     /// </summary>
     /// <param name="testResponse">Test response for <see cref="HttpClientHandler"/> to return.</param>
-    private HuggingFaceBackend CreateBackend(string testResponse)
+    private HuggingFaceLocalBackend CreateBackend(string testResponse)
     {
         var httpClientHandler = new Mock<HttpClientHandler>();
 
@@ -99,7 +99,7 @@ public class HuggingFaceBackendTests : IDisposable
               ItExpr.IsAny<CancellationToken>())
            .ReturnsAsync(this._response);
 
-        return new HuggingFaceBackend(BaseUri, Model, httpClientHandler.Object);
+        return new HuggingFaceLocalBackend(BaseUri, Model, httpClientHandler.Object);
     }
 
     public void Dispose()

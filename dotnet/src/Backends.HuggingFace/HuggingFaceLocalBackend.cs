@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Backends.HuggingFace;
 /// <summary>
 /// Backend implementation for HuggingFace models usage.
 /// </summary>
-public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenerator<string, float>, IDisposable
+public sealed class HuggingFaceLocalBackend : ITextCompletionClient, IEmbeddingGenerator<string, float>, IDisposable
 {
     private const string HttpUserAgent = "Microsoft Semantic Kernel";
     private const string CompletionEndpoint = "/completions";
@@ -27,12 +27,12 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
     private readonly HttpClientHandler? _httpClientHandler;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceBackend"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceLocalBackend"/> class.
     /// </summary>
     /// <param name="baseUri">Base URI to call for backend operations.</param>
     /// <param name="model">Model to use for backend operations.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    public HuggingFaceBackend(Uri baseUri, string model, HttpClientHandler httpClientHandler)
+    public HuggingFaceLocalBackend(Uri baseUri, string model, HttpClientHandler httpClientHandler)
     {
         this._model = model;
 
@@ -43,12 +43,12 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceBackend"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceLocalBackend"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
     /// <param name="baseUri">Base URI to call for backend operations.</param>
     /// <param name="model">Model to use for backend operations.</param>
-    public HuggingFaceBackend(Uri baseUri, string model)
+    public HuggingFaceLocalBackend(Uri baseUri, string model)
     {
         this._model = model;
 
@@ -60,23 +60,23 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceBackend"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceLocalBackend"/> class.
     /// </summary>
     /// <param name="baseUri">Base URI to call for backend operations in <see cref="string"/> format.</param>
     /// <param name="model">Model to use for backend operations.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    public HuggingFaceBackend(string baseUri, string model, HttpClientHandler httpClientHandler)
+    public HuggingFaceLocalBackend(string baseUri, string model, HttpClientHandler httpClientHandler)
         : this(new Uri(baseUri), model, httpClientHandler)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceBackend"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceLocalBackend"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
     /// <param name="baseUri">Base URI to call for backend operations in <see cref="string"/> format.</param>
     /// <param name="model">Model to use for backend operations.</param>
-    public HuggingFaceBackend(string baseUri, string model)
+    public HuggingFaceLocalBackend(string baseUri, string model)
         : this(new Uri(baseUri), model)
     {
     }
