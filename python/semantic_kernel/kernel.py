@@ -177,17 +177,12 @@ class Kernel(KernelBase):
 
         functions = []
         # Read every method from the skill instance
-        for candidate_name, candidate in inspect.getmembers(skill_instance, inspect.ismethod):
+        for _, candidate in inspect.getmembers(skill_instance, inspect.ismethod):
 
             # If the method is a semantic function, register it
             if not hasattr(candidate, "__sk_function__"):
                 continue
 
-            # If the method is not static , transform it into a static one
-            # if not isinstance(candidate, staticmethod):
-            #    candidate = staticmethod(candidate)
-
-            # candidate = candidate.__func__
             functions.append(
                 SKFunction.from_native_method(candidate, skill_name, self.logger)
             )
