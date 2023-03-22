@@ -10,7 +10,7 @@
 1. You will need an [Open AI Key](https://openai.com/api/) or
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample.
-2. Ensure the service API is already running `http://localhost:7071`. If not learn
+2. Ensure the service API is already running `http://localhost:7071`. If not, learn
    how to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. **Run** the following command `yarn install` (if you have never run the sample before)
    and/or `yarn start` from the command line.
@@ -24,7 +24,12 @@ to get answers about it. The sample highlights how [memory](https://aka.ms/sk/me
 and [embeddings](https://aka.ms/sk/embeddings) work along with the
 [SemanticTextPartitioner](../../../dotnet/src/SemanticKernel/SemanticFunctions/Partitioning/SemanticTextPartitioner.cs)
 when the size of the data is larger than the allowed token limited.
-Each SK function will call Open AI to perform the tasks you ask about.​
+Each SK function will call Open AI to perform the tasks you ask about.
+
+This sample will create embeddings only for markdown files by default in
+order to save time and costs.  You can change the filter by going to
+[GitHubSkill.cs](/semantic-kernel/blob/memory-sample/samples/dotnet/github-skills/GitHubSkill.cs)
+and editing the searchPattern filter.
 
 > [!CAUTION]
 > Each function will call Open AI which will use tokens that you will be billed for.
