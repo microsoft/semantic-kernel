@@ -26,10 +26,7 @@ and [embeddings](https://aka.ms/sk/embeddings) work along with the
 when the size of the data is larger than the allowed token limited.
 Each SK function will call Open AI to perform the tasks you ask about.
 
-This sample will create embeddings only for markdown files by default in
-order to save time and costs.  You can change the filter by going to
-[GitHubSkill.cs](/semantic-kernel/blob/memory-sample/samples/dotnet/github-skills/GitHubSkill.cs)
-and editing the searchPattern filter.
+In order to reduce costs and improve overall performance, this sample app indexes only content extracted from markdown files.
 
 > [!CAUTION]
 > Each function will call Open AI which will use tokens that you will be billed for.

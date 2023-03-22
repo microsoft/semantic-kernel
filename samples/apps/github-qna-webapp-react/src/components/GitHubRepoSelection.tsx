@@ -130,7 +130,7 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBr
                 <InfoLabel
                     info={
                         <div style={{ maxWidth: 250 }}>
-                            Only files of type below will be used for embedding and for answers.
+                            Embedding and answers will be based on the files of the type indicated below.
                         </div>
                     }
                     htmlFor={`EmbeddingFileTypeTooltip`}
