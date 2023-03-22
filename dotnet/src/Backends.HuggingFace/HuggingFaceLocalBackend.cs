@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Backends.Abstract;
+using Microsoft.SemanticKernel.AI.Extensions;
 using Microsoft.SemanticKernel.Backends.HuggingFace.HttpSchema;
 
 namespace Microsoft.SemanticKernel.Backends.HuggingFace;
