@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Microsoft.SemanticKernel.Backends.Abstract</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Backends.Abstract</RootNamespace>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--Temporary reference, will be removed in the next phase of multi-backend redesign-->
+    <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
+
+</Project>

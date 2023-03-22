@@ -58,6 +58,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backends.HuggingFace", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backends.HuggingFace.UnitTests", "src\Backends.HuggingFace.UnitTests\Backends.HuggingFace.UnitTests.csproj", "{EDDF7296-96D8-42D1-B568-32346665B180}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backends.Abstract", "src\Backends.Abstract\Backends.Abstract.csproj", "{CA9B57B5-93A6-4C4F-8443-4DEA5EA34BBF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -124,6 +126,10 @@ Global
 		{EDDF7296-96D8-42D1-B568-32346665B180}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDDF7296-96D8-42D1-B568-32346665B180}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDDF7296-96D8-42D1-B568-32346665B180}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA9B57B5-93A6-4C4F-8443-4DEA5EA34BBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA9B57B5-93A6-4C4F-8443-4DEA5EA34BBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA9B57B5-93A6-4C4F-8443-4DEA5EA34BBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA9B57B5-93A6-4C4F-8443-4DEA5EA34BBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -143,6 +149,7 @@ Global
 		{1B79D24F-6419-43B9-84E4-0A6EB46CC499} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{A6300F56-0D8B-456C-9DA6-A5DA64B217C7} = {1B79D24F-6419-43B9-84E4-0A6EB46CC499}
 		{EDDF7296-96D8-42D1-B568-32346665B180} = {1B79D24F-6419-43B9-84E4-0A6EB46CC499}
+		{CA9B57B5-93A6-4C4F-8443-4DEA5EA34BBF} = {1B79D24F-6419-43B9-84E4-0A6EB46CC499}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

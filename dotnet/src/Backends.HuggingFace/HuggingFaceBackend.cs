@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Backends.Abstract;
 using Microsoft.SemanticKernel.Backends.HuggingFace.HttpSchema;
 
 namespace Microsoft.SemanticKernel.Backends.HuggingFace;
@@ -124,10 +125,8 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
                 Content = new StringContent(JsonSerializer.Serialize(completionRequest)),
             };
 
-            var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            var completionResponse = JsonSerializer.Deserialize<CompletionResponse>(body);
+            var completionResponse = await this._httpClient
+                .SendRequestAsync<CompletionResponse>(httpRequestMessage).ConfigureAwait(false);
 
             return completionResponse?.Choices.First().Text!;
         }
@@ -162,10 +161,8 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
                 Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
             };
 
-            var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            var embeddingResponse = JsonSerializer.Deserialize<EmbeddingResponse>(body);
+            var embeddingResponse = await this._httpClient
+                .SendRequestAsync<EmbeddingResponse>(httpRequestMessage).ConfigureAwait(false);
 
             return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding.ToArray())).ToList()!;
         }
