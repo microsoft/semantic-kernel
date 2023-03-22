@@ -8,7 +8,7 @@ import QnA from './components/QnA';
 import QuickTips, { ITipGroup } from './components/QuickTips';
 import ServiceConfig from './components/ServiceConfig';
 import { ModelType } from './components/setup/ModelConfig';
-import { IBackendConfig, IKeyConfig } from './model/KeyConfig';
+import { IKeyConfig } from './model/KeyConfig';
 
 const App: FC = () => {
     enum AppState {
@@ -142,7 +142,11 @@ const App: FC = () => {
                             <Tab value="completion" style={{ marginLeft: 10, paddingRight: 0 }}>
                                 Completion Model
                             </Tab>
-                            <Tab value="embedding" style={{ marginLeft: 10, paddingRight: 0 }}>
+                            <Tab
+                                value="embedding"
+                                style={{ marginLeft: 10, paddingRight: 0 }}
+                                disabled={!keyConfig?.completionConfig}
+                            >
                                 Embedding Model
                             </Tab>
                             <Tab value="github" disabled={appState < AppState.GitHubProject}>
@@ -159,7 +163,7 @@ const App: FC = () => {
                                 onConfigComplete={(backendConfig) => {
                                     setKeyConfig({
                                         ...keyConfig,
-                                        embeddingConfig: keyConfig?.embeddingConfig ?? undefined,
+                                        embeddingConfig: keyConfig?.embeddingConfig,
                                         completionConfig: backendConfig,
                                     });
                                     setAppState(AppState.ConfigureEmbeddingModel);
@@ -173,7 +177,7 @@ const App: FC = () => {
                                 onConfigComplete={(backendConfig) => {
                                     setKeyConfig({
                                         ...keyConfig,
-                                        completionConfig: keyConfig?.completionConfig ?? ({} as IBackendConfig),
+                                        completionConfig: keyConfig?.completionConfig,
                                         embeddingConfig: backendConfig,
                                     });
                                     setAppState(AppState.GitHubProject);

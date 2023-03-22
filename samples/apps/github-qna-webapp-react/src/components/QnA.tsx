@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { Body1, Button, Label, Slider, SliderOnChangeData, Title3 } from '@fluentui/react-components';
+import { InfoLabel } from '@fluentui/react-components/unstable';
 import React, { FC, useCallback, useState } from 'react';
 import { ChatHistoryItem, FetchState, IChatMessage } from './chat/ChatHistoryItem';
 
@@ -34,7 +35,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
     ]);
     const [response, setResponse] = useState<IChatMessage>();
 
-    const [relevance, setRelevance] = useState(0.2);
+    const [relevance, setRelevance] = useState(0.4);
     const onSliderChange = useCallback((_e: any, sliderData: SliderOnChangeData) => {
         setRelevance(sliderData.value);
     }, []);
@@ -47,6 +48,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
             timestamp: new Date().toISOString(),
             mine: false,
             fetchState: FetchState.Fetching,
+            index: chatHistory.length + 1,
         };
         setChatHistory([...chatHistory, m, response]);
         try {
@@ -74,11 +76,11 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
 
     React.useEffect(() => {
         chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [isBusy]);
+    }, [isBusy, response, chatHistory]);
 
     React.useEffect(() => {
         if (response) {
-            chatHistory[chatHistory.length - 1] = response;
+            if (response.index) chatHistory[response.index] = response;
             setIsBusy(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -155,11 +157,22 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                 </Button>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: '5%' }}>
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <Label size="small">0</Label>
+                        <Label size="small">No Threshold</Label>
                         <Slider min={0} max={1} step={0.1} value={relevance} onChange={onSliderChange} />
-                        <Label size="small">1</Label>
+                        <Label size="small">Perfect Match</Label>
                     </div>
-                    <Label size="medium">Relevance: {relevance}</Label>
+                    <InfoLabel
+                        info={
+                            <div style={{ maxWidth: 250 }}>
+                                'Relevance' is used in memory search and is a measure from 0.0 to 1.0, where 1.0 means a
+                                perfect match. We encourage users to experiment with different values to see what the
+                                model thinks is most relevant to the query.
+                            </div>
+                        }
+                        htmlFor={`RelevanceTooltip`}
+                    >
+                        Relevance Threshold
+                    </InfoLabel>
                 </div>
             </div>
         </div>

@@ -20,6 +20,7 @@ export interface IChatMessage {
     author: string;
     timestamp: string;
     mine: boolean;
+    index?: number;
     fetchState?: FetchState;
 }
 

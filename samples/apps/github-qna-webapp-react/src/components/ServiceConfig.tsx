@@ -4,7 +4,7 @@ import { Body1, Button, Input, Label, Spinner, Tab, TabList, Title3 } from '@flu
 import { FC, useCallback, useEffect, useState } from 'react';
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
 import { IBackendConfig, IKeyConfig } from '../model/KeyConfig';
-import ModelConfig, { ModelType } from './setup/ModelConfig';
+import ModelConfig, { IResourceInput, ModelType } from './setup/ModelConfig';
 
 interface IData {
     onConfigComplete: (backendConfig: IBackendConfig) => void;
@@ -23,22 +23,23 @@ const ServiceConfig: FC<IData> = ({
         backendConfig?.backend !== undefined
             ? backendConfig.backend === 1
             : completionConfig?.backend !== undefined
-                ? completionConfig.backend === 1
-                : true,
+            ? completionConfig.backend === 1
+            : true,
     );
     const [completionOrEmbeddingConfig, setCompletionOrEmbeddingConfig] = useState<IBackendConfig>(backendConfig);
     const [isBusy, setIsBusy] = useState<boolean>(false);
     const sk = useSemanticKernel(process.env.REACT_APP_FUNCTION_URI as string);
+    const [isValidModel, setIsValidModel] = useState(true);
 
-    const [key, setKey] = useState<string>('');
     const [deploymentOrModelId, setDeploymentOrModelId] = useState<string>('');
 
-    const [azureOpenAiEndpoint, setAzureOpenAiEndpoint] = useState<string>(
-        backendConfig?.endpoint ??
-            modelType === ModelType.Completion ?
-            (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_ENDPOINT as string) :
-            (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_ENDPOINT as string),
-    );
+    const [resourceInput, setResourceInput] = useState<IResourceInput>({
+        key: '',
+        endpoint:
+            backendConfig?.endpoint ?? modelType === ModelType.Completion
+                ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_ENDPOINT as string)
+                : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_ENDPOINT as string),
+    });
 
     const saveKey = async () => {
         setIsBusy(true);
@@ -46,13 +47,13 @@ const ServiceConfig: FC<IData> = ({
         //POST a simple ask to validate the key
         const ask = { value: 'clippy', inputs: [{ key: 'style', value: 'Bill & Ted' }] };
 
-        const keyConfig: IKeyConfig = {
+        const serviceConfig: IKeyConfig = {
             completionConfig: modelType === ModelType.Completion ? completionOrEmbeddingConfig : completionConfig,
             embeddingConfig: modelType === ModelType.Embeddings ? completionOrEmbeddingConfig : undefined,
         };
 
         try {
-            var result = await sk.invokeAsync(keyConfig, ask, 'funskill', 'joke');
+            var result = await sk.invokeAsync(serviceConfig, ask, 'funskill', 'joke');
             console.log(result);
             onConfigComplete(completionOrEmbeddingConfig);
         } catch (e) {
@@ -65,43 +66,38 @@ const ServiceConfig: FC<IData> = ({
     const setDefaults = useCallback((isOpenAi: boolean) => {
         const defaultKey: string = isOpenAi
             ? // OpenAI
-            modelType === ModelType.Completion
+              modelType === ModelType.Completion
                 ? (process.env.REACT_APP_OPEN_AI_COMPLETION_KEY as string)
                 : (process.env.REACT_APP_OPEN_AI_EMBEDDING_KEY as string)
             : // Azure OpenAI
             modelType === ModelType.Completion
-                ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_KEY as string)
-                : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_KEY as string);
-            
+            ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_KEY as string)
+            : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_KEY as string);
 
         const defaultId: string = isOpenAi
             ? // OpenAI
-            modelType === ModelType.Completion
+              modelType === ModelType.Completion
                 ? (process.env.REACT_APP_OPEN_AI_COMPLETION_MODEL as string)
                 : (process.env.REACT_APP_OPEN_AI_EMBEDDING_MODEL as string)
             : // Azure OpenAI
             modelType === ModelType.Completion
-                ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_DEPLOYMENT as string)
-                : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_DEPLOYMENT as string);
-        
+            ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_DEPLOYMENT as string)
+            : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_DEPLOYMENT as string);
+
         const defaultEndpoint: string = isOpenAi
             ? // OpenAI
-            modelType === ModelType.Completion
-                ? (process.env.REACT_APP_OPEN_AI_COMPLETION_ENDPOINT as string)
-                : (process.env.REACT_APP_OPEN_AI_EMBEDDING_ENDPOINT as string)
+              ''
             : // Azure OpenAI
             modelType === ModelType.Completion
-                ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_ENDPOINT as string)
-                : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_ENDPOINT as string);
+            ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_ENDPOINT as string)
+            : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_ENDPOINT as string);
         console.log(defaultEndpoint);
         if ((backendConfig?.backend === 1 && isOpenAi) || (backendConfig?.backend === 0 && !isOpenAi)) {
-            setKey(backendConfig.key);
+            setResourceInput({ ...resourceInput, key: backendConfig.key, endpoint: backendConfig.endpoint });
             setDeploymentOrModelId(backendConfig.deploymentOrModelId);
-            setAzureOpenAiEndpoint(backendConfig.endpoint);
         } else {
-            setKey(defaultKey ?? '');
+            setResourceInput({ ...resourceInput, key: defaultKey ?? '', endpoint: defaultEndpoint });
             setDeploymentOrModelId(defaultId ?? '');
-            setAzureOpenAiEndpoint(defaultEndpoint ?? '');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -117,13 +113,13 @@ const ServiceConfig: FC<IData> = ({
     useEffect(() => {
         setCompletionOrEmbeddingConfig({
             backend: isOpenAI ? 1 : 0,
-            endpoint: isOpenAI ? '' : azureOpenAiEndpoint,
-            key: key,
+            endpoint: isOpenAI ? '' : resourceInput.endpoint,
+            key: resourceInput.key,
             deploymentOrModelId: deploymentOrModelId,
             label: deploymentOrModelId,
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [azureOpenAiEndpoint, deploymentOrModelId, key]);
+    }, [resourceInput, deploymentOrModelId]);
 
     return (
         <>
@@ -155,9 +151,9 @@ const ServiceConfig: FC<IData> = ({
                     <Input
                         id="openaikey"
                         type="password"
-                        value={key}
+                        value={resourceInput.key}
                         onChange={(_e, d) => {
-                            setKey(d.value);
+                            setResourceInput({ ...resourceInput, key: d.value });
                             setCompletionOrEmbeddingConfig({
                                 ...completionOrEmbeddingConfig,
                                 key: d.value,
@@ -170,7 +166,9 @@ const ServiceConfig: FC<IData> = ({
                         modelType={modelType}
                         backendConfig={completionOrEmbeddingConfig}
                         setBackendConfig={setCompletionOrEmbeddingConfig}
+                        setIsValidModel={setIsValidModel}
                         setModel={setDeploymentOrModelId}
+                        resourceInput={resourceInput}
                         defaultModel={deploymentOrModelId}
                     />
                 </>
@@ -180,9 +178,9 @@ const ServiceConfig: FC<IData> = ({
                     <Input
                         id="azureopenaikey"
                         type="password"
-                        value={key}
+                        value={resourceInput.key}
                         onChange={(_e, d) => {
-                            setKey(d.value);
+                            setResourceInput({ ...resourceInput, key: d.value });
                             setCompletionOrEmbeddingConfig({
                                 ...completionOrEmbeddingConfig,
                                 key: d.value,
@@ -193,9 +191,9 @@ const ServiceConfig: FC<IData> = ({
                     <Label htmlFor="aoaiendpoint">Endpoint</Label>
                     <Input
                         id="aoaiendpoint"
-                        value={azureOpenAiEndpoint}
+                        value={resourceInput.endpoint}
                         onChange={(e, d) => {
-                            setAzureOpenAiEndpoint(d.value);
+                            setResourceInput({ ...resourceInput, endpoint: d.value });
                             setCompletionOrEmbeddingConfig({
                                 ...completionOrEmbeddingConfig,
                                 endpoint: d.value,
@@ -208,7 +206,9 @@ const ServiceConfig: FC<IData> = ({
                         modelType={modelType}
                         backendConfig={completionOrEmbeddingConfig}
                         setBackendConfig={setCompletionOrEmbeddingConfig}
+                        setIsValidModel={setIsValidModel}
                         setModel={setDeploymentOrModelId}
+                        resourceInput={resourceInput}
                         defaultModel={deploymentOrModelId}
                     />
                 </>
@@ -216,7 +216,7 @@ const ServiceConfig: FC<IData> = ({
 
             <Button
                 style={{ width: 70, height: 32, marginTop: 10 }}
-                disabled={isBusy}
+                disabled={isBusy || !isValidModel}
                 appearance="primary"
                 onClick={saveKey}
             >
