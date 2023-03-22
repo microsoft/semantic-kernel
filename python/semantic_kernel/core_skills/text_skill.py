@@ -1,16 +1,11 @@
 
-from semantic_kernel.skill_definition import (
-    sk_function,
-    sk_function_context_parameter,
-    sk_function_input,
-    sk_function_name,
-)
+from semantic_kernel.skill_definition import sk_function
 
 
 class TextSkill:
 
     @sk_function("Trim whitespace from the start and end of a string.")
-    def trim(text: str) -> str:
+    def trim(self, text: str) -> str:
         """
         Trim whitespace from the start and end of a string.
 
@@ -21,7 +16,7 @@ class TextSkill:
         return text.strip()
 
     @sk_function("Trim whitespace from the start of a string.")
-    def trim_start(text: str) -> str:
+    def trim_start(self, text: str) -> str:
         """
        Trim whitespace from the start of a string.
 
@@ -32,7 +27,7 @@ class TextSkill:
         return text.lstrip()
 
     @sk_function("Trim whitespace from the end of a string.")
-    def trim_end(text: str) -> str:
+    def trim_end(self, text: str) -> str:
         """
        Trim whitespace from the end of a string.
 

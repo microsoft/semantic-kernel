@@ -4,9 +4,7 @@ from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition import (
     sk_function,
-    sk_function_context_parameter,
-    sk_function_input,
-    sk_function_name,
+    sk_function_context_parameter
 )
 
 
@@ -19,9 +17,9 @@ class TextMemorySkill:
     DEFAULT_RELEVANCE = 0.75
 
     # @staticmethod
-    @sk_function("Recall a fact from the long term memory")
-    @sk_function_name("recall")
-    @sk_function_input(description="The information to retrieve")
+    @sk_function("Recall a fact from the long term memory", 
+    name =  "recall", 
+    input_description="The information to retrieve")
     @sk_function_context_parameter(
         name=COLLECTION_PARAM,
         description="The collection to search for information",
@@ -81,9 +79,7 @@ class TextMemorySkill:
         return results[0].text if results[0].text is not None else ""
 
     # @staticmethod
-    @sk_function("Save information to semantic memory")
-    @sk_function_name("save")
-    @sk_function_input(description="The information to save")
+    @sk_function("Save information to semantic memory",name="save", input_description="The information to save")
     @sk_function_context_parameter(
         name=COLLECTION_PARAM,
         description="The collection to save the information",
