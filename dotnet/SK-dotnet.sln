@@ -52,7 +52,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{F4243136
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelBuilder", "..\samples\dotnet\KernelBuilder\KernelBuilder.csproj", "{A52818AC-57FB-495F-818F-9E1E7BC5618C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubSkillsExample", "..\samples\dotnet\github-skills\GitHubSkillsExample.csproj", "{39E5F0F6-8B36-4ECA-A5F6-FC7522DC2ECF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubSkills", "..\samples\dotnet\github-skills\GitHubSkills.csproj", "{39E5F0F6-8B36-4ECA-A5F6-FC7522DC2ECF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

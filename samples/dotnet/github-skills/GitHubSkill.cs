@@ -15,6 +15,8 @@ using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
 
+namespace GitHubSkills;
+
 /// <summary>
 /// Skill for interacting with a GitHub repository.
 /// </summary>
@@ -68,7 +70,7 @@ public class GitHubSkill
     private readonly ILogger<GitHubSkill> _logger;
 
     internal const string SummarizeCodeSnippetDefinition =
-    @"BEGIN CONTENT TO SUMMARIZE:
+        @"BEGIN CONTENT TO SUMMARIZE:
 {{$INPUT}}
 END CONTENT TO SUMMARIZE.
 
@@ -109,7 +111,8 @@ BEGIN SUMMARY:
     [SKFunction("Downloads a repository and summarizes the content")]
     [SKFunctionName("SummarizeRepository")]
     [SKFunctionInput(Description = "URL of the GitHub repository to summarize")]
-    [SKFunctionContextParameter(Name = Parameters.RepositoryBranch, Description = "Name of the repository repositoryBranch which will be downloaded and summarized")]
+    [SKFunctionContextParameter(Name = Parameters.RepositoryBranch,
+        Description = "Name of the repository repositoryBranch which will be downloaded and summarized")]
     [SKFunctionContextParameter(Name = Parameters.SearchPattern, Description = "The search string to match against the names of files in the repository")]
     public async Task SummarizeRepositoryAsync(string source, SKContext context)
     {
@@ -117,6 +120,7 @@ BEGIN SUMMARY:
         {
             repositoryBranch = "main";
         }
+
         if (!context.Variables.Get(Parameters.SearchPattern, out string searchPattern) || string.IsNullOrEmpty(searchPattern))
         {
             searchPattern = "*.md";
@@ -146,6 +150,7 @@ BEGIN SUMMARY:
             {
                 File.Delete(filePath);
             }
+
             if (Directory.Exists(directoryPath))
             {
                 Directory.Delete(directoryPath, true);

@@ -23,7 +23,7 @@ public static class SemanticKernelExtensions
     /// <param name="skillName">Name of the skill. Only alphanumeric chars and underscore.</param>
     /// <param name="endpoint">Name of the skill. Only alphanumeric chars and underscore.</param>
     /// <returns>A skill containing a list of functions</returns>
-    public async static Task<IDictionary<string, ISKFunction>> ImportSemanticSkillFromCloudAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportSemanticSkillFromCloudAsync(
         this IKernel kernel, string skillName, string endpoint)
     {
         // Prepare a skill, ie a list of functions to be populated in the loop below
