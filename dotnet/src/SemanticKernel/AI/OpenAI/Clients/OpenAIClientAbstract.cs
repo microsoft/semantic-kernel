@@ -3,17 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Mime;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Extensions;
 using Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.AI.OpenAI.Clients;
 

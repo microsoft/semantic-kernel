@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Net.Http;
 using System.Net;
-using System.Text.Json;
-using System.Threading.Tasks;
+using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.AI.Extensions;
 
