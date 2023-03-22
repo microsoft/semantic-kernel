@@ -1,5 +1,5 @@
 
-import functools
+
 from semantic_kernel.skill_definition import sk_function
 
 
