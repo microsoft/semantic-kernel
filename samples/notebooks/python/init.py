@@ -42,18 +42,14 @@ def azure_openai_settings_from_dot_env() -> Tuple[str, str]:
 
     api_key, endpoint = None, None
     with open(".env", "r") as f:
-        lines = f.readlines()
-
-        for line in lines:
+        for line in f:
             if line.startswith("AZURE_OPENAI_API_KEY"):
                 parts = line.split("=")[1:]
                 api_key = "=".join(parts).strip().strip('"')
-                break
 
             if line.startswith("AZURE_OPENAI_ENDPOINT"):
                 parts = line.split("=")[1:]
                 endpoint = "=".join(parts).strip().strip('"')
-                break
 
     # Azure requires both the API key and the endpoint URL.
     assert api_key is not None, "Azure OpenAI API key not found in .env file"

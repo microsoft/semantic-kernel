@@ -29,9 +29,15 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
 )
 from semantic_kernel.skill_definition.skill_collection import SkillCollection
 from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
+from semantic_kernel.utils.null_logger import NullLogger
+from semantic_kernel.memory.null_memory import NullMemory
+from semantic_kernel.configuration.kernel_config import KernelConfig
+from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 from semantic_kernel.template_engine.prompt_template_engine_base import (
     PromptTemplateEngineBase,
 )
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.kernel_extensions import KernelExtensions
 
 
 class Kernel(KernelBase):
@@ -43,17 +49,22 @@ class Kernel(KernelBase):
 
     def __init__(
         self,
-        skill_collection: SkillCollectionBase,
-        prompt_template_engine: PromptTemplateEngineBase,
-        memory: SemanticTextMemoryBase,
-        config: KernelConfig,
-        log: Logger,
+        *,
+        skill_collection: Optional[SkillCollectionBase] = None,
+        prompt_template_engine: Optional[PromptTemplateEngineBase] = None,
+        memory: Optional[SemanticTextMemoryBase] = None,
+        memory_storage: Optional[MemoryStoreBase] = None,
+        config: Optional[KernelConfig] = None,
+        log: Optional[Logger] = None,
     ) -> None:
-        self._log = log
-        self._config = config
-        self._skill_collection = skill_collection
-        self._prompt_template_engine = prompt_template_engine
-        self._memory = memory
+        self._log = log if log else NullLogger()
+        self._config = config if config else KernelConfig()
+        self._skill_collection = skill_collection if skill_collection else SkillCollection(self._log)
+        self._prompt_template_engine = prompt_template_engine if prompt_template_engine else PromptTemplateEngine(self._log)
+        self._memory = memory if memory else NullMemory()
+
+        if memory_storage:
+            KernelExtensions.use_memory(self, memory_storage)
 
     @property
     def config(self) -> KernelConfig:
