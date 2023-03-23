@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using GitHubSkills;
 using KernelHttpServer.Config;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,7 @@ using Microsoft.SemanticKernel.Skills.Document.FileSystem;
 using Microsoft.SemanticKernel.Skills.Document.OpenXml;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
+using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.TemplateEngine;
 using static KernelHttpServer.Config.Constants;
 using Directory = System.IO.Directory;
@@ -100,11 +102,6 @@ internal static class Extensions
         return skills.HasSemanticFunction(skillName, functionName) || skills.HasNativeFunction(skillName, functionName);
     }
 
-    private static bool _ShouldLoad(string skillName, IEnumerable<string>? skillsToLoad = null)
-    {
-        return skillsToLoad?.Contains(skillName, StringComparer.InvariantCultureIgnoreCase) != false;
-    }
-
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The caller invokes native skills during a request and the HttpClient instance must remain alive for those requests to be successful.")]
     internal static void RegisterNativeGraphSkills(this IKernel kernel, string graphToken, IEnumerable<string>? skillsToLoad = null)
@@ -112,25 +109,25 @@ internal static class Extensions
         IList<DelegatingHandler> handlers = GraphClientFactory.CreateDefaultHandlers(new TokenAuthenticationProvider(graphToken));
         GraphServiceClient graphServiceClient = new(GraphClientFactory.Create(handlers));
 
-        if (_ShouldLoad(nameof(CloudDriveSkill), skillsToLoad))
+        if (ShouldLoad(nameof(CloudDriveSkill), skillsToLoad))
         {
             CloudDriveSkill cloudDriveSkill = new(new OneDriveConnector(graphServiceClient));
             _ = kernel.ImportSkill(cloudDriveSkill, nameof(cloudDriveSkill));
         }
 
-        if (_ShouldLoad(nameof(TaskListSkill), skillsToLoad))
+        if (ShouldLoad(nameof(TaskListSkill), skillsToLoad))
         {
             TaskListSkill taskListSkill = new(new MicrosoftToDoConnector(graphServiceClient));
             _ = kernel.ImportSkill(taskListSkill, nameof(taskListSkill));
         }
 
-        if (_ShouldLoad(nameof(EmailSkill), skillsToLoad))
+        if (ShouldLoad(nameof(EmailSkill), skillsToLoad))
         {
             EmailSkill emailSkill = new(new OutlookMailConnector(graphServiceClient));
             _ = kernel.ImportSkill(emailSkill, nameof(emailSkill));
         }
 
-        if (_ShouldLoad(nameof(CalendarSkill), skillsToLoad))
+        if (ShouldLoad(nameof(CalendarSkill), skillsToLoad))
         {
             CalendarSkill calendarSkill = new(new OutlookCalendarConnector(graphServiceClient));
             _ = kernel.ImportSkill(calendarSkill, nameof(calendarSkill));
@@ -148,18 +145,33 @@ internal static class Extensions
         _ = kernel.ImportSkill(new TextMemorySkill(), nameof(TextMemorySkill));
     }
 
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+        Justification = "The caller invokes native skills during a request and the skill instances must remain alive for those requests to be successful.")]
     internal static void RegisterNativeSkills(this IKernel kernel, IEnumerable<string>? skillsToLoad = null)
     {
-        if (_ShouldLoad(nameof(DocumentSkill), skillsToLoad))
+        if (ShouldLoad(nameof(DocumentSkill), skillsToLoad))
         {
             DocumentSkill documentSkill = new(new WordDocumentConnector(), new LocalFileSystemConnector());
             _ = kernel.ImportSkill(documentSkill, nameof(DocumentSkill));
         }
 
-        if (_ShouldLoad(nameof(ConversationSummarySkill), skillsToLoad))
+        if (ShouldLoad(nameof(ConversationSummarySkill), skillsToLoad))
         {
             ConversationSummarySkill conversationSummarySkill = new(kernel);
             _ = kernel.ImportSkill(conversationSummarySkill, nameof(ConversationSummarySkill));
+        }
+
+        if (ShouldLoad(nameof(WebFileDownloadSkill), skillsToLoad))
+        {
+            var webFileDownloadSkill = new WebFileDownloadSkill();
+            _ = kernel.ImportSkill(webFileDownloadSkill, nameof(WebFileDownloadSkill));
+        }
+
+        if (ShouldLoad(nameof(GitHubSkill), skillsToLoad))
+        {
+            var downloadSkill = new WebFileDownloadSkill();
+            GitHubSkill githubSkill = new GitHubSkill(kernel, downloadSkill);
+            _ = kernel.ImportSkill(githubSkill, nameof(GitHubSkill));
         }
     }
 
@@ -179,7 +191,7 @@ internal static class Extensions
                 currentFolder = currentFolder?.Parent;
             }
 
-            if (_ShouldLoad(currentFolder.Name, skillsToLoad))
+            if (ShouldLoad(currentFolder.Name, skillsToLoad))
             {
                 try
                 {
@@ -191,5 +203,10 @@ internal static class Extensions
                 }
             }
         }
+    }
+
+    private static bool ShouldLoad(string skillName, IEnumerable<string>? skillsToLoad = null)
+    {
+        return skillsToLoad?.Contains(skillName, StringComparer.InvariantCultureIgnoreCase) != false;
     }
 }
