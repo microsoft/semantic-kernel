@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - run: echo "/root/.local/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v3
       - name: Install poetry
         run: pipx install poetry
@@ -33,6 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - run: echo "/root/.local/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v3
       - name: Install poetry
         run: pipx install poetry
