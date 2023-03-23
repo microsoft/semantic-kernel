@@ -167,9 +167,10 @@ internal static class Example12_Planning
         kernel.ImportSkill(new Skills.TextSkill(), "text");
         kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "coretext");
 
-        var executionResults = await kernel.RunAsync(
-            "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'",
-            planner["CreatePlan"]);
+        var context = new ContextVariables("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
+        context.Set(PlannerSkill.Parameters.RelevancyThreshold, "0.78");
+
+        var executionResults = await kernel.RunAsync(context, planner["CreatePlan"]);
 
         Console.WriteLine("Original plan:");
         Console.WriteLine(executionResults.Variables.ToPlan().PlanString);
