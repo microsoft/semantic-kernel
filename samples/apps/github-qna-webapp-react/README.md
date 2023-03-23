@@ -26,7 +26,8 @@ and [embeddings](https://aka.ms/sk/embeddings) work along with the
 when the size of the data is larger than the allowed token limited.
 Each SK function will call Open AI to perform the tasks you ask about.
 
-In order to reduce costs and improve overall performance, this sample app indexes only content extracted from markdown files.
+In order to reduce costs and improve overall performance, this sample app indexes
+only content extracted from markdown files.
 
 > [!CAUTION]
 > Each function will call Open AI which will use tokens that you will be billed for.
@@ -39,6 +40,6 @@ for how to create Skills.
 Join the community: Join our [Discord community](https://aka.ms/SKDiscord) to
 share ideas and get help​.
 
-Contribute: We need your help to make this the best it can be.  Learn how you
+Contribute: We need your help to make this the best it can be. Learn how you
 can [contribute](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md)
 to this project.​
