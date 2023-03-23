@@ -253,8 +253,23 @@ csharp_style_expression_bodied_local_functions = false:silent
 ##################
 # C# Style       #
 ##################
+
+# Disable unneccesary style rules by default
 [*.cs]
-dotnet_analyzer_diagnostic.category-Style.severity = none # Disable all unneccesary style rules by default
+dotnet_diagnostic.IDE0001.severity = none # Simplify name
+dotnet_diagnostic.IDE0002.severity = none # Simplify member access
+dotnet_diagnostic.IDE0004.severity = none # Remove unnecessary cast
+# dotnet_diagnostic.IDE0005.severity = none # Remove unnecessary usings
+dotnet_diagnostic.IDE0035.severity = none # Remove unreachable code
+dotnet_diagnostic.IDE0051.severity = none # Remove unused private member
+dotnet_diagnostic.IDE0052.severity = none # Remove unread private member
+dotnet_diagnostic.IDE0058.severity = none # Remove unused expression value
+dotnet_diagnostic.IDE0059.severity = none # Unnecessary assignment of a value
+dotnet_diagnostic.IDE0060.severity = none # Remove unused parameter
+dotnet_diagnostic.IDE0080.severity = none # Remove unnecessary suppression operator
+dotnet_diagnostic.IDE0100.severity = none # Remove unnecessary equality operator
+dotnet_diagnostic.IDE0110.severity = none # Remove unnecessary discards
+
 
 ###############################
 # VB Coding Conventions       #
