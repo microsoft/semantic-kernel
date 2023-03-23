@@ -1,0 +1,45 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: node-pr
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "samples/"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "yarn"
+          cache-dependency-path: 'samples/**/yarn.lock'
+
+      - name: Run yarn install & yarn build
+        # This step uses a bash script to find all subfolders of /samples that contain a yarn.lock file
+        # and then runs yarn install and yarn build for each of them.
+        # The --frozen-lockfile option ensures that the dependencies are installed exactly as specified in the lock file.
+        # The -cwd option sets the current working directory to the folder where the yarn.lock file is located.
+        run: |
+          #!/bin/bash
+          set -e # exit with nonzero exit code if anything fails
+          shopt -s globstar # enable globstar option to use ** for recursive matching
+          for lockfile in samples/**/yarn.lock; do # loop over all yarn.lock files
+            dir=$(dirname "$lockfile") # get the directory of the lock file
+            echo "Running yarn install and yarn build for $dir"
+            yarn --cwd "$dir" install --frozen-lockfile # install dependencies
+            yarn --cwd "$dir" build # run build script
+          done

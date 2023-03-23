@@ -10,6 +10,7 @@ on:
     branches: [ "main" ]
     paths:
       - "dotnet/**"
+      - "samples/dotnet/**"
       - "**.cs"
       - "**.csproj"
       - ".editorconfig"

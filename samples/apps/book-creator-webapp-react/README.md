@@ -12,8 +12,8 @@
 1. You will need an [Open AI Key](https://openai.com/api/) or
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample.
-2. Ensure the service API is already running `http://localhost:7071`. If not learn
-   how to start it [here](../../dotnet/KernelHttpServer/README.md).
+2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps
+   to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. **Run** the following command `yarn install` (if you have never run the sample before)
    and/or `yarn start` from the command line.
 4. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.

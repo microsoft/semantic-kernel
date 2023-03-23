@@ -55,6 +55,16 @@ public interface ISemanticTextMemory
     public Task<MemoryQueryResult?> GetAsync(string collection, string key, CancellationToken cancel = default);
 
     /// <summary>
+    /// Remove a memory by key.
+    /// For local memories the key is the "id" used when saving the record.
+    /// For external reference, the key is the "URI" used when saving the record.
+    /// </summary>
+    /// <param name="collection">Collection to search</param>
+    /// <param name="key">Unique memory record identifier</param>
+    /// <param name="cancel">Cancellation token</param>
+    public Task RemoveAsync(string collection, string key, CancellationToken cancel = default);
+
+    /// <summary>
     /// Find some information in memory
     /// </summary>
     /// <param name="collection">Collection to search</param>

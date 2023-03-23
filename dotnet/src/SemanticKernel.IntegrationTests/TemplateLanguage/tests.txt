@@ -1,0 +1,73 @@
+# About this file:
+# - The file is used by PromptTemplateEngineTests.cs to test SK template language.
+# - By using a TXT file there is no ambiguity caused by C#/Python escaping syntax.
+# - Empty lines and lines starting with "#" are ignored.
+# - Lines are NOT trimmed, there might be empty spaces at the end on purpose.
+# - The file contains multiple test cases.
+# - Each test case consists of two lines:
+#   - line 1: the template to render
+#   - line 2: the expected result after rendering
+# - If a template is invalid, line 2 contains the value "ERROR", e.g. a TemplateException is expected.
+
+""
+""
+
+{}
+{}
+
+{{}}
+{{}}
+
+.{{asis}}.
+..
+
+a{{asis ''}}b
+ab
+
+{{asis 'a'}}
+a
+
+{{ asis 'foo' }}
+foo
+
+# The second quote means the value is never closed, hiding the closing brackets
+# turning the entire string as a static text
+{{ asis 'foo\' }}
+{{ asis 'foo\' }}
+
+{{ asis 'f\'11' }}
+f'11
+
+{{ asis "f\\\'22" }}
+f\'22
+
+# The last quote hides the closing }}
+{{ call 'f\\'33" }}
+{{ call 'f\\'33" }}
+
+# \ is escaped but the second quote is not, terminating the string
+# After the string is terminated the <x> token is invalid
+{{ call 'f\\'x }}
+ERROR
+
+# \ is escaped but the second quote is not, terminating the string
+# After the string is terminated the <xy> token is invalid
+{{ call 'f\\'xy }}
+ERROR
+
+{{ "{{" }} and {{ "}}" }} x
+{{ and }} x
+
+ {{ " nothing special about these sequences: \ \0 \n \t \r \foo" }} 
+  nothing special about these sequences: \ \0 \n \t \r \foo 
+
+1{{ '\\' }}2
+1\2
+
+# Even number of escaped \
+{{ "\\\\\\\\" }}
+\\\\
+
+# Odd number of escaped \
+{{ "\\\\\\\\\\" }}
+\\\\\

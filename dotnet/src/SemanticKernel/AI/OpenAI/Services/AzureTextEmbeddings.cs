@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.OpenAI.Clients;
 using Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
@@ -26,8 +27,10 @@ public sealed class AzureTextEmbeddings : AzureOpenAIClientAbstract, IEmbeddingG
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
     /// <param name="log">Application logger</param>
-    public AzureTextEmbeddings(string modelId, string endpoint, string apiKey, string apiVersion, ILogger? log = null)
-        : base(log)
+    /// <param name="handlerFactory">An optional HTTP retry handler factory</param>
+    public AzureTextEmbeddings(string modelId, string endpoint, string apiKey, string apiVersion, ILogger? log = null,
+        IDelegatingHandlerFactory? handlerFactory = null)
+        : base(log, handlerFactory)
     {
         Verify.NotEmpty(modelId, "The ID cannot be empty, you must provide a Model ID or a Deployment name.");
         this._modelId = modelId;
