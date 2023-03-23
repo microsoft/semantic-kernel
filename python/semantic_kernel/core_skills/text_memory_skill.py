@@ -17,7 +17,7 @@ class TextMemorySkill:
     DEFAULT_RELEVANCE = 0.75
 
     # @staticmethod
-    @sk_function("Recall a fact from the long term memory", 
+    @sk_function(description="Recall a fact from the long term memory", 
     name =  "recall", 
     input_description="The information to retrieve")
     @sk_function_context_parameter(
@@ -30,7 +30,7 @@ class TextMemorySkill:
         description="The relevance score, from 0.0 to 1.0; 1.0 means perfect match",
         default_value=DEFAULT_RELEVANCE,
     )
-    async def recall_async(ask: str, context: SKContext) -> str:
+    async def recall_async(self, ask: str, context: SKContext) -> str:
         """
         Recall a fact from the long term memory.
 
@@ -78,8 +78,7 @@ class TextMemorySkill:
 
         return results[0].text if results[0].text is not None else ""
 
-    # @staticmethod
-    @sk_function("Save information to semantic memory",name="save", input_description="The information to save")
+    @sk_function(description="Save information to semantic memory",name="save", input_description="The information to save")
     @sk_function_context_parameter(
         name=COLLECTION_PARAM,
         description="The collection to save the information",
@@ -89,7 +88,7 @@ class TextMemorySkill:
         name=KEY_PARAM,
         description="The unique key to associate with the information",
     )
-    async def save_async(text: str, context: SKContext):
+    async def save_async(self, text: str, context: SKContext):
         """
         Save a fact to the long term memory.
 
