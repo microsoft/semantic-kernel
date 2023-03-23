@@ -110,6 +110,7 @@ dotnet_diagnostic.CA2007.severity = none # Do not directly await a Task
 dotnet_diagnostic.CA2225.severity = none # Operator overloads have named alternates
 dotnet_diagnostic.CA2227.severity = none # Change to be read-only by removing the property setter
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
+dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool) is hidden by default, set to none to prevent IDE from changing on autosave
 
 # Diagnostics elevated as warnings
 dotnet_diagnostic.CA1000.severity = warning # Do not declare static members on generic types
@@ -247,6 +248,28 @@ csharp_style_prefer_method_group_conversion = true:silent
 csharp_style_prefer_top_level_statements = true:silent
 csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
+
+
+##################
+# C# Style       #
+##################
+
+# Disable unneccesary style rules by default
+[*.cs]
+dotnet_diagnostic.IDE0001.severity = none # Simplify name
+dotnet_diagnostic.IDE0002.severity = none # Simplify member access
+dotnet_diagnostic.IDE0004.severity = none # Remove unnecessary cast
+# dotnet_diagnostic.IDE0005.severity = none # Remove unnecessary usings
+dotnet_diagnostic.IDE0035.severity = none # Remove unreachable code
+dotnet_diagnostic.IDE0051.severity = none # Remove unused private member
+dotnet_diagnostic.IDE0052.severity = none # Remove unread private member
+dotnet_diagnostic.IDE0058.severity = none # Remove unused expression value
+dotnet_diagnostic.IDE0059.severity = none # Unnecessary assignment of a value
+dotnet_diagnostic.IDE0060.severity = none # Remove unused parameter
+dotnet_diagnostic.IDE0080.severity = none # Remove unnecessary suppression operator
+dotnet_diagnostic.IDE0100.severity = none # Remove unnecessary equality operator
+dotnet_diagnostic.IDE0110.severity = none # Remove unnecessary discards
+
 
 ###############################
 # VB Coding Conventions       #

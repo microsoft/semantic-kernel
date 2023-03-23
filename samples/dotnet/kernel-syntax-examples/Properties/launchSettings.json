@@ -3,12 +3,12 @@
     "KernelSyntaxExamples": {
       "commandName": "Project",
       "environmentVariables": {
-        "BING_API_KEY": "",
-        "OPENAI_API_KEY": "",
-        "AZURE_OPENAI_DEPLOYMENT_LABEL": "azure-text-davinci-002",
-        "AZURE_OPENAI_DEPLOYMENT_NAME": "text-davinci-002",
-        "AZURE_OPENAI_ENDPOINT": "",
-        "AZURE_OPENAI_KEY": ""
+        // "BING_API_KEY": "",
+        // "OPENAI_API_KEY": "",
+        // "AZURE_OPENAI_DEPLOYMENT_LABEL": "azure-text-davinci-002",
+        // "AZURE_OPENAI_DEPLOYMENT_NAME": "text-davinci-002",
+        // "AZURE_OPENAI_ENDPOINT": "",
+        // "AZURE_OPENAI_KEY": ""
       }
     }
   }
