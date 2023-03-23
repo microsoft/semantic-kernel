@@ -46,22 +46,22 @@ public class PlannerSkill
         public const string RelevancyThreshold = "relevancyThreshold";
 
         /// <summary>
-        /// The maximum number of functions to include in the plan.
+        /// The maximum number of relevant functions as result of semantic search to include in the plan creation request.
         /// </summary>
-        public const string MaxFunctions = "maxFunctions";
+        public const string MaxRelevantFunctions = "MaxRelevantFunctions";
 
         /// <summary>
-        /// The list of skills to exclude from the plan.
+        /// The list of skills to exclude from the plan creation request.
         /// </summary>
         public const string ExcludedSkills = "excludedSkills";
 
         /// <summary>
-        /// The list of functions to exclude from the plan.
+        /// The list of functions to exclude from the plan creation request.
         /// </summary>
         public const string ExcludedFunctions = "excludedFunctions";
 
         /// <summary>
-        /// The list of functions to include in the plan.
+        /// The list of functions to include in the plan creation request.
         /// </summary>
         public const string IncludedFunctions = "includedFunctions";
     }
@@ -71,10 +71,22 @@ public class PlannerSkill
         // 0.78 is a good value for our samples and demonstrations.
         // Depending on the embeddings engine used, the user ask,
         // and the functions available, this value may need to be adjusted.
-        public double RelevancyThreshold { get; set; } = 0.78;
-        public int MaxFunctions { get; set; } = 10;
+        // For default, this is set to null to exhibit previous behavior.
+        public double? RelevancyThreshold { get; set; }
+
+        // Limits the number of relevant functions as result of semantic
+        // search included in the plan creation request.
+        // <see cref="Parameters.IncludedFunctions"/> will be included
+        // in the plan regardless of this limit.
+        public int MaxRelevantFunctions { get; set; } = 10;
+
+        // A list of skills to exclude from the plan creation request.
         public HashSet<string> ExcludedSkills { get; } = new() { RestrictedSkillName };
+
+        // A list of functions to exclude from the plan creation request.
         public HashSet<string> ExcludedFunctions { get; } = new() { "CreatePlan", "ExecutePlan" };
+
+        // A list of functions to include in the plan creation request.
         public HashSet<string> IncludedFunctions { get; } = new() { "BucketOutputs" };
     }
 
@@ -215,11 +227,14 @@ public class PlannerSkill
     [SKFunctionName("CreatePlan")]
     [SKFunctionInput(Description = "The goal to accomplish.")]
     [SKFunctionContextParameter(Name = Parameters.RelevancyThreshold, Description = "The relevancy threshold when filtering registered functions.",
-        DefaultValue = "0.78")]
-    [SKFunctionContextParameter(Name = Parameters.MaxFunctions, Description = "", DefaultValue = "10")]
-    [SKFunctionContextParameter(Name = Parameters.ExcludedFunctions, Description = "A list of functions to exclude from the plan.", DefaultValue = "")]
-    [SKFunctionContextParameter(Name = Parameters.ExcludedSkills, Description = "A list of skills to exclude from the plan.", DefaultValue = "")]
-    [SKFunctionContextParameter(Name = Parameters.IncludedFunctions, Description = "A list of functions to include in the plan.", DefaultValue = "")]
+        DefaultValue = "")]
+    [SKFunctionContextParameter(Name = Parameters.MaxRelevantFunctions, Description = "", DefaultValue = "10")]
+    [SKFunctionContextParameter(Name = Parameters.ExcludedFunctions, Description = "A list of functions to exclude from the plan creation request.",
+        DefaultValue = "")]
+    [SKFunctionContextParameter(Name = Parameters.ExcludedSkills, Description = "A list of skills to exclude from the plan creation request.",
+        DefaultValue = "")]
+    [SKFunctionContextParameter(Name = Parameters.IncludedFunctions, Description = "A list of functions to include in the plan creation request.",
+        DefaultValue = "")]
     public async Task<SKContext> CreatePlanAsync(string goal, SKContext context)
     {
         PlannerSkillConfig config = context.GetPlannerSkillConfig();

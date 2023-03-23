@@ -64,7 +64,7 @@ internal static class SKContextExtensions
             .ToList();
 
         List<FunctionView>? result = null;
-        if (string.IsNullOrEmpty(semanticQuery) || context.Memory is NullMemory)
+        if (string.IsNullOrEmpty(semanticQuery) || context.Memory is NullMemory || config.RelevancyThreshold is null)
         {
             // If no semantic query is provided, return all available functions.
             // If a Memory provider has not been registered, return all available functions.
@@ -78,7 +78,7 @@ internal static class SKContextExtensions
             await RememberFunctionsAsync(context, availableFunctions);
 
             // Search for functions that match the semantic query.
-            var memories = context.Memory.SearchAsync(PlannerMemoryCollectionName, semanticQuery, config.MaxFunctions, config.RelevancyThreshold,
+            var memories = context.Memory.SearchAsync(PlannerMemoryCollectionName, semanticQuery, config.MaxRelevantFunctions, config.RelevancyThreshold.Value,
                 context.CancellationToken);
 
             // Add functions that were found in the search results.
@@ -160,9 +160,10 @@ internal static class SKContextExtensions
             config.RelevancyThreshold = parsedValue;
         }
 
-        if (context.Variables.Get(Parameters.MaxFunctions, out var maxFunctions) && int.TryParse(maxFunctions, out var parsedMaxFunctions))
+        if (context.Variables.Get(Parameters.MaxRelevantFunctions, out var MaxRelevantFunctions) &&
+            int.TryParse(MaxRelevantFunctions, out var parsedMaxRelevantFunctions))
         {
-            config.MaxFunctions = parsedMaxFunctions;
+            config.MaxRelevantFunctions = parsedMaxRelevantFunctions;
         }
 
         if (context.Variables.Get(Parameters.ExcludedFunctions, out var excludedFunctions))

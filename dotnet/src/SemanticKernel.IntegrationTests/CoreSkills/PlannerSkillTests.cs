@@ -76,7 +76,7 @@ public sealed class PlannerSkillTests : IDisposable
         variables.Set(PlannerSkill.Parameters.ExcludedSkills, "IntentDetectionSkill,FunSkill");
         variables.Set(PlannerSkill.Parameters.ExcludedFunctions, "EmailTo");
         variables.Set(PlannerSkill.Parameters.IncludedFunctions, "Continue");
-        variables.Set(PlannerSkill.Parameters.MaxFunctions, "9");
+        variables.Set(PlannerSkill.Parameters.MaxRelevantFunctions, "9");
         variables.Set(PlannerSkill.Parameters.RelevancyThreshold, "0.77");
         SKContext actual = await target.RunAsync(variables, plannerSKill["CreatePlan"]).ConfigureAwait(true);
 
@@ -89,7 +89,6 @@ public sealed class PlannerSkillTests : IDisposable
     private readonly XunitLogger<object> _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
-
 
     public void Dispose()
     {
