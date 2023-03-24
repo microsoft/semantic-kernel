@@ -24,6 +24,13 @@ public interface ISkillCollection : IReadOnlySkillCollection
     ISkillCollection AddSemanticFunction(ISKFunction functionInstance);
 
     /// <summary>
+    /// Add a semantic function to the collection
+    /// </summary>
+    /// <param name="functionInstance">Function delegate</param>
+    /// <returns>Self instance</returns>
+    ISkillCollection AddSemanticChatFunction(ISKChatFunction functionInstance);
+
+    /// <summary>
     /// Add a native function to the collection
     /// </summary>
     /// <param name="functionInstance">Wrapped function delegate</param>

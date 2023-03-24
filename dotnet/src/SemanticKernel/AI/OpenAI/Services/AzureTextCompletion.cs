@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -82,7 +83,15 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
             Stop = requestSettings.StopSequences is { Count: > 0 } ? requestSettings.StopSequences : null,
         });
 
-        return await this.ExecuteCompleteRequestAsync(url, requestBody, cancellationToken);
+        CompletionResponse result = await this.ExecuteCompleteRequestAsync<CompletionResponse>(url, requestBody, cancellationToken);
+        if (result.Completions.Count < 1)
+        {
+            throw new AIException(
+                AIException.ErrorCodes.InvalidResponseContent,
+                "Completions not found");
+        }
+
+        return result.Completions.First().Text;
     }
 
     #region private ================================================================================

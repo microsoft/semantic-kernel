@@ -25,6 +25,11 @@ public sealed class OpenAIConfig : BackendConfig
     public string? OrgId { get; }
 
     /// <summary>
+    /// Should use the OpenAI Chat Completions Endpoint.
+    /// </summary>
+    public bool isChatEndpoint { get; }
+
+    /// <summary>
     /// Creates a new <see cref="OpenAIConfig" /> with supplied values.
     /// </summary>
     /// <param name="label">An identifier used to map semantic functions to backend,
@@ -32,7 +37,8 @@ public sealed class OpenAIConfig : BackendConfig
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    public OpenAIConfig(string label, string modelId, string apiKey, string? orgId)
+    /// <param name="isChatEndpoint">Should use the OpenAI Chat Completions Endpoint.</param>
+    public OpenAIConfig(string label, string modelId, string apiKey, string? orgId, bool isChatEndpoint = false)
         : base(label)
     {
         Verify.NotEmpty(modelId, "The model ID is empty");
@@ -41,5 +47,7 @@ public sealed class OpenAIConfig : BackendConfig
         this.ModelId = modelId;
         this.APIKey = apiKey;
         this.OrgId = orgId;
+        this.isChatEndpoint = isChatEndpoint;
+
     }
 }

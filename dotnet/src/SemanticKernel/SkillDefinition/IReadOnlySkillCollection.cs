@@ -80,6 +80,36 @@ public interface IReadOnlySkillCollection
     ISKFunction GetSemanticFunction(string skillName, string functionName);
 
     /// <summary>
+    /// Return the function delegate stored in the collection, regardless of the function type
+    /// </summary>
+    /// <param name="functionName">Function name</param>
+    /// <returns>Function delegate</returns>
+    ISKChatFunction GetChatFunction(string functionName);
+
+    /// <summary>
+    /// Return the function delegate stored in the collection, regardless of the function type
+    /// </summary>
+    /// <param name="functionName">Function name</param>
+    /// <param name="skillName">Skill name</param>
+    /// <returns>Function delegate</returns>
+    ISKChatFunction GetChatFunction(string skillName, string functionName);
+
+    /// <summary>
+    /// Return the semantic function delegate stored in the collection
+    /// </summary>
+    /// <param name="functionName">Function name</param>
+    /// <returns>Semantic function delegate</returns>
+    ISKChatFunction GetSemanticChatFunction(string functionName);
+
+    /// <summary>
+    /// Return the semantic function delegate stored in the collection
+    /// </summary>
+    /// <param name="functionName">Function name</param>
+    /// <param name="skillName">Skill name</param>
+    /// <returns>Semantic function delegate</returns>
+    ISKChatFunction GetSemanticChatFunction(string skillName, string functionName);
+
+    /// <summary>
     /// Return the native function delegate stored in the collection
     /// </summary>
     /// <param name="functionName">Function name</param>

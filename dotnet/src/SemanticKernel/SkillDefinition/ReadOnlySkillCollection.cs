@@ -10,10 +10,12 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 internal class ReadOnlySkillCollection : IReadOnlySkillCollection
 {
     private readonly ISkillCollection _skillCollection;
+    private readonly ISkillCollection _chatSkillCollection;
 
     public ReadOnlySkillCollection(ISkillCollection skillCollection)
     {
         this._skillCollection = skillCollection;
+        this._chatSkillCollection = skillCollection;
     }
 
     /// <inheritdoc/>
@@ -68,6 +70,30 @@ internal class ReadOnlySkillCollection : IReadOnlySkillCollection
     public ISKFunction GetSemanticFunction(string skillName, string functionName)
     {
         return this._skillCollection.GetSemanticFunction(skillName, functionName);
+    }
+
+    /// <inheritdoc/>
+    public ISKChatFunction GetChatFunction(string functionName)
+    {
+        return this._chatSkillCollection.GetChatFunction(functionName);
+    }
+
+    /// <inheritdoc/>
+    public ISKChatFunction GetChatFunction(string skillName, string functionName)
+    {
+        return this._chatSkillCollection.GetChatFunction(skillName, functionName);
+    }
+
+    /// <inheritdoc/>
+    public ISKChatFunction GetSemanticChatFunction(string functionName)
+    {
+        return this._chatSkillCollection.GetSemanticChatFunction(functionName);
+    }
+
+    /// <inheritdoc/>
+    public ISKChatFunction GetSemanticChatFunction(string skillName, string functionName)
+    {
+        return this._chatSkillCollection.GetSemanticChatFunction(skillName, functionName);
     }
 
     /// <inheritdoc/>

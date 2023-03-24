@@ -50,6 +50,7 @@ public sealed class KernelBuilder
         var instance = new Kernel(
             new SkillCollection(this._log),
             new PromptTemplateEngine(this._log),
+            new ChatPromptTemplateEngine(this._log),
             this._memory,
             this._config,
             this._log

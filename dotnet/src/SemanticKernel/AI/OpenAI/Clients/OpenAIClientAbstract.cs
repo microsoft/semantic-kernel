@@ -59,21 +59,15 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The completed text</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
-    protected async Task<string> ExecuteCompleteRequestAsync(string url, string requestBody, CancellationToken cancellationToken = default)
+    protected async Task<T> ExecuteCompleteRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
     {
         try
         {
             this.Log.LogDebug("Sending completion request to {0}: {1}", url, requestBody);
 
-            var result = await this.ExecutePostRequestAsync<CompletionResponse>(url, requestBody, cancellationToken);
-            if (result.Completions.Count < 1)
-            {
-                throw new AIException(
-                    AIException.ErrorCodes.InvalidResponseContent,
-                    "Completions not found");
-            }
+            var result = await this.ExecutePostRequestAsync<T>(url, requestBody, cancellationToken);
 
-            return result.Completions.First().Text;
+            return result;
         }
         catch (Exception e) when (e is not AIException)
         {

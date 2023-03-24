@@ -48,6 +48,8 @@ public sealed class Kernel : IKernel, IDisposable
 
     /// <inheritdoc/>
     public IPromptTemplateEngine PromptTemplateEngine => this._promptTemplateEngine;
+    /// <inheritdoc/>
+    public IChatPromptTemplateEngine ChatPromptTemplateEngine => this._chatPromptTemplateEngine;
 
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
@@ -59,12 +61,14 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     /// <param name="skillCollection"></param>
     /// <param name="promptTemplateEngine"></param>
+    /// <param name="chatPromptTemplateEngine"></param>
     /// <param name="memory"></param>
     /// <param name="config"></param>
     /// <param name="log"></param>
     public Kernel(
         ISkillCollection skillCollection,
         IPromptTemplateEngine promptTemplateEngine,
+        IChatPromptTemplateEngine chatPromptTemplateEngine,
         ISemanticTextMemory memory,
         KernelConfig config,
         ILogger log)
@@ -73,6 +77,7 @@ public sealed class Kernel : IKernel, IDisposable
         this._config = config;
         this._memory = memory;
         this._promptTemplateEngine = promptTemplateEngine;
+        this._chatPromptTemplateEngine = chatPromptTemplateEngine;
         this._skillCollection = skillCollection;
     }
 
@@ -91,6 +96,25 @@ public sealed class Kernel : IKernel, IDisposable
 
         ISKFunction function = this.CreateSemanticFunction(skillName, functionName, functionConfig);
         this._skillCollection.AddSemanticFunction(function);
+
+        return function;
+    }
+
+    /// <inheritdoc/>
+    public ISKChatFunction RegisterSemanticChatFunction(string functionName, SemanticChatFunctionConfig functionConfig)
+    {
+        return this.RegisterSemanticChatFunction(SkillCollection.GlobalSkill, functionName, functionConfig);
+    }
+
+    /// <inheritdoc/>
+    public ISKChatFunction RegisterSemanticChatFunction(string skillName, string functionName, SemanticChatFunctionConfig functionConfig)
+    {
+        // Future-proofing the name not to contain special chars
+        Verify.ValidSkillName(skillName);
+        Verify.ValidFunctionName(functionName);
+
+        ISKChatFunction function = this.CreateSemanticChatFunction(skillName, functionName, functionConfig);
+        this._skillCollection.AddSemanticChatFunction(function);
 
         return function;
     }
@@ -131,20 +155,39 @@ public sealed class Kernel : IKernel, IDisposable
         => this.RunAsync(new ContextVariables(), pipeline);
 
     /// <inheritdoc/>
+    public Task<SKContext> RunChatAsync(params ISKChatFunction[] pipeline)
+        => this.RunChatAsync(new ContextVariables(), pipeline);
+
+    /// <inheritdoc/>
     public Task<SKContext> RunAsync(string input, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(input), pipeline);
 
     /// <inheritdoc/>
+    public Task<SKContext> RunChatAsync(string input, params ISKChatFunction[] pipeline)
+        => this.RunChatAsync(new ContextVariables(input), pipeline);
+
+    /// <inheritdoc/>
     public Task<SKContext> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
         => this.RunAsync(variables, CancellationToken.None, pipeline);
+    /// <inheritdoc/>
+    public Task<SKContext> RunChatAsync(ContextVariables variables, params ISKChatFunction[] pipeline)
+        => this.RunChatAsync(variables, CancellationToken.None, pipeline);
 
     /// <inheritdoc/>
     public Task<SKContext> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(), cancellationToken, pipeline);
 
     /// <inheritdoc/>
+    public Task<SKContext> RunChatAsync(CancellationToken cancellationToken, params ISKChatFunction[] pipeline)
+        => this.RunChatAsync(new ContextVariables(), cancellationToken, pipeline);
+
+    /// <inheritdoc/>
     public Task<SKContext> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
+
+    /// <inheritdoc/>
+    public Task<SKContext> RunChatAsync(string input, CancellationToken cancellationToken, params ISKChatFunction[] pipeline)
+        => this.RunChatAsync(new ContextVariables(input), cancellationToken, pipeline);
 
     /// <inheritdoc/>
     public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
@@ -158,6 +201,51 @@ public sealed class Kernel : IKernel, IDisposable
 
         int pipelineStepCount = -1;
         foreach (ISKFunction f in pipeline)
+        {
+            if (context.ErrorOccurred)
+            {
+                this._log.LogError(
+                    context.LastException,
+                    "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastErrorDescription);
+                return context;
+            }
+
+            pipelineStepCount++;
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                context = await f.InvokeAsync(context);
+
+                if (context.ErrorOccurred)
+                {
+                    this._log.LogError("Function call fail during pipeline step {0}: {1}.{2}", pipelineStepCount, f.SkillName, f.Name);
+                    return context;
+                }
+            }
+            catch (Exception e) when (!e.IsCriticalException())
+            {
+                this._log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}", pipelineStepCount, f.SkillName, f.Name, e.Message);
+                context.Fail(e.Message, e);
+                return context;
+            }
+        }
+
+        return context;
+    }
+
+    /// <inheritdoc/>
+    public async Task<SKContext> RunChatAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKChatFunction[] pipeline)
+    {
+        var context = new SKContext(
+            variables,
+            this._memory,
+            this._skillCollection.ReadOnlySkillCollection,
+            this._log,
+            cancellationToken);
+
+        int pipelineStepCount = -1;
+        foreach (ISKChatFunction f in pipeline)
         {
             if (context.ErrorOccurred)
             {
@@ -231,6 +319,7 @@ public sealed class Kernel : IKernel, IDisposable
     private readonly ISkillCollection _skillCollection;
     private ISemanticTextMemory _memory;
     private readonly IPromptTemplateEngine _promptTemplateEngine;
+    private readonly IChatPromptTemplateEngine _chatPromptTemplateEngine;
 
     private ISKFunction CreateSemanticFunction(
         string skillName,
@@ -269,6 +358,60 @@ public sealed class Kernel : IKernel, IDisposable
 
             case OpenAIConfig openAiConfig:
                 func.SetAIBackend(() => new OpenAITextCompletion(
+                    openAiConfig.ModelId,
+                    openAiConfig.APIKey,
+                    openAiConfig.OrgId,
+                    this._log,
+                    this._config.HttpHandlerFactory));
+                break;
+
+            default:
+                throw new AIException(
+                    AIException.ErrorCodes.InvalidConfiguration,
+                    $"Unknown/unsupported backend configuration type {backend.GetType():G}, unable to prepare semantic function. " +
+                    $"Function description: {functionConfig.PromptTemplateConfig.Description}");
+        }
+
+        return func;
+    }
+
+    private ISKChatFunction CreateSemanticChatFunction(
+        string skillName,
+        string functionName,
+        SemanticChatFunctionConfig functionConfig)
+    {
+        if (!functionConfig.PromptTemplateConfig.Type.EqualsIgnoreCase("completion"))
+        {
+            throw new AIException(
+                AIException.ErrorCodes.FunctionTypeNotSupported,
+                $"Function type not supported: {functionConfig.PromptTemplateConfig}");
+        }
+
+        ISKChatFunction func = SKChatFunction.FromSemanticConfig(skillName, functionName, functionConfig);
+
+        // Connect the function to the current kernel skill collection, in case the function
+        // is invoked manually without a context and without a way to find other functions.
+        func.SetDefaultSkillCollection(this.Skills);
+
+        func.SetAIConfiguration(CompleteRequestSettings.FromChatCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
+
+        // TODO: allow to postpone this (e.g. use lazy init), allow to create semantic functions without a default backend
+        var backend = this._config.GetCompletionBackend(functionConfig.PromptTemplateConfig.DefaultBackends.FirstOrDefault());
+
+        switch (backend)
+        {
+            //case AzureOpenAIConfig azureBackendConfig:
+            //    func.SetAIBackend(() => new AzureTextCompletion(
+            //        azureBackendConfig.DeploymentName,
+            //        azureBackendConfig.Endpoint,
+            //        azureBackendConfig.APIKey,
+            //        azureBackendConfig.APIVersion,
+            //        this._log,
+            //        this._config.HttpHandlerFactory));
+            //    break;
+
+            case OpenAIConfig openAiConfig:
+                func.SetAIBackend(() => new OpenAIChatCompletion(
                     openAiConfig.ModelId,
                     openAiConfig.APIKey,
                     openAiConfig.OrgId,

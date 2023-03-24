@@ -66,6 +66,28 @@ public interface IKernel
         SemanticFunctionConfig functionConfig);
 
     /// <summary>
+    /// Build and register a function in the internal skill collection, in a global generic skill.
+    /// </summary>
+    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
+    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
+    ISKChatFunction RegisterSemanticChatFunction(
+        string functionName,
+        SemanticChatFunctionConfig functionConfig);
+
+    /// <summary>
+    /// Build and register a function in the internal skill collection.
+    /// </summary>
+    /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
+    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
+    ISKChatFunction RegisterSemanticChatFunction(
+        string skillName,
+        string functionName,
+        SemanticChatFunctionConfig functionConfig);
+
+    /// <summary>
     /// Import a set of functions from the given skill. The functions must have the `SKFunction` attribute.
     /// Once these functions are imported, the prompt templates can use functions to import content at runtime.
     /// </summary>
@@ -141,6 +163,69 @@ public interface IKernel
         ContextVariables variables,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline);
+
+    /// <summary>
+    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// </summary>
+    /// <param name="pipeline">List of functions</param>
+    /// <returns>Result of the function composition</returns>
+    Task<SKContext> RunChatAsync(
+        params ISKChatFunction[] pipeline);
+
+    /// <summary>
+    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// </summary>
+    /// <param name="input">Input to process</param>
+    /// <param name="pipeline">List of functions</param>
+    /// <returns>Result of the function composition</returns>
+    Task<SKContext> RunChatAsync(
+        string input,
+        params ISKChatFunction[] pipeline);
+
+    /// <summary>
+    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// </summary>
+    /// <param name="variables">Input to process</param>
+    /// <param name="pipeline">List of functions</param>
+    /// <returns>Result of the function composition</returns>
+    Task<SKContext> RunChatAsync(
+        ContextVariables variables,
+        params ISKChatFunction[] pipeline);
+
+    /// <summary>
+    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="pipeline">List of functions</param>
+    /// <returns>Result of the function composition</returns>
+    Task<SKContext> RunChatAsync(
+        CancellationToken cancellationToken,
+        params ISKChatFunction[] pipeline);
+
+    /// <summary>
+    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// </summary>
+    /// <param name="input">Input to process</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="pipeline">List of functions</param>
+    /// <returns>Result of the function composition</returns>
+    Task<SKContext> RunChatAsync(
+        string input,
+        CancellationToken cancellationToken,
+        params ISKChatFunction[] pipeline);
+
+    /// <summary>
+    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// </summary>
+    /// <param name="variables">Input to process</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="pipeline">List of functions</param>
+    /// <returns>Result of the function composition</returns>
+    Task<SKContext> RunChatAsync(
+        ContextVariables variables,
+        CancellationToken cancellationToken,
+        params ISKChatFunction[] pipeline);
+
 
     /// <summary>
     /// Access registered functions by skill + name. Not case sensitive.

@@ -32,6 +32,8 @@ public class SkillCollection : ISkillCollection
 
         // Important: names are case insensitive
         this._skillCollection = new(StringComparer.InvariantCultureIgnoreCase);
+        // Important: names are case insensitive
+        this._chatSkillCollection = new(StringComparer.InvariantCultureIgnoreCase);
     }
 
     /// <inheritdoc/>
@@ -44,6 +46,20 @@ public class SkillCollection : ISkillCollection
         }
 
         this._skillCollection[functionInstance.SkillName][functionInstance.Name] = functionInstance;
+
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public ISkillCollection AddSemanticChatFunction(ISKChatFunction functionInstance)
+    {
+        if (!this._chatSkillCollection.ContainsKey(functionInstance.SkillName))
+        {
+            // Important: names are case insensitive
+            this._chatSkillCollection[functionInstance.SkillName] = new(StringComparer.InvariantCultureIgnoreCase);
+        }
+
+        this._chatSkillCollection[functionInstance.SkillName][functionInstance.Name] = functionInstance;
 
         return this;
     }
@@ -116,6 +132,25 @@ public class SkillCollection : ISkillCollection
             $"Function not available {skillName}.{functionName}");
     }
 
+    public ISKChatFunction GetChatFunction(string functionName)
+    {
+        return this.GetChatFunction(GlobalSkill, functionName);
+    }
+
+    /// <inheritdoc/>
+    public ISKChatFunction GetChatFunction(string skillName, string functionName)
+    {
+        if (this.HasFunction(skillName, functionName))
+        {
+            return this._chatSkillCollection[skillName][functionName];
+        }
+
+        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        throw new KernelException(
+            KernelException.ErrorCodes.FunctionNotAvailable,
+            $"Function not available {skillName}.{functionName}");
+    }
+
     /// <inheritdoc/>
     public ISKFunction GetSemanticFunction(string functionName)
     {
@@ -128,6 +163,25 @@ public class SkillCollection : ISkillCollection
         if (this.HasSemanticFunction(skillName, functionName))
         {
             return this._skillCollection[skillName][functionName];
+        }
+
+        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        throw new KernelException(
+            KernelException.ErrorCodes.FunctionNotAvailable,
+            $"Function not available {skillName}.{functionName}");
+    }
+
+    public ISKChatFunction GetSemanticChatFunction(string functionName)
+    {
+        return this.GetSemanticChatFunction(GlobalSkill, functionName);
+    }
+
+    /// <inheritdoc/>
+    public ISKChatFunction GetSemanticChatFunction(string skillName, string functionName)
+    {
+        if (this.HasSemanticFunction(skillName, functionName))
+        {
+            return this._chatSkillCollection[skillName][functionName];
         }
 
         this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
@@ -190,6 +244,7 @@ public class SkillCollection : ISkillCollection
     private readonly ILogger _log = NullLogger.Instance;
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ISKFunction>> _skillCollection;
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ISKChatFunction>> _chatSkillCollection;
 
     #endregion
 }
