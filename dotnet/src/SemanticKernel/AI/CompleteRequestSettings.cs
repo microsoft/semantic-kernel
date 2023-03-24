@@ -34,7 +34,7 @@ public class CompleteRequestSettings
     /// <summary>
     /// The maximum number of tokens to generate in the completion.
     /// </summary>
-    public int MaxTokens { get; set; } = 100;
+    public int MaxTokens { get; set; } = 256;
 
     /// <summary>
     /// Sequences where the completion will stop generating further tokens.

@@ -21,13 +21,14 @@ public static class GPT3Tokenizer
 
     private static ConcurrentDictionary<int, char>? s_bytesToUnicodeCache;
 
+    // Regex for English contractions, e.g. "he's", "we'll", "I'm" etc.
     private static readonly Regex s_encodingRegex = new(
         @"'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+", RegexOptions.Compiled,
         TimeSpan.FromSeconds(5));
 
     /// <summary>
     /// The tokenizer uses a byte-pair encoding (BPE) algorithm to split words into
-    /// sub-words based on frequency and merges rules.It can handle out-of-vocabulary
+    /// sub-words based on frequency and merges rules. It can handle out-of-vocabulary
     /// words, punctuation, and special tokens.
     /// </summary>
     /// <param name="text">Text to tokenize</param>

@@ -14,7 +14,7 @@ internal static class EmbeddedResource
     /// Return content of BPE file.
     /// </summary>
     /// <returns>BPE file content</returns>
-    internal static string ReadBytPairEncodingTable()
+    internal static string ReadBytePairEncodingTable()
     {
         return ReadFile("vocab.bpe");
     }
