@@ -68,6 +68,7 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
 
         return qdrantResult!;
     }
+
     public async Task<IQdrantResult> CheckCollectionExistsAsync(string collectionName)
     {
         IQdrantResult? qdrantCheckResult = null;
@@ -124,7 +125,7 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
                         qdrantCreateUrl,
                         this._settings, null);
         }
-        catch(Exception ex)
+        catch
         {
             qdrantCreateResult = new CreateCollectionResult();
         }
@@ -145,7 +146,7 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
                         qdrantListUrl, 
                         null, null);
         }
-        catch( Exception ex)
+        catch
         {
             qdrantListResult = new ListInfoResult();   
         }
@@ -168,7 +169,7 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
                     qdrantDeleteUrl, 
                     null, null);
         }
-        catch(Exception ex)
+        catch
         {
             qdrantDeleteResult = new DeleteCollectionResult();
         }

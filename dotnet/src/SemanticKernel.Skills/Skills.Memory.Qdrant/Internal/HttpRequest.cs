@@ -65,7 +65,7 @@ internal static class HttpRequest
                 }
                 break;
 
-            case string mType when mType == nameof(HttpMethod.Post):
+            case string mType when mType == nameof(HttpMethod.Post).ToUpper():
                 {
                     using HttpResponseMessage httpResponse = 
                         await httpClient.PostAsJsonAsync<TResult>(qdranturl, qdrantData!);
@@ -83,7 +83,7 @@ internal static class HttpRequest
                 }
                 break;
 
-            case string mType when mType == nameof(HttpMethod.Put):
+            case string mType when mType == nameof(HttpMethod.Put).ToUpper():
                 {
                     using HttpResponseMessage httpResponse = 
                         await httpClient.PutAsJsonAsync<TResult>(qdranturl, qdrantData!);
@@ -102,7 +102,7 @@ internal static class HttpRequest
             
                 break;
 
-            case string mType when mType == nameof(HttpMethod.Patch):
+            case string mType when mType == nameof(HttpMethod.Patch).ToUpper():
                 {
                     using HttpResponseMessage httpResponse = 
                         await httpClient.PatchAsJsonAsync<TResult>(qdranturl, qdrantData!);
@@ -122,7 +122,7 @@ internal static class HttpRequest
 
                 break;
 
-            case string mType when mType == nameof(HttpMethod.Delete):
+            case string mType when mType == nameof(HttpMethod.Delete).ToUpper():
                 {
                     try
                     {
