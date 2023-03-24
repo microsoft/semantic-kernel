@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import inspect
 from logging import Logger
 from typing import Any, Dict, Optional
 
@@ -176,17 +177,15 @@ class Kernel(KernelBase):
 
         functions = []
         # Read every method from the skill instance
-        for candidate in skill_instance.__dict__.values():
-            # We're looking for a @staticmethod
-            if not isinstance(candidate, staticmethod):
-                continue
-            candidate = candidate.__func__
+        for _, candidate in inspect.getmembers(skill_instance, inspect.ismethod):
 
             # If the method is a semantic function, register it
-            if hasattr(candidate, "__sk_function_name__"):
-                functions.append(
-                    SKFunction.from_native_method(candidate, skill_name, self.logger)
-                )
+            if not hasattr(candidate, "__sk_function__"):
+                continue
+
+            functions.append(
+                SKFunction.from_native_method(candidate, skill_name, self.logger)
+            )
 
         self.logger.debug(f"Methods imported: {len(functions)}")
 

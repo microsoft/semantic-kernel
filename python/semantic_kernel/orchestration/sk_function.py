@@ -44,16 +44,18 @@ class SKFunction(SKFunctionBase):
         assert method.__sk_function_name__ is not None, "Method name is empty"
 
         parameters = []
-        for param in method.__sk_function_context_parameters__:
-            assert "name" in param, "Parameter name is empty"
-            assert "description" in param, "Parameter description is empty"
-            assert "default_value" in param, "Parameter default value is empty"
+        # sk_function_context_parameters are optionals
+        if hasattr(method, "__sk_function_context_parameters__"):
+            for param in method.__sk_function_context_parameters__:
+                assert "name" in param, "Parameter name is empty"
+                assert "description" in param, "Parameter description is empty"
+                assert "default_value" in param, "Parameter default value is empty"
 
-            parameters.append(
-                ParameterView(
-                    param["name"], param["description"], param["default_value"]
+                parameters.append(
+                    ParameterView(
+                        param["name"], param["description"], param["default_value"]
+                    )
                 )
-            )
 
         if hasattr(method, "__sk_function_input_description__"):
             input_param = ParameterView(
