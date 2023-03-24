@@ -63,7 +63,7 @@ where TEmbedding : unmanaged
 
     public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data, CancellationToken cancel = default)
     {
-        var collectionExists = await this._qdrantClient.DoesCollectionExistAsync(collection);
+        var collectionExists = await this._qdrantClient.IsExistingCollection(collection);
         if (!collectionExists)
         {
             await this._qdrantClient.CreateNewCollectionAsync(collection);
@@ -100,7 +100,7 @@ where TEmbedding : unmanaged
 
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
     {
-        return this._qdrantClient.ListCollectionsAsync();
+        return this._qdrantClient.GetCollectionListAsync();
     }
 
     #region private ================================================================================

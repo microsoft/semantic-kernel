@@ -148,7 +148,17 @@ where TEmbedding : unmanaged
         }
     }
 
-    
+    public async IAsyncEnumerable<string> GetCollectionListAsync()
+    {
+        this._log.LogDebug("Listing collections");
+
+        // foreach (var collection in collections?.Collections ?? Enumerable.Empty<ListCollectionsResponse.CollectionDescription>())
+        // {
+        //     yield return collection.Name;
+        // }
+        yield break;
+    }
+
     public async Task<DataEntry<QdrantVectorRecord<TEmbedding>>?> GetVectorByIdAsync(string collectionName, string key)
     {
         var pointId = Base64Encode(key);
@@ -288,44 +298,8 @@ where TEmbedding : unmanaged
             yield return kv;
         }
     }
-    public async Task<bool> DoesCollectionExistAsync(string collectionName)
-    {
-        this._log.LogDebug("Fetching collection {0}", collectionName);
-
-        /*using var request = FetchCollectionRequest.Fetch(collectionName).Build();
-        var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
-
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return false;
-        }
-
-        if (response.IsSuccessStatusCode)
-        {
-            return true;
-        }
-        
-        this._log.LogError("Collection fetch failed: {0}, {1}", response.StatusCode, responseContent);
-        throw new VectorDbException($"Unexpected response: {response.StatusCode}");
-        */
-        return await Task.FromResult(false);
-    }
-
-    public async IAsyncEnumerable<string> ListCollectionsAsync()
-    {
-        /*this._log.LogDebug("Listing collections");
-
-        using var request = ListCollectionsRequest.Create().Build();
-        var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
-
-        var collections = JsonSerializer.Deserialize<ListCollectionsResponse>(responseContent);
-
-        foreach (var collection in collections?.Collections ?? Enumerable.Empty<ListCollectionsResponse.CollectionDescription>())
-        {
-            yield return collection.Name;
-        }*/
-        yield break;
-    }
+   
+    
 
     #region private ================================================================================
 
