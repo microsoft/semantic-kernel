@@ -29,7 +29,7 @@ def build_kernel() -> sk.KernelBase:
         .build()
     )
 
-    kernel.import_skill(TextMemorySkill)
+    kernel.import_skill(TextMemorySkill())
 
     return kernel
 
