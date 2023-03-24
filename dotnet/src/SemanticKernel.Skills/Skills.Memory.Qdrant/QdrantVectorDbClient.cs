@@ -71,8 +71,14 @@ where TEmbedding : unmanaged
 
     public async Task<bool> IsExistingCollection(string collectionName )
     {
-        //Try/Get
-        return false;
+        CollectionInfo? existingCollection = null;
+        bool doesExist = false;
+
+        existingCollection = await this.GetCollectionInfoAsync(collectionName);
+
+        if (existingCollection != null) doesExist = true;
+        
+        return doesExist;
     }
     
     public async Task<CollectionInfo> GetCollectionInfoAsync(string collectionName)
@@ -100,31 +106,45 @@ where TEmbedding : unmanaged
         
     }
 
-    public async Task CreateCollectionAsync(string collectionName)
+    public async Task CreateNewCollectionAsync(string collectionName)
     {
-        this._log.LogDebug("Creating collection {0}", collectionName);
-
-        using var request = CreateCollectionRequest
-            .Create(collectionName)
-            .WithVectorSize(this._defaultVectorSize)
-            .WithDistanceType(QdrantDistanceType.Cosine)
-            .Build();
-        var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
-
-        // Creation is idempotent, ignore error (and for now ignore vector size)
-        if (response.StatusCode == HttpStatusCode.BadRequest)
-        {
-            if (responseContent.Contains("already exists", StringComparison.InvariantCultureIgnoreCase)) { return; }
-        }
+        IQdrantResult? qdrantResult = null;
+        
+        CollectionHandler createCollectionHandler = 
+            CollectionHandler.Init(this.VectorSize, this.DistanceType )
+                .Client(this._httpClient)
+                .Build();
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            qdrantResult = await createCollectionHandler.ExecuteRequest(CollectionHandler.CollectionHandlerType.Create, collectionName);
         }
         catch (Exception e)
         {
-            this._log.LogError(e, "Collection upsert failed: {0}, {1}", e.Message, responseContent);
-            throw;
+            this._log.LogError(e, "Create Collection failed: {0}", e.Message);
+            qdrantResult = new CreateCollectionResult();
+            ((CreateCollectionResult)qdrantResult).IsCreated = false; 
+        }
+    }
+
+    public async Task DeleteCollectionAsync(string collectionName)
+    {
+        IQdrantResult? qdrantResult = null;
+        
+        CollectionHandler deleteCollectionHandler = 
+            CollectionHandler.Init(this.VectorSize, this.DistanceType )
+                .Client(this._httpClient)
+                .Build();
+
+        try
+        {
+            qdrantResult = await deleteCollectionHandler.ExecuteRequest(CollectionHandler.CollectionHandlerType.Delete, collectionName);
+        }
+        catch (Exception e)
+        {
+            this._log.LogError(e, "Delete Collection failed: {0}", e.Message);
+            qdrantResult = new DeleteCollectionResult();
+            ((DeleteCollectionResult)qdrantResult).IsDeleted = false; 
         }
     }
 

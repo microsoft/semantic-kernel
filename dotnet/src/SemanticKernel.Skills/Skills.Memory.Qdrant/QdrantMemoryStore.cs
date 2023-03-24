@@ -66,7 +66,7 @@ where TEmbedding : unmanaged
         var collectionExists = await this._qdrantClient.DoesCollectionExistAsync(collection);
         if (!collectionExists)
         {
-            await this._qdrantClient.CreateCollectionAsync(collection);
+            await this._qdrantClient.CreateNewCollectionAsync(collection);
         }
 
         var vectorData = new DataEntry<QdrantVectorRecord<TEmbedding>>(
