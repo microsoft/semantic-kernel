@@ -34,11 +34,11 @@ internal async Task<IQdrantResult> ExecuteRequest(PointVectorHandlerType request
             PointVectorHandlerType.GetVectorPoint =>
                 await this.GetVectorPointAsync(collectionName, pointId!),
             PointVectorHandlerType.Upsert =>
-                await this.UpsertPointsToCollectionAsync(collectionName),
+                await this.UpsertPointsToCollectionAsync(collectionName, pointId),
             PointVectorHandlerType.GetCollectionPoints =>
-                await this.GetPointsForCollectionAsync(),
+                await this.GetPointsForCollectionAsync(collectionName),
             PointVectorHandlerType.Delete =>
-                await this.DeletePointFromCollectionAsync(collectionName!),
+                await this.DeletePointFromCollectionAsync(collectionName!, pointId),
             _ => throw new ArgumentOutOfRangeException(nameof(requestType), requestType, "The request type is not invalid")
                 
         };
@@ -57,6 +57,13 @@ internal async Task<IQdrantResult> ExecuteRequest(PointVectorHandlerType request
     {
         IQdrantResult? upsertPointsToCollectionResult = null;
         return upsertPointsToCollectionResult!;
+
+    }
+
+    internal async Task<IQdrantResult> GetPointsForCollectionAsync(string collectionName)
+    {
+        IQdrantResult? getPointsforCollectionResult = null;
+        return getPointsforCollectionResult!;
 
     }
 
