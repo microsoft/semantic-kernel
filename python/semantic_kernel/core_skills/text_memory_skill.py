@@ -9,7 +9,6 @@ from semantic_kernel.skill_definition import (
 
 
 class TextMemorySkill:
-
     COLLECTION_PARAM = "collection"
     RELEVANCE_PARAM = "relevance"
     KEY_PARAM = "key"
