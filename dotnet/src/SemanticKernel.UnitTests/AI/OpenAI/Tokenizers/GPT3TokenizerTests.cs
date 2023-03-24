@@ -12,6 +12,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.UnitTests.AI.OpenAI.Tokenizers;
 
+#pragma warning disable CA5394
 public class GPT3TokenizerTests
 {
     private readonly ITestOutputHelper _log;
@@ -80,7 +81,8 @@ más pequeñas de los programas informáticos", 68)]
 
         // Assert
         Assert.Equal(expectedTokens.Count, actualTokens.Count);
-        Assert.Equal(tokens.Replace(" ", ""), JsonSerializer.Serialize(actualTokens).Replace(" ", ""));
+        Assert.Equal(tokens.Replace(" ", "", StringComparison.OrdinalIgnoreCase),
+            JsonSerializer.Serialize(actualTokens).Replace(" ", "", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -136,8 +138,7 @@ más pequeñas de los programas informáticos", 68)]
             }
         }
 
-        result.Append($"{count}");
-
-        return result.ToString();
+        return $"{result}{count}";
     }
 }
+#pragma warning restore CA5394

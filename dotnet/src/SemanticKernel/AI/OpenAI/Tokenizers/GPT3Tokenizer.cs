@@ -98,9 +98,9 @@ public static class GPT3Tokenizer
 
     private static string BytePairEncoding(string token)
     {
-        if (s_bpeCache.ContainsKey(token))
+        if (s_bpeCache.TryGetValue(token, out string value))
         {
-            return s_bpeCache[token];
+            return value;
         }
 
         List<string> word = (from x in token.ToList() select x.ToString()).ToList();
@@ -116,7 +116,7 @@ public static class GPT3Tokenizer
             var minPairs = new SortedDictionary<long, Tuple<string, string>>();
             foreach (Tuple<string, string> pair in pairs)
             {
-                if (GPT3Settings.BpeRanks.ContainsKey(pair))
+                if (GPT3Settings.BpeRanks.TryGetValue(pair, out _))
                 {
                     int rank = GPT3Settings.BpeRanks[pair];
                     minPairs[rank] = pair;
