@@ -182,7 +182,6 @@ class Kernel(KernelBase):
         functions = []
         # Read every method from the skill instance
         for _, candidate in inspect.getmembers(skill_instance, inspect.ismethod):
-
             # If the method is a semantic function, register it
             if not hasattr(candidate, "__sk_function__"):
                 continue
@@ -253,7 +252,9 @@ class Kernel(KernelBase):
 
             if backend.backend_type == BackendType.AzureOpenAI:
                 # TODO: azure impl
-                pass
+                raise NotImplementedError(
+                    "Azure OpenAI Chat backend is not implemented yet"
+                )
             elif backend.backend_type == BackendType.OpenAI:
                 Verify.not_null(backend.open_ai, "OpenAI configuration is missing")
                 function.set_chat_backend(
