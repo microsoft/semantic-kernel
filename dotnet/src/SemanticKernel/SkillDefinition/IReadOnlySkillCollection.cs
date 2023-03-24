@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -93,6 +94,12 @@ public interface IReadOnlySkillCollection
     /// <param name="functionName">Function name</param>
     /// <returns>Native function delegate</returns>
     ISKFunction GetNativeFunction(string functionName);
+
+    /// <summary>
+    /// Return all functions in the collection.
+    /// </summary>
+    /// <returns>List of functions(wrapped function delegates)</returns>
+    IReadOnlyList<ISKFunction> GetAllFunctions();
 
     /// <summary>
     /// Get all registered functions details, minus the delegates

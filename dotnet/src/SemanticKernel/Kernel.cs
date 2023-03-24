@@ -220,8 +220,14 @@ public sealed class Kernel : IKernel, IDisposable
         // ReSharper disable once SuspiciousTypeConversion.Global
         if (this._memory is IDisposable mem) { mem.Dispose(); }
 
-        // ReSharper disable once SuspiciousTypeConversion.Global
-        if (this._skillCollection is IDisposable reg) { reg.Dispose(); }
+        //Dispose all registered functions
+        foreach (var function in this._skillCollection.GetAllFunctions())
+        {
+            if (function is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
     }
 
     #region private ================================================================================

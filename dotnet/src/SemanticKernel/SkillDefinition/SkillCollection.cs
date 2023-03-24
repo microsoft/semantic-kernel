@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -183,6 +184,12 @@ public class SkillCollection : ISkillCollection
         }
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<ISKFunction> GetAllFunctions()
+    {
+        return this._skillCollection.SelectMany(s => s.Value.Select(f => f.Value)).ToList();
     }
 
     #region private ================================================================================

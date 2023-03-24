@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -86,5 +87,11 @@ internal class ReadOnlySkillCollection : IReadOnlySkillCollection
     public FunctionsView GetFunctionsView(bool includeSemantic = true, bool includeNative = true)
     {
         return this._skillCollection.GetFunctionsView(includeSemantic, includeNative);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<ISKFunction> GetAllFunctions()
+    {
+        return this._skillCollection.GetAllFunctions();
     }
 }
