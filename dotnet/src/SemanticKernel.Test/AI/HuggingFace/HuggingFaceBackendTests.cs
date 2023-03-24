@@ -94,10 +94,10 @@ public class HuggingFaceBackendTests : IDisposable
         httpClientHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
-              "SendAsync",
-              ItExpr.IsAny<HttpRequestMessage>(),
-              ItExpr.IsAny<CancellationToken>())
-           .ReturnsAsync(this._response);
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(this._response);
 
         return new HuggingFaceBackend(BaseUri, Model, httpClientHandler.Object);
     }
