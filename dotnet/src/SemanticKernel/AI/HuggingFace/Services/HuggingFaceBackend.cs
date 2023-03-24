@@ -2,21 +2,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.Extensions;
-using Microsoft.SemanticKernel.Backends.HuggingFace.HttpSchema;
+using Microsoft.SemanticKernel.AI.HuggingFace.HttpSchema;
+using System.Linq;
 
-namespace Microsoft.SemanticKernel.Backends.HuggingFace;
-
+namespace Microsoft.SemanticKernel.AI.HuggingFace.Services;
 /// <summary>
 /// Backend implementation for HuggingFace models usage.
 /// </summary>
-public sealed class HuggingFaceLocalBackend : ITextCompletionClient, IEmbeddingGenerator<string, float>, IDisposable
+public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenerator<string, float>, IDisposable
 {
     private const string HttpUserAgent = "Microsoft Semantic Kernel";
     private const string CompletionEndpoint = "/completions";
@@ -27,12 +24,12 @@ public sealed class HuggingFaceLocalBackend : ITextCompletionClient, IEmbeddingG
     private readonly HttpClientHandler? _httpClientHandler;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceLocalBackend"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceBackend"/> class.
     /// </summary>
     /// <param name="baseUri">Base URI to call for backend operations.</param>
     /// <param name="model">Model to use for backend operations.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    public HuggingFaceLocalBackend(Uri baseUri, string model, HttpClientHandler httpClientHandler)
+    public HuggingFaceBackend(Uri baseUri, string model, HttpClientHandler httpClientHandler)
     {
         this._model = model;
 
@@ -43,16 +40,16 @@ public sealed class HuggingFaceLocalBackend : ITextCompletionClient, IEmbeddingG
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceLocalBackend"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceBackend"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
     /// <param name="baseUri">Base URI to call for backend operations.</param>
     /// <param name="model">Model to use for backend operations.</param>
-    public HuggingFaceLocalBackend(Uri baseUri, string model)
+    public HuggingFaceBackend(Uri baseUri, string model)
     {
         this._model = model;
 
-        this._httpClientHandler = new();
+        this._httpClientHandler = new() { CheckCertificateRevocationList = true };
         this._httpClient = new(this._httpClientHandler);
 
         this._httpClient.BaseAddress = baseUri;
@@ -60,23 +57,23 @@ public sealed class HuggingFaceLocalBackend : ITextCompletionClient, IEmbeddingG
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceLocalBackend"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceBackend"/> class.
     /// </summary>
     /// <param name="baseUri">Base URI to call for backend operations in <see cref="string"/> format.</param>
     /// <param name="model">Model to use for backend operations.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    public HuggingFaceLocalBackend(string baseUri, string model, HttpClientHandler httpClientHandler)
+    public HuggingFaceBackend(string baseUri, string model, HttpClientHandler httpClientHandler)
         : this(new Uri(baseUri), model, httpClientHandler)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceLocalBackend"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceBackend"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
     /// <param name="baseUri">Base URI to call for backend operations in <see cref="string"/> format.</param>
     /// <param name="model">Model to use for backend operations.</param>
-    public HuggingFaceLocalBackend(string baseUri, string model)
+    public HuggingFaceBackend(string baseUri, string model)
         : this(new Uri(baseUri), model)
     {
     }
@@ -118,11 +115,17 @@ public sealed class HuggingFaceLocalBackend : ITextCompletionClient, IEmbeddingG
                 Model = _model
             };
 
-            var requestUri = new Uri(CompletionEndpoint, UriKind.Relative);
-            var requestBody = JsonSerializer.Serialize(completionRequest);
+            using var httpRequestMessage = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(CompletionEndpoint, UriKind.Relative),
+                Content = new StringContent(JsonSerializer.Serialize(completionRequest)),
+            };
 
-            var completionResponse = await this._httpClient
-                .ExecutePostRequestAsync<CompletionResponse>(requestUri, requestBody).ConfigureAwait(false);
+            var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            var completionResponse = JsonSerializer.Deserialize<CompletionResponse>(body);
 
             return completionResponse?.Choices.First().Text!;
         }
@@ -150,11 +153,17 @@ public sealed class HuggingFaceLocalBackend : ITextCompletionClient, IEmbeddingG
                 Model = _model
             };
 
-            var requestUri = new Uri(EmbeddingEndpoint, UriKind.Relative);
-            var requestBody = JsonSerializer.Serialize(embeddingRequest);
+            using var httpRequestMessage = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(EmbeddingEndpoint, UriKind.Relative),
+                Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
+            };
 
-            var embeddingResponse = await this._httpClient
-                .ExecutePostRequestAsync<EmbeddingResponse>(requestUri, requestBody).ConfigureAwait(false);
+            var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            var embeddingResponse = JsonSerializer.Deserialize<EmbeddingResponse>(body);
 
             return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding.ToArray())).ToList()!;
         }

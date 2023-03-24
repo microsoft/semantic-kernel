@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Backends.HuggingFace.HttpSchema;
+namespace Microsoft.SemanticKernel.AI.HuggingFace.HttpSchema;
 
 /// <summary>
 /// HTTP Schema for completion response.

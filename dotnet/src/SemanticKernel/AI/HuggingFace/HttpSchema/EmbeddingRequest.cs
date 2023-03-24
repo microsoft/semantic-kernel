@@ -2,9 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Backends.HuggingFace.HttpSchema;
+namespace Microsoft.SemanticKernel.AI.HuggingFace.HttpSchema;
 
 /// <summary>
 /// HTTP schema to perform embedding request.
@@ -16,11 +17,11 @@ public sealed class EmbeddingRequest
     /// Data to embed.
     /// </summary>
     [JsonPropertyName("input")]
-    public IList<string>? Input { get; set; }
+    public IList<string> Input { get; set; } = new List<string>();
 
     /// <summary>
     /// Model to use for embedding generation.
     /// </summary>
     [JsonPropertyName("model")]
-    public string? Model { get; set; }
+    public string Model { get; set; } = string.Empty;
 }

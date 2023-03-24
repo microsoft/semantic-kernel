@@ -9,17 +9,17 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Backends.HuggingFace;
+using Microsoft.SemanticKernel.AI.HuggingFace.Services;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Backends.HuggingFace.UnitTests;
+namespace SemanticKernelTests.AI.HuggingFace;
 
 /// <summary>
-/// Unit tests for <see cref="HuggingFaceLocalBackend"/> class.
+/// Unit tests for <see cref="HuggingFaceBackend"/> class.
 /// </summary>
-public class HuggingFaceLocalBackendTests : IDisposable
+public class HuggingFaceBackendTests : IDisposable
 {
     private const string BaseUri = "http://localhost:5000";
     private const string Model = "gpt2";
@@ -30,7 +30,7 @@ public class HuggingFaceLocalBackendTests : IDisposable
     };
 
     /// <summary>
-    /// Verifies that <see cref="HuggingFaceLocalBackend.CompleteAsync(string, CompleteRequestSettings)"/>
+    /// Verifies that <see cref="HuggingFaceBackend.CompleteAsync(string, CompleteRequestSettings)"/>
     /// returns expected completed text without errors.
     /// </summary>
     [Fact]
@@ -50,7 +50,7 @@ public class HuggingFaceLocalBackendTests : IDisposable
     }
 
     /// <summary>
-    /// Verifies that <see cref="HuggingFaceLocalBackend.GenerateEmbeddingsAsync(IList{string})"/>
+    /// Verifies that <see cref="HuggingFaceBackend.GenerateEmbeddingsAsync(IList{string})"/>
     /// returns expected list of generated embeddings without errors.
     /// </summary>
     [Fact]
@@ -78,14 +78,14 @@ public class HuggingFaceLocalBackendTests : IDisposable
     /// <param name="fileName">Name of the file with test response.</param>
     private string GetTestResponse(string fileName)
     {
-        return File.ReadAllText($"./TestData/{fileName}");
+        return File.ReadAllText($"./AI/HuggingFace/TestData/{fileName}");
     }
 
     /// <summary>
-    /// Initializes <see cref="HuggingFaceLocalBackend"/> with mocked <see cref="HttpClientHandler"/>.
+    /// Initializes <see cref="HuggingFaceBackend"/> with mocked <see cref="HttpClientHandler"/>.
     /// </summary>
     /// <param name="testResponse">Test response for <see cref="HttpClientHandler"/> to return.</param>
-    private HuggingFaceLocalBackend CreateBackend(string testResponse)
+    private HuggingFaceBackend CreateBackend(string testResponse)
     {
         var httpClientHandler = new Mock<HttpClientHandler>();
 
@@ -99,7 +99,7 @@ public class HuggingFaceLocalBackendTests : IDisposable
               ItExpr.IsAny<CancellationToken>())
            .ReturnsAsync(this._response);
 
-        return new HuggingFaceLocalBackend(BaseUri, Model, httpClientHandler.Object);
+        return new HuggingFaceBackend(BaseUri, Model, httpClientHandler.Object);
     }
 
     public void Dispose()
