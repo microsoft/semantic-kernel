@@ -4,10 +4,10 @@
 from logging import Logger
 from typing import Any, Optional
 
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.ai.open_ai.services.open_ai_chat_completion import (
     OpenAIChatCompletion,
 )
+from semantic_kernel.diagnostics.verify import Verify
 
 
 class AzureChatCompletion(OpenAIChatCompletion):

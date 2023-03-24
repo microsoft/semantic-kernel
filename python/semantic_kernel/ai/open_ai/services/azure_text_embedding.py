@@ -4,10 +4,10 @@
 from logging import Logger
 from typing import Any, Optional
 
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
 )
+from semantic_kernel.diagnostics.verify import Verify
 
 
 class AzureTextEmbedding(OpenAITextEmbedding):

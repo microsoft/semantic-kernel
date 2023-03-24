@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Optional, List, Tuple
+from typing import Any, List, Optional, Tuple
 
 from semantic_kernel.ai.ai_exception import AIException
-from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.utils.null_logger import NullLogger
 
