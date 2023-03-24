@@ -2,12 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.HuggingFace.HttpSchema;
-using System.Linq;
 
 namespace Microsoft.SemanticKernel.AI.HuggingFace.Services;
 /// <summary>
