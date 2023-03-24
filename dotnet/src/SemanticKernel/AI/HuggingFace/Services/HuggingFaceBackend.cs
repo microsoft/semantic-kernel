@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.HuggingFace.HttpSchema;
 
 namespace Microsoft.SemanticKernel.AI.HuggingFace.Services;
+
 /// <summary>
 /// Backend implementation for HuggingFace models usage.
 /// </summary>
