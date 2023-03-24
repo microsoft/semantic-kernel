@@ -25,19 +25,75 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 public class PlannerSkill
 {
     /// <summary>
+    /// Parameter names.
+    /// <see cref="ContextVariables"/>
+    /// </summary>
+    public static class Parameters
+    {
+        /// <summary>
+        /// The number of buckets to create
+        /// </summary>
+        public const string BucketCount = "bucketCount";
+
+        /// <summary>
+        /// The prefix to use for the bucket labels
+        /// </summary>
+        public const string BucketLabelPrefix = "bucketLabelPrefix";
+
+        /// <summary>
+        /// The relevancy threshold when filtering registered functions.
+        /// </summary>
+        public const string RelevancyThreshold = "relevancyThreshold";
+
+        /// <summary>
+        /// The maximum number of relevant functions as result of semantic search to include in the plan creation request.
+        /// </summary>
+        public const string MaxRelevantFunctions = "MaxRelevantFunctions";
+
+        /// <summary>
+        /// The list of skills to exclude from the plan creation request.
+        /// </summary>
+        public const string ExcludedSkills = "excludedSkills";
+
+        /// <summary>
+        /// The list of functions to exclude from the plan creation request.
+        /// </summary>
+        public const string ExcludedFunctions = "excludedFunctions";
+
+        /// <summary>
+        /// The list of functions to include in the plan creation request.
+        /// </summary>
+        public const string IncludedFunctions = "includedFunctions";
+    }
+
+    internal sealed class PlannerSkillConfig
+    {
+        // 0.78 is a good value for our samples and demonstrations.
+        // Depending on the embeddings engine used, the user ask,
+        // and the functions available, this value may need to be adjusted.
+        // For default, this is set to null to exhibit previous behavior.
+        public double? RelevancyThreshold { get; set; }
+
+        // Limits the number of relevant functions as result of semantic
+        // search included in the plan creation request.
+        // <see cref="Parameters.IncludedFunctions"/> will be included
+        // in the plan regardless of this limit.
+        public int MaxRelevantFunctions { get; set; } = 100;
+
+        // A list of skills to exclude from the plan creation request.
+        public HashSet<string> ExcludedSkills { get; } = new() { RestrictedSkillName };
+
+        // A list of functions to exclude from the plan creation request.
+        public HashSet<string> ExcludedFunctions { get; } = new() { "CreatePlan", "ExecutePlan" };
+
+        // A list of functions to include in the plan creation request.
+        public HashSet<string> IncludedFunctions { get; } = new() { "BucketOutputs" };
+    }
+
+    /// <summary>
     /// The name to use when creating semantic functions that are restricted from the PlannerSkill plans
     /// </summary>
     private const string RestrictedSkillName = "PlannerSkill_Excluded";
-
-    /// <summary>
-    /// the skills to exclude from the skill collection
-    /// </summary>
-    private static readonly List<string> s_excludedSkills = new() { RestrictedSkillName };
-
-    /// <summary>
-    /// the functions to exclude from the skill collection
-    /// </summary>
-    private static readonly List<string> s_excludedFunctions = new() { "CreatePlan", "ExecutePlan" };
 
     /// <summary>
     /// the function flow runner, which executes plans that leverage functions
@@ -100,15 +156,15 @@ public class PlannerSkill
     /// <summary>
     /// Given an output of a function, parse the output into a number of buckets.
     /// </summary>
-    /// <param name="input"> The input from a function that needs to be parse into buckets. </param>
+    /// <param name="input"> The input from a function that needs to be parsed into buckets. </param>
     /// <param name="context"> The context to use </param>
     /// <returns> The context with the bucketed results </returns>
     [SKFunction("Given an output of a function, parse the output into a number of buckets.")]
     [SKFunctionName("BucketOutputs")]
     [SKFunctionInput(Description = "The output from a function that needs to be parse into buckets.")]
-    [SKFunctionContextParameter(Name = "bucketCount", Description = "The number of buckets.", DefaultValue = "")]
+    [SKFunctionContextParameter(Name = Parameters.BucketCount, Description = "The number of buckets.", DefaultValue = "")]
     [SKFunctionContextParameter(
-        Name = "bucketLabelPrefix",
+        Name = Parameters.BucketLabelPrefix,
         Description = "The target label prefix for the resulting buckets. " +
                       "Result will have index appended e.g. bucketLabelPrefix='Result' => Result_1, Result_2, Result_3",
         DefaultValue = "Result")]
@@ -117,9 +173,9 @@ public class PlannerSkill
         var bucketsAdded = 0;
 
         var bucketVariables = new ContextVariables(input);
-        if (context.Variables.Get("bucketCount", out var bucketCount))
+        if (context.Variables.Get(Parameters.BucketCount, out var bucketCount))
         {
-            bucketVariables.Set("bucketCount", bucketCount);
+            bucketVariables.Set(Parameters.BucketCount, bucketCount);
         }
 
         // {'buckets': ['Result 1\nThis is the first result.', 'Result 2\nThis is the second result. It's doubled!', 'Result 3\nThis is the third and final result. Truly astonishing.']}
@@ -135,7 +191,7 @@ public class PlannerSkill
 
             var resultObject = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(resultString);
 
-            if (context.Variables.Get("bucketLabelPrefix", out var bucketLabelPrefix) &&
+            if (context.Variables.Get(Parameters.BucketLabelPrefix, out var bucketLabelPrefix) &&
                 resultObject?.ContainsKey("buckets") == true)
             {
                 foreach (var item in resultObject["buckets"])
@@ -161,6 +217,7 @@ public class PlannerSkill
     /// <summary>
     /// Create a plan using registered functions to accomplish a goal.
     /// </summary>
+    /// <param name="goal"> The goal to accomplish. </param>
     /// <param name="context"> The context to use </param>
     /// <returns> The context with the plan </returns>
     /// <remarks>
@@ -168,12 +225,24 @@ public class PlannerSkill
     /// </remarks>
     [SKFunction("Create a plan using registered functions to accomplish a goal.")]
     [SKFunctionName("CreatePlan")]
-    public async Task<SKContext> CreatePlanAsync(SKContext context)
+    [SKFunctionInput(Description = "The goal to accomplish.")]
+    [SKFunctionContextParameter(Name = Parameters.RelevancyThreshold, Description = "The relevancy threshold when filtering registered functions.",
+        DefaultValue = "")]
+    [SKFunctionContextParameter(Name = Parameters.MaxRelevantFunctions,
+        Description = "Limits the number of relevant functions as result of semantic search included in the plan creation request.", DefaultValue = "100")]
+    [SKFunctionContextParameter(Name = Parameters.ExcludedFunctions, Description = "A list of functions to exclude from the plan creation request.",
+        DefaultValue = "")]
+    [SKFunctionContextParameter(Name = Parameters.ExcludedSkills, Description = "A list of skills to exclude from the plan creation request.",
+        DefaultValue = "")]
+    [SKFunctionContextParameter(Name = Parameters.IncludedFunctions, Description = "A list of functions to include in the plan creation request.",
+        DefaultValue = "")]
+    public async Task<SKContext> CreatePlanAsync(string goal, SKContext context)
     {
-        var goal = context.Variables.Input;
+        PlannerSkillConfig config = context.GetPlannerSkillConfig();
 
-        string relevantFunctionsManual = context.GetFunctionsManual(s_excludedSkills, s_excludedFunctions);
+        string relevantFunctionsManual = await context.GetFunctionsManualAsync(goal, config);
         context.Variables.Set("available_functions", relevantFunctionsManual);
+        // TODO - consider adding the relevancy score for functions added to manual
 
         var plan = await this._functionFlowFunction.InvokeAsync(context);
 
