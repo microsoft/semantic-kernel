@@ -41,6 +41,8 @@ class OpenAIChatCompletion(ChatCompletionClientBase):
         self._log = log if log is not None else NullLogger()
         self._messages = []
 
+        self.open_ai_instance = self._setup_open_ai()
+
     def _setup_open_ai(self) -> Any:
         import openai
 
@@ -84,10 +86,8 @@ class OpenAIChatCompletion(ChatCompletionClientBase):
                 "The last message must be from the user",
             )
 
-        openai = self._setup_open_ai()
-
         model_args = {}
-        if openai.api_type == "azure":
+        if self.open_ai_instance.api_type == "azure":
             model_args["engine"] = self._model_id
         else:
             model_args["model"] = self._model_id
@@ -97,7 +97,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase):
         ]
 
         try:
-            response: Any = await openai.ChatCompletion.acreate(
+            response: Any = await self.open_ai_instance.ChatCompletion.acreate(
                 **model_args,
                 messages=formatted_messages,
                 temperature=request_settings.temperature,

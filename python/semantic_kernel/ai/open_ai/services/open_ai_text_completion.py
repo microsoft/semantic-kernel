@@ -40,6 +40,8 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
 
+        self.open_ai_instance = self._setup_open_ai()
+
     def _setup_open_ai(self) -> Any:
         import openai
 
@@ -87,16 +89,14 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 f"but logprobs={request_settings.logprobs} was requested",
             )
 
-        openai = self._setup_open_ai()
-
         model_args = {}
-        if openai.api_type == "azure":
+        if self.open_ai_instance.api_type == "azure":
             model_args["engine"] = self._model_id
         else:
             model_args["model"] = self._model_id
 
         try:
-            response: Any = await openai.Completion.acreate(
+            response: Any = await self.open_ai_instance.Completion.acreate(
                 **model_args,
                 prompt=prompt,
                 temperature=request_settings.temperature,
