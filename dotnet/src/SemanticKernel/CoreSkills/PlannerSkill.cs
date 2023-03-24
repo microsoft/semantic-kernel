@@ -78,7 +78,7 @@ public class PlannerSkill
         // search included in the plan creation request.
         // <see cref="Parameters.IncludedFunctions"/> will be included
         // in the plan regardless of this limit.
-        public int MaxRelevantFunctions { get; set; } = 10;
+        public int MaxRelevantFunctions { get; set; } = 100;
 
         // A list of skills to exclude from the plan creation request.
         public HashSet<string> ExcludedSkills { get; } = new() { RestrictedSkillName };
@@ -228,7 +228,8 @@ public class PlannerSkill
     [SKFunctionInput(Description = "The goal to accomplish.")]
     [SKFunctionContextParameter(Name = Parameters.RelevancyThreshold, Description = "The relevancy threshold when filtering registered functions.",
         DefaultValue = "")]
-    [SKFunctionContextParameter(Name = Parameters.MaxRelevantFunctions, Description = "", DefaultValue = "10")]
+    [SKFunctionContextParameter(Name = Parameters.MaxRelevantFunctions,
+        Description = "Limits the number of relevant functions as result of semantic search included in the plan creation request.", DefaultValue = "100")]
     [SKFunctionContextParameter(Name = Parameters.ExcludedFunctions, Description = "A list of functions to exclude from the plan creation request.",
         DefaultValue = "")]
     [SKFunctionContextParameter(Name = Parameters.ExcludedSkills, Description = "A list of skills to exclude from the plan creation request.",
