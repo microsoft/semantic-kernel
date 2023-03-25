@@ -1,5 +1,3 @@
-
-
 import semantic_kernel as sk
 
 from semantic_kernel.core_skills.text_skill import TextSkill
@@ -13,13 +11,13 @@ def test_can_be_instantiated():
 def test_can_be_imported():
     kernel = sk.create_kernel()
     assert kernel.import_skill(TextSkill())
-    assert kernel.skills.has_native_function(SkillCollection.GLOBAL_SKILL, 'trim')
+    assert kernel.skills.has_native_function(SkillCollection.GLOBAL_SKILL, "trim")
 
 
 def test_can_be_imported_with_name():
     kernel = sk.create_kernel()
-    assert kernel.import_skill(TextSkill(), 'text')
-    assert kernel.skills.has_native_function('text', 'trim')
+    assert kernel.import_skill(TextSkill(), "text")
+    assert kernel.skills.has_native_function("text", "trim")
 
 
 def test_can_trim():

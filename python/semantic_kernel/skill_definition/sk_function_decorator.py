@@ -1,11 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-def sk_function(*, 
-                description: str = "", 
-                name: str = None, 
-                input_description: str = None, 
-                input_default_value: str = None):
+def sk_function(
+    *,
+    description: str = "",
+    name: str = None,
+    input_description: str = None,
+    input_default_value: str = None
+):
     """
     Decorator for SK functions.
 
