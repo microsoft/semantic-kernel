@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "jetbrains.resharper.globaltools": {
+      "version": "2022.3.3",
+      "commands": [
+        "jb"
+      ]
+    }
+  }
+}
