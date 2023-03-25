@@ -113,7 +113,7 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
             var completionRequest = new CompletionRequest
             {
                 Prompt = text,
-                Model = _model
+                Model = this._model
             };
 
             using var httpRequestMessage = new HttpRequestMessage()
@@ -151,7 +151,7 @@ public sealed class HuggingFaceBackend : ITextCompletionClient, IEmbeddingGenera
             var embeddingRequest = new EmbeddingRequest
             {
                 Input = data,
-                Model = _model
+                Model = this._model
             };
 
             using var httpRequestMessage = new HttpRequestMessage()
