@@ -1,4 +1,3 @@
-
 from semantic_kernel.skill_definition import sk_function
 
 
@@ -6,7 +5,7 @@ class TextSkill:
     """
     TextSkill provides a set of functions to manipulate strings.
 
-    Usage: 
+    Usage:
         kernel.import_skill("text", new TextSkill());
 
     Examples:
@@ -40,22 +39,22 @@ class TextSkill:
     @sk_function(description="Trim whitespace from the start of a string.")
     def trim_start(self, text: str) -> str:
         """
-       Trim whitespace from the start of a string.
+        Trim whitespace from the start of a string.
 
-        Example:
-            SKContext["input"] = "  hello world  "
-            {{text.trim $input}} => "hello world  "
+         Example:
+             SKContext["input"] = "  hello world  "
+             {{text.trim $input}} => "hello world  "
         """
         return text.lstrip()
 
     @sk_function(description="Trim whitespace from the end of a string.")
     def trim_end(self, text: str) -> str:
         """
-       Trim whitespace from the end of a string.
+        Trim whitespace from the end of a string.
 
-        Example:
-            SKContext["input"] = "  hello world  "
-            {{text.trim $input}} => "  hello world"
+         Example:
+             SKContext["input"] = "  hello world  "
+             {{text.trim $input}} => "  hello world"
         """
         return text.rstrip()
 
@@ -73,10 +72,10 @@ class TextSkill:
     @sk_function(description="Convert a string to lowercase.")
     def lowercase(self, text: str) -> str:
         """
-       Convert a string to lowercase.
+        Convert a string to lowercase.
 
-        Example:
-            SKContext["input"] = "HELLO WORLD"
-            {{text.lowercase $input}} => "hello world"
+         Example:
+             SKContext["input"] = "HELLO WORLD"
+             {{text.lowercase $input}} => "hello world"
         """
         return text.lower()
