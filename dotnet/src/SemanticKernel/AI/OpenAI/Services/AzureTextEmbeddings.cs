@@ -55,8 +55,8 @@ public sealed class AzureTextEmbeddings : AzureOpenAIClientAbstract, IEmbeddingG
 
         for (int i = 0; i < data.Count; i++)
         {
-            var requestBody = Json.Serialize(new AzureEmbeddingRequest { Input = new List<string> { data[i] } });
-            embeddings.AddRange(await this.ExecuteEmbeddingRequestAsync(url, requestBody));
+            var requestBody = Json.Serialize(new AzureTextEmbeddingRequest { Input = new List<string> { data[i] } });
+            embeddings.AddRange(await this.ExecuteTextEmbeddingRequestAsync(url, requestBody));
         }
 
         return embeddings;
