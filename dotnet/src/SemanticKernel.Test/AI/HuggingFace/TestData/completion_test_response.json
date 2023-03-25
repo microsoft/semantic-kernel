@@ -1,0 +1,19 @@
+{
+  "choices": [
+    {
+      "finish_reason": "test",
+      "index": 0,
+      "logprobs": "",
+      "text": "This is test completion response"
+    }
+  ],
+  "created": "Tue, 21 Mar 2023 11:18:04 GMT",
+  "id": "",
+  "model": "gpt2",
+  "object": "text_completion",
+  "usage": {
+    "completion_tokens": 32,
+    "prompt_tokens": 3,
+    "total_tokens": 35
+  }
+}

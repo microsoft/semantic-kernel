@@ -1,6 +1,6 @@
 
 from . import InferenceGenerator
-from transformers import AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # The model used to get the tokenizer can be a little arbitrary
 # since the tokenizers are common within the same model type

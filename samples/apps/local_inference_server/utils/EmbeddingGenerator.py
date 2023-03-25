@@ -6,6 +6,7 @@ class EmbeddingGenerator(InferenceGenerator.InferenceGenerator):
     def __init__(self, model_name):
         super().__init__(model_name)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
 
     def _mean_pooling(self, model_output, attention_mask):
         token_embeddings = model_output[0] #First element of model_output contains all token embeddings
