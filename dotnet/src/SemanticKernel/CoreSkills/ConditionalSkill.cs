@@ -3,8 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.ControlFlow;
@@ -17,7 +19,7 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 public class ConditionalSkill
 {
     #region Prompts
-    private const string IfStructureCheckPrompt =
+    internal const string IfStructureCheckPrompt =
         @"Structure:
 <if>
 	<conditiongroup/>
@@ -41,7 +43,7 @@ Test Structure:
 
 Return: ";
 
-    private const string EvaluateConditionPrompt =
+    internal const string EvaluateConditionPrompt =
         @"Rules
 . ""and"" and ""or"" should be self closing tags
 
@@ -117,7 +119,7 @@ Variables:
 
 Expect: ";
 
-    private const string ExtractThenOrElseFromIfPrompt =
+    internal const string ExtractThenOrElseFromIfPrompt =
         @"Consider the below structure, ignore any format error:
 
 {{$IfStatementContent}}
@@ -133,12 +135,14 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
 ";
     #endregion
 
-    private const string ReasonIdentifier = "Reason:";
+    internal const string ReasonIdentifier = "Reason:";
+    internal const string NoReasonMessage = "No reason was provided";
+
     private readonly ISKFunction _ifStructureCheckFunction;
     private readonly ISKFunction _evaluateConditionFunction;
     private readonly ISKFunction _evaluateIfBranchFunction;
 
-    public ConditionalSkill(IKernel kernel)
+    public ConditionalSkill(IKernel kernel, ITextCompletionClient? completionBackend = null)
     {
         this._ifStructureCheckFunction = kernel.CreateSemanticFunction(
             IfStructureCheckPrompt,
@@ -165,6 +169,13 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
             maxTokens: 10,
             temperature: 0,
             topP: 0.5);
+
+        if (completionBackend is not null)
+        {
+            this._ifStructureCheckFunction.SetAIBackend(() => completionBackend);
+            this._evaluateIfBranchFunction.SetAIBackend(() => completionBackend);
+            this._evaluateConditionFunction.SetAIBackend(() => completionBackend);
+        }
     }
 
     /// <summary>
@@ -180,6 +191,7 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
     public async Task<SKContext> IfAsync(string ifContent, SKContext context)
     {
         await this.EnsureIfStructureIsValidAsync(ifContent, context).ConfigureAwait(false);
+
         bool conditionEvaluation = await this.EvaluateConditionAsync(ifContent, context).ConfigureAwait(false);
 
         return await this.GetThenOrElseBranchAsync(ifContent, conditionEvaluation, context).ConfigureAwait(false);
@@ -200,10 +212,10 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         var llmCheckFunctionResponse = (await this._ifStructureCheckFunction.InvokeAsync(statement, context).ConfigureAwait(false)).ToString();
         var reason = this.GetReason(llmCheckFunctionResponse);
 
-        var error = llmCheckFunctionResponse.StartsWith("ERROR", System.StringComparison.InvariantCultureIgnoreCase);
-        if (!error)
+        var invalid = !llmCheckFunctionResponse.StartsWith("TRUE", StringComparison.OrdinalIgnoreCase);
+        if (invalid)
         {
-            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementFormat, reason);
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, reason);
         }
     }
 
@@ -215,13 +227,13 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         var llmConditionResponse = (await this._evaluateConditionFunction.InvokeAsync(conditionContent, context).ConfigureAwait(false)).ToString();
 
         var reason = this.GetReason(llmConditionResponse);
-        var error = llmConditionResponse.StartsWith("ERROR");
+        var error = !Regex.Match(llmConditionResponse, @"^(true|false)", RegexOptions.IgnoreCase).Success;
         if (error)
         {
             throw new ConditionException(ConditionException.ErrorCodes.InvalidConditionFormat, reason);
         }
 
-        return llmConditionResponse.StartsWith("TRUE");
+        return llmConditionResponse.StartsWith("TRUE", StringComparison.OrdinalIgnoreCase);
     }
 
     private string GetConditionalVariablesFromContext(ContextVariables variables)
@@ -230,12 +242,11 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
     }
     private string? GetReason(string llmResponse)
     {
-
-        var hasReasonIndex = llmResponse.IndexOf(ReasonIdentifier);
+        var hasReasonIndex = llmResponse.IndexOf(ReasonIdentifier, StringComparison.OrdinalIgnoreCase);
         if (hasReasonIndex > -1)
         {
-            return llmResponse[hasReasonIndex..].Trim();
+            return llmResponse[(hasReasonIndex+ ReasonIdentifier.Length)..].Trim();
         }
-        return null;
+        return NoReasonMessage;
     }
 }

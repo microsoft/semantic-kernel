@@ -17,14 +17,14 @@ public class ConditionException : Exception<ConditionException.ErrorCodes>
         UnknownError = -1,
 
         /// <summary>
-        /// Invalid condition format.
+        /// Invalid condition structure.
         /// </summary>
         InvalidConditionFormat = 0,
 
         /// <summary>
-        /// Invalid statement format.
+        /// Invalid statement structure.
         /// </summary>
-        InvalidStatementFormat = 1,
+        InvalidStatementStructure = 1,
     }
 
     /// <summary>

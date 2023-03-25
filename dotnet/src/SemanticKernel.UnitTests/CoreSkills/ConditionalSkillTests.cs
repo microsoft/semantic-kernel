@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planning.ControlFlow;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -54,94 +55,170 @@ public class ConditionalSkillTests
     }
 
     [Fact]
-    public async Task ItCanCreatePlanAsync()
+    public async Task ItCanRunIfAsync()
     {
         // Arrange
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
-        var conditionalSkill = new ConditionalSkill(kernel);
+        var completionBackendMock = new Mock<ITextCompletionClient>();
+        var conditionalSkill = new ConditionalSkill(kernel, completionBackendMock.Object);
         var condition = kernel.ImportSkill(conditionalSkill, "conditional");
 
         // Act
-        var context = await kernel.RunAsync(GoalText, condition["CreatePlan"]);
+        var context = await kernel.RunAsync(GoalText, condition["IfAsync"]);
 
         // Assert
-        var plan = context.Variables.ToPlan();
-        Assert.NotNull(plan);
-        Assert.NotNull(plan.Id);
-        Assert.Equal(GoalText, plan.Goal);
-        Assert.StartsWith("<goal>\nSolve the equation x^2 = 2.\n</goal>", plan.PlanString, StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(context);
     }
 
     [Theory]
-    [InlineData(
-@"<plan>
-    <function.MockSkill.Echo input=""Hello World"" />
-    <if>
-        <dsafd/>
-    </if>
-</plan>")]
-    public async Task InvalidIfResultAsync(string planText)
+    [InlineData("", ConditionalSkill.NoReasonMessage)]
+    [InlineData("Unexpected Result", ConditionalSkill.NoReasonMessage)]
+    [InlineData("ERROR", ConditionalSkill.NoReasonMessage)]
+    [InlineData("ERROR REASON: Something1 Error", "Something1 Error")]
+    [InlineData("ERROR\nReason:Something2 Error", "Something2 Error")]
+    [InlineData("ERROR\n\n Reason:\nSomething3 Error", "Something3 Error")]
+    [InlineData("FALSE", ConditionalSkill.NoReasonMessage)]
+    [InlineData("FALSE reason: Something1 False", "Something1 False")]
+    [InlineData("FALSE\nReason:Something2 False", "Something2 False")]
+    [InlineData("FALSE\n\n Reason:\nSomething3 False", "Something3 False")]
+    public async Task InvalidIfStatementCheckResponseShouldFailContextWithReasonMessageAsync(string llmResult, string expectedReason)
     {
         // Arrange
-        /*var kernelMock = new Mock<IKernel>();
-        var memoryMock = new Mock<ISemanticTextMemory>();
-        var skillCollectionMock = new Mock<IReadOnlySkillCollection>();
-        var loggerMock = new Mock<ILogger>();
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
-        var target = new ConditionalSkill(kernelMock.Object);
-        var functions = kernel.ImportSkill(target);
-
-        var 
-        kernelMock.Setup(k => k.RegisterSemanticFunction(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SemanticFunctionConfig>())).Returns(functions["IfAsync"]);
-
-        //skillCollectionMock.Setup(sc => sc).Returns(skillCollectionMock.Object);
-        */
-        var aiBackendMock = new Mock<ITextCompletionClient>();
-
-        var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
-        var conditionalSkill = new ConditionalSkill(kernel);
+        var completionBackendMock = new Mock<ITextCompletionClient>();
+        completionBackendMock.Setup(a => a.CompleteAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(llmResult);
+        var conditionalSkill = new ConditionalSkill(kernel, completionBackendMock.Object);
         var functions = kernel.ImportSkill(conditionalSkill, "conditional");
-        kernel.RegisterSemanticFunction
-        aiBackendMock.Setup(a => a.CompleteAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(string.Empty);
 
-        functions["IfAsync"].SetAIBackend(() => aiBackendMock.Object);
+        // Act
+        var context = await kernel.RunAsync("Any", functions["IfAsync"]);
 
-        //var context = new SKContext(new ContextVariables(), memoryMock.Object, skillCollectionMock.Object, loggerMock.Object);
-
-        // Act + Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await kernel.RunAsync(planText, functions["IfAsync"]));
+        // Assert
+        Assert.NotNull(context);
+        Assert.True(context.ErrorOccurred);
+        Assert.NotNull(context.LastException);
+        Assert.IsType<ConditionException>(context.LastException);
+        Assert.Equal(ConditionException.ErrorCodes.InvalidStatementStructure, ((ConditionException)context.LastException).ErrorCode);
+        Assert.Equal($"{nameof(ConditionException.ErrorCodes.InvalidStatementStructure)}: {expectedReason}", ((ConditionException)context.LastException).Message);
     }
 
-    public class MockSkill
+    [Theory]
+    [InlineData("", ConditionalSkill.NoReasonMessage)]
+    [InlineData("Unexpected Result", ConditionalSkill.NoReasonMessage)]
+    [InlineData("ERROR", ConditionalSkill.NoReasonMessage)]
+    [InlineData("ERROR reason: Something1 Error", "Something1 Error")]
+    [InlineData("ERROR\nREASON:Something2 Error", "Something2 Error")]
+    [InlineData("ERROR\n\n ReAson:\nSomething3 Error", "Something3 Error")]
+    public async Task InvalidEvaluateConditionResponseShouldFailContextWithReasonMessageAsync(string llmResult, string expectedReason)
     {
-        private readonly ITestOutputHelper _testOutputHelper;
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var completionBackendMock = new Mock<ITextCompletionClient>();
+        var ifContent = "Any";
+        var ifCheckPrompt = ConditionalSkill.IfStructureCheckPrompt[..30];
+        var evalConditionPrompt = ConditionalSkill.EvaluateConditionPrompt[..30];
 
-        public MockSkill(ITestOutputHelper testOutputHelper)
-        {
-            this._testOutputHelper = testOutputHelper;
-        }
+        // To be able to check the condition need ensure success in the if statement check first
+        completionBackendMock.Setup(a =>
+            a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(ifCheckPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("TRUE");
 
-        [SKFunction("Split the input into two parts")]
-        [SKFunctionName("SplitInput")]
-        [SKFunctionInput(Description = "The input text to split")]
-        public Task<SKContext> SplitInputAsync(string input, SKContext context)
-        {
-            var parts = input.Split(':');
-            context.Variables.Set("First", parts[0]);
-            context.Variables.Set("Second", parts[1]);
-            return Task.FromResult(context);
-        }
+        completionBackendMock.Setup(a =>
+            a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(evalConditionPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(llmResult);
 
-        [SKFunction("Echo the input text")]
-        [SKFunctionName("Echo")]
-        public Task<SKContext> EchoAsync(string text, SKContext context)
-        {
-            this._testOutputHelper.WriteLine(text);
-            _ = context.Variables.Update("Echo Result: " + text);
-            return Task.FromResult(context);
-        }
+        var conditionalSkill = new ConditionalSkill(kernel, completionBackendMock.Object);
+        var functions = kernel.ImportSkill(conditionalSkill, "conditional");
+
+        // Act
+        var context = await kernel.RunAsync(ifContent, functions["IfAsync"]);
+
+        // Assert
+        Assert.NotNull(context);
+        Assert.True(context.ErrorOccurred);
+        Assert.NotNull(context.LastException);
+        Assert.IsType<ConditionException>(context.LastException);
+        Assert.Equal(ConditionException.ErrorCodes.InvalidConditionFormat, ((ConditionException)context.LastException).ErrorCode);
+        Assert.Equal($"{nameof(ConditionException.ErrorCodes.InvalidConditionFormat)}: {expectedReason}", ((ConditionException)context.LastException).Message);
+    }
+
+    [Theory]
+    [InlineData("TRUE", "Then")]
+    [InlineData("True", "Then")]
+    [InlineData("true", "Then")]
+    [InlineData("FALSE", "Else")]
+    [InlineData("False", "Else")]
+    [InlineData("false", "Else")]
+    public async Task ValidEvaluateConditionResponseShouldReturnAsync(string llmResult, string expectedBranchTag)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var completionBackendMock = new Mock<ITextCompletionClient>();
+        var ifContent = "Any";
+        var ifCheckPrompt = ConditionalSkill.IfStructureCheckPrompt[..30];
+        var evalConditionPrompt = ConditionalSkill.EvaluateConditionPrompt[..30];
+
+        // To be able to check the condition need ensure success in the if statement check first
+        completionBackendMock.Setup(a =>
+            a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(ifCheckPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("TRUE");
+
+        completionBackendMock.Setup(a =>
+            a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(evalConditionPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(llmResult);
+
+        var conditionalSkill = new ConditionalSkill(kernel, completionBackendMock.Object);
+        var functions = kernel.ImportSkill(conditionalSkill, "conditional");
+
+        // Act
+        var context = await kernel.RunAsync(ifContent, functions["IfAsync"]);
+
+        // Assert
+        Assert.NotNull(context);
+        Assert.True(context.Variables.ContainsKey("EvaluateIfBranchTag"));
+        Assert.Equal(expectedBranchTag, context["EvaluateIfBranchTag"]);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Result1")]
+    public async Task ValidIfShouldReturnGetThenOrElseBranchResponseAsync(string thenOrElseLLMResult)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var completionBackendMock = new Mock<ITextCompletionClient>();
+        var ifContent = "Any";
+        var ifCheckPrompt = ConditionalSkill.IfStructureCheckPrompt[..30];
+        var evalConditionPrompt = ConditionalSkill.EvaluateConditionPrompt[..30];
+        var extractThenOrElseFromIfPrompt = ConditionalSkill.ExtractThenOrElseFromIfPrompt[..30];
+
+        // To be able to check the condition need ensure success in the if statement check first
+        completionBackendMock.Setup(a =>
+            a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(ifCheckPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("TRUE");
+
+        completionBackendMock.Setup(a =>
+            a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(evalConditionPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("TRUE");
+
+        completionBackendMock.Setup(a =>
+            a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(extractThenOrElseFromIfPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(thenOrElseLLMResult);
+
+        var conditionalSkill = new ConditionalSkill(kernel, completionBackendMock.Object);
+        var functions = kernel.ImportSkill(conditionalSkill, "conditional");
+
+        // Act
+        var context = await kernel.RunAsync(ifContent, functions["IfAsync"]);
+
+        // Assert
+        Assert.NotNull(context);
+        Assert.False(context.ErrorOccurred);
+        Assert.Equal(thenOrElseLLMResult, context.ToString());
     }
 }
