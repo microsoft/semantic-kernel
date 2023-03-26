@@ -1,0 +1,1 @@
+dotnet add package Microsoft.SemanticKernel --version 0.8.48.1-preview
