@@ -3,17 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.ControlFlow;
 using Microsoft.SemanticKernel.SkillDefinition;
-using static Microsoft.SemanticKernel.CoreSkills.PlannerSkill;
-
-#pragma warning disable CA1310
 
 namespace Microsoft.SemanticKernel.CoreSkills;
 public class ConditionalSkill
@@ -33,15 +31,19 @@ Rules:
 . ""Then"" must exists and have at least one child node
 . ""Else"" is optional
 . If ""Else"" is provided must have one or more children nodes
-. Return TRUE if Test Structure is valid
-. Return FALSE if Test Structure is not valid 
-
-DONT PROVIDE AN EXPLANATION
+. Return true if Test Structure is valid
+. Return false if Test Structure is not valid with a reason
+. Give a json list of variables used inside all the ""Condition Group""s
+. All the return should be in Json format.
+. Response Json Structure:
+{
+  ""valid"": bool,
+  ""reason"": string,
+  ""variables"": [string]
+}
 
 Test Structure:
-{{$IfStatementContent}}
-
-Return: ";
+{{$IfStatementContent}}";
 
     internal const string EvaluateConditionPrompt =
         @"Rules
@@ -190,9 +192,9 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
     [SKFunction("Get a planner if statement content and output then or else contents depending on the conditional evaluation.")]
     public async Task<SKContext> IfAsync(string ifContent, SKContext context)
     {
-        await this.EnsureIfStructureIsValidAsync(ifContent, context).ConfigureAwait(false);
+        var usedVariables = await this.GetVariablesAndEnsureIfStructureIsValidAsync(ifContent, context).ConfigureAwait(false);
 
-        bool conditionEvaluation = await this.EvaluateConditionAsync(ifContent, context).ConfigureAwait(false);
+        bool conditionEvaluation = await this.EvaluateConditionAsync(ifContent, usedVariables, context).ConfigureAwait(false);
 
         return await this.GetThenOrElseBranchAsync(ifContent, conditionEvaluation, context).ConfigureAwait(false);
     }
@@ -206,23 +208,27 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         return (await this._evaluateIfBranchFunction.InvokeAsync(context).ConfigureAwait(false));
     }
 
-    private async Task EnsureIfStructureIsValidAsync(string statement, SKContext context)
+    private async Task<IEnumerable<string>> GetVariablesAndEnsureIfStructureIsValidAsync(string statement, SKContext context)
     {
         context.Variables.Set("IfStatementContent", statement);
         var llmCheckFunctionResponse = (await this._ifStructureCheckFunction.InvokeAsync(statement, context).ConfigureAwait(false)).ToString();
-        var reason = this.GetReason(llmCheckFunctionResponse);
 
-        var invalid = !llmCheckFunctionResponse.StartsWith("TRUE", StringComparison.OrdinalIgnoreCase);
-        if (invalid)
+        JsonNode llmResponse = this.GetValuesFromResponse(llmCheckFunctionResponse);
+        var valid = llmResponse["valid"]!.GetValue<bool>();
+
+        if (!valid)
         {
-            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, reason);
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, llmResponse?["reason"]?.GetValue<string>() ?? NoReasonMessage);
         }
+
+        return llmResponse?["variables"]?.Deserialize<string[]>()
+            .Where(v => !string.IsNullOrWhiteSpace(v)) ?? Enumerable.Empty<string>();
     }
 
-    private async Task<bool> EvaluateConditionAsync(string conditionContent, SKContext context)
+    private async Task<bool> EvaluateConditionAsync(string conditionContent, IEnumerable<string> usedVariables, SKContext context)
     {
         context.Variables.Set("IfStatementContent", conditionContent);
-        context.Variables.Set("ConditionalVariables", this.GetConditionalVariablesFromContext(context.Variables));
+        context.Variables.Set("ConditionalVariables", this.GetConditionalVariablesFromContext(usedVariables, context.Variables));
 
         var llmConditionResponse = (await this._evaluateConditionFunction.InvokeAsync(conditionContent, context).ConfigureAwait(false)).ToString();
 
@@ -236,10 +242,19 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         return llmConditionResponse.StartsWith("TRUE", StringComparison.OrdinalIgnoreCase);
     }
 
-    private string GetConditionalVariablesFromContext(ContextVariables variables)
+    private string GetConditionalVariablesFromContext(IEnumerable<string> usedVariables, ContextVariables variables)
     {
-        return string.Join("\n", variables.Select(x => $"{x.Key} = {x.Value}"));
+        var checkNotFoundVariables = usedVariables.Where(u => !variables.ContainsKey(u));
+        if (checkNotFoundVariables.Any())
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.ContextVariablesNotFound, string.Join(", ", checkNotFoundVariables));
+        }
+
+        return string.Join("\n", variables
+            .Where(v => usedVariables.Contains(v.Key))
+            .Select(x => $"{x.Key} = {x.Value}"));
     }
+
     private string? GetReason(string llmResponse)
     {
         var hasReasonIndex = llmResponse.IndexOf(ReasonIdentifier, StringComparison.OrdinalIgnoreCase);
@@ -248,5 +263,24 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
             return llmResponse[(hasReasonIndex+ ReasonIdentifier.Length)..].Trim();
         }
         return NoReasonMessage;
+    }
+
+    private JsonNode GetValuesFromResponse(string llmResponse)
+    {
+        var startIndex = llmResponse.IndexOf('{', StringComparison.InvariantCultureIgnoreCase);
+        JsonNode? response = null;
+
+        if (startIndex > -1)
+        {
+            var jsonResponse = llmResponse[startIndex..];
+            response = JsonSerializer.Deserialize<JsonNode>(jsonResponse);
+        }
+
+        if (response is not null)
+        {
+            return response;
+        }
+
+        throw new ConditionException(ConditionException.ErrorCodes.JsonResponseNotFound);
     }
 }

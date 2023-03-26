@@ -25,6 +25,8 @@ public class ConditionException : Exception<ConditionException.ErrorCodes>
         /// Invalid statement structure.
         /// </summary>
         InvalidStatementStructure = 1,
+        JsonResponseNotFound = 2,
+        ContextVariablesNotFound = 3,
     }
 
     /// <summary>

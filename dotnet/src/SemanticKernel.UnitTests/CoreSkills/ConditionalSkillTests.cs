@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -72,16 +74,34 @@ public class ConditionalSkillTests
     }
 
     [Theory]
-    [InlineData("", ConditionalSkill.NoReasonMessage)]
-    [InlineData("Unexpected Result", ConditionalSkill.NoReasonMessage)]
-    [InlineData("ERROR", ConditionalSkill.NoReasonMessage)]
-    [InlineData("ERROR REASON: Something1 Error", "Something1 Error")]
-    [InlineData("ERROR\nReason:Something2 Error", "Something2 Error")]
-    [InlineData("ERROR\n\n Reason:\nSomething3 Error", "Something3 Error")]
-    [InlineData("FALSE", ConditionalSkill.NoReasonMessage)]
-    [InlineData("FALSE reason: Something1 False", "Something1 False")]
-    [InlineData("FALSE\nReason:Something2 False", "Something2 False")]
-    [InlineData("FALSE\n\n Reason:\nSomething3 False", "Something3 False")]
+    [InlineData("")]
+    [InlineData("Unexpected Result")]
+    public async Task InvalidJsonIfStatementCheckResponseShouldFailContextAsync(string llmResult)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var completionBackendMock = new Mock<ITextCompletionClient>();
+        completionBackendMock.Setup(a => a.CompleteAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(llmResult);
+        var conditionalSkill = new ConditionalSkill(kernel, completionBackendMock.Object);
+        var functions = kernel.ImportSkill(conditionalSkill, "conditional");
+
+        // Act
+        var context = await kernel.RunAsync("Any", functions["IfAsync"]);
+
+        // Assert
+        Assert.NotNull(context);
+        Assert.True(context.ErrorOccurred);
+        Assert.NotNull(context.LastException);
+        Assert.IsType<ConditionException>(context.LastException);
+        Assert.Equal(ConditionException.ErrorCodes.JsonResponseNotFound, ((ConditionException)context.LastException).ErrorCode);
+    }
+
+    [Theory]
+    [InlineData("{\"valid\": false, \"reason\": null}", ConditionalSkill.NoReasonMessage)]
+    [InlineData("{\"valid\": false, \"reason\": \"Something1 Error\"}", "Something1 Error")]
+    [InlineData("{\"valid\": false, \n\"reason\": \"Something2 Error\"}", "Something2 Error")]
+    [InlineData("{\"valid\": false, \n\n\"reason\": \"Something3 Error\"}", "Something3 Error")]
     public async Task InvalidIfStatementCheckResponseShouldFailContextWithReasonMessageAsync(string llmResult, string expectedReason)
     {
         // Arrange
@@ -124,7 +144,7 @@ public class ConditionalSkillTests
         // To be able to check the condition need ensure success in the if statement check first
         completionBackendMock.Setup(a =>
             a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(ifCheckPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync("TRUE");
+                .ReturnsAsync("{\"valid\": true}");
 
         completionBackendMock.Setup(a =>
             a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(evalConditionPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
@@ -165,7 +185,7 @@ public class ConditionalSkillTests
         // To be able to check the condition need ensure success in the if statement check first
         completionBackendMock.Setup(a =>
             a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(ifCheckPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync("TRUE");
+                .ReturnsAsync($"{{\"valid\": true}}");
 
         completionBackendMock.Setup(a =>
             a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(evalConditionPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
@@ -181,6 +201,116 @@ public class ConditionalSkillTests
         Assert.NotNull(context);
         Assert.True(context.Variables.ContainsKey("EvaluateIfBranchTag"));
         Assert.Equal(expectedBranchTag, context["EvaluateIfBranchTag"]);
+    }
+
+    [Theory]
+    [InlineData("Variable1,Variable2", "Variable1")]
+    [InlineData("Variable1,Variable2", "")]
+    [InlineData("Variable1,Variable2,Variable3", "Variable2")]
+    public async Task EvaluateShouldUseExistingConditionVariablesOnlyAsync(string existingVariables, string conditionVariables)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var completionBackendMock = new Mock<ITextCompletionClient>();
+        var ifContent = "Any";
+        var ifCheckPrompt = ConditionalSkill.IfStructureCheckPrompt[..30];
+        var evalConditionPrompt = ConditionalSkill.EvaluateConditionPrompt[..30];
+
+        // To be able to check the condition need ensure success in the if statement check first
+        completionBackendMock.Setup(a =>
+            a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(ifCheckPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync($"{{\"valid\": true, \"variables\": [\"{string.Join("\",\"", conditionVariables.Split(','))}\"]}}");
+
+        completionBackendMock.Setup(a =>
+            a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(evalConditionPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("TRUE");
+
+        var conditionalSkill = new ConditionalSkill(kernel, completionBackendMock.Object);
+        var functions = kernel.ImportSkill(conditionalSkill, "conditional");
+
+        var contextVariables = new ContextVariables(ifContent);
+        if (!string.IsNullOrEmpty(existingVariables))
+        {
+            foreach (var variableName in existingVariables.Split(','))
+            {
+                contextVariables.Set(variableName, "x");
+            }
+        }
+        IEnumerable<string> notExpectedVariablesInPrompt = existingVariables.Split(',');
+        if (!string.IsNullOrEmpty(conditionVariables))
+        {
+            notExpectedVariablesInPrompt = notExpectedVariablesInPrompt.Except(conditionVariables.Split(','));
+        }
+
+        // Act
+        var context = await kernel.RunAsync(contextVariables, functions["IfAsync"]);
+
+        // Assert
+        Assert.NotNull(context);
+        Assert.True(context.Variables.ContainsKey("ConditionalVariables"));
+        if (!string.IsNullOrEmpty(conditionVariables))
+        {
+            foreach (var variableName in conditionVariables.Split(','))
+            {
+                Assert.Contains(variableName, context.Variables["ConditionalVariables"], StringComparison.InvariantCulture);
+            }
+        }
+
+        foreach (var variableName in notExpectedVariablesInPrompt)
+        {
+            Assert.DoesNotContain(variableName, context.Variables["ConditionalVariables"], StringComparison.InvariantCulture);
+        }
+    }
+
+    [Theory]
+    [InlineData("Variable1,Variable2", "Variable4")]
+    [InlineData("Variable1,Variable2,Variable3", "Variable5,Variable2")]
+    public async Task InvalidEvaluateWhenConditionVariablesDontExistsAsync(string existingVariables, string conditionVariables)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        var completionBackendMock = new Mock<ITextCompletionClient>();
+        var ifContent = "Any";
+        var ifCheckPrompt = ConditionalSkill.IfStructureCheckPrompt[..30];
+        var evalConditionPrompt = ConditionalSkill.EvaluateConditionPrompt[..30];
+
+        // To be able to check the condition need ensure success in the if statement check first
+        completionBackendMock.Setup(a =>
+            a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(ifCheckPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync($"{{\"valid\": true, \"variables\": [\"{string.Join("\",\"", conditionVariables.Split(','))}\"]}}");
+
+        completionBackendMock.Setup(a =>
+            a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(evalConditionPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("TRUE");
+
+        var conditionalSkill = new ConditionalSkill(kernel, completionBackendMock.Object);
+        var functions = kernel.ImportSkill(conditionalSkill, "conditional");
+
+        var contextVariables = new ContextVariables(ifContent);
+        if (!string.IsNullOrEmpty(existingVariables))
+        {
+            foreach (var variableName in existingVariables.Split(','))
+            {
+                contextVariables.Set(variableName, "x");
+            }
+        }
+        IEnumerable<string> expectedNotFound = Enumerable.Empty<string>();
+        if (!string.IsNullOrEmpty(conditionVariables))
+        {
+            expectedNotFound = conditionVariables.Split(',').Except(existingVariables?.Split(",") ?? Array.Empty<string>());
+        }
+
+        // Act
+        var context = await kernel.RunAsync(contextVariables, functions["IfAsync"]);
+
+        // Assert
+        Assert.True(context.ErrorOccurred);
+        Assert.NotNull(context.LastException);
+        Assert.IsType<ConditionException>(context.LastException);
+        Assert.Equal(ConditionException.ErrorCodes.ContextVariablesNotFound, ((ConditionException)context.LastException).ErrorCode);
+        Assert.Equal($"{nameof(ConditionException.ErrorCodes.ContextVariablesNotFound)}: {string.Join(", ", expectedNotFound)}", ((ConditionException)context.LastException).Message);
     }
 
     [Theory]
@@ -200,7 +330,7 @@ public class ConditionalSkillTests
         // To be able to check the condition need ensure success in the if statement check first
         completionBackendMock.Setup(a =>
             a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(ifCheckPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync("TRUE");
+                .ReturnsAsync("{\"valid\": true}");
 
         completionBackendMock.Setup(a =>
             a.CompleteAsync(It.Is<string>(prompt => prompt.Contains(evalConditionPrompt)), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
