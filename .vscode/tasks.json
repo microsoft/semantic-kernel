@@ -136,6 +136,26 @@
       }
     },
     {
+      "label": "Test - Semantic-Kernel Integration (Code Coverage)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "--collect",
+        "XPlat Code Coverage;Format=lcov",
+        "SemanticKernel.IntegrationTests.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.IntegrationTests/"
+      }
+    },
+    {
       "label": "Run - Kernel-Demo",
       "command": "dotnet",
       "type": "process",
