@@ -198,7 +198,7 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
     {
         var usedVariables = await this.GetVariablesAndEnsureIfStructureIsValidAsync(ifContent, context).ConfigureAwait(false);
 
-        bool conditionEvaluation = await this.LLMEvaluateConditionAsync(ifContent, usedVariables, context).ConfigureAwait(false);
+        bool conditionEvaluation = await this.EvaluateConditionAsync(ifContent, usedVariables, context).ConfigureAwait(false);
 
         return await this.GetThenOrElseBranchAsync(ifContent, conditionEvaluation, context).ConfigureAwait(false);
     }
@@ -229,26 +229,7 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
             .Where(v => !string.IsNullOrWhiteSpace(v)).Select(v => v.TrimStart('$')) ?? Enumerable.Empty<string>();
     }
 
-    private async Task<bool> LLMEvaluateConditionAsync(string ifContent, IEnumerable<string> usedVariables, SKContext context)
-    {
-        var conditionContent = this.ExtractConditionalContent(ifContent);
-
-        context.Variables.Set("IfCondition", conditionContent);
-        context.Variables.Set("ConditionalVariables", this.GetConditionalVariablesFromContext(usedVariables, context.Variables));
-
-        var llmConditionResponse = (await this._evaluateConditionFunction.InvokeAsync(conditionContent, context).ConfigureAwait(false)).ToString();
-
-        var reason = this.GetReason(llmConditionResponse);
-        var error = !Regex.Match(llmConditionResponse.Trim(), @"^(true|false)", RegexOptions.IgnoreCase).Success;
-        if (error)
-        {
-            throw new ConditionException(ConditionException.ErrorCodes.InvalidConditionFormat, reason);
-        }
-
-        return llmConditionResponse.StartsWith("TRUE", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private async Task<bool> RuntimeEvaluateConditionAsync(string ifContent, IEnumerable<string> usedVariables, SKContext context)
+    private async Task<bool> EvaluateConditionAsync(string ifContent, IEnumerable<string> usedVariables, SKContext context)
     {
         var conditionContent = this.ExtractConditionalContent(ifContent);
 
