@@ -29,7 +29,6 @@ public class PlanningException : Exception<PlanningException.ErrorCodes>
         /// Invalid configuration.
         /// </summary>
         InvalidConfiguration = 1,
-        ParserNotFound = 2,
     }
 
     /// <summary>

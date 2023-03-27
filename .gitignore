@@ -446,4 +446,3 @@ _site
 # Yarn
 .yarn
 .yarnrc.yml
-/samples/dotnet/kernel-syntax-examples/Properties/launchSettings.json

@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Planning;
 public class ConditionException : Exception<ConditionException.ErrorCodes>
 {
     /// <summary>
-    /// Error codes for <see cref="PlanningException"/>.
+    /// Error codes for <see cref="ConditionException"/>.
     /// </summary>
     public enum ErrorCodes
     {
@@ -43,7 +43,7 @@ public class ConditionException : Exception<ConditionException.ErrorCodes>
     public ErrorCodes ErrorCode { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PlanningException"/> class.
+    /// Initializes a new instance of the <see cref="ConditionException"/> class.
     /// </summary>
     /// <param name="errCode">The error code.</param>
     /// <param name="message">The message.</param>
@@ -53,7 +53,7 @@ public class ConditionException : Exception<ConditionException.ErrorCodes>
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PlanningException"/> class.
+    /// Initializes a new instance of the <see cref="ConditionException"/> class.
     /// </summary>
     /// <param name="errCode">The error code.</param>
     /// <param name="message">The message.</param>

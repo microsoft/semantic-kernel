@@ -8,7 +8,7 @@ internal static class SemanticFunctionConstants
         @"Create an XML plan step by step, to satisfy the goal given.
 To create a plan, follow these steps:
 1. From a <goal> create a <plan> as a series of <functions>.
-2. Use only the [AVAILABLE FUNCTIONS] , create new functions, inputs or attribute values.
+2. Use only the [AVAILABLE FUNCTIONS] - do not create new functions, inputs or attribute values.
 3. Only use functions that are required for the given goal.
 4. A function has an 'input' and an 'output'.
 5. The 'output' from each function is automatically passed as 'input' to the subsequent <function>.
