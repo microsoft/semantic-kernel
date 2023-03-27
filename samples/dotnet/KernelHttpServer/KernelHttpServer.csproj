@@ -26,7 +26,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.Document\Skills.Document.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.MsGraph\Skills.MsGraph.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.Web\Skills.Web.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\github-skills\GitHubSkills.csproj" />
   </ItemGroup>
 
   <ItemGroup>
