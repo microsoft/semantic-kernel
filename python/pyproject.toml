@@ -17,6 +17,7 @@ black = {version = "^23.1.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
 pytest = "7.2.0"
 ruff = "^0.0.257"
+pytest-asyncio = "^0.21.0"
 
 [tool.isort]
 profile = "black"
