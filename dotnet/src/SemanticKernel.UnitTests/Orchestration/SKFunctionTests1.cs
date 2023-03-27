@@ -33,7 +33,7 @@ public sealed class SKFunctionTests1
 
         // Assert
         Assert.Equal(0, skFunction.RequestSettings.Temperature);
-        Assert.Equal(100, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal(256, skFunction.RequestSettings.MaxTokens);
     }
 
     [Fact]
