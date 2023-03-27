@@ -1,12 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional, Tuple
 from logging import Logger
 from re import match as re_match
+from typing import Optional, Tuple
 
+from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine_v2.blocks.block import Block
 from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
-from semantic_kernel.orchestration.context_variables import ContextVariables
 
 
 class FunctionIdBlock(Block):

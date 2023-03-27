@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from pytest import raises
 from logging import Logger
+
+from pytest import raises
 
 from semantic_kernel.template_engine_v2.blocks.block import Block
 from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes

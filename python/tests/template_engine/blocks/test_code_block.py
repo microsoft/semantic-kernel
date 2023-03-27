@@ -1,19 +1,20 @@
-from pytest import raises, mark
-from unittest.mock import Mock
 from logging import Logger
+from unittest.mock import Mock
 
-from semantic_kernel.template_engine_v2.blocks.code_block import CodeBlock
-from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine_v2.blocks.function_id_block import FunctionIdBlock
-from semantic_kernel.template_engine_v2.blocks.var_block import VarBlock
-from semantic_kernel.template_engine_v2.blocks.val_block import ValBlock
+from pytest import mark, raises
+
+from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.memory.null_memory import NullMemory
+from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine_v2.blocks.code_block import CodeBlock
+from semantic_kernel.template_engine_v2.blocks.function_id_block import FunctionIdBlock
+from semantic_kernel.template_engine_v2.blocks.val_block import ValBlock
+from semantic_kernel.template_engine_v2.blocks.var_block import VarBlock
 
 
 class TestCodeBlock:

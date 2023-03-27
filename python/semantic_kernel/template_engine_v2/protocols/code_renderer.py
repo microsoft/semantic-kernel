@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Protocol, Coroutine
+from typing import Coroutine, Protocol
 
 from semantic_kernel.orchestration.sk_context import SKContext
 

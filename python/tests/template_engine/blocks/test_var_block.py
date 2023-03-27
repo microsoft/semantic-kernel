@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from pytest import raises
 from logging import Logger
 
-from semantic_kernel.template_engine_v2.blocks.var_block import VarBlock
+from pytest import raises
+
+from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine_v2.blocks.symbols import Symbols
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.template_engine_v2.blocks.var_block import VarBlock
 
 
 class TestVarBlock:
