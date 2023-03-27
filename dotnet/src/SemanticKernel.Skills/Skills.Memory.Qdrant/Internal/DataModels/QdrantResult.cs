@@ -13,19 +13,12 @@ public interface IQdrantResult
 
 internal class CollectionInfoResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo
-    {
-        get => this.ResponseInfo;
-        set => this.ResponseInfo = value;
-    }
+
+    public QdrantResponse? ResponseInfo { get; set; }
 
     [JsonPropertyName("result")]
-    public QdrantCollectionInfo? Result
-    {
-        get => this.Result;
-        set => this.Result = value;
-    }
-
+    public QdrantCollectionInfo? Result {get; set;}
+    
     public class QdrantCollectionInfo
     {
         public CollectionInfo? InfoResult { get; set; }
@@ -40,11 +33,7 @@ internal class CollectionInfoResult : IQdrantResult
 
 internal class CollectionExistsResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo
-    {
-        get => this.ResponseInfo;
-        set => this.ResponseInfo = value;
-    }
+    public QdrantResponse? ResponseInfo { get; set; }
 
     [JsonPropertyName("result")]
     internal bool DoesExist { get; set; }
@@ -52,11 +41,8 @@ internal class CollectionExistsResult : IQdrantResult
 
 internal class ListInfoResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo
-    {
-        get => this.ResponseInfo;
-        set => this.ResponseInfo = value;
-    }
+    public QdrantResponse? ResponseInfo { get; set;}
+
 
     [JsonPropertyName("result")]
     internal QdrantListInfo? Result
@@ -74,11 +60,8 @@ internal class ListInfoResult : IQdrantResult
 
 internal class CreateCollectionResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo
-    {
-        get => this.ResponseInfo;
-        set => this.ResponseInfo = value;
-    }
+
+    public QdrantResponse? ResponseInfo {get; set;}
 
     [JsonPropertyName("result")]
     internal bool IsCreated { get; set; }
@@ -86,11 +69,7 @@ internal class CreateCollectionResult : IQdrantResult
 
 internal class DeleteCollectionResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo
-    {
-        get => this.ResponseInfo;
-        set => this.ResponseInfo = value;
-    }
+    public QdrantResponse? ResponseInfo {get; set; }
 
     [JsonPropertyName("result")]
     internal bool IsDeleted { get; set; }
@@ -98,11 +77,8 @@ internal class DeleteCollectionResult : IQdrantResult
 
 internal class RetrievePointResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo
-    {
-        get => this.ResponseInfo;
-        set => this.ResponseInfo = value;
-    }
+
+    public QdrantResponse? ResponseInfo { get; set;}
 
     [JsonPropertyName("result")]
     internal Points? VectorPoint { get; set; }
@@ -110,11 +86,8 @@ internal class RetrievePointResult : IQdrantResult
 
 internal class RetrieveAllPointsResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo
-    {
-        get => this.ResponseInfo;
-        set => this.ResponseInfo = value;
-    }
+
+    public QdrantResponse? ResponseInfo { get; set; }
 
     [JsonPropertyName("result")]
     internal QdrantPointsInfo? Result { get; set; }
@@ -131,11 +104,7 @@ internal class RetrieveAllPointsResult : IQdrantResult
 
 internal class UpsertPointResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo
-    {
-        get => this.ResponseInfo;
-        set => this.ResponseInfo = value;
-    }
+    public QdrantResponse? ResponseInfo { get; set; }
 
     [JsonPropertyName("result")]
     internal QdrantUpsertInfo? Result { get; set; }
@@ -152,11 +121,7 @@ internal class UpsertPointResult : IQdrantResult
 
 internal class DeletePointResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo
-    {
-        get => this.ResponseInfo;
-        set => this.ResponseInfo = value;
-    }
+    public QdrantResponse? ResponseInfo { get; set; }
 
     [JsonPropertyName("result")]
     internal QdrantDeleteInfo? Result { get; set; }
