@@ -410,7 +410,6 @@ FodyWeavers.xsd
 *.key
 
 .env
-launchSettings.json
 appsettings.development.json
 testsettings.development.json
 config.development.yaml
