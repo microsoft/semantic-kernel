@@ -2,153 +2,81 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Data.Sqlite;
+using System.Text;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+using Microsoft.SemanticKernel.Memory.Collections;
 using Microsoft.SemanticKernel.Memory.Storage;
+using Microsoft.SemanticKernel.Memory;
+using SQLiteLibrary.Imported;
+using Microsoft.Data.Sqlite;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Sqlite;
-
-/// <summary>
-/// An implementation of <see cref="IDataStore{TValue}"/> backed by a SQLite database.
-/// </summary>
-/// <remarks>The data is saved to a database file, specified in the constructor.
-/// The data persists between subsequent instances. Only one instance may access the file at a time.
-/// The caller is responsible for deleting the file.</remarks>
-/// <typeparam name="TValue">The type of data to be stored in this data store.</typeparam>
-public class SqliteDataStore<TValue> : IDataStore<TValue>, IDisposable
+namespace SqliteMemory;
+public class SqliteMemoryStore<TEmbedding> : SqliteDataStore<IEmbeddingWithMetadata<TEmbedding>>, IMemoryStore<TEmbedding>
+    where TEmbedding : unmanaged
 {
-    /// <summary>
-    /// Connect a Sqlite database
-    /// </summary>
-    /// <param name="filename">Path to the database file. If file does not exist, it will be created.</param>
-    /// <param name="cancel">Cancellation token</param>
-    [SuppressMessage("Design", "CA1000:Do not declare static members on generic types",
-        Justification = "Static factory method used to ensure successful connection.")]
-    public static async Task<SqliteDataStore<TValue>> ConnectAsync(string filename,
-        CancellationToken cancel = default)
-    {
-        SqliteConnection dbConnection = await Database.CreateConnectionAsync(filename, cancel);
-        return new SqliteDataStore<TValue>(dbConnection);
-    }
+    public SqliteMemoryStore(SqliteConnection dbConnection)
+        : base(dbConnection)
+    { }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
+    public IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(
+        string collection,
+        Embedding<TEmbedding> embedding,
+        int limit = 1,
+        double minRelevanceScore = 0)
     {
-        return this._dbConnection.GetCollectionsAsync(cancel);
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<DataEntry<TValue>> GetAllAsync(string collection,
-        [EnumeratorCancellation] CancellationToken cancel = default)
-    {
-        await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collection, cancel))
+        if (limit <= 0)
         {
-            yield return DataEntry.Create<TValue>(dbEntry.Key, dbEntry.Value, ParseTimestamp(dbEntry.Timestamp));
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task<DataEntry<TValue>?> GetAsync(string collection, string key, CancellationToken cancel = default)
-    {
-        DatabaseEntry? entry = await this._dbConnection.ReadAsync(collection, key, cancel);
-        if (entry.HasValue)
-        {
-            DatabaseEntry dbEntry = entry.Value;
-            return DataEntry.Create<TValue>(dbEntry.Key, dbEntry.Value, ParseTimestamp(dbEntry.Timestamp));
+            return AsyncEnumerable.Empty<(IEmbeddingWithMetadata<TEmbedding>, double)>();
         }
 
-        return null;
-    }
+        string tableName = "";
+        IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> asyncEmbeddingCollection = this.TryGetCollectionAsync(collection, tableName);
+        IEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> embeddingCollection = (IEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>>)Task.FromResult(asyncEmbeddingCollection.ToListAsync());
 
-    /// <inheritdoc/>
-    public async Task<DataEntry<TValue>> PutAsync(string collection, DataEntry<TValue> data, CancellationToken cancel = default)
-    {
-        await this._dbConnection.InsertAsync(collection, data.Key, data.ValueString, ToTimestampString(data.Timestamp), cancel);
-        return data;
-    }
-
-    /// <inheritdoc/>
-    public Task RemoveAsync(string collection, string key, CancellationToken cancel = default)
-    {
-        return this._dbConnection.DeleteAsync(collection, key, cancel);
-    }
-
-    /// <summary>
-    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-    /// </summary>
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-
-    #region protected ================================================================================
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this._disposedValue)
+        if (!embeddingCollection.Any())
         {
-            if (disposing)
+            return AsyncEnumerable.Empty<(IEmbeddingWithMetadata<TEmbedding>, double)>();
+        }
+
+        EmbeddingReadOnlySpan<TEmbedding> embeddingSpan = new(embedding.AsReadOnlySpan());
+
+        TopNCollection<IEmbeddingWithMetadata<TEmbedding>> embeddings = new(limit);
+
+        foreach (var item in embeddingCollection)
+        {
+            if (item.Value != null)
             {
-                this._dbConnection.Dispose();
+                EmbeddingReadOnlySpan<TEmbedding> itemSpan = new(item.Value.Embedding.AsReadOnlySpan());
+                double similarity = embeddingSpan.CosineSimilarity(itemSpan);
+                if (similarity >= minRelevanceScore)
+                {
+                    embeddings.Add(new(item.Value, similarity));
+                }
             }
-
-            this._disposedValue = true;
         }
-    }
 
-    #endregion
+        embeddings.SortByScore();
+
+        return embeddings.Select(x => (x.Value, x.Score.Value)).ToAsyncEnumerable();
+    }
 
     #region private ================================================================================
 
-    private readonly SqliteConnection _dbConnection;
-    private bool _disposedValue;
-
     /// <summary>
-    /// Constructor
+    /// Calculates the cosine similarity between an <see cref="Embedding{TEmbedding}"/> and an <see cref="IEmbeddingWithMetadata{TEmbedding}"/>
     /// </summary>
-    /// <param name="dbConnection">DB connection</param>
-    private SqliteDataStore(SqliteConnection dbConnection)
+    /// <param name="embedding">The input <see cref="Embedding{TEmbedding}"/> to be compared.</param>
+    /// <param name="embeddingWithData">The input <see cref="IEmbeddingWithMetadata{TEmbedding}"/> to be compared.</param>
+    /// <returns>A tuple consisting of the <see cref="IEmbeddingWithMetadata{TEmbedding}"/> cosine similarity result.</returns>
+    private (IEmbeddingWithMetadata<TEmbedding>, double) PairEmbeddingWithSimilarity(Embedding<TEmbedding> embedding,
+        IEmbeddingWithMetadata<TEmbedding> embeddingWithData)
     {
-        this._dbConnection = dbConnection;
-    }
-
-    // TODO: never used
-    private static string? ValueToString(TValue? value)
-    {
-        if (value != null)
-        {
-            if (typeof(TValue) == typeof(string))
-            {
-                return value.ToString();
-            }
-
-            return JsonSerializer.Serialize(value);
-        }
-
-        return null;
-    }
-
-    private static string? ToTimestampString(DateTimeOffset? timestamp)
-    {
-        return timestamp?.ToString("u", CultureInfo.InvariantCulture);
-    }
-
-    private static DateTimeOffset? ParseTimestamp(string? str)
-    {
-        if (!string.IsNullOrEmpty(str)
-            && DateTimeOffset.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset timestamp))
-        {
-            return timestamp;
-        }
-
-        return null;
+        var similarity = embedding.Vector.ToArray().CosineSimilarity(embeddingWithData.Embedding.Vector.ToArray());
+        return (embeddingWithData, similarity);
     }
 
     #endregion

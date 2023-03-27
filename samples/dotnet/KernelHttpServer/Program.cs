@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel.Memory;
+using SqliteMemory;
+using Microsoft.Data.Sqlite;
 
 namespace KernelHttpServer;
 
@@ -22,9 +24,15 @@ public static class Program
 
                 var builtConfig = config.Build();
             })
-            .ConfigureServices(services =>
+            .ConfigureServices(async services =>
             {
-                services.AddSingleton<IMemoryStore<float>>(new VolatileMemoryStore());
+                //services.AddSingleton<IMemoryStore<float>>(new VolatileMemoryStore());
+
+                string databaseFile = "D:\\SQLiteDataBases\\SKDataBase";
+                SqliteConnection dbConnection = new SqliteConnection(@"Data Source={databaseFile};");
+                await dbConnection.OpenAsync(); // TODO: close connection when done (not sure where that code would reside)
+
+                services.AddSingleton<IMemoryStore<float>>(new SqliteMemoryStore<float>(dbConnection));
 
                 // return JSON with expected lowercase naming
                 services.Configure<JsonSerializerOptions>(options =>
