@@ -13,7 +13,4 @@ internal class CollectionData
     public QdrantResponse CollectionResponse { get; set; } = default!;
 
     public CollectionInfo CollectionInfo { get; set; } = default!;
-
-
 }
-

@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 /// connect, create, delete, and get embeddings data from a Qdrant VectorDB instance.
 /// </summary>
 public class QdrantVectorDbClient<TEmbedding>
-where TEmbedding : unmanaged
+    where TEmbedding : unmanaged
 {
     public string BaseAddress
     {
@@ -41,7 +41,7 @@ where TEmbedding : unmanaged
     public int VectorSize
     {
         get { return this._vectorSize > 0 ? this._vectorSize : this._defaultVectorSize; }
-        set { this._vectorSize = value ! > 0 ? value : this._defaultVectorSize; }
+        set { this._vectorSize = value! > 0 ? value : this._defaultVectorSize; }
     }
 
     public QdrantDistanceType DistanceType
@@ -65,35 +65,36 @@ where TEmbedding : unmanaged
         {
             this.Port = port.Value;
         }
-
-
     }
 
-    public async Task<bool> IsExistingCollection(string collectionName )
+    public async Task<bool> IsExistingCollectionAsync(string collectionName)
     {
         CollectionInfo? existingCollection = null;
         bool doesExist = false;
 
         existingCollection = await this.GetCollectionInfoAsync(collectionName);
 
-        if (existingCollection != null) doesExist = true;
-        
+        if (existingCollection != null)
+        {
+            doesExist = true;
+        }
+
         return doesExist;
     }
-    
+
     public async Task<CollectionInfo> GetCollectionInfoAsync(string collectionName)
     {
         IQdrantResult? qdrantResult = null;
         CollectionInfo? collectionInfo = null;
-        
-        CollectionHandler getCollectionInfoHandler = 
-            CollectionHandler.Init(this.VectorSize, this.DistanceType )
+
+        CollectionHandler getCollectionInfoHandler =
+            CollectionHandler.Init(this.VectorSize, this.DistanceType)
                 .Client(this._httpClient)
                 .Build();
 
         try
         {
-            qdrantResult = await getCollectionInfoHandler.ExecuteRequest(CollectionHandler.CollectionHandlerType.GetInfo, collectionName);
+            qdrantResult = await getCollectionInfoHandler.ExecuteRequestAsync(CollectionHandler.CollectionHandlerType.GetInfo, collectionName);
             collectionInfo = ((CollectionInfoResult)qdrantResult).Result!.InfoResult!;
         }
         catch (Exception e)
@@ -103,48 +104,47 @@ where TEmbedding : unmanaged
         }
 
         return collectionInfo!;
-        
     }
 
     public async Task CreateNewCollectionAsync(string collectionName)
     {
         IQdrantResult? qdrantResult = null;
-        
-        CollectionHandler createCollectionHandler = 
-            CollectionHandler.Init(this.VectorSize, this.DistanceType )
+
+        CollectionHandler createCollectionHandler =
+            CollectionHandler.Init(this.VectorSize, this.DistanceType)
                 .Client(this._httpClient)
                 .Build();
 
         try
         {
-            qdrantResult = await createCollectionHandler.ExecuteRequest(CollectionHandler.CollectionHandlerType.Create, collectionName);
+            qdrantResult = await createCollectionHandler.ExecuteRequestAsync(CollectionHandler.CollectionHandlerType.Create, collectionName);
         }
         catch (Exception e)
         {
             this._log.LogError(e, "Create Collection failed: {0}", e.Message);
             qdrantResult = new CreateCollectionResult();
-            ((CreateCollectionResult)qdrantResult).IsCreated = false; 
+            ((CreateCollectionResult)qdrantResult).IsCreated = false;
         }
     }
 
     public async Task DeleteCollectionAsync(string collectionName)
     {
         IQdrantResult? qdrantResult = null;
-        
-        CollectionHandler deleteCollectionHandler = 
-            CollectionHandler.Init(this.VectorSize, this.DistanceType )
+
+        CollectionHandler deleteCollectionHandler =
+            CollectionHandler.Init(this.VectorSize, this.DistanceType)
                 .Client(this._httpClient)
                 .Build();
 
         try
         {
-            qdrantResult = await deleteCollectionHandler.ExecuteRequest(CollectionHandler.CollectionHandlerType.Delete, collectionName);
+            qdrantResult = await deleteCollectionHandler.ExecuteRequestAsync(CollectionHandler.CollectionHandlerType.Delete, collectionName);
         }
         catch (Exception e)
         {
             this._log.LogError(e, "Delete Collection failed: {0}", e.Message);
             qdrantResult = new DeleteCollectionResult();
-            ((DeleteCollectionResult)qdrantResult).IsDeleted = false; 
+            ((DeleteCollectionResult)qdrantResult).IsDeleted = false;
         }
     }
 
@@ -298,8 +298,6 @@ where TEmbedding : unmanaged
             yield return kv;
         }
     }
-   
-    
 
     #region private ================================================================================
 

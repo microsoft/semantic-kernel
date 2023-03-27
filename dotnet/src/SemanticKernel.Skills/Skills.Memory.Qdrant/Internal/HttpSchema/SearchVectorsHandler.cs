@@ -19,9 +19,10 @@ internal class SearchVectorsHandler : IValidatable
     }
 
     public void Validate()
-    { }
+    {
+    }
 
     #region private ================================================================================
-    #endregion
 
+    #endregion
 }

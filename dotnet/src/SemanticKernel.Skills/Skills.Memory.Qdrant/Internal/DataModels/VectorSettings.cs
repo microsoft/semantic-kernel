@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
+
 internal class VectorSettings : IValidatable
 {
     [JsonPropertyName("size")]
@@ -28,5 +29,4 @@ internal class VectorSettings : IValidatable
             this.DistanceType is QdrantDistanceType.Cosine or QdrantDistanceType.DotProduct or QdrantDistanceType.Euclidean or QdrantDistanceType.Manhattan,
             $"Distance type {this.DistanceType:G} not supported.");
     }
-
 }

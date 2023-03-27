@@ -24,7 +24,4 @@ public class CollectionInfo
 
     [JsonPropertyName("segments_count")]
     internal int SegmentsCount { get; set; }
-
 }
-
-

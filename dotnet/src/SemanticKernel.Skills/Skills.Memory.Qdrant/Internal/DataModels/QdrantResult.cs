@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -13,6 +13,7 @@ public interface IQdrantResult
 
 internal class CollectionInfoResult : IQdrantResult
 {
+
     public QdrantResponse? ResponseInfo { get; set; }
 
     [JsonPropertyName("result")]
@@ -28,7 +29,6 @@ internal class CollectionInfoResult : IQdrantResult
         [JsonPropertyName("payload_schema")]
         public PayloadInfo? PayloadProperty { get; set; }
     }
-
 }
 
 internal class CollectionExistsResult : IQdrantResult
@@ -43,13 +43,14 @@ internal class ListInfoResult : IQdrantResult
 {
     public QdrantResponse? ResponseInfo { get; set;}
 
+
     [JsonPropertyName("result")]
-    internal QdrantListInfo? Result 
-    { 
+    internal QdrantListInfo? Result
+    {
         get => this.Result;
-        set => this.Result = value; 
+        set => this.Result = value;
     }
-      
+
     internal class QdrantListInfo
     {
         [JsonPropertyName("collections")]
@@ -59,6 +60,7 @@ internal class ListInfoResult : IQdrantResult
 
 internal class CreateCollectionResult : IQdrantResult
 {
+
     public QdrantResponse? ResponseInfo {get; set;}
 
     [JsonPropertyName("result")]
@@ -75,15 +77,16 @@ internal class DeleteCollectionResult : IQdrantResult
 
 internal class RetrievePointResult : IQdrantResult
 {
+
     public QdrantResponse? ResponseInfo { get; set;}
 
     [JsonPropertyName("result")]
     internal Points? VectorPoint { get; set; }
-    
 }
 
 internal class RetrieveAllPointsResult : IQdrantResult
 {
+
     public QdrantResponse? ResponseInfo { get; set; }
 
     [JsonPropertyName("result")]
@@ -114,7 +117,6 @@ internal class UpsertPointResult : IQdrantResult
         [JsonPropertyName("status")]
         internal string? UpdateStatus { get; set; }
     }
-
 }
 
 internal class DeletePointResult : IQdrantResult
@@ -132,5 +134,4 @@ internal class DeletePointResult : IQdrantResult
         [JsonPropertyName("status")]
         internal string? DeleteStatus { get; set; }
     }
-
 }
