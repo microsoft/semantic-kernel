@@ -63,10 +63,10 @@ internal class FunctionFlowRunner
     /// <returns>The resulting plan xml after executing a step in the plan.</returns>
     /// <context>
     /// Brief overview of how it works:
-    /// 1. The plan xml is parsed into an XmlDocument.
+    /// 1. The Solution xml is parsed into an XmlDocument.
     /// 2. The Goal node is extracted from the plan xml.
-    /// 3. The Solution node is extracted from the plan xml.
-    /// 4. The first function node in the Solution node is processed.
+    /// 3. The Plan node is extracted from the plan xml.
+    /// 4. The first function node in the plan node is processed.
     /// 5. The resulting plan xml is returned.
     /// </context>
     /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
@@ -74,10 +74,10 @@ internal class FunctionFlowRunner
     {
         try
         {
-            XmlDocument xmlDoc = new();
+            XmlDocument solutionXml = new();
             try
             {
-                xmlDoc.LoadXml("<xml>" + planPayload + "</xml>");
+                solutionXml.LoadXml("<xml>" + planPayload + "</xml>");
             }
             catch (XmlException e)
             {
@@ -85,14 +85,14 @@ internal class FunctionFlowRunner
             }
 
             // Get the Goal
-            var (goalTxt, goalXmlString) = GatherGoal(xmlDoc);
+            var (goalTxt, goalXmlString) = GatherGoal(solutionXml);
 
             // Get the Solution
-            XmlNodeList solution = xmlDoc.GetElementsByTagName(PlanTag);
+            XmlNodeList planNodes = solutionXml.GetElementsByTagName(PlanTag);
 
             // Prepare content for the new plan xml
-            var solutionContent = new StringBuilder();
-            _ = solutionContent.AppendLine($"<{PlanTag}>");
+            var planContent = new StringBuilder();
+            _ = planContent.AppendLine($"<{PlanTag}>");
 
             // Use goal as default function {{INPUT}} -- check and see if it's a plan in Input, if so, use goalTxt, otherwise, use the input.
             if (!context.Variables.Get("PLAN__INPUT", out var planInput))
@@ -117,12 +117,12 @@ internal class FunctionFlowRunner
             context.Log.LogDebug("Processing solution");
 
             // Process the solution nodes
-            string stepResults = await this.ProcessNodeListAsync(solution, functionInput, context);
+            string stepResults = await this.ProcessNodeListAsync(planNodes, functionInput, context);
             // Add the solution and variable updates to the new plan xml
-            _ = solutionContent.Append(stepResults)
+            _ = planContent.Append(stepResults)
                 .AppendLine($"</{PlanTag}>");
             // Update the plan xml
-            var updatedPlan = goalXmlString + solutionContent.Replace("\r\n", "\n");
+            var updatedPlan = goalXmlString + planContent.Replace("\r\n", "\n");
             updatedPlan = updatedPlan.Trim();
 
             context.Variables.Set(Plan.PlanKey, updatedPlan);
