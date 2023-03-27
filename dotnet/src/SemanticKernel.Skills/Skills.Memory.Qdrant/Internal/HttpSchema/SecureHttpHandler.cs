@@ -2,7 +2,7 @@
 
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.SDKClient.Internal.Http;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
 
 internal class HttpHandlers
 {

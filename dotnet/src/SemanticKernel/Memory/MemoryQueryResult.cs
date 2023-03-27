@@ -71,11 +71,11 @@ public class MemoryQueryResult
         double relevance)
     {
         return new MemoryQueryResult(
-            isReference: rec.IsReference,
-            sourceName: rec.ExternalSourceName,
-            id: rec.Id,
-            description: rec.Description,
-            text: rec.Text,
+            isReference: rec.Metadata.IsReference,
+            sourceName: rec.Metadata.ExternalSourceName,
+            id: rec.Metadata.Id,
+            description: rec.Metadata.Description,
+            text: rec.Metadata.Text,
             relevance);
     }
 }
