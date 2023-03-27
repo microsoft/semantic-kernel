@@ -2,12 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -52,7 +49,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         target.Config.SetDefaultCompletionBackend(openAIConfiguration.Label);
 
-        IDictionary<string, ISKFunction> skill = GetSkill("ChatSkill", target);
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
 
         // Act
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -81,7 +78,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         target.Config.SetDefaultCompletionBackend(azureOpenAIConfiguration.Label);
 
-        IDictionary<string, ISKFunction> skill = GetSkill("ChatSkill", target);
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
 
         // Act
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -111,27 +108,13 @@ public sealed class OpenAICompletionTests : IDisposable
             modelId: openAIConfiguration.ModelId,
             apiKey: "INVALID_KEY");
 
-        IDictionary<string, ISKFunction> skill = GetSkill("SummarizeSkill", target);
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
 
         // Act
         await target.RunAsync(prompt, skill["Summarize"]);
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.InvariantCultureIgnoreCase);
-    }
-
-    private static IDictionary<string, ISKFunction> GetSkill(string skillName, IKernel target)
-    {
-        string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
-        {
-            throw new InvalidOperationException("Unable to determine current assembly directory.");
-        }
-
-        string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/skills"));
-
-        IDictionary<string, ISKFunction> skill = target.ImportSemanticSkillFromDirectory(skillParentDirectory, skillName);
-        return skill;
     }
 
     #region internals

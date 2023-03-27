@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
 using RepoUtils;
@@ -21,6 +22,7 @@ internal static class Example12_Planning
         await PoetrySamplesAsync();
         await EmailSamplesAsync();
         await BookSamplesAsync();
+        await MemorySampleAsync();
     }
 
     private static async Task PoetrySamplesAsync()
@@ -118,6 +120,60 @@ internal static class Example12_Planning
         Stopwatch sw = new();
         sw.Start();
         await ExecutePlanAsync(kernel, planner, originalPlan);
+    }
+
+    private static async Task MemorySampleAsync()
+    {
+        Console.WriteLine("======== Planning - Create and Execute Plan using Memory ========");
+
+        var kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .Configure(
+                config =>
+                {
+                    config.AddAzureOpenAICompletionBackend(
+                        Env.Var("AZURE_OPENAI_DEPLOYMENT_LABEL"),
+                        Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
+                        Env.Var("AZURE_OPENAI_ENDPOINT"),
+                        Env.Var("AZURE_OPENAI_KEY"));
+
+                    config.AddAzureOpenAIEmbeddingsBackend(
+                        Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_LABEL"),
+                        Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
+                        Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
+                        Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"));
+                })
+            .WithMemoryStorage(new VolatileMemoryStore())
+            .Build();
+
+        // Load native skill into the kernel skill collection, sharing its functions with prompt templates
+        var planner = kernel.ImportSkill(new PlannerSkill(kernel), "planning");
+
+        string folder = RepoFiles.SampleSkillsPath();
+        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "CalendarSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "ChatSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "ChildrensBookSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "ClassificationSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "CodingSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "IntentDetectionSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "MiscSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "QASkill");
+
+        kernel.ImportSkill(new EmailSkill(), "email");
+        kernel.ImportSkill(new StaticTextSkill(), "statictext");
+        kernel.ImportSkill(new Skills.TextSkill(), "text");
+        kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "coretext");
+
+        var context = new ContextVariables("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
+        context.Set(PlannerSkill.Parameters.RelevancyThreshold, "0.78");
+
+        var executionResults = await kernel.RunAsync(context, planner["CreatePlan"]);
+
+        Console.WriteLine("Original plan:");
+        Console.WriteLine(executionResults.Variables.ToPlan().PlanString);
     }
 
     private static IKernel InitializeKernelAndPlanner(out IDictionary<string, ISKFunction> planner)

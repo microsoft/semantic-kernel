@@ -56,7 +56,7 @@ For example:
       export OpenAI__ApiKey="sk-...."
       export AzureOpenAI__ApiKey="...."
       export AzureOpenAI__DeploymentName="azure-text-davinci-003"
-      export AzureOpenAIEmbedding__DeploymentName="azure-text-embedding-ada-002"
+      export AzureOpenAIEmbeddings__DeploymentName="azure-text-embedding-ada-002"
       export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
       export Bing__ApiKey="...."
       ```
@@ -67,7 +67,7 @@ For example:
       $env:OpenAI__ApiKey = "sk-...."
       $env:AzureOpenAI__ApiKey = "...."
       $env:AzureOpenAI__DeploymentName = "azure-text-davinci-003"
-      $env:AzureOpenAIEmbedding__DeploymentName = "azure-text-embedding-ada-002"
+      $env:AzureOpenAIEmbeddings__DeploymentName = "azure-text-embedding-ada-002"
       $env:AzureOpenAI__Endpoint = "https://contoso.openai.azure.com/"
       $env:Bing__ApiKey = "...."
       ```
