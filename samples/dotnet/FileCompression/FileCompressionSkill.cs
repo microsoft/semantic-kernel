@@ -11,23 +11,20 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Skills.FileCompression;
 
-//**********************************************************************************************************************
-// EXAMPLE USAGE
-//
-// ISemanticKernel kernel = SemanticKernel.Build();
-// var zipCompressor = new ZipFileCompressor();
-// var skill = new FileCompressionSkill(zipCompressor);
-// var fileCompression = kernel.ImportSkill(skill, "FileCompression");
-// string sourceFilePath = "FileToCompress.txt";
-// string destinationFilePath = "CompressedFile.zip";
-// var variables = new ContextVariables(sourceFilePath);
-// variables.Set(FileCompressionSkill.Parameters.DestinationFilePath, destinationFilePath);
-// await kernel.RunAsync(variables, fileCompression["CompressFileAsync"]);
-//**********************************************************************************************************************
-
 /// <summary>
 /// Skill for compressing and decompressing files.
 /// </summary>
+/// <example>
+/// ISemanticKernel kernel = SemanticKernel.Build();
+/// var zipCompressor = new ZipFileCompressor();
+/// var skill = new FileCompressionSkill(zipCompressor);
+/// var fileCompression = kernel.ImportSkill(skill, "FileCompression");
+/// string sourceFilePath = "FileToCompress.txt";
+/// string destinationFilePath = "CompressedFile.zip";
+/// var variables = new ContextVariables(sourceFilePath);
+/// variables.Set(FileCompressionSkill.Parameters.DestinationFilePath, destinationFilePath);
+/// await kernel.RunAsync(variables, fileCompression["CompressFileAsync"]);
+/// </example>
 public class FileCompressionSkill
 {
     /// <summary>
@@ -46,9 +43,6 @@ public class FileCompressionSkill
         /// </summary>
         public const string DestinationFilePath = "destinationFilePath";
     }
-
-    private readonly IFileCompressor _fileCompressor;
-    private readonly ILogger<FileCompressionSkill> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileCompressionSkill"/> class.
@@ -71,7 +65,7 @@ public class FileCompressionSkill
     [SKFunction("Compresses an input file to an output file")]
     [SKFunctionInput(Description = "Path of file to compress")]
     [SKFunctionContextParameter(Name = Parameters.DestinationFilePath, Description = "Path of compressed file to create")]
-    public async Task<string> CompressFileAsync(string sourceFilePath, SKContext context)
+    public async Task<string?> CompressFileAsync(string sourceFilePath, SKContext context)
     {
         this._logger.LogTrace($"{nameof(CompressFileAsync)} got called");
 
@@ -81,7 +75,7 @@ public class FileCompressionSkill
             this._logger.LogError(errorMessage);
             context.Fail(errorMessage);
 
-            throw new KeyNotFoundException(errorMessage);
+            return null;
         }
 
         await this._fileCompressor.CompressFileAsync(Environment.ExpandEnvironmentVariables(sourceFilePath),
@@ -101,7 +95,7 @@ public class FileCompressionSkill
     [SKFunction("Compresses a directory to an output file")]
     [SKFunctionInput(Description = "Path of directory to compress")]
     [SKFunctionContextParameter(Name = Parameters.DestinationFilePath, Description = "Path of compressed file to create")]
-    public async Task<string> CompressDirectoryAsync(string sourceDirectoryPath, SKContext context)
+    public async Task<string?> CompressDirectoryAsync(string sourceDirectoryPath, SKContext context)
     {
         this._logger.LogTrace($"{nameof(CompressDirectoryAsync)} got called");
 
@@ -111,7 +105,7 @@ public class FileCompressionSkill
             this._logger.LogError(errorMessage);
             context.Fail(errorMessage);
 
-            throw new KeyNotFoundException(errorMessage);
+            return null;
         }
 
         await this._fileCompressor.CompressDirectoryAsync(Environment.ExpandEnvironmentVariables(sourceDirectoryPath),
@@ -131,7 +125,7 @@ public class FileCompressionSkill
     [SKFunction("Decompresses an input file")]
     [SKFunctionInput(Description = "Path of directory into which decompressed content was extracted")]
     [SKFunctionContextParameter(Name = Parameters.DestinationDirectoryPath, Description = "Directory into which to extract the decompressed content")]
-    public async Task<string> DecompressFileAsync(string sourceFilePath, SKContext context)
+    public async Task<string?> DecompressFileAsync(string sourceFilePath, SKContext context)
     {
         this._logger.LogTrace($"{nameof(DecompressFileAsync)} got called");
 
@@ -141,7 +135,7 @@ public class FileCompressionSkill
             this._logger.LogError(errorMessage);
             context.Fail(errorMessage);
 
-            throw new KeyNotFoundException(errorMessage);
+            return null;
         }
 
         if (!Directory.Exists(destinationDirectoryPath))
@@ -155,4 +149,7 @@ public class FileCompressionSkill
 
         return destinationDirectoryPath;
     }
+
+    private readonly IFileCompressor _fileCompressor;
+    private readonly ILogger<FileCompressionSkill> _logger;
 }

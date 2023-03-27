@@ -64,7 +64,7 @@ public class WebFileDownloadSkill : IDisposable
             string errorMessage = $"Missing variable {Parameters.FilePath}";
             context.Fail(errorMessage);
 
-            throw new KeyNotFoundException(errorMessage);
+            return;
         }
 
         this._logger.LogDebug("Sending GET request for {0}", source);
