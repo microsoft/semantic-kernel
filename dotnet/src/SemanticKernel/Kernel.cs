@@ -32,7 +32,7 @@ namespace Microsoft.SemanticKernel;
 /// * RPC functions and secure environments, e.g. sandboxing and credentials management
 /// * auto-generate pipelines given a higher level goal
 /// </summary>
-public sealed class Kernel : IKernel, IDisposable
+public sealed class Kernel : IKernel
 {
     /// <inheritdoc/>
     public KernelConfig Config => this._config;

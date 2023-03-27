@@ -186,6 +186,9 @@ public sealed class Program
         await sk.RunAsync(followUpTaskMemory, todo["AddTaskAsync"]);
 
         logger.LogInformation("Done!");
+
+        //Dispose Kernel instance
+        sk.Dispose();
     }
 
     /// <summary>

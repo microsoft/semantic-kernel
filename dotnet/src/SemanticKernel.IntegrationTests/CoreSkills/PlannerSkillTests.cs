@@ -43,7 +43,7 @@ public sealed class PlannerSkillTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        IKernel target = Kernel.Builder
+        using IKernel target = Kernel.Builder
             .WithLogger(this._logger)
             .Configure(config =>
             {

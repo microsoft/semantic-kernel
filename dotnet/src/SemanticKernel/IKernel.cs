@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Interface for the semantic kernel.
 /// </summary>
-public interface IKernel
+public interface IKernel : IDisposable
 {
     /// <summary>
     /// Settings required to execute functions, including details about AI dependencies, e.g. endpoints and API keys.
