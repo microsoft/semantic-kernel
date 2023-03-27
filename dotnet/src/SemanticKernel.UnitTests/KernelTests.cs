@@ -21,7 +21,7 @@ public class KernelTests
     public void ItProvidesAccessToFunctionsViaSkillCollection()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         kernel.Config.AddOpenAICompletionBackend("x", "y", "z");
 
         var nativeSkill = new MySkill();
@@ -48,7 +48,7 @@ public class KernelTests
     public async Task ItProvidesAccessToFunctionsViaSKContextAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         kernel.Config.AddOpenAICompletionBackend("x", "y", "z");
 
         var nativeSkill = new MySkill();
@@ -71,7 +71,7 @@ public class KernelTests
     public async Task RunAsyncDoesNotRunWhenCancelledAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         var nativeSkill = new MySkill();
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
@@ -91,7 +91,7 @@ public class KernelTests
     public async Task RunAsyncRunsWhenNotCancelledAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         var nativeSkill = new MySkill();
         kernel.ImportSkill(nativeSkill, "mySk");
 
@@ -123,7 +123,7 @@ public class KernelTests
     public void ItAllowsToImportSkillsInTheGlobalNamespace()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
 
         // Act
         IDictionary<string, ISKFunction> skill = kernel.ImportSkill(new MySkill());
@@ -137,7 +137,7 @@ public class KernelTests
     public void ItFailsIfCompletionBackendConfigIsNotSet()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
 
         var exception = Assert.Throws<KernelException>(() => kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun"));
     }

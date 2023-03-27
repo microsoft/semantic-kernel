@@ -27,7 +27,7 @@ public class FileIOSkillTests
     public void ItCanBeImported()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
 
         // Act - Assert no exception occurs e.g. due to reflection
         _ = kernel.ImportSkill(new FileIOSkill(), "fileIO");

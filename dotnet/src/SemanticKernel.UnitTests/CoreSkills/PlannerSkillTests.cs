@@ -38,7 +38,7 @@ Solve the equation x^2 = 2.
     public void ItCanBeInstantiated()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
 
         // Act - Assert no exception occurs
@@ -49,7 +49,7 @@ Solve the equation x^2 = 2.
     public void ItCanBeImported()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
 
         // Act - Assert no exception occurs e.g. due to reflection
@@ -60,7 +60,7 @@ Solve the equation x^2 = 2.
     public async Task ItCanCreatePlanAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = new PlannerSkill(kernel);
         var planner = kernel.ImportSkill(plannerSkill, "planner");
@@ -80,7 +80,7 @@ Solve the equation x^2 = 2.
     public async Task ItCanExecutePlanTextAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
@@ -101,7 +101,7 @@ Solve the equation x^2 = 2.
     public async Task ItCanExecutePlanAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         Plan createdPlan = new()
@@ -126,7 +126,7 @@ Solve the equation x^2 = 2.
     public async Task ItCanCreateSkillPlanAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
@@ -145,7 +145,7 @@ Solve the equation x^2 = 2.
     public async Task ItCanExecutePlanJsonAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         Plan createdPlan = new()
@@ -168,7 +168,7 @@ Solve the equation x^2 = 2.
     public async Task NoGoalExecutePlanReturnsInvalidResultAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
@@ -190,7 +190,7 @@ Solve the equation x^2 = 2.
     public async Task InvalidPlanExecutePlanReturnsInvalidResultAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
@@ -219,7 +219,7 @@ Solve the equation x^2 = 2.
     public async Task ExecutePlanCanCallFunctionAsync(string goalText, string planText)
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -252,7 +252,7 @@ This is some text
     public async Task ExecutePlanCanCallFunctionWithTextAsync(string goalText, string planText)
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -287,7 +287,7 @@ This is some text
     public async Task ExecutePlanCanCallFunctionWithVariablesAsync(string goalText, string planText)
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -326,7 +326,7 @@ This is some text
     public async Task ExecutePlanCanCallFunctionWithVariablesAndResultAsync(string goalText, string planText)
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -368,7 +368,7 @@ This is some text
     public async Task ExecutePlanCanCallFunctionWithChainedVariablesAsync(string goalText, string planText)
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -406,7 +406,7 @@ This is some text
     public async Task ExecutePlanCanSkipTagsAsync(string goalText, string planText)
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -439,7 +439,7 @@ This is some text
     public async Task ExecutePlanCanSkipOutputAsync(string goalText, string planText)
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        using var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
