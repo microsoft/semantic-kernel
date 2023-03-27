@@ -38,7 +38,7 @@ public class ChatHistory
     /// <summary>
     /// List of messages in the chat
     /// </summary>
-    public List<Message> Messages { get; set; }
+    public List<Message> Messages { get; }
 
     /// <summary>
     /// Create a new instance of the chat content class
