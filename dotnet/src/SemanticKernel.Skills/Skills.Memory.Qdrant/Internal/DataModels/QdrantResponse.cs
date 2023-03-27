@@ -20,11 +20,5 @@ internal abstract class QdrantResponse
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? Time { get; set; }
 
-    /* /// <summary>
-    /// Response result
-    /// </summary>
-    [JsonPropertyName(name: "result")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? Result { get; set; } */
 }
 

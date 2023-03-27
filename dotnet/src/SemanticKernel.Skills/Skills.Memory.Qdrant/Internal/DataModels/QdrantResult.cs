@@ -92,3 +92,81 @@ internal class DeleteCollectionResult : IQdrantResult
     [JsonPropertyName("result")]
     internal bool IsDeleted { get; set; }
 }
+
+internal class RetrievePointResult : IQdrantResult
+{
+    public QdrantResponse? ResponseInfo 
+    { 
+        get => this.ResponseInfo; 
+        set => this.ResponseInfo = value; 
+    }
+
+    [JsonPropertyName("result")]
+    internal Points? VectorPoint { get; set; }
+    
+}
+
+internal class RetrieveAllPointsResult : IQdrantResult
+{
+    public QdrantResponse? ResponseInfo 
+    { 
+        get => this.ResponseInfo; 
+        set => this.ResponseInfo = value; 
+    }
+
+    [JsonPropertyName("result")]
+    internal QdrantPointsInfo? Result { get; set; }
+
+    internal class QdrantPointsInfo
+    {
+        [JsonPropertyName("points")]
+        internal Points[]? PointCollection { get; set; }
+
+        [JsonPropertyName("next_page_offset")]
+        internal int? NextPageOffset { get; set; }
+    }
+}
+
+internal class UpsertPointResult : IQdrantResult
+{
+    public QdrantResponse? ResponseInfo 
+    { 
+        get => this.ResponseInfo; 
+        set => this.ResponseInfo = value; 
+    }
+
+    [JsonPropertyName("result")]
+    internal QdrantUpsertInfo? Result { get; set; }
+
+    internal class QdrantUpsertInfo
+    {
+        [JsonPropertyName("operation_id")]
+        internal int? OperationId { get; set; }
+
+        [JsonPropertyName("status")]
+        internal string? UpdateStatus { get; set; }
+    }
+
+}
+
+internal class DeletePointResult : IQdrantResult
+{
+    public QdrantResponse? ResponseInfo 
+    { 
+        get => this.ResponseInfo; 
+        set => this.ResponseInfo = value; 
+    }
+
+    [JsonPropertyName("result")]
+    internal QdrantDeleteInfo? Result { get; set; }
+
+    internal class QdrantDeleteInfo
+    {
+        [JsonPropertyName("operation_id")]
+        internal int? OperationId { get; set; }
+
+        [JsonPropertyName("status")]
+        internal string? DeleteStatus { get; set; }
+    }
+
+}
