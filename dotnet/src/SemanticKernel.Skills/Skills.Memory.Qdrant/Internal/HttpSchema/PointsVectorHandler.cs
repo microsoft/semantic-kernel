@@ -32,13 +32,13 @@ public class PointsVectorHandler : IValidatable
         Verify.NotNullOrEmpty(this._collectionName, "The collection name is empty");
     }
 
-    internal async Task<IQdrantResult> ExecuteRequest(PointVectorHandlerType requestType, string collectionName, int? pointId = null, string? pointjsondata = null)
+    internal async Task<IQdrantResult> ExecuteRequestAsync(PointVectorHandlerType requestType, string collectionName, int? pointId = null,
+        string? pointjsondata = null)
     {
         IQdrantResult? qdrantResult = null;
 
         qdrantResult = requestType switch
         {
-            
             PointVectorHandlerType.GetVectorPoint =>
                 await this.RetrieveVectorPointAsync(collectionName, pointId),
             PointVectorHandlerType.Upsert =>
@@ -48,28 +48,27 @@ public class PointsVectorHandler : IValidatable
             PointVectorHandlerType.Delete =>
                 await this.DeletePointFromCollectionAsync(collectionName!, pointId),
             _ => throw new ArgumentOutOfRangeException(nameof(requestType), requestType, "The request type is not invalid")
-                
         };
 
         return qdrantResult!;
     }
 
-    internal async Task<IQdrantResult> RetrieveVectorPointAsync(string collectionName, int? pointId )
+    internal async Task<IQdrantResult> RetrieveVectorPointAsync(string collectionName, int? pointId)
     {
         IQdrantResult? retrieveVectorPointResult = null;
-        
+
         string qdrantRetrievePointUrl = QdrantApiUrlConstants.RetrievePointUrl(collectionName, pointId.ToString()!);
 
         Verify.NotNullOrEmpty(collectionName, "The collection name must be defined");
         Verify.NotNull(pointId, "The point id must be defined");
 
-        try 
+        try
         {
             retrieveVectorPointResult = await HttpRequest.SendHttpFromJsonAsync<RetrievePointResult, IQdrantResult>(
-                        this._client!,
-                        HttpMethod.Get,
-                        qdrantRetrievePointUrl,
-                        null, null);
+                this._client!,
+                HttpMethod.Get,
+                qdrantRetrievePointUrl,
+                null, null);
         }
         catch
         {
@@ -78,7 +77,6 @@ public class PointsVectorHandler : IValidatable
         }
 
         return retrieveVectorPointResult!;
-
     }
 
     internal async Task<IQdrantResult> UpsertPointToCollectionAsync(string collectionName, string vectorData)
@@ -91,27 +89,26 @@ public class PointsVectorHandler : IValidatable
         Points? pointData = JsonSerializer.Deserialize<Points>(vectorData);
         PointUpsertParams? pointParams = new PointUpsertParams
         {
-            PointData = new List<Points>{pointData!}
+            PointData = new List<Points> { pointData! }
         };
 
         string qdrantUpsertPointUrl = QdrantApiUrlConstants.UpsertPointsUrl(collectionName);
-       
+
         try
         {
             upsertPointsToCollectionResult = await HttpRequest.SendHttpFromJsonAsync<UpsertPointResult, PointUpsertParams>(
-                        this._client!,
-                        HttpMethod.Put,
-                        qdrantUpsertPointUrl,
-                        pointParams, null);
+                this._client!,
+                HttpMethod.Put,
+                qdrantUpsertPointUrl,
+                pointParams, null);
         }
         catch
         {
             upsertPointsToCollectionResult = new UpsertPointResult();
             upsertPointsToCollectionResult.ResponseInfo = null;
         }
-        
-        return upsertPointsToCollectionResult!;
 
+        return upsertPointsToCollectionResult!;
     }
 
     internal async Task<IQdrantResult> GetPointsForCollectionAsync(string collectionName)
@@ -121,21 +118,21 @@ public class PointsVectorHandler : IValidatable
         {
             WithPayload = true,
             WithVector = true,
-            Limit=0,
-            Offset=0,
+            Limit = 0,
+            Offset = 0,
         };
 
         string qdrantGetAllPointsUrl = QdrantApiUrlConstants.GetPointsForCollectionUrl(collectionName);
 
         Verify.NotNullOrEmpty(collectionName, "The collection name must be defined");
 
-        try 
+        try
         {
             getPointsforCollectionResult = await HttpRequest.SendHttpFromJsonAsync<RetrieveAllPointsResult, PointParams>(
-                        this._client!,
-                        HttpMethod.Post,
-                        qdrantGetAllPointsUrl,
-                        pointParams, null);
+                this._client!,
+                HttpMethod.Post,
+                qdrantGetAllPointsUrl,
+                pointParams, null);
         }
         catch
         {
@@ -144,12 +141,10 @@ public class PointsVectorHandler : IValidatable
         }
 
         return getPointsforCollectionResult!;
-
     }
 
-    internal async Task<IQdrantResult> DeletePointFromCollectionAsync(string collectionName, int? pointId )
+    internal async Task<IQdrantResult> DeletePointFromCollectionAsync(string collectionName, int? pointId)
     {
-        
         IQdrantResult? deletePointFromCollectionResult = null;
 
         Verify.NotNullOrEmpty(collectionName, "The collection name must be defined");
@@ -161,13 +156,13 @@ public class PointsVectorHandler : IValidatable
 
         string qdrantDeletePointUrl = QdrantApiUrlConstants.DeletePointUrl(collectionName);
 
-        try 
+        try
         {
             deletePointFromCollectionResult = await HttpRequest.SendHttpFromJsonAsync<DeletePointResult, PointDeleteParams>(
-                        this._client!,
-                        HttpMethod.Post,
-                        qdrantDeletePointUrl,
-                        deleteParams, null);
+                this._client!,
+                HttpMethod.Post,
+                qdrantDeletePointUrl,
+                deleteParams, null);
         }
         catch
         {
@@ -175,16 +170,13 @@ public class PointsVectorHandler : IValidatable
             deletePointFromCollectionResult.ResponseInfo = null;
         }
 
-
         return deletePointFromCollectionResult!;
-
     }
 
-
     #region private ================================================================================
+
     private string? _collectionName;
     private HttpClient? _client;
-    private string? _vectorPointId;
 
     private PointsVectorHandler(HttpClient client, string collectionName)
     {
@@ -193,5 +185,4 @@ public class PointsVectorHandler : IValidatable
     }
 
     #endregion
-
 }

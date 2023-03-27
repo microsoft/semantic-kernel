@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 /// The embedding data persists between subsequent instances and has similarity search capability.
 /// </remarks>
 public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
-where TEmbedding : unmanaged
+    where TEmbedding : unmanaged
 {
     public QdrantMemoryStore(string host, int port)
     {
@@ -61,9 +61,10 @@ where TEmbedding : unmanaged
             value: (IEmbeddingWithMetadata<TEmbedding>)vectorResult.Value!);
     }
 
-    public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data, CancellationToken cancel = default)
+    public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data,
+        CancellationToken cancel = default)
     {
-        var collectionExists = await this._qdrantClient.IsExistingCollection(collection);
+        var collectionExists = await this._qdrantClient.IsExistingCollectionAsync(collection);
         if (!collectionExists)
         {
             await this._qdrantClient.CreateNewCollectionAsync(collection);
@@ -89,7 +90,8 @@ where TEmbedding : unmanaged
         }
     }
 
-    public async IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(string collection, Embedding<TEmbedding> embedding, int limit = 1, double minRelevanceScore = 0)
+    public async IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(string collection, Embedding<TEmbedding> embedding,
+        int limit = 1, double minRelevanceScore = 0)
     {
         var results = this._qdrantClient.FindNearesetInCollectionAsync(collection, embedding, limit);
         await foreach ((IEmbeddingWithMetadata<TEmbedding>, double) result in results)
@@ -110,6 +112,7 @@ where TEmbedding : unmanaged
     /// a concurrent dictionary of cached Qdrant vector entries mapped by plaintext key
     /// </summary>
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DataEntry<QdrantVectorRecord<TEmbedding>>>> _qdrantData = new();
+
     private QdrantVectorDbClient<TEmbedding> _qdrantClient;
 
     #endregion

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -13,14 +13,18 @@ public interface IQdrantResult
 
 internal class CollectionInfoResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo 
-    { get => this.ResponseInfo; 
-      set => this.ResponseInfo = value; }
-      
+    public QdrantResponse? ResponseInfo
+    {
+        get => this.ResponseInfo;
+        set => this.ResponseInfo = value;
+    }
+
     [JsonPropertyName("result")]
-    public QdrantCollectionInfo? Result 
-    { get => this.Result;
-      set => this.Result = value; }
+    public QdrantCollectionInfo? Result
+    {
+        get => this.Result;
+        set => this.Result = value;
+    }
 
     public class QdrantCollectionInfo
     {
@@ -32,15 +36,14 @@ internal class CollectionInfoResult : IQdrantResult
         [JsonPropertyName("payload_schema")]
         public PayloadInfo? PayloadProperty { get; set; }
     }
-
 }
 
 internal class CollectionExistsResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo 
-    { 
-        get => this.ResponseInfo; 
-        set => this.ResponseInfo = value; 
+    public QdrantResponse? ResponseInfo
+    {
+        get => this.ResponseInfo;
+        set => this.ResponseInfo = value;
     }
 
     [JsonPropertyName("result")]
@@ -49,19 +52,19 @@ internal class CollectionExistsResult : IQdrantResult
 
 internal class ListInfoResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo 
-    { 
-        get => this.ResponseInfo; 
-        set => this.ResponseInfo = value; 
+    public QdrantResponse? ResponseInfo
+    {
+        get => this.ResponseInfo;
+        set => this.ResponseInfo = value;
     }
 
     [JsonPropertyName("result")]
-    internal QdrantListInfo? Result 
-    { 
+    internal QdrantListInfo? Result
+    {
         get => this.Result;
-        set => this.Result = value; 
+        set => this.Result = value;
     }
-      
+
     internal class QdrantListInfo
     {
         [JsonPropertyName("collections")]
@@ -71,10 +74,10 @@ internal class ListInfoResult : IQdrantResult
 
 internal class CreateCollectionResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo 
-    { 
-        get => this.ResponseInfo; 
-        set => this.ResponseInfo = value; 
+    public QdrantResponse? ResponseInfo
+    {
+        get => this.ResponseInfo;
+        set => this.ResponseInfo = value;
     }
 
     [JsonPropertyName("result")]
@@ -83,10 +86,10 @@ internal class CreateCollectionResult : IQdrantResult
 
 internal class DeleteCollectionResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo 
-    { 
-        get => this.ResponseInfo; 
-        set => this.ResponseInfo = value; 
+    public QdrantResponse? ResponseInfo
+    {
+        get => this.ResponseInfo;
+        set => this.ResponseInfo = value;
     }
 
     [JsonPropertyName("result")]
@@ -95,23 +98,22 @@ internal class DeleteCollectionResult : IQdrantResult
 
 internal class RetrievePointResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo 
-    { 
-        get => this.ResponseInfo; 
-        set => this.ResponseInfo = value; 
+    public QdrantResponse? ResponseInfo
+    {
+        get => this.ResponseInfo;
+        set => this.ResponseInfo = value;
     }
 
     [JsonPropertyName("result")]
     internal Points? VectorPoint { get; set; }
-    
 }
 
 internal class RetrieveAllPointsResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo 
-    { 
-        get => this.ResponseInfo; 
-        set => this.ResponseInfo = value; 
+    public QdrantResponse? ResponseInfo
+    {
+        get => this.ResponseInfo;
+        set => this.ResponseInfo = value;
     }
 
     [JsonPropertyName("result")]
@@ -129,10 +131,10 @@ internal class RetrieveAllPointsResult : IQdrantResult
 
 internal class UpsertPointResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo 
-    { 
-        get => this.ResponseInfo; 
-        set => this.ResponseInfo = value; 
+    public QdrantResponse? ResponseInfo
+    {
+        get => this.ResponseInfo;
+        set => this.ResponseInfo = value;
     }
 
     [JsonPropertyName("result")]
@@ -146,15 +148,14 @@ internal class UpsertPointResult : IQdrantResult
         [JsonPropertyName("status")]
         internal string? UpdateStatus { get; set; }
     }
-
 }
 
 internal class DeletePointResult : IQdrantResult
 {
-    public QdrantResponse? ResponseInfo 
-    { 
-        get => this.ResponseInfo; 
-        set => this.ResponseInfo = value; 
+    public QdrantResponse? ResponseInfo
+    {
+        get => this.ResponseInfo;
+        set => this.ResponseInfo = value;
     }
 
     [JsonPropertyName("result")]
@@ -168,5 +169,4 @@ internal class DeletePointResult : IQdrantResult
         [JsonPropertyName("status")]
         internal string? DeleteStatus { get; set; }
     }
-
 }

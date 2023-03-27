@@ -56,7 +56,5 @@ internal sealed class CreateCollectionRequest : IValidatable
         this.Settings = new VectorSettings();
     }
 
-
-
     #endregion
 }

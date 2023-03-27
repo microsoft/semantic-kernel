@@ -19,6 +19,4 @@ internal abstract class QdrantResponse
     [JsonPropertyName("time")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? Time { get; set; }
-
 }
-

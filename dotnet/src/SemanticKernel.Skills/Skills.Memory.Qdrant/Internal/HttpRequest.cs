@@ -47,10 +47,11 @@ internal static class HttpRequest
         return new HttpRequestMessage(HttpMethod.Delete, url);
     }
 
-    public static async Task<TResult> SendHttpFromJsonAsync<TResult, TContent>(HttpClient httpClient, HttpMethod methodType, string qdranturl, TContent? httpContentData, TResult? qdrantData)
+    public static async Task<TResult> SendHttpFromJsonAsync<TResult, TContent>(HttpClient httpClient, HttpMethod methodType, string qdranturl,
+        TContent? httpContentData, TResult? qdrantData)
     {
         TResult httpResult = default!;
-        
+
         switch (methodType.ToString().ToUpper())
         {
             case string mType when mType == nameof(HttpMethod.Get).ToUpper():
@@ -63,79 +64,78 @@ internal static class HttpRequest
                 {
                     throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
                 }
+
                 break;
 
             case string mType when mType == nameof(HttpMethod.Post).ToUpper():
+            {
+                using HttpResponseMessage httpResponse =
+                    await httpClient.PostAsJsonAsync<TResult>(qdranturl, qdrantData!);
+                try
                 {
-                    using HttpResponseMessage httpResponse = 
-                        await httpClient.PostAsJsonAsync<TResult>(qdranturl, qdrantData!);
-                    try
-                    {
-                        httpResponse.EnsureSuccessStatusCode();
-                        var Result = await httpResponse.Content.ReadFromJsonAsync<TResult>();
-                        httpResult = Result!;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
-                    }
-                               
+                    httpResponse.EnsureSuccessStatusCode();
+                    var Result = await httpResponse.Content.ReadFromJsonAsync<TResult>();
+                    httpResult = Result!;
                 }
-                break;
+                catch (Exception ex)
+                {
+                    throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
+                }
+            }
+            break;
 
             case string mType when mType == nameof(HttpMethod.Put).ToUpper():
+            {
+                using HttpResponseMessage httpResponse =
+                    await httpClient.PutAsJsonAsync<TResult>(qdranturl, qdrantData!);
+
+                try
                 {
-                    using HttpResponseMessage httpResponse = 
-                        await httpClient.PutAsJsonAsync<TResult>(qdranturl, qdrantData!);
-                    
-                    try
-                    {
-                        httpResponse.EnsureSuccessStatusCode();
-                        var Result = await httpResponse.Content.ReadFromJsonAsync<TResult>();
-                        httpResult = Result!;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
-                    }                    
+                    httpResponse.EnsureSuccessStatusCode();
+                    var Result = await httpResponse.Content.ReadFromJsonAsync<TResult>();
+                    httpResult = Result!;
                 }
-            
-                break;
+                catch (Exception ex)
+                {
+                    throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
+                }
+            }
+
+            break;
 
             case string mType when mType == nameof(HttpMethod.Patch).ToUpper():
+            {
+                using HttpResponseMessage httpResponse =
+                    await httpClient.PatchAsJsonAsync<TResult>(qdranturl, qdrantData!);
+
+                try
                 {
-                    using HttpResponseMessage httpResponse = 
-                        await httpClient.PatchAsJsonAsync<TResult>(qdranturl, qdrantData!);
-
-                    try
-                    {
-                        httpResponse.EnsureSuccessStatusCode();
-                        var Result = await httpResponse.Content.ReadFromJsonAsync<TResult>();
-                        httpResult = Result!;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
-                    }
-                
+                    httpResponse.EnsureSuccessStatusCode();
+                    var Result = await httpResponse.Content.ReadFromJsonAsync<TResult>();
+                    httpResult = Result!;
                 }
+                catch (Exception ex)
+                {
+                    throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
+                }
+            }
 
-                break;
+            break;
 
             case string mType when mType == nameof(HttpMethod.Delete).ToUpper():
+            {
+                try
                 {
-                    try
-                    {
-                        var Result = await httpClient.DeleteFromJsonAsync<TResult>(qdranturl);
-                        httpResult = Result!;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
-                    }
+                    var Result = await httpClient.DeleteFromJsonAsync<TResult>(qdranturl);
+                    httpResult = Result!;
                 }
+                catch (Exception ex)
+                {
+                    throw new HttpRequestException($"Error requesting Qdrant data: {ex.Message}");
+                }
+            }
 
-                break;
+            break;
 
             default:
                 break;
@@ -143,7 +143,7 @@ internal static class HttpRequest
 
         return httpResult!;
     }
-       
+
     public static StringContent? GetJsonContent(object? payload)
     {
         if (payload != null)

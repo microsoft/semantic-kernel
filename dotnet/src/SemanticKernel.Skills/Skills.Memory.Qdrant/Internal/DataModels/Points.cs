@@ -15,7 +15,6 @@ internal class Points
 
     [JsonPropertyName("vector")]
     internal float[]? Vector { get; set; }
-
 }
 
 internal class PointParams
@@ -54,16 +53,15 @@ internal class PointRange
 {
     [JsonPropertyName("lt")]
     internal double LessThan { get; set; }
-    
+
     [JsonPropertyName("gt")]
     internal double GreaterThan { get; set; }
-    
+
     [JsonPropertyName("gte")]
     internal double GreaterThanEqual { get; set; }
 
     [JsonPropertyName("lte")]
     internal double LessThanEqual { get; set; }
-
 }
 
 internal class PointUpsertParams

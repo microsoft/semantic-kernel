@@ -46,13 +46,13 @@ public class CollectionHandler : IValidatable
         return this;
     }
 
-internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestType, string? collectionName = null)
+    internal async Task<IQdrantResult> ExecuteRequestAsync(CollectionHandlerType requestType, string? collectionName = null)
     {
         IQdrantResult? qdrantResult = null;
 
         qdrantResult = requestType switch
         {
-            CollectionHandlerType.CheckExists => 
+            CollectionHandlerType.CheckExists =>
                 await this.CheckCollectionExistsAsync(collectionName!),
             CollectionHandlerType.GetInfo =>
                 await this.GetInfoForCollectionAsync(collectionName!),
@@ -63,7 +63,6 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
             CollectionHandlerType.Delete =>
                 await this.DeleteCollectionAsync(collectionName!),
             _ => throw new ArgumentOutOfRangeException(nameof(requestType), requestType, "The request type is not invalid")
-                
         };
 
         return qdrantResult!;
@@ -73,7 +72,7 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
     {
         IQdrantResult? qdrantCheckResult = null;
         Verify.NotNullOrEmpty(collectionName, "The collection name must be defined");
-        
+
         qdrantCheckResult = await this.GetInfoForCollectionAsync(collectionName);
 
         return qdrantCheckResult!;
@@ -86,18 +85,18 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
 
         Verify.NotNullOrEmpty(collectionName, "The collection name must be defined");
 
-        try 
+        try
         {
             qdrantCollectionResult = await HttpRequest.SendHttpFromJsonAsync<CollectionInfoResult, IQdrantResult>(
-                        this._client!,
-                        HttpMethod.Get,
-                        qdrantGetUrl,
-                        null, null);
+                this._client!,
+                HttpMethod.Get,
+                qdrantGetUrl,
+                null, null);
         }
         catch (HttpRequestException httpEx)
         {
             qdrantCollectionResult = new CollectionInfoResult();
-            qdrantCollectionResult.ResponseInfo!.Status = $"HTTP Request Error {httpEx.Message}: Collection Not Found";   
+            qdrantCollectionResult.ResponseInfo!.Status = $"HTTP Request Error {httpEx.Message}: Collection Not Found";
         }
         catch (Exception ex)
         {
@@ -106,7 +105,6 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
         }
 
         return qdrantCollectionResult!;
-
     }
 
     internal async Task<IQdrantResult> CreateQdrantCollectionAsync(string collectionName)
@@ -117,13 +115,13 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
 
         Verify.NotNullOrEmpty(collectionName, "The collection name must be defined");
 
-        try 
+        try
         {
             qdrantCreateResult = await HttpRequest.SendHttpFromJsonAsync<CreateCollectionResult, VectorSettings>(
-                        this._client!,
-                        HttpMethod.Put,
-                        qdrantCreateUrl,
-                        this._settings, null);
+                this._client!,
+                HttpMethod.Put,
+                qdrantCreateUrl,
+                this._settings, null);
         }
         catch
         {
@@ -136,19 +134,20 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
     internal async Task<IQdrantResult> ListCollectionsAsync()
     {
         IQdrantResult? qdrantListResult = null;
-       
+
         string qdrantListUrl = QdrantApiUrlConstants.GetCollectionsNamesUrl();
 
-        try{
+        try
+        {
             qdrantListResult = await HttpRequest.SendHttpFromJsonAsync<ListInfoResult, IQdrantResult>(
-                        this._client!,
-                        HttpMethod.Get,
-                        qdrantListUrl, 
-                        null, null);
+                this._client!,
+                HttpMethod.Get,
+                qdrantListUrl,
+                null, null);
         }
         catch
         {
-            qdrantListResult = new ListInfoResult();   
+            qdrantListResult = new ListInfoResult();
         }
 
         return qdrantListResult!;
@@ -156,7 +155,6 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
 
     internal async Task<IQdrantResult> DeleteCollectionAsync(string collectionName)
     {
-
         IQdrantResult? qdrantDeleteResult = null;
 
         string qdrantDeleteUrl = QdrantApiUrlConstants.DeleteCollectionUrl(collectionName);
@@ -164,21 +162,18 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
         try
         {
             qdrantDeleteResult = await HttpRequest.SendHttpFromJsonAsync<DeleteCollectionResult, IQdrantResult>(
-                    this._client!,
-                    HttpMethod.Delete,
-                    qdrantDeleteUrl, 
-                    null, null);
+                this._client!,
+                HttpMethod.Delete,
+                qdrantDeleteUrl,
+                null, null);
         }
         catch
         {
             qdrantDeleteResult = new DeleteCollectionResult();
         }
-        
+
         return qdrantDeleteResult!;
-
     }
-
-
 
     #region private ================================================================================
 
@@ -196,4 +191,3 @@ internal async Task<IQdrantResult> ExecuteRequest(CollectionHandlerType requestT
 
     #endregion
 }
-
