@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -30,7 +31,8 @@ public class SkillCollectionTests
     {
         //Arrange
         var semanticFunction = SKFunction.FromSemanticConfig("sk", "name", this._semanticFunctionConfig);
-        var nativeFunction = SKFunction.FromNativeMethod(typeof(SkillCollectionTests).GetMethod(nameof(TestNativeFunction), BindingFlags.Static | BindingFlags.NonPublic));
+        var nativeFunction = SKFunction.FromNativeMethod(Method(TestNativeFunctionAsync));
+        Assert.NotNull(nativeFunction);
 
         var sut = new SkillCollection();
         sut.AddSemanticFunction(semanticFunction);
@@ -45,8 +47,13 @@ public class SkillCollectionTests
         Assert.Contains(allFunctions, f => f.IsSemantic == false);
     }
 
+    private static MethodInfo Method(Delegate method)
+    {
+        return method.Method;
+    }
+
     [SKFunction("TestNativeFunction")]
-    private static Task TestNativeFunction(SKContext context)
+    private static Task TestNativeFunctionAsync(SKContext context)
     {
         return Task.FromResult(0);
     }
