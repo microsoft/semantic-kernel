@@ -5,17 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Orchestration.Extensions;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.ControlFlow;
-using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -67,7 +61,7 @@ public class ConditionalSkillTests
         var condition = kernel.ImportSkill(conditionalSkill, "conditional");
 
         // Act
-        var context = await kernel.RunAsync(GoalText, condition["IfAsync"]);
+        var context = await kernel.RunAsync(GoalText, condition["If"]);
 
         // Assert
         Assert.NotNull(context);
@@ -87,7 +81,7 @@ public class ConditionalSkillTests
         var functions = kernel.ImportSkill(conditionalSkill, "conditional");
 
         // Act
-        var context = await kernel.RunAsync("Any", functions["IfAsync"]);
+        var context = await kernel.RunAsync("Any", functions["If"]);
 
         // Assert
         Assert.NotNull(context);
@@ -113,7 +107,7 @@ public class ConditionalSkillTests
         var functions = kernel.ImportSkill(conditionalSkill, "conditional");
 
         // Act
-        var context = await kernel.RunAsync("Any", functions["IfAsync"]);
+        var context = await kernel.RunAsync("Any", functions["If"]);
 
         // Assert
         Assert.NotNull(context);
@@ -137,7 +131,7 @@ public class ConditionalSkillTests
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var completionBackendMock = new Mock<ITextCompletionClient>();
-        var ifContent = "Any";
+        var ifContent = "<if><conditiongroup></conditiongroup><then></then></if>";
         var ifCheckPrompt = ConditionalSkill.IfStructureCheckPrompt[..30];
         var evalConditionPrompt = ConditionalSkill.EvaluateConditionPrompt[..30];
 
@@ -154,7 +148,7 @@ public class ConditionalSkillTests
         var functions = kernel.ImportSkill(conditionalSkill, "conditional");
 
         // Act
-        var context = await kernel.RunAsync(ifContent, functions["IfAsync"]);
+        var context = await kernel.RunAsync(ifContent, functions["If"]);
 
         // Assert
         Assert.NotNull(context);
@@ -178,7 +172,7 @@ public class ConditionalSkillTests
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var completionBackendMock = new Mock<ITextCompletionClient>();
-        var ifContent = "Any";
+        var ifContent = "<if><conditiongroup></conditiongroup><then></then></if>";
         var ifCheckPrompt = ConditionalSkill.IfStructureCheckPrompt[..30];
         var evalConditionPrompt = ConditionalSkill.EvaluateConditionPrompt[..30];
 
@@ -195,7 +189,7 @@ public class ConditionalSkillTests
         var functions = kernel.ImportSkill(conditionalSkill, "conditional");
 
         // Act
-        var context = await kernel.RunAsync(ifContent, functions["IfAsync"]);
+        var context = await kernel.RunAsync(ifContent, functions["If"]);
 
         // Assert
         Assert.NotNull(context);
@@ -213,7 +207,7 @@ public class ConditionalSkillTests
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var completionBackendMock = new Mock<ITextCompletionClient>();
-        var ifContent = "Any";
+        var ifContent = "<if><conditiongroup></conditiongroup><then></then></if>";
         var ifCheckPrompt = ConditionalSkill.IfStructureCheckPrompt[..30];
         var evalConditionPrompt = ConditionalSkill.EvaluateConditionPrompt[..30];
 
@@ -244,7 +238,7 @@ public class ConditionalSkillTests
         }
 
         // Act
-        var context = await kernel.RunAsync(contextVariables, functions["IfAsync"]);
+        var context = await kernel.RunAsync(contextVariables, functions["If"]);
 
         // Assert
         Assert.NotNull(context);
@@ -272,7 +266,7 @@ public class ConditionalSkillTests
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var completionBackendMock = new Mock<ITextCompletionClient>();
-        var ifContent = "Any";
+        var ifContent = "<if><conditiongroup></conditiongroup><then></then></if>";
         var ifCheckPrompt = ConditionalSkill.IfStructureCheckPrompt[..30];
         var evalConditionPrompt = ConditionalSkill.EvaluateConditionPrompt[..30];
 
@@ -303,7 +297,7 @@ public class ConditionalSkillTests
         }
 
         // Act
-        var context = await kernel.RunAsync(contextVariables, functions["IfAsync"]);
+        var context = await kernel.RunAsync(contextVariables, functions["If"]);
 
         // Assert
         Assert.True(context.ErrorOccurred);
@@ -322,7 +316,7 @@ public class ConditionalSkillTests
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
         var completionBackendMock = new Mock<ITextCompletionClient>();
-        var ifContent = "Any";
+        var ifContent = "<if><conditiongroup></conditiongroup><then></then></if>";
         var ifCheckPrompt = ConditionalSkill.IfStructureCheckPrompt[..30];
         var evalConditionPrompt = ConditionalSkill.EvaluateConditionPrompt[..30];
         var extractThenOrElseFromIfPrompt = ConditionalSkill.ExtractThenOrElseFromIfPrompt[..30];
@@ -344,7 +338,7 @@ public class ConditionalSkillTests
         var functions = kernel.ImportSkill(conditionalSkill, "conditional");
 
         // Act
-        var context = await kernel.RunAsync(ifContent, functions["IfAsync"]);
+        var context = await kernel.RunAsync(ifContent, functions["If"]);
 
         // Assert
         Assert.NotNull(context);
