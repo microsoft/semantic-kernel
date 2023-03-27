@@ -123,7 +123,7 @@ var kernel9 = Kernel.Builder
 var kernel10 = Kernel.Builder.WithRetryHandlerFactory(new RetryThreeTimesFactory()).Build();
 
 // ==========================================================================================================
-// Kernel instances should be Disposed when they are not required anymore to free OS resources they might hold.
+// Kernel instance should be disposed to release OS resources it may hold, when it's not required anymore.
 new List<IKernel>(new[] { kernel1, kernel2, kernel3, kernel4, kernel5, kernel6, kernel7, kernel8, kernel9, kernel10 }).ForEach(k => k.Dispose());
 
 // Example of a basic custom retry handler
