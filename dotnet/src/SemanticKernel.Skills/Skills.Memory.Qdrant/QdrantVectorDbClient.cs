@@ -152,11 +152,23 @@ public class QdrantVectorDbClient<TEmbedding>
     {
         this._log.LogDebug("Listing collections");
 
-        // foreach (var collection in collections?.Collections ?? Enumerable.Empty<ListCollectionsResponse.CollectionDescription>())
-        // {
-        //     yield return collection.Name;
-        // }
-        yield break;
+        IQdrantResult? qdrantResult = null;
+
+        CollectionHandler GetCollectionsHandler =
+            CollectionHandler.Init(this.VectorSize, this.DistanceType)
+                .Client(this._httpClient)
+                .Build();
+        
+        
+        qdrantResult = await GetCollectionsHandler.ListCollectionsAsync();
+        var collections = ((ListInfoResult)qdrantResult).Result!.CollectionNames;
+
+
+        foreach (var collection in collections ?? Enumerable.Empty<string>())
+        {
+            yield return collection;
+        }
+
     }
 
     public async Task<DataEntry<QdrantVectorRecord<TEmbedding>>?> GetVectorByIdAsync(string collectionName, string key)
