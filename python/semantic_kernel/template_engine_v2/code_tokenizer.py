@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import List
 from logging import Logger
+from typing import List
 
 from semantic_kernel.template_engine_v2.blocks.block import Block
+from semantic_kernel.template_engine_v2.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine_v2.blocks.symbols import Symbols
 from semantic_kernel.template_engine_v2.blocks.val_block import ValBlock
 from semantic_kernel.template_engine_v2.blocks.var_block import VarBlock
-from semantic_kernel.template_engine_v2.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.utils.null_logger import NullLogger
 
 

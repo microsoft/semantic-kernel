@@ -118,7 +118,9 @@ class SkillCollection(SkillCollectionBase):
 
         return result
 
-    def get_function(self, skill_name: Optional[str], function_name: str) -> "SKFunctionBase":
+    def get_function(
+        self, skill_name: Optional[str], function_name: str
+    ) -> "SKFunctionBase":
         s_name, f_name = self._normalize_names(skill_name, function_name, True)
         if self.has_function(s_name, f_name):
             return self._skill_collection[s_name][f_name]

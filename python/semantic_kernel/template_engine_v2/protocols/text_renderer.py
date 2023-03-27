@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Protocol, Optional
+from typing import Optional, Protocol
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
 
