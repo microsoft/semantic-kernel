@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 public class ImageGenerationResponse
 {
     /// <summary>
+    /// OpenAI Image response
     /// </summary>
     public sealed class Image
     {
@@ -23,7 +24,7 @@ public class ImageGenerationResponse
         public string Url { get; set; } = string.Empty;
 
         /// <summary>
-        /// Created image in base64 format
+        /// Image content in base64 format
         /// </summary>
         [JsonPropertyName("b64_json")]
         public string AsBase64 { get; set; } = string.Empty;
