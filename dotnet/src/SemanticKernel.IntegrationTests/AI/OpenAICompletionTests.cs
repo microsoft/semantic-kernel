@@ -43,7 +43,7 @@ public sealed class OpenAICompletionTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        target.Config.AddOpenAICompletion(
+        target.Config.AddOpenAITextCompletion(
             serviceId: openAIConfiguration.Label,
             modelId: openAIConfiguration.ModelId,
             apiKey: openAIConfiguration.ApiKey);
@@ -71,7 +71,7 @@ public sealed class OpenAICompletionTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        target.Config.AddAzureOpenAICompletion(
+        target.Config.AddAzureOpenAITextCompletion(
             serviceId: azureOpenAIConfiguration.Label,
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
@@ -104,7 +104,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
-        target.Config.AddOpenAICompletion(
+        target.Config.AddOpenAITextCompletion(
             serviceId: openAIConfiguration.Label,
             modelId: openAIConfiguration.ModelId,
             apiKey: "INVALID_KEY");

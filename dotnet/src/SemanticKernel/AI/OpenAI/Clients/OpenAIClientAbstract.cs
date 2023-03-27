@@ -55,12 +55,12 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <summary>
     /// Asynchronously sends a completion request for the prompt
     /// </summary>
-    /// <param name="url">URL for the completion request API</param>
+    /// <param name="url">URL for the text completion request API</param>
     /// <param name="requestBody">Prompt to complete</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The text completion</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
-    protected async Task<string> ExecuteTextCompleteRequestAsync(
+    protected async Task<string> ExecuteTextCompletionRequestAsync(
         string url,
         string requestBody,
         CancellationToken cancellationToken)
@@ -90,12 +90,12 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <summary>
     /// Asynchronously sends a chat completion request for the given history
     /// </summary>
-    /// <param name="url">URL for the chat request API</param>
+    /// <param name="url">URL for the chat completion request API</param>
     /// <param name="requestBody">Request payload</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The next chat message</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
-    protected async Task<string> ExecuteChatCompleteRequestAsync(
+    protected async Task<string> ExecuteChatCompletionRequestAsync(
         string url,
         string requestBody,
         CancellationToken cancellationToken = default)
@@ -125,7 +125,7 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <summary>
     /// Asynchronously sends a text embedding request for the text.
     /// </summary>
-    /// <param name="url">URL for the chat request API</param>
+    /// <param name="url">URL for the text embedding request API</param>
     /// <param name="requestBody">Request payload</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of text embeddings</returns>
@@ -158,7 +158,7 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <summary>
     /// Run the HTTP request to generate a list of images
     /// </summary>
-    /// <param name="url">URL for the chat request API</param>
+    /// <param name="url">URL for the image generation request API</param>
     /// <param name="requestBody">Request payload</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of image URLs</returns>
@@ -170,7 +170,7 @@ public abstract class OpenAIClientAbstract : IDisposable
     {
         try
         {
-            var result = await this.ExecutePostRequestAsync<ImageUrlGenerationResponse>(url, requestBody, cancellationToken);
+            var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken);
             return result.Images.Select(x => x.Url).ToList();
         }
         catch (Exception e) when (e is not AIException)
@@ -184,7 +184,7 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <summary>
     /// Run the HTTP request to generate a list of images
     /// </summary>
-    /// <param name="url">URL for the chat request API</param>
+    /// <param name="url">URL for the image generation request API</param>
     /// <param name="requestBody">Request payload</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of images serialized in base64</returns>
@@ -196,7 +196,7 @@ public abstract class OpenAIClientAbstract : IDisposable
     {
         try
         {
-            var result = await this.ExecutePostRequestAsync<ImageUrlGenerationResponse>(url, requestBody, cancellationToken);
+            var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken);
             return result.Images.Select(x => x.AsBase64).ToList();
         }
         catch (Exception e) when (e is not AIException)

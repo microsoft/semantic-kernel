@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 /// <summary>
 /// Image generation response
 /// </summary>
-public class ImageUrlGenerationResponse
+public class ImageGenerationResponse
 {
     /// <summary>
     /// </summary>
@@ -23,14 +23,14 @@ public class ImageUrlGenerationResponse
         public string Url { get; set; } = string.Empty;
 
         /// <summary>
-        /// URL to the image created
+        /// Created image in base64 format
         /// </summary>
         [JsonPropertyName("b64_json")]
         public string AsBase64 { get; set; } = string.Empty;
     }
 
     /// <summary>
-    /// List of possible completions.
+    /// List of possible image generations
     /// </summary>
     [JsonPropertyName("data")]
     public IList<Image> Images { get; set; } = new List<Image>();

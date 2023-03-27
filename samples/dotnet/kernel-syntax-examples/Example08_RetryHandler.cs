@@ -48,7 +48,7 @@ public static class Example08_RetryHandler
         kernelBuilder = kernelBuilder.Configure(c => c.DefaultHttpRetryConfig.RetryableStatusCodes.Add(System.Net.HttpStatusCode.Unauthorized));
 
         // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
-        kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAICompletion("text-davinci-003", "text-davinci-003", "BAD_KEY"));
+        kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAITextCompletion("text-davinci-003", "text-davinci-003", "BAD_KEY"));
 
         var kernel = kernelBuilder.Build();
 
@@ -59,7 +59,7 @@ public static class Example08_RetryHandler
     {
         var kernel = Kernel.Builder.WithLogger(ConsoleLogger.Log).Build();
         // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
-        kernel.Config.AddOpenAICompletion("text-davinci-003", "text-davinci-003", "BAD_KEY");
+        kernel.Config.AddOpenAITextCompletion("text-davinci-003", "text-davinci-003", "BAD_KEY");
 
         return kernel;
     }
@@ -76,7 +76,7 @@ public static class Example08_RetryHandler
             .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!);
 
         // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
-        kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAICompletion("text-davinci-003", "text-davinci-003", "BAD_KEY"));
+        kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAITextCompletion("text-davinci-003", "text-davinci-003", "BAD_KEY"));
 
         var kernel = kernelBuilder.Build();
 

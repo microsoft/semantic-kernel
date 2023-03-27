@@ -4,6 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 
+/// <summary>
+/// Image generation request
+/// </summary>
 public sealed class ImageGenerationRequest
 {
     /// <summary>

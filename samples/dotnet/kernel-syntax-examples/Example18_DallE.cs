@@ -42,7 +42,7 @@ public static class Example18_DallE
         Console.WriteLine("======== Chat with images ========");
 
         // Add your chat completion backend
-        kernel.Config.AddOpenAIChatGPT("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAIChatCompletion("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
         var chat = (OpenAIChatHistory)chatGPT.CreateNewChat(

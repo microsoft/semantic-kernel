@@ -105,7 +105,7 @@ public sealed class Program
             AzureOpenAIConfiguration? azureOpenAIConfiguration = configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
             if (azureOpenAIConfiguration != null)
             {
-                sk.Config.AddAzureOpenAICompletion(
+                sk.Config.AddAzureOpenAITextCompletion(
                     serviceId: azureOpenAIConfiguration.Label,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
@@ -118,7 +118,7 @@ public sealed class Program
             OpenAIConfiguration? openAIConfiguration = configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
             if (openAIConfiguration != null)
             {
-                sk.Config.AddOpenAICompletion(
+                sk.Config.AddOpenAITextCompletion(
                     serviceId: openAIConfiguration.Label,
                     modelId: openAIConfiguration.ModelId,
                     apiKey: openAIConfiguration.ApiKey);

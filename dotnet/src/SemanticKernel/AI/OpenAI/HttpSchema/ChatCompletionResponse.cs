@@ -5,6 +5,9 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 
+/// <summary>
+/// Chat completion response
+/// </summary>
 public sealed class ChatCompletionResponse
 {
     /// <summary>

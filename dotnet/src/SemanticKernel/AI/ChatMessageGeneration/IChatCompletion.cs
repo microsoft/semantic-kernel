@@ -13,7 +13,7 @@ public interface IChatCompletion
     /// <param name="chat">Chat history</param>
     /// <param name="requestSettings">AI request settings</param>
     /// <param name="cancellationToken">Async cancellation token</param>
-    /// <returns></returns>
+    /// <returns>Generated chat message in string format</returns>
     public Task<string> GenerateMessageAsync(
         ChatHistory chat,
         ChatRequestSettings requestSettings,

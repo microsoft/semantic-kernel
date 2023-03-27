@@ -83,6 +83,6 @@ public sealed class OpenAITextCompletion : OpenAIClientAbstract, ITextCompletion
             Stop = requestSettings.StopSequences is { Count: > 0 } ? requestSettings.StopSequences : null,
         });
 
-        return this.ExecuteTextCompleteRequestAsync(OpenaiEndpoint, requestBody, cancellationToken);
+        return this.ExecuteTextCompletionRequestAsync(OpenaiEndpoint, requestBody, cancellationToken);
     }
 }

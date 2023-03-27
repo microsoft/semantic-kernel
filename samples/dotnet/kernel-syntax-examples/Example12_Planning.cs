@@ -132,7 +132,7 @@ internal static class Example12_Planning
             .Configure(
                 config =>
                 {
-                    config.AddAzureOpenAICompletion(
+                    config.AddAzureOpenAITextCompletion(
                         Env.Var("AZURE_OPENAI_DEPLOYMENT_LABEL"),
                         Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_ENDPOINT"),
@@ -180,7 +180,7 @@ internal static class Example12_Planning
     private static IKernel InitializeKernelAndPlanner(out IDictionary<string, ISKFunction> planner)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddAzureOpenAICompletion(
+        kernel.Config.AddAzureOpenAITextCompletion(
             Env.Var("AZURE_OPENAI_DEPLOYMENT_LABEL"),
             Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
             Env.Var("AZURE_OPENAI_ENDPOINT"),

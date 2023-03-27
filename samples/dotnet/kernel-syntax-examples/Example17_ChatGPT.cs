@@ -22,7 +22,7 @@ public static class Example17_ChatGPT
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         // Add your chat completion backend
-        kernel.Config.AddOpenAIChatGPT("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAIChatCompletion("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
         IChatCompletion backend = kernel.GetService<IChatCompletion>();
         var chat = (OpenAIChatHistory)backend.CreateNewChat("You are a librarian, expert about books");

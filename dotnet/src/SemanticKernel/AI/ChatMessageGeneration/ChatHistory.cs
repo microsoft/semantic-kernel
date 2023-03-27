@@ -53,7 +53,6 @@ public class ChatHistory
     /// </summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
-    /// <returns>Self instance</returns>
     public void AddMessage(string authorRole, string content)
     {
         this.Messages.Add(new Message(authorRole, content));
@@ -62,7 +61,7 @@ public class ChatHistory
     /// <summary>
     /// Map internal data to HTTP schema used with LLM
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Returns list of chat messages</returns>
     public IList<ChatCompletionRequest.Message> ToHttpSchema()
     {
         return this.Messages

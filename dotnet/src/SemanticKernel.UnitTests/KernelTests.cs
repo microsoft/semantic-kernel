@@ -23,7 +23,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletion("x", "y", "z");
+        kernel.Config.AddOpenAITextCompletion("x", "y", "z");
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -50,7 +50,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletion("x", "y", "z");
+        kernel.Config.AddOpenAITextCompletion("x", "y", "z");
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");

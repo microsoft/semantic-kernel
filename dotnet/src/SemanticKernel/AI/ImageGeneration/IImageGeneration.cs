@@ -14,7 +14,7 @@ public interface IImageGeneration
     /// <param name="width">Image width in pixels</param>
     /// <param name="height">Image height in pixels</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns></returns>
+    /// <returns>Generated image in base64 format or image URL</returns>
     public Task<string> GenerateImageAsync(
         string description,
         int width,

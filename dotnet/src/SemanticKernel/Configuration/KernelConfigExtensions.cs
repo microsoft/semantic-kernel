@@ -23,7 +23,7 @@ public static class KernelConfigExtensions
     /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
     /// <param name="overwrite">Whether to overwrite an existing configuration if the same id exists</param>
     /// <returns>Self instance</returns>
-    public static KernelConfig AddAzureOpenAICompletion(this KernelConfig config,
+    public static KernelConfig AddAzureOpenAITextCompletion(this KernelConfig config,
         string serviceId, string deploymentName, string endpoint, string apiKey, string apiVersion = "2022-12-01", bool overwrite = false)
     {
         Verify.NotEmpty(serviceId, "The service Id provided is empty");
@@ -54,7 +54,7 @@ public static class KernelConfigExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="overwrite">Whether to overwrite an existing configuration if the same name exists</param>
     /// <returns>Self instance</returns>
-    public static KernelConfig AddOpenAICompletion(this KernelConfig config,
+    public static KernelConfig AddOpenAITextCompletion(this KernelConfig config,
         string serviceId, string modelId, string apiKey, string? orgId = null, bool overwrite = false)
     {
         Verify.NotEmpty(serviceId, "The service Id provided is empty");
@@ -148,7 +148,7 @@ public static class KernelConfigExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="overwrite">Whether to overwrite an existing configuration if the same name exists</param>
     /// <returns>Self instance</returns>
-    public static KernelConfig AddOpenAIChatGPT(this KernelConfig config,
+    public static KernelConfig AddOpenAIChatCompletion(this KernelConfig config,
         string serviceId, string modelId, string apiKey, string? orgId = null, bool overwrite = false)
     {
         Verify.NotEmpty(serviceId, "The service Id provided is empty");

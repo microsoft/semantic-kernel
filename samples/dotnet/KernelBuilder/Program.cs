@@ -42,7 +42,7 @@ var memory = new SemanticTextMemory(memoryStorage, embeddingGenerator);
 var skills = new SkillCollection();
 var templateEngine = new PromptTemplateEngine(logger);
 var config = new KernelConfig();
-config.AddAzureOpenAICompletion("foo", "deploymentName", "https://...", "apiKey", "2022-12-01");
+config.AddAzureOpenAITextCompletion("foo", "deploymentName", "https://...", "apiKey", "2022-12-01");
 
 // Create kernel manually injecting all the dependencies
 var kernel3 = new Kernel(skills, templateEngine, memory, config, logger);
@@ -57,7 +57,7 @@ var kernel4 = Kernel.Builder
     .WithMemory(memory)
     .Configure(c =>
     {
-        c.AddAzureOpenAICompletion("foo", "deploymentName", "https://...", "apiKey", "2022-12-01");
+        c.AddAzureOpenAITextCompletion("foo", "deploymentName", "https://...", "apiKey", "2022-12-01");
     })
     .Build();
 
@@ -74,7 +74,7 @@ var kernel6 = Kernel.Builder
     .Configure(c =>
     {
         // This will be used when using AI completions
-        c.AddAzureOpenAICompletion("myName1", "completionDeploymentName", "https://...", "apiKey", "2022-12-01");
+        c.AddAzureOpenAITextCompletion("myName1", "completionDeploymentName", "https://...", "apiKey", "2022-12-01");
 
         // This will be used when indexing memory records
         c.AddAzureOpenAIEmbeddingGeneration("myName2", "embeddingsDeploymentName", "https://...", "apiKey", "2022-12-01");
@@ -88,14 +88,14 @@ var kernel6 = Kernel.Builder
 var kernel7 = Kernel.Builder
     .Configure(c =>
     {
-        c.AddAzureOpenAICompletion("myName1", "completionDeploymentName", "https://...", "apiKey", "2022-12-01");
+        c.AddAzureOpenAITextCompletion("myName1", "completionDeploymentName", "https://...", "apiKey", "2022-12-01");
     })
     .Build();
 
 kernel7.Config
     .AddAzureOpenAIEmbeddingGeneration("myName2", "embeddingsDeploymentName1", "https://...", "apiKey", "2022-12-01")
     .AddAzureOpenAIEmbeddingGeneration("myName3", "embeddingsDeploymentName2", "https://...", "apiKey", "2022-12-01")
-    .AddOpenAICompletion("myName4", "text-davinci-003", "sk-...")
+    .AddOpenAITextCompletion("myName4", "text-davinci-003", "sk-...")
     .SetDefaultEmbeddingService("myName3");
 
 // ==========================================================================================================

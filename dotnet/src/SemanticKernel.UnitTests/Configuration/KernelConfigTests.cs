@@ -78,20 +78,20 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItFailsWhenAddingCompletionBackendsWithSameLabel()
+    public void ItFailsWhenAddingTextCompletionServicesWithSameLabel()
     {
         var target = new KernelConfig();
-        target.AddAzureOpenAICompletion("azure", "depl", "https://url", "key");
+        target.AddAzureOpenAITextCompletion("azure", "depl", "https://url", "key");
 
         var exception = Assert.Throws<KernelException>(() =>
         {
-            target.AddAzureOpenAICompletion("azure", "depl2", "https://url", "key");
+            target.AddAzureOpenAITextCompletion("azure", "depl2", "https://url", "key");
         });
         Assert.Equal(KernelException.ErrorCodes.InvalidServiceConfiguration, exception.ErrorCode);
     }
 
     [Fact]
-    public void ItFailsWhenAddingEmbeddingsBackendsWithSameLabel()
+    public void ItFailsWhenAddingEmbeddingGenerationServicesWithSameLabel()
     {
         var target = new KernelConfig();
         target.AddAzureOpenAIEmbeddingGeneration("azure", "depl", "https://url", "key");
@@ -104,10 +104,10 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItSucceedsWhenAddingDifferentBackendTypeWithSameLabel()
+    public void ItSucceedsWhenAddingDifferentServiceTypeWithSameLabel()
     {
         var target = new KernelConfig();
-        target.AddAzureOpenAICompletion("azure", "depl", "https://url", "key");
+        target.AddAzureOpenAITextCompletion("azure", "depl", "https://url", "key");
         target.AddAzureOpenAIEmbeddingGeneration("azure", "depl2", "https://url", "key");
 
         Assert.True(target.TextCompletionServices.ContainsKey("azure"));
@@ -115,7 +115,7 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItFailsWhenSetNonExistentCompletionBackend()
+    public void ItFailsWhenSetNonExistentTextCompletionService()
     {
         var target = new KernelConfig();
         var exception = Assert.Throws<KernelException>(() =>
@@ -126,7 +126,7 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItFailsWhenSetNonExistentEmbeddingBackend()
+    public void ItFailsWhenSetNonExistentEmbeddingService()
     {
         var target = new KernelConfig();
         var exception = Assert.Throws<KernelException>(() =>
@@ -137,12 +137,12 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItTellsIfABackendIsAvailable()
+    public void ItTellsIfAServiceIsAvailable()
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureOpenAICompletion("azure", "depl", "https://url", "key");
-        target.AddOpenAICompletion("oai", "model", "apikey");
+        target.AddAzureOpenAITextCompletion("azure", "depl", "https://url", "key");
+        target.AddOpenAITextCompletion("oai", "model", "apikey");
         target.AddAzureOpenAIEmbeddingGeneration("azure", "depl2", "https://url2", "key");
         target.AddOpenAIEmbeddingGeneration("oai2", "model2", "apikey2");
 
@@ -159,16 +159,16 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItCanOverwriteBackends()
+    public void ItCanOverwriteServices()
     {
         // Arrange
         var target = new KernelConfig();
 
         // Act - Assert no exception occurs
-        target.AddAzureOpenAICompletion("one", "dep", "https://localhost", "key", overwrite: true);
-        target.AddAzureOpenAICompletion("one", "dep", "https://localhost", "key", overwrite: true);
-        target.AddOpenAICompletion("one", "model", "key", overwrite: true);
-        target.AddOpenAICompletion("one", "model", "key", overwrite: true);
+        target.AddAzureOpenAITextCompletion("one", "dep", "https://localhost", "key", overwrite: true);
+        target.AddAzureOpenAITextCompletion("one", "dep", "https://localhost", "key", overwrite: true);
+        target.AddOpenAITextCompletion("one", "model", "key", overwrite: true);
+        target.AddOpenAITextCompletion("one", "model", "key", overwrite: true);
         target.AddAzureOpenAIEmbeddingGeneration("one", "dep", "https://localhost", "key", overwrite: true);
         target.AddAzureOpenAIEmbeddingGeneration("one", "dep", "https://localhost", "key", overwrite: true);
         target.AddOpenAIEmbeddingGeneration("one", "model", "key", overwrite: true);
@@ -176,14 +176,14 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItCanRemoveAllBackends()
+    public void ItCanRemoveAllServices()
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureOpenAICompletion("one", "dep", "https://localhost", "key");
-        target.AddAzureOpenAICompletion("2", "dep", "https://localhost", "key");
-        target.AddOpenAICompletion("3", "model", "key");
-        target.AddOpenAICompletion("4", "model", "key");
+        target.AddAzureOpenAITextCompletion("one", "dep", "https://localhost", "key");
+        target.AddAzureOpenAITextCompletion("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextCompletion("3", "model", "key");
+        target.AddOpenAITextCompletion("4", "model", "key");
         target.AddAzureOpenAIEmbeddingGeneration("5", "dep", "https://localhost", "key");
         target.AddAzureOpenAIEmbeddingGeneration("6", "dep", "https://localhost", "key");
         target.AddOpenAIEmbeddingGeneration("7", "model", "key");
@@ -199,14 +199,14 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItCanRemoveAllCompletionBackends()
+    public void ItCanRemoveAllTextCompletionServices()
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureOpenAICompletion("one", "dep", "https://localhost", "key");
-        target.AddAzureOpenAICompletion("2", "dep", "https://localhost", "key");
-        target.AddOpenAICompletion("3", "model", "key");
-        target.AddOpenAICompletion("4", "model", "key");
+        target.AddAzureOpenAITextCompletion("one", "dep", "https://localhost", "key");
+        target.AddAzureOpenAITextCompletion("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextCompletion("3", "model", "key");
+        target.AddOpenAITextCompletion("4", "model", "key");
         target.AddAzureOpenAIEmbeddingGeneration("5", "dep", "https://localhost", "key");
         target.AddAzureOpenAIEmbeddingGeneration("6", "dep", "https://localhost", "key");
         target.AddOpenAIEmbeddingGeneration("7", "model", "key");
@@ -221,14 +221,14 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItCanRemoveAllEmbeddingsBackends()
+    public void ItCanRemoveAllEmbeddingServices()
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureOpenAICompletion("one", "dep", "https://localhost", "key");
-        target.AddAzureOpenAICompletion("2", "dep", "https://localhost", "key");
-        target.AddOpenAICompletion("3", "model", "key");
-        target.AddOpenAICompletion("4", "model", "key");
+        target.AddAzureOpenAITextCompletion("one", "dep", "https://localhost", "key");
+        target.AddAzureOpenAITextCompletion("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextCompletion("3", "model", "key");
+        target.AddOpenAITextCompletion("4", "model", "key");
         target.AddAzureOpenAIEmbeddingGeneration("5", "dep", "https://localhost", "key");
         target.AddAzureOpenAIEmbeddingGeneration("6", "dep", "https://localhost", "key");
         target.AddOpenAIEmbeddingGeneration("7", "model", "key");
@@ -243,13 +243,13 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItCanRemoveOneCompletionBackend()
+    public void ItCanRemoveOneCompletionService()
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureOpenAICompletion("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAICompletion("2", "dep", "https://localhost", "key");
-        target.AddOpenAICompletion("3", "model", "key");
+        target.AddAzureOpenAITextCompletion("1", "dep", "https://localhost", "key");
+        target.AddAzureOpenAITextCompletion("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextCompletion("3", "model", "key");
         Assert.Equal("1", target.DefaultTextCompletionServiceId);
 
         // Act - Assert
@@ -262,7 +262,7 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void ItCanRemoveOneEmbeddingsBackend()
+    public void ItCanRemoveOneEmbeddingService()
     {
         // Arrange
         var target = new KernelConfig();
@@ -281,7 +281,7 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void GetEmbeddingsBackendItReturnsDefaultWhenNonExistingLabelIsProvided()
+    public void GetEmbeddingServiceItReturnsDefaultWhenNonExistingLabelIsProvided()
     {
         // Arrange
         var target = new KernelConfig();
@@ -297,7 +297,7 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void GetEmbeddingsBackendReturnsSpecificWhenExistingLabelIsProvided()
+    public void GetEmbeddingServiceReturnsSpecificWhenExistingLabelIsProvided()
     {
         // Arrange
         var kernel = new Mock<IKernel>();
@@ -314,7 +314,7 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void GetEmbeddingsBackendReturnsDefaultWhenNoLabelIsProvided()
+    public void GetEmbeddingServiceReturnsDefaultWhenNoLabelIsProvided()
     {
         // Arrange
         var kernel = new Mock<IKernel>();
@@ -331,13 +331,13 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void GetCompletionBackendReturnsDefaultWhenNonExistingLabelIsProvided()
+    public void GetTextCompletionServiceReturnsDefaultWhenNonExistingLabelIsProvided()
     {
         // Arrange
         var kernel = new Mock<IKernel>();
         var target = new KernelConfig();
-        target.AddOpenAICompletion("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAICompletion("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextCompletion("1", "dep", "https://localhost", "key");
+        target.AddAzureOpenAITextCompletion("2", "dep", "https://localhost", "key");
         target.SetDefaultTextCompletionService("2");
 
         // Act
@@ -348,13 +348,13 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void GetCompletionBackendReturnsSpecificWhenExistingLabelIsProvided()
+    public void GetTextCompletionServiceReturnsSpecificWhenExistingLabelIsProvided()
     {
         // Arrange
         var kernel = new Mock<IKernel>();
         var target = new KernelConfig();
-        target.AddOpenAICompletion("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAICompletion("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextCompletion("1", "dep", "https://localhost", "key");
+        target.AddAzureOpenAITextCompletion("2", "dep", "https://localhost", "key");
         target.SetDefaultTextCompletionService("2");
 
         // Act
@@ -365,13 +365,13 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void GetCompletionBackendItReturnsDefaultWhenNoLabelIsProvided()
+    public void GetTextCompletionServiceItReturnsDefaultWhenNoLabelIsProvided()
     {
         // Arrange
         var kernel = new Mock<IKernel>();
         var target = new KernelConfig();
-        target.AddOpenAICompletion("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAICompletion("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextCompletion("1", "dep", "https://localhost", "key");
+        target.AddAzureOpenAITextCompletion("2", "dep", "https://localhost", "key");
         target.SetDefaultTextCompletionService("2");
 
         // Act

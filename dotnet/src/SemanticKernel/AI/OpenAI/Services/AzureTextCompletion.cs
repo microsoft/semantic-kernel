@@ -83,7 +83,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
             Stop = requestSettings.StopSequences is { Count: > 0 } ? requestSettings.StopSequences : null,
         });
 
-        return await this.ExecuteTextCompleteRequestAsync(url, requestBody, cancellationToken);
+        return await this.ExecuteTextCompletionRequestAsync(url, requestBody, cancellationToken);
     }
 
     #region private ================================================================================

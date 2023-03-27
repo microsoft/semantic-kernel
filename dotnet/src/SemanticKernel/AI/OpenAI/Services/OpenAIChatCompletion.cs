@@ -68,7 +68,7 @@ public class OpenAIChatCompletion : OpenAIClientAbstract, IChatCompletion
             Stop = requestSettings.StopSequences is { Count: > 0 } ? requestSettings.StopSequences : null,
         });
 
-        return this.ExecuteChatCompleteRequestAsync(OpenaiEndpoint, requestBody, cancellationToken);
+        return this.ExecuteChatCompletionRequestAsync(OpenaiEndpoint, requestBody, cancellationToken);
     }
 
     /// <inheritdoc/>

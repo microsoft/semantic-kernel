@@ -48,7 +48,7 @@ public sealed class PlannerSkillTests : IDisposable
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                config.AddAzureOpenAICompletion(
+                config.AddAzureOpenAITextCompletion(
                     serviceId: azureOpenAIConfiguration.Label,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
