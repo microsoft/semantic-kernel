@@ -3,10 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
@@ -39,7 +41,7 @@ Rules:
 {
   ""valid"": bool,
   ""reason"": string,
-  ""variables"": [string]
+  ""variables"": [string] (only the variables within ""Condition Group"")
 }
 
 Test Structure:
@@ -47,74 +49,76 @@ Test Structure:
 
     internal const string EvaluateConditionPrompt =
         @"Rules
-. ""and"" and ""or"" should be self closing tags
+1 ""and"" and ""or"" should be self closing tags
+2 Expect should be TRUE, FALSE OR ERROR
 
-Given:
+Given Example:
 <conditiongroup>
-    <condition variable=""x"" exact=""1"" />
+    <condition variable=""$x"" exact=""1"" />
     <and/>
-    <condition variable=""y"" contains=""asd"" />
+    <condition variable=""$y"" contains=""asd"" />
     <or/>
     <not>
-        <condition variable=""z"" greaterthan=""10"" />
+        <condition variable=""$z"" greaterthan=""10"" />
     </not>
 </conditiongroup>
 
-Evaluate:
+Expect Example: TRUE
+
+Evaluate Example:
 (x == ""1"" ^ y.Contains(""asd"") ∨ ¬(z > 10))
 (TRUE ^ TRUE ∨ ¬ (FALSE))
 (TRUE ^ TRUE ∨ TRUE) = TRUE
 
-Variables:
+Variables Example:
 x = ""2""
 y = ""adfsdasfgsasdddsf""
 z = ""100""
 w = ""sdf""
 
-Expect: TRUE
-
-Given:
+Given Example:
 <if>
      <conditiongroup>
-          <condition variable=""24hour"" exact=""1"" />
+          <condition variable=""$24hour"" exact=""1"" />
           <and/>
-          <condition variable=""24hour"" greaterthan=""10"" />
+          <condition variable=""$24hour"" greaterthan=""10"" />
      </conditiongroup>
      <then><if>Good Morning</if></then>
      <else><else>Good afternoon</else></else>
 </if>
 
-Variables:
+Variables Example:
 24hour = 11
 
-Evaluate:
+Expect Example: FALSE
+
+Evaluate Example:
 (24hour == 1 ^ 24hour > 10)
 (FALSE ^ TRUE) = FALSE
 
-Expect: FALSE
 
-Given:
+Given Example:
 Invalid XML
 
-Variables:
+Variables Example:
 24hour = 11
 
-Expect: ERROR
-Reason: 
+Expect Example: ERROR
+Reason Example: 
 
-Given:
+Given Example:
 <conditiongroup>
-<condition variable=""23hour"" exact=""10""/>
+<condition variable=""$23hour"" exact=""10""/>
 </conditiongroup>
 
-Variables:
+Variables Example:
 24hour = 11
 
-Expect: ERROR
-Reason: 23hour is not a valid variable. 
+Expect Example: ERROR
+Reason Example: 23hour is not a valid variable. 
 
 Given:
-{{$IfStatementContent}}
+{{$IfCondition}}
 
 Variables:
 {{$ConditionalVariables}}
@@ -150,9 +154,8 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
             IfStructureCheckPrompt,
             skillName: nameof(ConditionalSkill),
             description: "Evaluate if an If structure is valid and returns TRUE or FALSE",
-            maxTokens: 10,
+            maxTokens: 100,
             temperature: 0,
-            stopSequences: new string[] { "\n" },
             topP: 0.5
             );
 
@@ -160,7 +163,7 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
             EvaluateConditionPrompt,
             skillName: nameof(ConditionalSkill),
             description: "Evaluate a condition group and returns TRUE or FALSE",
-            maxTokens: 40,
+            maxTokens: 100,
             temperature: 0,
             topP: 0.5);
 
@@ -168,7 +171,7 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
             ExtractThenOrElseFromIfPrompt,
             skillName: nameof(ConditionalSkill),
             description: "Extract the content of the first child tag from the root If element",
-            maxTokens: 10,
+            maxTokens: 1000,
             temperature: 0,
             topP: 0.5);
 
@@ -190,11 +193,12 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
     /// This skill is initially intended to be used only by the Plan Runner.
     /// </remarks>
     [SKFunction("Get a planner if statement content and output then or else contents depending on the conditional evaluation.")]
+    [SKFunctionName("If")]
     public async Task<SKContext> IfAsync(string ifContent, SKContext context)
     {
         var usedVariables = await this.GetVariablesAndEnsureIfStructureIsValidAsync(ifContent, context).ConfigureAwait(false);
 
-        bool conditionEvaluation = await this.EvaluateConditionAsync(ifContent, usedVariables, context).ConfigureAwait(false);
+        bool conditionEvaluation = await this.LLMEvaluateConditionAsync(ifContent, usedVariables, context).ConfigureAwait(false);
 
         return await this.GetThenOrElseBranchAsync(ifContent, conditionEvaluation, context).ConfigureAwait(false);
     }
@@ -222,18 +226,20 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         }
 
         return llmResponse?["variables"]?.Deserialize<string[]>()
-            .Where(v => !string.IsNullOrWhiteSpace(v)) ?? Enumerable.Empty<string>();
+            .Where(v => !string.IsNullOrWhiteSpace(v)).Select(v => v.TrimStart('$')) ?? Enumerable.Empty<string>();
     }
 
-    private async Task<bool> EvaluateConditionAsync(string conditionContent, IEnumerable<string> usedVariables, SKContext context)
+    private async Task<bool> LLMEvaluateConditionAsync(string ifContent, IEnumerable<string> usedVariables, SKContext context)
     {
-        context.Variables.Set("IfStatementContent", conditionContent);
+        var conditionContent = this.ExtractConditionalContent(ifContent);
+
+        context.Variables.Set("IfCondition", conditionContent);
         context.Variables.Set("ConditionalVariables", this.GetConditionalVariablesFromContext(usedVariables, context.Variables));
 
         var llmConditionResponse = (await this._evaluateConditionFunction.InvokeAsync(conditionContent, context).ConfigureAwait(false)).ToString();
 
         var reason = this.GetReason(llmConditionResponse);
-        var error = !Regex.Match(llmConditionResponse, @"^(true|false)", RegexOptions.IgnoreCase).Success;
+        var error = !Regex.Match(llmConditionResponse.Trim(), @"^(true|false)", RegexOptions.IgnoreCase).Success;
         if (error)
         {
             throw new ConditionException(ConditionException.ErrorCodes.InvalidConditionFormat, reason);
@@ -242,17 +248,60 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         return llmConditionResponse.StartsWith("TRUE", StringComparison.OrdinalIgnoreCase);
     }
 
+    private async Task<bool> RuntimeEvaluateConditionAsync(string ifContent, IEnumerable<string> usedVariables, SKContext context)
+    {
+        var conditionContent = this.ExtractConditionalContent(ifContent);
+
+        context.Variables.Set("IfCondition", conditionContent);
+        context.Variables.Set("ConditionalVariables", this.GetConditionalVariablesFromContext(usedVariables, context.Variables));
+
+        var llmConditionResponse = (await this._evaluateConditionFunction.InvokeAsync(conditionContent, context).ConfigureAwait(false)).ToString();
+
+        var reason = this.GetReason(llmConditionResponse);
+        var error = !Regex.Match(llmConditionResponse.Trim(), @"^(true|false)", RegexOptions.IgnoreCase).Success;
+        if (error)
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidConditionFormat, reason);
+        }
+
+        return llmConditionResponse.StartsWith("TRUE", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string ExtractConditionalContent(string ifContent)
+    {
+        XmlDocument xmlDoc = new();
+        xmlDoc.LoadXml("<xml>" + ifContent + "</xml>");
+        XmlNode parentConditionGroupNode = xmlDoc.SelectSingleNode("//if/conditiongroup");
+
+        return parentConditionGroupNode.OuterXml;
+    }
+
     private string GetConditionalVariablesFromContext(IEnumerable<string> usedVariables, ContextVariables variables)
     {
+        var conditionalVariables = new StringBuilder();
+
         var checkNotFoundVariables = usedVariables.Where(u => !variables.ContainsKey(u));
         if (checkNotFoundVariables.Any())
         {
             throw new ConditionException(ConditionException.ErrorCodes.ContextVariablesNotFound, string.Join(", ", checkNotFoundVariables));
         }
 
-        return string.Join("\n", variables
-            .Where(v => usedVariables.Contains(v.Key))
-            .Select(x => $"{x.Key} = {x.Value}"));
+        var existingVariables = variables.Where(v => usedVariables.Contains(v.Key));
+
+        foreach( var v in existingVariables )
+        {
+            // Numeric don't add quotes
+            if (Regex.Match(v.Value, "^[0-9.,]+$").Success)
+            {
+                conditionalVariables.AppendLine($"{v.Key} = {v.Value}");
+            }
+            else
+            {
+                conditionalVariables.AppendLine($"{v.Key} = {JsonSerializer.Serialize(v.Value)}");
+            }
+        }
+
+        return conditionalVariables.ToString();
     }
 
     private string? GetReason(string llmResponse)

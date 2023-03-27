@@ -6,11 +6,11 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Planning.ControlFlow;
 
-public sealed class ExactCondition : Condition
+public sealed class EqualsCondition : Condition
 {
-    public override string Type => "Exact";
+    public override string Type => "Equals";
     public Dictionary<string, object> ExpectedVariableValue { get; }
-    public ExactCondition(string variable, string value)
+    public EqualsCondition(string variable, string value)
     {
         this.ExpectedVariableValue = new Dictionary<string, object>() { { variable, value } };
     }
