@@ -3,7 +3,7 @@
 using System;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Planning.ControlFlow;
+namespace Microsoft.SemanticKernel.Planning;
 public class ConditionException : Exception<ConditionException.ErrorCodes>
 {
     /// <summary>
@@ -25,7 +25,15 @@ public class ConditionException : Exception<ConditionException.ErrorCodes>
         /// Invalid statement structure.
         /// </summary>
         InvalidStatementStructure = 1,
+
+        /// <summary>
+        /// Json Response was not present in the output
+        /// </summary>
         JsonResponseNotFound = 2,
+
+        /// <summary>
+        /// Required context variables are not present in the context
+        /// </summary>
         ContextVariablesNotFound = 3,
     }
 

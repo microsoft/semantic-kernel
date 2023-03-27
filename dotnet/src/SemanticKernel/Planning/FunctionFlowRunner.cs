@@ -160,7 +160,7 @@ internal class FunctionFlowRunner
                     continue;
                 }
 
-                if(processFunctions && o2.Name.StartsWith(ConditionIfTag, StringComparison.InvariantCultureIgnoreCase))
+                if (processFunctions && o2.Name.StartsWith(ConditionIfTag, StringComparison.InvariantCultureIgnoreCase))
                 {
                     if (!context.IsFunctionRegistered("Conditional", "If", out var ifCheckFunction))
                     {

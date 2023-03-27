@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning.ControlFlow;
+using Microsoft.SemanticKernel.Planning;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;

@@ -12,7 +12,7 @@ using System.Xml;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning.ControlFlow;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
@@ -288,7 +288,7 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
 
         var existingVariables = variables.Where(v => usedVariables.Contains(v.Key));
 
-        foreach( var v in existingVariables )
+        foreach (var v in existingVariables)
         {
             // Numeric don't add quotes
             if (Regex.Match(v.Value, "^[0-9.,]+$").Success)
@@ -309,7 +309,7 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         var hasReasonIndex = llmResponse.IndexOf(ReasonIdentifier, StringComparison.OrdinalIgnoreCase);
         if (hasReasonIndex > -1)
         {
-            return llmResponse[(hasReasonIndex+ ReasonIdentifier.Length)..].Trim();
+            return llmResponse[(hasReasonIndex + ReasonIdentifier.Length)..].Trim();
         }
         return NoReasonMessage;
     }
