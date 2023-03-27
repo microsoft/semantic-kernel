@@ -19,10 +19,50 @@ internal static class Example12_Planning
 {
     public static async Task RunAsync()
     {
-        await PoetrySamplesAsync();
-        await EmailSamplesAsync();
-        await BookSamplesAsync();
-        await MemorySampleAsync();
+        // await PoetrySamplesAsync();
+        // await EmailSamplesAsync();
+        // await BookSamplesAsync();
+        // await MemorySampleAsync();
+        await ConditionalSampleAsync();
+    }
+
+    private static async Task ConditionalSampleAsync()
+    {
+        Console.WriteLine("======== Planning - Create and Execute Poetry Plan ========");
+        var kernel = InitializeKernelAndPlanner(out var planner);
+
+        // Load additional skills to enable planner to do non-trivial asks.
+        string folder = RepoFiles.SampleSkillsPath();
+        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+
+        var originalPlan = await kernel.RunAsync(
+            @"Summarize an outline about AI If the summarization contains any reference to ""AGI"" then Generate a summary outline for AGI.
+After that generate a list of synopsis for a novel using the resulting summarization.
+Generate a poem about love.", planner["CreatePlan"]);
+        // <goal>Summarize an outline about AI If the summarization length is greater than 100 then Generate a summary outline for AGI. After that generate a list of synopsis for a novel using the resulting summarization. Generate a poem about love</goal>
+        // <plan>
+        //   <function.Everything.Summarize setContextVariable=""SUMMARIZED_OUTLINE""/>
+        //   <if>
+        //     <conditiongroup>
+        //       <condition variable=""$SUMMARIZED_OUTLINE"" greaterthan=""100""/>
+        //     </conditiongroup>
+        //     <then>
+        //       <function.Everything.Summarize input=""Artificial General Intelligence (AGI) is the hypothetical ability of a machine to perform any intellectual task that a human can. It is a major goal of AI research and a common topic of science fiction and futurism. Some of the challenges and risks of developing AGI include ethical, social, philosophical, and existential issues."" setContextVariable=""SUMMARIZED_OUTLINE_AGI""/>
+        //       <function.Everything.GenerateList input=""$SUMMARIZED_OUTLINE_AGI"" listType=""synopsis"" listCount=""3"" setContextVariable=""SYNOPSIS_LIST""/>
+        //       <function.Everything.GeneratePoem input=""love"" poemType=""small""/>
+        //     </then>
+        //     <else>
+        //       <function.Everything.GenerateList input=""$SUMMARIZED_OUTLINE"" listType=""synopsis"" listCount=""3"" setContextVariable=""SYNOPSIS_LIST""/>
+        //       <function.Everything.GeneratePoem input=""love"" poemType=""small""/>
+        //     </else>
+        //   </if>
+        // </plan>
+
+        Console.WriteLine("Original plan:");
+        Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
+
+        await ExecutePlanAsync(kernel, planner, originalPlan, 5);
     }
 
     private static async Task PoetrySamplesAsync()
@@ -187,7 +227,7 @@ internal static class Example12_Planning
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
         planner = kernel.ImportSkill(new PlannerSkill(kernel), "planning");
-
+        kernel.ImportSkill(new ConditionalSkill(kernel), "conditional");
         return kernel;
     }
 
