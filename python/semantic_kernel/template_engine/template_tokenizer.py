@@ -103,21 +103,24 @@ class TemplateTokenizer:
                             if first_block_type == BlockTypes.VARIABLE:
                                 if len(code_blocks) > 1:
                                     raise ValueError(
-                                        f"Invalid token detected after the variable: {content_without_delimiters}"
+                                        "Invalid token detected after the "
+                                        f"variable: {content_without_delimiters}"
                                     )
 
                                 blocks.append(code_blocks[0])
                             elif first_block_type == BlockTypes.VALUE:
                                 if len(code_blocks) > 1:
                                     raise ValueError(
-                                        f"Invalid token detected after the value: {content_without_delimiters}"
+                                        "Invalid token detected after the "
+                                        "value: {content_without_delimiters}"
                                     )
 
                                 blocks.append(code_blocks[0])
                             elif first_block_type == BlockTypes.FUNCTION_ID:
                                 if len(code_blocks) > 2:
                                     raise ValueError(
-                                        f"Functions support only one parameter: {content_without_delimiters}"
+                                        "Functions support only one "
+                                        f"parameter: {content_without_delimiters}"
                                     )
 
                                 blocks.append(
@@ -129,7 +132,8 @@ class TemplateTokenizer:
                                 )
                             else:
                                 raise ValueError(
-                                    f"Code tokenizer returned an incorrect first token type {first_block_type}"
+                                    "Code tokenizer returned an incorrect "
+                                    f"first token type {first_block_type}"
                                 )
 
                         end_of_last_block = cursor + 1
