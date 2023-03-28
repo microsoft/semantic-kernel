@@ -45,6 +45,16 @@ class CodeTokenizer:
         space_separator_found = False
         skip_next_char = False
 
+        # 1 char only edge case
+        if len(text) == 1:
+            if next_char == Symbols.VAR_PREFIX:
+                blocks.append(VarBlock(text, self.log))
+            elif next_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
+                blocks.append(ValBlock(text, self.log))
+            else:
+                blocks.append(FunctionIdBlock(text, self.log))
+            return blocks
+
         for next_char_cursor in range(1, len(text)):
             current_char = next_char
             next_char = text[next_char_cursor]
@@ -56,12 +66,12 @@ class CodeTokenizer:
             # First char is easy
             if next_char_cursor == 1:
                 if current_char == Symbols.VAR_PREFIX:
-                    current_token_type = "Variable"
+                    current_token_type = BlockTypes.VARIABLE
                 elif current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
-                    current_token_type = "Value"
+                    current_token_type = BlockTypes.VALUE
                     text_value_delimiter = current_char
                 else:
-                    current_token_type = "FunctionId"
+                    current_token_type = BlockTypes.FUNCTION_ID
 
                 current_token_content.append(current_char)
                 continue
@@ -93,10 +103,10 @@ class CodeTokenizer:
             # If we're not between quotes, a space signals the end of the current token
             # Note: there might be multiple consecutive spaces
             if self._is_blank_space(current_char):
-                if current_token_type == "Variable":
+                if current_token_type == BlockTypes.VARIABLE:
                     blocks.append(VarBlock("".join(current_token_content), self.log))
                     current_token_content.clear()
-                elif current_token_type == "FunctionId":
+                elif current_token_type == BlockTypes.FUNCTION_ID:
                     blocks.append(
                         FunctionIdBlock("".join(current_token_content), self.log)
                     )
@@ -128,11 +138,11 @@ class CodeTokenizer:
         # Capture last token
         current_token_content.append(next_char)
 
-        if current_token_type == "Value":
+        if current_token_type == BlockTypes.VALUE:
             blocks.append(ValBlock("".join(current_token_content), self.log))
-        elif current_token_type == "Variable":
+        elif current_token_type == BlockTypes.VARIABLE:
             blocks.append(VarBlock("".join(current_token_content), self.log))
-        elif current_token_type == "FunctionId":
+        elif current_token_type == BlockTypes.FUNCTION_ID:
             blocks.append(FunctionIdBlock("".join(current_token_content), self.log))
         else:
             raise ValueError("Tokens must be separated by one space least")

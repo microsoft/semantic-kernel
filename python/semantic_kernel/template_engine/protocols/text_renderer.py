@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional, Protocol
+from typing import Optional, Protocol, runtime_checkable
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
 
 
+@runtime_checkable
 class TextRenderer(Protocol):
     """
     Protocol for static (text) blocks that don't need async rendering.

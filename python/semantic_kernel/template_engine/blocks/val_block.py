@@ -10,14 +10,17 @@ from semantic_kernel.template_engine.blocks.symbols import Symbols
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 
 
-class ValBlock(Block):
+class ValBlock(Block, TextRenderer):
     def __init__(self, content: Optional[str] = None, log: Optional[Logger] = None):
         super().__init__(content=content and content.strip(), log=log)
 
         if len(self.content) < 2:
             err = "A value must have single quotes or double quotes on both sides"
             self.log.error(err)
-            raise ValueError(err)
+            self._value = ""
+            self._first = "\0"
+            self._last = "\0"
+            return
 
         self._first = self.content[0]
         self._last = self.content[-1]

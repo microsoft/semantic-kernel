@@ -10,7 +10,7 @@ from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 
 
-class FunctionIdBlock(Block):
+class FunctionIdBlock(Block, TextRenderer):
     def __init__(self, content: Optional[str] = None, log: Optional[Logger] = None):
         super().__init__(content=content and content.strip(), log=log)
 
