@@ -26,11 +26,6 @@ public class Plan
     internal const string PlanKey = "PLAN__PLAN";
 
     /// <summary>
-    /// Internal constant string representing the arguments key.
-    /// </summary>
-    internal const string ArgumentsKey = "PLAN__ARGUMENTS";
-
-    /// <summary>
     /// Internal constant string representing the is complete key.
     /// </summary>
     internal const string IsCompleteKey = "PLAN__ISCOMPLETE";

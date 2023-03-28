@@ -12,14 +12,14 @@
 1. You will need an [Open AI Key](https://openai.com/api/) or
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample
-2. Ensure the service API is already running `http://localhost:7071`. If not learn
-   how to start it [here](../../dotnet/KernelHttpServer/README.md).
+2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps 
+   to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. You will also need to
    [register your application](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)
    in the Azure Portal. Follow the steps to register your app
    [here](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app).
     - Select **`Single-page application (SPA)`** as platform type, and the Redirect URI will be **`http://localhost:3000`**
-    - It is recommended you use the **`Personal Microsoft accounts`** account type for this sample.
+    - Select **`Personal Microsoft accounts only`** as supported account types for this sample
 4. Once registered, copy the **Application (client) ID** from the Azure Portal and paste
    the GUID into the **[.env](.env)** file next to `REACT_APP_GRAPH_CLIENT_ID=` (first line of the .env file).
 5. **Run** the following command `yarn install` (if you have never run the sample before)
@@ -39,3 +39,13 @@ Each function will call Microsoft Graph and/or Open AI to perform the tasks.
 
 > [!CAUTION]
 > Each function will call Open AI which will use tokens that you will be billed for.
+
+## Troubleshooting
+
+### unauthorized_client: The client does not exist or is not enabled for consumers.
+
+1. Ensure in your Application Manifest that **`Personal Microsoft accounts`** are allowed to sign in.
+   - `"signInAudience": "PersonalMicrosoftAccount"` or
+   - `"signInAudience": "AzureADandPersonalMicrosoftAccount"`
+
+2. If you are not able to change the manifest, create a new Application following the instructions in [Running the sample](#running-the-sample), step 3.

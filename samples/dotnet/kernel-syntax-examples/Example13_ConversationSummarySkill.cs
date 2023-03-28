@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
@@ -178,7 +179,7 @@ Jane: Goodbye!
     private static IKernel InitializeKernel()
     {
         IKernel kernel = Kernel.Builder.WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddAzureOpenAICompletionBackend(
+        kernel.Config.AddAzureOpenAITextCompletion(
             Env.Var("AZURE_OPENAI_DEPLOYMENT_LABEL"),
             Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
             Env.Var("AZURE_OPENAI_ENDPOINT"),
