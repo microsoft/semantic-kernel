@@ -24,6 +24,7 @@ class FileIOSkill:
 
     @sk_function(
         description="Read a file",
+        name="readAsync",
         input_description="Path of the source file",
     )
     async def read_async(self, path: str) -> str:
@@ -45,7 +46,7 @@ class FileIOSkill:
             content = await fp.read()
             return content
 
-    @sk_function(description="Write a file")
+    @sk_function(description="Write a file", name="writeAsync",)
     @sk_function_context_parameter(name="path", description="Destination path")
     @sk_function_context_parameter(name="content", description="File content")
     async def write_async(self, context: SKContext):
@@ -55,7 +56,8 @@ class FileIOSkill:
         Example:
             {{file.writeAsync}}
         Args:
-            Contains the 'path' for the Destination file and 'content' of the file to write.
+            Contains the 'path' for the Destination file and
+            the 'content' of the file to write.
 
         Returns:
             The contents of the file
