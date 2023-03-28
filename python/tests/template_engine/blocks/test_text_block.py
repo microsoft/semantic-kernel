@@ -70,3 +70,40 @@ def test_render():
     text_block = TextBlock(text="test text")
     rendered_value = text_block.render(ContextVariables())
     assert rendered_value == "test text"
+
+
+def test_preserves_empty_values():
+    assert "" == TextBlock(text=None).content
+    assert "" == TextBlock(text="").content
+    assert " " == TextBlock(text=" ").content
+    assert "  " == TextBlock(text="  ").content
+    assert " \n" == TextBlock(text=" \n").content
+    assert " \t" == TextBlock(text=" \t").content
+    assert " \r" == TextBlock(text=" \r").content
+
+
+def test_is_always_valid():
+    assert TextBlock(text=None).is_valid() == (True, "")
+    assert TextBlock(text="").is_valid() == (True, "")
+    assert TextBlock(text=" ").is_valid() == (True, "")
+    assert TextBlock(text="  ").is_valid() == (True, "")
+    assert TextBlock(text=" \n").is_valid() == (True, "")
+    assert TextBlock(text=" \t").is_valid() == (True, "")
+    assert TextBlock(text=" \r").is_valid() == (True, "")
+    assert TextBlock(text="test").is_valid() == (True, "")
+    assert TextBlock(text=" \nabc").is_valid() == (True, "")
+
+
+def test_renders_the_content_as_it():
+    assert TextBlock(text=None).render() == ""
+    assert TextBlock(text="").render() == ""
+    assert TextBlock(text=" ").render() == " "
+    assert TextBlock(text="  ").render() == "  "
+    assert TextBlock(text=" \n").render() == " \n"
+    assert TextBlock(text=" \t").render() == " \t"
+    assert TextBlock(text=" \r").render() == " \r"
+    assert TextBlock(text="test").render() == "test"
+    assert TextBlock(text=" \nabc").render() == " \nabc"
+    assert TextBlock(text="'x'").render() == "'x'"
+    assert TextBlock(text='"x"').render() == '"x"'
+    assert TextBlock(text="\"'x'\"").render() == "\"'x'\""
