@@ -256,6 +256,9 @@ class SKFunction(SKFunctionBase):
         self._ensure_context_has_skills(context)
 
         delegate = DelegateHandlers.get_handler(self._delegate_type)
+        # for python3.9 compatibility (staticmethod is not callable)
+        if not hasattr(delegate, "__call__"):
+            delegate = delegate.__func__
         new_context = await delegate(self._function, context)
 
         return new_context
