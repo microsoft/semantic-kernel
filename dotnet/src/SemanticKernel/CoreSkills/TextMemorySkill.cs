@@ -33,7 +33,7 @@ public class TextMemorySkill
     public const string RelevanceParam = "relevance";
 
     /// <summary>
-    /// Name of the context variable used to specify a unique key associated with stored information.
+    /// Name of the context variable used to specify a unique key associated with stored data entry.
     /// </summary>
     public const string KeyParam = "key";
 
@@ -146,7 +146,7 @@ public class TextMemorySkill
     [SKFunctionInput(Description = "The information to save")]
     [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the information to save", DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated with the information to save")]
-    public async Task SaveAsync(string text, SKContext context)
+    public async Task<string> SaveAsync(string text, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
         Verify.NotEmpty(collection, "Memory collection not defined");
@@ -156,7 +156,7 @@ public class TextMemorySkill
 
         context.Log.LogTrace("Saving memory to collection '{0}'", collection);
 
-        await context.Memory.SaveInformationAsync(collection, text: text, id: key);
+        return await context.Memory.SaveInformationAsync(collection, text: text, id: key);
     }
 
     /// <summary>

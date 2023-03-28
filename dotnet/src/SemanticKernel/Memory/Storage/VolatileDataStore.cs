@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -48,16 +49,18 @@ public class VolatileDataStore<TValue> : IDataStore<TValue>
     }
 
     /// <inheritdoc/>
-    public virtual Task<DataEntry<TValue>> PutAsync(string collection, DataEntry<TValue> data, CancellationToken cancel = default)
+    public virtual Task<string> PutAsync(string collection, DataEntry<TValue> data, CancellationToken cancel = default)
     {
         Verify.NotNull(data, "Data entry cannot be NULL");
 
+        string id = Guid.NewGuid().ToString();
+
         if (this.TryGetCollection(collection, out var collectionDict, create: true))
         {
-            collectionDict[data.Key] = data;
+            collectionDict[id] = data;
         }
 
-        return Task.FromResult(data);
+        return Task.FromResult(id);
     }
 
     /// <inheritdoc/>

@@ -45,7 +45,7 @@ public class MemoryQueryResult
     /// <param name="isReference">Whether the source data used to calculate embeddings are stored in the local
     /// storage provider or is available through and external service, such as web site, MS Graph, etc.</param>
     /// <param name="sourceName">A value used to understand which external service owns the data, to avoid storing the information
-    /// inside the Id. E.g. this could be "MSTeams", "WebSite", "GitHub", etc.</param>
+    /// inside the Key. E.g. this could be "MSTeams", "WebSite", "GitHub", etc.</param>
     /// <param name="id">Unique identifier. The format of the value is domain specific, so it can be a URL, a GUID, etc.</param>
     /// <param name="description">Optional title describing the entry, useful for external references when Text is empty.</param>
     /// <param name="text">Source text, available only when the memory is not an external source.</param>

@@ -18,11 +18,11 @@ public struct DataEntry<TValue> : IEquatable<DataEntry<TValue>>
     /// <summary>
     /// Creates an instance of a <see cref="DataEntry{TValue}"/>.
     /// </summary>
-    /// <param name="key">The data key.</param>
+    /// <param name="key">The unique data key.</param>
     /// <param name="value">The data value.</param>
     /// <param name="timestamp">The data timestamp.</param>
     [JsonConstructor]
-    public DataEntry(string key, TValue? value, DateTimeOffset? timestamp = null)
+    public DataEntry(string? key, TValue? value, DateTimeOffset? timestamp = null)
     {
         this.Key = key;
         this.Value = value;
@@ -33,7 +33,7 @@ public struct DataEntry<TValue> : IEquatable<DataEntry<TValue>>
     /// Gets the key of the data.
     /// </summary>
     [JsonPropertyName("key")]
-    public readonly string Key { get; }
+    public string? Key { get; set; } = null;
 
     /// <summary>
     /// Gets the value of the data.
@@ -52,6 +52,12 @@ public struct DataEntry<TValue> : IEquatable<DataEntry<TValue>>
     /// </summary>
     [JsonIgnore]
     public Type ValueType => typeof(TValue);
+
+    /// <summary>
+    /// <c>true</c> if the data has a value.
+    /// </summary>
+    [JsonIgnore]
+    public bool HasKey => (this.Value != null);
 
     /// <summary>
     /// <c>true</c> if the data has a value.
@@ -187,10 +193,8 @@ public static class DataEntry
     /// <param name="value">The data value.</param>
     /// <param name="timestamp">The data timestamp.</param>
     /// <returns>A <see cref="DataEntry{TValue}"/> object.</returns>
-    public static DataEntry<TValue> Create<TValue>(string key, TValue? value, DateTimeOffset? timestamp = null)
+    public static DataEntry<TValue> Create<TValue>(string? key, TValue? value, DateTimeOffset? timestamp = null)
     {
-        Verify.NotEmpty(key, "Data entry key cannot be NULL");
-
         return new DataEntry<TValue>(key, value, timestamp);
     }
 
@@ -202,7 +206,7 @@ public static class DataEntry
     /// <param name="value">The data value.</param>
     /// <param name="timestamp">The data timestamp.</param>
     /// <returns>A <see cref="DataEntry{TValue}"/> object.</returns>
-    public static DataEntry<TValue> Create<TValue>(string key, string value, DateTimeOffset? timestamp = null)
+    public static DataEntry<TValue> Create<TValue>(string? key, string value, DateTimeOffset? timestamp = null)
     {
         Verify.NotEmpty(key, "Data entry key cannot be NULL");
 

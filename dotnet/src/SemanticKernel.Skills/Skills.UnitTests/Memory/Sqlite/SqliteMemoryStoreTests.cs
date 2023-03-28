@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -39,17 +41,17 @@ public class SqliteDataStoreTests : IDisposable
         // Arrange
         int rand = RandomNumberGenerator.GetInt32(int.MaxValue);
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
 
         // Act
         this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
-        await this._db.PutValueAsync(collection, key, value);
+        var key = await this._db.PutValueAsync(collection, value);
 
         string? actual = await this._db.GetValueAsync(collection, key);
 
         // Assert
         Assert.NotNull(actual);
+        Assert.NotNull(key);
         Assert.Equal(value, actual);
     }
 
@@ -59,13 +61,12 @@ public class SqliteDataStoreTests : IDisposable
         // Arrange
         int rand = RandomNumberGenerator.GetInt32(int.MaxValue);
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
         DateTimeOffset timestamp = DateTimeOffset.UtcNow;
 
         // Act
         this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
-        await this._db.PutValueAsync(collection, key, value, timestamp);
+        var key = await this._db.PutValueAsync(collection, value, timestamp);
         DataEntry<string>? actual = await this._db.GetAsync(collection, key);
 
         // Assert
@@ -81,14 +82,13 @@ public class SqliteDataStoreTests : IDisposable
         // Arrange
         int rand = RandomNumberGenerator.GetInt32(int.MaxValue);
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
         DateTimeOffset timestamp = DateTimeOffset.UtcNow;
-        var data = DataEntry.Create(key, value, timestamp);
+        var data = DataEntry.Create(null, value, timestamp);
 
         // Act
         this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
-        await this._db.PutAsync(collection, data);
+        var key = await this._db.PutAsync(collection, data);
         DataEntry<string>? actual = await this._db.GetAsync(collection, key);
 
         // Assert
@@ -104,13 +104,12 @@ public class SqliteDataStoreTests : IDisposable
         // Arrange
         int rand = RandomNumberGenerator.GetInt32(int.MaxValue);
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
-        var data = DataEntry.Create(key, value, DateTimeOffset.UtcNow);
+        var data = DataEntry.Create(null, value, DateTimeOffset.UtcNow);
 
         // Act
         this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
-        await this._db.PutAsync(collection, data);
+        var key = await this._db.PutAsync(collection, data);
         await this._db.RemoveAsync(collection, key);
 
         // Assert
@@ -124,12 +123,11 @@ public class SqliteDataStoreTests : IDisposable
         // Arrange
         int rand = RandomNumberGenerator.GetInt32(int.MaxValue);
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
 
         // Act
         this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
-        await this._db.PutValueAsync(collection, key, value);
+        var key = await this._db.PutValueAsync(collection, value);
         var collections = this._db.GetCollectionsAsync();
 
         // Assert
@@ -144,20 +142,24 @@ public class SqliteDataStoreTests : IDisposable
         // Arrange
         int rand = RandomNumberGenerator.GetInt32(int.MaxValue);
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
         int quantity = 15;
+
+        IList<string> keys = new List<string>();
 
         // Act
         this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
         for (int i = 0; i < quantity; i++)
         {
-            await this._db.PutValueAsync(collection, key + i, value);
+            keys.Add(await this._db.PutValueAsync(collection, value));
         }
 
         var getAllResults = this._db.GetAllAsync(collection);
 
         // Assert
+        Assert.NotEmpty(keys);
+        Assert.True(keys.Any(), "keys is empty");
+        Assert.True(keys.Count == quantity, "keys should have 15 entries");
         Assert.NotNull(getAllResults);
         Assert.True(await getAllResults.AnyAsync(), "Collections is empty");
         Assert.True(await getAllResults.CountAsync() == quantity, "Collections should have 15 entries");

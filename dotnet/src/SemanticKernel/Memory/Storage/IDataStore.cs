@@ -30,10 +30,10 @@ public interface IDataStore<TValue>
     IAsyncEnumerable<DataEntry<TValue>> GetAllAsync(string collection, CancellationToken cancel = default);
 
     /// <summary>
-    /// Gets a <see cref="IDataStore{TValue}"/> object from a collection and key.
+    /// Gets a <see cref="IDataStore{TValue}"/> object given the data entry's collection and unique ID.
     /// </summary>
     /// <param name="collection">Collection name.</param>
-    /// <param name="key">Item key.</param>
+    /// <param name="key">Unique Item key.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>The data, if found. Null otherwise.</returns>
     Task<DataEntry<TValue>?> GetAsync(string collection, string key, CancellationToken cancel = default);
@@ -44,14 +44,14 @@ public interface IDataStore<TValue>
     /// <param name="collection">Collection name.</param>
     /// <param name="data">The <see cref="DataEntry{TValue}"/> object to insert into the data store.</param>
     /// <param name="cancel">Cancellation token.</param>
-    /// <returns></returns>
-    Task<DataEntry<TValue>> PutAsync(string collection, DataEntry<TValue> data, CancellationToken cancel = default);
+    /// <returns>Returns the unique key for the database entry</returns>
+    Task<string> PutAsync(string collection, DataEntry<TValue> data, CancellationToken cancel = default);
 
     /// <summary>
-    /// Removes a data entry from the store.
+    /// Removes a data entry from the store given the data entry's unique ID.
     /// </summary>
     /// <param name="collection">Collection name.</param>
-    /// <param name="key">Item key.</param>
+    /// <param name="key">Unique Item key.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     Task RemoveAsync(string collection, string key, CancellationToken cancel = default);
@@ -68,7 +68,7 @@ public static class DataStoreExtensions
     /// <typeparam name="TValue">The data value type.</typeparam>
     /// <param name="store">The data store.</param>
     /// <param name="collection">The collection within the data store.</param>
-    /// <param name="key">The key for the data within the collection.</param>
+    /// <param name="key">The unique key for the data within the collection.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>The data value, if found. Null otherwise.</returns>
     public static async Task<TValue?> GetValueAsync<TValue>(this IDataStore<TValue> store, string collection, string key, CancellationToken cancel = default)
@@ -90,17 +90,16 @@ public static class DataStoreExtensions
     /// <typeparam name="TValue">The data value type.</typeparam>
     /// <param name="store">The data store.</param>
     /// <param name="collection">The collection within the data store.</param>
-    /// <param name="key">The key for the data within the collection.</param>
     /// <param name="value">The data value.</param>
     /// <param name="timeStamp">The data timestamp.</param>
     /// <param name="cancel">Cancellation token.</param>
-    public static Task<DataEntry<TValue>> PutValueAsync<TValue>(this IDataStore<TValue> store, string collection, string key, TValue? value,
+    public static Task<string> PutValueAsync<TValue>(this IDataStore<TValue> store, string collection, TValue? value,
         DateTimeOffset? timeStamp = null,
         CancellationToken cancel = default)
     {
         Verify.NotNull(store, "Data store cannot be NULL");
 
-        DataEntry<TValue> entry = DataEntry.Create(key, value, timeStamp);
+        DataEntry<TValue> entry = DataEntry.Create(null, value, timeStamp);
         return store.PutAsync(collection, entry, cancel);
     }
 }

@@ -28,7 +28,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task SaveInformationAsync(
+    public async Task<string> SaveInformationAsync(
         string collection,
         string text,
         string id,
@@ -38,11 +38,11 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         var embeddings = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
         MemoryRecord data = MemoryRecord.LocalRecord(id, text, description, embeddings);
 
-        await this._storage.PutValueAsync(collection, key: id, value: data, cancel: cancel);
+        return await this._storage.PutValueAsync(collection, value: data, cancel: cancel);
     }
 
     /// <inheritdoc/>
-    public async Task SaveReferenceAsync(
+    public async Task<string> SaveReferenceAsync(
         string collection,
         string text,
         string externalId,
@@ -53,7 +53,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
         var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description, embedding);
 
-        await this._storage.PutValueAsync(collection, key: externalId, value: data, cancel: cancel);
+        return await this._storage.PutValueAsync(collection, value: data, cancel: cancel);
     }
 
     /// <inheritdoc/>

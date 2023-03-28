@@ -28,10 +28,10 @@ public static class Example15_MemorySkill
 
         // ========= Store memories using the kernel =========
 
-        await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "info1", text: "My name is Andrea");
-        await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "info2", text: "I work as a tourist operator");
-        await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "info3", text: "I've been living in Seattle since 2005");
-        await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "info4", text: "I visited France and Italy five times since 2015");
+        string memKey1 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "info1", text: "My name is Andrea");
+        string memKey2 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "info2", text: "I work as a tourist operator");
+        string memKey3 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "info3", text: "I've been living in Seattle since 2005");
+        string memKey4 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "info4", text: "I visited France and Italy five times since 2015");
 
         // ========= Store memories using semantic function =========
 
@@ -47,17 +47,17 @@ public static class Example15_MemorySkill
         context[TextMemorySkill.CollectionParam] = MemoryCollectionName;
         context[TextMemorySkill.KeyParam] = "info5";
         context["info"] = "My family is from New York";
-        await memorySaver.InvokeAsync(context);
+        var memKey5 = await memorySaver.InvokeAsync(context);
 
         // ========= Test memory remember =========
         Console.WriteLine("========= Example: Recalling a Memory =========");
 
-        context[TextMemorySkill.KeyParam] = "info1";
+        context[TextMemorySkill.KeyParam] = memKey1;
         var answer = await memorySkill.RetrieveAsync(context);
-        Console.WriteLine("Memory associated with 'info1': {0}", answer);
+        Console.WriteLine("Memory associated with {0}: {1}", memKey1, answer);
         /*
         Output:
-        "Memory associated with 'info1': My name is Andrea
+        "Memory associated with <GUID>: My name is Andrea
         */
 
         // ========= Test memory recall =========

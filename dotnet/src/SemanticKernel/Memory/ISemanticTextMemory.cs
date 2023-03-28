@@ -15,11 +15,11 @@ public interface ISemanticTextMemory
     /// Save some information into the semantic memory, keeping a copy of the source information.
     /// </summary>
     /// <param name="collection">Collection where to save the information</param>
-    /// <param name="id">Unique identifier</param>
+    /// <param name="id">Unique identifier for searching memory metadata</param>
     /// <param name="text">Information to save</param>
     /// <param name="description">Optional description</param>
     /// <param name="cancel">Cancellation token</param>
-    public Task SaveInformationAsync(
+    public Task<string> SaveInformationAsync(
         string collection,
         string text,
         string id,
@@ -31,11 +31,11 @@ public interface ISemanticTextMemory
     /// </summary>
     /// <param name="collection">Collection where to save the information</param>
     /// <param name="text">Information to save</param>
-    /// <param name="externalId">Unique identifier, e.g. URL or GUID to the original source</param>
+    /// <param name="externalId">Unique identifier, e.g. URL or GUID to the original source for searching memory metadata</param>
     /// <param name="externalSourceName">Name of the external service, e.g. "MSTeams", "GitHub", "WebSite", "Outlook IMAP", etc.</param>
     /// <param name="description">Optional description</param>
     /// <param name="cancel">Cancellation token</param>
-    public Task SaveReferenceAsync(
+    public Task<string> SaveReferenceAsync(
         string collection,
         string text,
         string externalId,

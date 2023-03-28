@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -33,16 +34,16 @@ public class VolatileMemoryStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key";
         var embedding = new Embedding<double>(new double[] { 1, 1, 1 });
         var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "1 1 1");
 
         // Act
-        await this._db.PutValueAsync(collection, key, memory);
+        var key = await this._db.PutValueAsync(collection, memory);
         var actual = await this._db.GetValueAsync(collection, key);
 
         // Assert
         Assert.NotNull(actual);
+        Assert.NotNull(key);
         Assert.Equal(memory, actual);
     }
 
@@ -52,13 +53,12 @@ public class VolatileMemoryStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key";
         var embedding = new Embedding<double>(new double[] { 1, 2, 3 });
         var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "1 2 3");
         DateTimeOffset timestamp = DateTimeOffset.UtcNow;
 
         // Act
-        await this._db.PutValueAsync(collection, key, memory, timestamp);
+        var key = await this._db.PutValueAsync(collection, memory, timestamp);
         var actual = await this._db.GetAsync(collection, key);
 
         // Assert
@@ -74,14 +74,13 @@ public class VolatileMemoryStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key";
         var embedding = new Embedding<double>(new double[] { 3, 2, 1 });
         var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "3 2 1");
         DateTimeOffset timestamp = DateTimeOffset.UtcNow;
-        var data = new DataEntry<IEmbeddingWithMetadata<double>>(key, memory, timestamp);
+        var data = new DataEntry<IEmbeddingWithMetadata<double>>(null, memory, timestamp);
 
         // Act
-        await this._db.PutAsync(collection, data);
+        var key = await this._db.PutAsync(collection, data);
         DataEntry<IEmbeddingWithMetadata<double>>? actual = await this._db.GetAsync(collection, key);
 
         // Assert
@@ -97,13 +96,12 @@ public class VolatileMemoryStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key";
         var embedding = new Embedding<double>(new double[] { -1, -1, -1 });
         var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "-1 -1 -1");
-        var data = new DataEntry<IEmbeddingWithMetadata<double>>(key, memory);
+        var data = new DataEntry<IEmbeddingWithMetadata<double>>(null, memory);
 
         // Act
-        await this._db.PutAsync(collection, data);
+        var key = await this._db.PutAsync(collection, data);
         await this._db.RemoveAsync(collection, key);
 
         // Assert
@@ -117,12 +115,11 @@ public class VolatileMemoryStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key";
         var embedding = new Embedding<double>(new double[] { 0, 0, 0 });
         var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "0 0 0");
 
         // Act
-        await this._db.PutValueAsync(collection, key, memory);
+        var key = await this._db.PutValueAsync(collection, memory);
         var collections = this._db.GetCollectionsAsync().ToEnumerable();
 
         // Assert
@@ -137,19 +134,23 @@ public class VolatileMemoryStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key";
         var embedding = new Embedding<double>(new double[] { 0, 0, 0 });
         var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "0 0 0");
+
+        IList<string> keys = new List<string>();
 
         // Act
         for (int i = 0; i < 15; i++)
         {
-            await this._db.PutValueAsync(collection, key + i, memory);
+            keys.Add(await this._db.PutValueAsync(collection, memory));
         }
 
         var getAllResults = this._db.GetAllAsync(collection).ToEnumerable();
 
         // Assert
+        Assert.NotEmpty(keys);
+        Assert.True(keys.Any(), "keys are empty");
+        Assert.True(keys.Count() == 15, "keys should have 15 entries");
         Assert.NotNull(getAllResults);
         Assert.True(getAllResults.Any(), "Collections are empty");
         Assert.True(getAllResults.Count() == 15, "Collections should have 15 entries");
@@ -163,26 +164,21 @@ public class VolatileMemoryStoreTests
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
         int topN = 4;
-
-        string key = "key" + Random.Shared.Next();
+        
         var memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 1, 1 }), "1 ,1 ,1");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
+        _ = await this._db.PutValueAsync(collection, memory);
+        
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -1, -1 }), "-1 ,-1 ,-1");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
+        await this._db.PutValueAsync(collection, memory);
+        
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 2, 3 }), "1 ,2 ,3");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
+        _ = await this._db.PutValueAsync(collection, memory);
+        
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -2, -3 }), "-1 ,-2 ,-3");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
+        _ = await this._db.PutValueAsync(collection, memory);
+        
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, -1, 2 }), "1 ,-1 ,2");
-        await this._db.PutValueAsync(collection, key, memory);
+        _ = await this._db.PutValueAsync(collection, memory);
 
         // Act
         var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: -1).ToEnumerable().ToArray();
@@ -204,26 +200,21 @@ public class VolatileMemoryStoreTests
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
         int topN = 4;
-
-        string key = "key" + Random.Shared.Next();
+        
         var memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 1, 1 }), "1 ,1 ,1");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
+        _ = await this._db.PutValueAsync(collection, memory);
+        
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -1, -1 }), "-1 ,-1 ,-1");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
+        _ = await this._db.PutValueAsync(collection, memory);
+        
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 2, 3 }), "1 ,2 ,3");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
+        _ = await this._db.PutValueAsync(collection, memory);
+        
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -2, -3 }), "-1 ,-2 ,-3");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
+        _ = await this._db.PutValueAsync(collection, memory);
+        
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, -1, 2 }), "1 ,-1 ,2");
-        await this._db.PutValueAsync(collection, key, memory);
+        _ = await this._db.PutValueAsync(collection, memory);
 
         // Act
         var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToEnumerable().ToArray();
@@ -244,16 +235,14 @@ public class VolatileMemoryStoreTests
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
         int topN = 4;
-
-        string key = "key" + Random.Shared.Next();
+        
         var memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 1, 1 }), "1 ,2 ,3");
-        await this._db.PutValueAsync(collection, key, memory);
+        _ = await this._db.PutValueAsync(collection, memory);
 
         for (int i = 0; i < 10; i++)
         {
-            key = "key" + Random.Shared.Next();
             memory = new DoubleEmbeddingWithBasicMetadata(compareEmbedding, "1 ,1 ,1");
-            await this._db.PutValueAsync(collection, key, memory);
+            _ = await this._db.PutValueAsync(collection, memory);
         }
 
         // Act

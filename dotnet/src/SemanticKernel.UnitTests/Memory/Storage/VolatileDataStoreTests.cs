@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory.Storage;
@@ -34,16 +36,16 @@ public class VolatileDataStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
 
         // Act
-        await this._db.PutValueAsync(collection, key, value);
+        var key = await this._db.PutValueAsync(collection, value);
 
         var actual = await this._db.GetValueAsync(collection, key);
 
         // Assert
         Assert.NotNull(actual);
+        Assert.NotNull(key);
         Assert.Equal(value, actual);
     }
 
@@ -53,16 +55,16 @@ public class VolatileDataStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
         DateTimeOffset timestamp = DateTimeOffset.UtcNow;
 
         // Act
-        await this._db.PutValueAsync(collection, key, value, timestamp);
+        var key = await this._db.PutValueAsync(collection, value, timestamp);
         var actual = await this._db.GetAsync(collection, key);
 
         // Assert
         Assert.NotNull(actual);
+        Assert.NotNull(key);
         Assert.Equal(value, actual!.Value.Value);
         Assert.True(timestamp.Date.Equals(actual!.Value.Timestamp?.Date));
         Assert.True((int)timestamp.TimeOfDay.TotalSeconds == (int?)actual!.Value.Timestamp?.TimeOfDay.TotalSeconds);
@@ -74,18 +76,17 @@ public class VolatileDataStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
         DateTimeOffset timestamp = DateTimeOffset.UtcNow;
-        var data = DataEntry.Create(key, value, timestamp);
+        var data = DataEntry.Create(null, value, timestamp);
 
         // Act
-        var placed = await this._db.PutAsync(collection, data);
+        var key = await this._db.PutAsync(collection, data);
         DataEntry<string>? actual = await this._db.GetAsync(collection, key);
 
         // Assert
         Assert.NotNull(actual);
-        Assert.True(placed.Equals(data));
+        Assert.NotNull(key);
         Assert.Equal(value, actual!.Value.Value);
         Assert.True(timestamp.Date.Equals(actual!.Value.Timestamp?.Date));
         Assert.True((int)timestamp.TimeOfDay.TotalSeconds == (int?)actual!.Value.Timestamp?.TimeOfDay.TotalSeconds);
@@ -97,12 +98,11 @@ public class VolatileDataStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
-        var data = DataEntry.Create(key, value, DateTimeOffset.UtcNow);
+        var data = DataEntry.Create(value, DateTimeOffset.UtcNow.ToString());
 
         // Act
-        await this._db.PutAsync(collection, data);
+        var key = await this._db.PutAsync(collection, data);
         await this._db.RemoveAsync(collection, key);
         var attempt = await this._db.GetAsync(collection, key);
 
@@ -117,11 +117,10 @@ public class VolatileDataStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
 
         // Act
-        await this._db.PutValueAsync(collection, key, value);
+        var key = await this._db.PutValueAsync(collection, value);
         var collections = this._db.GetCollectionsAsync().ToEnumerable();
 
         // Assert
@@ -136,18 +135,22 @@ public class VolatileDataStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key" + rand;
         string value = "value" + rand;
+
+        IList<string> keys = new List<string>();
 
         // Act
         for (int i = 0; i < 15; i++)
         {
-            await this._db.PutValueAsync(collection, key + i, value);
+            keys.Add(await this._db.PutValueAsync(collection, value));
         }
 
         var getAllResults = this._db.GetAllAsync(collection).ToEnumerable();
 
         // Assert
+        Assert.NotEmpty(keys);
+        Assert.True(keys.Any(), "keys empty");
+        Assert.True(keys.Count() == 15, "keys should have 15 entries");
         Assert.NotNull(getAllResults);
         Assert.True(getAllResults.Any(), "Collections collection empty");
         Assert.True(getAllResults.Count() == 15, "Collections collection should have 15 entries");
@@ -159,35 +162,13 @@ public class VolatileDataStoreTests
         // Arrange
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
-        string key = "key";
         string value = "value";
 
         // Act
-        await this._db.PutValueAsync(collection, key, value);
+        var key = await this._db.PutValueAsync(collection, value);
         var attempt = await this._db.GetAsync(collection, key + "1");
 
         // Assert
         Assert.Null(attempt);
-    }
-
-    [Fact]
-    public async Task ItWillOverwriteExistingValueAsync()
-    {
-        // Arrange
-        int rand = Random.Shared.Next();
-        string collection = "collection" + rand;
-        string key = "key";
-        string value1 = "value1";
-        string value2 = "value2";
-
-        // Act
-        await this._db.PutValueAsync(collection, key, value1);
-        await this._db.PutValueAsync(collection, key, value2);
-        var actual = await this._db.GetAsync(collection, key);
-
-        // Assert
-        Assert.NotNull(actual);
-        Assert.NotEqual(value1, actual!.Value.Value);
-        Assert.Equal(value2, actual!.Value.Value);
     }
 }

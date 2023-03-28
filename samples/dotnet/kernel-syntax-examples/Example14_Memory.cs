@@ -45,7 +45,7 @@ public static class Example14_Memory
         var i = 0;
         foreach (var entry in githubFiles)
         {
-            await kernel.Memory.SaveReferenceAsync(
+            _ = await kernel.Memory.SaveReferenceAsync(
                 collection: memoryCollectionName,
                 description: entry.Value,
                 text: entry.Value,
