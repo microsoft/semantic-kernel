@@ -26,6 +26,7 @@
     "@azure/msal-react": "^1.5.1",
     "@fluentui/react-components": "^9.13.0",
     "@fluentui/react-icons": "^2.0.193",
+    "@microsoft/microsoft-graph-client": "^3.0.5",
     "@reduxjs/toolkit": "^1.9.1",
     "abcjs": "^6.1.9",
     "cron": "^2.2.0",
