@@ -1,11 +1,12 @@
 import os
 
 import aiofiles
-from semantic_kernel.skill_definition.sk_function_context_parameter_decorator import (
+from semantic_kernel.orchestration.sk_context import SKContext
+
+from semantic_kernel.skill_definition import (
+    sk_function,
     sk_function_context_parameter,
 )
-from python.semantic_kernel.orchestration.sk_context import SKContext
-from python.semantic_kernel.skill_definition import sk_function
 
 
 class FileIOSkill:
@@ -59,11 +60,13 @@ class FileIOSkill:
         Returns:
             The contents of the file
         """
-        path = context.get("path")
-        content = context.get("content")
+        has_path, path = context.variables.get("path")
+        has_content, content = context.variables.get("content")
 
-        assert content is not None, "Content is required"
-        assert path is not None, "Path is required"
+        assert has_path, "Path is required"
+        assert has_content, "Content is required"
+        assert content is not None, "Content is required and should not be empty"
+        assert path is not None, "Path is required and should not be empty"
 
         async with aiofiles.open(path, "w") as fp:
             await fp.write(content)
