@@ -1,20 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from unittest.mock import Mock
-from pytest import fixture, mark, raises
 
-from semantic_kernel.skill_definition import sk_function
+from pytest import fixture, mark
+
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function import SKFunction
+from semantic_kernel.skill_definition import sk_function
 from semantic_kernel.skill_definition.read_only_skill_collection import (
     ReadOnlySkillCollection,
 )
-from semantic_kernel.template_engine.prompt_template_engine import (
-    PromptTemplateEngine,
-)
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 from semantic_kernel.utils.null_logger import NullLogger
 
 

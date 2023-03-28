@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from pytest import raises, mark
+from pytest import mark, raises
 
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer

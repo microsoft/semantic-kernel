@@ -53,7 +53,7 @@ class PromptTemplate(PromptTemplateBase):
 
         blocks = self._template_engine.extract_blocks(self._template)
         for block in blocks:
-            if block.type != BlockTypes.Variable:
+            if block.type != BlockTypes.VARIABLE:
                 continue
             if block is None:
                 continue
