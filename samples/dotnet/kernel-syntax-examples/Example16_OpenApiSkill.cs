@@ -30,7 +30,7 @@ internal class Example16_OpenApiSkill
         //kernel.ImportOpenApiSkillFromDirectory(folder, "AzureKeyVaultSkill");
 
         //Use OpenApi skill from Skills.OpenAPI package
-        kernel.RegisterOpenApiSkill(LocalOpenApiSkillsProvider.LoadFroResource(LocalOpenApiSkillsProvider.AzureKeyVault), LocalOpenApiSkillsProvider.AzureKeyVault);
+        kernel.RegisterOpenApiSkill(LocalOpenApiSkillsProvider.LoadFromResource(LocalOpenApiSkillsProvider.AzureKeyVault), LocalOpenApiSkillsProvider.AzureKeyVault);
 
         var plan = await kernel.RunAsync("Load 'test-secret' from Azure KeyValut available at https://dev-tests.vault.azure.net using GetSecret function.", planner["CreatePlan"]);
 

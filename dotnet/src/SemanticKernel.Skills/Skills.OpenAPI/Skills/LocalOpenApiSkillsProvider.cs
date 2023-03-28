@@ -21,7 +21,7 @@ public static class LocalOpenApiSkillsProvider
     /// </summary>
     /// <param name="skillName">The skill name.</param>
     /// <returns>The OpenApi document resource stream.</returns>
-    public static Stream LoadFroResource(string skillName)
+    public static Stream LoadFromResource(string skillName)
     {
         Verify.ValidSkillName(skillName);
 
