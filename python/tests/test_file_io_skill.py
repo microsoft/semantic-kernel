@@ -1,3 +1,4 @@
+import os
 import pytest
 import semantic_kernel as sk
 import tempfile
@@ -57,3 +58,21 @@ async def test_can_write():
         content = fp.read()
 
         assert content == "Hello, world!"
+
+@pytest.mark.asyncio
+async def test_cannot_write():
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        skill = FileIOSkill()
+        os.chmod(temp_dir, 0o500)
+        
+        temp_file = os.path.join(temp_dir, "test.txt")
+        context_variables = ContextVariables()
+
+        context_variables.set("path", temp_file)
+        context_variables.set("content", "Hello, world!")
+
+        context = SKContext(context_variables, None, None, None)
+
+        with pytest.raises(PermissionError):
+            await skill.write_async(context)
