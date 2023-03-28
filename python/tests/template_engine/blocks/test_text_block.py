@@ -5,8 +5,8 @@ from logging import Logger
 from pytest import raises
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine_v2.blocks.text_block import TextBlock
+from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.text_block import TextBlock
 
 
 def test_init():

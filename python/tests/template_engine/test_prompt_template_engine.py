@@ -11,10 +11,10 @@ from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.skill_definition.read_only_skill_collection import (
     ReadOnlySkillCollection,
 )
-from semantic_kernel.template_engine_v2.prompt_template_engine import (
+from semantic_kernel.template_engine.prompt_template_engine import (
     PromptTemplateEngine,
 )
-from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.utils.null_logger import NullLogger
 
 

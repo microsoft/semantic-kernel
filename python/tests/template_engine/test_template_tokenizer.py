@@ -2,8 +2,8 @@
 
 from pytest import mark
 
-from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine_v2.template_tokenizer import TemplateTokenizer
+from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 
 @mark.parametrize(

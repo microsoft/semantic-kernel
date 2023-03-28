@@ -34,8 +34,8 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
 )
 from semantic_kernel.skill_definition.skill_collection import SkillCollection
 from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
-from semantic_kernel.template_engine.prompt_template_engine_base import (
-    PromptTemplateEngineBase,
+from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
+    PromptTemplatingEngine,
 )
 
 
@@ -43,13 +43,13 @@ class Kernel(KernelBase):
     _log: Logger
     _config: KernelConfig
     _skill_collection: SkillCollectionBase
-    _prompt_template_engine: PromptTemplateEngineBase
+    _prompt_template_engine: PromptTemplatingEngine
     _memory: SemanticTextMemoryBase
 
     def __init__(
         self,
         skill_collection: SkillCollectionBase,
-        prompt_template_engine: PromptTemplateEngineBase,
+        prompt_template_engine: PromptTemplatingEngine,
         memory: SemanticTextMemoryBase,
         config: KernelConfig,
         log: Logger,
@@ -73,7 +73,7 @@ class Kernel(KernelBase):
         return self._memory
 
     @property
-    def prompt_template_engine(self) -> PromptTemplateEngineBase:
+    def prompt_template_engine(self) -> PromptTemplatingEngine:
         return self._prompt_template_engine
 
     @property
