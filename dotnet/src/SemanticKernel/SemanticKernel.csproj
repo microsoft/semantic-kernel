@@ -42,5 +42,8 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>DynamicProxyGenAssembly2</_Parameter1> <!-- Moq -->
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Microsoft.SemanticKernel.Skills.OpenAPI</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 </Project>
