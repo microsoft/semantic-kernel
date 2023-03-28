@@ -6,7 +6,7 @@ class TextSkill:
     TextSkill provides a set of functions to manipulate strings.
 
     Usage:
-        kernel.import_skill("text", new TextSkill());
+        kernel.import_skill("text", TextSkill());
 
     Examples:
         SKContext["input"] = "  hello world  "
