@@ -11,11 +11,11 @@ from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
-from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine_v2.blocks.code_block import CodeBlock
-from semantic_kernel.template_engine_v2.blocks.function_id_block import FunctionIdBlock
-from semantic_kernel.template_engine_v2.blocks.val_block import ValBlock
-from semantic_kernel.template_engine_v2.blocks.var_block import VarBlock
+from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.code_block import CodeBlock
+from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
+from semantic_kernel.template_engine.blocks.val_block import ValBlock
+from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 
 class TestCodeBlock:

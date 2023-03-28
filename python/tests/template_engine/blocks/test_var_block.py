@@ -5,9 +5,9 @@ from logging import Logger
 from pytest import mark, raises
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine_v2.blocks.symbols import Symbols
-from semantic_kernel.template_engine_v2.blocks.var_block import VarBlock
+from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.symbols import Symbols
+from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 
 def test_init():

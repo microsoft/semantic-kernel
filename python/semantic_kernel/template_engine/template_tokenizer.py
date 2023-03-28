@@ -3,12 +3,12 @@
 from logging import Logger
 from typing import List
 
-from semantic_kernel.template_engine_v2.blocks.block import Block
-from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine_v2.blocks.code_block import CodeBlock
-from semantic_kernel.template_engine_v2.blocks.symbols import Symbols
-from semantic_kernel.template_engine_v2.blocks.text_block import TextBlock
-from semantic_kernel.template_engine_v2.code_tokenizer import CodeTokenizer
+from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.code_block import CodeBlock
+from semantic_kernel.template_engine.blocks.symbols import Symbols
+from semantic_kernel.template_engine.blocks.text_block import TextBlock
+from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 from semantic_kernel.utils.null_logger import NullLogger
 
 
