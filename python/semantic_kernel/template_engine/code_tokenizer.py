@@ -53,6 +53,7 @@ class CodeTokenizer:
                 blocks.append(ValBlock(text, self.log))
             else:
                 blocks.append(FunctionIdBlock(text, self.log))
+
             return blocks
 
         for next_char_cursor in range(1, len(text)):

@@ -34,8 +34,16 @@ class FunctionIdBlock(Block, TextRenderer):
         return BlockTypes.FUNCTION_ID
 
     def is_valid(self) -> Tuple[bool, str]:
-        if not re_match(r"^[a-zA-Z0-9_.]+$", self.content):
+        if self.content is None or len(self.content) == 0:
             error_msg = "The function identifier is empty"
+            return False, error_msg
+
+        if not re_match(r"^[a-zA-Z0-9_.]*$", self.content):
+            error_msg = (
+                f"The function identifier '{self.content}' contains invalid "
+                "characters. Only alphanumeric chars, underscore and a single "
+                "dot are allowed."
+            )
             return False, error_msg
 
         if self._has_more_than_one_dot(self.content):
