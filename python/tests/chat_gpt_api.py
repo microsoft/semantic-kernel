@@ -4,29 +4,32 @@ import asyncio
 
 import semantic_kernel as sk
 
-sk_prompt = """
-ChatBot can have a conversation with you about any topic.
-It can give explicit instructions or say 'I don't know'
-when it doesn't know the answer.
-
-{{$chat_history}}
-User:> {{$user_input}}
-ChatBot:>
+system_message = """
+You are a chat bot. Your name is Mosscap and
+you have one goal: figure out what people need.
+Your full name, should you need to know it, is
+Splendid Speckled Mosscap. You communicate
+effectively, but you tend to answer with long
+flowery prose.
 """
 
 kernel = sk.create_kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.config.add_openai_completion_backend(
-    "davinci-003", "text-davinci-003", api_key, org_id
-)
+kernel.config.add_openai_chat_backend("chat-gpt", "gpt-3.5-turbo", api_key, org_id)
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-    max_tokens=2000, temperature=0.7, top_p=0.4
+    max_tokens=2000, temperature=0.7, top_p=0.8
 )
 
-prompt_template = sk.PromptTemplate(
-    sk_prompt, kernel.prompt_template_engine, prompt_config
+prompt_template = sk.ChatPromptTemplate(
+    "{{$user_input}}", kernel.prompt_template_engine, prompt_config
+)
+
+prompt_template.add_system_message(system_message)
+prompt_template.add_user_message("Hi there, who are you?")
+prompt_template.add_assistant_message(
+    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
 )
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
@@ -35,7 +38,6 @@ chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_co
 
 async def chat() -> bool:
     context = sk.ContextVariables()
-    context["chat_history"] = ""
 
     try:
         user_input = input("User:> ")
@@ -52,9 +54,7 @@ async def chat() -> bool:
         return False
 
     answer = await kernel.run_on_vars_async(context, chat_function)
-    context["chat_history"] += f"\nUser:> {user_input}\nChatBot:> {answer}\n"
-
-    print(f"ChatBot:> {answer}")
+    print(f"Mosscap:> {answer}")
     return True
 
 

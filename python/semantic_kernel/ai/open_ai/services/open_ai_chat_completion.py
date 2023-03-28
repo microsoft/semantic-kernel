@@ -1,16 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Optional
+from typing import Any, List, Optional, Tuple
 
 from semantic_kernel.ai.ai_exception import AIException
-from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.utils.null_logger import NullLogger
 
 
-class OpenAITextCompletion(TextCompletionClientBase):
+class OpenAIChatCompletion(ChatCompletionClientBase):
     _model_id: str
     _api_key: str
     _org_id: Optional[str] = None
@@ -24,7 +24,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
         log: Optional[Logger] = None,
     ) -> None:
         """
-        Initializes a new instance of the OpenAITextCompletion class.
+        Initializes a new instance of the OpenAIChatCompletion class.
 
         Arguments:
             model_id {str} -- OpenAI model name, see
@@ -39,6 +39,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self._api_key = api_key
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
+        self._messages = []
 
         self.open_ai_instance = self._setup_open_ai()
 
@@ -51,21 +52,19 @@ class OpenAITextCompletion(TextCompletionClientBase):
 
         return openai
 
-    async def complete_simple_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+    async def complete_chat_async(
+        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
     ) -> str:
         """
-        Completes the given prompt. Returns a single string completion.
-        Cannot return multiple completions. Cannot return logprobs.
+        Completes the given user message. Returns a single string completion.
 
         Arguments:
-            prompt {str} -- The prompt to complete.
-            request_settings {CompleteRequestSettings} -- The request settings.
+            user_message {str} -- The message (from a user) to respond to.
+            request_settings {ChatRequestSettings} -- The request settings.
 
         Returns:
             str -- The completed text.
         """
-        Verify.not_empty(prompt, "The prompt is empty")
         Verify.not_null(request_settings, "The request settings cannot be empty")
 
         if request_settings.max_tokens < 1:
@@ -75,18 +74,16 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 f"but was {request_settings.max_tokens}",
             )
 
-        if request_settings.number_of_responses != 1:
+        if len(messages) <= 0:
             raise AIException(
                 AIException.ErrorCodes.InvalidRequest,
-                "complete_simple_async only supports a single completion, "
-                f"but {request_settings.number_of_responses} were requested",
+                "To complete a chat you need at least one message",
             )
 
-        if request_settings.logprobs != 0:
+        if messages[-1][0] != "user":
             raise AIException(
                 AIException.ErrorCodes.InvalidRequest,
-                "complete_simple_async does not support logprobs, "
-                f"but logprobs={request_settings.logprobs} was requested",
+                "The last message must be from the user",
             )
 
         model_args = {}
@@ -95,30 +92,27 @@ class OpenAITextCompletion(TextCompletionClientBase):
         else:
             model_args["model"] = self._model_id
 
+        formatted_messages = [
+            {"role": role, "content": message} for role, message in messages
+        ]
+
         try:
-            response: Any = await self.open_ai_instance.Completion.acreate(
+            response: Any = await self.open_ai_instance.ChatCompletion.acreate(
                 **model_args,
-                prompt=prompt,
+                messages=formatted_messages,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
                 presence_penalty=request_settings.presence_penalty,
                 frequency_penalty=request_settings.frequency_penalty,
                 max_tokens=request_settings.max_tokens,
-                stop=(
-                    request_settings.stop_sequences
-                    if len(request_settings.stop_sequences) > 0
-                    else None
-                ),
             )
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
-                "OpenAI service failed to complete the prompt",
+                "OpenAI service failed to complete the chat",
                 ex,
             )
 
         # TODO: tracking on token counts/etc.
 
-        return response.choices[0].text
-
-    # TODO: complete w/ multiple...
+        return response.choices[0].message.content

@@ -8,11 +8,15 @@ kernel = sk.create_kernel()
 
 # Load credentials from .env file
 api_key, org_id = sk.openai_settings_from_dot_env()
+# deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
 # Configure LLM backend
 kernel.config.add_openai_completion_backend(
     "davinci-003", "text-davinci-003", api_key, org_id
 )
+# kernel.config.add_azure_openai_completion_backend(
+#     "davinci-003", deployment_name, endpoint, api_key
+# )
 
 # Define semantic function using SK prompt template language
 sk_prompt = """

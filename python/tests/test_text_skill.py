@@ -1,5 +1,4 @@
 import semantic_kernel as sk
-
 from semantic_kernel.core_skills.text_skill import TextSkill
 from semantic_kernel.skill_definition.skill_collection import SkillCollection
 
