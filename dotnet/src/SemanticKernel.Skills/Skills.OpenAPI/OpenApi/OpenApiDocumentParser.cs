@@ -30,6 +30,8 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
         return ExtractRestOperations(openApiDocument);
     }
 
+    #region private
+
     /// <summary>
     /// Parses an OpenApi document and extracts Rest operations.
     /// </summary>
@@ -107,4 +109,6 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
         return restParameters;
     }
+
+    #endregion
 }

@@ -52,6 +52,8 @@ internal class RestOperationRunner : IRestOperationRunner
         return await this.SendAsync(uri, method, headers, payload, cancellationToken);
     }
 
+    #region private
+
     /// <summary>
     /// Sends an HTTP request.
     /// </summary>
@@ -88,4 +90,6 @@ internal class RestOperationRunner : IRestOperationRunner
 
         return JsonNode.Parse(content);
     }
+
+    #endregion
 }

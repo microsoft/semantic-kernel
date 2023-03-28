@@ -75,6 +75,7 @@ public static class KernelOpenApiExtensions
         return kernel.RegisterOpenApiSkill(stream, skillDirectoryName);
     }
 
+    #region private
     private static ISKFunction RegisterRestFunction(this IKernel kernel, string skillName, RestOperation operation)
     {
         var restOperationParameters = operation.GetParameters();
@@ -141,4 +142,5 @@ public static class KernelOpenApiExtensions
 
         return kernel.RegisterCustomFunction(skillName, function);
     }
+    #endregion
 }
