@@ -168,7 +168,7 @@ public class SqliteDataStoreTests : IDisposable
     public async Task ItWillOverwriteExistingValueAsync()
     {
         // Arrange
-        int rand = Random.Shared.Next();
+        int rand = RandomNumberGenerator.GetInt32(int.MaxValue);
         string collection = "collection" + rand;
         string value1 = "value1";
         string value2 = "value2";
