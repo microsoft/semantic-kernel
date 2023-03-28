@@ -16,5 +16,13 @@
     <PackageId>Microsoft.SemanticKernel.Skills.OpenAPI</PackageId>
     <Title>Semantic Kernel - OpenAPI Skills</Title>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
   
 </Project>
