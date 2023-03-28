@@ -58,7 +58,7 @@ public class VolatileMemoryStoreTests
         DateTimeOffset timestamp = DateTimeOffset.UtcNow;
 
         // Act
-        var key = await this._db.PutValueAsync(collection, memory, timestamp);
+        var key = await this._db.PutValueAsync(collection, memory, timeStamp: timestamp);
         var actual = await this._db.GetAsync(collection, key);
 
         // Assert
@@ -150,7 +150,7 @@ public class VolatileMemoryStoreTests
         // Assert
         Assert.NotEmpty(keys);
         Assert.True(keys.Any(), "keys are empty");
-        Assert.True(keys.Count() == 15, "keys should have 15 entries");
+        Assert.True(keys.Count == 15, "keys should have 15 entries");
         Assert.NotNull(getAllResults);
         Assert.True(getAllResults.Any(), "Collections are empty");
         Assert.True(getAllResults.Count() == 15, "Collections should have 15 entries");

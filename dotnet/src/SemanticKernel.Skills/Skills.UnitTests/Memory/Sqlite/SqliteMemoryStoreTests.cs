@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -66,7 +65,7 @@ public class SqliteDataStoreTests : IDisposable
 
         // Act
         this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
-        var key = await this._db.PutValueAsync(collection, value, timestamp);
+        var key = await this._db.PutValueAsync(collection, value, timeStamp: timestamp);
         DataEntry<string>? actual = await this._db.GetAsync(collection, key);
 
         // Assert
@@ -163,6 +162,28 @@ public class SqliteDataStoreTests : IDisposable
         Assert.NotNull(getAllResults);
         Assert.True(await getAllResults.AnyAsync(), "Collections is empty");
         Assert.True(await getAllResults.CountAsync() == quantity, "Collections should have 15 entries");
+    }
+
+    [Fact]
+    public async Task ItWillOverwriteExistingValueAsync()
+    {
+        // Arrange
+        int rand = Random.Shared.Next();
+        string collection = "collection" + rand;
+        string value1 = "value1";
+        string value2 = "value2";
+
+        // Act
+        this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
+        var key = await this._db.PutValueAsync(collection, value1);
+        var key2 = await this._db.PutValueAsync(collection, value2, key);
+        var actual = await this._db.GetAsync(collection, key);
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Equal(key, key2);
+        Assert.NotEqual(value1, actual!.Value.Value);
+        Assert.Equal(value2, actual!.Value.Value);
     }
 
     protected virtual void Dispose(bool disposing)

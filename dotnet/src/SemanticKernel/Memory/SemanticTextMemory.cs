@@ -33,12 +33,13 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string text,
         string id,
         string? description = null,
+        string? dbKey = null,
         CancellationToken cancel = default)
     {
         var embeddings = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
         MemoryRecord data = MemoryRecord.LocalRecord(id, text, description, embeddings);
 
-        return await this._storage.PutValueAsync(collection, value: data, cancel: cancel);
+        return await this._storage.PutValueAsync(collection, value: data, dbKey: dbKey, cancel: cancel);
     }
 
     /// <inheritdoc/>
@@ -48,12 +49,13 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string externalId,
         string externalSourceName,
         string? description = null,
+        string? dbKey = null,
         CancellationToken cancel = default)
     {
         var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
         var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description, embedding);
 
-        return await this._storage.PutValueAsync(collection, value: data, cancel: cancel);
+        return await this._storage.PutValueAsync(collection, value: data, dbKey: dbKey, cancel: cancel);
     }
 
     /// <inheritdoc/>

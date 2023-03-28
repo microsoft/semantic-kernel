@@ -54,10 +54,10 @@ public struct DataEntry<TValue> : IEquatable<DataEntry<TValue>>
     public Type ValueType => typeof(TValue);
 
     /// <summary>
-    /// <c>true</c> if the data has a value.
+    /// <c>true</c> if the key has a value.
     /// </summary>
     [JsonIgnore]
-    public bool HasKey => (this.Value != null);
+    public bool HasKey => (this.Key != null);
 
     /// <summary>
     /// <c>true</c> if the data has a value.

@@ -138,7 +138,7 @@ internal static class SKContextExtensions
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
                 await context.Memory.SaveInformationAsync(PlannerMemoryCollectionName, key, functionName, function.ToManualString(),
-                    context.CancellationToken);
+                    cancel: context.CancellationToken);
             }
         }
 

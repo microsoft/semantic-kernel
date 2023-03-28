@@ -18,12 +18,14 @@ public interface ISemanticTextMemory
     /// <param name="id">Unique identifier for searching memory metadata</param>
     /// <param name="text">Information to save</param>
     /// <param name="description">Optional description</param>
+    /// <param name="dbKey">The unique database key.</param>
     /// <param name="cancel">Cancellation token</param>
     public Task<string> SaveInformationAsync(
         string collection,
         string text,
         string id,
         string? description = null,
+        string? dbKey = null,
         CancellationToken cancel = default);
 
     /// <summary>
@@ -34,6 +36,7 @@ public interface ISemanticTextMemory
     /// <param name="externalId">Unique identifier, e.g. URL or GUID to the original source for searching memory metadata</param>
     /// <param name="externalSourceName">Name of the external service, e.g. "MSTeams", "GitHub", "WebSite", "Outlook IMAP", etc.</param>
     /// <param name="description">Optional description</param>
+    /// <param name="dbKey">The unique database key.</param>
     /// <param name="cancel">Cancellation token</param>
     public Task<string> SaveReferenceAsync(
         string collection,
@@ -41,6 +44,7 @@ public interface ISemanticTextMemory
         string externalId,
         string externalSourceName,
         string? description = null,
+        string? dbKey = null,
         CancellationToken cancel = default);
 
     /// <summary>

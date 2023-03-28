@@ -39,7 +39,7 @@ public interface IDataStore<TValue>
     Task<DataEntry<TValue>?> GetAsync(string collection, string key, CancellationToken cancel = default);
 
     /// <summary>
-    /// Inserts a data entry. Updates if key is already present.
+    /// Updates or Inserts a data entry (Upsert).
     /// </summary>
     /// <param name="collection">Collection name.</param>
     /// <param name="data">The <see cref="DataEntry{TValue}"/> object to insert into the data store.</param>
@@ -91,15 +91,20 @@ public static class DataStoreExtensions
     /// <param name="store">The data store.</param>
     /// <param name="collection">The collection within the data store.</param>
     /// <param name="value">The data value.</param>
+    /// <param name="dbKey">The unique database key.</param>
     /// <param name="timeStamp">The data timestamp.</param>
     /// <param name="cancel">Cancellation token.</param>
-    public static Task<string> PutValueAsync<TValue>(this IDataStore<TValue> store, string collection, TValue? value,
+    public static Task<string> PutValueAsync<TValue>(
+        this IDataStore<TValue> store,
+        string collection,
+        TValue? value,
+        string? dbKey = null,
         DateTimeOffset? timeStamp = null,
         CancellationToken cancel = default)
     {
         Verify.NotNull(store, "Data store cannot be NULL");
 
-        DataEntry<TValue> entry = DataEntry.Create(null, value, timeStamp);
+        DataEntry<TValue> entry = DataEntry.Create(dbKey, value, timeStamp);
         return store.PutAsync(collection, entry, cancel);
     }
 }

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,7 +68,16 @@ public class SqliteDataStore<TValue> : IDataStore<TValue>, IDisposable
     /// <inheritdoc/>
     public async Task<string> PutAsync(string collection, DataEntry<TValue> data, CancellationToken cancel = default)
     {
-        string key = Guid.NewGuid().ToString();
+        string key;
+        if (string.IsNullOrEmpty(data.Key))
+        {
+            key = Guid.NewGuid().ToString();
+        }
+        else
+        {
+            key = data.Key;
+        }
+
         await this._dbConnection.InsertAsync(collection, key, data.ValueString, ToTimestampString(data.Timestamp), cancel);
         return key;
     }

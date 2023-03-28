@@ -23,6 +23,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string text,
         string id,
         string? description = null,
+        string? dbKey = null,
         CancellationToken cancel = default)
     {
         return Task.FromResult(string.Empty);
@@ -35,6 +36,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string externalId,
         string externalSourceName,
         string? description = null,
+        string? dbKey = null,
         CancellationToken cancel = default)
     {
         return Task.FromResult(string.Empty);

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -59,7 +58,7 @@ public class VolatileDataStoreTests
         DateTimeOffset timestamp = DateTimeOffset.UtcNow;
 
         // Act
-        var key = await this._db.PutValueAsync(collection, value, timestamp);
+        var key = await this._db.PutValueAsync(collection, value, timeStamp: timestamp);
         var actual = await this._db.GetAsync(collection, key);
 
         // Assert
@@ -99,7 +98,7 @@ public class VolatileDataStoreTests
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
         string value = "value" + rand;
-        var data = DataEntry.Create(value, DateTimeOffset.UtcNow.ToString());
+        var data = DataEntry.Create(key: null, value: value, timestamp: DateTimeOffset.UtcNow);
 
         // Act
         var key = await this._db.PutAsync(collection, data);
@@ -170,5 +169,26 @@ public class VolatileDataStoreTests
 
         // Assert
         Assert.Null(attempt);
+    }
+
+    [Fact]
+    public async Task ItWillOverwriteExistingValueAsync()
+    {
+        // Arrange
+        int rand = Random.Shared.Next();
+        string collection = "collection" + rand;
+        string value1 = "value1";
+        string value2 = "value2";
+
+        // Act
+        var key = await this._db.PutValueAsync(collection, value1);
+        var key2 = await this._db.PutValueAsync(collection, value2, key);
+        var actual = await this._db.GetAsync(collection, key);
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Equal(key, key2);
+        Assert.NotEqual(value1, actual!.Value.Value);
+        Assert.Equal(value2, actual!.Value.Value);
     }
 }

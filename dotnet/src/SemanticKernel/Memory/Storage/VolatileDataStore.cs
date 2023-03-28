@@ -53,14 +53,22 @@ public class VolatileDataStore<TValue> : IDataStore<TValue>
     {
         Verify.NotNull(data, "Data entry cannot be NULL");
 
-        string id = Guid.NewGuid().ToString();
+        string key;
+        if (string.IsNullOrEmpty(data.Key))
+        {
+            key = Guid.NewGuid().ToString();
+        }
+        else
+        {
+            key = data.Key;
+        }
 
         if (this.TryGetCollection(collection, out var collectionDict, create: true))
         {
-            collectionDict[id] = data;
+            collectionDict[key] = data;
         }
 
-        return Task.FromResult(id);
+        return Task.FromResult(key);
     }
 
     /// <inheritdoc/>
