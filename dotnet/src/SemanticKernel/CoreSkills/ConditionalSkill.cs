@@ -16,6 +16,15 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
+
+/// <summary>
+/// <para>Semantic skill that evaluates conditional structures</para>
+/// <para>
+/// Usage:
+/// var kernel = SemanticKernel.Build(ConsoleLogger.Log);
+/// kernel.ImportSkill("conditional", new ConditionalSkill(kernel));
+/// </para>
+/// </summary>
 public class ConditionalSkill
 {
     #region Prompts
@@ -148,6 +157,11 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
     private readonly ISKFunction _evaluateConditionFunction;
     private readonly ISKFunction _evaluateIfBranchFunction;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConditionalSkill"/> class.
+    /// </summary>
+    /// <param name="kernel"> The kernel to use </param>
+    /// <param name="completionBackend"> A optional completion backend to run the internal semantic functions </param>
     public ConditionalSkill(IKernel kernel, ITextCompletionClient? completionBackend = null)
     {
         this._ifStructureCheckFunction = kernel.CreateSemanticFunction(
@@ -156,8 +170,7 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
             description: "Evaluate if an If structure is valid and returns TRUE or FALSE",
             maxTokens: 100,
             temperature: 0,
-            topP: 0.5
-            );
+            topP: 0.5);
 
         this._evaluateConditionFunction = kernel.CreateSemanticFunction(
             EvaluateConditionPrompt,
@@ -203,6 +216,13 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         return await this.GetThenOrElseBranchAsync(ifContent, conditionEvaluation, context).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Returns the content from the Then or the Else branch based in the condition provided
+    /// </summary>
+    /// <param name="ifContent">If Structure content</param>
+    /// <param name="trueCondition">Condition used to decide on Then or Else returning data</param>
+    /// <param name="context">Current context</param>
+    /// <returns>SKContext with the input as the Then or the Else branches data</returns>
     private async Task<SKContext> GetThenOrElseBranchAsync(string ifContent, bool trueCondition, SKContext context)
     {
         var branchVariables = new ContextVariables(ifContent);
@@ -212,12 +232,20 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         return (await this._evaluateIfBranchFunction.InvokeAsync(context).ConfigureAwait(false));
     }
 
-    private async Task<IEnumerable<string>> GetVariablesAndEnsureIfStructureIsValidAsync(string statement, SKContext context)
+    /// <summary>
+    /// Get the variables used in the If statement and ensure the structure is valid
+    /// </summary>
+    /// <param name="ifContent">If structure content</param>
+    /// <param name="context">Current context</param>
+    /// <returns>List of used variables in the if condition</returns>
+    /// <exception cref="ConditionException">InvalidStatementStructure</exception>
+    /// <exception cref="ConditionException">JsonResponseNotFound</exception>
+    private async Task<IEnumerable<string>> GetVariablesAndEnsureIfStructureIsValidAsync(string ifContent, SKContext context)
     {
-        context.Variables.Set("IfStatementContent", statement);
-        var llmCheckFunctionResponse = (await this._ifStructureCheckFunction.InvokeAsync(statement, context).ConfigureAwait(false)).ToString();
+        context.Variables.Set("IfStatementContent", ifContent);
+        var llmCheckFunctionResponse = (await this._ifStructureCheckFunction.InvokeAsync(ifContent, context).ConfigureAwait(false)).ToString();
 
-        JsonNode llmResponse = this.GetValuesFromResponse(llmCheckFunctionResponse);
+        JsonNode llmResponse = this.IfCheckResponseAsJson(llmCheckFunctionResponse);
         var valid = llmResponse["valid"]!.GetValue<bool>();
 
         if (!valid)
@@ -229,6 +257,15 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
             .Where(v => !string.IsNullOrWhiteSpace(v)).Select(v => v.TrimStart('$')) ?? Enumerable.Empty<string>();
     }
 
+    /// <summary>
+    /// Evaluates a condition group and returns TRUE or FALSE
+    /// </summary>
+    /// <param name="ifContent">If structure content</param>
+    /// <param name="usedVariables">Used variables to send for evaluation</param>
+    /// <param name="context">Current context</param>
+    /// <returns>Condition result</returns>
+    /// <exception cref="ConditionException">InvalidConditionFormat</exception>
+    /// <exception cref="ConditionException">ContextVariablesNotFound</exception>
     private async Task<bool> EvaluateConditionAsync(string ifContent, IEnumerable<string> usedVariables, SKContext context)
     {
         var conditionContent = this.ExtractConditionalContent(ifContent);
@@ -250,6 +287,11 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         return llmConditionResponse.StartsWith("TRUE", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Extracts the condition root group content closest the If structure
+    /// </summary>
+    /// <param name="ifContent">If structure content to extract from</param>
+    /// <returns>Conditiongroup contents</returns>
     private string ExtractConditionalContent(string ifContent)
     {
         XmlDocument xmlDoc = new();
@@ -259,6 +301,13 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         return parentConditionGroupNode.OuterXml;
     }
 
+    /// <summary>
+    /// Gets all the variables used in the condition and their values from the context
+    /// </summary>
+    /// <param name="usedVariables">Variables used in the condition</param>
+    /// <param name="variables">Context variables</param>
+    /// <returns>List of variables and its values for prompting</returns>
+    /// <exception cref="ConditionException">ContextVariablesNotFound</exception>
     private string GetConditionalVariablesFromContext(IEnumerable<string> usedVariables, ContextVariables variables)
     {
         var conditionalVariables = new StringBuilder();
@@ -274,19 +323,18 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         foreach (var v in existingVariables)
         {
             // Numeric don't add quotes
-            if (Regex.Match(v.Value, "^[0-9.,]+$").Success)
-            {
-                conditionalVariables.AppendLine($"{v.Key} = {v.Value}");
-            }
-            else
-            {
-                conditionalVariables.AppendLine($"{v.Key} = {JsonSerializer.Serialize(v.Value)}");
-            }
+            var value = Regex.IsMatch(v.Value, "^[0-9.,]+$") ? v.Value : JsonSerializer.Serialize(v.Value);
+            conditionalVariables.AppendLine($"{v.Key} = {value}");
         }
 
         return conditionalVariables.ToString();
     }
 
+    /// <summary>
+    /// Gets the reason from the LLM response
+    /// </summary>
+    /// <param name="llmResponse">Raw LLM response</param>
+    /// <returns>Reason details</returns>
     private string? GetReason(string llmResponse)
     {
         var hasReasonIndex = llmResponse.IndexOf(ReasonIdentifier, StringComparison.OrdinalIgnoreCase);
@@ -297,7 +345,13 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         return NoReasonMessage;
     }
 
-    private JsonNode GetValuesFromResponse(string llmResponse)
+    /// <summary>
+    /// Gets a JsonNode traversable structure from the LLM text response
+    /// </summary>
+    /// <param name="llmResponse"></param>
+    /// <returns></returns>
+    /// <exception cref="ConditionException"></exception>
+    private JsonNode IfCheckResponseAsJson(string llmResponse)
     {
         var startIndex = llmResponse.IndexOf('{', StringComparison.InvariantCultureIgnoreCase);
         JsonNode? response = null;
