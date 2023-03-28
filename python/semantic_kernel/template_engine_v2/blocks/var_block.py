@@ -27,7 +27,10 @@ class VarBlock(Block):
 
     def is_valid(self) -> Tuple[bool, str]:
         if not self.content:
-            error_msg = f"A variable must start with the symbol {Symbols.VAR_PREFIX} and have a name"
+            error_msg = (
+                f"A variable must start with the symbol {Symbols.VAR_PREFIX} "
+                "and have a name"
+            )
             self.log.error(error_msg)
             return False, error_msg
 

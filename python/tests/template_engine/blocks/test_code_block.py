@@ -1,5 +1,5 @@
 from logging import Logger
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 from pytest import mark, raises
 
@@ -8,7 +8,6 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
@@ -201,7 +200,8 @@ class TestCodeBlock:
         # Set up a canary dictionary to track changes in the context variables
         canary = {"input": "", "var1": "", "var2": ""}
 
-        # Define the function to be invoked, which modifies the canary and context variables
+        # Define the function to be invoked, which modifies the canary
+        # and context variables
         def invoke(ctx):
             nonlocal canary
             canary["input"] = ctx["input"]
@@ -259,7 +259,8 @@ class TestCodeBlock:
             logger=self.log,
         )
 
-        # Create a FunctionIdBlock with the function name and a VarBlock with the custom variable
+        # Create a FunctionIdBlock with the function name and a
+        # VarBlock with the custom variable
         func_id = FunctionIdBlock(content="funcName")
         var_block = VarBlock(content=f"${VAR_NAME}")
 
@@ -336,7 +337,8 @@ class TestCodeBlock:
         self.skills.has_function.return_value = True
         self.skills.get_function.return_value = function
 
-        # Create a CodeBlock with the FunctionIdBlock and ValBlock, and render it with the context
+        # Create a CodeBlock with the FunctionIdBlock and ValBlock,
+        # and render it with the context
         code_block = CodeBlock(tokens=[func_id, val_block], content="", log=self.log)
         result = await code_block.render_code_async(context)
 

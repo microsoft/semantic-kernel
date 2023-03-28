@@ -11,7 +11,8 @@ class ContextVariables:
         """
         Initialize the ContextVariables instance with an optional content string.
 
-        :param content: The content string to be stored as the main variable, defaults to an empty string.
+        :param content: The content string to be stored as the main variable,
+            defaults to an empty string.
         """
         self._variables: Dict[str, str] = {}
         self._main_key: str = "input"

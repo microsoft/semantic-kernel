@@ -16,18 +16,22 @@ class PromptTemplatingEngine(Protocol):
         self, template_text: Optional[str] = None, validate: bool = True
     ) -> List[Block]:
         """
-        Given a prompt template string, extract all the blocks (text, variables, function calls).
+        Given a prompt template string, extract all the blocks
+        (text, variables, function calls).
 
         :param template_text: Prompt template (see skprompt.txt files)
-        :param validate: Whether to validate the blocks syntax, or just return the blocks found, which could contain invalid code
-        :return: A list of all the blocks, ie the template tokenized in text, variables and function calls
+        :param validate: Whether to validate the blocks syntax, or just
+            return the blocks found, which could contain invalid code
+        :return: A list of all the blocks, ie the template tokenized in
+            text, variables and function calls
         """
         ...
 
     async def render_async(self, template_text: str, context: SKContext) -> str:
         """
-        Given a prompt template, replace the variables with their values and execute the functions replacing their
-        reference with the function result.
+        Given a prompt template, replace the variables with their values
+        and execute the functions replacing their reference with the
+        function result.
 
         :param template_text: Prompt template (see skprompt.txt files)
         :param context: Access into the current kernel execution context
@@ -49,11 +53,13 @@ class PromptTemplatingEngine(Protocol):
         self, blocks: List[Block], variables: Optional[ContextVariables] = None
     ) -> List[Block]:
         """
-        Given a list of blocks, render the Variable Blocks, replacing placeholders with the actual value in memory.
+        Given a list of blocks, render the Variable Blocks, replacing
+        placeholders with the actual value in memory.
 
         :param blocks: List of blocks, typically all the blocks found in a template
         :param variables: Container of all the temporary variables known to the kernel
-        :return: An updated list of blocks where Variable Blocks have rendered to Text Blocks
+        :return: An updated list of blocks where Variable Blocks have rendered to
+            Text Blocks
         """
         ...
 
@@ -61,10 +67,12 @@ class PromptTemplatingEngine(Protocol):
         self, blocks: List[Block], execution_context: SKContext
     ) -> List[Block]:
         """
-        Given a list of blocks, render the Code Blocks, executing the functions and replacing placeholders with the functions result.
+        Given a list of blocks, render the Code Blocks, executing the
+        functions and replacing placeholders with the functions result.
 
         :param blocks: List of blocks, typically all the blocks found in a template
         :param execution_context: Access into the current kernel execution context
-        :return: An updated list of blocks where Code Blocks have rendered to Text Blocks
+        :return: An updated list of blocks where Code Blocks have rendered to
+            Text Blocks
         """
         ...

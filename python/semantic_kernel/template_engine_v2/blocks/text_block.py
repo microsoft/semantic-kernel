@@ -19,7 +19,8 @@ class TextBlock(Block):
         if start_index is not None and stop_index is not None:
             if start_index > stop_index:
                 raise ValueError(
-                    f"start_index ({start_index}) must be less than stop_index ({stop_index})"
+                    f"start_index ({start_index}) must be less than "
+                    f"stop_index ({stop_index})"
                 )
 
             if start_index < 0:
