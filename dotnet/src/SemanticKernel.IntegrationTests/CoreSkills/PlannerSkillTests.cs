@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
@@ -47,19 +48,19 @@ public sealed class PlannerSkillTests : IDisposable
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                config.AddAzureOpenAICompletionBackend(
-                    label: azureOpenAIConfiguration.Label,
+                config.AddAzureOpenAITextCompletion(
+                    serviceId: azureOpenAIConfiguration.Label,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
 
-                config.AddAzureOpenAIEmbeddingsBackend(
-                    label: azureOpenAIEmbeddingsConfiguration.Label,
+                config.AddAzureOpenAIEmbeddingGeneration(
+                    serviceId: azureOpenAIEmbeddingsConfiguration.Label,
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
 
-                config.SetDefaultCompletionBackend(azureOpenAIConfiguration.Label);
+                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.Label);
             })
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();

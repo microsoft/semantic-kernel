@@ -7,6 +7,7 @@ using KernelHttpServer.Utils;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Memory;
 using static KernelHttpServer.Config.Constants;
 
@@ -49,10 +50,10 @@ internal static class SemanticKernelFactory
                 switch (config.CompletionConfig.AIService)
                 {
                     case AIService.OpenAI:
-                        c.AddOpenAICompletionBackend(config.CompletionConfig.Label, config.CompletionConfig.DeploymentOrModelId, config.CompletionConfig.Key);
+                        c.AddOpenAITextCompletion(config.CompletionConfig.Label, config.CompletionConfig.DeploymentOrModelId, config.CompletionConfig.Key);
                         break;
                     case AIService.AzureOpenAI:
-                        c.AddAzureOpenAICompletionBackend(config.CompletionConfig.Label, config.CompletionConfig.DeploymentOrModelId, config.CompletionConfig.Endpoint, config.CompletionConfig.Key);
+                        c.AddAzureOpenAITextCompletion(config.CompletionConfig.Label, config.CompletionConfig.DeploymentOrModelId, config.CompletionConfig.Endpoint, config.CompletionConfig.Key);
                         break;
                 }
 
@@ -61,10 +62,10 @@ internal static class SemanticKernelFactory
                     switch (config.EmbeddingConfig.AIService)
                     {
                         case AIService.OpenAI:
-                            c.AddOpenAIEmbeddingsBackend(config.EmbeddingConfig.Label, config.EmbeddingConfig.DeploymentOrModelId, config.EmbeddingConfig.Key);
+                            c.AddOpenAIEmbeddingGeneration(config.EmbeddingConfig.Label, config.EmbeddingConfig.DeploymentOrModelId, config.EmbeddingConfig.Key);
                             break;
                         case AIService.AzureOpenAI:
-                            c.AddAzureOpenAIEmbeddingsBackend(config.EmbeddingConfig.Label, config.EmbeddingConfig.DeploymentOrModelId, config.EmbeddingConfig.Endpoint, config.EmbeddingConfig.Key);
+                            c.AddAzureOpenAIEmbeddingGeneration(config.EmbeddingConfig.Label, config.EmbeddingConfig.DeploymentOrModelId, config.EmbeddingConfig.Endpoint, config.EmbeddingConfig.Key);
                             break;
                     }
 
@@ -88,7 +89,7 @@ internal static class SemanticKernelFactory
             kernel.RegisterNativeGraphSkills(graphToken.First());
         }
 
-        if (kernel.Config.DefaultEmbeddingsBackend != null)
+        if (kernel.Config.DefaultTextEmbeddingServiceId != null)
         {
             kernel.RegisterTextMemory();
         }

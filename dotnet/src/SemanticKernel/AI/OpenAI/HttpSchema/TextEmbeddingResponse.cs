@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 /// <summary>
 /// A response from an embedding request
 /// </summary>
-public sealed class EmbeddingResponse
+public sealed class TextEmbeddingResponse
 {
     /// <summary>
     /// A single embedding vector

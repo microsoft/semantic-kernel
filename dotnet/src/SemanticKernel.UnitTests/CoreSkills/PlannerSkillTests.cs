@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
@@ -39,7 +40,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
 
         // Act - Assert no exception occurs
         _ = new PlannerSkill(kernel);
@@ -50,7 +51,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
 
         // Act - Assert no exception occurs e.g. due to reflection
         _ = kernel.ImportSkill(new PlannerSkill(kernel), "planner");
@@ -61,7 +62,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = new PlannerSkill(kernel);
         var planner = kernel.ImportSkill(plannerSkill, "planner");
 
@@ -81,7 +82,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
         // Act
@@ -102,7 +103,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         Plan createdPlan = new()
         {
@@ -127,7 +128,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
         // Act
@@ -146,7 +147,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         Plan createdPlan = new()
         {
@@ -169,7 +170,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
         // Act
@@ -191,7 +192,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
         // Act
@@ -220,7 +221,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
         Plan createdPlan = new()
@@ -253,7 +254,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
         Plan createdPlan = new()
@@ -288,7 +289,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
         Plan createdPlan = new()
@@ -327,7 +328,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
         Plan createdPlan = new()
@@ -369,7 +370,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
         Plan createdPlan = new()
@@ -407,7 +408,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
         Plan createdPlan = new()
@@ -440,7 +441,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAICompletionBackend("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
         Plan createdPlan = new()

@@ -51,8 +51,8 @@ public sealed class OpenAITextEmbeddings : OpenAIClientAbstract, IEmbeddingGener
     /// <inheritdoc/>
     public async Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(IList<string> data)
     {
-        var requestBody = Json.Serialize(new OpenAIEmbeddingRequest { Model = this._modelId, Input = data, });
+        var requestBody = Json.Serialize(new OpenAITextEmbeddingRequest { Model = this._modelId, Input = data, });
 
-        return await this.ExecuteEmbeddingRequestAsync(OpenaiEmbeddingEndpoint, requestBody);
+        return await this.ExecuteTextEmbeddingRequestAsync(OpenaiEmbeddingEndpoint, requestBody);
     }
 }

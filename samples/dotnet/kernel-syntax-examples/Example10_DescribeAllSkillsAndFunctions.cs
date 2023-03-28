@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
@@ -22,7 +23,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
         Console.WriteLine("======== Describe all skills and functions ========");
 
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("davinci", "text-davinci-003", "none");
+        kernel.Config.AddOpenAITextCompletion("davinci", "text-davinci-003", "none");
 
         // Import a native skill
         var skill1 = new StaticTextSkill();

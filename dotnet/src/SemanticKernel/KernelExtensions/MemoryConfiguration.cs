@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.OpenAI.Services;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
@@ -22,7 +19,7 @@ public static class MemoryConfiguration
     /// <param name="storage">Memory storage</param>
     public static void UseMemory(this IKernel kernel, IMemoryStore<float> storage)
     {
-        UseMemory(kernel, kernel.Config.DefaultEmbeddingsBackend, storage);
+        UseMemory(kernel, kernel.Config.DefaultTextEmbeddingServiceId, storage);
     }
 
     /// <summary>
@@ -37,38 +34,7 @@ public static class MemoryConfiguration
     {
         Verify.NotEmpty(embeddingsBackendLabel, "The embedding backend label is empty");
 
-        IBackendConfig embeddingsBackendCfg = kernel.Config.GetEmbeddingsBackend(embeddingsBackendLabel);
-
-        Verify.NotNull(embeddingsBackendCfg, $"AI configuration is missing for label: {embeddingsBackendLabel}");
-
-        IEmbeddingGenerator<string, float>? embeddingGenerator;
-
-        switch (embeddingsBackendCfg)
-        {
-            case AzureOpenAIConfig azureAIConfig:
-                embeddingGenerator = new AzureTextEmbeddings(
-                    azureAIConfig.DeploymentName,
-                    azureAIConfig.Endpoint,
-                    azureAIConfig.APIKey,
-                    azureAIConfig.APIVersion,
-                    kernel.Log,
-                    kernel.Config.HttpHandlerFactory);
-                break;
-
-            case OpenAIConfig openAIConfig:
-                embeddingGenerator = new OpenAITextEmbeddings(
-                    openAIConfig.ModelId,
-                    openAIConfig.APIKey,
-                    openAIConfig.OrgId,
-                    kernel.Log,
-                    kernel.Config.HttpHandlerFactory);
-                break;
-
-            default:
-                throw new AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    $"Unknown/unsupported backend type {embeddingsBackendCfg.GetType():G}, unable to prepare semantic memory");
-        }
+        var embeddingGenerator = kernel.GetService<IEmbeddingGenerator<string, float>>();
 
         UseMemory(kernel, embeddingGenerator, storage);
     }

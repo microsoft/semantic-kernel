@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -42,12 +43,12 @@ public sealed class OpenAICompletionTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        target.Config.AddOpenAICompletionBackend(
-            label: openAIConfiguration.Label,
+        target.Config.AddOpenAITextCompletion(
+            serviceId: openAIConfiguration.Label,
             modelId: openAIConfiguration.ModelId,
             apiKey: openAIConfiguration.ApiKey);
 
-        target.Config.SetDefaultCompletionBackend(openAIConfiguration.Label);
+        target.Config.SetDefaultTextCompletionService(openAIConfiguration.Label);
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
 
@@ -70,13 +71,13 @@ public sealed class OpenAICompletionTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        target.Config.AddAzureOpenAICompletionBackend(
-            label: azureOpenAIConfiguration.Label,
+        target.Config.AddAzureOpenAITextCompletion(
+            serviceId: azureOpenAIConfiguration.Label,
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey);
 
-        target.Config.SetDefaultCompletionBackend(azureOpenAIConfiguration.Label);
+        target.Config.SetDefaultTextCompletionService(azureOpenAIConfiguration.Label);
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
 
@@ -103,8 +104,8 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
-        target.Config.AddOpenAICompletionBackend(
-            label: openAIConfiguration.Label,
+        target.Config.AddOpenAITextCompletion(
+            serviceId: openAIConfiguration.Label,
             modelId: openAIConfiguration.ModelId,
             apiKey: "INVALID_KEY");
 
