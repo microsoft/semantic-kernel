@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
@@ -22,7 +23,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("x", "y", "z");
+        kernel.Config.AddOpenAITextCompletion("x", "y", "z");
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -49,7 +50,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAICompletionBackend("x", "y", "z");
+        kernel.Config.AddOpenAITextCompletion("x", "y", "z");
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");

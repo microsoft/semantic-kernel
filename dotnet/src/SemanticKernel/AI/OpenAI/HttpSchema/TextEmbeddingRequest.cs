@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 /// <summary>
 /// A request to create embedding vector representing input text
 /// </summary>
-public abstract class EmbeddingRequest
+public abstract class TextEmbeddingRequest
 {
     /// <summary>
     /// Input to embed
@@ -20,7 +20,7 @@ public abstract class EmbeddingRequest
 /// <summary>
 /// An OpenAI embedding request
 /// </summary>
-public sealed class OpenAIEmbeddingRequest : EmbeddingRequest
+public sealed class OpenAITextEmbeddingRequest : TextEmbeddingRequest
 {
     /// <summary>
     /// Embedding model ID
@@ -32,6 +32,6 @@ public sealed class OpenAIEmbeddingRequest : EmbeddingRequest
 /// <summary>
 /// An Azure OpenAI embedding request
 /// </summary>
-public sealed class AzureEmbeddingRequest : EmbeddingRequest
+public sealed class AzureTextEmbeddingRequest : TextEmbeddingRequest
 {
 }

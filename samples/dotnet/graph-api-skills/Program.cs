@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
@@ -104,8 +105,8 @@ public sealed class Program
             AzureOpenAIConfiguration? azureOpenAIConfiguration = configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
             if (azureOpenAIConfiguration != null)
             {
-                sk.Config.AddAzureOpenAICompletionBackend(
-                    label: azureOpenAIConfiguration.Label,
+                sk.Config.AddAzureOpenAITextCompletion(
+                    serviceId: azureOpenAIConfiguration.Label,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
@@ -117,8 +118,8 @@ public sealed class Program
             OpenAIConfiguration? openAIConfiguration = configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
             if (openAIConfiguration != null)
             {
-                sk.Config.AddOpenAICompletionBackend(
-                    label: openAIConfiguration.Label,
+                sk.Config.AddOpenAITextCompletion(
+                    serviceId: openAIConfiguration.Label,
                     modelId: openAIConfiguration.ModelId,
                     apiKey: openAIConfiguration.ApiKey);
             }
@@ -130,7 +131,7 @@ public sealed class Program
             throw new InvalidOperationException("'DefaultCompletionBackendLabel' is not set in configuration.");
         }
 
-        sk.Config.SetDefaultCompletionBackend(defaultCompletionBackendLabel);
+        sk.Config.SetDefaultTextCompletionService(defaultCompletionBackendLabel);
 
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))

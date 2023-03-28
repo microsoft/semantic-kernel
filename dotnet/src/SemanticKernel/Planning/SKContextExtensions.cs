@@ -160,8 +160,8 @@ internal static class SKContextExtensions
             config.RelevancyThreshold = parsedValue;
         }
 
-        if (context.Variables.Get(Parameters.MaxRelevantFunctions, out var MaxRelevantFunctions) &&
-            int.TryParse(MaxRelevantFunctions, out var parsedMaxRelevantFunctions))
+        if (context.Variables.Get(Parameters.MaxRelevantFunctions, out var maxRelevantFunctions) &&
+            int.TryParse(maxRelevantFunctions, out var parsedMaxRelevantFunctions))
         {
             config.MaxRelevantFunctions = parsedMaxRelevantFunctions;
         }

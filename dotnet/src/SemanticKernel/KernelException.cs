@@ -48,12 +48,12 @@ public class KernelException : Exception<KernelException.ErrorCodes>
         /// <summary>
         /// Invalid backend configuration.
         /// </summary>
-        InvalidBackendConfiguration,
+        InvalidServiceConfiguration,
 
         /// <summary>
         /// Backend not found.
         /// </summary>
-        BackendNotFound,
+        ServiceNotFound,
 
         /// <summary>
         /// Skill collection not set.

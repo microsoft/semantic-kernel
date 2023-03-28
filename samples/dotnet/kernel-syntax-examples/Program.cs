@@ -53,6 +53,15 @@ public static class Program
 
         await Example15_MemorySkill.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example16_CustomLLM.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example17_ChatGPT.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example18_DallE.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
 #pragma warning restore CS1591

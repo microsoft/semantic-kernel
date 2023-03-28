@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Orchestration;
@@ -91,7 +91,7 @@ public interface ISKFunction
     /// </summary>
     /// <param name="backendFactory">AI backend factory</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIBackend(Func<ITextCompletionClient> backendFactory);
+    ISKFunction SetAIBackend(Func<ITextCompletion> backendFactory);
 
     /// <summary>
     /// Set the AI completion settings used with LLM requests
