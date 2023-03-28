@@ -46,7 +46,10 @@ class FileIOSkill:
             content = await fp.read()
             return content
 
-    @sk_function(description="Write a file", name="writeAsync",)
+    @sk_function(
+        description="Write a file",
+        name="writeAsync",
+    )
     @sk_function_context_parameter(name="path", description="Destination path")
     @sk_function_context_parameter(name="content", description="File content")
     async def write_async(self, context: SKContext):

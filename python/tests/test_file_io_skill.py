@@ -59,13 +59,13 @@ async def test_can_write():
 
         assert content == "Hello, world!"
 
+
 @pytest.mark.asyncio
 async def test_cannot_write():
-
     with tempfile.TemporaryDirectory() as temp_dir:
         skill = FileIOSkill()
         os.chmod(temp_dir, 0o500)
-        
+
         temp_file = os.path.join(temp_dir, "test.txt")
         context_variables = ContextVariables()
 
