@@ -7,14 +7,14 @@ from semantic_kernel.diagnostics.verify import Verify
 
 
 class ContextVariables:
-    def __init__(self, content: str = "") -> None:
+    def __init__(self, content: str = "", variables: Dict[str, str] = None) -> None:
         """
         Initialize the ContextVariables instance with an optional content string.
 
         :param content: The content string to be stored as the main variable,
             defaults to an empty string.
         """
-        self._variables: Dict[str, str] = {}
+        self._variables: Dict[str, str] = variables or {}
         self._main_key: str = "input"
         self._variables[self._main_key] = content
 
