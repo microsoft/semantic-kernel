@@ -58,7 +58,7 @@ internal static class Verify
     internal static void ValidFunctionParamName([NotNull] string? functionParamName)
     {
         NotEmpty(functionParamName, "The function parameter name cannot be empty");
-        Regex pattern = new("^[0-9A-Za-z_]*$");
+        Regex pattern = new("^[0-9A-Za-z_-]*$");
         if (!pattern.IsMatch(functionParamName))
         {
             throw new KernelException(

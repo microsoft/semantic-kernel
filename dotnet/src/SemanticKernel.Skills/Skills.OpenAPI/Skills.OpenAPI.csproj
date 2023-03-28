@@ -18,6 +18,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Skills\AzureKeyVaultSkill\openapi.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>KernelSyntaxExamples</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Skills\AzureKeyVaultSkill\openapi.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.OpenApi" />
+    <PackageReference Include="Microsoft.OpenApi.Readers" />
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
