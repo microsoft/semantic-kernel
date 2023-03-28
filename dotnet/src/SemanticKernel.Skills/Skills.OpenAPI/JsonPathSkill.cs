@@ -20,12 +20,39 @@ public class JsonPathSkill
     }
 
     /// <summary>
-    /// Retrieve one or more values from a JSON string using a JsonPath query.
+    /// Retrieve the value of a JSON element from a JSON string using a JsonPath query.
     /// </summary>
-    [SKFunction("Retrieve a single value of a property from a JSON string.")]
+    [SKFunction("Retrieve the value of a JSON element from a JSON string using a JsonPath query.")]
     [SKFunctionInput(Description = "JSON string")]
-    [SKFunctionContextParameter(Name = "JsonPath", Description = "JSON path.")]
-    public string GetJsonPropertyValue(string json, SKContext context)
+    [SKFunctionContextParameter(Name = "JsonPath", Description = "JSON path query.")]
+    public string GetJsonElementValue(string json, SKContext context)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            context.Fail($"Missing input JSON.");
+            return string.Empty;
+        }
+
+        if (!context.Variables.Get(Parameters.JsonPath, out string jsonPath))
+        {
+            context.Fail($"Missing variable {Parameters.JsonPath}.");
+            return string.Empty;
+        }
+
+        JObject jsonObject = JObject.Parse(json);
+
+        JToken? token = jsonObject.SelectToken(jsonPath);
+
+        return token?.Value<string>() ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Retrieve a collection of JSON elements from a JSON string using a JsonPath query.
+    /// </summary>
+    [SKFunction("Retrieve a collection of JSON elements from a JSON string using a JsonPath query.")]
+    [SKFunctionInput(Description = "JSON string")]
+    [SKFunctionContextParameter(Name = "JsonPath", Description = "JSON path query.")]
+    public string GetJsonElements(string json, SKContext context)
     {
         if (string.IsNullOrWhiteSpace(json))
         {
@@ -43,21 +70,6 @@ public class JsonPathSkill
 
         JToken[] tokens = jsonObject.SelectTokens(jsonPath).ToArray();
 
-        if (!tokens.Any())
-        {
-            // If there were no results, return an empty string.
-            return string.Empty;
-        }
-        else if (tokens.Length == 1 &&
-            tokens.First().GetType() == typeof(JValue))
-        {
-            // If there was a single result that is a simple value, return just that value.
-            return tokens.First().Value<string>() ?? string.Empty;
-        }
-        else 
-        {
-            // Anything else, reserialize the results as structured JSON.
-            return JsonConvert.SerializeObject(tokens, Formatting.None);
-        }
+        return JsonConvert.SerializeObject(tokens, Formatting.None);
     }
 }

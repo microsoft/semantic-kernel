@@ -44,6 +44,21 @@ public class JsonPathSkillTests
 
     [Theory]
     [InlineData("$.Manufacturers[0].Products[0].Name", "Anvil")] // single value
+    [InlineData("$.Manufacturers[0].Products[0].Foo", "")] // no value
+    public void GetJsonElementValueSucceeds(string jsonPath, string expected)
+    {
+        var target = new JsonPathSkill();
+
+        ContextVariables variables = new ContextVariables(Json);
+        variables[JsonPathSkill.Parameters.JsonPath] = jsonPath;
+        SKContext context = new SKContext(variables, NullMemory.Instance, null, NullLogger.Instance);
+
+        string actual = target.GetJsonElementValue(Json, context);
+
+        Assert.Equal(expected, actual, StringComparer.InvariantCultureIgnoreCase);
+    }
+
+    [Theory]
     [InlineData("$..Products[?(@.Price >= 50)].Name", "[\"Anvil\",\"Elbow Grease\"]")] // multiple values
     [InlineData("$.Manufacturers", "[[{\"Name\":\"Acme Co\",\"Products\":[{\"Name\":\"Anvil\",\"Price\":50}]},{\"Name\":\"Contoso\",\"Products\":[{\"Name\":\"Elbow Grease\",\"Price\":99.95},{\"Name\":\"Headlight Fluid\",\"Price\":4}]}]]")] // complex value
     public void GetJsonPropertyValueSucceeds(string jsonPath, string expected)
@@ -54,7 +69,7 @@ public class JsonPathSkillTests
         variables[JsonPathSkill.Parameters.JsonPath] = jsonPath;
         SKContext context = new SKContext(variables, NullMemory.Instance, null, NullLogger.Instance);
 
-        string actual = target.GetJsonPropertyValue(Json, context);
+        string actual = target.GetJsonElements(Json, context);
 
         Assert.Equal(expected, actual, StringComparer.InvariantCultureIgnoreCase);
     }
