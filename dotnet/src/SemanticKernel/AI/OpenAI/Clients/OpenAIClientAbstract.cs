@@ -211,12 +211,15 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// Performs prompt normalization
     /// </summary>
     /// <param name="prompt">Prompt to normalize</param>
-    protected void NormalizePrompt(string prompt)
+    /// <returns>Normalized prompt</returns>
+    protected string NormalizePrompt(string prompt)
     {
         if (!string.IsNullOrWhiteSpace(prompt))
         {
             prompt = prompt.Replace("\r\n", "\n", StringComparison.InvariantCultureIgnoreCase);
         }
+
+        return prompt;
     }
 
     /// <summary>

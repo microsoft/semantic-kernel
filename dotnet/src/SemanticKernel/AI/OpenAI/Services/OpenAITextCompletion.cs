@@ -71,12 +71,10 @@ public sealed class OpenAITextCompletion : OpenAIClientAbstract, ITextCompletion
                 $"MaxTokens {requestSettings.MaxTokens} is not valid, the value must be greater than zero");
         }
 
-        this.NormalizePrompt(text);
-
         var requestBody = Json.Serialize(new OpenAITextCompletionRequest
         {
             Model = this._modelId,
-            Prompt = text,
+            Prompt = this.NormalizePrompt(text),
             Temperature = requestSettings.Temperature,
             TopP = requestSettings.TopP,
             PresencePenalty = requestSettings.PresencePenalty,
