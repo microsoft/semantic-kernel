@@ -29,9 +29,9 @@ class TestValBlock:
         val_block = ValBlock(content="'test value\"")
         is_valid, error_msg = val_block.is_valid()
         assert not is_valid
-        assert (
-            error_msg
-            == "A value must be defined using either single quotes or double quotes, not both"
+        assert error_msg == (
+            "A value must be defined using either single quotes "
+            "or double quotes, not both"
         )
 
     def test_is_valid_no_quotes(self):

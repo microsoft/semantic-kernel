@@ -40,7 +40,10 @@ class ValBlock(Block):
             return False, error_msg
 
         if self._first != self._last:
-            error_msg = "A value must be defined using either single quotes or double quotes, not both"
+            error_msg = (
+                "A value must be defined using either single quotes or "
+                "double quotes, not both"
+            )
             self.log.error(error_msg)
             return False, error_msg
 

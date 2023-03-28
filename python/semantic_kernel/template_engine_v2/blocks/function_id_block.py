@@ -17,7 +17,8 @@ class FunctionIdBlock(Block):
         if len(function_name_parts) > 2:
             self.log.error(f"Invalid function name `{self.content}`")
             raise ValueError(
-                "A function name can contain at most one dot separating the skill name from the function name"
+                "A function name can contain at most one dot separating "
+                "the skill name from the function name"
             )
 
         if len(function_name_parts) == 2:
@@ -37,7 +38,10 @@ class FunctionIdBlock(Block):
             return False, error_msg
 
         if self._has_more_than_one_dot(self.content):
-            error_msg = "The function identifier can contain max one '.' char separating skill name from function name"
+            error_msg = (
+                "The function identifier can contain max one '.' "
+                "char separating skill name from function name"
+            )
             return False, error_msg
 
         return True, ""
