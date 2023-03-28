@@ -15,9 +15,9 @@ using RestSkills.Authentication;
 namespace RestSkills;
 
 /// <summary>
-/// Runs Rest operation represented by RestOperation model class.
+/// Runs REST API operation represented by RestApiOperation model class.
 /// </summary>
-internal class RestOperationRunner : IRestOperationRunner
+internal class RestApiOperationRunner : IRestApiOperationRunner
 {
     /// <summary>
     /// An instance of the HttpClient class.
@@ -30,18 +30,18 @@ internal class RestOperationRunner : IRestOperationRunner
     private readonly IAuthenticationHandler _authenticationHandler;
 
     /// <summary>
-    /// Creates an instance of a <see cref="RestOperationRunner"/> class.
+    /// Creates an instance of a <see cref="RestApiOperationRunner"/> class.
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
     /// <param name="authenticationHandler">An instance of authentication handler.</param>
-    public RestOperationRunner(HttpClient httpClient, IAuthenticationHandler authenticationHandler)
+    public RestApiOperationRunner(HttpClient httpClient, IAuthenticationHandler authenticationHandler)
     {
         this._httpClient = httpClient;
         this._authenticationHandler = authenticationHandler;
     }
 
     /// <inheritdoc/>
-    public async Task<JsonNode?> RunAsync(RestOperation operation, IDictionary<string, string> arguments, JsonNode? payload = null, CancellationToken cancellationToken = default)
+    public async Task<JsonNode?> RunAsync(RestApiOperation operation, IDictionary<string, string> arguments, JsonNode? payload = null, CancellationToken cancellationToken = default)
     {
         var uri = operation.BuildOperationUri(arguments);
 

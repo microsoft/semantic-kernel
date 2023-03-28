@@ -10,9 +10,9 @@ using RestSkillsApi;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 /// <summary>
-/// The Rest operation.
+/// The REST API operation.
 /// </summary>
-internal class RestOperation
+internal class RestApiOperation
 {
     /// <summary>
     /// The operation identifier.
@@ -45,14 +45,14 @@ internal class RestOperation
     public IDictionary<string, string> Headers { get; private set; } = new Dictionary<string, string>();
 
     /// <summary>
-    /// Creates an instance of a <see cref="RestOperation"/> class.
+    /// Creates an instance of a <see cref="RestApiOperation"/> class.
     /// </summary>
     /// <param name="id">The operation identifier.</param>
     /// <param name="description">The operation description.</param>
     /// <param name="path">The operation path.</param>
     /// <param name="method">The operation method - GET, POST, PUT, DELETE.</param>
     /// <param name="serverUrl">The server URL.</param>
-    public RestOperation(string id, string description, string path, HttpMethod method, string serverUrl)
+    public RestApiOperation(string id, string description, string path, HttpMethod method, string serverUrl)
     {
         this.Id = id;
         this.Description = description;
@@ -81,17 +81,17 @@ internal class RestOperation
         return new Uri(new Uri(serverUrl, UriKind.Absolute), path);
     }
 
-    public void AddParameters(IList<RestParameter> parameters)
+    public void AddParameters(IList<RestApiOperationParameter> parameters)
     {
         this._parameters.AddRange(parameters);
     }
 
-    public IReadOnlyList<RestParameter> GetParameters()
+    public IReadOnlyList<RestApiOperationParameter> GetParameters()
     {
-        var parameters = new List<RestParameter>(this._parameters);
+        var parameters = new List<RestApiOperationParameter>(this._parameters);
 
         //Register "server-url" as a paramter so that it's possible to override it if needed.
-        parameters.Add(new RestParameter(ServerUrlArgumentName, false, RestParameterType.Override, this.ServerUrl));
+        parameters.Add(new RestApiOperationParameter(ServerUrlArgumentName, false, RestApiOperationParameterType.Override, this.ServerUrl));
 
         return parameters;
     }
@@ -117,10 +117,10 @@ internal class RestOperation
             }
 
             //A try to find default value for the parameter            
-            var parameterMetadata = this._parameters.First(p => p.Type == RestParameterType.Path && p.Name == parameterName);
+            var parameterMetadata = this._parameters.First(p => p.Type == RestApiOperationParameterType.Path && p.Name == parameterName);
             if (parameterMetadata?.DefaultValue == null)
             {
-                throw new RestOperationException($"No argument found for parameter - '{parameterName}' for operation - '{this.Id}'");
+                throw new RestApiOperationException($"No argument found for parameter - '{parameterName}' for operation - '{this.Id}'");
             }
 
             return parameterMetadata.DefaultValue;
@@ -139,7 +139,7 @@ internal class RestOperation
     {
         var builder = new StringBuilder();
 
-        var queryStringParameters = this._parameters.Where(p => p.Type == RestParameterType.Query);
+        var queryStringParameters = this._parameters.Where(p => p.Type == RestApiOperationParameterType.Query);
 
         foreach (var parameter in queryStringParameters)
         {
@@ -160,7 +160,7 @@ internal class RestOperation
             //Throw an exception if the parameter is a required one but no value is provided.
             if (parameter.IsRequired)
             {
-                throw new RestOperationException($"No argument found for required query string parameter - '{parameter.Name}' for operation - '{this.Id}'");
+                throw new RestApiOperationException($"No argument found for required query string parameter - '{parameter.Name}' for operation - '{this.Id}'");
             }
         }
 
@@ -173,7 +173,7 @@ internal class RestOperation
 
     private const string ServerUrlArgumentName = "server-url";
 
-    private List<RestParameter> _parameters = new List<RestParameter>();
+    private List<RestApiOperationParameter> _parameters = new List<RestApiOperationParameter>();
 
     # endregion
 }

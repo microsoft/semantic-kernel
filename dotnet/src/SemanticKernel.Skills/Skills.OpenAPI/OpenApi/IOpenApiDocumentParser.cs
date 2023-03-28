@@ -16,5 +16,5 @@ internal interface IOpenApiDocumentParser
     /// </summary>
     /// <param name="stream">Stream containing OpenAPI document to parse.</param>
     /// <returns>List of rest operations.</returns>
-    IList<RestOperation> Parse(Stream stream);
+    IList<RestApiOperation> Parse(Stream stream);
 }

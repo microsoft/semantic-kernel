@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 internal class OpenApiDocumentParser : IOpenApiDocumentParser
 {
     /// <inheritdoc/>
-    public IList<RestOperation> Parse(Stream stream)
+    public IList<RestApiOperation> Parse(Stream stream)
     {
         var openApiDocument = new OpenApiStreamReader().Read(stream, out var diagnostic);
 
@@ -37,9 +37,9 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// </summary>
     /// <param name="document">The OpenApi document.</param>
     /// <returns>List of Rest operations.</returns>
-    private static IList<RestOperation> ExtractRestOperations(OpenApiDocument document)
+    private static IList<RestApiOperation> ExtractRestOperations(OpenApiDocument document)
     {
-        var result = new List<RestOperation>();
+        var result = new List<RestApiOperation>();
 
         var serverUrl = document.Servers.First().Url;
 
@@ -60,9 +60,9 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="pathItem">Rest resource metadata.</param>
     /// <param name="serverUrl">The server url.</param>
     /// <returns>Rest operation.</returns>
-    private static IList<RestOperation> CreateRestOperations(string serverUrl, string path, OpenApiPathItem pathItem)
+    private static IList<RestApiOperation> CreateRestOperations(string serverUrl, string path, OpenApiPathItem pathItem)
     {
-        var result = new List<RestOperation>();
+        var result = new List<RestApiOperation>();
 
         foreach (var operationPair in pathItem.Operations)
         {
@@ -70,7 +70,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
             var operationItem = operationPair.Value;
 
-            var restOperation = new RestOperation(
+            var restOperation = new RestApiOperation(
                 operationItem!.OperationId,
                 operationItem!.Description,
                 path,
@@ -86,9 +86,9 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
         return result;
     }
 
-    private static IList<RestParameter> ConvertParameters(IList<OpenApiParameter> parameters)
+    private static IList<RestApiOperationParameter> ConvertParameters(IList<OpenApiParameter> parameters)
     {
-        var restParameters = new List<RestParameter>();
+        var restParameters = new List<RestApiOperationParameter>();
 
         foreach (var parameter in parameters)
         {
@@ -97,10 +97,10 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
                 throw new OpenApiDocumentParsingException($"Parameter location of {parameter.Name} parameter is undefined.");
             }
 
-            var restParameter = new RestParameter(
+            var restParameter = new RestApiOperationParameter(
                 parameter.Name,
                 parameter.Required,
-                (RestParameterType)parameter.In, //TODO: Do a proper enum mapping,
+                (RestApiOperationParameterType)parameter.In, //TODO: Do a proper enum mapping,
                 (parameter.Schema.Default as OpenApiString)?.Value ?? string.Empty
             );
 
