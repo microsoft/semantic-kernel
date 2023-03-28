@@ -208,6 +208,18 @@ public abstract class OpenAIClientAbstract : IDisposable
     }
 
     /// <summary>
+    /// Performs prompt normalization
+    /// </summary>
+    /// <param name="prompt">Prompt to normalize</param>
+    protected void NormalizePrompt(string prompt)
+    {
+        if (!string.IsNullOrWhiteSpace(prompt))
+        {
+            prompt = prompt.Replace("\r\n", "\n", StringComparison.InvariantCultureIgnoreCase);
+        }
+    }
+
+    /// <summary>
     /// Explicit finalizer called by IDisposable
     /// </summary>
     public void Dispose()

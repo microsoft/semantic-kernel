@@ -72,6 +72,8 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
                 $"MaxTokens {requestSettings.MaxTokens} is not valid, the value must be greater than zero");
         }
 
+        this.NormalizePrompt(text);
+
         var requestBody = Json.Serialize(new AzureTextCompletionRequest
         {
             Prompt = text,
