@@ -236,11 +236,11 @@ class DelegateInference:
         awaitable = iscoroutinefunction(function)
 
         for name, value in DelegateInference.__dict__.items():
-            if name.startswith("infer_") and hasattr(
-                value.__wrapped__, "_delegate_type"
-            ):
+            wrapped = getattr(value, "__wrapped__", getattr(value, "__func__", None))
+
+            if name.startswith("infer_") and hasattr(wrapped, "_delegate_type"):
                 # Get the delegate type
-                if value.__wrapped__(function_signature, awaitable):
-                    return value.__wrapped__._delegate_type
+                if wrapped(function_signature, awaitable):
+                    return wrapped._delegate_type
 
         return DelegateTypes.Unknown
