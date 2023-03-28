@@ -5,9 +5,13 @@ from logging import Logger
 from typing import Any, Dict, Optional
 
 from semantic_kernel.ai.ai_exception import AIException
+from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
 from semantic_kernel.ai.open_ai.services.azure_text_completion import (
     AzureTextCompletion,
+)
+from semantic_kernel.ai.open_ai.services.open_ai_chat_completion import (
+    OpenAIChatCompletion,
 )
 from semantic_kernel.ai.open_ai.services.open_ai_text_completion import (
     OpenAITextCompletion,
@@ -233,47 +237,84 @@ class Kernel(KernelBase):
         # TODO: allow to postpone this (use lazy init)
         # allow to create semantic functions without
         # a default backend
-        backend = self._config.get_completion_backend(
-            function_config.prompt_template_config.default_backends[0]
-            if len(function_config.prompt_template_config.default_backends) > 0
-            else None
-        )
-
-        function.set_ai_configuration(
-            CompleteRequestSettings.from_completion_config(
-                function_config.prompt_template_config.completion
+        if function_config.has_chat_prompt:
+            backend = self._config.get_chat_backend(
+                function_config.prompt_template_config.default_backends[0]
+                if len(function_config.prompt_template_config.default_backends) > 0
+                else None
             )
-        )
 
-        if backend.backend_type == BackendType.AzureOpenAI:
-            Verify.not_null(
-                backend.azure_open_ai, "Azure OpenAI configuration is missing"
-            )
-            function.set_ai_backend(
-                lambda: AzureTextCompletion(
-                    backend.azure_open_ai.deployment_name,  # type: ignore
-                    backend.azure_open_ai.endpoint,  # type: ignore
-                    backend.azure_open_ai.api_key,  # type: ignore
-                    backend.azure_open_ai.api_version,  # type: ignore
-                    self._log,
+            function.set_chat_configuration(
+                ChatRequestSettings.from_completion_config(
+                    function_config.prompt_template_config.completion
                 )
             )
-        elif backend.backend_type == BackendType.OpenAI:
-            Verify.not_null(backend.open_ai, "OpenAI configuration is missing")
-            function.set_ai_backend(
-                lambda: OpenAITextCompletion(
-                    backend.open_ai.model_id,  # type: ignore
-                    backend.open_ai.api_key,  # type: ignore
-                    backend.open_ai.org_id,  # type: ignore
-                    self._log,
+
+            if backend.backend_type == BackendType.AzureOpenAI:
+                # TODO: azure impl
+                raise NotImplementedError(
+                    "Azure OpenAI Chat backend is not implemented yet"
                 )
-            )
+            elif backend.backend_type == BackendType.OpenAI:
+                Verify.not_null(backend.open_ai, "OpenAI configuration is missing")
+                function.set_chat_backend(
+                    lambda: OpenAIChatCompletion(
+                        backend.open_ai.model_id,  # type: ignore
+                        backend.open_ai.api_key,  # type: ignore
+                        backend.open_ai.org_id,  # type: ignore
+                        self._log,
+                    )
+                )
+            else:
+                raise AIException(
+                    AIException.ErrorCodes.InvalidConfiguration,
+                    f"Unknown/unsupported backend type: {backend.backend_type.name}, "
+                    f"unable to prepare semantic function. Function description: "
+                    f"{function_config.prompt_template_config.description}",
+                )
+
         else:
-            raise AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
-                f"Unknown/unsupported backend type: {backend.backend_type.name}, "
-                f"unable to prepare semantic function. Function description: "
-                f"{function_config.prompt_template_config.description}",
+            backend = self._config.get_completion_backend(
+                function_config.prompt_template_config.default_backends[0]
+                if len(function_config.prompt_template_config.default_backends) > 0
+                else None
             )
+
+            function.set_ai_configuration(
+                CompleteRequestSettings.from_completion_config(
+                    function_config.prompt_template_config.completion
+                )
+            )
+
+            if backend.backend_type == BackendType.AzureOpenAI:
+                Verify.not_null(
+                    backend.azure_open_ai, "Azure OpenAI configuration is missing"
+                )
+                function.set_ai_backend(
+                    lambda: AzureTextCompletion(
+                        backend.azure_open_ai.deployment_name,  # type: ignore
+                        backend.azure_open_ai.endpoint,  # type: ignore
+                        backend.azure_open_ai.api_key,  # type: ignore
+                        backend.azure_open_ai.api_version,  # type: ignore
+                        self._log,
+                    )
+                )
+            elif backend.backend_type == BackendType.OpenAI:
+                Verify.not_null(backend.open_ai, "OpenAI configuration is missing")
+                function.set_ai_backend(
+                    lambda: OpenAITextCompletion(
+                        backend.open_ai.model_id,  # type: ignore
+                        backend.open_ai.api_key,  # type: ignore
+                        backend.open_ai.org_id,  # type: ignore
+                        self._log,
+                    )
+                )
+            else:
+                raise AIException(
+                    AIException.ErrorCodes.InvalidConfiguration,
+                    f"Unknown/unsupported backend type: {backend.backend_type.name}, "
+                    f"unable to prepare semantic function. Function description: "
+                    f"{function_config.prompt_template_config.description}",
+                )
 
         return function
