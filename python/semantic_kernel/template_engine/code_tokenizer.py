@@ -12,18 +12,33 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.utils.null_logger import NullLogger
 
 
+# BNF parsed by CodeTokenizer:
+# [template]       ::= "" | [variable] " " [template]
+#                         | [value] " " [template]
+#                         | [function-call] " " [template]
+# [variable]       ::= "$" [valid-name]
+# [value]          ::= "'" [text] "'" | '"' [text] '"'
+# [function-call]  ::= [function-id] | [function-id] [parameter]
+# [parameter]      ::= [variable] | [value]
 class CodeTokenizer:
     def __init__(self, log: Logger = None):
         self.log = log or NullLogger()
 
     def tokenize(self, text: str) -> List[Block]:
+        # Remove spaces, which are ignored anyway
         text = text.strip() if text else ""
 
-        if not text:
+        # Render None/empty to []
+        if not text or text == "":
             return []
 
+        # Track what type of token we're reading
         current_token_type = None
+
+        # Track the content of the current token
         current_token_content = []
+
+        # Other state we need to track
         text_value_delimiter = None
         blocks = []
         next_char = text[0]
@@ -49,6 +64,7 @@ class CodeTokenizer:
                 skip_next_char = False
                 continue
 
+            # First char is easy
             if next_char_cursor == 1:
                 if current_char == Symbols.VAR_PREFIX:
                     current_token_type = BlockTypes.VARIABLE
@@ -61,7 +77,12 @@ class CodeTokenizer:
                 current_token_content.append(current_char)
                 continue
 
+            # While reading values between quotes
             if current_token_type == BlockTypes.VALUE:
+                # If the current char is escaping the next special char we:
+                #  - skip the current char (escape char)
+                #  - add the next char (special char)
+                #  - jump to the one after (to handle "\\" properly)
                 if current_char == Symbols.ESCAPE_CHAR and self._can_be_escaped(
                     next_char
                 ):
@@ -71,6 +92,7 @@ class CodeTokenizer:
 
                 current_token_content.append(current_char)
 
+                # When we reach the end of the value, we add the block
                 if current_char == text_value_delimiter:
                     blocks.append(ValBlock("".join(current_token_content), self.log))
                     current_token_content.clear()
@@ -79,6 +101,8 @@ class CodeTokenizer:
 
                 continue
 
+            # If we're not between quotes, a space signals the end of the current token
+            # Note: there might be multiple consecutive spaces
             if self._is_blank_space(current_char):
                 if current_token_type == BlockTypes.VARIABLE:
                     blocks.append(VarBlock("".join(current_token_content), self.log))
@@ -94,6 +118,7 @@ class CodeTokenizer:
 
                 continue
 
+            # If we're not inside a quoted value and we're not processing a space
             current_token_content.append(current_char)
 
             if current_token_type is None:
@@ -101,13 +126,17 @@ class CodeTokenizer:
                     raise ValueError("Tokens must be separated by one space least")
 
                 if current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):
+                    # A quoted value starts here
                     current_token_type = BlockTypes.VALUE
                     text_value_delimiter = current_char
                 elif current_char == Symbols.VAR_PREFIX:
+                    # A variable starts here
                     current_token_type = BlockTypes.VARIABLE
                 else:
+                    # A function id starts here
                     current_token_type = BlockTypes.FUNCTION_ID
 
+        # Capture last token
         current_token_content.append(next_char)
 
         if current_token_type == BlockTypes.VALUE:
@@ -121,9 +150,6 @@ class CodeTokenizer:
 
         return blocks
 
-    def _is_var_prefix(self, c: str) -> bool:
-        return c == Symbols.VAR_PREFIX
-
     def _is_blank_space(self, c: str) -> bool:
         return c in (
             Symbols.SPACE,
@@ -131,9 +157,6 @@ class CodeTokenizer:
             Symbols.CARRIAGE_RETURN,
             Symbols.TAB,
         )
-
-    def _is_quote(self, c: str) -> bool:
-        return c in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE)
 
     def _can_be_escaped(self, c: str) -> bool:
         return c in (
