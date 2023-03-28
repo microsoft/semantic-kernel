@@ -282,7 +282,7 @@ public class VolatileMemoryStoreTests
             this.Metadata = metadata;
         }
 
-        public string JsonSerializeMetadata()
+        public string GetSerializedMetadata()
         {
             return JsonSerializer.Serialize(this.Metadata);
         }
