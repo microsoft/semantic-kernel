@@ -33,11 +33,11 @@ public class SqliteMemoryStore<TEmbedding> : SqliteDataStore<IEmbeddingWithMetad
             return AsyncEnumerable.Empty<(IEmbeddingWithMetadata<TEmbedding>, double)>();
         }
 
-        string tableName = "";
-        IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> asyncEmbeddingCollection = this.TryGetCollectionAsync(collection, tableName);
-        IEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> embeddingCollection = (IEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>>)Task.FromResult(asyncEmbeddingCollection.ToListAsync());
+        IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> asyncEmbeddingCollection = this.TryGetCollectionAsync(collection);
+        IEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> embeddingCollection = asyncEmbeddingCollection.ToEnumerable();
 
-        if (!embeddingCollection.Any())
+        bool bEmpty = embeddingCollection?.Any() ?? false;
+        if (bEmpty)
         {
             return AsyncEnumerable.Empty<(IEmbeddingWithMetadata<TEmbedding>, double)>();
         }
@@ -46,6 +46,8 @@ public class SqliteMemoryStore<TEmbedding> : SqliteDataStore<IEmbeddingWithMetad
 
         TopNCollection<IEmbeddingWithMetadata<TEmbedding>> embeddings = new(limit);
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+        // We checked to make sure embedding collection is not null a few lines ago.
         foreach (var item in embeddingCollection)
         {
             if (item.Value != null)
@@ -58,6 +60,7 @@ public class SqliteMemoryStore<TEmbedding> : SqliteDataStore<IEmbeddingWithMetad
                 }
             }
         }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
         embeddings.SortByScore();
 
@@ -81,3 +84,10 @@ public class SqliteMemoryStore<TEmbedding> : SqliteDataStore<IEmbeddingWithMetad
 
     #endregion
 }
+
+//public class SqliteMemoryStore : SqliteMemoryStore<float>
+//{
+//    public SqliteMemoryStore(SqliteConnection dbConnection)
+//        : base(dbConnection)
+//    { }
+//}

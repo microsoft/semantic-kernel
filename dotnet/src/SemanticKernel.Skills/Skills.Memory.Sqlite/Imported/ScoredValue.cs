@@ -92,7 +92,9 @@ public struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredVal
         return left.CompareTo(right) >= 0;
     }
 
+#pragma warning disable CA1000 // Do not declare static members on generic types
     public static ScoredValue<T> Min()
+#pragma warning restore CA1000 // Do not declare static members on generic types
     {
         return new ScoredValue<T>(default!, Score.Min);
     }

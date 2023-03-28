@@ -28,8 +28,9 @@ public static class Program
             {
                 //services.AddSingleton<IMemoryStore<float>>(new VolatileMemoryStore());
 
-                string databaseFile = "D:\\SQLiteDataBases\\SKDataBase";
-                SqliteConnection dbConnection = new SqliteConnection(@"Data Source={databaseFile};");
+                //string databaseFile = "SKDataBase.db";
+                //SqliteConnection.CreateFile("SKDataBase.db");
+                SqliteConnection dbConnection = new SqliteConnection(@"Data Source=SKDataBase.db;");
                 await dbConnection.OpenAsync(); // TODO: close connection when done (not sure where that code would reside)
 
                 services.AddSingleton<IMemoryStore<float>>(new SqliteMemoryStore<float>(dbConnection));
