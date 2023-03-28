@@ -4,13 +4,13 @@
 from logging import Logger
 from typing import Any, Optional
 
-from semantic_kernel.ai.open_ai.services.open_ai_text_completion import (
-    OpenAITextCompletion,
+from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
+    OpenAITextEmbedding,
 )
 from semantic_kernel.diagnostics.verify import Verify
 
 
-class AzureTextCompletion(OpenAITextCompletion):
+class AzureTextEmbedding(OpenAITextEmbedding):
     _endpoint: str
     _api_version: str
 
