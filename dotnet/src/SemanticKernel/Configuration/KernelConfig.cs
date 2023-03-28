@@ -3,7 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.AI.OpenAI.Services;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.ImageGeneration;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
 
@@ -11,6 +14,7 @@ namespace Microsoft.SemanticKernel.Configuration;
 
 /// <summary>
 /// Semantic kernel configuration.
+/// TODO: use .NET ServiceCollection (will require a lot of changes)
 /// </summary>
 public sealed class KernelConfig
 {
@@ -25,164 +29,184 @@ public sealed class KernelConfig
     public HttpRetryConfig DefaultHttpRetryConfig { get; private set; } = new();
 
     /// <summary>
-    /// Adds an Azure OpenAI backend to the list.
-    /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
+    /// Text completion service factories
     /// </summary>
-    /// <param name="label">An identifier used to map semantic functions to backend,
-    /// decoupling prompts configurations from the actual model used</param>
-    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
-    /// <param name="overwrite">Whether to overwrite an existing configuration if the same name exists</param>
-    /// <returns>Self instance</returns>
-    public KernelConfig AddAzureOpenAICompletionBackend(
-        string label, string deploymentName, string endpoint, string apiKey, string apiVersion = "2022-12-01", bool overwrite = false)
-    {
-        Verify.NotEmpty(label, "The backend label is empty");
+    public Dictionary<string, Func<IKernel, ITextCompletion>> TextCompletionServices { get; } = new();
 
-        if (!overwrite && this.CompletionBackends.ContainsKey(label))
+    /// <summary>
+    /// Chat completion service factories
+    /// </summary>
+    public Dictionary<string, Func<IKernel, IChatCompletion>> ChatCompletionServices { get; } = new();
+
+    /// <summary>
+    /// Text embedding generation service factories
+    /// </summary>
+    public Dictionary<string, Func<IKernel, IEmbeddingGenerator<string, float>>> TextEmbeddingServices { get; } = new();
+
+    /// <summary>
+    /// Image generation service factories
+    /// </summary>
+    public Dictionary<string, Func<IKernel, IImageGeneration>> ImageGenerationServices { get; } = new();
+
+    /// <summary>
+    /// Default text completion service.
+    /// </summary>
+    public string? DefaultTextCompletionServiceId { get; private set; }
+
+    /// <summary>
+    /// Default chat completion service.
+    /// </summary>
+    public string? DefaultChatCompletionServiceId { get; private set; }
+
+    /// <summary>
+    /// Default text embedding generation service.
+    /// </summary>
+    public string? DefaultTextEmbeddingServiceId { get; private set; }
+
+    /// <summary>
+    /// Default image generation service.
+    /// </summary>
+    public string? DefaultImageGenerationServiceId { get; private set; }
+
+    /// <summary>
+    /// Get all text completion services.
+    /// </summary>
+    /// <returns>IEnumerable of all completion service Ids in the kernel configuration.</returns>
+    public IEnumerable<string> AllTextCompletionServices => this.TextCompletionServices.Keys;
+
+    /// <summary>
+    /// Get all chat completion services.
+    /// </summary>
+    /// <returns>IEnumerable of all completion service Ids in the kernel configuration.</returns>
+    public IEnumerable<string> AllChatCompletionServices => this.ChatCompletionServices.Keys;
+
+    /// <summary>
+    /// Get all text embedding generation services.
+    /// </summary>
+    /// <returns>IEnumerable of all embedding service Ids in the kernel configuration.</returns>
+    public IEnumerable<string> AllTextEmbeddingServices => this.TextEmbeddingServices.Keys;
+
+    /// <summary>
+    /// Add to the list a service for text completion, e.g. Azure OpenAI Text Completion.
+    /// </summary>
+    /// <param name="serviceId">Id used to identify the service</param>
+    /// <param name="serviceFactory">Function used to instantiate the service object</param>
+    /// <param name="overwrite">Whether to overwrite a service having the same id</param>
+    /// <returns>Current object instance</returns>
+    /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    public KernelConfig AddTextCompletion(
+        string serviceId, Func<IKernel, ITextCompletion> serviceFactory, bool overwrite = false)
+    {
+        Verify.NotEmpty(serviceId, "The service id provided is empty");
+
+        if (!overwrite && this.TextCompletionServices.ContainsKey(serviceId))
         {
             throw new KernelException(
-                KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"A completion backend already exists for the label: {label}");
+                KernelException.ErrorCodes.InvalidServiceConfiguration,
+                $"A text completion with id '{serviceId}' already exists");
         }
 
-        this.CompletionBackends[label] = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
+        this.TextCompletionServices[serviceId] = serviceFactory;
 
-        if (this.CompletionBackends.Count == 1)
+        if (this.TextCompletionServices.Count == 1)
         {
-            this._defaultCompletionBackend = label;
+            this.DefaultTextCompletionServiceId = serviceId;
         }
 
         return this;
     }
 
     /// <summary>
-    /// Adds the OpenAI completion backend to the list.
-    /// See https://platform.openai.com/docs for service details.
+    /// Add to the list a service for chat completion, e.g. OpenAI ChatGPT.
     /// </summary>
-    /// <param name="label">An identifier used to map semantic functions to backend,
-    /// decoupling prompts configurations from the actual model used</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
-    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
-    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="overwrite">Whether to overwrite an existing configuration if the same name exists</param>
-    /// <returns>Self instance</returns>
-    public KernelConfig AddOpenAICompletionBackend(
-        string label, string modelId, string apiKey, string? orgId = null, bool overwrite = false)
+    /// <param name="serviceId">Id used to identify the service</param>
+    /// <param name="serviceFactory">Function used to instantiate the service object</param>
+    /// <param name="overwrite">Whether to overwrite a service having the same id</param>
+    /// <returns>Current object instance</returns>
+    /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    public KernelConfig AddChatCompletion(
+        string serviceId, Func<IKernel, IChatCompletion> serviceFactory, bool overwrite = false)
     {
-        Verify.NotEmpty(label, "The backend label is empty");
+        Verify.NotEmpty(serviceId, "The service id provided is empty");
 
-        if (!overwrite && this.CompletionBackends.ContainsKey(label))
+        if (!overwrite && this.ChatCompletionServices.ContainsKey(serviceId))
         {
             throw new KernelException(
-                KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"A completion backend already exists for the label: {label}");
+                KernelException.ErrorCodes.InvalidServiceConfiguration,
+                $"An chat completion with id '{serviceId}' already exists");
         }
 
-        this.CompletionBackends[label] = new OpenAIConfig(label, modelId, apiKey, orgId);
+        this.ChatCompletionServices[serviceId] = serviceFactory;
 
-        if (this.CompletionBackends.Count == 1)
+        if (this.ChatCompletionServices.Count == 1)
         {
-            this._defaultCompletionBackend = label;
+            this.DefaultChatCompletionServiceId = serviceId;
         }
 
         return this;
     }
 
     /// <summary>
-    /// Adds an Azure OpenAI embeddings backend to the list.
-    /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
+    /// Add to the list a service for text embedding generation, e.g. Azure OpenAI Text Embedding.
     /// </summary>
-    /// <param name="label">An identifier used to map semantic functions to backend,
-    /// decoupling prompts configurations from the actual model used</param>
-    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
-    /// <param name="overwrite">Whether to overwrite an existing configuration if the same name exists</param>
-    /// <returns>Self instance</returns>
-    public KernelConfig AddAzureOpenAIEmbeddingsBackend(
-        string label, string deploymentName, string endpoint, string apiKey, string apiVersion = "2022-12-01", bool overwrite = false)
+    /// <param name="serviceId">Id used to identify the service</param>
+    /// <param name="serviceFactory">Function used to instantiate the service object</param>
+    /// <param name="overwrite">Whether to overwrite a service having the same id</param>
+    /// <returns>Current object instance</returns>
+    /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    public KernelConfig AddTextEmbeddingGeneration(
+        string serviceId, Func<IKernel, IEmbeddingGenerator<string, float>> serviceFactory, bool overwrite = false)
     {
-        Verify.NotEmpty(label, "The backend label is empty");
+        Verify.NotEmpty(serviceId, "The service id provided is empty");
 
-        if (!overwrite && this.EmbeddingsBackends.ContainsKey(label))
+        if (!overwrite && this.TextEmbeddingServices.ContainsKey(serviceId))
         {
             throw new KernelException(
-                KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"An embeddings backend already exists for the label: {label}");
+                KernelException.ErrorCodes.InvalidServiceConfiguration,
+                $"An embedding generator with id '{serviceId}' already exists");
         }
 
-        this.EmbeddingsBackends[label] = new AzureOpenAIConfig(label, deploymentName, endpoint, apiKey, apiVersion);
+        this.TextEmbeddingServices[serviceId] = serviceFactory;
 
-        if (this.EmbeddingsBackends.Count == 1)
+        if (this.TextEmbeddingServices.Count == 1)
         {
-            this._defaultEmbeddingsBackend = label;
+            this.DefaultTextEmbeddingServiceId = serviceId;
         }
 
         return this;
     }
 
     /// <summary>
-    /// Adds the OpenAI embeddings backend to the list.
-    /// See https://platform.openai.com/docs for service details.
+    /// Add to the list a service for image generation, e.g. OpenAI DallE.
     /// </summary>
-    /// <param name="label">An identifier used to map semantic functions to backend,
-    /// decoupling prompts configurations from the actual model used</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
-    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
-    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="overwrite">Whether to overwrite an existing configuration if the same name exists</param>
-    /// <returns>Self instance</returns>
-    public KernelConfig AddOpenAIEmbeddingsBackend(
-        string label, string modelId, string apiKey, string? orgId = null, bool overwrite = false)
+    /// <param name="serviceId">Id used to identify the service</param>
+    /// <param name="serviceFactory">Function used to instantiate the service object</param>
+    /// <param name="overwrite">Whether to overwrite a service having the same id</param>
+    /// <returns>Current object instance</returns>
+    /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    public KernelConfig AddImageGeneration(
+        string serviceId, Func<IKernel, IImageGeneration> serviceFactory, bool overwrite = false)
     {
-        Verify.NotEmpty(label, "The backend label is empty");
+        Verify.NotEmpty(serviceId, "The service id provided is empty");
 
-        if (!overwrite && this.EmbeddingsBackends.ContainsKey(label))
+        if (!overwrite && this.ImageGenerationServices.ContainsKey(serviceId))
         {
             throw new KernelException(
-                KernelException.ErrorCodes.InvalidBackendConfiguration,
-                $"An embeddings backend already exists for the label: {label}");
+                KernelException.ErrorCodes.InvalidServiceConfiguration,
+                $"An image generation with id '{serviceId}' already exists");
         }
 
-        this.EmbeddingsBackends[label] = new OpenAIConfig(label, modelId, apiKey, orgId);
+        this.ImageGenerationServices[serviceId] = serviceFactory;
 
-        if (this.EmbeddingsBackends.Count == 1)
+        if (this.ImageGenerationServices.Count == 1)
         {
-            this._defaultEmbeddingsBackend = label;
+            this.DefaultImageGenerationServiceId = serviceId;
         }
 
         return this;
     }
 
-    /// <summary>
-    /// Check whether a given completion backend is in the configuration.
-    /// </summary>
-    /// <param name="label">Name of completion backend to look for.</param>
-    /// <param name="condition">Optional condition that must be met for a backend to be deemed present.</param>
-    /// <returns><c>true</c> when a completion backend matching the giving label is present, <c>false</c> otherwise.</returns>
-    public bool HasCompletionBackend(string label, Func<IBackendConfig, bool>? condition = null)
-    {
-        return condition == null
-            ? this.CompletionBackends.ContainsKey(label)
-            : this.CompletionBackends.Any(x => x.Key == label && condition(x.Value));
-    }
-
-    /// <summary>
-    /// Check whether a given embeddings backend is in the configuration.
-    /// </summary>
-    /// <param name="label">Name of embeddings backend to look for.</param>
-    /// <param name="condition">Optional condition that must be met for a backend to be deemed present.</param>
-    /// <returns><c>true</c> when an embeddings backend matching the giving label is present, <c>false</c> otherwise.</returns>
-    public bool HasEmbeddingsBackend(string label, Func<IBackendConfig, bool>? condition = null)
-    {
-        return condition == null
-            ? this.EmbeddingsBackends.ContainsKey(label)
-            : this.EmbeddingsBackends.Any(x => x.Key == label && condition(x.Value));
-    }
+    #region Set
 
     /// <summary>
     /// Set the http retry handler factory to use for the kernel.
@@ -211,212 +235,215 @@ public sealed class KernelConfig
     }
 
     /// <summary>
-    /// Set the default completion backend to use for the kernel.
+    /// Set the default completion service to use for the kernel.
     /// </summary>
-    /// <param name="label">Label of completion backend to use.</param>
+    /// <param name="serviceId">Identifier of completion service to use.</param>
     /// <returns>The updated kernel configuration.</returns>
-    /// <exception cref="KernelException">Thrown if the requested backend doesn't exist.</exception>
-    public KernelConfig SetDefaultCompletionBackend(string label)
+    /// <exception cref="KernelException">Thrown if the requested service doesn't exist.</exception>
+    public KernelConfig SetDefaultTextCompletionService(string serviceId)
     {
-        if (!this.CompletionBackends.ContainsKey(label))
+        if (!this.TextCompletionServices.ContainsKey(serviceId))
         {
             throw new KernelException(
-                KernelException.ErrorCodes.BackendNotFound,
-                $"The completion backend doesn't exist with label: {label}");
+                KernelException.ErrorCodes.ServiceNotFound,
+                $"A text completion service id '{serviceId}' doesn't exist");
         }
 
-        this._defaultCompletionBackend = label;
+        this.DefaultTextCompletionServiceId = serviceId;
         return this;
     }
 
     /// <summary>
-    /// Default completion backend.
+    /// Set the default embedding service to use for the kernel.
     /// </summary>
-    public string? DefaultCompletionBackend => this._defaultCompletionBackend;
-
-    /// <summary>
-    /// Set the default embeddings backend to use for the kernel.
-    /// </summary>
-    /// <param name="label">Label of embeddings backend to use.</param>
+    /// <param name="serviceId">Identifier of text embedding service to use.</param>
     /// <returns>The updated kernel configuration.</returns>
-    /// <exception cref="KernelException">Thrown if the requested backend doesn't exist.</exception>
-    public KernelConfig SetDefaultEmbeddingsBackend(string label)
+    /// <exception cref="KernelException">Thrown if the requested service doesn't exist.</exception>
+    public KernelConfig SetDefaultEmbeddingService(string serviceId)
     {
-        if (!this.EmbeddingsBackends.ContainsKey(label))
+        if (!this.TextEmbeddingServices.ContainsKey(serviceId))
         {
             throw new KernelException(
-                KernelException.ErrorCodes.BackendNotFound,
-                $"The embeddings backend doesn't exist with label: {label}");
+                KernelException.ErrorCodes.ServiceNotFound,
+                $"A text embedding generation service id '{serviceId}' doesn't exist");
         }
 
-        this._defaultEmbeddingsBackend = label;
+        this.DefaultTextEmbeddingServiceId = serviceId;
         return this;
     }
 
-    /// <summary>
-    /// Default embeddings backend.
-    /// </summary>
-    public string? DefaultEmbeddingsBackend => this._defaultEmbeddingsBackend;
+    #endregion
+
+    #region Get
 
     /// <summary>
-    /// Get the completion backend configuration matching the given label or the default if a label is not provided or not found.
+    /// Get the text completion service configuration matching the given id or the default if an id is not provided or not found.
     /// </summary>
-    /// <param name="label">Optional label of the desired backend.</param>
-    /// <returns>The completion backend configuration matching the given label or the default.</returns>
-    /// <exception cref="KernelException">Thrown when no suitable backend is found.</exception>
-    public IBackendConfig GetCompletionBackend(string? label = null)
+    /// <param name="serviceId">Optional identifier of the desired service.</param>
+    /// <returns>The text completion service id matching the given id or the default.</returns>
+    /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
+    public string GetTextCompletionServiceIdOrDefault(string? serviceId = null)
     {
-        if (string.IsNullOrEmpty(label))
+        if (string.IsNullOrEmpty(serviceId) || !this.TextCompletionServices.ContainsKey(serviceId))
         {
-            if (this._defaultCompletionBackend == null)
-            {
-                throw new KernelException(
-                    KernelException.ErrorCodes.BackendNotFound,
-                    "A label was not provided and no default completion backend is available.");
-            }
-
-            return this.CompletionBackends[this._defaultCompletionBackend];
+            serviceId = this.DefaultTextCompletionServiceId;
         }
 
-        if (this.CompletionBackends.TryGetValue(label, out IBackendConfig value))
+        if (string.IsNullOrEmpty(serviceId))
         {
-            return value;
+            throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text completion service not available");
         }
 
-        if (this._defaultCompletionBackend != null)
-        {
-            return this.CompletionBackends[this._defaultCompletionBackend];
-        }
-
-        throw new KernelException(
-            KernelException.ErrorCodes.BackendNotFound,
-            $"Completion backend not found with label: {label} and no default completion backend is available.");
+        return serviceId;
     }
 
     /// <summary>
-    /// Get the embeddings backend configuration matching the given label or the default if a label is not provided or not found.
+    /// Get the chat completion service configuration matching the given id or the default if an id is not provided or not found.
     /// </summary>
-    /// <param name="label">Optional label of the desired backend.</param>
-    /// <returns>The embeddings backend configuration matching the given label or the default.</returns>
-    /// <exception cref="KernelException">Thrown when no suitable backend is found.</exception>
-    public IBackendConfig GetEmbeddingsBackend(string? label = null)
+    /// <param name="serviceId">Optional identifier of the desired service.</param>
+    /// <returns>The completion service id matching the given id or the default.</returns>
+    /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
+    public string GetChatCompletionServiceIdOrDefault(string? serviceId = null)
     {
-        if (string.IsNullOrEmpty(label))
+        if (string.IsNullOrEmpty(serviceId) || !this.ChatCompletionServices.ContainsKey(serviceId))
         {
-            if (this._defaultEmbeddingsBackend == null)
-            {
-                throw new KernelException(
-                    KernelException.ErrorCodes.BackendNotFound,
-                    "A label was not provided and no default embeddings backend is available.");
-            }
-
-            return this.EmbeddingsBackends[this._defaultEmbeddingsBackend];
+            serviceId = this.DefaultChatCompletionServiceId;
         }
 
-        if (this.EmbeddingsBackends.TryGetValue(label, out IBackendConfig value))
+        if (string.IsNullOrEmpty(serviceId))
         {
-            return value;
+            throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Chat completion service not available");
         }
 
-        if (this._defaultEmbeddingsBackend != null)
-        {
-            return this.EmbeddingsBackends[this._defaultEmbeddingsBackend];
-        }
-
-        throw new KernelException(
-            KernelException.ErrorCodes.BackendNotFound,
-            $"Embeddings backend not found with label: {label} and no default embeddings backend is available.");
+        return serviceId;
     }
 
     /// <summary>
-    /// Get all completion backends.
+    /// Get the text embedding service configuration matching the given id or the default if an id is not provided or not found.
     /// </summary>
-    /// <returns>IEnumerable of all completion backends in the kernel configuration.</returns>
-    public IEnumerable<IBackendConfig> GetAllCompletionBackends()
+    /// <param name="serviceId">Optional identifier of the desired service.</param>
+    /// <returns>The embedding service id matching the given id or the default.</returns>
+    /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
+    public string GetTextEmbeddingServiceIdOrDefault(string? serviceId = null)
     {
-        return this.CompletionBackends.Select(x => x.Value);
+        if (string.IsNullOrEmpty(serviceId) || !this.TextEmbeddingServices.ContainsKey(serviceId))
+        {
+            serviceId = this.DefaultTextEmbeddingServiceId;
+        }
+
+        if (string.IsNullOrEmpty(serviceId))
+        {
+            throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text embedding generation service not available");
+        }
+
+        return serviceId;
     }
 
     /// <summary>
-    /// Get all embeddings backends.
+    /// Get the image generation service id matching the given id or the default if an id is not provided or not found.
     /// </summary>
-    /// <returns>IEnumerable of all embeddings backends in the kernel configuration.</returns>
-    public IEnumerable<IBackendConfig> GetAllEmbeddingsBackends()
+    /// <param name="serviceId">Optional identifier of the desired service.</param>
+    /// <returns>The image generation service id matching the given id or the default.</returns>
+    /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
+    public string GetImageGenerationServiceIdOrDefault(string? serviceId = null)
     {
-        return this.EmbeddingsBackends.Select(x => x.Value);
+        if (string.IsNullOrEmpty(serviceId) || !this.ImageGenerationServices.ContainsKey(serviceId))
+        {
+            serviceId = this.DefaultImageGenerationServiceId;
+        }
+
+        if (string.IsNullOrEmpty(serviceId))
+        {
+            throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Image generation service not available");
+        }
+
+        return serviceId;
     }
 
+    #endregion
+
+    #region Remove
+
     /// <summary>
-    /// Remove the completion backend with the given label.
+    /// Remove the text completion service with the given id.
     /// </summary>
-    /// <param name="label">Label of backend to remove.</param>
+    /// <param name="serviceId">Identifier of service to remove.</param>
     /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig RemoveCompletionBackend(string label)
+    public KernelConfig RemoveTextCompletionService(string serviceId)
     {
-        this.CompletionBackends.Remove(label);
-        if (this._defaultCompletionBackend == label)
+        this.TextCompletionServices.Remove(serviceId);
+        if (this.DefaultTextCompletionServiceId == serviceId)
         {
-            this._defaultCompletionBackend = this.CompletionBackends.Keys.FirstOrDefault();
+            this.DefaultTextCompletionServiceId = this.TextCompletionServices.Keys.FirstOrDefault();
         }
 
         return this;
     }
 
     /// <summary>
-    /// Remove the embeddings backend with the given label.
+    /// Remove the chat completion service with the given id.
     /// </summary>
-    /// <param name="label">Label of backend to remove.</param>
+    /// <param name="serviceId">Identifier of service to remove.</param>
     /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig RemoveEmbeddingsBackend(string label)
+    public KernelConfig RemoveChatCompletionService(string serviceId)
     {
-        this.EmbeddingsBackends.Remove(label);
-        if (this._defaultEmbeddingsBackend == label)
+        this.ChatCompletionServices.Remove(serviceId);
+        if (this.DefaultChatCompletionServiceId == serviceId)
         {
-            this._defaultEmbeddingsBackend = this.EmbeddingsBackends.Keys.FirstOrDefault();
+            this.DefaultChatCompletionServiceId = this.ChatCompletionServices.Keys.FirstOrDefault();
         }
 
         return this;
     }
 
     /// <summary>
-    /// Remove all completion backends.
+    /// Remove the text embedding generation service with the given id.
     /// </summary>
+    /// <param name="serviceId">Identifier of service to remove.</param>
     /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig RemoveAllCompletionBackends()
+    public KernelConfig RemoveTextEmbeddingService(string serviceId)
     {
-        this.CompletionBackends.Clear();
-        this._defaultCompletionBackend = null;
+        this.TextEmbeddingServices.Remove(serviceId);
+        if (this.DefaultTextEmbeddingServiceId == serviceId)
+        {
+            this.DefaultTextEmbeddingServiceId = this.TextEmbeddingServices.Keys.FirstOrDefault();
+        }
+
         return this;
     }
 
     /// <summary>
-    /// Remove all embeddings backends.
-    /// </summary>
-    /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig RemoveAllEmbeddingBackends()
-    {
-        this.EmbeddingsBackends.Clear();
-        this._defaultEmbeddingsBackend = null;
-        return this;
-    }
-
-    /// <summary>
-    /// Remove all backends.
+    /// Remove all text completion services.
     /// </summary>
     /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig RemoveAllBackends()
+    public KernelConfig RemoveAllTextCompletionServices()
     {
-        this.RemoveAllCompletionBackends();
-        this.RemoveAllEmbeddingBackends();
+        this.TextCompletionServices.Clear();
+        this.DefaultTextCompletionServiceId = null;
         return this;
     }
 
-    #region private
+    /// <summary>
+    /// Remove all chat completion services.
+    /// </summary>
+    /// <returns>The updated kernel configuration.</returns>
+    public KernelConfig RemoveAllChatCompletionServices()
+    {
+        this.ChatCompletionServices.Clear();
+        this.DefaultChatCompletionServiceId = null;
+        return this;
+    }
 
-    private Dictionary<string, IBackendConfig> CompletionBackends { get; } = new();
-    private Dictionary<string, IBackendConfig> EmbeddingsBackends { get; } = new();
-    private string? _defaultCompletionBackend;
-    private string? _defaultEmbeddingsBackend;
+    /// <summary>
+    /// Remove all text embedding generation services.
+    /// </summary>
+    /// <returns>The updated kernel configuration.</returns>
+    public KernelConfig RemoveAllTextEmbeddingServices()
+    {
+        this.TextEmbeddingServices.Clear();
+        this.DefaultTextEmbeddingServiceId = null;
+        return this;
+    }
 
     #endregion
 }

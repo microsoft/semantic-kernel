@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.OpenAI.Clients;
 using Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Text;
@@ -14,7 +15,7 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.Services;
 /// <summary>
 /// Azure OpenAI text completion client.
 /// </summary>
-public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextCompletionClient
+public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextCompletion
 {
     /// <summary>
     /// Creates a new AzureTextCompletion client instance
@@ -71,7 +72,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
                 $"MaxTokens {requestSettings.MaxTokens} is not valid, the value must be greater than zero");
         }
 
-        var requestBody = Json.Serialize(new AzureCompletionRequest
+        var requestBody = Json.Serialize(new AzureTextCompletionRequest
         {
             Prompt = text,
             Temperature = requestSettings.Temperature,
@@ -82,7 +83,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
             Stop = requestSettings.StopSequences is { Count: > 0 } ? requestSettings.StopSequences : null,
         });
 
-        return await this.ExecuteCompleteRequestAsync(url, requestBody, cancellationToken);
+        return await this.ExecuteTextCompletionRequestAsync(url, requestBody, cancellationToken);
     }
 
     #region private ================================================================================
