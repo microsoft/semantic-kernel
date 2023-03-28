@@ -164,19 +164,19 @@ public class VolatileMemoryStoreTests
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
         int topN = 4;
-        
+
         var memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 1, 1 }), "1 ,1 ,1");
         _ = await this._db.PutValueAsync(collection, memory);
-        
+
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -1, -1 }), "-1 ,-1 ,-1");
         await this._db.PutValueAsync(collection, memory);
-        
+
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 2, 3 }), "1 ,2 ,3");
         _ = await this._db.PutValueAsync(collection, memory);
-        
+
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -2, -3 }), "-1 ,-2 ,-3");
         _ = await this._db.PutValueAsync(collection, memory);
-        
+
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, -1, 2 }), "1 ,-1 ,2");
         _ = await this._db.PutValueAsync(collection, memory);
 
@@ -200,19 +200,19 @@ public class VolatileMemoryStoreTests
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
         int topN = 4;
-        
+
         var memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 1, 1 }), "1 ,1 ,1");
         _ = await this._db.PutValueAsync(collection, memory);
-        
+
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -1, -1 }), "-1 ,-1 ,-1");
         _ = await this._db.PutValueAsync(collection, memory);
-        
+
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 2, 3 }), "1 ,2 ,3");
         _ = await this._db.PutValueAsync(collection, memory);
-        
+
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -2, -3 }), "-1 ,-2 ,-3");
         _ = await this._db.PutValueAsync(collection, memory);
-        
+
         memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, -1, 2 }), "1 ,-1 ,2");
         _ = await this._db.PutValueAsync(collection, memory);
 
@@ -235,7 +235,7 @@ public class VolatileMemoryStoreTests
         int rand = Random.Shared.Next();
         string collection = "collection" + rand;
         int topN = 4;
-        
+
         var memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 1, 1 }), "1 ,2 ,3");
         _ = await this._db.PutValueAsync(collection, memory);
 
