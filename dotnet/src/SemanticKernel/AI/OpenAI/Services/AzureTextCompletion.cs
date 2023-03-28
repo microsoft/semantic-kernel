@@ -74,7 +74,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
 
         var requestBody = Json.Serialize(new AzureTextCompletionRequest
         {
-            Prompt = text,
+            Prompt = text.NormalizeLineEndings(),
             Temperature = requestSettings.Temperature,
             TopP = requestSettings.TopP,
             PresencePenalty = requestSettings.PresencePenalty,
