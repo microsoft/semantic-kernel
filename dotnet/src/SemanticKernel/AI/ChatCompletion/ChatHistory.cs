@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 
-namespace Microsoft.SemanticKernel.AI.ChatMessageGeneration;
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 public class ChatHistory
 {

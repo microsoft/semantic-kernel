@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.AI.ChatMessageGeneration;
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
 /// OpenAI Chat content

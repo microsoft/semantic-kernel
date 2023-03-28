@@ -3,13 +3,13 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatMessageGeneration;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Configuration;
 using RepoUtils;
 
 /**
- * The following example shows how to use Semantic Kernel with OpenAI DallE to create images
+ * The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
  */
 
 // ReSharper disable once InconsistentNaming
@@ -17,7 +17,7 @@ public static class Example18_DallE
 {
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== DallE Image Generation ========");
+        Console.WriteLine("======== Dall-E 2 Image Generation ========");
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 

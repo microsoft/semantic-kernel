@@ -3,7 +3,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.AI.ChatMessageGeneration;
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 public interface IChatCompletion
 {

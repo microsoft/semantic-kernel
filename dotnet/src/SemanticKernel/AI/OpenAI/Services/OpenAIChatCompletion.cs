@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatMessageGeneration;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.OpenAI.Clients;
 using Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 using Microsoft.SemanticKernel.Diagnostics;

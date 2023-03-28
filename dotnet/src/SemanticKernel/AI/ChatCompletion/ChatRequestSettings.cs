@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.AI.ChatMessageGeneration;
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
 /// Settings for a chat completion request.

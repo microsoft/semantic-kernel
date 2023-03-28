@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.AI.ChatMessageGeneration;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
