@@ -1,11 +1,13 @@
 from logging import Logger
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 from pytest import mark, raises
 
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
@@ -45,24 +47,37 @@ class TestCodeBlock:
             skill_collection=self.skills,
             logger=self.log,
         )
-        function = Mock(spec=SKFunctionBase)
-        function.invoke_async.side_effect = Exception("error")
+
+        def invoke(_):
+            raise Exception("error")
+
+        function = SKFunction(
+            delegate_type=DelegateTypes.InSKContext,
+            delegate_function=invoke,
+            skill_name="",
+            function_name="funcName",
+            description="",
+            parameters=[],
+            is_semantic=False,
+        )
+
         self.skills.has_function.return_value = True
         self.skills.get_function.return_value = function
+
         target = CodeBlock(content="functionName", log=self.log)
 
         with raises(ValueError):
             await target.render_code_async(context)
 
     def test_it_has_the_correct_type(self):
-        target = CodeBlock(content="", log=self.log)
-        assert target.type == BlockTypes.CODE
+        assert CodeBlock(content="", log=self.log).type == BlockTypes.CODE
 
     def test_it_trims_spaces(self):
         assert CodeBlock(content="  aa  ", log=self.log).content == "aa"
 
     def test_it_checks_validity_of_internal_blocks(self):
         valid_block1 = FunctionIdBlock(content="x")
+
         valid_block2 = ValBlock(content="''")
         invalid_block = VarBlock(content="!notvalid")
 
@@ -81,6 +96,7 @@ class TestCodeBlock:
 
     def test_it_requires_a_valid_function_call(self):
         func_id = FunctionIdBlock(content="funcName")
+
         val_block = ValBlock(content="'value'")
         var_block = VarBlock(content="$var")
 
@@ -93,11 +109,13 @@ class TestCodeBlock:
 
         is_valid1, _ = code_block1.is_valid()
         is_valid2, _ = code_block2.is_valid()
+
         is_valid3, _ = code_block3.is_valid()
         is_valid4, _ = code_block4.is_valid()
 
         assert is_valid1
         assert is_valid2
+
         assert not is_valid3
         assert not is_valid4
 
@@ -105,6 +123,7 @@ class TestCodeBlock:
     async def test_it_renders_code_block_consisting_of_just_a_var_block1(self):
         variables = ContextVariables()
         variables["varName"] = "foo"
+
         context = SKContext(
             variables, memory=NullMemory(), skill_collection=None, logger=self.log
         )
@@ -118,12 +137,14 @@ class TestCodeBlock:
     async def test_it_renders_code_block_consisting_of_just_a_var_block2(self):
         variables = ContextVariables()
         variables["varName"] = "bar"
+
         context = SKContext(
             variables, memory=NullMemory(), skill_collection=None, logger=self.log
         )
-        var_block = VarBlock(content="$varName")
 
-        code_block = CodeBlock(tokens=[var_block], content="", log=self.log)
+        code_block = CodeBlock(
+            tokens=[VarBlock(content="$varName")], content="", log=self.log
+        )
         result = await code_block.render_code_async(context)
 
         assert result == "bar"
@@ -150,33 +171,38 @@ class TestCodeBlock:
             skill_collection=None,
             logger=self.log,
         )
-        val_block = ValBlock(content="'arrivederci'")
 
-        code_block = CodeBlock(tokens=[val_block], content="", log=self.log)
+        code_block = CodeBlock(
+            tokens=[ValBlock(content="'arrivederci'")], content="", log=self.log
+        )
         result = await code_block.render_code_async(context)
 
         assert result == "arrivederci"
 
     @mark.asyncio
     async def test_it_invokes_function_cloning_all_variables(self):
-        FUNC = "funcName"
-
+        # Set up initial context variables
         variables = ContextVariables()
         variables["input"] = "zero"
         variables["var1"] = "uno"
         variables["var2"] = "due"
+
+        # Create a context with the variables, memory, skill collection, and logger
         context = SKContext(
             variables,
             memory=NullMemory(),
             skill_collection=self.skills,
             logger=self.log,
         )
-        func_id = FunctionIdBlock(content=FUNC)
 
+        # Create a FunctionIdBlock with the function name
+        func_id = FunctionIdBlock(content="funcName")
+
+        # Set up a canary dictionary to track changes in the context variables
         canary = {"input": "", "var1": "", "var2": ""}
-        function = Mock(spec=SKFunctionBase)
 
-        async def invoke_async(input, ctx, settings, log):
+        # Define the function to be invoked, which modifies the canary and context variables
+        def invoke(ctx):
             nonlocal canary
             canary["input"] = ctx["input"]
             canary["var1"] = ctx["var1"]
@@ -186,87 +212,135 @@ class TestCodeBlock:
             ctx["var1"] = "overridden"
             ctx["var2"] = "overridden"
 
-        function.invoke_async.side_effect = invoke_async
+        # Create an SKFunction with the invoke function as its delegate
+        function = SKFunction(
+            delegate_type=DelegateTypes.InSKContext,
+            delegate_function=invoke,
+            skill_name="",
+            function_name="funcName",
+            description="",
+            parameters=[],
+            is_semantic=False,
+        )
 
+        # Mock the skill collection's function retrieval
         self.skills.has_function.return_value = True
         self.skills.get_function.return_value = function
 
+        # Create a CodeBlock with the FunctionIdBlock and render it with the context
         code_block = CodeBlock(tokens=[func_id], content="", log=self.log)
         await code_block.render_code_async(context)
 
+        # Check that the canary values match the original context variables
         assert canary["input"] == "zero"
         assert canary["var1"] == "uno"
         assert canary["var2"] == "due"
 
+        # Check that the original context variables were not modified
         assert variables["input"] == "zero"
         assert variables["var1"] == "uno"
         assert variables["var2"] == "due"
 
     @mark.asyncio
     async def test_it_invokes_function_with_custom_variable(self):
-        FUNC = "funcName"
-        VAR = "varName"
+        # Define custom variable name and value
+        VAR_NAME = "varName"
         VAR_VALUE = "varValue"
 
+        # Set up initial context variables
         variables = ContextVariables()
-        variables[VAR] = VAR_VALUE
+        variables[VAR_NAME] = VAR_VALUE
+
+        # Create a context with the variables, memory, skill collection, and logger
         context = SKContext(
             variables,
             memory=NullMemory(),
             skill_collection=self.skills,
             logger=self.log,
         )
-        func_id = FunctionIdBlock(content=FUNC)
-        var_block = VarBlock(content=f"${VAR}")
 
+        # Create a FunctionIdBlock with the function name and a VarBlock with the custom variable
+        func_id = FunctionIdBlock(content="funcName")
+        var_block = VarBlock(content=f"${VAR_NAME}")
+
+        # Set up a canary variable to track changes in the context input
         canary = ""
 
-        function = Mock(spec=SKFunctionBase)
-
-        async def invoke_async(ctx):
+        # Define the function to be invoked, which modifies the canary variable
+        def invoke(ctx):
             nonlocal canary
             canary = ctx["input"]
 
-        function.invoke_async.side_effect = invoke_async
+        # Create an SKFunction with the invoke function as its delegate
+        function = SKFunction(
+            delegate_type=DelegateTypes.InSKContext,
+            delegate_function=invoke,
+            skill_name="",
+            function_name="funcName",
+            description="",
+            parameters=[],
+            is_semantic=False,
+        )
 
+        # Mock the skill collection's function retrieval
         self.skills.has_function.return_value = True
         self.skills.get_function.return_value = function
 
+        # Create a CodeBlock with the FunctionIdBlock and VarBlock,
+        # and render it with the context
         code_block = CodeBlock(tokens=[func_id, var_block], content="", log=self.log)
         result = await code_block.render_code_async(context)
 
+        # Check that the result matches the custom variable value
         assert result == VAR_VALUE
+        # Check that the canary value matches the custom variable value
         assert canary == VAR_VALUE
 
     @mark.asyncio
     async def test_it_invokes_function_with_custom_value(self):
-        FUNC = "funcName"
+        # Define a value to be used in the test
         VALUE = "value"
 
+        # Create a context with empty variables, memory, skill collection, and logger
         context = SKContext(
             ContextVariables(),
             memory=NullMemory(),
             skill_collection=self.skills,
             logger=self.log,
         )
-        func_id = FunctionIdBlock(content=FUNC)
+
+        # Create a FunctionIdBlock with the function name and a ValBlock with the value
+        func_id = FunctionIdBlock(content="funcName")
         val_block = ValBlock(content=f"'{VALUE}'")
 
+        # Set up a canary variable to track changes in the context input
         canary = ""
 
-        function = Mock(spec=SKFunctionBase)
-
-        async def invoke_async(ctx):
+        # Define the function to be invoked, which modifies the canary variable
+        def invoke(ctx):
             nonlocal canary
             canary = ctx["input"]
 
-        function.invoke_async.side_effect = invoke_async
+        # Create an SKFunction with the invoke function as its delegate
+        function = SKFunction(
+            delegate_type=DelegateTypes.InSKContext,
+            delegate_function=invoke,
+            skill_name="",
+            function_name="funcName",
+            description="",
+            parameters=[],
+            is_semantic=False,
+        )
 
+        # Mock the skill collection's function retrieval
         self.skills.has_function.return_value = True
         self.skills.get_function.return_value = function
 
+        # Create a CodeBlock with the FunctionIdBlock and ValBlock, and render it with the context
         code_block = CodeBlock(tokens=[func_id, val_block], content="", log=self.log)
         result = await code_block.render_code_async(context)
 
+        # Check that the result matches the value
         assert result == VALUE
+        # Check that the canary value matches the value
         assert canary == VALUE
