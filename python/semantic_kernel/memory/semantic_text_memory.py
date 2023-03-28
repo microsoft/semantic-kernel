@@ -42,9 +42,11 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         description: Optional[str] = None,
     ) -> None:
         embedding = await self._embeddings_generator.generate_embeddings_async([text])
-        MemoryRecord.reference_record(
+        data = MemoryRecord.reference_record(
             external_id, external_source_name, description, embedding
         )
+
+        await self._storage.put_value_async(collection, external_id, data)
 
     async def get_async(
         self,
