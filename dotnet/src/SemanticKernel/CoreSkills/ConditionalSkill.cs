@@ -236,7 +236,9 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         context.Variables.Set("IfCondition", conditionContent);
         context.Variables.Set("ConditionalVariables", this.GetConditionalVariablesFromContext(usedVariables, context.Variables));
 
-        var llmConditionResponse = (await this._evaluateConditionFunction.InvokeAsync(conditionContent, context).ConfigureAwait(false)).ToString();
+        var llmConditionResponse = (await this._evaluateConditionFunction.InvokeAsync(conditionContent, context).ConfigureAwait(false))
+            .ToString()
+            .Trim();
 
         var reason = this.GetReason(llmConditionResponse);
         var error = !Regex.Match(llmConditionResponse.Trim(), @"^(true|false)", RegexOptions.IgnoreCase).Success;

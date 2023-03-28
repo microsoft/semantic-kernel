@@ -203,7 +203,7 @@ public class TimeSkill
     public string Minute()
     {
         // Example: 15
-        return DateTimeOffset.Now.ToString("m", CultureInfo.CurrentCulture);
+        return DateTimeOffset.Now.ToString("mm", CultureInfo.CurrentCulture);
     }
 
     /// <summary>
@@ -217,7 +217,7 @@ public class TimeSkill
     public string Second()
     {
         // Example: 7
-        return DateTimeOffset.Now.ToString("s", CultureInfo.CurrentCulture);
+        return DateTimeOffset.Now.ToString("ss", CultureInfo.CurrentCulture);
     }
 
     /// <summary>

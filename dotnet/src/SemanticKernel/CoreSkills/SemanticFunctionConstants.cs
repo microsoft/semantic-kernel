@@ -15,7 +15,7 @@ To create a plan, follow these steps:
 6. 'input' does not need to be specified if it consumes the 'output' of the previous function.
 7. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""$<UNIQUE_VARIABLE_KEY>""/>
 8. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
-9. Available conditions: greaterthan, equals, contains, startswith
+9. Available conditions: greaterthan, greaterthanorequals, equals, contains, startswith
 10. Append an ""END"" XML comment at the end of the plan.
 
 [EXAMPLE FUNCTIONS]
