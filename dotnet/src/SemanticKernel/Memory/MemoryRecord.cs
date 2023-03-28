@@ -11,58 +11,13 @@ namespace Microsoft.SemanticKernel.Memory;
 internal class MemoryRecord : IEmbeddingWithMetadata<float>
 {
     /// <summary>
-    /// Nested class representing the metadata associated with a Semantic Kernel memory.
-    /// </summary>
-    public class MemoryRecordMetadata
-    {
-        /// <summary>
-        /// Whether the source data used to calculate embeddings are stored in the local
-        /// storage provider or is available through and external service, such as web site, MS Graph, etc.
-        /// </summary>
-        public bool IsReference { get; }
-
-        /// <summary>
-        /// A value used to understand which external service owns the data, to avoid storing the information
-        /// inside the URI. E.g. this could be "MSTeams", "WebSite", "GitHub", etc.
-        /// </summary>
-        public string ExternalSourceName { get; }
-
-        /// <summary>
-        /// Unique identifier. The format of the value is domain specific, so it can be a URL, a GUID, etc.
-        /// </summary>
-        public string Id { get; }
-
-        /// <summary>
-        /// Optional title describing the content. Note: the title is not indexed.
-        /// </summary>
-        public string Description { get; }
-
-        /// <summary>
-        /// Source text, available only when the memory is not an external source.
-        /// </summary>
-        public string Text { get; }
-
-        internal MemoryRecordMetadata(
-            bool isReference,
-            string id,
-            string? text = null,
-            string? description = null,
-            string? externalSource = null
-        )
-        {
-            this.IsReference = isReference;
-            this.ExternalSourceName = externalSource ?? string.Empty;
-            this.Id = id;
-            this.Text = text ?? string.Empty;
-            this.Description = description ?? string.Empty;
-        }
-    }
-
-    /// <summary>
     /// Source content embeddings.
     /// </summary>
     public Embedding<float> Embedding { get; private set; }
 
+    /// <summary>
+    /// Metadata associated with a Semantic Kernel memory.
+    /// </summary>
     public MemoryRecordMetadata Metadata { get; private set; }
 
     /// <summary>
@@ -80,17 +35,17 @@ internal class MemoryRecord : IEmbeddingWithMetadata<float>
         string? description,
         Embedding<float> embedding)
     {
-        return new MemoryRecord
-        {
-            Metadata = new MemoryRecordMetadata
+        return new MemoryRecord(
+            new MemoryRecordMetadata
             (
                 isReference: true,
-                externalSource: sourceName,
+                externalSourceName: sourceName,
                 id: externalId,
-                description: description
+                description: description ?? string.Empty,
+                text: string.Empty
             ),
-            Embedding = embedding
-        };
+            embedding
+        );
     }
 
     /// <summary>
@@ -108,16 +63,17 @@ internal class MemoryRecord : IEmbeddingWithMetadata<float>
         Embedding<float> embedding)
     {
         return new MemoryRecord
-        {
-            Metadata = new MemoryRecordMetadata
+        (
+            new MemoryRecordMetadata
             (
                 isReference: false,
                 id: id,
                 text: text,
-                description: description
+                description: description ?? string.Empty,
+                externalSourceName: string.Empty
             ),
-            Embedding = embedding
-        };
+            embedding
+        );
     }
 
     public static MemoryRecord FromJson(
@@ -127,11 +83,7 @@ internal class MemoryRecord : IEmbeddingWithMetadata<float>
         var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
         if (metadata != null)
         {
-            return new MemoryRecord
-            {
-                Metadata = metadata,
-                Embedding = embedding
-            };
+            return new MemoryRecord(metadata, embedding);
         }
         else
         {
@@ -141,7 +93,7 @@ internal class MemoryRecord : IEmbeddingWithMetadata<float>
         }
     }
 
-    public string JsonSerializeMetadata()
+    public string GetSerializedMetadata()
     {
         return JsonSerializer.Serialize(this.Metadata);
     }
@@ -149,7 +101,9 @@ internal class MemoryRecord : IEmbeddingWithMetadata<float>
     /// <summary>
     /// Block constructor, use <see cref="ReferenceRecord"/> or <see cref="LocalRecord"/>
     /// </summary>
-    private MemoryRecord()
+    private MemoryRecord(MemoryRecordMetadata metadata, Embedding<float> embedding)
     {
+        this.Metadata = metadata;
+        this.Embedding = embedding;
     }
 }

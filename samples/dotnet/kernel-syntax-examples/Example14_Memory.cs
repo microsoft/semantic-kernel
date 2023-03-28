@@ -83,8 +83,8 @@ public static class Example14_Memory
         await foreach (MemoryQueryResult memory in memories)
         {
             Console.WriteLine($"Result {++i}:");
-            Console.WriteLine("  URL:     : " + memory.Id);
-            Console.WriteLine("  Title    : " + memory.Description);
+            Console.WriteLine("  URL:     : " + memory.Metadata.Id);
+            Console.WriteLine("  Title    : " + memory.Metadata.Description);
             Console.WriteLine("  Relevance: " + memory.Relevance);
             Console.WriteLine();
         }
@@ -118,8 +118,8 @@ public static class Example14_Memory
         await foreach (MemoryQueryResult memory in memories)
         {
             Console.WriteLine($"Result {++i}:");
-            Console.WriteLine("  URL:     : " + memory.Id);
-            Console.WriteLine("  Title    : " + memory.Description);
+            Console.WriteLine("  URL:     : " + memory.Metadata.Id);
+            Console.WriteLine("  Title    : " + memory.Metadata.Description);
             Console.WriteLine("  Relevance: " + memory.Relevance);
             Console.WriteLine();
         }
