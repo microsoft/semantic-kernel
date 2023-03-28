@@ -7,9 +7,10 @@ from typing import Optional, Tuple
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine_v2.blocks.block import Block
 from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine_v2.protocols.text_renderer import TextRenderer
 
 
-class FunctionIdBlock(Block):
+class FunctionIdBlock(Block, TextRenderer):
     def __init__(self, content: Optional[str] = None, log: Optional[Logger] = None):
         super().__init__(content=content and content.strip(), log=log)
 
@@ -33,8 +34,16 @@ class FunctionIdBlock(Block):
         return BlockTypes.FUNCTION_ID
 
     def is_valid(self) -> Tuple[bool, str]:
-        if not re_match(r"^[a-zA-Z0-9_.]+$", self.content):
+        if self.content is None or len(self.content) == 0:
             error_msg = "The function identifier is empty"
+            return False, error_msg
+
+        if not re_match(r"^[a-zA-Z0-9_.]*$", self.content):
+            error_msg = (
+                f"The function identifier '{self.content}' contains invalid "
+                "characters. Only alphanumeric chars, underscore and a single "
+                "dot are allowed."
+            )
             return False, error_msg
 
         if self._has_more_than_one_dot(self.content):

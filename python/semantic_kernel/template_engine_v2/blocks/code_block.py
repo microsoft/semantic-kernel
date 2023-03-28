@@ -11,9 +11,10 @@ from semantic_kernel.template_engine_v2.blocks.block import Block
 from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine_v2.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine_v2.code_tokenizer import CodeTokenizer
+from semantic_kernel.template_engine_v2.protocols.code_renderer import CodeRenderer
 
 
-class CodeBlock(Block):
+class CodeBlock(Block, CodeRenderer):
     def __init__(
         self,
         content: str,

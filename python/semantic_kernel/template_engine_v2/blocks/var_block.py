@@ -8,16 +8,18 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine_v2.blocks.block import Block
 from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine_v2.blocks.symbols import Symbols
+from semantic_kernel.template_engine_v2.protocols.text_renderer import TextRenderer
 
 
-class VarBlock(Block):
+class VarBlock(Block, TextRenderer):
     def __init__(self, content: Optional[str] = None, log: Optional[Logger] = None):
         super().__init__(content=content and content.strip(), log=log)
 
         if len(self.content) < 2:
             err = "The variable name is empty"
             self.log.error(err)
-            raise ValueError(err)
+            self.name = ""
+            return
 
         self.name = self.content[1:]
 

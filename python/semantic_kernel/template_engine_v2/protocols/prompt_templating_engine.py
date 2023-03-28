@@ -39,7 +39,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_async_blocks(self, blocks: List[Block], context: SKContext) -> str:
+    async def render_blocks_async(self, blocks: List[Block], context: SKContext) -> str:
         """
         Given a list of blocks render each block and compose the final result.
 

@@ -6,15 +6,16 @@ from typing import Optional, Tuple
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine_v2.blocks.block import Block
 from semantic_kernel.template_engine_v2.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine_v2.protocols.text_renderer import TextRenderer
 
 
-class TextBlock(Block):
+class TextBlock(Block, TextRenderer):
     def __init__(
         self,
         text: Optional[str] = None,
-        log: Optional[Logger] = None,
         start_index: Optional[int] = None,
         stop_index: Optional[int] = None,
+        log: Optional[Logger] = None,
     ):
         if start_index is not None and stop_index is not None:
             if start_index > stop_index:
