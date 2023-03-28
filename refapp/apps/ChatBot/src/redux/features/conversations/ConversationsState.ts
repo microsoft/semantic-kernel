@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+import { ChatMessage } from "../../../libs/models/ChatMessage";
 import { ChatState, initialChatName, initialState as initialChatState } from "../chat/ChatState";
 
 export type Conversation = {
@@ -17,6 +18,11 @@ export const initialState: ConversationsState = {
     },
     selectedId: initialChatName,
 };
+
+export type UpdateConversationPayload = {
+    id: string,
+    messages: ChatMessage[]
+}
 
 export interface ConversationTitleChange {
     id: string, 

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { ChatMessage } from '../../../libs/models/ChatMessage';
 import { ChatState } from '../chat/ChatState';
 import { Conversation, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
@@ -26,9 +27,12 @@ export const conversationsSlice = createSlice({
             const newId = action.payload.id ?? '';
             state.conversations = { [newId]: action.payload, ...state.conversations };
         },
+        updateConversation: (state: ConversationsState, action: PayloadAction<ChatMessage[]>) => {
+            state.conversations[state.selectedId].messages = action.payload;
+        },
     },
 });
 
-export const { setConversations, editConversationTitle, setSelectedConversation, addConversation } = conversationsSlice.actions;
+export const { setConversations, editConversationTitle, setSelectedConversation, addConversation, updateConversation } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

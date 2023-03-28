@@ -6,10 +6,12 @@ import debug from 'debug';
 import React, { useEffect, useState } from 'react';
 import { Constants } from '../../Constants';
 import { AuthHelper } from '../../libs/AuthHelper';
+import { ChatMessage } from '../../libs/models/ChatMessage';
 import { useSemanticKernel } from '../../libs/semantic-kernel/useSemanticKernel';
 import { useChat } from '../../libs/useChat';
-import { useAppSelector } from '../../redux/app/hooks';
+import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
+import { updateConversation } from '../../redux/features/conversations/conversationsSlice';
 import { ChatHistory } from './ChatHistory';
 import { ChatInput } from './ChatInput';
 
@@ -43,6 +45,7 @@ export const ChatRoom: React.FC = () => {
     const classes = useClasses();
     const account = useAccount();
     const chat = useChat();
+    const dispatch = useAppDispatch();
     const scrollViewTargetRef = React.useRef<HTMLDivElement>(null);
     const scrollTargetRef = React.useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = React.useState(true);
@@ -95,7 +98,7 @@ export const ChatRoom: React.FC = () => {
 
     const getResponse = async (value: string) => {
         //POST a simple ask to validate the token
-        const ask = { value: 'clippy', inputs: [{ key: 'style', value: 'Bill & Ted' }] };
+        // const ask = { value: 'clippy', inputs: [{ key: 'style', value: 'Bill & Ted' }] };
         try {
             // TODO: hook up KernelHttpServer
             // var result = await sk.invokeAsync(accessToken, ask, 'funskill', 'joke');
@@ -105,7 +108,9 @@ export const ChatRoom: React.FC = () => {
                 sender: account?.homeAccountId,
                 content: value // + result.value,
             };
-            chat.addMessageToHistory(messageResult);
+            chat.addMessageToHistory(messageResult).then((value: ChatMessage[]) => {
+                dispatch(updateConversation(value));
+            });
         } catch (e) {
             alert('Something went wrong.\n\nDetails:\n' + e);
         }

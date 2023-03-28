@@ -26,6 +26,7 @@ export const useChat = () => {
 
     const addMessageToHistory = async (message: ChatMessage) => {
         dispatch(addMessage(message));
+        return [...messages, message];
     };
 
     // TODO: handle error case of missing account information

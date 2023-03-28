@@ -79,7 +79,7 @@ export const ChatList: FC = () => {
                                 <ChatListItem
                                     id={id}
                                     header={id}
-                                    timestamp={new Date(convo.botTypingTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    timestamp={new Date(messages[lastMessage].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     preview={messages.length > 0 ? messages[lastMessage].content : 'Click to start the chat'}
                                 />
                             </TreeItem>
