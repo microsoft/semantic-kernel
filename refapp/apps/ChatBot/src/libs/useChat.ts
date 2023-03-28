@@ -10,13 +10,6 @@ import { MicrosoftGraph } from './MicrosoftGraph';
 import { ChatMessage } from "./models/ChatMessage";
 import { ChatUser } from "./models/ChatUser";
 
-enum AudienceSignal {
-    UserTypingStart = 'user-typing-start',
-    UserTypingStop = 'user-typing-stop',
-    BotTypingStart = 'bot-typing-start',
-    BotTypingStop = 'bot-typing-stop',
-}
-
 const log = debug(Constants.debug.root).extend('use-chat');
 
 export const useChat = () => {
@@ -35,19 +28,20 @@ export const useChat = () => {
         dispatch(addMessage(message));
     };
 
+    // TODO: handle error case of missing account information
     const createChat = async () => {
         const name = `SK Chatbot @ ${new Date().toLocaleString()}`;
         const user: ChatUser = {
-            id: account.homeAccountId,
-            fullName: account.name ?? 'Unknown User',
-            emailAddress: account.username,
+            id: account?.homeAccountId ?? '',
+            fullName: account?.name ?? 'Unknown User',
+            emailAddress: account?.username ?? '',
             photo: await MicrosoftGraph.getMyPhotoAsync(),
             online: true,
             lastTypingTimestamp: 0,
         };
         const newChat: ChatState = {
             id: name,
-            messages: [initialBotMessage(account?.name)],
+            messages: [initialBotMessage(account?.name ?? 'there')],
             audience: [user],
             botTypingTimestamp: 0
         }

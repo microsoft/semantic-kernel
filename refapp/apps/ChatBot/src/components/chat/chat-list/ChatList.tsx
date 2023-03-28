@@ -36,10 +36,6 @@ const useClasses = makeStyles({
     }
 });
 
-interface IChatListProps {
-
-}
-
 export const ChatList: FC = () => {
     const classes = useClasses();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
@@ -48,6 +44,7 @@ export const ChatList: FC = () => {
     const onAddChat = () => {
         chat.createChat();
     };
+
     // TODO: hookup buttons onClick
     return <>
         <div className={classes.root}>
@@ -92,4 +89,8 @@ export const ChatList: FC = () => {
             </Tree>
         </div>
     </>;
+}
+
+function useEffect(arg0: () => void) {
+    throw new Error("Function not implemented.");
 }

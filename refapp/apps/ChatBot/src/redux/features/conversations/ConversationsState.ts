@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { mockConversations } from "../../../mock-data";
-import { ChatState } from "../chat/ChatState";
+import { ChatState, initialChatName, initialState as initialChatState } from "../chat/ChatState";
 
 export type Conversation = {
     [key:string]: ChatState
@@ -12,10 +11,11 @@ export interface ConversationsState {
     selectedId: string;
 }
 
-// TODO: revert
 export const initialState: ConversationsState = {
-    ...mockConversations,
-    selectedId: '',
+    conversations: {
+        [initialChatName]: initialChatState
+    },
+    selectedId: initialChatName,
 };
 
 export interface ConversationTitleChange {

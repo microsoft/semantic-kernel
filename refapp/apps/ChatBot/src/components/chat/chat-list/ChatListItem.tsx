@@ -1,8 +1,6 @@
 import { Avatar, makeStyles, shorthands, Text } from '@fluentui/react-components';
 import { FC } from 'react';
 import { useChat } from '../../../libs/useChat';
-import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
-import { RootState } from '../../../redux/app/store';
 
 const useClasses = makeStyles({
     root: {
@@ -66,8 +64,6 @@ interface IChatListItemProps {
 // TODO: add onClick to trigger chat window open
 export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, preview }) => {
     const classes = useClasses();
-    const dispatch = useAppDispatch();
-    const { conversations } = useAppSelector((state: RootState) => state.conversations);
     const chat = useChat();
 
     const onClick = (_ev: any) => {

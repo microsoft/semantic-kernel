@@ -85,6 +85,7 @@ export const ChatWindow: React.FC = () => {
 
     useEffect(() => {
         setTitle(selectedId);
+        setIsEditing(false);
     }, [selectedId])
 
     return (
