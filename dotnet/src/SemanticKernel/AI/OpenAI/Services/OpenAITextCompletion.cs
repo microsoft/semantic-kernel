@@ -74,7 +74,7 @@ public sealed class OpenAITextCompletion : OpenAIClientAbstract, ITextCompletion
         var requestBody = Json.Serialize(new OpenAITextCompletionRequest
         {
             Model = this._modelId,
-            Prompt = text,
+            Prompt = text.NormalizeLineEndings(),
             Temperature = requestSettings.Temperature,
             TopP = requestSettings.TopP,
             PresencePenalty = requestSettings.PresencePenalty,

@@ -31,6 +31,9 @@ public sealed class OpenAICompletionTests : IDisposable
             .AddEnvironmentVariables()
             .AddUserSecrets<OpenAICompletionTests>()
             .Build();
+
+        this._serviceConfiguration.Add(AIServiceType.OpenAI, this.ConfigureOpenAI);
+        this._serviceConfiguration.Add(AIServiceType.AzureOpenAI, this.ConfigureAzureOpenAI);
     }
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
@@ -40,15 +43,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
 
-        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
-        Assert.NotNull(openAIConfiguration);
-
-        target.Config.AddOpenAITextCompletion(
-            serviceId: openAIConfiguration.Label,
-            modelId: openAIConfiguration.ModelId,
-            apiKey: openAIConfiguration.ApiKey);
-
-        target.Config.SetDefaultTextCompletionService(openAIConfiguration.Label);
+        this.ConfigureOpenAI(target);
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
 
@@ -66,18 +61,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
 
-        // OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
-        // Assert.NotNull(openAIConfiguration);
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
-        target.Config.AddAzureOpenAITextCompletion(
-            serviceId: azureOpenAIConfiguration.Label,
-            deploymentName: azureOpenAIConfiguration.DeploymentName,
-            endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey);
-
-        target.Config.SetDefaultTextCompletionService(azureOpenAIConfiguration.Label);
+        this.ConfigureAzureOpenAI(target);
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
 
@@ -118,10 +102,40 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.InvariantCultureIgnoreCase);
     }
 
+    [Theory(Skip = "This test is for manual verification.")]
+    [InlineData("\n", AIServiceType.OpenAI)]
+    [InlineData("\r\n", AIServiceType.OpenAI)]
+    [InlineData("\n", AIServiceType.AzureOpenAI)]
+    [InlineData("\r\n", AIServiceType.AzureOpenAI)]
+    public async Task CompletionWithDifferentLineEndingsAsync(string lineEnding, AIServiceType service)
+    {
+        // Arrange
+        var prompt =
+            $"Given a json input and a request. Apply the request on the json input and return the result. " +
+            $"Put the result in between <result></result> tags{lineEnding}" +
+            $"Input:{lineEnding}{{\"name\": \"John\", \"age\": 30}}{lineEnding}{lineEnding}Request:{lineEnding}name";
+
+        const string expectedAnswerContains = "<result>John</result>";
+
+        IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+
+        this._serviceConfiguration[service](target);
+
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
+
+        // Act
+        SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
+
+        // Assert
+        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
     #region internals
 
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
+
+    private readonly Dictionary<AIServiceType, Action<IKernel>> _serviceConfiguration = new();
 
     public void Dispose()
     {
@@ -141,6 +155,35 @@ public sealed class OpenAICompletionTests : IDisposable
             this._logger.Dispose();
             this._testOutputHelper.Dispose();
         }
+    }
+
+    private void ConfigureOpenAI(IKernel kernel)
+    {
+        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+
+        Assert.NotNull(openAIConfiguration);
+
+        kernel.Config.AddOpenAITextCompletion(
+            serviceId: openAIConfiguration.Label,
+            modelId: openAIConfiguration.ModelId,
+            apiKey: openAIConfiguration.ApiKey);
+
+        kernel.Config.SetDefaultTextCompletionService(openAIConfiguration.Label);
+    }
+
+    private void ConfigureAzureOpenAI(IKernel kernel)
+    {
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        kernel.Config.AddAzureOpenAITextCompletion(
+            serviceId: azureOpenAIConfiguration.Label,
+            deploymentName: azureOpenAIConfiguration.DeploymentName,
+            endpoint: azureOpenAIConfiguration.Endpoint,
+            apiKey: azureOpenAIConfiguration.ApiKey);
+
+        kernel.Config.SetDefaultTextCompletionService(azureOpenAIConfiguration.Label);
     }
 
     #endregion
