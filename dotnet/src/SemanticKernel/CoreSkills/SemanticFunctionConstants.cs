@@ -482,6 +482,7 @@ My tragic story was immortalized by Shakespeare in a play.
 [Input]
 {{$INPUT}}
 [Output]";
+
     internal const string ParseConditionGroup =
         @"<conditiongroup>
     <condition variable=""x"" exact=""1"" />
