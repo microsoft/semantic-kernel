@@ -2,9 +2,9 @@
 
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http;
 
-internal class HttpHandlers
+internal static class HttpHandlers
 {
     public static HttpClientHandler CheckCertificateRevocation
     {

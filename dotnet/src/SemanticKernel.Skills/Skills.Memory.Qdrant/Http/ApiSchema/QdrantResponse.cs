@@ -2,8 +2,11 @@
 
 using System.Text.Json.Serialization;
 
-namespace Micrsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
+namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http.ApiSchema;
 
+/// <summary>
+/// Base class for Qdrant response schema.
+/// </summary>
 internal abstract class QdrantResponse
 {
     /// <summary>

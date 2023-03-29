@@ -11,11 +11,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory.Storage;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
-using Micrsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
-using Micrsoft.SemanticKernel.Skills.Memory.Qdrant.HttpSchema;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http;
+using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http.ApiSchema;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 
@@ -26,35 +24,36 @@ namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 public class QdrantVectorDbClient<TEmbedding>
     where TEmbedding : unmanaged
 {
+    /// <summary>
+    /// The endpoint for the Qdrant service.
+    /// </summary>
     public string BaseAddress
     {
         get { return this._httpClient.BaseAddress.ToString(); }
         set { this._httpClient.BaseAddress = SanitizeEndpoint(value); }
     }
 
+    /// <summary>
+    /// The port for the Qdrant service.
+    /// </summary>
     public int Port
     {
         get { return this._httpClient.BaseAddress.Port; }
         set { this._httpClient.BaseAddress = SanitizeEndpoint(this.BaseAddress, value); }
     }
 
-    public int VectorSize
-    {
-        get { return this._vectorSize > 0 ? this._vectorSize : this._defaultVectorSize; }
-        set { this._vectorSize = value! > 0 ? value : this._defaultVectorSize; }
-    }
-
-    public QdrantDistanceType DistanceType
-    {
-        get { return this._distanceType; }
-        set { this._distanceType = value; }
-    }
-
+    /// <summary>
+    /// The constructor for the QdrantVectorDbClient.
+    /// </summary>
+    /// <param name="endpoint"></param>
+    /// <param name="port"></param>
+    /// <param name="httpClient"></param>
+    /// <param name="log"></param>
     public QdrantVectorDbClient(
         string endpoint,
         int? port = null,
         HttpClient? httpClient = null,
-        ILogger<QdrantVectorDbClient<TEmbedding>>? log = null)
+        ILogger? log = null)
     {
         this._log = log ?? NullLogger<QdrantVectorDbClient<TEmbedding>>.Instance;
 
@@ -67,207 +66,261 @@ public class QdrantVectorDbClient<TEmbedding>
         }
     }
 
-    public async Task<bool> IsExistingCollectionAsync(string collectionName)
+    /// <summary>
+    /// Get a specific vector by its unique Qdrant ID.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <param name="pointId"></param>
+    /// <returns></returns>
+    public async Task<DataEntry<QdrantVectorRecord<TEmbedding>>?> GetVectorByIdAsync(string collectionName, string pointId)
     {
-        CollectionInfo? existingCollection = null;
-        bool doesExist = false;
+        this._log.LogDebug("Searching vector by point ID");
 
-        existingCollection = await this.GetCollectionInfoAsync(collectionName);
-
-        if (existingCollection != null)
-        {
-            doesExist = true;
-        }
-
-        return doesExist;
-    }
-
-    public async Task<CollectionInfo> GetCollectionInfoAsync(string collectionName)
-    {
-        IQdrantResult? qdrantResult = null;
-        CollectionInfo? collectionInfo = null;
-
-        CollectionHandler getCollectionInfoHandler =
-            CollectionHandler.Init(this.VectorSize, this.DistanceType)
-                .Client(this._httpClient)
-                .Build();
-
-        try
-        {
-            qdrantResult = await getCollectionInfoHandler.ExecuteRequestAsync(CollectionHandler.CollectionHandlerType.GetInfo, collectionName);
-            collectionInfo = ((CollectionInfoResult)qdrantResult).Result!.InfoResult!;
-        }
-        catch (Exception e)
-        {
-            this._log.LogError(e, "Get Collection information  failed: {0}", e.Message);
-            collectionInfo = null;
-        }
-
-        return collectionInfo!;
-    }
-
-    public async Task CreateNewCollectionAsync(string collectionName)
-    {
-        IQdrantResult? qdrantResult = null;
-
-        CollectionHandler createCollectionHandler =
-            CollectionHandler.Init(this.VectorSize, this.DistanceType)
-                .Client(this._httpClient)
-                .Build();
-
-        try
-        {
-            qdrantResult = await createCollectionHandler.ExecuteRequestAsync(CollectionHandler.CollectionHandlerType.Create, collectionName);
-        }
-        catch (Exception e)
-        {
-            this._log.LogError(e, "Create Collection failed: {0}", e.Message);
-            qdrantResult = new CreateCollectionResult();
-            ((CreateCollectionResult)qdrantResult).IsCreated = false;
-        }
-    }
-
-    public async Task DeleteCollectionAsync(string collectionName)
-    {
-        IQdrantResult? qdrantResult = null;
-
-        CollectionHandler deleteCollectionHandler =
-            CollectionHandler.Init(this.VectorSize, this.DistanceType)
-                .Client(this._httpClient)
-                .Build();
-
-        try
-        {
-            qdrantResult = await deleteCollectionHandler.ExecuteRequestAsync(CollectionHandler.CollectionHandlerType.Delete, collectionName);
-        }
-        catch (Exception e)
-        {
-            this._log.LogError(e, "Delete Collection failed: {0}", e.Message);
-            qdrantResult = new DeleteCollectionResult();
-            ((DeleteCollectionResult)qdrantResult).IsDeleted = false;
-        }
-    }
-
-    public async IAsyncEnumerable<string> GetCollectionListAsync()
-    {
-        this._log.LogDebug("Listing collections");
-
-        IQdrantResult? qdrantResult = null;
-
-        CollectionHandler GetCollectionsHandler =
-            CollectionHandler.Init(this.VectorSize, this.DistanceType)
-                .Client(this._httpClient)
-                .Build();
-        
-        
-        qdrantResult = await GetCollectionsHandler.ListCollectionsAsync();
-        var collections = ((ListInfoResult)qdrantResult).Result!.CollectionNames;
-
-
-        foreach (var collection in collections ?? Enumerable.Empty<string>())
-        {
-            yield return collection;
-        }
-
-    }
-
-    public async Task<DataEntry<QdrantVectorRecord<TEmbedding>>?> GetVectorByIdAsync(string collectionName, string key)
-    {
-        var pointId = Base64Encode(key);
-
-        this._log.LogDebug("Searching vector by point ID {0}", pointId);
-
-        /*using HttpRequestMessage request = SearchVectorsRequest<TEmbedding>
-            .Create(collectionName, this._defaultVectorSize)
-            .HavingExternalId(pointId)
-            .IncludePayLoad()
-            .TakeFirst()
+        using HttpRequestMessage request = GetVectorsRequest.Create(collectionName)
+            .WithPointId(pointId)
+            .WithPayloads(true)
+            .WithVectors(true)
             .Build();
 
-        var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
-        response.EnsureSuccessStatusCode();
-
-        var data = new SearchVectorsResponse<TEmbedding>(responseContent);
-        Verify.Equals("ok", data.Status, "Something went wrong while looking for the vector");
-
-        if (data.Vectors.Count == 0)
-        {
-            this._log.LogWarning("Vector not found: {0}", pointId);
-            return null;
-        } */
-
-        /*var record = new QdrantVectorRecord<TEmbedding>(
-            new Embedding<TEmbedding>(data.Vectors.First().Vector.ToArray()),
-            data.Vectors.First().ExternalPayload,
-            data.Vectors.First().ExternalTags);
-        this._log.LogDebug("Vector found}");
-
-        return new DataEntry<QdrantVectorRecord<TEmbedding>>(Base64Decode(pointId), record);
-        */
-        return null;
-    }
-
-    public async Task DeleteVectorAsync(string collectionName, string key)
-    {
-        var pointId = Base64Encode(key);
-        this._log.LogDebug("Deleting vector by point ID {0}", pointId);
-
-        Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
-        Verify.NotNullOrEmpty(pointId, "Qdrant point ID is empty");
-
-        /*using var request = DeleteVectorsRequest
-            .DeleteFrom(collectionName)
-            .DeleteVector(pointId)
-            .Build();
-        await this.ExecuteHttpRequestAsync(request);*/
-    }
-
-    public async Task UpsertVectorAsync(string collectionName, DataEntry<QdrantVectorRecord<TEmbedding>> vectorData)
-    {
-        this._log.LogDebug("Upserting vector");
-        Verify.NotNull(vectorData, "The vector is NULL");
-
-        /*DataEntry<QdrantVectorRecord<TEmbedding>>? existingRecord = await this.GetVectorByIdAsync(collectionName, vectorData.Key);
-
-        // Generate a new ID for the new vector
-        if (existingRecord == null)
-        {
-            return;
-        }
-
-        using var request = CreateVectorsRequest<TEmbedding>
-            .CreateIn(collectionName)
-            .UpsertVector(Base64Encode(vectorData.Key), vectorData.Value!).Build();
-        var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
-
-        if (response.StatusCode == HttpStatusCode.UnprocessableEntity
-            && responseContent.Contains("data did not match any variant of untagged enum ExtendedPointId", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new VectorDbException("The vector ID must be a GUID string");
-        }
-
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
         try
         {
             response.EnsureSuccessStatusCode();
         }
-        catch (Exception e)
+        catch (HttpRequestException e)
         {
-            this._log.LogError(e, "Vector upsert failed: {0}, {1}", e.Message, responseContent);
-            throw;
-        } */
+            this._log.LogDebug("Vector not found {0}", e.Message);
+            return null;
+        }
+
+        var data = JsonSerializer.Deserialize<GetVectorsResponse<TEmbedding>>(responseContent);
+
+        if (data == null)
+        {
+            this._log.LogWarning("Unable to deserialize Get response");
+            return null;
+        }
+
+        if (!data.Result.Any())
+        {
+            this._log.LogWarning("Vector not found");
+            return null;
+        }
+
+        var recordData = data.Result.First();
+
+#pragma warning disable CS8604 // The request specifically asked for a payload to be in the response
+        var record = new QdrantVectorRecord<TEmbedding>(
+            new Embedding<TEmbedding>(
+                recordData.Vector!.ToArray()), // The request specifically asked for a vector to be in the response
+            recordData.Payload,
+            null);
+#pragma warning restore CS8604
+
+        this._log.LogDebug("Vector found");
+
+        return new DataEntry<QdrantVectorRecord<TEmbedding>>(pointId.ToString(), record);
     }
 
-    public async IAsyncEnumerable<(QdrantVectorRecord<TEmbedding>, double)> FindNearesetInCollectionAsync(
+    /// <summary>
+    /// Get a specific vector by a unique identifier in the metadata (Qdrant payload).
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <param name="metadataId"></param>
+    /// <returns></returns>
+    public async Task<DataEntry<QdrantVectorRecord<TEmbedding>>?> GetVectorByPayloadIdAsync(string collectionName, string metadataId)
+    {
+        using HttpRequestMessage request = SearchVectorsRequest<TEmbedding>.Create(collectionName)
+            .SimilarTo(new TEmbedding[this._defaultVectorSize])
+            .HavingExternalId(metadataId)
+            .IncludePayLoad()
+            .TakeFirst()
+            .IncludeVectorData()
+            .Build();
+
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException e)
+        {
+            this._log.LogDebug("Request for vector with payload ID failed {0}", e.Message);
+            return null;
+        }
+
+        var data = JsonSerializer.Deserialize<SearchVectorsResponse<TEmbedding>>(responseContent);
+
+        if (data == null)
+        {
+            this._log.LogWarning("Unable to deserialize Search response");
+            return null;
+        }
+
+        if (!data.Results.Any())
+        {
+            this._log.LogDebug("Vector not found");
+            return null;
+        }
+
+        var point = data.Results.First();
+
+        var record = new QdrantVectorRecord<TEmbedding>(
+            new Embedding<TEmbedding>(
+                point.Vector.ToArray()),
+            point.Payload,
+            null);
+        this._log.LogDebug("Vector found}");
+
+        return new DataEntry<QdrantVectorRecord<TEmbedding>>(point.Id, record);
+    }
+
+    /// <summary>
+    /// Delete a vector by its unique Qdrant ID.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <param name="pointId"></param>
+    /// <returns></returns>
+    public async Task DeleteVectorByIdAsync(string collectionName, string pointId)
+    {
+        this._log.LogDebug("Deleting vector by point ID");
+
+        Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
+        Verify.NotNull(pointId, "Qdrant point ID is NULL");
+
+        using var request = DeleteVectorsRequest
+            .DeleteFrom(collectionName)
+            .DeleteVector(pointId)
+            .Build();
+
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+            var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+            if (result?.Status == "ok")
+            {
+                this._log.LogDebug("Vector being deleted");
+            }
+            else
+            {
+                this._log.LogWarning("Vector delete failed");
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            this._log.LogError(e, "Vector delete request failed: {0}", e.Message);
+        }
+    }
+
+    /// <summary>
+    /// Delete a vector by its unique identifier in the metadata (Qdrant payload).
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <param name="metadataId"></param>
+    /// <returns></returns>
+    public async Task DeleteVectorByPayloadIdAsync(string collectionName, string metadataId)
+    {
+        DataEntry<QdrantVectorRecord<TEmbedding>>? existingRecord = await this.GetVectorByPayloadIdAsync(collectionName, metadataId);
+
+        if (existingRecord == null)
+        {
+            this._log.LogDebug("Vector not found");
+            return;
+        }
+
+        this._log.LogDebug("Vector found, deleting");
+
+        using var request = DeleteVectorsRequest
+            .DeleteFrom(collectionName)
+            .DeleteVector(existingRecord.Value.Key)
+            .Build();
+
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+            var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+            if (result?.Status == "ok")
+            {
+                this._log.LogDebug("Vector being deleted");
+            }
+            else
+            {
+                this._log.LogWarning("Vector delete failed");
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            this._log.LogError(e, "Vector delete request failed: {0}", e.Message);
+        }
+    }
+
+    /// <summary>
+    /// Upsert a vector.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <param name="vectorData"></param>
+    /// <returns></returns>
+    public async Task UpsertVectorAsync(string collectionName, DataEntry<QdrantVectorRecord<TEmbedding>> vectorData)
+    {
+        this._log.LogDebug("Upserting vector");
+        Verify.NotNull(vectorData, "The vector data entry is NULL");
+        Verify.NotNull(vectorData.Value, "The vector data entry contains NULL value");
+
+        DataEntry<QdrantVectorRecord<TEmbedding>>? existingRecord = await this.GetVectorByPayloadIdAsync(collectionName, vectorData.Key);
+
+        if (existingRecord != null)
+        {
+            return;
+        }
+
+        // Generate a new ID for the new vector
+        using var request = UpsertVectorRequest<TEmbedding>
+            .Create(collectionName)
+            .UpsertVector(Guid.NewGuid().ToString(), vectorData.Value).Build();
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+            var result = JsonSerializer.Deserialize<UpsertVectorResponse>(responseContent);
+            if (result?.Status == "ok")
+            {
+                this._log.LogDebug("Vector upserted");
+            }
+            else
+            {
+                this._log.LogWarning("Vector upsert failed");
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            this._log.LogError(e, "Vector upsert request failed: {0}", e.Message);
+        }
+    }
+
+    /// <summary>
+    /// Find the nearest vectors in a collection using vector similarity search.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <param name="target"></param>
+    /// <param name="top"></param>
+    /// <param name="requiredTags"></param>
+    /// <returns></returns>
+    public async IAsyncEnumerable<(QdrantVectorRecord<TEmbedding>, double)> FindNearestInCollectionAsync(
         string collectionName,
         Embedding<TEmbedding> target,
         int top = 1,
-        string[]? requiredTags = null)
+        IEnumerable<string>? requiredTags = null)
     {
         this._log.LogDebug("Searching top {0} closest vectors in {1}", top);
 
         Verify.NotNull(target, "The given vector is NULL");
 
-        /*using HttpRequestMessage request = SearchVectorsRequest<TEmbedding>
+        using HttpRequestMessage request = SearchVectorsRequest<TEmbedding>
             .Create(collectionName)
             .SimilarTo(target.Vector.ToArray())
             .HavingTags(requiredTags)
@@ -276,13 +329,18 @@ public class QdrantVectorDbClient<TEmbedding>
             .Take(top)
             .Build();
 
-        var (response, responseContent) = await this.ExecuteHttpRequestAsync(request);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
         response.EnsureSuccessStatusCode();
 
-        var data = new SearchVectorsResponse<TEmbedding>(responseContent);
-        Verify.Equals("ok", data.Status, "Something went wrong while looking for the vector");
+        var data = JsonSerializer.Deserialize<SearchVectorsResponse<TEmbedding>>(responseContent);
 
-        if (data.Vectors.Count == 0)
+        if (data == null)
+        {
+            this._log.LogWarning("Unable to deserialize Search response");
+            yield break;
+        }
+
+        if (!data.Results.Any())
         {
             this._log.LogWarning("Nothing found");
             yield break;
@@ -290,33 +348,133 @@ public class QdrantVectorDbClient<TEmbedding>
 
         var result = new List<(QdrantVectorRecord<TEmbedding>, double)>();
 
-        foreach (var v in data.Vectors)
+        foreach (var v in data.Results)
         {
             var record = new QdrantVectorRecord<TEmbedding>(
                 new Embedding<TEmbedding>(v.Vector),
-                v.ExternalPayload,
-                v.ExternalTags);
+                v.Payload);
 
             result.Add((record, v.Score ?? 0));
         }
 
         // Qdrant search results are currently sorted by id, alphabetically
-        result = SortSearchResultByScore(result); */
-        //var result;
-        //foreach (var kv in result)
-        IAsyncEnumerable<(QdrantVectorRecord<TEmbedding>, double)> result = null;
-        await foreach (var kv in result)
+        result = SortSearchResultByScore(result);
+        foreach (var kv in result)
         {
             yield return kv;
         }
     }
 
+    /// <summary>
+    /// Create a Qdrant vector collection.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <returns></returns>
+    public async Task CreateCollectionAsync(string collectionName)
+    {
+        this._log.LogDebug("Creating collection {0}", collectionName);
+
+        using var request = CreateCollectionRequest
+            .Create(collectionName, this._defaultVectorSize, QdrantDistanceType.Cosine)
+            .Build();
+
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+
+        // Creation is idempotent, ignore error (and for now ignore vector size)
+        if (response.StatusCode == HttpStatusCode.BadRequest)
+        {
+            if (responseContent.Contains("already exists", StringComparison.InvariantCultureIgnoreCase)) { return; }
+        }
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException e)
+        {
+            this._log.LogError(e, "Collection upsert failed: {0}, {1}", e.Message, responseContent);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Delete a Qdrant vector collection.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <returns></returns>
+    public async Task DeleteCollectionAsync(string collectionName)
+    {
+        this._log.LogDebug("Deleting collection {0}", collectionName);
+
+        using var request = DeleteCollectionRequest.Create(collectionName).Build();
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+
+        // Deletion is idempotent, ignore error
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return;
+        }
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException e)
+        {
+            this._log.LogError(e, "Collection deletion failed: {0}, {1}", e.Message, responseContent);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Check if a vector collection exists.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <returns></returns>
+    /// <exception cref="VectorDbException"></exception>
+    public async Task<bool> DoesCollectionExistAsync(string collectionName)
+    {
+        this._log.LogDebug("Fetching collection {0}", collectionName);
+
+        using var request = GetCollectionsRequest.Create(collectionName).Build();
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return false;
+        }
+
+        if (response.IsSuccessStatusCode)
+        {
+            return true;
+        }
+
+        this._log.LogError("Collection fetch failed: {0}, {1}", response.StatusCode, responseContent);
+        throw new VectorDbException($"Unexpected response: {response.StatusCode}");
+    }
+
+    /// <summary>
+    /// List all vector collections.
+    /// </summary>
+    /// <returns></returns>
+    public async IAsyncEnumerable<string> ListCollectionsAsync()
+    {
+        this._log.LogDebug("Listing collections");
+
+        using var request = ListCollectionsRequest.Create().Build();
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+
+        var collections = JsonSerializer.Deserialize<ListCollectionsResponse>(responseContent);
+
+        foreach (var collection in collections?.Result?.Collections ?? Enumerable.Empty<ListCollectionsResponse.CollectionResult.CollectionDescription>())
+        {
+            yield return collection.Name;
+        }
+    }
+
     #region private ================================================================================
 
-    private int _vectorSize;
-    private QdrantDistanceType _distanceType = QdrantDistanceType.Cosine;
-
-    private readonly ILogger<QdrantVectorDbClient<TEmbedding>> _log;
+    private readonly ILogger _log;
     private readonly HttpClient _httpClient;
     private readonly int _defaultVectorSize = 1536; //output dimension size for OpenAI's text-emebdding-ada-002
 
@@ -326,18 +484,6 @@ public class QdrantVectorDbClient<TEmbedding>
         // Sort list in place
         tuplesList.Sort((a, b) => b.Item2.CompareTo(a.Item2));
         return tuplesList;
-    }
-
-    private static string Base64Encode(string plainText)
-    {
-        var byteString = System.Text.Encoding.UTF8.GetBytes(plainText);
-        return Convert.ToBase64String(byteString);
-    }
-
-    private static string Base64Decode(string base64Text)
-    {
-        var bytes = Convert.FromBase64String(base64Text);
-        return System.Text.Encoding.UTF8.GetString(bytes);
     }
 
     private static Uri SanitizeEndpoint(string endpoint)
@@ -364,7 +510,7 @@ public class QdrantVectorDbClient<TEmbedding>
         }
         else
         {
-            this._log.LogWarning("Qdrant responsed with error");
+            this._log.LogTrace("Qdrant responsed with error");
         }
 
         return (response, responseContent);
