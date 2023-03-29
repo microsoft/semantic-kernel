@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.Memory.Qdrant\Skills.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.Web\Skills.Web.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
