@@ -25,6 +25,47 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 /// </summary>
 public static class KernelOpenApiExtensions
 {
+
+    /// <summary>
+    /// Imports OpenAPI document from a URL.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="skillName">Skill name.</param>
+    /// <param name="url">Url to in which to retrieve the OpenAPI definition.</param>
+    /// <param name="httpClient">Optional HttpClient to use for the request.</param>
+    /// <returns>A list of all the semantic functions representing the skill.</returns>
+    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null)
+    {
+        Verify.ValidSkillName(skillName);
+
+        HttpResponseMessage openApiResponse;
+        if (httpClient == null)
+        {
+            // TODO Fix this:  throwing "The inner handler has not been assigned"
+            //using DefaultHttpRetryHandler retryHandler = new DefaultHttpRetryHandler(
+            //  config: new HttpRetryConfig() { MaxRetryCount = 3 },
+            //  log: null);
+
+            //using HttpClient client = new HttpClient(retryHandler, false);
+            using HttpClient client = new HttpClient();
+
+            openApiResponse = await client.GetAsync(url);
+        }
+        else
+        {
+            openApiResponse = await httpClient.GetAsync(url);
+        }
+        openApiResponse.EnsureSuccessStatusCode();
+
+        Stream stream = await openApiResponse.Content.ReadAsStreamAsync();
+        if (stream == null)
+        {
+            throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
+        }
+
+        return kernel.RegisterOpenApiSkill(stream, skillName);
+    }
+
     /// <summary>
     /// Imports OpenApi document from assembly resource.
     /// </summary>
