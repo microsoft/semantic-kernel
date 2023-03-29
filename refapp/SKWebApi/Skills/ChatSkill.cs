@@ -9,11 +9,11 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SKWebApi.Skills;
 
-public class InfiniteChatSkill
+public class ChatSkill
 {
     private readonly IKernel _kernel;
 
-    public InfiniteChatSkill(IKernel kernel)
+    public ChatSkill(IKernel kernel)
     {
         this._kernel = kernel;
     }
@@ -40,7 +40,7 @@ public class InfiniteChatSkill
 
         var completionFunction = this._kernel.CreateSemanticFunction(
             SystemPromptDefaults.systemIntentExtractionPrompt,
-            skillName: nameof(InfiniteChatSkill),
+            skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
         var result = await completionFunction.InvokeAsync(
@@ -72,7 +72,8 @@ public class InfiniteChatSkill
         );
 
         var latestMessage = await this.GetLatestMemoryAsync(context);
-        var results = context.Memory.SearchAsync("ChatMessages", latestMessage.Text);
+        Console.WriteLine($"Latest message: {latestMessage.Text}");
+        var results = context.Memory.SearchAsync("ChatMessages", latestMessage.Text, limit: 1000);
 
         string memoryText = "";
         await foreach (var memory in results)
@@ -163,7 +164,7 @@ public class InfiniteChatSkill
 
         var completionFunction = this._kernel.CreateSemanticFunction(
             SystemPromptDefaults.systemChatPrompt,
-            skillName: nameof(InfiniteChatSkill),
+            skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
         context = await completionFunction.InvokeAsync(

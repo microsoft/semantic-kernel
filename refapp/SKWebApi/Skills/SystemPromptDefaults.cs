@@ -18,7 +18,7 @@ internal static class SystemPromptDefaults
     {
         systemDescriptionPrompt,
         systemIntentPrompt,
-        "{{InfiniteChatSkill.ExtractChatHistory}}",
+        "{{ChatSkill.ExtractChatHistory}}",
         systemIntentContinuationPrompt
     };
     internal static string systemIntentExtractionPrompt = string.Join("\n", systemIntentPromptComponents);
@@ -30,8 +30,8 @@ internal static class SystemPromptDefaults
         systemDescriptionPrompt,
         systemResponsePrompt,
         "{{$userIntent}}",
-        "{{InfiniteChatSkill.ExtractUserMemories}}",
-        "{{InfiniteChatSkill.ExtractChatHistory}}",
+        "{{ChatSkill.ExtractUserMemories}}",
+        "{{ChatSkill.ExtractChatHistory}}",
         systemChatContinuationPrompt
     };
     internal static string systemChatPrompt = string.Join("\n", systemChatPromptComponents);
