@@ -129,6 +129,30 @@ public static class KernelChatGptPluginExtensions
         return kernel.RegisterOpenApiSkill(stream, skillDirectoryName);
     }
 
+    /// <summary>
+    /// Imports ChatGPT plugin from a file.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="skillName">Name of the skill to register.</param>
+    /// <param name="filePath">File path to the ChatGPT plugin definition.</param>
+    /// <param name="httpClient">Optional HttpClient to use for the request.</param>
+    /// <returns>A list of all the semantic functions representing the skill.</returns>
+    public static IDictionary<string, ISKFunction> ImportChatGptPluginSkillSkillFromFile(
+        this IKernel kernel, string skillName, string filePath, HttpClient? httpClient = null)
+    {
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {filePath} is found.");
+        }
+        kernel.Log.LogTrace("Registering Rest functions from {0} ChatGPT Plugin.", filePath);
+
+        var skill = new Dictionary<string, ISKFunction>();
+
+        using var stream = File.OpenRead(filePath);
+
+        return kernel.RegisterOpenApiSkill(stream, skillName);
+    }
+
     private static string ParseOpenApiUrl(string gptPluginJson)
     {
         JsonNode? gptPlugin = JsonObject.Parse(gptPluginJson);

@@ -130,6 +130,28 @@ public static class KernelOpenApiExtensions
     }
 
     /// <summary>
+    /// Imports OpenApi document from a file.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="skillName">Name of the skill to register.</param>
+    /// <param name="filePath">File path to the OpenAPI document.</param>
+    /// <returns>A list of all the semantic functions representing the skill.</returns>
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromFile(this IKernel kernel, string skillName, string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException($"No OpenApi document for the specified path - {filePath} is found.");
+        }
+        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document.", filePath);
+
+        var skill = new Dictionary<string, ISKFunction>();
+
+        using var stream = File.OpenRead(filePath);
+
+        return kernel.RegisterOpenApiSkill(stream, skillName);
+    }
+
+    /// <summary>
     /// Registers an OpenApi skill.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
