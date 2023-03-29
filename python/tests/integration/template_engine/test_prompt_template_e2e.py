@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from pytest import mark, raises
 from typing import List, Tuple
+
+from pytest import mark, raises
 
 import semantic_kernel as sk
 from semantic_kernel.skill_definition import sk_function
-from semantic_kernel.template_engine.prompt_template_engine import (
-    PromptTemplateEngine,
-)
+from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 
 
 def _get_template_language_tests() -> List[Tuple[str, str]]:

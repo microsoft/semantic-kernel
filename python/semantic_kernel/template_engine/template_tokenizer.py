@@ -68,7 +68,7 @@ class TemplateTokenizer:
                 and current_char == Symbols.BLOCK_STARTER
                 and next_char == Symbols.BLOCK_STARTER
             ):
-                # A bock starts at the first "{"
+                # A block starts at the first "{"
                 block_start_pos = current_char_pos
                 block_start_found = True
 
@@ -166,7 +166,7 @@ class TemplateTokenizer:
                         end_of_last_block = cursor + 1
                         block_start_found = False
 
-        # If ther eis something left after the last block, capture it as a TextBlock
+        # If there is something left after the last block, capture it as a TextBlock
         if end_of_last_block < len(text):
             blocks.append(TextBlock(text, end_of_last_block, len(text), log=self.log))
 
