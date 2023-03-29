@@ -56,7 +56,7 @@ public static class Example19_Qdrant
 
         Console.WriteLine("== Retrieving Memories ==");
         MemoryQueryResult? lookup = await kernel.Memory.GetAsync(MemoryCollectionName, "cat1");
-        Console.WriteLine(lookup == null ? "No memories found" : lookup.Metadata.Text);
+        Console.WriteLine(lookup != null ? lookup.Metadata.Text : "No memories found");
 
         Console.WriteLine("== Removing Collection {0} ==", MemoryCollectionName);
         Console.WriteLine("== Printing Collections in DB ==");
