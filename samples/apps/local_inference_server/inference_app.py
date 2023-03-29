@@ -56,7 +56,7 @@ def process_completion_request(request, model):
     request_data = request.data
     json_data = json.loads(request_data)
     try:
-        prompt = json_data["prompt"]
+        prompt = json_data["inputs"]
         if "context" in json_data:
             context = json_data["context"]
         else:
@@ -82,7 +82,7 @@ def process_embedding_request(request, model):
     request_data = request.data
     json_data = json.loads(request_data)
     try:
-        sentences = json_data["input"]
+        sentences = json_data["inputs"]
         inference_generator = EmbeddingGenerator.EmbeddingGenerator(model)
         embeddings, num_prompt_tokens = inference_generator.perform_inference(sentences)
         return jsonify(create_responses.create_embedding_response(
@@ -96,7 +96,7 @@ def process_image_generation_request(request, model):
     request_data = request.data
     json_data = json.loads(request_data)
     num_images = json_data["n"]
-    prompt = json_data["prompt"]
+    prompt = json_data["inputs"]
     image_size = json_data["size"]
     try:
         image_generator = ImageGenerator.ImageGenerator(model)
