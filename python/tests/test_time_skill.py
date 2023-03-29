@@ -1,4 +1,5 @@
 import datetime
+import semantic_kernel as sk
 
 from unittest import mock
 
@@ -6,6 +7,14 @@ from semantic_kernel.core_skills.time_skill import TimeSkill
 
 test_mock_now = datetime.datetime(2031, 1, 12, 12, 24, 56, tzinfo=datetime.timezone.utc)
 
+def test_can_be_instantiated():
+    assert TimeSkill()
+
+
+def test_can_be_imported():
+    kernel = sk.create_kernel()
+    assert kernel.import_skill(TimeSkill(), "time")
+    assert kernel.skills.has_native_function("time", "now")
 
 def test_date():
     skill = TimeSkill()
