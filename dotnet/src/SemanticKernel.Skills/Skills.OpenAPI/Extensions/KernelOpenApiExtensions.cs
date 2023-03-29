@@ -25,6 +25,57 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 /// </summary>
 public static class KernelOpenApiExtensions
 {
+
+    /// <summary>
+    /// Imports OpenAPI document from a URL.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="skillName">Skill name.</param>
+    /// <param name="url">Url to in which to retrieve the OpenAPI definition.</param>
+    /// <param name="httpClient">Optional HttpClient to use for the request.</param>
+    /// <returns>A list of all the semantic functions representing the skill.</returns>
+    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null)
+    {
+        Verify.ValidSkillName(skillName);
+
+        HttpResponseMessage? response = null;
+        try
+        {
+            if (httpClient == null)
+            {
+                // TODO Fix this:  throwing "The inner handler has not been assigned"
+                //using DefaultHttpRetryHandler retryHandler = new DefaultHttpRetryHandler(
+                //  config: new HttpRetryConfig() { MaxRetryCount = 3 },
+                //  log: null);
+
+                //using HttpClient client = new HttpClient(retryHandler, false);
+                using HttpClient client = new HttpClient();
+
+                response = await client.GetAsync(url);
+            }
+            else
+            {
+                response = await httpClient.GetAsync(url);
+            }
+            response.EnsureSuccessStatusCode();
+
+            Stream stream = await response.Content.ReadAsStreamAsync();
+            if (stream == null)
+            {
+                throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
+            }
+
+            return kernel.RegisterOpenApiSkill(stream, skillName);
+        }
+        finally
+        {
+            if (response != null)
+            {
+                response.Dispose();
+            }
+        }
+    }
+
     /// <summary>
     /// Imports OpenApi document from assembly resource.
     /// </summary>
@@ -76,6 +127,28 @@ public static class KernelOpenApiExtensions
         using var stream = File.OpenRead(openApiDocumentPath);
 
         return kernel.RegisterOpenApiSkill(stream, skillDirectoryName);
+    }
+
+    /// <summary>
+    /// Imports OpenApi document from a file.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="skillName">Name of the skill to register.</param>
+    /// <param name="filePath">File path to the OpenAPI document.</param>
+    /// <returns>A list of all the semantic functions representing the skill.</returns>
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromFile(this IKernel kernel, string skillName, string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException($"No OpenApi document for the specified path - {filePath} is found.");
+        }
+        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document.", filePath);
+
+        var skill = new Dictionary<string, ISKFunction>();
+
+        using var stream = File.OpenRead(filePath);
+
+        return kernel.RegisterOpenApiSkill(stream, skillName);
     }
 
     /// <summary>
