@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Storage;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.DataModels;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
@@ -23,66 +21,72 @@ namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
     where TEmbedding : unmanaged
 {
-    public QdrantMemoryStore(string host, int port)
+    /// <summary>
+    /// Constructor for a memory store backed by a Qdrant Vector database instance.
+    /// </summary>
+    /// <param name="host"></param>
+    /// <param name="port"></param>
+    /// <param name="logger"></param>
+    public QdrantMemoryStore(string host, int port, ILogger? logger = null)
     {
-        this._qdrantClient = new QdrantVectorDbClient<TEmbedding>(host, port);
+        this._qdrantClient = new QdrantVectorDbClient<TEmbedding>(endpoint: host, port: port, log: logger);
     }
 
+    /// <inheritdoc />
     public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>?> GetAsync(string collection, string key, CancellationToken cancel = default)
     {
         DataEntry<QdrantVectorRecord<TEmbedding>> vectorResult = default;
-
-        if (!this._qdrantData.TryGetValue(collection, out var value) && value.TryGetValue(key, out vectorResult))
+        try
         {
-            try
+            // Qdrant entries are uniquely identified by Base-64 or UUID strings
+            var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collection, key);
+            if (vectorData != null)
             {
-                // Qdrant entries are uniquely identified by Base-64 or UUID strings
-                var vectorData = await this._qdrantClient.GetVectorByIdAsync(collection, key);
-                if (vectorData != null)
-                {
-                    if (!this._qdrantData.ContainsKey(collection))
-                    {
-                        this._qdrantData.TryAdd(collection, new ConcurrentDictionary<string, DataEntry<QdrantVectorRecord<TEmbedding>>>());
-                    }
-
-                    this._qdrantData[collection].TryAdd(key, vectorData.Value);
-
-                    vectorResult = vectorData.Value;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new VectorDbException($"Failed to get vector data from Qdrant {ex.Message}");
+                vectorResult = vectorData.Value;
             }
         }
+        catch (Exception ex)
+        {
+            throw new VectorDbException($"Failed to get vector data from Qdrant {ex.Message}");
+        }
 
-        return new DataEntry<IEmbeddingWithMetadata<TEmbedding>>(
-            key: key,
-            value: (IEmbeddingWithMetadata<TEmbedding>)vectorResult.Value!);
+        if (vectorResult.Value != null)
+        {
+            return new DataEntry<IEmbeddingWithMetadata<TEmbedding>>(
+                key: key,
+                value: (IEmbeddingWithMetadata<TEmbedding>)vectorResult.Value);
+        }
+        else
+        {
+            return new DataEntry<IEmbeddingWithMetadata<TEmbedding>>(
+                key: key,
+                value: null);
+        }
     }
 
-    public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data,
-        CancellationToken cancel = default)
+    /// <inheritdoc />
+    public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data, CancellationToken cancel = default)
     {
-        var collectionExists = await this._qdrantClient.IsExistingCollectionAsync(collection);
+        var collectionExists = await this._qdrantClient.DoesCollectionExistAsync(collection);
         if (!collectionExists)
         {
-            await this._qdrantClient.CreateNewCollectionAsync(collection);
+            await this._qdrantClient.CreateCollectionAsync(collection);
         }
 
         var vectorData = new DataEntry<QdrantVectorRecord<TEmbedding>>(
             key: data.Key,
-            value: QdrantVectorRecord<TEmbedding>.FromJson(data.Value!.Embedding, data.Value.JsonSerializeMetadata()));
+            value: QdrantVectorRecord<TEmbedding>.FromJson(data.Value!.Embedding, data.Value.GetSerializedMetadata()));
         await this._qdrantClient.UpsertVectorAsync(collection, vectorData);
 
         return data;
     }
 
+    /// <inheritdoc />
     public async Task RemoveAsync(string collection, string key, CancellationToken cancel = default)
     {
         try
         {
-            await this._qdrantClient.DeleteVectorAsync(collection, key);
+            await this._qdrantClient.DeleteVectorByIdAsync(collection, key);
         }
         catch (Exception ex)
         {
@@ -90,19 +94,30 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
         }
     }
 
-    public async IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(string collection, Embedding<TEmbedding> embedding,
-        int limit = 1, double minRelevanceScore = 0)
+    /// <inheritdoc />
+    public async IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(string collection, Embedding<TEmbedding> embedding, int limit = 1, double minRelevanceScore = 0)
     {
-        var results = this._qdrantClient.FindNearesetInCollectionAsync(collection, embedding, limit);
+        var results = this._qdrantClient.FindNearestInCollectionAsync(collection, embedding, limit);
         await foreach ((IEmbeddingWithMetadata<TEmbedding>, double) result in results)
         {
             yield return result;
         }
     }
 
+    /// <inheritdoc />
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
     {
-        return this._qdrantClient.GetCollectionListAsync();
+        return this._qdrantClient.ListCollectionsAsync();
+    }
+
+    /// <summary>
+    /// Deletes a collection from the Qdrant Vector database.
+    /// </summary>
+    /// <param name="collection"></param>
+    /// <returns></returns>
+    public async Task DeleteCollectionAsync(string collection)
+    {
+        await this._qdrantClient.DeleteCollectionAsync(collection);
     }
 
     #region private ================================================================================
@@ -111,8 +126,6 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
     /// Concurrent dictionary consisting of Qdrant Collection names mapped to
     /// a concurrent dictionary of cached Qdrant vector entries mapped by plaintext key
     /// </summary>
-    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DataEntry<QdrantVectorRecord<TEmbedding>>>> _qdrantData = new();
-
     private QdrantVectorDbClient<TEmbedding> _qdrantClient;
 
     #endregion
@@ -124,7 +137,7 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
 /// </summary>
 public class QdrantMemoryStore : QdrantMemoryStore<float>
 {
-    public QdrantMemoryStore(string host, int port) : base(host, port)
+    public QdrantMemoryStore(string host, int port, ILogger? logger = null) : base(host, port, logger)
     {
     }
 }

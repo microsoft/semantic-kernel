@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 
-internal class Verify
+internal static class Verify
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void True(bool value, string message)

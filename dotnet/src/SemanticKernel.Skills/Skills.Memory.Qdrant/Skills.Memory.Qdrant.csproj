@@ -19,8 +19,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.CSharp" VersionOverride="4.7.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-        <PackageReference Include="Newtonsoft.Json" VersionOverride="13.0.2" />
-        <PackageReference Include="System.Net.Http.Json" VersionOverride="7.0.1"/>
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
     <ItemGroup>
