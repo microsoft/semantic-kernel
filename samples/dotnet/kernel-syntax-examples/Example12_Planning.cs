@@ -24,6 +24,55 @@ internal static class Example12_Planning
         await EmailSamplesAsync();
         await BookSamplesAsync();
         await MemorySampleAsync();
+        await ConditionalSampleAsync();
+    }
+
+    private static async Task ConditionalSampleAsync()
+    {
+        Console.WriteLine("======== Planning - Conditional flow example ========");
+        var kernel = InitializeKernelAndPlanner(out var planner);
+
+        // Load additional skills to enable planner to do non-trivial asks.
+        string folder = RepoFiles.SampleSkillsPath();
+        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+        kernel.ImportSkill(new TimeSkill());
+
+        var originalPlan = await kernel.RunAsync(
+            @"If is still morning please give me a joke about coffee otherwise tell me one about afternoon, but if its night give me a poem about the moon", planner["CreatePlan"]);
+        /*
+        <goal>
+        If is still morning please give me a joke about coffee otherwise tell me one about afternoon, but if its night give me a poem about the moon
+        </goal>
+        <plan>
+          <function._GLOBAL_FUNCTIONS_.HourNumber setContextVariable="HOUR"/>
+          <if>
+            <conditiongroup>
+              <condition variable="$HOUR" lessThan="12"/>
+            </conditiongroup>
+            <then>
+              <function.FunSkill.Joke input="coffee"/>
+            </then>
+            <else>
+              <if>
+                <conditiongroup>
+                  <condition variable="$HOUR" lessThan="18"/>
+                </conditiongroup>
+                <then>
+                  <function.FunSkill.Joke input="afternoon"/>
+                </then>
+                <else>
+                  <function.FunSkill.ShortPoem input="the moon"/>
+                </else>
+              </if>
+            </else>
+          </if>
+        </plan>
+        */
+        Console.WriteLine("Original plan:");
+        Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
+
+        await ExecutePlanAsync(kernel, planner, originalPlan, 5);
     }
 
     private static async Task PoetrySamplesAsync()
@@ -188,7 +237,6 @@ internal static class Example12_Planning
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
         planner = kernel.ImportSkill(new PlannerSkill(kernel), "planning");
-
         return kernel;
     }
 
