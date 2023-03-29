@@ -97,13 +97,14 @@ Here is a quick example of how to use Semantic Kernel from a C# console app.
 
 ```csharp
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.KernelExtensions;
 
 var kernel = Kernel.Builder.Build();
 
 // For Azure Open AI service endpoint and keys please see
 // https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api
-kernel.Config.AddAzureOpenAICompletionBackend(
+kernel.Config.AddAzureOpenAITextCompletion(
     "davinci-backend",                   // Alias used by the kernel
     "text-davinci-003",                  // Azure OpenAI *Deployment ID*
     "https://contoso.openai.azure.com/", // Azure OpenAI *Endpoint*
