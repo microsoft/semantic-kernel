@@ -27,33 +27,44 @@ public static class KernelChatGptPluginExtensions
     /// <param name="url">Url to in which to retrieve the ChatGPT plugin.</param>
     /// <param name="httpClient">Optional HttpClient to use for the request.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptSkillFromUrlAsync(this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null)
+    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromUrlAsync(
+        this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null)
     {
         Verify.ValidSkillName(skillName);
 
-        HttpResponseMessage chatGptPluginResponse;
-        if (httpClient == null)
+        HttpResponseMessage? response = null;
+        try
         {
-            // TODO Fix this:  throwing "The inner handler has not been assigned"
-            //using DefaultHttpRetryHandler retryHandler = new DefaultHttpRetryHandler(
-            //  config: new HttpRetryConfig() { MaxRetryCount = 3 },
-            //  log: null);
+            if (httpClient == null)
+            {
+                // TODO Fix this:  throwing "The inner handler has not been assigned"
+                //using DefaultHttpRetryHandler retryHandler = new DefaultHttpRetryHandler(
+                //  config: new HttpRetryConfig() { MaxRetryCount = 3 },
+                //  log: null);
 
-            //using HttpClient client = new HttpClient(retryHandler, false);
-            using HttpClient client = new HttpClient(); 
+                //using HttpClient client = new HttpClient(retryHandler, false);
+                using HttpClient client = new HttpClient();
 
-            chatGptPluginResponse = await client.GetAsync(url);
+                response = await client.GetAsync(url);
+            }
+            else
+            {
+                response = await httpClient.GetAsync(url);
+            }
+            response.EnsureSuccessStatusCode();
+
+            string gptPluginJson = await response.Content.ReadAsStringAsync();
+            string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
+
+            return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient);
         }
-        else
+        finally
         {
-            chatGptPluginResponse = await httpClient.GetAsync(url);
+            if (response != null)
+            {
+                response.Dispose();
+            }
         }
-        chatGptPluginResponse.EnsureSuccessStatusCode();
-
-        string gptPluginJson = await chatGptPluginResponse.Content.ReadAsStringAsync();
-        string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
-
-        return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient);
     }
 
     /// <summary>
@@ -63,7 +74,8 @@ public static class KernelChatGptPluginExtensions
     /// <param name="skillName">Skill name.</param>
     /// <param name="httpClient">Optional HttpClient to use for the request.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromResourceAsync(this IKernel kernel, string skillName, HttpClient? httpClient = null)
+    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromResourceAsync(
+        this IKernel kernel, string skillName, HttpClient? httpClient = null)
     {
         Verify.ValidSkillName(skillName);
 
@@ -93,7 +105,8 @@ public static class KernelChatGptPluginExtensions
     /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
     /// <param name="httpClient">Optional HttpClient to use for the request.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromDirectory(this IKernel kernel, string parentDirectory, string skillDirectoryName, HttpClient? httpClient = null)
+    public static IDictionary<string, ISKFunction> ImportChatGptPluginSkillSkillFromDirectory(
+        this IKernel kernel, string parentDirectory, string skillDirectoryName, HttpClient? httpClient = null)
     {
         const string CHATGPT_PLUGIN_FILE = "ai-plugin.json";
 

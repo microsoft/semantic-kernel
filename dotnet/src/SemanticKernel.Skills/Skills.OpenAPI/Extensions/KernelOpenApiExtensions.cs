@@ -38,32 +38,42 @@ public static class KernelOpenApiExtensions
     {
         Verify.ValidSkillName(skillName);
 
-        HttpResponseMessage openApiResponse;
-        if (httpClient == null)
+        HttpResponseMessage? response = null;
+        try
         {
-            // TODO Fix this:  throwing "The inner handler has not been assigned"
-            //using DefaultHttpRetryHandler retryHandler = new DefaultHttpRetryHandler(
-            //  config: new HttpRetryConfig() { MaxRetryCount = 3 },
-            //  log: null);
+            if (httpClient == null)
+            {
+                // TODO Fix this:  throwing "The inner handler has not been assigned"
+                //using DefaultHttpRetryHandler retryHandler = new DefaultHttpRetryHandler(
+                //  config: new HttpRetryConfig() { MaxRetryCount = 3 },
+                //  log: null);
 
-            //using HttpClient client = new HttpClient(retryHandler, false);
-            using HttpClient client = new HttpClient();
+                //using HttpClient client = new HttpClient(retryHandler, false);
+                using HttpClient client = new HttpClient();
 
-            openApiResponse = await client.GetAsync(url);
+                response = await client.GetAsync(url);
+            }
+            else
+            {
+                response = await httpClient.GetAsync(url);
+            }
+            response.EnsureSuccessStatusCode();
+
+            Stream stream = await response.Content.ReadAsStreamAsync();
+            if (stream == null)
+            {
+                throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
+            }
+
+            return kernel.RegisterOpenApiSkill(stream, skillName);
         }
-        else
+        finally
         {
-            openApiResponse = await httpClient.GetAsync(url);
+            if (response != null)
+            {
+                response.Dispose();
+            }
         }
-        openApiResponse.EnsureSuccessStatusCode();
-
-        Stream stream = await openApiResponse.Content.ReadAsStreamAsync();
-        if (stream == null)
-        {
-            throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
-        }
-
-        return kernel.RegisterOpenApiSkill(stream, skillName);
     }
 
     /// <summary>
