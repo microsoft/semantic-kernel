@@ -17,19 +17,13 @@ public static class Example19_Qdrant
     public static async Task RunAsync()
     {
         int qdrantPort = int.Parse(Env.Var("QDRANT_PORT"), CultureInfo.InvariantCulture);
-        QdrantMemoryStore memoryStore = new QdrantMemoryStore(Env.Var("QDRANT_ENDPOINT"), qdrantPort);
+        QdrantMemoryStore memoryStore = new QdrantMemoryStore(Env.Var("QDRANT_ENDPOINT"), qdrantPort, ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .Configure(c =>
             {
-                c.AddAzureOpenAITextCompletion(serviceId: "davinci",
-                    deploymentName: "text-davinci-003",
-                    endpoint: Env.Var("AZURE_ENDPOINT"),
-                    apiKey: Env.Var("AZURE_API_KEY"));
-                c.AddAzureOpenAIEmbeddingGeneration(serviceId: "ada",
-                    deploymentName: "text-embedding-ada-002",
-                    endpoint: Env.Var("AZURE_ENDPOINT"),
-                    apiKey: Env.Var("AZURE_API_KEY"));
+                c.AddOpenAITextCompletion("davinci", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+                c.AddOpenAIEmbeddingGeneration("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
             })
             .WithMemoryStorage(memoryStore)
             .Build();
@@ -56,11 +50,12 @@ public static class Example19_Qdrant
 
         Console.WriteLine("== Retrieving Memories ==");
         MemoryQueryResult? lookup = await kernel.Memory.GetAsync(MemoryCollectionName, "cat1");
-        Console.WriteLine(lookup != null ? lookup.Metadata.Text : "No memories found");
+        Console.WriteLine(lookup != null ? lookup.Metadata.Text : "ERROR: memory not found");
 
         Console.WriteLine("== Removing Collection {0} ==", MemoryCollectionName);
-        Console.WriteLine("== Printing Collections in DB ==");
         await memoryStore.DeleteCollectionAsync(MemoryCollectionName);
+
+        Console.WriteLine("== Printing Collections in DB ==");
         await foreach (var collection in collections)
         {
             Console.WriteLine(collection);

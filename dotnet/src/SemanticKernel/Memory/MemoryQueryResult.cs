@@ -50,8 +50,8 @@ public class MemoryQueryResult
         else
         {
             throw new MemoryException(
-                MemoryException.ErrorCodes.UnableToSerializeMetadata,
-                "Unable to create memory from serialized metadata");
+                MemoryException.ErrorCodes.UnableToDeserializeMetadata,
+                "Unable to create memory query result from serialized metadata");
         }
     }
 
