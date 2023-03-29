@@ -48,7 +48,7 @@ class VolatileMemoryStore(VolatileDataStore, MemoryStoreBase):
         top_results = filtered_results[:limit]
         return top_results
 
-    def compute_similarity_scores(
+    async def compute_similarity_scores(
         self, embedding: ndarray, embedding_array: ndarray
     ) -> ndarray:
         """Compute the similarity scores between the query embedding and all the embeddings in the collection.
@@ -86,4 +86,5 @@ class VolatileMemoryStore(VolatileDataStore, MemoryStoreBase):
                 "The query embedding or the entire embedding collection contains zero vectors."
                 "Cosine similarity scores cannot be computed"
             )
+            raise Exception(f"Invalid vectors, cannot compute cosine similarity scores for zero vectors")
         return similarity_scores
