@@ -26,12 +26,17 @@ internal class FunctionFlowRunner
     /// <summary>
     /// The tag name used in the plan xml for the solution.
     /// </summary>
-    internal const string SolutionTag = "plan";
+    internal const string PlanTag = "plan";
 
     /// <summary>
     /// The tag name used in the plan xml for a step that calls a skill function.
     /// </summary>
     internal const string FunctionTag = "function.";
+
+    /// <summary>
+    /// The tag name used in the plan xml for a conditional check
+    /// </summary>
+    internal const string ConditionIfTag = "if";
 
     /// <summary>
     /// The attribute tag used in the plan xml for setting the context variable name to set the output of a function to.
@@ -58,10 +63,10 @@ internal class FunctionFlowRunner
     /// <returns>The resulting plan xml after executing a step in the plan.</returns>
     /// <context>
     /// Brief overview of how it works:
-    /// 1. The plan xml is parsed into an XmlDocument.
+    /// 1. The Solution xml is parsed into an XmlDocument.
     /// 2. The Goal node is extracted from the plan xml.
-    /// 3. The Solution node is extracted from the plan xml.
-    /// 4. The first function node in the Solution node is processed.
+    /// 3. The Plan node is extracted from the plan xml.
+    /// 4. The first function node in the plan node is processed.
     /// 5. The resulting plan xml is returned.
     /// </context>
     /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
@@ -69,10 +74,10 @@ internal class FunctionFlowRunner
     {
         try
         {
-            XmlDocument xmlDoc = new();
+            XmlDocument solutionXml = new();
             try
             {
-                xmlDoc.LoadXml("<xml>" + planPayload + "</xml>");
+                solutionXml.LoadXml("<xml>" + planPayload + "</xml>");
             }
             catch (XmlException e)
             {
@@ -80,14 +85,14 @@ internal class FunctionFlowRunner
             }
 
             // Get the Goal
-            var (goalTxt, goalXmlString) = GatherGoal(xmlDoc);
+            var (goalTxt, goalXmlString) = GatherGoal(solutionXml);
 
             // Get the Solution
-            XmlNodeList solution = xmlDoc.GetElementsByTagName(SolutionTag);
+            XmlNodeList planNodes = solutionXml.GetElementsByTagName(PlanTag);
 
             // Prepare content for the new plan xml
-            var solutionContent = new StringBuilder();
-            _ = solutionContent.AppendLine($"<{SolutionTag}>");
+            var planContent = new StringBuilder();
+            _ = planContent.AppendLine($"<{PlanTag}>");
 
             // Use goal as default function {{INPUT}} -- check and see if it's a plan in Input, if so, use goalTxt, otherwise, use the input.
             if (!context.Variables.Get("PLAN__INPUT", out var planInput))
@@ -112,12 +117,12 @@ internal class FunctionFlowRunner
             context.Log.LogDebug("Processing solution");
 
             // Process the solution nodes
-            string stepResults = await this.ProcessNodeListAsync(solution, functionInput, context);
+            string stepResults = await this.ProcessNodeListAsync(planNodes, functionInput, context);
             // Add the solution and variable updates to the new plan xml
-            _ = solutionContent.Append(stepResults)
-                .AppendLine($"</{SolutionTag}>");
+            _ = planContent.Append(stepResults)
+                .AppendLine($"</{PlanTag}>");
             // Update the plan xml
-            var updatedPlan = goalXmlString + solutionContent.Replace("\r\n", "\n");
+            var updatedPlan = goalXmlString + planContent.Replace("\r\n", "\n");
             updatedPlan = updatedPlan.Trim();
 
             context.Variables.Set(Plan.PlanKey, updatedPlan);
@@ -155,12 +160,39 @@ internal class FunctionFlowRunner
                     continue;
                 }
 
+                if (processFunctions && o2.Name.StartsWith(ConditionIfTag, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if (!context.IsFunctionRegistered("Conditional", "If", out var ifCheckFunction))
+                    {
+                        throw new PlanningException(PlanningException.ErrorCodes.InvalidConfiguration, "Conditional Skill for planning not found.");
+                    }
+
+                    var functionVariables = new ContextVariables();
+                    functionVariables.Update(context.Variables);
+                    functionVariables.Set("INPUT", o2.OuterXml);
+                    var result = await this._kernel.RunAsync(functionVariables, ifCheckFunction!);
+
+                    if (result.ErrorOccurred)
+                    {
+                        throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, result.LastErrorDescription, result.LastException);
+                    }
+
+                    _ = stepAndTextResults.Append(INDENT).AppendLine(result.Variables.Input);
+                    processFunctions = false;
+                    continue;
+                }
+
                 if (o2.Name.StartsWith(FunctionTag, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var skillFunctionName = o2.Name.Split(FunctionTag)?[1] ?? string.Empty;
                     context.Log.LogTrace("{0}: found skill node {1}", parentNodeName, skillFunctionName);
                     GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
-                    if (processFunctions && !string.IsNullOrEmpty(functionName) && context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
+                    if (!context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
+                    {
+                        throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Plan is using an unavailable skill: {skillName}.{functionName}");
+                    }
+
+                    if (processFunctions && !string.IsNullOrEmpty(functionName))
                     {
                         Verify.NotNull(functionName, nameof(functionName));
                         Verify.NotNull(skillFunction, nameof(skillFunction));
