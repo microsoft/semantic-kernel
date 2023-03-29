@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -7,7 +8,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Class representing the metadata associated with a Semantic Kernel memory.
 /// </summary>
-public class MemoryRecordMetadata
+public class MemoryRecordMetadata : ICloneable
 {
     /// <summary>
     /// Whether the source data used to calculate embeddings are stored in the local
@@ -60,5 +61,10 @@ public class MemoryRecordMetadata
         this.Id = id;
         this.Text = text;
         this.Description = description;
+    }
+
+    public object Clone()
+    {
+        return this.MemberwiseClone();
     }
 }
