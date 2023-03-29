@@ -1,50 +1,81 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.Resource;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.TemplateEngine;
+using SemanticKernel.Service.Config;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace SemanticKernel.Service;
 
-// Add services to the container.
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
-builder.Services.AddAuthorization();
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+public static class Program
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Host.ConfigureAppSettings();
+
+        // Add services to the DI container
+        AddServices(builder.Services, builder.Configuration);
+
+        var app = builder.Build();
+
+        // Configure the HTTP request pipeline
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+        app.UseHttpsRedirection();
+        // app.UseAuthentication();
+        app.UseAuthorization();
+        app.MapControllers();
+
+        app.Run();
+    }
+
+    private static void AddServices(IServiceCollection services, ConfigurationManager configuration)
+    {
+        /*builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+        builder.Services.AddAuthorization();*/
+	
+        services.AddControllers();
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
+
+        services.AddSingleton<ILogger>(s => s.GetRequiredService<ILogger<Kernel>>()); // To support ILogger (as opposed to generic ILogger<T>)
+
+        AddSemanticKernelServices(services, configuration);
+    }
+
+    private static void AddSemanticKernelServices(IServiceCollection services, ConfigurationManager configuration)
+    {
+        // Each REST call gets a fresh new SK instance
+        var kernelConfig = new KernelConfig();
+        AIServiceConfig completionConfig = configuration.GetRequiredSection("CompletionConfig").Get<AIServiceConfig>();
+        kernelConfig.AddCompletionBackend(completionConfig);
+        ISemanticTextMemory memory = NullMemory.Instance;
+        AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
+        if (/*embeddingConfig is not empty*/true)
+        {
+            // The same SK memory store is shared with all REST calls and users
+            IMemoryStore<float> memoryStore = new VolatileMemoryStore();
+            IEmbeddingGenerator<string, float> embeddingGenerator = embeddingConfig.ToTextEmbeddingsService(/* TODO: add logger */);
+            kernelConfig.AddEmbeddingBackend(embeddingConfig);
+#pragma warning disable CA2000 // Dispose objects before losing scope - Used later through DI
+            memory = new SemanticTextMemory(memoryStore, embeddingGenerator);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+        }
+        services.AddSingleton<ISkillCollection, SkillCollection>(); // Keep skill list empty?
+        services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
+        services.AddSingleton(memory);
+        services.AddSingleton(kernelConfig);
+
+        services.AddScoped<Kernel>();
+    }
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-//TODO: remove boiler plate code below, leaving here as an example
-
-//var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"] ?? "";
-//var summaries = new[]
-//{
-//    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-//};
-
-//app.MapGet("/weatherforecast", (HttpContext httpContext) =>
-//{
-//    httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
-
-//    return forecast;
-//})
-//.WithName("GetWeatherForecast")
-//.RequireAuthorization();
-
-app.Run();
