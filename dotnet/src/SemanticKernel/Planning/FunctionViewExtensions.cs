@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
-using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Planning;
+// ReSharper disable once CheckNamespace // Extension methods
+namespace Microsoft.SemanticKernel.SkillDefinition;
 
 internal static class FunctionViewExtensions
 {

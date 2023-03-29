@@ -18,7 +18,7 @@ cd samples/dotnet/kernel-syntax-examples
 
 dotnet user-secrets set "BING_API_KEY" "..."
 dotnet user-secrets set "OPENAI_API_KEY" "..."
-dotnet user-secrets set "AZURE_OPENAI_DEPLOYMENT_LABEL" "..."
+dotnet user-secrets set "AZURE_OPENAI_SERVICE_ID" "..."
 dotnet user-secrets set "AZURE_OPENAI_DEPLOYMENT_NAME" "https://... .openai.azure.com/"
 dotnet user-secrets set "AZURE_OPENAI_ENDPOINT" "..."
 dotnet user-secrets set "AZURE_OPENAI_KEY" "..."
@@ -30,7 +30,7 @@ To set your secrets with environment variables, use these names:
 
 * BING_API_KEY
 * OPENAI_API_KEY
-* AZURE_OPENAI_DEPLOYMENT_LABEL
+* AZURE_OPENAI_SERVICE_ID
 * AZURE_OPENAI_DEPLOYMENT_NAME
 * AZURE_OPENAI_ENDPOINT
 * AZURE_OPENAI_KEY

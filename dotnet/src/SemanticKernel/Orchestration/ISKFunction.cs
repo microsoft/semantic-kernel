@@ -37,7 +37,7 @@ public interface ISKFunction
     public bool IsSemantic { get; }
 
     /// <summary>
-    /// AI backend settings
+    /// AI service settings
     /// </summary>
     public CompleteRequestSettings RequestSettings { get; }
 
@@ -86,12 +86,12 @@ public interface ISKFunction
     ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills);
 
     /// <summary>
-    /// Set the AI backend used by the semantic function, passing a factory method.
+    /// Set the AI service used by the semantic function, passing a factory method.
     /// The factory allows to lazily instantiate the client and to properly handle its disposal.
     /// </summary>
-    /// <param name="backendFactory">AI backend factory</param>
+    /// <param name="serviceFactory">AI service factory</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIBackend(Func<ITextCompletion> backendFactory);
+    ISKFunction SetAIService(Func<ITextCompletion> serviceFactory);
 
     /// <summary>
     /// Set the AI completion settings used with LLM requests

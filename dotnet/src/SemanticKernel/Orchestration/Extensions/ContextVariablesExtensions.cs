@@ -4,7 +4,8 @@ using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Planning;
 
-namespace Microsoft.SemanticKernel.Orchestration.Extensions;
+// ReSharper disable once CheckNamespace // Extension methods
+namespace Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
 /// Class that holds extension methods for ContextVariables.

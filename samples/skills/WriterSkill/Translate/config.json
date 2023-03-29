@@ -11,8 +11,5 @@
     "stop_sequences": [
       "[done]"
     ]
-  },
-  "default_backends": [
-    "text-davinci-002"
-  ]
+  }
 }

@@ -4,7 +4,6 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 using RepoUtils;
@@ -22,8 +21,8 @@ public static class Example19_Qdrant
             .WithLogger(ConsoleLogger.Log)
             .Configure(c =>
             {
-                c.AddOpenAITextCompletion("davinci", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
-                c.AddOpenAIEmbeddingGeneration("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
+                c.AddOpenAITextCompletionService("davinci", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+                c.AddOpenAIEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
             })
             .WithMemoryStorage(memoryStore)
             .Build();
