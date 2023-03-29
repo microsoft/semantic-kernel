@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.HuggingFace.HttpSchema;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.AI.HuggingFace.Services;
 
@@ -15,8 +17,11 @@ namespace Microsoft.SemanticKernel.AI.HuggingFace.Services;
 public sealed class HuggingFaceTextCompletion : ITextCompletionClient, IDisposable
 {
     private const string HttpUserAgent = "Microsoft Semantic Kernel";
-    private const string CompletionEndpoint = "/completions";
+    private const string HuggingFaceApiBaseUri = "https://api-inference.huggingface.co";
+    private const string CompletionRemoteApiEndpoint = "/models";
+    private const string CompletionLocalApiEndpoint = "/completions";
 
+    private readonly string _completionEndpoint;
     private readonly string _model;
     private readonly HttpClient _httpClient;
     private readonly HttpClientHandler? _httpClientHandler;
@@ -29,12 +34,17 @@ public sealed class HuggingFaceTextCompletion : ITextCompletionClient, IDisposab
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
     public HuggingFaceTextCompletion(Uri baseUri, string model, HttpClientHandler httpClientHandler)
     {
+        Verify.NotNull(baseUri, "Base URI cannot be null.");
+        Verify.NotEmpty(model, "Model cannot be empty.");
+
         this._model = model;
 
         this._httpClient = new(httpClientHandler);
 
         this._httpClient.BaseAddress = baseUri;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
+
+        this._completionEndpoint = CompletionLocalApiEndpoint;
     }
 
     /// <summary>
@@ -45,6 +55,9 @@ public sealed class HuggingFaceTextCompletion : ITextCompletionClient, IDisposab
     /// <param name="model">Model to use for service API call.</param>
     public HuggingFaceTextCompletion(Uri baseUri, string model)
     {
+        Verify.NotNull(baseUri, "Base URI cannot be null.");
+        Verify.NotEmpty(model, "Model cannot be empty.");
+
         this._model = model;
 
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
@@ -52,28 +65,42 @@ public sealed class HuggingFaceTextCompletion : ITextCompletionClient, IDisposab
 
         this._httpClient.BaseAddress = baseUri;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
+
+        this._completionEndpoint = CompletionLocalApiEndpoint;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
+    /// Using HuggingFace API for service call, see https://huggingface.co/docs/api-inference/index.
     /// </summary>
-    /// <param name="baseUri">Base URI for service API call in <see cref="string"/> format.</param>
+    /// <param name="apiKey">HuggingFace API key, see https://huggingface.co/docs/api-inference/quicktour#running-inference-with-api-requests.</param>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    public HuggingFaceTextCompletion(string baseUri, string model, HttpClientHandler httpClientHandler)
-        : this(new Uri(baseUri), model, httpClientHandler)
+    public HuggingFaceTextCompletion(string apiKey, string model, HttpClientHandler httpClientHandler)
+        : this(new Uri(HuggingFaceApiBaseUri), model, httpClientHandler)
     {
+        Verify.NotEmpty(apiKey, "HuggingFace API key cannot be empty.");
+
+        this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+        this._completionEndpoint = CompletionRemoteApiEndpoint;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
+    /// Using HuggingFace API for service call, see https://huggingface.co/docs/api-inference/index.
     /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
-    /// <param name="baseUri">Base URI for service API call in <see cref="string"/> format.</param>
+    /// <param name="apiKey">HuggingFace API key, see https://huggingface.co/docs/api-inference/quicktour#running-inference-with-api-requests.</param>
     /// <param name="model">Model to use for service API call.</param>
-    public HuggingFaceTextCompletion(string baseUri, string model)
-        : this(new Uri(baseUri), model)
+    public HuggingFaceTextCompletion(string apiKey, string model)
+        : this(new Uri(HuggingFaceApiBaseUri), model)
     {
+        Verify.NotEmpty(apiKey, "HuggingFace API key cannot be empty.");
+
+        this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+        this._completionEndpoint = CompletionRemoteApiEndpoint;
     }
 
     /// <inheritdoc/>
@@ -103,23 +130,22 @@ public sealed class HuggingFaceTextCompletion : ITextCompletionClient, IDisposab
         {
             var completionRequest = new CompletionRequest
             {
-                Prompt = text,
-                Model = this._model
+                Input = text
             };
 
             using var httpRequestMessage = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri(CompletionEndpoint, UriKind.Relative),
-                Content = new StringContent(JsonSerializer.Serialize(completionRequest)),
+                RequestUri = new Uri($"{this._completionEndpoint}/{this._model}", UriKind.Relative),
+                Content = new StringContent(JsonSerializer.Serialize(completionRequest))
             };
 
             var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            var completionResponse = JsonSerializer.Deserialize<CompletionResponse>(body);
+            var completionResponse = JsonSerializer.Deserialize<List<CompletionResponse>>(body);
 
-            return completionResponse?.Choices.First().Text!;
+            return completionResponse.First().Text!;
         }
         catch (Exception e) when (e is not AIException)
         {
