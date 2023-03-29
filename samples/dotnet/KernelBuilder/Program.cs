@@ -37,8 +37,8 @@ var kernelX3 = builderX.Build();
 // Manually setup all the dependencies used internally by the kernel
 var logger = NullLogger.Instance;
 var memoryStorage = new VolatileMemoryStore();
-var embeddingGenerator = new AzureTextEmbeddings("modelId", "https://...", "apiKey", "2022-12-01", logger);
-var memory = new SemanticTextMemory(memoryStorage, embeddingGenerator);
+var textEmbeddingGenerator = new AzureTextEmbeddingGeneration("modelId", "https://...", "apiKey", "2022-12-01", logger);
+var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
 var skills = new SkillCollection();
 var templateEngine = new PromptTemplateEngine(logger);
 var config = new KernelConfig();
@@ -64,7 +64,7 @@ var kernel4 = Kernel.Builder
 // Example: how to use a custom memory storage and custom embedding generator
 var kernel5 = Kernel.Builder
     .WithLogger(NullLogger.Instance)
-    .WithMemoryStorageAndEmbeddingGenerator(memoryStorage, embeddingGenerator)
+    .WithMemoryStorageAndTextEmbeddingGeneration(memoryStorage, textEmbeddingGenerator)
     .Build();
 
 // Example: how to use a custom memory storage
@@ -96,7 +96,7 @@ kernel7.Config
     .AddAzureOpenAIEmbeddingGeneration("myName2", "embeddingsDeploymentName1", "https://...", "apiKey", "2022-12-01")
     .AddAzureOpenAIEmbeddingGeneration("myName3", "embeddingsDeploymentName2", "https://...", "apiKey", "2022-12-01")
     .AddOpenAITextCompletion("myName4", "text-davinci-003", "sk-...")
-    .SetDefaultEmbeddingService("myName3");
+    .SetDefaultTextEmbeddingGeneration("myName3");
 
 // ==========================================================================================================
 // When invoking AI, by default the kernel will retry on transient errors, such as throttling and timeouts.

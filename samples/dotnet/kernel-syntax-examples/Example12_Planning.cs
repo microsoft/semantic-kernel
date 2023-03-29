@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
@@ -133,13 +133,13 @@ internal static class Example12_Planning
                 config =>
                 {
                     config.AddAzureOpenAITextCompletion(
-                        Env.Var("AZURE_OPENAI_DEPLOYMENT_LABEL"),
+                        Env.Var("AZURE_OPENAI_SERVICE_ID"),
                         Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_ENDPOINT"),
                         Env.Var("AZURE_OPENAI_KEY"));
 
                     config.AddAzureOpenAIEmbeddingGeneration(
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_LABEL"),
+                        Env.Var("AZURE_OPENAI_EMBEDDINGS_SERVICE_ID"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"));
@@ -181,7 +181,7 @@ internal static class Example12_Planning
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         kernel.Config.AddAzureOpenAITextCompletion(
-            Env.Var("AZURE_OPENAI_DEPLOYMENT_LABEL"),
+            Env.Var("AZURE_OPENAI_SERVICE_ID"),
             Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
             Env.Var("AZURE_OPENAI_ENDPOINT"),
             Env.Var("AZURE_OPENAI_KEY"));

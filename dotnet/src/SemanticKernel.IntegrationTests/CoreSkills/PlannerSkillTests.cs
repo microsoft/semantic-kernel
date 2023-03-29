@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.IntegrationTests.AI;
+using SemanticKernel.IntegrationTests.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -49,18 +49,18 @@ public sealed class PlannerSkillTests : IDisposable
             .Configure(config =>
             {
                 config.AddAzureOpenAITextCompletion(
-                    serviceId: azureOpenAIConfiguration.Label,
+                    serviceId: azureOpenAIConfiguration.ServiceId,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
 
                 config.AddAzureOpenAIEmbeddingGeneration(
-                    serviceId: azureOpenAIEmbeddingsConfiguration.Label,
+                    serviceId: azureOpenAIEmbeddingsConfiguration.ServiceId,
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
 
-                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.Label);
+                config.SetDefaultTextCompletion(azureOpenAIConfiguration.ServiceId);
             })
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();

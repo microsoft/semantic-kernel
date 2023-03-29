@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
-using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI.ChatCompletion;
 using RepoUtils;
 
 /**
@@ -21,7 +22,7 @@ public static class Example18_DallE
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        // Add your image generation backend
+        // Add your image generation service
         kernel.Config.AddOpenAIImageGeneration("dallE", Env.Var("OPENAI_API_KEY"));
 
         IImageGeneration dallE = kernel.GetService<IImageGeneration>();
@@ -41,7 +42,7 @@ public static class Example18_DallE
 
         Console.WriteLine("======== Chat with images ========");
 
-        // Add your chat completion backend
+        // Add your chat completion service
         kernel.Config.AddOpenAIChatCompletion("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();

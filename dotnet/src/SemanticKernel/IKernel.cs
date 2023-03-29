@@ -158,7 +158,7 @@ public interface IKernel
     SKContext CreateNewContext();
 
     /// <summary>
-    /// Get one of the configured services. Currently limited to AI backends.
+    /// Get one of the configured services. Currently limited to AI services.
     /// </summary>
     /// <param name="name">Optional name. If the name is not provided, returns the default T available</param>
     /// <typeparam name="T">Service type</typeparam>

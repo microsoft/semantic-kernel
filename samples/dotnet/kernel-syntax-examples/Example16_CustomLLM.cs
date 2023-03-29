@@ -16,7 +16,7 @@ using RepoUtils;
  * - You are using OpenAI/Azure OpenAI models but the models are behind a web service with a different API schema
  * - You want to use a local model
  */
-public class MyBackend : ITextCompletion
+public class MyTextCompletionService : ITextCompletion
 {
     public async Task<string> CompleteAsync(
         string text,
@@ -42,10 +42,10 @@ public static class Example16_CustomLLM
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        ITextCompletion Factory(IKernel k) => new MyBackend();
+        ITextCompletion Factory(IKernel k) => new MyTextCompletionService();
 
-        // Add your text completion backend
-        kernel.Config.AddTextCompletion("myBackend", Factory);
+        // Add your text completion service
+        kernel.Config.AddTextCompletion("myService", Factory);
 
         const string FUNCTION_DEFINITION = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
 

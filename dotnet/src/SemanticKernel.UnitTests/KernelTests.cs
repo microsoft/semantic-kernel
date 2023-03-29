@@ -5,11 +5,12 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Moq;
 using Xunit;
 
 // ReSharper disable StringLiteralTypo
@@ -23,7 +24,8 @@ public class KernelTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAITextCompletion("x", "y", "z");
+        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        kernel.Config.AddTextCompletion("x", factory.Object, true);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -50,7 +52,8 @@ public class KernelTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAITextCompletion("x", "y", "z");
+        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        kernel.Config.AddTextCompletion("x", factory.Object, true);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -135,12 +138,13 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItFailsIfCompletionBackendConfigIsNotSet()
+    public void ItFailsIfTextCompletionServiceConfigIsNotSet()
     {
         // Arrange
         var kernel = KernelBuilder.Create();
 
-        var exception = Assert.Throws<KernelException>(() => kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun"));
+        var exception = Assert.Throws<KernelException>(
+            () => kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun"));
     }
 
     public class MySkill

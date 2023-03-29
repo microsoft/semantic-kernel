@@ -12,7 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
@@ -100,38 +100,38 @@ public sealed class Program
         var todo = sk.ImportSkill(todoSkill, "todo");
         var outlook = sk.ImportSkill(outlookSkill, "outlook");
 
-        if (configuration.GetSection("AzureOpenAI:Label").Value != null)
+        if (configuration.GetSection("AzureOpenAI:ServiceId").Value != null)
         {
             AzureOpenAIConfiguration? azureOpenAIConfiguration = configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
             if (azureOpenAIConfiguration != null)
             {
                 sk.Config.AddAzureOpenAITextCompletion(
-                    serviceId: azureOpenAIConfiguration.Label,
+                    serviceId: azureOpenAIConfiguration.ServiceId,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
             }
         }
 
-        if (configuration.GetSection("OpenAI:Label").Value != null)
+        if (configuration.GetSection("OpenAI:ServiceId").Value != null)
         {
             OpenAIConfiguration? openAIConfiguration = configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
             if (openAIConfiguration != null)
             {
                 sk.Config.AddOpenAITextCompletion(
-                    serviceId: openAIConfiguration.Label,
+                    serviceId: openAIConfiguration.ServiceId,
                     modelId: openAIConfiguration.ModelId,
                     apiKey: openAIConfiguration.ApiKey);
             }
         }
 
-        string? defaultCompletionBackendLabel = configuration["DefaultCompletionBackendLabel"];
-        if (string.IsNullOrWhiteSpace(defaultCompletionBackendLabel))
+        string? defaultCompletionServiceId = configuration["DefaultCompletionServiceId"];
+        if (string.IsNullOrWhiteSpace(defaultCompletionServiceId))
         {
-            throw new InvalidOperationException("'DefaultCompletionBackendLabel' is not set in configuration.");
+            throw new InvalidOperationException("'DefaultCompletionServiceId' is not set in configuration.");
         }
 
-        sk.Config.SetDefaultTextCompletionService(defaultCompletionBackendLabel);
+        sk.Config.SetDefaultTextCompletion(defaultCompletionServiceId);
 
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))

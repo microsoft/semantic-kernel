@@ -41,7 +41,7 @@ public sealed class KernelConfig
     /// <summary>
     /// Text embedding generation service factories
     /// </summary>
-    public Dictionary<string, Func<IKernel, IEmbeddingGenerator<string, float>>> TextEmbeddingServices { get; } = new();
+    public Dictionary<string, Func<IKernel, IEmbeddingGeneration<string, float>>> TextEmbeddingGenerationServices { get; } = new();
 
     /// <summary>
     /// Image generation service factories
@@ -61,7 +61,7 @@ public sealed class KernelConfig
     /// <summary>
     /// Default text embedding generation service.
     /// </summary>
-    public string? DefaultTextEmbeddingServiceId { get; private set; }
+    public string? DefaultTextEmbeddingGenerationServiceId { get; private set; }
 
     /// <summary>
     /// Default image generation service.
@@ -84,7 +84,7 @@ public sealed class KernelConfig
     /// Get all text embedding generation services.
     /// </summary>
     /// <returns>IEnumerable of all embedding service Ids in the kernel configuration.</returns>
-    public IEnumerable<string> AllTextEmbeddingServices => this.TextEmbeddingServices.Keys;
+    public IEnumerable<string> AllTextEmbeddingGenerationServices => this.TextEmbeddingGenerationServices.Keys;
 
     /// <summary>
     /// Add to the list a service for text completion, e.g. Azure OpenAI Text Completion.
@@ -155,22 +155,22 @@ public sealed class KernelConfig
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
     public KernelConfig AddTextEmbeddingGeneration(
-        string serviceId, Func<IKernel, IEmbeddingGenerator<string, float>> serviceFactory, bool overwrite = false)
+        string serviceId, Func<IKernel, IEmbeddingGeneration<string, float>> serviceFactory, bool overwrite = false)
     {
         Verify.NotEmpty(serviceId, "The service id provided is empty");
 
-        if (!overwrite && this.TextEmbeddingServices.ContainsKey(serviceId))
+        if (!overwrite && this.TextEmbeddingGenerationServices.ContainsKey(serviceId))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.InvalidServiceConfiguration,
-                $"An embedding generator with id '{serviceId}' already exists");
+                $"An embedding generation service with id '{serviceId}' already exists");
         }
 
-        this.TextEmbeddingServices[serviceId] = serviceFactory;
+        this.TextEmbeddingGenerationServices[serviceId] = serviceFactory;
 
-        if (this.TextEmbeddingServices.Count == 1)
+        if (this.TextEmbeddingGenerationServices.Count == 1)
         {
-            this.DefaultTextEmbeddingServiceId = serviceId;
+            this.DefaultTextEmbeddingGenerationServiceId = serviceId;
         }
 
         return this;
@@ -240,7 +240,7 @@ public sealed class KernelConfig
     /// <param name="serviceId">Identifier of completion service to use.</param>
     /// <returns>The updated kernel configuration.</returns>
     /// <exception cref="KernelException">Thrown if the requested service doesn't exist.</exception>
-    public KernelConfig SetDefaultTextCompletionService(string serviceId)
+    public KernelConfig SetDefaultTextCompletion(string serviceId)
     {
         if (!this.TextCompletionServices.ContainsKey(serviceId))
         {
@@ -259,16 +259,16 @@ public sealed class KernelConfig
     /// <param name="serviceId">Identifier of text embedding service to use.</param>
     /// <returns>The updated kernel configuration.</returns>
     /// <exception cref="KernelException">Thrown if the requested service doesn't exist.</exception>
-    public KernelConfig SetDefaultEmbeddingService(string serviceId)
+    public KernelConfig SetDefaultTextEmbeddingGeneration(string serviceId)
     {
-        if (!this.TextEmbeddingServices.ContainsKey(serviceId))
+        if (!this.TextEmbeddingGenerationServices.ContainsKey(serviceId))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.ServiceNotFound,
                 $"A text embedding generation service id '{serviceId}' doesn't exist");
         }
 
-        this.DefaultTextEmbeddingServiceId = serviceId;
+        this.DefaultTextEmbeddingGenerationServiceId = serviceId;
         return this;
     }
 
@@ -324,11 +324,11 @@ public sealed class KernelConfig
     /// <param name="serviceId">Optional identifier of the desired service.</param>
     /// <returns>The embedding service id matching the given id or the default.</returns>
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
-    public string GetTextEmbeddingServiceIdOrDefault(string? serviceId = null)
+    public string GetTextEmbeddingGenerationServiceIdOrDefault(string? serviceId = null)
     {
-        if (string.IsNullOrEmpty(serviceId) || !this.TextEmbeddingServices.ContainsKey(serviceId))
+        if (string.IsNullOrEmpty(serviceId) || !this.TextEmbeddingGenerationServices.ContainsKey(serviceId))
         {
-            serviceId = this.DefaultTextEmbeddingServiceId;
+            serviceId = this.DefaultTextEmbeddingGenerationServiceId;
         }
 
         if (string.IsNullOrEmpty(serviceId))
@@ -401,12 +401,12 @@ public sealed class KernelConfig
     /// </summary>
     /// <param name="serviceId">Identifier of service to remove.</param>
     /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig RemoveTextEmbeddingService(string serviceId)
+    public KernelConfig RemoveTextEmbeddingGenerationService(string serviceId)
     {
-        this.TextEmbeddingServices.Remove(serviceId);
-        if (this.DefaultTextEmbeddingServiceId == serviceId)
+        this.TextEmbeddingGenerationServices.Remove(serviceId);
+        if (this.DefaultTextEmbeddingGenerationServiceId == serviceId)
         {
-            this.DefaultTextEmbeddingServiceId = this.TextEmbeddingServices.Keys.FirstOrDefault();
+            this.DefaultTextEmbeddingGenerationServiceId = this.TextEmbeddingGenerationServices.Keys.FirstOrDefault();
         }
 
         return this;
@@ -438,10 +438,10 @@ public sealed class KernelConfig
     /// Remove all text embedding generation services.
     /// </summary>
     /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig RemoveAllTextEmbeddingServices()
+    public KernelConfig RemoveAllTextEmbeddingGenerationServices()
     {
-        this.TextEmbeddingServices.Clear();
-        this.DefaultTextEmbeddingServiceId = null;
+        this.TextEmbeddingGenerationServices.Clear();
+        this.DefaultTextEmbeddingGenerationServiceId = null;
         return this;
     }
 

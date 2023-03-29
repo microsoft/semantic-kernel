@@ -235,10 +235,10 @@ public sealed class Kernel : IKernel, IDisposable
             return (T)service;
         }
 
-        if (typeof(T) == typeof(IEmbeddingGenerator<string, float>))
+        if (typeof(T) == typeof(IEmbeddingGeneration<string, float>))
         {
-            name = this.Config.GetTextEmbeddingServiceIdOrDefault(name);
-            if (!this.Config.TextEmbeddingServices.TryGetValue(name, out Func<IKernel, IEmbeddingGenerator<string, float>> factory))
+            name = this.Config.GetTextEmbeddingGenerationServiceIdOrDefault(name);
+            if (!this.Config.TextEmbeddingGenerationServices.TryGetValue(name, out Func<IKernel, IEmbeddingGeneration<string, float>> factory))
             {
                 throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No text embedding service available");
             }
@@ -314,8 +314,8 @@ public sealed class Kernel : IKernel, IDisposable
 
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
-        // Note: the backend is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIBackend(() => this.GetService<ITextCompletion>());
+        // Note: the service is instantiated using the kernel configuration state when the function is invoked
+        func.SetAIService(() => this.GetService<ITextCompletion>());
 
         return func;
     }
