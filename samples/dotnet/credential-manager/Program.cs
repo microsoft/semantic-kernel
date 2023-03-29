@@ -6,8 +6,12 @@ using Microsoft.Identity.Client;
 
 namespace CredentialManagerExample;
 
+public delegate Task AuthorizationCallback(HttpRequestMessage request);
+
 public sealed class Program
 {
+    private static readonly HttpClient s_httpClient = new();
+
     public static async Task Main()
     {
         // Using appsettings.json for our configuration settings
@@ -20,40 +24,29 @@ public sealed class Program
 
         var scopes = configuration.GetSection("Scopes").Get<string[]>() ?? throw new InvalidOperationException("Invalid scopes.");
         
-        var authProvider = CreateAuthenticationProvider(
-            new LocalUserMSALCredentialManager(),
-            appConfiguration.ClientId,
-            appConfiguration.TenantId,
-            scopes,
-            new Uri(appConfiguration.RedirectUri)
-            );
-
-        // Create and authenticate request
-        using var httpClient = new HttpClient();
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/beta/me/profile/");
-        await authProvider.AuthenticateRequestAsync(requestMessage);
 
-        // Send request
-        HttpResponseMessage responseMessage = await httpClient.SendAsync(requestMessage);
+        async Task localUserMSALAuthCallback(HttpRequestMessage requestMessage)
+        {
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue(
+                scheme: "bearer",
+                parameter: await new LocalUserMSALCredentialManager().GetTokenAsync(
+                    appConfiguration.ClientId,
+                    appConfiguration.TenantId,
+                    scopes,
+                    new Uri(appConfiguration.RedirectUri))
+                );
+        }
+        HttpResponseMessage responseMessage = await AuthorizeAndSendRequestAsync(requestMessage, localUserMSALAuthCallback);
+
         Console.WriteLine(responseMessage.StatusCode + " " + responseMessage.ReasonPhrase);
         Console.WriteLine(await responseMessage.Content.ReadAsStringAsync());
     }
 
-    private static DelegateAuthenticationProvider CreateAuthenticationProvider(
-        LocalUserMSALCredentialManager credentialManager,
-        string clientId,
-        string tenantId,
-        string[] scopes,
-        Uri redirectUri)
-        => new(
-            async (requestMessage) =>
-            {
-                requestMessage.Headers.Authorization = new AuthenticationHeaderValue(
-                    scheme: "bearer",
-                    parameter: await credentialManager.GetTokenAsync(
-                        clientId,
-                        tenantId,
-                        scopes,
-                        redirectUri));
-            });
+    public static async Task<HttpResponseMessage> AuthorizeAndSendRequestAsync(HttpRequestMessage requestMessage, AuthorizationCallback authCallback)
+    {
+        // Authorize the message before sending it, using the provided callback/delegate
+        await authCallback(requestMessage);
+        return await s_httpClient.SendAsync(requestMessage);
+    }
 }
