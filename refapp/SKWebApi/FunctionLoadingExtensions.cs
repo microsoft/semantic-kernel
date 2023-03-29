@@ -1,20 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel;
-using System.IO;
 using Microsoft.SemanticKernel.KernelExtensions;
-using System.Reflection;
-using System.Linq;
-using System;
-using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
+using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace SemanticKernel.Service;
 
 internal static class FunctionLoadingExtensions
 {
+    internal static void RegisterSemanticSkills(
+        this IKernel kernel,
+        string skillDirectory,
+        ILogger logger)
+    {
+        string fullPath = Path.GetFullPath(skillDirectory).TrimEnd(Path.DirectorySeparatorChar);
+        string skillName = Path.GetFileName(fullPath);
+
+        try
+        {
+            kernel.ImportSemanticSkillFromDirectory(skillDirectory.Substring(0, skillDirectory.Length - skillName.Length), skillName);
+        }
+        catch (TemplateException e)
+        {
+            logger.LogWarning("Could not load skill from {Directory}: {Message}", skillDirectory, e.Message);
+        }
+    }
+
     internal static void RegisterSemanticSkill(
         this IKernel kernel,
         string skillDirectory,

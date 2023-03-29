@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
@@ -58,7 +53,7 @@ public class SemanticKernelController : ControllerBase
         {
             return this.NotFound($"Failed to find {skillName}/{functionName} on server");
         }
-        
+
         // Put ask's variables in the context we will use
         var contextVariables = new ContextVariables(ask.Value);
         foreach (var input in ask.Inputs)

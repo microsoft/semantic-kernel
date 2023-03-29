@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Configuration;
@@ -35,7 +30,7 @@ public static class Program
             app.UseSwaggerUI();
         }
         app.UseHttpsRedirection();
-		// app.UseAuthentication();
+        // app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
 
@@ -50,7 +45,7 @@ public static class Program
         services.AddSwaggerGen();
 
         services.AddSingleton<ILogger>(s => s.GetRequiredService<ILogger<Kernel>>()); // To support ILogger (as opposed to generic ILogger<T>)
-        
+
         AddSemanticKernelServices(services, configuration);
     }
 
