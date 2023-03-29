@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -21,7 +22,7 @@ namespace Microsoft.SemanticKernel.AI.OpenAI.Clients;
 /// <summary>
 /// An abstract OpenAI Client.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "OpenAI users use strings")]
+[SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "OpenAI users use strings")]
 public abstract class OpenAIClientAbstract : IDisposable
 {
     /// <summary>
@@ -54,18 +55,21 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <summary>
     /// Asynchronously sends a completion request for the prompt
     /// </summary>
-    /// <param name="url">URL for the completion request API</param>
+    /// <param name="url">URL for the text completion request API</param>
     /// <param name="requestBody">Prompt to complete</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The completed text</returns>
+    /// <returns>The text completion</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
-    protected async Task<string> ExecuteCompleteRequestAsync(string url, string requestBody, CancellationToken cancellationToken = default)
+    protected async Task<string> ExecuteTextCompletionRequestAsync(
+        string url,
+        string requestBody,
+        CancellationToken cancellationToken)
     {
         try
         {
-            this.Log.LogDebug("Sending completion request to {0}: {1}", url, requestBody);
+            this.Log.LogTrace("Sending text completion request to {0}: {1}", url, requestBody);
 
-            var result = await this.ExecutePostRequestAsync<CompletionResponse>(url, requestBody, cancellationToken);
+            var result = await this.ExecutePostRequestAsync<TextCompletionResponse>(url, requestBody, cancellationToken);
             if (result.Completions.Count < 1)
             {
                 throw new AIException(
@@ -84,17 +88,56 @@ public abstract class OpenAIClientAbstract : IDisposable
     }
 
     /// <summary>
-    /// Asynchronously sends an embedding request for the text.
+    /// Asynchronously sends a chat completion request for the given history
     /// </summary>
-    /// <param name="url"></param>
-    /// <param name="requestBody"></param>
-    /// <returns></returns>
-    /// <exception cref="AIException"></exception>
-    protected async Task<IList<Embedding<float>>> ExecuteEmbeddingRequestAsync(string url, string requestBody)
+    /// <param name="url">URL for the chat completion request API</param>
+    /// <param name="requestBody">Request payload</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The next chat message</returns>
+    /// <exception cref="AIException">AIException thrown during the request.</exception>
+    protected async Task<string> ExecuteChatCompletionRequestAsync(
+        string url,
+        string requestBody,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            var result = await this.ExecutePostRequestAsync<EmbeddingResponse>(url, requestBody);
+            this.Log.LogTrace("Sending chat completion request to {0}: {1}", url, requestBody);
+
+            var result = await this.ExecutePostRequestAsync<ChatCompletionResponse>(url, requestBody, cancellationToken);
+            if (result.Completions.Count < 1)
+            {
+                throw new AIException(
+                    AIException.ErrorCodes.InvalidResponseContent,
+                    "Chat message not found");
+            }
+
+            return result.Completions.First().Message.Content;
+        }
+        catch (Exception e) when (e is not AIException)
+        {
+            throw new AIException(
+                AIException.ErrorCodes.UnknownError,
+                $"Something went wrong: {e.Message}", e);
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously sends a text embedding request for the text.
+    /// </summary>
+    /// <param name="url">URL for the text embedding request API</param>
+    /// <param name="requestBody">Request payload</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of text embeddings</returns>
+    /// <exception cref="AIException">AIException thrown during the request.</exception>
+    protected async Task<IList<Embedding<float>>> ExecuteTextEmbeddingRequestAsync(
+        string url,
+        string requestBody,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken);
             if (result.Embeddings.Count < 1)
             {
                 throw new AIException(
@@ -103,6 +146,58 @@ public abstract class OpenAIClientAbstract : IDisposable
             }
 
             return result.Embeddings.Select(e => new Embedding<float>(e.Values.ToArray())).ToList();
+        }
+        catch (Exception e) when (e is not AIException)
+        {
+            throw new AIException(
+                AIException.ErrorCodes.UnknownError,
+                $"Something went wrong: {e.Message}", e);
+        }
+    }
+
+    /// <summary>
+    /// Run the HTTP request to generate a list of images
+    /// </summary>
+    /// <param name="url">URL for the image generation request API</param>
+    /// <param name="requestBody">Request payload</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of image URLs</returns>
+    /// <exception cref="AIException">AIException thrown during the request.</exception>
+    protected async Task<IList<string>> ExecuteImageUrlGenerationRequestAsync(
+        string url,
+        string requestBody,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken);
+            return result.Images.Select(x => x.Url).ToList();
+        }
+        catch (Exception e) when (e is not AIException)
+        {
+            throw new AIException(
+                AIException.ErrorCodes.UnknownError,
+                $"Something went wrong: {e.Message}", e);
+        }
+    }
+
+    /// <summary>
+    /// Run the HTTP request to generate a list of images
+    /// </summary>
+    /// <param name="url">URL for the image generation request API</param>
+    /// <param name="requestBody">Request payload</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of images serialized in base64</returns>
+    /// <exception cref="AIException">AIException thrown during the request.</exception>
+    protected async Task<IList<string>> ExecuteImageBase64GenerationRequestAsync(
+        string url,
+        string requestBody,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken);
+            return result.Images.Select(x => x.AsBase64).ToList();
         }
         catch (Exception e) when (e is not AIException)
         {

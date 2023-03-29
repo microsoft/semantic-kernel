@@ -33,7 +33,6 @@ public static class ContextVariablesExtensions
         vars.Set(Plan.IdKey, plan.Id);
         vars.Set(Plan.GoalKey, plan.Goal);
         vars.Set(Plan.PlanKey, plan.PlanString);
-        vars.Set(Plan.ArgumentsKey, plan.Arguments);
         vars.Set(Plan.IsCompleteKey, plan.IsComplete.ToString());
         vars.Set(Plan.IsSuccessfulKey, plan.IsSuccessful.ToString());
         vars.Set(Plan.ResultKey, plan.Result);
@@ -50,7 +49,6 @@ public static class ContextVariablesExtensions
         vars.Set(Plan.IdKey, null);
         vars.Set(Plan.GoalKey, null);
         vars.Set(Plan.PlanKey, null);
-        vars.Set(Plan.ArgumentsKey, null);
         vars.Set(Plan.IsCompleteKey, null);
         vars.Set(Plan.IsSuccessfulKey, null);
         vars.Set(Plan.ResultKey, null);
@@ -66,7 +64,6 @@ public static class ContextVariablesExtensions
     {
         if (vars.Get(Plan.PlanKey, out string plan))
         {
-            vars.Get(Plan.ArgumentsKey, out string arguments);
             vars.Get(Plan.IdKey, out string id);
             vars.Get(Plan.GoalKey, out string goal);
             vars.Get(Plan.IsCompleteKey, out string isComplete);
@@ -78,7 +75,6 @@ public static class ContextVariablesExtensions
                 Id = id,
                 Goal = goal,
                 PlanString = plan,
-                Arguments = arguments,
                 IsComplete = !string.IsNullOrEmpty(isComplete) && bool.Parse(isComplete),
                 IsSuccessful = !string.IsNullOrEmpty(isSuccessful) && bool.Parse(isSuccessful),
                 Result = result

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { Body1, Button, Input, Label, Spinner, Title3 } from '@fluentui/react-components';
+import { InfoLabel } from '@fluentui/react-components/unstable';
 import { ArrowDownload16Regular, CheckmarkCircle20Filled, ErrorCircle20Regular } from '@fluentui/react-icons';
 import { FC, useEffect, useState } from 'react';
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
@@ -122,9 +123,19 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBr
                     onClick={() => download()}
                 />
             </div>
-            <Label>
-                <strong>Embedding Filetypes</strong>
-            </Label>
+            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <Label>
+                    <strong>Embedding File Types</strong>
+                </Label>
+                <InfoLabel
+                    info={
+                        <div style={{ maxWidth: 250 }}>
+                            Embedding and answers will be based on the files of the type indicated below.
+                        </div>
+                    }
+                    htmlFor={`EmbeddingFileTypeTooltip`}
+                />
+            </div>
             <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
                 <Input
                     readOnly
