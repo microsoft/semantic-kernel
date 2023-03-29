@@ -5,9 +5,9 @@ import { makeStyles, Subtitle1 } from '@fluentui/react-components';
 import { FC, useEffect } from 'react';
 import { Login } from './components/Login';
 import { ChatView } from './components/views/ChatView';
-import { useChat } from './libs/useChat';
-import { useAppSelector } from './redux/app/hooks';
+import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
+import { setSelectedConversation } from './redux/features/conversations/conversationsSlice';
 
 const useClasses = makeStyles({
     container: {
@@ -36,11 +36,11 @@ const App: FC = () => {
     //     >('view');
     const classes = useClasses();
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
-    const chat = useChat();
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         const keys = Object.keys(conversations);
-        chat.setSelectedChat(keys[0]);
+        dispatch(setSelectedConversation(keys[0]));
     }, []);
 
     return (

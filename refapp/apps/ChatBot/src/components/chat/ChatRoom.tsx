@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount, useMsal } from '@azure/msal-react';
+import { useAccount } from '@azure/msal-react';
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import debug from 'debug';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Constants } from '../../Constants';
-import { AuthHelper } from '../../libs/AuthHelper';
-import { ChatMessage } from '../../libs/models/ChatMessage';
-import { useSemanticKernel } from '../../libs/semantic-kernel/useSemanticKernel';
 import { useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -41,17 +38,16 @@ const useClasses = makeStyles({
 
 
 export const ChatRoom: React.FC = () => {
-    const { audience, messages } = useAppSelector((state: RootState) => state.chat);
+    const { audience } = useAppSelector((state: RootState) => state.chat);
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const messages = conversations[selectedId].messages;
     const classes = useClasses();
     const account = useAccount();
-    const chat = useChat();
     const dispatch = useAppDispatch();
     const scrollViewTargetRef = React.useRef<HTMLDivElement>(null);
     const scrollTargetRef = React.useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = React.useState(true);
-    const sk = useSemanticKernel(import.meta.env.VITE_REACT_APP_FUNCTION_URI as string);
-    const [accessToken, setAccessToken] = useState('');
-    const { instance } = useMsal();
+    const chat = useChat();
 
     React.useEffect(() => {
         if (!shouldAutoScroll) return;
@@ -82,38 +78,14 @@ export const ChatRoom: React.FC = () => {
 
     const handleSubmit = async (value: string) => {
         log('submitting user chat message');
-        // TODO: handle Submit
-        await getResponse(value);
-        setShouldAutoScroll(true);
-    };
-
-    const requestAccessToken = () => {
-        // Silently acquires an access token which is then attached to a request for Microsoft Graph data
-        AuthHelper.aquireToken(instance, setAccessToken)
-    }
-
-    useEffect(() => {
-        requestAccessToken();
-    }, []);
-
-    const getResponse = async (value: string) => {
-        //POST a simple ask to validate the token
-        // const ask = { value: 'clippy', inputs: [{ key: 'style', value: 'Bill & Ted' }] };
-        try {
-            // TODO: hook up KernelHttpServer
-            // var result = await sk.invokeAsync(accessToken, ask, 'funskill', 'joke');
-            // console.log(result);
-            const messageResult = {
+        const chatInput = {
                 timestamp: new Date().getTime(),
                 sender: account?.homeAccountId,
-                content: value // + result.value,
-            };
-            chat.addMessageToHistory(messageResult).then((value: ChatMessage[]) => {
-                dispatch(updateConversation(value));
-            });
-        } catch (e) {
-            alert('Something went wrong.\n\nDetails:\n' + e);
-        }
+                content: value,
+        };
+        dispatch(updateConversation({ message: chatInput }));
+        await chat.getResponse(value, selectedId);
+        setShouldAutoScroll(true);
     };
 
     return (

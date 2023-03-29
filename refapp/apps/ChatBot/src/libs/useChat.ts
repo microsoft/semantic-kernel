@@ -3,30 +3,24 @@ import debug from "debug";
 import { Constants } from "../Constants";
 import { useAppDispatch, useAppSelector } from "../redux/app/hooks";
 import { RootState } from "../redux/app/store";
-import { addMessage, setChat } from "../redux/features/chat/chatSlice";
 import { ChatState, initialBotMessage } from "../redux/features/chat/ChatState";
-import { addConversation, setSelectedConversation } from "../redux/features/conversations/conversationsSlice";
+import { addConversation, setSelectedConversation, updateConversation } from "../redux/features/conversations/conversationsSlice";
 import { MicrosoftGraph } from './MicrosoftGraph';
-import { ChatMessage } from "./models/ChatMessage";
 import { ChatUser } from "./models/ChatUser";
+import { useSemanticKernel } from "./semantic-kernel/useSemanticKernel";
 
 const log = debug(Constants.debug.root).extend('use-chat');
 
 export const useChat = () => {
-    const { audience, messages } = useAppSelector((state: RootState) => state.chat);
-    const { conversations } = useAppSelector((state: RootState) => state.conversations);
+    const { audience } = useAppSelector((state: RootState) => state.chat);
     const dispatch = useAppDispatch();
     const account = useAccount();
+    const sk = useSemanticKernel(import.meta.env.VITE_REACT_APP_FUNCTION_URI as string);
 
     const getAudienceMemberForId = (id: string) =>
     {
         if (id === 'bot') return Constants.bot.profile;
         return audience.find((member) => member.id === id);
-    };
-
-    const addMessageToHistory = async (message: ChatMessage) => {
-        dispatch(addMessage(message));
-        return [...messages, message];
     };
 
     // TODO: handle error case of missing account information
@@ -47,22 +41,29 @@ export const useChat = () => {
             botTypingTimestamp: 0
         }
         dispatch(addConversation(newChat));
-        // Pass in new chat payload to account for 
-        // race condition between parallel dispatches
-        // Will remove this once we support async fetch from SK
-        setSelectedChat(name, newChat);
+        dispatch(setSelectedConversation(name));
         return name;
     };
 
-    const setSelectedChat = (id: string, chatPayload?: ChatState) => {
-        dispatch(setSelectedConversation(id));
-        dispatch(setChat(conversations[id] ?? chatPayload));
-    }
+    const getResponse = async (value: string, chatId: string) => {
+        // TODO: generate reply instead of simple ask
+        const ask = { value: value, inputs: [{ key: 'style', value: 'Bill & Ted' }] };
+        try {
+            var result = await sk.invokeAsync(ask, 'funskill', 'joke');
+            const messageResult = {
+                timestamp: new Date().getTime(),
+                sender: 'bot',
+                content: result.value,
+            };
+            dispatch(updateConversation({ message: messageResult, chatId: chatId }));
+        } catch (e) {
+            alert('Something went wrong.\n\nDetails:\n' + e);
+        }
+    };
 
     return {
-        addMessageToHistory,
         getAudienceMemberForId,
-        setSelectedChat,
-        createChat
+        createChat,
+        getResponse
     };
 }
