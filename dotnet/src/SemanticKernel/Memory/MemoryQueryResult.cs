@@ -12,7 +12,7 @@ public class MemoryQueryResult
 {
     /// <summary>
     /// Whether the source data used to calculate embeddings are stored in the local
-    /// storage provider or is available through and external service, such as web site, MS Graph, etc.
+    /// storage provider or is available through an external service, such as web site, MS Graph, etc.
     /// </summary>
     public MemoryRecordMetadata Metadata { get; }
 
@@ -24,8 +24,11 @@ public class MemoryQueryResult
     /// <summary>
     /// Create a new instance of MemoryQueryResult
     /// </summary>
-    /// <param name="metadata"></param>
-    /// <param name="relevance"></param>
+    /// <param name="metadata">
+    ///   Whether the source data used to calculate embeddings are stored in the local
+    ///   storage provider or is available through an external service, such as web site, MS Graph, etc.
+    /// </param>
+    /// <param name="relevance">Search relevance, from 0 to 1, where 1 means perfect match.</param>
     [JsonConstructor]
     public MemoryQueryResult(
         MemoryRecordMetadata metadata,
@@ -57,14 +60,7 @@ public class MemoryQueryResult
         double relevance)
     {
         return new MemoryQueryResult(
-            new MemoryRecordMetadata
-            (
-                isReference: rec.Metadata.IsReference,
-                id: rec.Metadata.Id,
-                text: rec.Metadata.Text,
-                description: rec.Metadata.Description,
-                externalSourceName: rec.Metadata.ExternalSourceName
-            ),
+            (MemoryRecordMetadata)rec.Metadata.Clone(),
             relevance);
     }
 }

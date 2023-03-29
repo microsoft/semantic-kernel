@@ -6,13 +6,8 @@ namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http;
 
 internal static class HttpHandlers
 {
-    public static HttpClientHandler CheckCertificateRevocation
+    public static HttpClientHandler CheckCertificateRevocation { get; } = new HttpClientHandler
     {
-        get
-        {
-            var handler = new HttpClientHandler();
-            handler.CheckCertificateRevocationList = true;
-            return handler;
-        }
-    }
+        CheckCertificateRevocationList = false
+    };
 }

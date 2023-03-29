@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 using RepoUtils;
 
@@ -14,8 +16,9 @@ public static class Example19_Qdrant
 
     public static async Task RunAsync()
     {
-        var memoryStore = new QdrantMemoryStore(Env.Var("QDRANT_ENDPOINT"), int.Parse(Env.Var("QDRANT_PORT")));
-        var kernel = Kernel.Builder
+        int qdrantPort = int.Parse(Env.Var("QDRANT_PORT"), CultureInfo.InvariantCulture);
+        QdrantMemoryStore memoryStore = new QdrantMemoryStore(Env.Var("QDRANT_ENDPOINT"), qdrantPort);
+        IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .Configure(c =>
             {
@@ -52,16 +55,8 @@ public static class Example19_Qdrant
         }
 
         Console.WriteLine("== Retrieving Memories ==");
-        var lookup = await kernel.Memory.GetAsync(MemoryCollectionName, "cat1");
-
-        if (lookup == null)
-        {
-            Console.WriteLine("No memories found");
-        }
-        else
-        {
-            Console.WriteLine(lookup.Metadata.Text);
-        }
+        MemoryQueryResult? lookup = await kernel.Memory.GetAsync(MemoryCollectionName, "cat1");
+        Console.WriteLine(lookup != null ? lookup.Metadata.Text : "No memories found");
 
         Console.WriteLine("== Removing Collection {0} ==", MemoryCollectionName);
         Console.WriteLine("== Printing Collections in DB ==");

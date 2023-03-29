@@ -13,12 +13,12 @@ internal class MemoryRecord : IEmbeddingWithMetadata<float>
     /// <summary>
     /// Source content embeddings.
     /// </summary>
-    public Embedding<float> Embedding { get; private set; }
+    public Embedding<float> Embedding { get; }
 
     /// <summary>
     /// Metadata associated with a Semantic Kernel memory.
     /// </summary>
-    public MemoryRecordMetadata Metadata { get; private set; }
+    public MemoryRecordMetadata Metadata { get; }
 
     /// <summary>
     /// Prepare an instance about a memory which source is stored externally.
@@ -85,12 +85,10 @@ internal class MemoryRecord : IEmbeddingWithMetadata<float>
         {
             return new MemoryRecord(metadata, embedding);
         }
-        else
-        {
-            throw new MemoryException(
-                MemoryException.ErrorCodes.UnableToSerializeMetadata,
-                "Unable to create memory from serialized metadata");
-        }
+
+        throw new MemoryException(
+            MemoryException.ErrorCodes.UnableToSerializeMetadata,
+            "Unable to create memory from serialized metadata");
     }
 
     public string GetSerializedMetadata()

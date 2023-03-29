@@ -48,17 +48,12 @@ internal static class HttpRequest
 
     private static StringContent? GetJsonContent(object? payload)
     {
-        if (payload != null)
+        if (payload == null)
         {
-            if (payload is string strPayload)
-            {
-                return new StringContent(strPayload);
-            }
-
-            var json = JsonSerializer.Serialize(payload);
-            return new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
+            return null;
         }
 
-        return null;
+        string strPayload = payload is string s ? s : JsonSerializer.Serialize(payload);
+        return new StringContent(strPayload, Encoding.UTF8, MediaTypeNames.Application.Json);
     }
 }
