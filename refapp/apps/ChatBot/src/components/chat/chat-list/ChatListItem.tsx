@@ -62,7 +62,6 @@ interface IChatListItemProps {
 }
 
 // TODO: populate Avatar
-// TODO: add onClick to trigger chat window open
 export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, preview }) => {
     const classes = useClasses();
     const dispatch = useAppDispatch();

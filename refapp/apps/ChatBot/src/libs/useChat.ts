@@ -38,7 +38,7 @@ export const useChat = () => {
             id: name,
             messages: [initialBotMessage(account?.name ?? 'there')],
             audience: [user],
-            botTypingTimestamp: 0
+            botTypingTimestamp: 0,
         }
         dispatch(addConversation(newChat));
         dispatch(setSelectedConversation(name));

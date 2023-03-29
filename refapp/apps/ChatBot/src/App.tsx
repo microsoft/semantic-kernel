@@ -39,6 +39,7 @@ const App: FC = () => {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
+        // TODO: Load Conversations from BE
         const keys = Object.keys(conversations);
         dispatch(setSelectedConversation(keys[0]));
     }, []);

@@ -90,7 +90,3 @@ export const ChatList: FC = () => {
         </div>
     </>;
 }
-
-function useEffect(arg0: () => void) {
-    throw new Error("Function not implemented.");
-}

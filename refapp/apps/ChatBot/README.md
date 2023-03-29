@@ -23,4 +23,4 @@
 
 5. **Run** the following command `yarn install` (if you have never run the app before)
    and/or `yarn start` from the command line.
-6. A browser will automatically open, otherwise you can navigate to `https://127.0.0.1:4000/` to use the ChatBot.
+6. A browser will automatically open, otherwise you can navigate to `http://localhost:3000/` to use the ChatBot.
