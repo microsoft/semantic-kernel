@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.AI.HuggingFace.HttpSchema;
@@ -11,20 +10,8 @@ namespace Microsoft.SemanticKernel.AI.HuggingFace.HttpSchema;
 public sealed class CompletionResponse
 {
     /// <summary>
-    /// Model containing possible completion option.
+    /// Completed text.
     /// </summary>
-    public sealed class Choice
-    {
-        /// <summary>
-        /// Completed text.
-        /// </summary>
-        [JsonPropertyName("text")]
-        public string? Text { get; set; }
-    }
-
-    /// <summary>
-    /// List of possible completions.
-    /// </summary>
-    [JsonPropertyName("choices")]
-    public IList<Choice>? Choices { get; set; }
+    [JsonPropertyName("generated_text")]
+    public string? Text { get; set; }
 }

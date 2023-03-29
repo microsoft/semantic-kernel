@@ -105,14 +105,13 @@ public sealed class HuggingFaceEmbeddingGeneration : IEmbeddingGenerator<string,
         {
             var embeddingRequest = new EmbeddingRequest
             {
-                Input = data,
-                Model = this._model
+                Input = data
             };
 
             using var httpRequestMessage = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri(EmbeddingEndpoint, UriKind.Relative),
+                RequestUri = new Uri($"{EmbeddingEndpoint}/{this._model}", UriKind.Relative),
                 Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
             };
 

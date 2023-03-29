@@ -53,7 +53,7 @@ public class HuggingFaceTextCompletionTests : IDisposable
 
         var httpClientHandler = HuggingFaceTestHelper.GetHttpClientHandlerMock(this._response);
 
-        return new HuggingFaceTextCompletion(BaseUri, Model, httpClientHandler);
+        return new HuggingFaceTextCompletion(new Uri(BaseUri), Model, httpClientHandler);
     }
 
     public void Dispose()

@@ -15,12 +15,6 @@ public sealed class EmbeddingRequest
     /// <summary>
     /// Data to embed.
     /// </summary>
-    [JsonPropertyName("input")]
+    [JsonPropertyName("inputs")]
     public IList<string> Input { get; set; } = new List<string>();
-
-    /// <summary>
-    /// Model to use for embedding generation.
-    /// </summary>
-    [JsonPropertyName("model")]
-    public string Model { get; set; } = string.Empty;
 }
