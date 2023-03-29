@@ -66,6 +66,14 @@ public interface IKernel
         SemanticFunctionConfig functionConfig);
 
     /// <summary>
+    /// Registers a custom function in the internal skill collection.
+    /// </summary>
+    /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="customFunction">The custom function to register.</param>
+    /// <returns>A C# function wrapping the function execution logic.</returns>
+    ISKFunction RegisterCustomFunction(string skillName, SKFunction customFunction);
+
+    /// <summary>
     /// Import a set of functions from the given skill. The functions must have the `SKFunction` attribute.
     /// Once these functions are imported, the prompt templates can use functions to import content at runtime.
     /// </summary>

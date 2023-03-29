@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using KernelSyntaxExamples;
 
 #pragma warning disable CS1591
 public static class Program
@@ -52,6 +53,9 @@ public static class Program
         Console.WriteLine("== DONE ==");
 
         await Example15_MemorySkill.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example16_OpenApiSkill.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
