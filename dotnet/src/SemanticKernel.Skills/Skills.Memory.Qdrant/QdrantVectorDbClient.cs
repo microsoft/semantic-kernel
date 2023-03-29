@@ -30,7 +30,6 @@ public class QdrantVectorDbClient<TEmbedding>
     public string BaseAddress
     {
         get { return this._httpClient.BaseAddress.ToString(); }
-        set { this._httpClient.BaseAddress = SanitizeEndpoint(value); }
     }
 
     /// <summary>
@@ -39,7 +38,6 @@ public class QdrantVectorDbClient<TEmbedding>
     public int Port
     {
         get { return this._httpClient.BaseAddress.Port; }
-        set { this._httpClient.BaseAddress = SanitizeEndpoint(this.BaseAddress, value); }
     }
 
     /// <summary>
@@ -57,13 +55,10 @@ public class QdrantVectorDbClient<TEmbedding>
     {
         this._log = log ?? NullLogger<QdrantVectorDbClient<TEmbedding>>.Instance;
 
-        this._httpClient = httpClient ?? new HttpClient(HttpHandlers.CheckCertificateRevocation);
-        this.BaseAddress = endpoint;
+        Verify.ArgNotNullOrEmpty(endpoint, nameof(endpoint));
 
-        if (port.HasValue)
-        {
-            this.Port = port.Value;
-        }
+        this._httpClient = httpClient ?? new HttpClient(HttpHandlers.CheckCertificateRevocation);
+        this._httpClient.BaseAddress = SanitizeEndpoint(endpoint, port);
     }
 
     /// <summary>
@@ -131,7 +126,7 @@ public class QdrantVectorDbClient<TEmbedding>
     public async Task<DataEntry<QdrantVectorRecord<TEmbedding>>?> GetVectorByPayloadIdAsync(string collectionName, string metadataId)
     {
         using HttpRequestMessage request = SearchVectorsRequest<TEmbedding>.Create(collectionName)
-            .SimilarTo(new TEmbedding[this._defaultVectorSize])
+            .SimilarTo(new TEmbedding[DefaultVectorSize])
             .HavingExternalId(metadataId)
             .IncludePayLoad()
             .TakeFirst()
@@ -375,7 +370,7 @@ public class QdrantVectorDbClient<TEmbedding>
         this._log.LogDebug("Creating collection {0}", collectionName);
 
         using var request = CreateCollectionRequest
-            .Create(collectionName, this._defaultVectorSize, QdrantDistanceType.Cosine)
+            .Create(collectionName, DefaultVectorSize, QdrantDistanceType.Cosine)
             .Build();
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
@@ -476,7 +471,7 @@ public class QdrantVectorDbClient<TEmbedding>
 
     private readonly ILogger _log;
     private readonly HttpClient _httpClient;
-    private readonly int _defaultVectorSize = 1536; //output dimension size for OpenAI's text-emebdding-ada-002
+    private const int DefaultVectorSize = 1536; //output dimension size for OpenAI's text-emebdding-ada-002
 
     private static List<(QdrantVectorRecord<TEmbedding>, double)> SortSearchResultByScore(
         List<(QdrantVectorRecord<TEmbedding>, double)> tuplesList)
@@ -486,16 +481,13 @@ public class QdrantVectorDbClient<TEmbedding>
         return tuplesList;
     }
 
-    private static Uri SanitizeEndpoint(string endpoint)
+    private static Uri SanitizeEndpoint(string endpoint, int? port)
     {
         Verify.IsValidUrl(nameof(endpoint), endpoint, false, true, false);
-        return new Uri(endpoint);
-    }
 
-    private static Uri SanitizeEndpoint(string endpoint, int port)
-    {
-        UriBuilder builder =
-            new UriBuilder(SanitizeEndpoint(endpoint)) { Port = port };
+        UriBuilder builder = new(endpoint);
+        if (port.HasValue) { builder.Port = port.Value; }
+
         return builder.Uri;
     }
 
@@ -510,7 +502,7 @@ public class QdrantVectorDbClient<TEmbedding>
         }
         else
         {
-            this._log.LogTrace("Qdrant responsed with error");
+            this._log.LogTrace("Qdrant responded with error");
         }
 
         return (response, responseContent);
