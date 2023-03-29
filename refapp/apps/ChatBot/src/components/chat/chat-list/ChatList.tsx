@@ -14,7 +14,8 @@ const useClasses = makeStyles({
     root: {
         width: '25%',
         minHeight: '100%',
-        overflowY: 'scroll',
+        overflowX: 'hidden',
+        overflowY: 'auto',
         scrollbarWidth: 'thin',
         backgroundColor: '#F0F0F0'
     },

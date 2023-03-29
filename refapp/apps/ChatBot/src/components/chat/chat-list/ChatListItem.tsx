@@ -10,8 +10,7 @@ const useClasses = makeStyles({
         paddingTop: '0.8rem',
         paddingBottom: '0.8rem',
         paddingRight: '1rem',
-        height: '4.8rem',
-        minWidth: '90%'
+        minWidth: '90%',
     },
     avatar: {
         flexShrink: '0',
@@ -28,12 +27,10 @@ const useClasses = makeStyles({
     header: {
         display: 'flex',
         flexDirection: 'row',
-        height: '1.2rem',
+        maxHeight: '1.2rem',
         lineHeight: '20px',
         flexGrow: '1',
         justifyContent: 'space-between',
-        ...shorthands.overflow('hidden'),
-        textOverflow: 'ellipsis',
     },
     timestamp: {
         flexShrink: 0,
@@ -43,14 +40,18 @@ const useClasses = makeStyles({
         marginBottom: 'auto',
         marginLeft: '0.8rem'
     },
+    title: {
+        ...shorthands.overflow('hidden'),
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap'
+    },
     preview: {
         ...shorthands.overflow('hidden'),
-        whiteSpace: 'nowrap',
-        display: 'block',
-        flexGrow: 1,
-        lineHeight: "16px",
-        height: "16px",
-        textOverflow: 'ellipsis',
+        marginTop: '0.2rem',
+        lineHeight: '16px',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical'
     }
 });
 
@@ -75,7 +76,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, pr
             <Avatar />
             <div className={classes.body}>
                 <div className={classes.header}>
-                    <Text style={{color: 'var(--colorNeutralForeground1)'}}> {header} </Text>
+                    <Text className={classes.title } style={{color: 'var(--colorNeutralForeground1)'}}> {header} </Text>
                     {timestamp && (
                         <Text className={classes.timestamp} size={300} >
                             {timestamp}
@@ -83,7 +84,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, pr
                     )}
                 </div>
                 {preview && (
-                    <div className={classes.preview} >
+                    <div className={classes.preview}>
                         {<Text id={`message-preview-${id}`} size={200}>{preview}</Text>}
                     </div>
                 )}
