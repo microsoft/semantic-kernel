@@ -87,8 +87,8 @@ internal class MemoryRecord : IEmbeddingWithMetadata<float>
         }
 
         throw new MemoryException(
-            MemoryException.ErrorCodes.UnableToSerializeMetadata,
-            "Unable to create memory from serialized metadata");
+            MemoryException.ErrorCodes.UnableToDeserializeMetadata,
+            "Unable to create memory record from serialized metadata");
     }
 
     public string GetSerializedMetadata()

@@ -23,7 +23,7 @@ public class MemoryException : Exception<MemoryException.ErrorCodes>
         /// <summary>
         /// Unable to construct memory from serialized metadata.
         /// </summary>
-        UnableToSerializeMetadata,
+        UnableToDeserializeMetadata,
     }
 
     /// <summary>
