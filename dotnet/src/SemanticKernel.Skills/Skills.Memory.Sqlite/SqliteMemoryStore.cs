@@ -76,6 +76,7 @@ public class SqliteDataStore<TValue> : IDataStore<TValue>, IDisposable
         else
         {
             key = data.Key;
+            await this._dbConnection.DeleteAsync(collection, key, cancel);
         }
 
         await this._dbConnection.InsertAsync(collection, key, data.ValueString, ToTimestampString(data.Timestamp), cancel);
