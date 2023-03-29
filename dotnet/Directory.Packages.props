@@ -8,6 +8,10 @@
   <ItemGroup>
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="7.0.2" />
+
+    <!-- Web -->
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+
     <!-- Microsoft.Extensions.Logging -->
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
@@ -32,7 +36,7 @@
 
     <!-- Skills -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.19.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.3" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.4" />
     <PackageVersion Include="Microsoft.Graph" Version="4.51.0" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="2.26.0" />
 
