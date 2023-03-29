@@ -43,7 +43,8 @@ const useClasses = makeStyles({
     title: {
         ...shorthands.overflow('hidden'),
         textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap'
+        whiteSpace: 'nowrap',
+        minWidth: '4rem'
     },
     preview: {
         ...shorthands.overflow('hidden'),
