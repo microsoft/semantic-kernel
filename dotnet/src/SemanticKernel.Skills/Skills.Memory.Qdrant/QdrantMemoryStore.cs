@@ -35,40 +35,27 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
     /// <inheritdoc />
     public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>?> GetAsync(string collection, string key, CancellationToken cancel = default)
     {
-        DataEntry<QdrantVectorRecord<TEmbedding>> vectorResult = default;
         try
         {
             // Qdrant entries are uniquely identified by Base-64 or UUID strings
             var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collection, key);
-            if (vectorData != null)
-            {
-                vectorResult = vectorData.Value;
-            }
+            return new DataEntry<IEmbeddingWithMetadata<TEmbedding>>(
+                key: key,
+                value: vectorData?.Value);
         }
         catch (Exception ex)
         {
             throw new VectorDbException($"Failed to get vector data from Qdrant {ex.Message}");
         }
-
-        if (vectorResult.Value != null)
-        {
-            return new DataEntry<IEmbeddingWithMetadata<TEmbedding>>(
-                key: key,
-                value: (IEmbeddingWithMetadata<TEmbedding>)vectorResult.Value);
-        }
-        else
-        {
-            return new DataEntry<IEmbeddingWithMetadata<TEmbedding>>(
-                key: key,
-                value: null);
-        }
     }
 
     /// <inheritdoc />
-    public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data, CancellationToken cancel = default)
+    public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(
+        string collection,
+        DataEntry<IEmbeddingWithMetadata<TEmbedding>> data,
+        CancellationToken cancel = default)
     {
-        var collectionExists = await this._qdrantClient.DoesCollectionExistAsync(collection);
-        if (!collectionExists)
+        if (!await this._qdrantClient.DoesCollectionExistAsync(collection))
         {
             await this._qdrantClient.CreateCollectionAsync(collection);
         }
@@ -95,7 +82,11 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(string collection, Embedding<TEmbedding> embedding, int limit = 1, double minRelevanceScore = 0)
+    public async IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(
+        string collection,
+        Embedding<TEmbedding> embedding,
+        int limit = 1,
+        double minRelevanceScore = 0)
     {
         var results = this._qdrantClient.FindNearestInCollectionAsync(collection, embedding, limit);
         await foreach ((IEmbeddingWithMetadata<TEmbedding>, double) result in results)
@@ -126,7 +117,7 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
     /// Concurrent dictionary consisting of Qdrant Collection names mapped to
     /// a concurrent dictionary of cached Qdrant vector entries mapped by plaintext key
     /// </summary>
-    private QdrantVectorDbClient<TEmbedding> _qdrantClient;
+    private readonly QdrantVectorDbClient<TEmbedding> _qdrantClient;
 
     #endregion
 }

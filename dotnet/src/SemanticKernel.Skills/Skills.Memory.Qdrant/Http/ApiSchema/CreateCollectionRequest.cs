@@ -45,7 +45,7 @@ internal sealed class CreateCollectionRequest
         }
 
         [JsonIgnore]
-        internal QdrantDistanceType DistanceType { get; set; }
+        private QdrantDistanceType DistanceType { get; set; }
 
         public void Validate()
         {
