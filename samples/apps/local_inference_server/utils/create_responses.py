@@ -3,25 +3,9 @@ from datetime import datetime
 # These responses are modeled after the OpenAI REST API
 
 def create_completion_response(completion_text, model, num_prompt_tokens, num_completion_tokens):
-    data = {
-            "id": "",
-            "object": "text_completion",
-            "created": datetime.now(),
-            "model": model,
-            "choices": [
-            {
-                "text": completion_text,
-                "index": 0,
-                "logprobs": "",
-                "finish_reason": "test"
-            }
-            ],
-            "usage": {
-                "prompt_tokens": num_prompt_tokens,
-                "completion_tokens": num_completion_tokens,
-                "total_tokens": num_prompt_tokens + num_completion_tokens
-            }
-        }
+    data = [{
+        "generated_text": completion_text
+    }]
     return data 
 
 def create_embedding_indices(embeddings):
