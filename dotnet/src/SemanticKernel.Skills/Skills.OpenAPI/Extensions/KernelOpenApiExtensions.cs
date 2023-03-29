@@ -12,11 +12,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Auth;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
-using RestSkills;
-using RestSkills.Authentication;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 
@@ -45,7 +45,10 @@ public static class KernelOpenApiExtensions
             throw new MissingManifestResourceException($"Unable to load OpenApi skill from assembly resource '{resourceName}'.");
         }
 
-        return kernel.RegisterOpenApiSkill(stream, skillName);
+        // The caller is expected to provide a callback function which will be used to add authorization data to the request before sending.
+        AuthorizeRequestCallback authorizeRequestCallback = BearerTokenHandler.AddAuthorizationData;
+
+        return kernel.RegisterOpenApiSkill(stream, skillName, authorizeRequestCallback);
     }
 
     /// <summary>
@@ -75,7 +78,10 @@ public static class KernelOpenApiExtensions
 
         using var stream = File.OpenRead(openApiDocumentPath);
 
-        return kernel.RegisterOpenApiSkill(stream, skillDirectoryName);
+        // The caller is expected to provide a callback function which will be used to add authorization data to the request before sending.
+        AuthorizeRequestCallback authorizeRequestCallback = BearerTokenHandler.AddAuthorizationData;
+
+        return kernel.RegisterOpenApiSkill(stream, skillDirectoryName, authorizeRequestCallback);
     }
 
     /// <summary>
@@ -84,8 +90,9 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">OpenApi document stream.</param>
     /// <param name="skillName">Skill name.</param>
+    /// <param name="authorizeRequestCallback">Delegate for authorizing the HTTP request message.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> RegisterOpenApiSkill(this IKernel kernel, Stream documentStream, string skillName)
+    public static IDictionary<string, ISKFunction> RegisterOpenApiSkill(this IKernel kernel, Stream documentStream, string skillName, AuthorizeRequestCallback authorizeRequestCallback)
     {
         Verify.NotNull(kernel, nameof(kernel));
         Verify.ValidSkillName(skillName);
@@ -102,7 +109,7 @@ public static class KernelOpenApiExtensions
             try
             {
                 kernel.Log.LogTrace("Registering Rest function {0}.{1}.", skillName, operation.Id);
-                skill[skillName] = kernel.RegisterRestFunction(skillName, operation);
+                skill[skillName] = kernel.RegisterRestFunction(skillName, operation, authorizeRequestCallback);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -115,7 +122,7 @@ public static class KernelOpenApiExtensions
     }
 
     #region private
-    private static ISKFunction RegisterRestFunction(this IKernel kernel, string skillName, RestApiOperation operation)
+    private static ISKFunction RegisterRestFunction(this IKernel kernel, string skillName, RestApiOperation operation, AuthorizeRequestCallback authorizeRequestCallback)
     {
         var restOperationParameters = operation.GetParameters();
 
@@ -123,7 +130,7 @@ public static class KernelOpenApiExtensions
         {
             try
             {
-                var runner = new RestApiOperationRunner(new HttpClient(), new BearerTokenHandler());
+                var runner = new RestApiOperationRunner(new HttpClient(), authorizeRequestCallback);
 
                 //Extract function arguments from context
                 var arguments = new Dictionary<string, string>();

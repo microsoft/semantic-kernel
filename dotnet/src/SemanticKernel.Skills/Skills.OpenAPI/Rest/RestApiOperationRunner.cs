@@ -8,11 +8,10 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Auth;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
-using RestSkills.Authentication;
 
-namespace RestSkills;
+namespace Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 
 /// <summary>
 /// Runs REST API operation represented by RestApiOperation model class.
@@ -22,22 +21,22 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     /// <summary>
     /// An instance of the HttpClient class.
     /// </summary>
-    private HttpClient _httpClient;
+    private readonly HttpClient _httpClient;
 
     /// <summary>
-    /// The authentication handler.
+    /// Delegate for authorizing the HTTP request.
     /// </summary>
-    private readonly IAuthenticationHandler _authenticationHandler;
+    private readonly AuthorizeRequestCallback _authorizeRequestCallback;
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationRunner"/> class.
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
-    /// <param name="authenticationHandler">An instance of authentication handler.</param>
-    public RestApiOperationRunner(HttpClient httpClient, IAuthenticationHandler authenticationHandler)
+    /// <param name="authorizeRequestCallback">Delegate for authorizing the HTTP request.</param>
+    public RestApiOperationRunner(HttpClient httpClient, AuthorizeRequestCallback authorizeRequestCallback)
     {
         this._httpClient = httpClient;
-        this._authenticationHandler = authenticationHandler;
+        this._authorizeRequestCallback = authorizeRequestCallback;
     }
 
     /// <inheritdoc/>
@@ -67,7 +66,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     {
         using var requestMessage = new HttpRequestMessage(method, uri);
 
-        this._authenticationHandler.AddAuthenticationData(requestMessage);
+        this._authorizeRequestCallback(requestMessage);
 
         if (payload != null)
         {
