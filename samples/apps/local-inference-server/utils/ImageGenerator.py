@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from diffusers import DiffusionPipeline
 import base64
 from . import InferenceGenerator

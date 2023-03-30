@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft. All rights reserved.
 
 from . import InferenceGenerator
 from transformers import AutoTokenizer, AutoModelForCausalLM

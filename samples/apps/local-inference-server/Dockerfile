@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 FROM huggingface/transformers-pytorch-gpu
 
 COPY ./requirements.txt /app/requirements.txt

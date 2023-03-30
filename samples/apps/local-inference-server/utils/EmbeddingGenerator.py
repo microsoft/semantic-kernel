@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import torch
 from . import InferenceGenerator
 from transformers import AutoModel, AutoTokenizer
