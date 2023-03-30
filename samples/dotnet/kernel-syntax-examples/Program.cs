@@ -65,6 +65,9 @@ public static class Program
 
         await Example19_Qdrant.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example20_HuggingFace.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
 #pragma warning restore CS1591

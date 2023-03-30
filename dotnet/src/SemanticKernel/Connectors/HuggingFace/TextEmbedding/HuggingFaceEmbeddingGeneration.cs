@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
 /// <summary>
 /// HuggingFace embedding generation service.
 /// </summary>
-public sealed class HuggingFaceEmbeddingGeneration : IEmbeddingGenerator<string, float>, IDisposable
+public sealed class HuggingFaceEmbeddingGeneration : IEmbeddingGeneration<string, float>, IDisposable
 {
     private const string HttpUserAgent = "Microsoft Semantic Kernel";
     private const string EmbeddingEndpoint = "/embeddings";

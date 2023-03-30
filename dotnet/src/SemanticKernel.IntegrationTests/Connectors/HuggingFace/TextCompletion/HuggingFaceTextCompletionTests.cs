@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
 using Xunit;
 
-namespace SemanticKernel.Connectors.HuggingFace.IntegrationTests;
+namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextCompletion;
 
 /// <summary>
 /// Integration tests for <see cref="HuggingFaceTextCompletion"/>.
@@ -24,6 +24,7 @@ public sealed class HuggingFaceTextCompletionTests
         // Load configuration
         this._configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .Build();
     }

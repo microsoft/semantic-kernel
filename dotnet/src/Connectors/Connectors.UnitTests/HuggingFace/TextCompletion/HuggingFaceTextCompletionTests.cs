@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
 using Xunit;
 
-namespace SemanticKernel.Connectors.HuggingFace.UnitTests.TextCompletion;
+namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextCompletion;
 
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextCompletion"/> class.

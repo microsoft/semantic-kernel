@@ -60,12 +60,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connectors", "connectors", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.UnitTests", "src\Connectors\Connectors.UnitTests\Connectors.UnitTests.csproj", "{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.HuggingFace", "src\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj", "{AADA39E0-1406-41F2-856A-3AA69B69EFE1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.HuggingFace.UnitTests", "src\Connectors\Connectors.HuggingFace.UnitTests\Connectors.HuggingFace.UnitTests.csproj", "{86446A30-41A0-47C2-BE48-B410FE1E0BFD}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.HuggingFace.IntegrationTests", "src\Connectors\Connectors.HuggingFace.IntegrationTests\Connectors.HuggingFace.IntegrationTests.csproj", "{CB201CC6-CB17-464F-BBE4-07347EFFB6EF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -136,18 +130,6 @@ Global
 		{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AADA39E0-1406-41F2-856A-3AA69B69EFE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AADA39E0-1406-41F2-856A-3AA69B69EFE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AADA39E0-1406-41F2-856A-3AA69B69EFE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AADA39E0-1406-41F2-856A-3AA69B69EFE1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{86446A30-41A0-47C2-BE48-B410FE1E0BFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{86446A30-41A0-47C2-BE48-B410FE1E0BFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{86446A30-41A0-47C2-BE48-B410FE1E0BFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{86446A30-41A0-47C2-BE48-B410FE1E0BFD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CB201CC6-CB17-464F-BBE4-07347EFFB6EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB201CC6-CB17-464F-BBE4-07347EFFB6EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB201CC6-CB17-464F-BBE4-07347EFFB6EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB201CC6-CB17-464F-BBE4-07347EFFB6EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -172,9 +154,6 @@ Global
 		{39E5F0F6-8B36-4ECA-A5F6-FC7522DC2ECF} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{0247C2C9-86C3-45BA-8873-28B0948EDC0C} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{EB3FC57F-E591-4C88-BCD5-B6A1BC635168} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
-		{AADA39E0-1406-41F2-856A-3AA69B69EFE1} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
-		{86446A30-41A0-47C2-BE48-B410FE1E0BFD} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
-		{CB201CC6-CB17-464F-BBE4-07347EFFB6EF} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

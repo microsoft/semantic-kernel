@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
 using Xunit;
 
-namespace SemanticKernel.Connectors.HuggingFace.UnitTests.TextEmbedding;
+namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextEmbedding;
 
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceEmbeddingGeneration"/> class.

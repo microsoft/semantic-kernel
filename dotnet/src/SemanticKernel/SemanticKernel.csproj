@@ -58,4 +58,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Connectors\HuggingFace" />
+  </ItemGroup>
 </Project>
