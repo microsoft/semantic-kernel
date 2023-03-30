@@ -2,46 +2,89 @@
 
 import { IAsk } from './model/Ask';
 import { IAskResult } from './model/AskResult';
+import {
+    IKeyConfig, SK_HTTP_HEADER_COMPLETION_BACKEND, SK_HTTP_HEADER_COMPLETION_ENDPOINT, SK_HTTP_HEADER_COMPLETION_KEY, SK_HTTP_HEADER_COMPLETION_MODEL, SK_HTTP_HEADER_EMBEDDING_BACKEND, SK_HTTP_HEADER_EMBEDDING_ENDPOINT, SK_HTTP_HEADER_EMBEDDING_KEY, SK_HTTP_HEADER_EMBEDDING_MODEL, SK_HTTP_HEADER_MSGRAPH
+} from './model/KeyConfig';
 
 interface ServiceRequest {
     commandPath: string;
     method?: string;
     body?: unknown;
-    token?: string;
+    keyConfig: IKeyConfig;
 }
 
 export class SemanticKernel {
     // eslint-disable-next-line @typescript-eslint/space-before-function-paren
     constructor(private readonly serviceUrl: string) { }
 
+    private keyConfig: IKeyConfig = {
+        completionConfig: {
+            backend: 0,
+            label: import.meta.env.VITE_REACT_APP_AZURE_OPEN_AI_COMPLETION_DEPLOYMENT,
+            deploymentOrModelId: import.meta.env.VITE_REACT_APP_AZURE_OPEN_AI_COMPLETION_DEPLOYMENT,
+            endpoint: import.meta.env.VITE_REACT_APP_AZURE_OPEN_AI_ENDPOINT,
+            key: import.meta.env.VITE_REACT_APP_AZURE_OPEN_AI_KEY,
+        },
+        embeddingConfig: {
+            backend: 0,
+            label: import.meta.env.VITE_REACT_APP_AZURE_OPEN_AI_EMBEDDINGS_DEPLOYMENT,
+            deploymentOrModelId: import.meta.env.VITE_REACT_APP_AZURE_OPEN_AI_EMBEDDINGS_DEPLOYMENT,
+            endpoint: import.meta.env.VITE_REACT_APP_AZURE_OPEN_AI_ENDPOINT,
+            key: import.meta.env.VITE_REACT_APP_AZURE_OPEN_AI_KEY,
+        },
+    }
+
     public invokeAsync = async (
-        token: string,
         ask: IAsk,
         skillName: string,
         functionName: string,
     ): Promise<IAskResult> => {
-        if (!token) {
-           throw new Error("Missing valid AAD token");
-        }
         const result = await this.getResponseAsync<IAskResult>({
             commandPath: `/api/skills/${skillName}/invoke/${functionName}`,
             method: 'POST',
             body: ask,
-            token: token
+            keyConfig: this.keyConfig,
+        });
+        return result;
+    };
+
+    public executePlanAsync = async (ask: IAsk, maxSteps: number = 10): Promise<IAskResult> => {
+        const result = await this.getResponseAsync<IAskResult>({
+            commandPath: `/api/planner/execute/${maxSteps}`,
+            method: 'POST',
+            body: ask,
+            keyConfig: this.keyConfig,
         });
         return result;
     };
 
     private readonly getResponseAsync = async <T>(request: ServiceRequest): Promise<T> => {
-        const { commandPath, method, body, token } = request;
+        const { commandPath, method, body, keyConfig } = request;
+
+        const headers = new Headers();
+
+        if (keyConfig.completionConfig !== undefined) {
+            headers.append(SK_HTTP_HEADER_COMPLETION_KEY, keyConfig.completionConfig.key);
+            headers.append(SK_HTTP_HEADER_COMPLETION_MODEL, keyConfig.completionConfig.deploymentOrModelId);
+            headers.append(SK_HTTP_HEADER_COMPLETION_ENDPOINT, keyConfig.completionConfig.endpoint);
+            headers.append(SK_HTTP_HEADER_COMPLETION_BACKEND, keyConfig.completionConfig.backend.toString());
+        }
+
+        if (keyConfig.embeddingConfig !== undefined) {
+            headers.append(SK_HTTP_HEADER_EMBEDDING_KEY, keyConfig.embeddingConfig.key);
+            headers.append(SK_HTTP_HEADER_EMBEDDING_MODEL, keyConfig.embeddingConfig.deploymentOrModelId);
+            headers.append(SK_HTTP_HEADER_EMBEDDING_ENDPOINT, keyConfig.embeddingConfig.endpoint);
+            headers.append(SK_HTTP_HEADER_EMBEDDING_BACKEND, keyConfig.embeddingConfig.backend.toString());
+        }
+
+        if (keyConfig.graphToken !== undefined) {
+            headers.append(SK_HTTP_HEADER_MSGRAPH, keyConfig.graphToken);
+        }
 
         try {
             const response = await fetch(`${this.serviceUrl}${commandPath}`, {
                 method: method ?? 'GET',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
+                headers,
                 body: JSON.stringify(body),
             });
 
