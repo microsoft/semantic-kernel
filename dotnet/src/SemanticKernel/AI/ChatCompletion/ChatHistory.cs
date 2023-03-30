@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.SemanticKernel.AI.OpenAI.HttpSchema;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -56,16 +54,5 @@ public class ChatHistory
     public void AddMessage(string authorRole, string content)
     {
         this.Messages.Add(new Message(authorRole, content));
-    }
-
-    /// <summary>
-    /// Map internal data to HTTP schema used with LLM
-    /// </summary>
-    /// <returns>Returns list of chat messages</returns>
-    public IList<ChatCompletionRequest.Message> ToHttpSchema()
-    {
-        return this.Messages
-            .Select(msg => new ChatCompletionRequest.Message(msg.AuthorRole, msg.Content))
-            .ToList();
     }
 }

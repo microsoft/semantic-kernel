@@ -22,14 +22,6 @@ public interface IDataStore<TValue>
     IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default);
 
     /// <summary>
-    /// Gets all entries within a collection.
-    /// </summary>
-    /// <param name="collection">Collection name.</param>
-    /// <param name="cancel">Cancellation token.</param>
-    /// <returns>A collection of data; empty if collection doesn't exist.</returns>
-    IAsyncEnumerable<DataEntry<TValue>> GetAllAsync(string collection, CancellationToken cancel = default);
-
-    /// <summary>
     /// Gets a <see cref="IDataStore{TValue}"/> object from a collection and key.
     /// </summary>
     /// <param name="collection">Collection name.</param>

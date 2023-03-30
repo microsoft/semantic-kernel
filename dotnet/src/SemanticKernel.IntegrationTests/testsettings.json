@@ -1,22 +1,22 @@
 ﻿{
   "OpenAI": {
-    "Label": "text-davinci-002",
+    "ServiceId": "text-davinci-002",
     "ModelId": "text-davinci-002",
     "ApiKey": ""
   },
   "AzureOpenAI": {
-    "Label": "azure-text-davinci-002",
+    "ServiceId": "azure-text-davinci-002",
     "DeploymentName": "text-davinci-002",
     "Endpoint": "",
     "ApiKey": ""
   },
   "OpenAIEmbeddings": {
-    "Label": "text-embedding-ada-002",
+    "ServiceId": "text-embedding-ada-002",
     "ModelId": "text-embedding-ada-002",
     "ApiKey": ""
   },
   "AzureOpenAIEmbeddings": {
-    "Label": "azure-text-embedding-ada-002",
+    "ServiceId": "azure-text-embedding-ada-002",
     "DeploymentName": "text-embedding-ada-002",
     "Endpoint": "",
     "ApiKey": ""

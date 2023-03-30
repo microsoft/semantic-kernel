@@ -197,11 +197,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIBackend(Func<ITextCompletion> backendFactory)
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
-        Verify.NotNull(backendFactory, "AI LLM backed factory is empty");
+        Verify.NotNull(serviceFactory, "AI LLM service factory is empty");
         this.VerifyIsSemantic();
-        this._aiBackend = backendFactory.Invoke();
+        this._aiService = serviceFactory.Invoke();
         return this;
     }
 
@@ -237,7 +237,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private readonly Delegate _function;
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
-    private ITextCompletion? _aiBackend = null;
+    private ITextCompletion? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
 
     private struct MethodDetails
@@ -303,7 +303,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     private void ReleaseUnmanagedResources()
     {
-        if (this._aiBackend is not IDisposable disposable) { return; }
+        if (this._aiService is not IDisposable disposable) { return; }
 
         disposable.Dispose();
     }
@@ -332,7 +332,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         settings ??= this._aiRequestSettings;
 
         var callable = (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>>)this._function;
-        context.Variables.Update((await callable(this._aiBackend, settings, context)).Variables);
+        context.Variables.Update((await callable(this._aiService, settings, context)).Variables);
         return context;
     }
 

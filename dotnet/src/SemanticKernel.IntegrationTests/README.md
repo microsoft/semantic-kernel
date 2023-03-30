@@ -21,23 +21,23 @@ For example:
 ```json
 {
   "OpenAI": {
-    "Label": "text-davinci-003",
+    "ServiceId": "text-davinci-003",
     "ModelId": "text-davinci-003",
     "ApiKey": "sk-...."
   },
   "AzureOpenAI": {
-    "Label": "azure-text-davinci-003",
+    "ServiceId": "azure-text-davinci-003",
     "DeploymentName": "text-davinci-003",
     "Endpoint": "https://contoso.openai.azure.com/",
     "ApiKey": "...."
   },
   "OpenAIEmbeddings": {
-    "Label": "text-embedding-ada-002",
+    "ServiceId": "text-embedding-ada-002",
     "ModelId": "text-embedding-ada-002",
     "ApiKey": "sk-...."
   },
   "AzureOpenAIEmbeddings": {
-    "Label": "azure-text-embedding-ada-002",
+    "ServiceId": "azure-text-embedding-ada-002",
     "DeploymentName": "text-embedding-ada-002",
     "Endpoint": "https://contoso.openai.azure.com/",
     "ApiKey": "...."

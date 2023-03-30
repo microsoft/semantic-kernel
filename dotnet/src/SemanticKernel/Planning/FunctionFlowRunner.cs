@@ -9,7 +9,6 @@ using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Orchestration.Extensions;
 
 namespace Microsoft.SemanticKernel.Planning;
 

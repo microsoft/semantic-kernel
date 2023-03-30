@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Reliability;
@@ -45,10 +45,10 @@ public static class Example08_RetryHandler
         // Add 401 to the list of retryable status codes
         // Typically 401 would not be something we retry but for demonstration
         // purposes we are doing so as it's easy to trigger when using an invalid key.
-        kernelBuilder = kernelBuilder.Configure(c => c.DefaultHttpRetryConfig.RetryableStatusCodes.Add(System.Net.HttpStatusCode.Unauthorized));
+        kernelBuilder = kernelBuilder.Configure(c => c.DefaultHttpRetryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized));
 
         // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
-        kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAITextCompletion("text-davinci-003", "text-davinci-003", "BAD_KEY"));
+        kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", "BAD_KEY"));
 
         var kernel = kernelBuilder.Build();
 
@@ -59,7 +59,7 @@ public static class Example08_RetryHandler
     {
         var kernel = Kernel.Builder.WithLogger(InfoLogger.Log).Build();
         // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
-        kernel.Config.AddOpenAITextCompletion("text-davinci-003", "text-davinci-003", "BAD_KEY");
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", "BAD_KEY");
 
         return kernel;
     }
@@ -76,7 +76,7 @@ public static class Example08_RetryHandler
             .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!);
 
         // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
-        kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAITextCompletion("text-davinci-003", "text-davinci-003", "BAD_KEY"));
+        kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", "BAD_KEY"));
 
         var kernel = kernelBuilder.Build();
 

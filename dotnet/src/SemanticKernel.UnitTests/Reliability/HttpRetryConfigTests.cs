@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Reliability;
 using Xunit;
 

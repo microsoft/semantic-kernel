@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -158,7 +157,7 @@ public interface IKernel
     SKContext CreateNewContext();
 
     /// <summary>
-    /// Get one of the configured services. Currently limited to AI backends.
+    /// Get one of the configured services. Currently limited to AI services.
     /// </summary>
     /// <param name="name">Optional name. If the name is not provided, returns the default T available</param>
     /// <typeparam name="T">Service type</typeparam>

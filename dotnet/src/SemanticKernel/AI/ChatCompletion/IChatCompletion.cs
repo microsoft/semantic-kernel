@@ -22,7 +22,7 @@ public interface IChatCompletion
     /// <summary>
     /// Create a new empty chat instance
     /// </summary>
-    /// <param name="instructions">Optional chat instructions for the backend</param>
+    /// <param name="instructions">Optional chat instructions for the AI service</param>
     /// <returns>Chat object</returns>
     public ChatHistory CreateNewChat(string instructions = "");
 }
