@@ -16,12 +16,12 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </summary>
 public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
 {
-    private readonly IEmbeddingGenerator<string, float> _embeddingGenerator;
+    private readonly IEmbeddingGeneration<string, float> _embeddingGenerator;
     private readonly IMemoryStore<float> _storage;
 
     public SemanticTextMemory(
         IMemoryStore<float> storage,
-        IEmbeddingGenerator<string, float> embeddingGenerator)
+        IEmbeddingGeneration<string, float> embeddingGenerator)
     {
         this._embeddingGenerator = embeddingGenerator;
         this._storage = storage;
@@ -66,9 +66,9 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
 
         if (record == null || record.Value == null || record.Value.Value == null) { return null; }
 
-        MemoryRecord result = (MemoryRecord)(record.Value.Value);
+        string metadataString = record.Value.Value.GetSerializedMetadata();
 
-        return MemoryQueryResult.FromMemoryRecord(result, 1);
+        return MemoryQueryResult.FromJson(metadataString, 1);
     }
 
     /// <inheritdoc/>
@@ -95,7 +95,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
 
         await foreach ((IEmbeddingWithMetadata<float>, double) result in results.WithCancellation(cancel))
         {
-            yield return MemoryQueryResult.FromMemoryRecord((MemoryRecord)result.Item1, result.Item2);
+            yield return MemoryQueryResult.FromJson(result.Item1.GetSerializedMetadata(), result.Item2);
         }
     }
 

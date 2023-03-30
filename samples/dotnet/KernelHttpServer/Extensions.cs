@@ -37,7 +37,7 @@ internal static class Extensions
         var apiConfig = new ApiKeyConfig();
 
         // completion values
-        if (req.Headers.TryGetValues(SKHttpHeaders.CompletionBackend, out var completionAIService))
+        if (req.Headers.TryGetValues(SKHttpHeaders.CompletionService, out var completionAIService))
         {
             apiConfig.CompletionConfig.AIService = Enum.Parse<AIService>(completionAIService.First());
         }
@@ -45,7 +45,7 @@ internal static class Extensions
         if (req.Headers.TryGetValues(SKHttpHeaders.CompletionModel, out var completionModelValue))
         {
             apiConfig.CompletionConfig.DeploymentOrModelId = completionModelValue.First();
-            apiConfig.CompletionConfig.Label = apiConfig.CompletionConfig.DeploymentOrModelId;
+            apiConfig.CompletionConfig.ServiceId = apiConfig.CompletionConfig.DeploymentOrModelId;
         }
 
         if (req.Headers.TryGetValues(SKHttpHeaders.CompletionEndpoint, out var completionEndpoint))
@@ -59,7 +59,7 @@ internal static class Extensions
         }
 
         // embedding values
-        if (req.Headers.TryGetValues(SKHttpHeaders.EmbeddingBackend, out var embeddingAIService))
+        if (req.Headers.TryGetValues(SKHttpHeaders.EmbeddingService, out var embeddingAIService))
         {
             apiConfig.EmbeddingConfig.AIService = Enum.Parse<AIService>(embeddingAIService.First());
         }
@@ -67,7 +67,7 @@ internal static class Extensions
         if (req.Headers.TryGetValues(SKHttpHeaders.EmbeddingModel, out var embeddingModelValue))
         {
             apiConfig.EmbeddingConfig.DeploymentOrModelId = embeddingModelValue.First();
-            apiConfig.EmbeddingConfig.Label = apiConfig.EmbeddingConfig.DeploymentOrModelId;
+            apiConfig.EmbeddingConfig.ServiceId = apiConfig.EmbeddingConfig.DeploymentOrModelId;
         }
 
         if (req.Headers.TryGetValues(SKHttpHeaders.EmbeddingEndpoint, out var embeddingEndpoint))

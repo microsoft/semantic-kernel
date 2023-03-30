@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 
@@ -19,8 +18,8 @@ public static class Example15_MemorySkill
             .WithLogger(ConsoleLogger.Log)
             .Configure(c =>
             {
-                c.AddOpenAICompletionBackend("davinci", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
-                c.AddOpenAIEmbeddingsBackend("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
+                c.AddOpenAITextCompletionService("davinci", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+                c.AddOpenAIEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
             })
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();

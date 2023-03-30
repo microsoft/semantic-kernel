@@ -34,7 +34,7 @@ public static class Example14_Memory
 
         var kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .Configure(c => c.AddOpenAIEmbeddingsBackend("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY")))
+            .Configure(c => c.AddOpenAIEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY")))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
@@ -82,8 +82,8 @@ public static class Example14_Memory
         await foreach (MemoryQueryResult memory in memories)
         {
             Console.WriteLine($"Result {++i}:");
-            Console.WriteLine("  URL:     : " + memory.Id);
-            Console.WriteLine("  Title    : " + memory.Description);
+            Console.WriteLine("  URL:     : " + memory.Metadata.Id);
+            Console.WriteLine("  Title    : " + memory.Metadata.Description);
             Console.WriteLine("  Relevance: " + memory.Relevance);
             Console.WriteLine();
         }
@@ -117,8 +117,8 @@ public static class Example14_Memory
         await foreach (MemoryQueryResult memory in memories)
         {
             Console.WriteLine($"Result {++i}:");
-            Console.WriteLine("  URL:     : " + memory.Id);
-            Console.WriteLine("  Title    : " + memory.Description);
+            Console.WriteLine("  URL:     : " + memory.Metadata.Id);
+            Console.WriteLine("  Title    : " + memory.Metadata.Description);
             Console.WriteLine("  Relevance: " + memory.Relevance);
             Console.WriteLine();
         }

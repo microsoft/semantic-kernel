@@ -99,38 +99,38 @@ public sealed class Program
         var todo = sk.ImportSkill(todoSkill, "todo");
         var outlook = sk.ImportSkill(outlookSkill, "outlook");
 
-        if (configuration.GetSection("AzureOpenAI:Label").Value != null)
+        if (configuration.GetSection("AzureOpenAI:ServiceId").Value != null)
         {
             AzureOpenAIConfiguration? azureOpenAIConfiguration = configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
             if (azureOpenAIConfiguration != null)
             {
-                sk.Config.AddAzureOpenAICompletionBackend(
-                    label: azureOpenAIConfiguration.Label,
+                sk.Config.AddAzureOpenAITextCompletionService(
+                    serviceId: azureOpenAIConfiguration.ServiceId,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
             }
         }
 
-        if (configuration.GetSection("OpenAI:Label").Value != null)
+        if (configuration.GetSection("OpenAI:ServiceId").Value != null)
         {
             OpenAIConfiguration? openAIConfiguration = configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
             if (openAIConfiguration != null)
             {
-                sk.Config.AddOpenAICompletionBackend(
-                    label: openAIConfiguration.Label,
+                sk.Config.AddOpenAITextCompletionService(
+                    serviceId: openAIConfiguration.ServiceId,
                     modelId: openAIConfiguration.ModelId,
                     apiKey: openAIConfiguration.ApiKey);
             }
         }
 
-        string? defaultCompletionBackendLabel = configuration["DefaultCompletionBackendLabel"];
-        if (string.IsNullOrWhiteSpace(defaultCompletionBackendLabel))
+        string? defaultCompletionServiceId = configuration["DefaultCompletionServiceId"];
+        if (string.IsNullOrWhiteSpace(defaultCompletionServiceId))
         {
-            throw new InvalidOperationException("'DefaultCompletionBackendLabel' is not set in configuration.");
+            throw new InvalidOperationException("'DefaultCompletionServiceId' is not set in configuration.");
         }
 
-        sk.Config.SetDefaultCompletionBackend(defaultCompletionBackendLabel);
+        sk.Config.SetDefaultTextCompletionService(defaultCompletionServiceId);
 
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
