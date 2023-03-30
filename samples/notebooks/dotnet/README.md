@@ -87,7 +87,7 @@ Enter the notebooks folder, and run this to launch the browser interface:
 
 ## Nuget
 
-If you are unable to get the Nuget package, first list your nuget sources:
+If you are unable to get the Nuget package, first list your Nuget sources:
 ```sh
 dotnet nuget list source
 ```
