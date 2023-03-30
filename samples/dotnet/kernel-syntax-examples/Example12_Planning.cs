@@ -38,36 +38,27 @@ internal static class Example12_Planning
         kernel.ImportSkill(new TimeSkill());
 
         var originalPlan = await kernel.RunAsync(
-            @"If is still morning please give me a joke about coffee otherwise tell me one about afternoon, but if its night give me a poem about the moon", planner["CreatePlan"]);
+            @"If is still morning please give me a joke about coffee otherwise tell me one about afternoon, but if its night give me a poem about the moon",
+            planner["CreatePlan"]);
+
         /*
-        <goal>
-        If is still morning please give me a joke about coffee otherwise tell me one about afternoon, but if its night give me a poem about the moon
-        </goal>
+        <goal>If is still morning please give me a joke about coffee otherwise tell me one about afternoon, but if its night give me a poem about the moon</goal>
         <plan>
-          <function._GLOBAL_FUNCTIONS_.HourNumber setContextVariable="HOUR"/>
-          <if>
-            <conditiongroup>
-              <condition variable="$HOUR" lessThan="12"/>
-            </conditiongroup>
-            <then>
-              <function.FunSkill.Joke input="coffee"/>
-            </then>
-            <else>
-              <if>
-                <conditiongroup>
-                  <condition variable="$HOUR" lessThan="18"/>
-                </conditiongroup>
-                <then>
-                  <function.FunSkill.Joke input="afternoon"/>
-                </then>
-                <else>
-                  <function.FunSkill.ShortPoem input="the moon"/>
-                </else>
-              </if>
-            </else>
+          <function._GLOBAL_FUNCTIONS_.HourNumber setContextVariable="CURRENT_HOUR"/>
+          <if condition="$CURRENT_HOUR lessthan 12">
+            <function.FunSkill.Joke input="coffee"/>
           </if>
+          <else>
+            <if condition="$CURRENT_HOUR lessthan 18">
+              <function.FunSkill.Joke input="afternoon"/>
+            </if>
+            <else>
+              <function.FunSkill.ShortPoem input="the moon"/>
+            </else>
+          </else>
         </plan>
         */
+
         Console.WriteLine("Original plan:");
         Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
 
