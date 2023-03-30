@@ -13,6 +13,8 @@ are modeled after OpenAI and Azure OpenAI for smooth transition to more capable 
 
 `docker image build -t hf_model_server .`
 
+Note that this step will take some minutes to download Docker image dependencies.
+
 ## Running the Sample Container
 
 `docker run -p 5000:5000 -d hf_model_server`
