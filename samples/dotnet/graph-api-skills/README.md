@@ -8,7 +8,9 @@ This example program demonstrates how to use the Microsoft Graph API skills with
    - The `appsettings.Development.json` file should be ignored by git and will not be checked in by default.
 2. Set your API Keys
    - This example can use either Azure OpenAI or OpenAI models for summarization.
-   - In your `appsettings.Development.json` fill out the `OpenAI` and/or `AzureOpenAI` sections with an appropriate label and API key.
+   - In your `appsettings.Development.json` fill out the `OpenAI` and/or `AzureOpenAI` sections with
+     a unique service id and your API key (you can use any service id, it's only a string that allows to
+     distinguish multiple services).
 3. If you have not already, [register an application with the Microsoft identity platform](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app).
    - Select **`Mobile and desktop applications`** as platform type, and the Redirect URI will be **`http://localhost`**
    - It is recommended you use the **`Personal Microsoft accounts`** account type for this sample.
@@ -27,11 +29,11 @@ Example `appsettings.Development.json`:
   },
   "OneDrivePathToFile": "Documents/MyFile.txt",
   "OpenAI": {
-    "Label": "text-davinci-003",
+    "ServiceId": "oaidavinci",
     "ApiKey": "YOUR_OPENAPI_KEY"
   },
   "AzureOpenAI": {
-    "Label": "azure-text-davinci-003",
+    "ServiceId": "azuredavinci",
     "DeploymentName": "azure-text-davinci-003",
     "Endpoint": "YOUR_AZURE_OPENAI_ENDPOINT (e.g. https://contoso.openai.azure.com/",
     "ApiKey": "YOUR_AZURE_OPENAPI_KEY"

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Orchestration.Extensions;
+// ReSharper disable once CheckNamespace // Extension methods
+
+namespace Microsoft.SemanticKernel.Orchestration;
 
 internal static class SKContextExtensions
 {

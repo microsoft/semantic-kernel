@@ -4,6 +4,9 @@
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
 // You can access the builder using either Kernel.Builder or KernelBuilder.
 
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI.TextCompletion;
+
 IKernel kernel1 = KernelBuilder.Create();
 
 IKernel kernel2 = Kernel.Builder.Build();
@@ -37,12 +40,14 @@ var kernelX3 = builderX.Build();
 // Manually setup all the dependencies used internally by the kernel
 var logger = NullLogger.Instance;
 var memoryStorage = new VolatileMemoryStore();
-var embeddingGenerator = new AzureTextEmbeddings("modelId", "https://...", "apiKey", "2022-12-01", logger);
-var memory = new SemanticTextMemory(memoryStorage, embeddingGenerator);
+var textEmbeddingGenerator = new AzureTextEmbeddingGeneration("modelId", "https://...", "apiKey", "2022-12-01", logger);
+var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
 var skills = new SkillCollection();
 var templateEngine = new PromptTemplateEngine(logger);
 var config = new KernelConfig();
-config.AddAzureOpenAICompletionBackend("foo", "deploymentName", "https://...", "apiKey", "2022-12-01");
+var httpHandlerFactory = new DefaultHttpRetryHandlerFactory(new HttpRetryConfig());
+ITextCompletion Factory(IKernel kernel) => new AzureTextCompletion("deploymentName", "https://...", "apiKey", "2022-12-01", logger, httpHandlerFactory);
+config.AddTextCompletionService("foo", Factory);
 
 // Create kernel manually injecting all the dependencies
 var kernel3 = new Kernel(skills, templateEngine, memory, config, logger);
@@ -57,14 +62,14 @@ var kernel4 = Kernel.Builder
     .WithMemory(memory)
     .Configure(c =>
     {
-        c.AddAzureOpenAICompletionBackend("foo", "deploymentName", "https://...", "apiKey", "2022-12-01");
+        c.AddAzureOpenAITextCompletionService("foo", "deploymentName", "https://...", "apiKey", "2022-12-01");
     })
     .Build();
 
 // Example: how to use a custom memory storage and custom embedding generator
 var kernel5 = Kernel.Builder
     .WithLogger(NullLogger.Instance)
-    .WithMemoryStorageAndEmbeddingGenerator(memoryStorage, embeddingGenerator)
+    .WithMemoryStorageAndTextEmbeddingGeneration(memoryStorage, textEmbeddingGenerator)
     .Build();
 
 // Example: how to use a custom memory storage
@@ -74,10 +79,10 @@ var kernel6 = Kernel.Builder
     .Configure(c =>
     {
         // This will be used when using AI completions
-        c.AddAzureOpenAICompletionBackend("myName1", "completionDeploymentName", "https://...", "apiKey", "2022-12-01");
+        c.AddAzureOpenAITextCompletionService("myName1", "completionDeploymentName", "https://...", "apiKey", "2022-12-01");
 
         // This will be used when indexing memory records
-        c.AddAzureOpenAIEmbeddingsBackend("myName2", "embeddingsDeploymentName", "https://...", "apiKey", "2022-12-01");
+        c.AddAzureOpenAIEmbeddingGenerationService("myName2", "embeddingsDeploymentName", "https://...", "apiKey", "2022-12-01");
     })
     .Build();
 
@@ -88,15 +93,18 @@ var kernel6 = Kernel.Builder
 var kernel7 = Kernel.Builder
     .Configure(c =>
     {
-        c.AddAzureOpenAICompletionBackend("myName1", "completionDeploymentName", "https://...", "apiKey", "2022-12-01");
+        c.AddAzureOpenAITextCompletionService("myName1", "completionDeploymentName", "https://...", "apiKey", "2022-12-01");
+    })
+    .Configure(c =>
+    {
+        c.SetDefaultTextEmbeddingGenerationService("myName3");
     })
     .Build();
 
 kernel7.Config
-    .AddAzureOpenAIEmbeddingsBackend("myName2", "embeddingsDeploymentName1", "https://...", "apiKey", "2022-12-01")
-    .AddAzureOpenAIEmbeddingsBackend("myName3", "embeddingsDeploymentName2", "https://...", "apiKey", "2022-12-01")
-    .AddOpenAICompletionBackend("myName4", "text-davinci-003", "sk-...")
-    .SetDefaultEmbeddingsBackend("myName3");
+    .AddAzureOpenAIEmbeddingGenerationService("myName2", "embeddingsDeploymentName1", "https://...", "apiKey", "2022-12-01")
+    .AddAzureOpenAIEmbeddingGenerationService("myName3", "embeddingsDeploymentName2", "https://...", "apiKey", "2022-12-01")
+    .AddOpenAITextCompletionService("myName4", "text-davinci-003", "sk-...");
 
 // ==========================================================================================================
 // When invoking AI, by default the kernel will retry on transient errors, such as throttling and timeouts.

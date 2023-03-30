@@ -20,13 +20,17 @@ internal static class ConsoleLogger
     {
         return LoggerFactory.Create(builder =>
         {
-            // builder.SetMinimumLevel(LogLevel.Warning);
+            builder.SetMinimumLevel(LogLevel.Warning);
+
             // builder.AddFilter("Microsoft", LogLevel.Trace);
             // builder.AddFilter("Microsoft", LogLevel.Debug);
             // builder.AddFilter("Microsoft", LogLevel.Information);
-            builder.AddFilter("Microsoft", LogLevel.Warning);
+            // builder.AddFilter("Microsoft", LogLevel.Warning);
             // builder.AddFilter("Microsoft", LogLevel.Error);
+
+            builder.AddFilter("Microsoft", LogLevel.Warning);
             builder.AddFilter("System", LogLevel.Warning);
+
             builder.AddConsole();
         });
     }
