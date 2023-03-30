@@ -1,9 +1,8 @@
 ﻿using System.Globalization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -92,13 +91,13 @@ public class ChatSkill
         var latestMessage = await this.GetLatestMemoryAsync(context);
         if (latestMessage != null)
         {
-            var results = context.Memory.SearchAsync("ChatMessages", latestMessage.Text, limit: 1000);
+            var results = context.Memory.SearchAsync("ChatMessages", latestMessage.Metadata.Text, limit: 1000);
             await foreach (var memory in results)
             {
-                var estimatedTokenCount = this.EstimateTokenCount(memory.Text);
+                var estimatedTokenCount = this.EstimateTokenCount(memory.Metadata.Text);
                 if (remainingToken - estimatedTokenCount > 0)
                 {
-                    memoryText += $"\n{memory.Text}";
+                    memoryText += $"\n{memory.Metadata.Text}";
                     remainingToken -= estimatedTokenCount;
                 }
                 else
@@ -136,10 +135,10 @@ public class ChatSkill
                 continue;
             }
 
-            var estimatedTokenCount = this.EstimateTokenCount(message.Text);
+            var estimatedTokenCount = this.EstimateTokenCount(message.Metadata.Text);
             if (remainingToken - estimatedTokenCount > 0)
             {
-                historyText += $"\n{message.Text}";
+                historyText += $"\n{message.Metadata.Text}";
                 remainingToken -= estimatedTokenCount;
             }
             else
@@ -280,7 +279,7 @@ public class ChatSkill
                 allChatMessageMemories.Add(results.First());
             }
         }
-        catch (Exception ex) when (!ex.IsCriticalException())
+        catch (AIException ex)
         {
             var msg = $"Exception while retrieving memories: {ex.Message}";
             context.Log.LogWarning(msg);
@@ -288,7 +287,7 @@ public class ChatSkill
             yield break;
         }
 
-        foreach (var memory in allChatMessageMemories.OrderBy(memory => memory.Id))
+        foreach (var memory in allChatMessageMemories.OrderBy(memory => memory.Metadata.Id))
         {
             yield return memory;
         }
