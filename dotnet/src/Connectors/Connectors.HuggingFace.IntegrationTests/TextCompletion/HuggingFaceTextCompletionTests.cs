@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
 using Xunit;
@@ -15,6 +16,17 @@ public sealed class HuggingFaceTextCompletionTests
 {
     private const string BaseUri = "http://localhost:5000";
     private const string Model = "gpt2";
+
+    private readonly IConfigurationRoot _configuration;
+
+    public HuggingFaceTextCompletionTests()
+    {
+        // Load configuration
+        this._configuration = new ConfigurationBuilder()
+            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddEnvironmentVariables()
+            .Build();
+    }
 
     [Fact(Skip = "This test is for manual verification.")]
     public async Task HuggingFaceLocalAndRemoteTextCompletionAsync()
@@ -39,6 +51,6 @@ public sealed class HuggingFaceTextCompletionTests
 
     private string GetApiKey()
     {
-        return Environment.GetEnvironmentVariable("HF_API_KEY")!;
+        return this._configuration.GetSection("HuggingFace:ApiKey").Get<string>()!;
     }
 }
