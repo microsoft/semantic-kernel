@@ -68,7 +68,7 @@ internal class SearchVectorsRequest<TEmbedding> : IValidatable
 
         return this;
     }
-    
+
     public SearchVectorsRequest<TEmbedding> WithScoreThreshold(double threshold)
     {
         this.ScoreThreshold = threshold;

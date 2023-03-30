@@ -369,7 +369,6 @@ public class QdrantVectorDbClient<TEmbedding>
     /// Create a Qdrant vector collection.
     /// </summary>
     /// <param name="collectionName"></param>
-    /// <param name="collectionVectorSize"></param>
     /// <returns></returns>
     public async Task CreateCollectionAsync(string collectionName)
     {
