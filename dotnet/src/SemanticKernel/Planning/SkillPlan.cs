@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Object that contains details about a plan and its goal and details of its execution.
 /// </summary>
-public class Plan
+public class SkillPlan
 {
     /// <summary>
     /// Internal constant string representing the ID key.
@@ -23,7 +23,7 @@ public class Plan
     /// <summary>
     /// Internal constant string representing the plan key.
     /// </summary>
-    internal const string PlanKey = "PLAN__PLAN";
+    internal const string PlanKey = "PLAN__PLAN"; // TODO Will probably remove eventually
 
     /// <summary>
     /// Internal constant string representing the is complete key.
@@ -97,8 +97,8 @@ public class Plan
     /// </summary>
     /// <param name="json">JSON string representation of aPlan</param>
     /// <returns>An instance of a Plan object.</returns>
-    public static Plan FromJson(string json)
+    public static SkillPlan FromJson(string json)
     {
-        return JsonSerializer.Deserialize<Plan>(json) ?? new Plan();
+        return JsonSerializer.Deserialize<SkillPlan>(json) ?? new SkillPlan();
     }
 }
