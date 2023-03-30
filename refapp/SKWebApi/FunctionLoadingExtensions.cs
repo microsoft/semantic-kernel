@@ -15,21 +15,21 @@ internal static class FunctionLoadingExtensions
     {
         string[] subDirectories = Directory.GetDirectories(skillsDirectory);
 
-        foreach (string skillDirectory in subDirectories)
+        foreach (string subDir in subDirectories)
         {
             try
             {
-                kernel.ImportSemanticSkillFromDirectory(skillsDirectory, skillDirectory);
+                kernel.ImportSemanticSkillFromDirectory(skillsDirectory, Path.GetFileName(subDir)!);
             }
             catch (TemplateException e)
             {
-                logger.LogError("Could not load skill from {Directory}: {Message}", skillDirectory, e.Message);
+                logger.LogError("Could not load skill from {Directory}: {Message}", subDir, e.Message);
             }
         }
     }
 
     internal static Dictionary<string, Type> RegisterNativeSkillDependencies(
-        this IServiceProvider serviceProvider,
+        this IServiceCollection serviceProvider,
         string skillDirectory)
     {
         // TODO: Implement this method

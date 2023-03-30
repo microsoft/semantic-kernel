@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
+using SKWebApi;
 
 namespace SemanticKernel.Service;
 
@@ -48,12 +49,14 @@ public static class Program
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
 
+        services.AddSingleton<IConfiguration>(configuration);
+
         services.AddSingleton<ILogger>(s => s.GetRequiredService<ILogger<Kernel>>()); // To support ILogger (as opposed to generic ILogger<T>)
 
-        AddSemanticKernelServices(services, configuration);
+        services.AddSemanticKernelServices(configuration);
     }
 
-    private static void AddSemanticKernelServices(IServiceCollection services, ConfigurationManager configuration)
+    private static void AddSemanticKernelServices(this IServiceCollection services, ConfigurationManager configuration)
     {
         // Each REST call gets a fresh new SK instance
         var kernelConfig = new KernelConfig();
@@ -61,7 +64,7 @@ public static class Program
         kernelConfig.AddCompletionBackend(completionConfig);
         ISemanticTextMemory memory = NullMemory.Instance;
         AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
-        if (/*embeddingConfig is not empty*/true)
+        if (embeddingConfig.IsValid())
         {
             // The same SK memory store is shared with all REST calls and users
             IMemoryStore<float> memoryStore = new VolatileMemoryStore();
@@ -77,5 +80,13 @@ public static class Program
         services.AddSingleton(kernelConfig);
 
         services.AddScoped<Kernel>();
+
+        IDictionary<string, Type> mapOfDependenciesToTypes = new Dictionary<string, Type>();
+        string nativeSkillsDirectory = configuration.GetSection(Constants.NativeSkillsDirectory).Get<string>();
+        if (!string.IsNullOrWhiteSpace(nativeSkillsDirectory))
+        {
+            mapOfDependenciesToTypes = services.RegisterNativeSkillDependencies(nativeSkillsDirectory);
+        }
+        services.AddSingleton<IDictionary<string, Type>>(mapOfDependenciesToTypes);
     }
 }

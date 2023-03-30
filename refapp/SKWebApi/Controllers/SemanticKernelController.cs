@@ -5,16 +5,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
+using SKWebApi;
 
 namespace SemanticKernel.Service.Controllers;
 
 [ApiController]
 public class SemanticKernelController : ControllerBase
 {
+    private readonly IDictionary<string, Type> _mapOfDependenciesToTypes;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<SemanticKernelController> _logger;
 
-    public SemanticKernelController(ILogger<SemanticKernelController> logger)
+    public SemanticKernelController(IDictionary<string, Type> mapOfDependenciesToTypes, IServiceProvider serviceProvider, IConfiguration configuration, ILogger<SemanticKernelController> logger)
     {
+        this._mapOfDependenciesToTypes = mapOfDependenciesToTypes;
+        this._serviceProvider = serviceProvider;
+        this._configuration = configuration;
         this._logger = logger;
     }
 
@@ -41,10 +48,15 @@ public class SemanticKernelController : ControllerBase
     {
         this._logger.LogDebug("Received call to invoke {SkillName}/{FunctionName}", skillName, functionName);
 
-        // TODO: load requested function
-        //kernel.RegisterNativeSkills()
+        string semanticSkillsDirectory = this._configuration.GetSection(Constants.SemanticSkillsDirectory).Get<string>();
+        if (!string.IsNullOrWhiteSpace(semanticSkillsDirectory))
+        {
+            kernel.RegisterSemanticSkills(semanticSkillsDirectory, this._logger);
+        }
 
-        ISKFunction? function = default;
+        kernel.RegisterNativeSkills(this._serviceProvider, this._mapOfDependenciesToTypes, this._logger);
+
+        ISKFunction? function = null;
         try
         {
             function = kernel.Skills.GetFunction(skillName, functionName);
