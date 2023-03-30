@@ -302,12 +302,14 @@ public class QdrantVectorDbClient<TEmbedding>
     /// </summary>
     /// <param name="collectionName"></param>
     /// <param name="target"></param>
+    /// <param name="threshold"></param>
     /// <param name="top"></param>
     /// <param name="requiredTags"></param>
     /// <returns></returns>
     public async IAsyncEnumerable<(QdrantVectorRecord<TEmbedding>, double)> FindNearestInCollectionAsync(
         string collectionName,
         Embedding<TEmbedding> target,
+        double threshold,
         int top = 1,
         IEnumerable<string>? requiredTags = null)
     {
@@ -319,6 +321,7 @@ public class QdrantVectorDbClient<TEmbedding>
             .Create(collectionName)
             .SimilarTo(target.Vector.ToArray())
             .HavingTags(requiredTags)
+            .WithScoreThreshold(threshold)
             .IncludePayLoad()
             .IncludeVectorData()
             .Take(top)
