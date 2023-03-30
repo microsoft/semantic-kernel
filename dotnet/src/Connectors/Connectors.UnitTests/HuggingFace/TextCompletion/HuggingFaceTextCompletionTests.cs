@@ -16,7 +16,7 @@ namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextCompletion;
 /// </summary>
 public class HuggingFaceTextCompletionTests : IDisposable
 {
-    private const string BaseUri = "http://localhost:5000";
+    private const string BaseUri = "http://localhost:5000/completions";
     private const string Model = "gpt2";
 
     private readonly HttpResponseMessage _response = new()

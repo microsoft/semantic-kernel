@@ -18,7 +18,6 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
 public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<string, float>, IDisposable
 {
     private const string HttpUserAgent = "Microsoft Semantic Kernel";
-    private const string EmbeddingEndpoint = "/embeddings";
 
     private readonly string _model;
     private readonly HttpClient _httpClient;
@@ -27,19 +26,19 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
     /// </summary>
-    /// <param name="baseUri">Base URI for service API call.</param>
+    /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    public HuggingFaceTextEmbeddingGeneration(Uri baseUri, string model, HttpClientHandler httpClientHandler)
+    public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
-        Verify.NotNull(baseUri, "Base URI cannot be null.");
+        Verify.NotNull(endpoint, "Endpoint cannot be null.");
         Verify.NotEmpty(model, "Model cannot be empty.");
 
         this._model = model;
 
         this._httpClient = new(httpClientHandler);
 
-        this._httpClient.BaseAddress = baseUri;
+        this._httpClient.BaseAddress = endpoint;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
     }
 
@@ -47,11 +46,11 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
-    /// <param name="baseUri">Base URI for service API call.</param>
+    /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
-    public HuggingFaceTextEmbeddingGeneration(Uri baseUri, string model)
+    public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model)
     {
-        Verify.NotNull(baseUri, "Base URI cannot be null.");
+        Verify.NotNull(endpoint, "Endpoint cannot be null.");
         Verify.NotEmpty(model, "Model cannot be empty.");
 
         this._model = model;
@@ -59,7 +58,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
         this._httpClient = new(this._httpClientHandler);
 
-        this._httpClient.BaseAddress = baseUri;
+        this._httpClient.BaseAddress = endpoint;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
     }
 
@@ -79,7 +78,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     #region private ================================================================================
 
     /// <summary>
-    /// Performs HTTP request to given base URI for embedding generation.
+    /// Performs HTTP request to given endpoint for embedding generation.
     /// </summary>
     /// <param name="data">Data to embed.</param>
     /// <returns>List of generated embeddings.</returns>
@@ -96,7 +95,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
             using var httpRequestMessage = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri($"{EmbeddingEndpoint}/{this._model}", UriKind.Relative),
+                RequestUri = new Uri($"/{this._model}", UriKind.Relative),
                 Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
             };
 
@@ -107,7 +106,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
 
             return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding.ToArray())).ToList()!;
         }
-        catch (Exception e) when (e is not AIException)
+        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,
