@@ -2,6 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.CoreSkills;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
@@ -9,8 +10,16 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SKWebApi.Skills;
 
+/// <summary>
+/// ChatSkill offers a more coherent chat experience by using memories
+/// to extract conversation history and user intentions.
+/// </summary>
 public class ChatSkill
 {
+    /// <summary>
+    /// A kernel instance to create a completion function since each invocation
+    /// of the <see cref="ChatAsync"/> function will generate a new prompt dynamically.
+    /// </summary>
     private readonly IKernel _kernel;
 
     public ChatSkill(IKernel kernel)
@@ -18,6 +27,10 @@ public class ChatSkill
         this._kernel = kernel;
     }
 
+    /// <summary>
+    /// Extract user intent from the conversation history.
+    /// </summary>
+    /// <param name="context">Contains the 'audience' indicating the name of the user.</param>
     [SKFunction("Extract user intent")]
     [SKFunctionName("ExtractUserIntent")]
     [SKFunctionContextParameter(Name = "audience", Description = "The audience the chat bot is interacting with.")]
@@ -51,12 +64,16 @@ public class ChatSkill
                 context.Log,
                 context.CancellationToken
             ),
-            settings: this.GetIntentCompletionSettings()
+            settings: this.CreateIntentCompletionSettings()
         );
 
         return $"User intent: {result.ToString()}";
     }
 
+    /// <summary>
+    /// Extract relevant memories based on the latest message.
+    /// </summary>
+    /// <param name="context">Contains the 'tokenLimit' and the 'contextTokenLimit' controlling the length of the prompt.</param>
     [SKFunction("Extract user memories")]
     [SKFunctionName("ExtractUserMemories")]
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
@@ -71,28 +88,33 @@ public class ChatSkill
             Math.Floor(contextTokenLimit * SystemPromptDefaults.MemoriesResponseContextWeight)
         );
 
-        var latestMessage = await this.GetLatestMemoryAsync(context);
-        Console.WriteLine($"Latest message: {latestMessage.Text}");
-        var results = context.Memory.SearchAsync("ChatMessages", latestMessage.Text, limit: 1000);
-
         string memoryText = "";
-        await foreach (var memory in results)
+        var latestMessage = await this.GetLatestMemoryAsync(context);
+        if (latestMessage != null)
         {
-            var estimatedTokenCount = this.EstimateTokenCount(memory.Text);
-            if (remainingToken - estimatedTokenCount > 0)
+            var results = context.Memory.SearchAsync("ChatMessages", latestMessage.Text, limit: 1000);
+            await foreach (var memory in results)
             {
-                memoryText += $"\n{memory.Text}";
-                remainingToken -= estimatedTokenCount;
-            }
-            else
-            {
-                break;
+                var estimatedTokenCount = this.EstimateTokenCount(memory.Text);
+                if (remainingToken - estimatedTokenCount > 0)
+                {
+                    memoryText += $"\n{memory.Text}";
+                    remainingToken -= estimatedTokenCount;
+                }
+                else
+                {
+                    break;
+                }
             }
         }
 
         return $"Past memories:\n{memoryText.Trim()}";
     }
 
+    /// <summary>
+    /// Extract chat history.
+    /// </summary>
+    /// <param name="context">Contains the 'tokenLimit' and the 'contextTokenLimit' controlling the length of the prompt.</param>
     [SKFunction("Extract chat history")]
     [SKFunctionName("ExtractChatHistory")]
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
@@ -109,6 +131,11 @@ public class ChatSkill
 
         await foreach (var message in this.GetAllMemoriesAsync(context))
         {
+            if (message == null)
+            {
+                continue;
+            }
+
             var estimatedTokenCount = this.EstimateTokenCount(message.Text);
             if (remainingToken - estimatedTokenCount > 0)
             {
@@ -124,6 +151,13 @@ public class ChatSkill
         return $"Chat history:\n{historyText.Trim()}";
     }
 
+    /// <summary>
+    /// This is the entry point for getting a chat response. It manages the token limit, saves
+    /// messages to memory, and fill in the necessary context variables for completing the
+    /// prompt that will be rendered by the template engine.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="context">Contains the 'tokenLimit' and the 'contextTokenLimit' controlling the length of the prompt.</param>
     [SKFunction("Get chat response")]
     [SKFunctionName("Chat")]
     [SKFunctionInput(Description = "The new message")]
@@ -169,7 +203,7 @@ public class ChatSkill
 
         context = await completionFunction.InvokeAsync(
             context: context,
-            settings: this.GetChatResponseCompletionSettings()
+            settings: this.CreateChatResponseCompletionSettings()
         );
 
         // Save this response to memory such that subsequent chat responses can use it
@@ -187,6 +221,11 @@ public class ChatSkill
         return context;
     }
 
+    /// <summary>
+    /// Save a new message to the chat history.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="context">Contains the 'audience' indicating the name of the user.</param>
     [SKFunction("Save a new message to the chat history")]
     [SKFunctionName("SaveNewMessage")]
     [SKFunctionInput(Description = "The new message")]
@@ -218,7 +257,11 @@ public class ChatSkill
         );
     }
 
-    private async IAsyncEnumerable<MemoryQueryResult> GetAllMemoriesAsync(SKContext context)
+    /// <summary>
+    /// Get all chat messages from memory.
+    /// </summary>
+    /// <param name="context">Contains the memory object.</param>
+    private async IAsyncEnumerable<MemoryQueryResult?> GetAllMemoriesAsync(SKContext context)
     {
         var allCollections = await context.Memory.GetCollectionsAsync(context.CancellationToken);
         var allChatMessageCollections = allCollections.Where(collection => collection != "ChatMessages");
@@ -229,7 +272,7 @@ public class ChatSkill
             {
                 var results = await context.Memory.SearchAsync(
                     collection,
-                    "abc",                  // dummy query
+                    "abc",                  // dummy query since we don't care about relevance. An empty string will cause exception.
                     limit: 1,
                     minRelevanceScore: 0.0, // no relevance required since the collection only has one entry
                     cancel: context.CancellationToken
@@ -237,10 +280,12 @@ public class ChatSkill
                 allChatMessageMemories.Add(results.First());
             }
         }
-        catch (Exception e)
+        catch (Exception ex) when (!ex.IsCriticalException())
         {
-            Console.WriteLine("Exception while retrieving memories: {0}", e.Message);
-            throw e;
+            var msg = $"Exception while retrieving memories: {ex.Message}";
+            context.Log.LogWarning(msg);
+            context.Fail(msg, ex);
+            yield break;
         }
 
         foreach (var memory in allChatMessageMemories.OrderBy(memory => memory.Id))
@@ -249,13 +294,20 @@ public class ChatSkill
         }
     }
 
-    private async Task<MemoryQueryResult> GetLatestMemoryAsync(SKContext context)
+    /// <summary>
+    /// Get the latest chat message from memory.
+    /// </summary>
+    /// <param name="context">Contains the memory object.</param>
+    private async Task<MemoryQueryResult?> GetLatestMemoryAsync(SKContext context)
     {
         var allMemories = this.GetAllMemoriesAsync(context);
         return await allMemories.FirstAsync();
     }
 
-    private CompleteRequestSettings GetChatResponseCompletionSettings()
+    /// <summary>
+    /// Create a completion settings object for chat response. Parameters are read from the SystemPromptDefaults class.
+    /// </summary>
+    private CompleteRequestSettings CreateChatResponseCompletionSettings()
     {
         var completionSettings = new CompleteRequestSettings();
         completionSettings.MaxTokens = SystemPromptDefaults.ResponseTokenLimit;
@@ -266,7 +318,10 @@ public class ChatSkill
         return completionSettings;
     }
 
-    private CompleteRequestSettings GetIntentCompletionSettings()
+    /// <summary>
+    /// Create a completion settings object for intent response. Parameters are read from the SystemPromptDefaults class.
+    /// </summary>
+    private CompleteRequestSettings CreateIntentCompletionSettings()
     {
         var completionSettings = new CompleteRequestSettings();
         completionSettings.MaxTokens = SystemPromptDefaults.ResponseTokenLimit;
@@ -278,6 +333,10 @@ public class ChatSkill
         return completionSettings;
     }
 
+    /// <summary>
+    /// Estimate the number of tokens in a string.
+    /// TODO: This is a very naive implementation. We should use the new implementation that is available in the kernel.
+    /// </summary>
     private int EstimateTokenCount(string text)
     {
         return (int)Math.Floor(text.Length / SystemPromptDefaults.TokenEstimateFactor);
