@@ -40,7 +40,7 @@ class PromptTemplateConfig:
     def from_dict(data: dict) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
         config.schema = data.get("schema")
-        config.type = data.get("type)")
+        config.type = data.get("type")
         config.description = data.get("description")
 
         # Some skills may not have all completion parameters defined
