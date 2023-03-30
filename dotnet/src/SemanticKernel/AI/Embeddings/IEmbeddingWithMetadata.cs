@@ -13,4 +13,9 @@ public interface IEmbeddingWithMetadata<TEmbedding>
     /// Gets the <see cref="Embedding{TEmbedding}"/>.
     /// </summary>
     Embedding<TEmbedding> Embedding { get; }
+
+    /// <summary>
+    /// Returns a string representing the metadata.
+    /// </summary>
+    string GetSerializedMetadata();
 }

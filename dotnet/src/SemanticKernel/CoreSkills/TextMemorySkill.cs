@@ -71,7 +71,7 @@ public class TextMemorySkill
 
         var memory = await context.Memory.GetAsync(collection, key);
 
-        return memory?.Text ?? string.Empty;
+        return memory?.Metadata.Text ?? string.Empty;
     }
 
     /// <summary>
@@ -116,11 +116,11 @@ public class TextMemorySkill
         if (limitInt == 1)
         {
             var memory = memories.FirstOrDefault();
-            resultString = (memory != null) ? memory.Text : string.Empty;
+            resultString = (memory != null) ? memory.Metadata.Text : string.Empty;
         }
         else
         {
-            resultString = JsonSerializer.Serialize(memories.Select(x => x.Text));
+            resultString = JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
         }
 
         if (resultString.Length == 0)

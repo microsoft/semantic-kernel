@@ -8,8 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.OpenAI.Services;
-using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.ImageGeneration;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
@@ -189,13 +191,15 @@ public sealed class Kernel : IKernel, IDisposable
 
                 if (context.ErrorOccurred)
                 {
-                    this._log.LogError("Function call fail during pipeline step {0}: {1}.{2}", pipelineStepCount, f.SkillName, f.Name);
+                    this._log.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
+                        pipelineStepCount, f.SkillName, f.Name, context.LastErrorDescription);
                     return context;
                 }
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
-                this._log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}", pipelineStepCount, f.SkillName, f.Name, e.Message);
+                this._log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
+                    pipelineStepCount, f.SkillName, f.Name, e.Message);
                 context.Fail(e.Message, e);
                 return context;
             }
@@ -223,6 +227,63 @@ public sealed class Kernel : IKernel, IDisposable
             this._memory,
             this._skillCollection.ReadOnlySkillCollection,
             this._log);
+    }
+
+    /// <inheritdoc/>
+    public T GetService<T>(string? name = "")
+    {
+        // TODO: use .NET ServiceCollection (will require a lot of changes)
+        // TODO: support Connectors, IHttpFactory and IDelegatingHandlerFactory
+
+        if (typeof(T) == typeof(ITextCompletion))
+        {
+            name = this.Config.GetTextCompletionServiceIdOrDefault(name);
+            if (!this.Config.TextCompletionServices.TryGetValue(name, out Func<IKernel, ITextCompletion> factory))
+            {
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No text completion service available");
+            }
+
+            var service = factory.Invoke(this);
+            return (T)service;
+        }
+
+        if (typeof(T) == typeof(IEmbeddingGeneration<string, float>))
+        {
+            name = this.Config.GetTextEmbeddingGenerationServiceIdOrDefault(name);
+            if (!this.Config.TextEmbeddingGenerationServices.TryGetValue(name, out Func<IKernel, IEmbeddingGeneration<string, float>> factory))
+            {
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No text embedding service available");
+            }
+
+            var service = factory.Invoke(this);
+            return (T)service;
+        }
+
+        if (typeof(T) == typeof(IChatCompletion))
+        {
+            name = this.Config.GetChatCompletionServiceIdOrDefault(name);
+            if (!this.Config.ChatCompletionServices.TryGetValue(name, out Func<IKernel, IChatCompletion> factory))
+            {
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No chat completion service available");
+            }
+
+            var service = factory.Invoke(this);
+            return (T)service;
+        }
+
+        if (typeof(T) == typeof(IImageGeneration))
+        {
+            name = this.Config.GetImageGenerationServiceIdOrDefault(name);
+            if (!this.Config.ImageGenerationServices.TryGetValue(name, out Func<IKernel, IImageGeneration> factory))
+            {
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No image generation service available");
+            }
+
+            var service = factory.Invoke(this);
+            return (T)service;
+        }
+
+        throw new NotSupportedException("The kernel service collection doesn't support the type " + typeof(T).FullName);
     }
 
     /// <summary>
@@ -265,36 +326,8 @@ public sealed class Kernel : IKernel, IDisposable
 
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
-        // TODO: allow to postpone this (e.g. use lazy init), allow to create semantic functions without a default backend
-        var backend = this._config.GetCompletionBackend(functionConfig.PromptTemplateConfig.DefaultBackends.FirstOrDefault());
-
-        switch (backend)
-        {
-            case AzureOpenAIConfig azureBackendConfig:
-                func.SetAIBackend(() => new AzureTextCompletion(
-                    azureBackendConfig.DeploymentName,
-                    azureBackendConfig.Endpoint,
-                    azureBackendConfig.APIKey,
-                    azureBackendConfig.APIVersion,
-                    this._log,
-                    this._config.HttpHandlerFactory));
-                break;
-
-            case OpenAIConfig openAiConfig:
-                func.SetAIBackend(() => new OpenAITextCompletion(
-                    openAiConfig.ModelId,
-                    openAiConfig.APIKey,
-                    openAiConfig.OrgId,
-                    this._log,
-                    this._config.HttpHandlerFactory));
-                break;
-
-            default:
-                throw new AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    $"Unknown/unsupported backend configuration type {backend.GetType():G}, unable to prepare semantic function. " +
-                    $"Function description: {functionConfig.PromptTemplateConfig.Description}");
-        }
+        // Note: the service is instantiated using the kernel configuration state when the function is invoked
+        func.SetAIService(() => this.GetService<ITextCompletion>());
 
         return func;
     }

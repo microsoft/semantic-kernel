@@ -9,9 +9,9 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Orchestration.Extensions;
 using RepoUtils;
 using Skills;
+using TextSkill = Skills.TextSkill;
 
 // ReSharper disable once InconsistentNaming
 
@@ -131,14 +131,14 @@ internal static class Example12_Planning
             .Configure(
                 config =>
                 {
-                    config.AddAzureOpenAICompletionBackend(
-                        Env.Var("AZURE_OPENAI_DEPLOYMENT_LABEL"),
+                    config.AddAzureOpenAITextCompletionService(
+                        Env.Var("AZURE_OPENAI_SERVICE_ID"),
                         Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_ENDPOINT"),
                         Env.Var("AZURE_OPENAI_KEY"));
 
-                    config.AddAzureOpenAIEmbeddingsBackend(
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_LABEL"),
+                    config.AddAzureOpenAIEmbeddingGenerationService(
+                        Env.Var("AZURE_OPENAI_EMBEDDINGS_SERVICE_ID"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"));
@@ -164,7 +164,7 @@ internal static class Example12_Planning
 
         kernel.ImportSkill(new EmailSkill(), "email");
         kernel.ImportSkill(new StaticTextSkill(), "statictext");
-        kernel.ImportSkill(new Skills.TextSkill(), "text");
+        kernel.ImportSkill(new TextSkill(), "text");
         kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "coretext");
 
         var context = new ContextVariables("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
@@ -179,8 +179,8 @@ internal static class Example12_Planning
     private static IKernel InitializeKernelAndPlanner(out IDictionary<string, ISKFunction> planner)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddAzureOpenAICompletionBackend(
-            Env.Var("AZURE_OPENAI_DEPLOYMENT_LABEL"),
+        kernel.Config.AddAzureOpenAITextCompletionService(
+            Env.Var("AZURE_OPENAI_SERVICE_ID"),
             Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
             Env.Var("AZURE_OPENAI_ENDPOINT"),
             Env.Var("AZURE_OPENAI_KEY"));
