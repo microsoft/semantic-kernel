@@ -55,8 +55,8 @@ public class SemanticKernelController : ControllerBase
         }
 
         // Put ask's variables in the context we will use
-        var contextVariables = new ContextVariables(ask.Value);
-        foreach (var input in ask.Inputs)
+        var contextVariables = new ContextVariables(ask.Input);
+        foreach (var input in ask.Variables)
         {
             contextVariables.Set(input.Key, input.Value);
         }
@@ -68,6 +68,6 @@ public class SemanticKernelController : ControllerBase
             return this.BadRequest(result.LastErrorDescription);
         }
 
-        return this.Ok(new AskResult { Value = result.Result, State = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) });
+        return this.Ok(new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) });
     }
 }

@@ -10,64 +10,32 @@ internal static class FunctionLoadingExtensions
 {
     internal static void RegisterSemanticSkills(
         this IKernel kernel,
-        string skillDirectory,
+        string skillsDirectory,
         ILogger logger)
     {
-        string fullPath = Path.GetFullPath(skillDirectory).TrimEnd(Path.DirectorySeparatorChar);
-        string skillName = Path.GetFileName(fullPath);
+        string[] subDirectories = Directory.GetDirectories(skillsDirectory);
 
-        try
+        foreach (string skillDirectory in subDirectories)
         {
-            kernel.ImportSemanticSkillFromDirectory(skillDirectory.Substring(0, skillDirectory.Length - skillName.Length), skillName);
-        }
-        catch (TemplateException e)
-        {
-            logger.LogWarning("Could not load skill from {Directory}: {Message}", skillDirectory, e.Message);
+            try
+            {
+                kernel.ImportSemanticSkillFromDirectory(skillsDirectory, skillDirectory);
+            }
+            catch (TemplateException e)
+            {
+                logger.LogError("Could not load skill from {Directory}: {Message}", skillDirectory, e.Message);
+            }
         }
     }
 
-    internal static void RegisterSemanticSkill(
-        this IKernel kernel,
-        string skillDirectory,
-        ILogger logger)
+    internal static Dictionary<string, Type> RegisterNativeSkillDependencies(
+        this IServiceProvider serviceProvider,
+        string skillDirectory)
     {
-        string fullPath = Path.GetFullPath(skillDirectory).TrimEnd(Path.DirectorySeparatorChar);
-        string skillName = Path.GetFileName(fullPath);
+        // TODO: Implement this method
 
-        try
-        {
-            kernel.ImportSemanticSkillFromDirectory(skillDirectory.Substring(0, skillDirectory.Length - skillName.Length), skillName);
-        }
-        catch (TemplateException e)
-        {
-            logger.LogWarning("Could not load skill from {Directory}: {Message}", skillDirectory, e.Message);
-        }
+        return new Dictionary<string, Type>();
     }
-
-    /*internal static void RegisterNativeSkillDependencies(
-        this IKernel kernel,
-        string skillDirectory,
-        ILogger logger)
-    {
-        // object skill = new ();
-        // kernel.ImportSkill(skill, nameof(DocumentSkill));
-
-        Assembly.Load("xxx")
-            .GetTypes()
-            .Where(w => w.Namespace == "xxx.Repository" && w.IsClass)
-            .ToList()
-            .ForEach(t => {
-                services.AddTransient(t.GetInterface("I" + t.Name, false), t);
-            });
-
-        // load assembly and register with DI  
-        var assembly = Assembly.LoadFrom(Path.Combine("..\\Controllers\\bin\\Debug\\netcoreapp3.1", "Orders.dll"));
-        var orderType = assembly.ExportedTypes.First(t => t.Name == "Order");
-        services.AddScoped(orderType); // this is where we would make our type known to the DI container  
-        var loadedTypesCache = new LoadedTypesCache(); // this step is optional - i chose to leverage the same DI mechanism to avoid having to load assembly in my controller for type definition.  
-        loadedTypesCache.LoadedTypes.Add("order", orderType);
-        services.AddSingleton(loadedTypesCache); // singleton seems like a good fit here 
-    }*/
 
     internal static void RegisterNativeSkills(
         this IKernel kernel,

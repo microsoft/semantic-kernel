@@ -4,7 +4,7 @@ namespace SemanticKernel.Service.Model;
 
 public class Ask
 {
-    public string Value { get; set; } = string.Empty;
+    public string Input { get; set; } = string.Empty;
 
-    public IEnumerable<KeyValuePair<string, string>> Inputs { get; set; } = Enumerable.Empty<KeyValuePair<string, string>>();
+    public IEnumerable<KeyValuePair<string, string>> Variables { get; set; } = Enumerable.Empty<KeyValuePair<string, string>>();
 }
