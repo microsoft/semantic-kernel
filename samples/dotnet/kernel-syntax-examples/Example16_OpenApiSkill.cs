@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Auth;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
@@ -17,10 +18,10 @@ internal class Example16_OpenApiSkill
 {
     public static async Task RunAsync()
     {
-        await GetSecretFromAzureKeyValutAsync();
+        await GetSecretFromAzureKeyVaultAsync();
     }
 
-    public static async Task GetSecretFromAzureKeyValutAsync()
+    public static async Task GetSecretFromAzureKeyVaultAsync()
     {
         Console.WriteLine("======== Planning - Create and Execute Azure Plan ========");
         var kernel = InitializeKernelAndPlanner(out var planner);
@@ -30,7 +31,7 @@ internal class Example16_OpenApiSkill
         //kernel.ImportOpenApiSkillFromDirectory(folder, "AzureKeyVaultSkill");
 
         //Use OpenApi skill from Skills.OpenAPI package
-        kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault);
+        kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, BearerTokenHandler.AddAuthorizationData);
 
         var plan = await kernel.RunAsync("Load 'test-secret' from Azure KeyValut available at https://dev-tests.vault.azure.net using GetSecret function.", planner["CreatePlan"]);
 

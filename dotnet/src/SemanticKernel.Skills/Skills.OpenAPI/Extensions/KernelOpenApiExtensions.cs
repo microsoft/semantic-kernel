@@ -33,8 +33,10 @@ public static class KernelOpenApiExtensions
     /// <param name="skillName">Skill name.</param>
     /// <param name="url">Url to in which to retrieve the OpenAPI definition.</param>
     /// <param name="httpClient">Optional HttpClient to use for the request.</param>
+    /// <param name="authorizeRequestCallback">Delegate for authorizing HTTP requests to the API.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null)
+    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(
+        this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null, AuthorizeRequestCallback? authorizeRequestCallback = null)
     {
         Verify.ValidSkillName(skillName);
 
@@ -65,7 +67,7 @@ public static class KernelOpenApiExtensions
                 throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
             }
 
-            return kernel.RegisterOpenApiSkill(stream, skillName);
+            return kernel.RegisterOpenApiSkill(stream, skillName, authorizeRequestCallback);
         }
         finally
         {
@@ -81,8 +83,9 @@ public static class KernelOpenApiExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
+    /// <param name="authorizeRequestCallback">Optional delegate for authorizing HTTP requests to the API.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromResource(this IKernel kernel, string skillName)
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromResource(this IKernel kernel, string skillName, AuthorizeRequestCallback? authorizeRequestCallback = null)
     {
         Verify.ValidSkillName(skillName);
 
@@ -96,9 +99,6 @@ public static class KernelOpenApiExtensions
             throw new MissingManifestResourceException($"Unable to load OpenApi skill from assembly resource '{resourceName}'.");
         }
 
-        // The caller is expected to provide a callback function which will be used to add authorization data to the request before sending.
-        AuthorizeRequestCallback authorizeRequestCallback = BearerTokenHandler.AddAuthorizationData;
-
         return kernel.RegisterOpenApiSkill(stream, skillName, authorizeRequestCallback);
     }
 
@@ -108,8 +108,9 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the skill directory.</param>
     /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
+    /// <param name="authorizeRequestCallback">Optional delegate for authorizing HTTP requests to the API.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromDirectory(this IKernel kernel, string parentDirectory, string skillDirectoryName)
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromDirectory(this IKernel kernel, string parentDirectory, string skillDirectoryName, AuthorizeRequestCallback? authorizeRequestCallback = null)
     {
         const string OPENAPI_FILE = "openapi.json";
 
@@ -129,9 +130,6 @@ public static class KernelOpenApiExtensions
 
         using var stream = File.OpenRead(openApiDocumentPath);
 
-        // The caller is expected to provide a callback function which will be used to add authorization data to the request before sending.
-        AuthorizeRequestCallback authorizeRequestCallback = BearerTokenHandler.AddAuthorizationData;
-
         return kernel.RegisterOpenApiSkill(stream, skillDirectoryName, authorizeRequestCallback);
     }
 
@@ -141,8 +139,9 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Name of the skill to register.</param>
     /// <param name="filePath">File path to the OpenAPI document.</param>
+    /// <param name="authorizeRequestCallback">Optional delegate for authorizing HTTP requests to the API.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromFile(this IKernel kernel, string skillName, string filePath)
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromFile(this IKernel kernel, string skillName, string filePath, AuthorizeRequestCallback? authorizeRequestCallback)
     {
         if (!File.Exists(filePath))
         {
@@ -154,7 +153,7 @@ public static class KernelOpenApiExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.RegisterOpenApiSkill(stream, skillName);
+        return kernel.RegisterOpenApiSkill(stream, skillName, authorizeRequestCallback);
     }
 
     /// <summary>
@@ -163,9 +162,9 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">OpenApi document stream.</param>
     /// <param name="skillName">Skill name.</param>
-    /// <param name="authorizeRequestCallback">Delegate for authorizing the HTTP request message.</param>
+    /// <param name="authorizeRequestCallback">Optional delegate for authorizing the HTTP requests to the API.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> RegisterOpenApiSkill(this IKernel kernel, Stream documentStream, string skillName, AuthorizeRequestCallback authorizeRequestCallback)
+    public static IDictionary<string, ISKFunction> RegisterOpenApiSkill(this IKernel kernel, Stream documentStream, string skillName, AuthorizeRequestCallback? authorizeRequestCallback = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
         Verify.ValidSkillName(skillName);
@@ -176,6 +175,9 @@ public static class KernelOpenApiExtensions
         var operations = parser.Parse(documentStream);
 
         var skill = new Dictionary<string, ISKFunction>();
+
+        // If no auth callback provided, use empty function
+        authorizeRequestCallback ??= (request) => { };
 
         foreach (var operation in operations)
         {
