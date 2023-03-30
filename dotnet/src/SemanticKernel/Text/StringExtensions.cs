@@ -12,4 +12,9 @@ internal static class StringExtensions
     {
         return src.Equals(value, StringComparison.InvariantCultureIgnoreCase);
     }
+
+    internal static string NormalizeLineEndings(this string src)
+    {
+        return src.Replace("\r\n", "\n", StringComparison.InvariantCultureIgnoreCase);
+    }
 }

@@ -55,6 +55,7 @@ and try these examples:
 | [Simple chat summary](samples/apps/chat-summary-webapp-react/README.md) | Use ready-to-use skills and get those skills into your app easily.                                                                |
 | [Book creator](samples/apps/book-creator-webapp-react/README.md)        | Use planner to deconstruct a complex goal and envision using the planner in your app.                                             |
 | [Authentication and APIs](samples/apps/auth-api-webapp-react/README.md) | Use a basic connector pattern to authenticate and connect to an API and imagine integrating external data into your app's LLM AI. |
+| [Github repository Q&A](samples/apps/github-qna-webapp-react/README.md) | Use embeddings and memory to store recent data and allow you to query against it.                                                 |
 
 For a more hands-on overview, you can also run the
 [Getting Started notebook](samples/notebooks/dotnet/Getting-Started-Notebook.ipynb),
@@ -96,26 +97,32 @@ Here is a quick example of how to use Semantic Kernel from a C# console app.
 
 ```csharp
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.KernelExtensions;
 
 var kernel = Kernel.Builder.Build();
 
-// For Azure Open AI service endpoint and keys please see
+// For Azure Open AI details please see
 // https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api
-kernel.Config.AddAzureOpenAICompletionBackend(
-    "davinci-backend",                   // Alias used by the kernel
+kernel.Config.AddAzureOpenAITextCompletionService(
+    "davinci-azure",                     // Alias used by the kernel
     "text-davinci-003",                  // Azure OpenAI *Deployment ID*
     "https://contoso.openai.azure.com/", // Azure OpenAI *Endpoint*
     "...your Azure OpenAI Key..."        // Azure OpenAI *Key*
 );
 
-string skPrompt = @"
+string summarizePrompt = @"
 {{$input}}
 
-Give me the TLDR in 5 words.
-";
+Give me the a TLDR in 5 words.";
 
-string textToSummarize = @"
+string haikuPrompt = @"
+{{$input}}
+
+Write a futuristic haiku about it.";
+
+var summarize = kernel.CreateSemanticFunction(summarizePrompt);
+var haikuWriter = kernel.CreateSemanticFunction(haikuPrompt);
+
+string inputText = @"
 1) A robot may not injure a human being or, through inaction,
 allow a human being to come to harm.
 
@@ -123,16 +130,15 @@ allow a human being to come to harm.
 such orders would conflict with the First Law.
 
 3) A robot must protect its own existence as long as such protection
-does not conflict with the First or Second Law.
-";
+does not conflict with the First or Second Law.";
 
-var tldrFunction = kernel.CreateSemanticFunction(skPrompt);
+var output = await kernel.RunAsync(inputText, summarize, haikuWriter);
 
-var summary = await kernel.RunAsync(textToSummarize, tldrFunction);
+Console.WriteLine(output);
 
-Console.WriteLine(summary);
-
-// Output => Protect humans, follow orders, survive.
+// Output => Robots protect us all
+//           No harm to humans they bring
+//           Peaceful coexistence
 ```
 
 ## Contributing and Community
