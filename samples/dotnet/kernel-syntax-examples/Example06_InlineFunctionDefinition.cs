@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.KernelExtensions;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -22,7 +21,7 @@ public static class Example06_InlineFunctionDefinition
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         // OpenAI settings
-        kernel.Config.AddOpenAICompletionBackend("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
 
         // Function defined using few-shot design pattern
         const string FUNCTION_DEFINITION = @"

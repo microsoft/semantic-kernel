@@ -55,7 +55,19 @@ public static class Program
         await Example15_MemorySkill.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example16_OpenApiSkill.RunAsync();
+        await Example16_CustomLLM.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example17_ChatGPT.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example18_DallE.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example19_Qdrant.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example20_OpenApiSkill.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }

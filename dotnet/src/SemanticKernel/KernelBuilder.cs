@@ -4,9 +4,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -20,7 +18,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class KernelBuilder
 {
-    private KernelConfig _config = new KernelConfig();
+    private KernelConfig _config = new();
     private ISemanticTextMemory _memory = NullMemory.Instance;
     private ILogger _log = NullLogger.Instance;
     private IMemoryStore<float>? _memoryStorage = null;
@@ -106,8 +104,8 @@ public sealed class KernelBuilder
     /// <param name="storage">Storage to add.</param>
     /// <param name="embeddingGenerator">Embedding generator to add.</param>
     /// <returns>Updated kernel builder including the memory storage and embedding generator.</returns>
-    public KernelBuilder WithMemoryStorageAndEmbeddingGenerator(
-        IMemoryStore<float> storage, IEmbeddingGenerator<string, float> embeddingGenerator)
+    public KernelBuilder WithMemoryStorageAndTextEmbeddingGeneration(
+        IMemoryStore<float> storage, IEmbeddingGeneration<string, float> embeddingGenerator)
     {
         Verify.NotNull(storage, "The memory instance provided is NULL");
         Verify.NotNull(embeddingGenerator, "The embedding generator instance provided is NULL");

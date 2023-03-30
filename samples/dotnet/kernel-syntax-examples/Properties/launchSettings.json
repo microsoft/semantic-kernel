@@ -3,12 +3,8 @@
     "KernelSyntaxExamples": {
       "commandName": "Project",
       "environmentVariables": {
-        // "BING_API_KEY": "",
-        // "OPENAI_API_KEY": "",
-        // "AZURE_OPENAI_DEPLOYMENT_LABEL": "azure-text-davinci-002",
-        // "AZURE_OPENAI_DEPLOYMENT_NAME": "text-davinci-002",
-        // "AZURE_OPENAI_ENDPOINT": "",
-        // "AZURE_OPENAI_KEY": ""
+      // Do not set env vars here to avoid the risk of leaking secrets in the repository or pull requests.
+      // We recommend using Secret Manager instead, see README.md for more details
       }
     }
   }

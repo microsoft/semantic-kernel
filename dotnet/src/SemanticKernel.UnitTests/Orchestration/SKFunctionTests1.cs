@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -33,7 +33,7 @@ public sealed class SKFunctionTests1
 
         // Assert
         Assert.Equal(0, skFunction.RequestSettings.Temperature);
-        Assert.Equal(100, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal(256, skFunction.RequestSettings.MaxTokens);
     }
 
     [Fact]
