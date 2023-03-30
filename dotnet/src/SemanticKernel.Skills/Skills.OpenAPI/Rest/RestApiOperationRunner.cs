@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Auth;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
@@ -26,17 +25,26 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     /// <summary>
     /// Delegate for authorizing the HTTP request.
     /// </summary>
-    private readonly AuthorizeRequestCallback _authorizeRequestCallback;
+    private readonly Func<HttpRequestMessage, Task> _authCallback;
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationRunner"/> class.
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
-    /// <param name="authorizeRequestCallback">Delegate for authorizing the HTTP request.</param>
-    public RestApiOperationRunner(HttpClient httpClient, AuthorizeRequestCallback authorizeRequestCallback)
+    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
+    public RestApiOperationRunner(HttpClient httpClient, Func<HttpRequestMessage, Task>? authCallback = null)
     {
         this._httpClient = httpClient;
-        this._authorizeRequestCallback = authorizeRequestCallback;
+
+        // If no auth callback provided, use empty function
+        if (authCallback == null)
+        {
+            this._authCallback = (request) => { return Task.CompletedTask; };
+        }
+        else
+        {
+            this._authCallback = authCallback;
+        }
     }
 
     /// <inheritdoc/>
@@ -66,7 +74,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     {
         using var requestMessage = new HttpRequestMessage(method, uri);
 
-        this._authorizeRequestCallback(requestMessage);
+        await this._authCallback(requestMessage);
 
         if (payload != null)
         {

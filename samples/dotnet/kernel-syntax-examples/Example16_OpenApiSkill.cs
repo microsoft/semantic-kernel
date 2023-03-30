@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Auth;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
@@ -28,17 +27,18 @@ internal class Example16_OpenApiSkill
         Console.WriteLine("======== Planning - Create and Execute Azure Plan ========");
         var kernel = InitializeKernelAndPlanner(out var planner);
 
-        static void authorizeRequestCallback(HttpRequestMessage request)
+        static Task authCallback(HttpRequestMessage request)
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Env.Var("AZURE_KEYVAULT_TOKEN"));
+            return Task.CompletedTask;
         }
 
         //Use OpenApi skill from folder
         //string folder = RepoFiles.SampleSkillsPath();
-        //kernel.ImportOpenApiSkillFromDirectory(folder, "AzureKeyVaultSkill", authorizeRequestCallback);
+        //kernel.ImportOpenApiSkillFromDirectory(folder, "AzureKeyVaultSkill", authCallback);
 
         //Use OpenApi skill from Skills.OpenAPI package
-        kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, authorizeRequestCallback);
+        kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, authCallback);
 
         var plan = await kernel.RunAsync("Load 'test-secret' from Azure KeyVault available at https://dev-tests.vault.azure.net using GetSecret function.", planner["CreatePlan"]);
 
