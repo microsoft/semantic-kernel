@@ -95,6 +95,7 @@ If you see `No sources found.`, add the NuGet official package source:
 ```sh
 dotnet nuget add source "https://api.nuget.org/v3/index.json" --name "nuget.org"
 ```
+Run `dotnet nuget list source` again to verify the source was added.
 
 ## Polyglot Notebooks
 
