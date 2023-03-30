@@ -40,6 +40,11 @@ internal class FunctionFlowRunner
     internal const string ConditionIfTag = "if";
 
     /// <summary>
+    /// The tag name used in the plan xml for a conditional check
+    /// </summary>
+    internal const string ConditionElseTag = "else";
+
+    /// <summary>
     /// The attribute tag used in the plan xml for setting the context variable name to set the output of a function to.
     /// </summary>
     internal const string SetContextVariableTag = "setContextVariable";
@@ -164,24 +169,38 @@ internal class FunctionFlowRunner
                     continue;
                 }
 
+                // Ignore else statements if any (they are handled in the if statement)
+                if (processFunctions && o2.Name.StartsWith(ConditionElseTag, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    context.Log.LogTrace("{0}: skipping Else tag node", parentNodeName);
+                    continue;
+                }
+
                 if (processFunctions && o2.Name.StartsWith(ConditionIfTag, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var ifContent = o2.OuterXml;
-                    var functionVariables = new ContextVariables();
-                    functionVariables.Update(context.Variables);
-                    functionVariables.Set("INPUT", o2.OuterXml);
+                    context.Log.LogTrace("{0}: found IF tag node", parentNodeName);
+                    // Includes IF + ELSE statement
+                    var ifFullContent = o2.OuterXml;
 
-                    var result = await this._conditionalFlowHelper.IfAsync(ifContent,
-                        new SKContext(functionVariables, this._kernel.Memory, this._kernel.Skills, this._kernel.Log, context.CancellationToken));
-
-                    if (result.ErrorOccurred)
+                    //Go for the next node to see if it's an else
+                    if (this.CheckIfNextNodeIsElseAndGetItsContents(o2, out var elseContents))
                     {
-                        throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, result.LastErrorDescription, result.LastException);
+                        ifFullContent += elseContents;
                     }
 
-                    _ = stepAndTextResults.Append(INDENT).AppendLine(result.Variables.Input);
+                    var functionVariables = new ContextVariables();
+                    functionVariables.Update(context.Variables);
+                    functionVariables.Set("INPUT", ifFullContent);
+
+                    var branchIfOrElse = await this._conditionalFlowHelper.IfAsync(ifFullContent,
+                        new SKContext(functionVariables, this._kernel.Memory, this._kernel.Skills, this._kernel.Log, context.CancellationToken));
+
+                    _ = stepAndTextResults.Append(INDENT).AppendLine(branchIfOrElse);
                     processFunctions = false;
-                    continue;
+
+                    // As the branching and order of events in the plan was redefined by the condition, the current sequence of the plan is no
+                    // longer valid and a break is needed to end this iteration
+                    break;
                 }
 
                 if (o2.Name.StartsWith(FunctionTag, StringComparison.InvariantCultureIgnoreCase))
@@ -247,7 +266,6 @@ internal class FunctionFlowRunner
 
                         // capture current keys before running function
                         var keysToIgnore = functionVariables.Select(x => x.Key).ToList();
-
                         var result = await this._kernel.RunAsync(functionVariables, skillFunction);
 
                         // copy all values for VariableNames in functionVariables not in keysToIgnore to context.Variables
@@ -288,6 +306,23 @@ internal class FunctionFlowRunner
         }
 
         return stepAndTextResults.Replace("\r\n", "\n").ToString();
+    }
+
+    private bool CheckIfNextNodeIsElseAndGetItsContents(XmlNode ifNode, out string? elseContents)
+    {
+        elseContents = null;
+        if (ifNode.NextSibling is null)
+        {
+            return false;
+        }
+
+        if (!ifNode.NextSibling.Name.Equals("else", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        elseContents = ifNode.NextSibling.OuterXml;
+        return true;
     }
 
     private static (string goalTxt, string goalXmlString) GatherGoal(XmlDocument xmlDoc)

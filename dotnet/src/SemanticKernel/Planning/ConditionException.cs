@@ -20,7 +20,7 @@ public class ConditionException : Exception<ConditionException.ErrorCodes>
         /// <summary>
         /// Invalid condition structure.
         /// </summary>
-        InvalidConditionFormat = 0,
+        InvalidCondition = 0,
 
         /// <summary>
         /// Invalid statement structure.
@@ -30,7 +30,7 @@ public class ConditionException : Exception<ConditionException.ErrorCodes>
         /// <summary>
         /// Json Response was not present in the output
         /// </summary>
-        JsonResponseNotFound = 2,
+        InvalidResponse = 2,
 
         /// <summary>
         /// Required context variables are not present in the context

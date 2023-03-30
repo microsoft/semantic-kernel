@@ -15,8 +15,9 @@ To create a plan, follow these steps:
 6. 'input' does not need to be specified if it consumes the 'output' of the previous function.
 7. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""$<UNIQUE_VARIABLE_KEY>""/>
 8. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
-9. Available conditions: greaterthan, greaterthanorequals, equals, contains, startswith
-10. Append an ""END"" XML comment at the end of the plan.
+9. You can only use ""<if>"" or ""<else>"" nest else tags, don't use elseif.
+10. Don't use ""="", "">"" or ""<"" in condition attributes: use equals, greaterthan or lessthan instead.
+11. Append an ""END"" XML comment at the end of the plan.
 
 [EXAMPLE FUNCTIONS]
   WriterSkill.Summarize:
@@ -123,25 +124,25 @@ To create a plan, follow these steps:
     inputs:
     - input: the text to email
     - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
+  _GLOBAL_FUNCTIONS_.Length:
+    description: Get the length of a string.
+    inputs:
+    - input: Input string
 [END EXAMPLE FUNCTIONS]
 
-<goal>Summarize the input, if the input length is greater than 10 then Create an outline for a children's book with 3 chapters about a group of kids in a club and then summarize it otherwise translate to japanese and email it to Martin.</goal>
+<goal>Summarize the input, if the input length > 10 and contains ""book"" then Create an outline for a children's book with 3 chapters about a group of kids in a club and summarize it otherwise translate to japanese and email it to Martin.</goal>
 <plan>
   <function.Everything.Summarize setContextVariable=""SUMMARIZED_INPUT""/>
-  <if>
-    <conditiongroup>
-       <condition variable=""$SUMMARIZED_INPUT"" greaterthan=""10"" />
-    </conditiongroup>
-    <then>
+  <function._GLOBAL_FUNCTIONS_.Length setContextVariable=""$SUMMARIZED_INPUT_LENGTH""/>
+  <if condition=""$SUMMARIZED_INPUT_LENGTH greaterthan 10 and $SUMMARIZED_INPUT contains 'book'"">
       <function._GLOBAL_FUNCTIONS_.NovelOutline input=""A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic."" chapterCount=""3"" />
       <function.Everything.Summarize/>
-    </then>
-    <else>
+  </if>
+  <else>
       <function.LanguageHelpers.TranslateTo input=""$SUMMARIZED_INPUT"" translate_to_language=""Japanese"" setContextVariable=""TRANSLATED_TEXT"" />
       <function.EmailConnector.LookupContactEmail input=""Martin"" setContextVariable=""CONTACT_RESULT"" />
       <function.EmailConnector.EmailTo input=""$TRANSLATED_TEXT"" recipient=""$CONTACT_RESULT""/>
-    </else>
-  </if>
+  </else>
 </plan><!-- END -->
 
 [AVAILABLE FUNCTIONS]

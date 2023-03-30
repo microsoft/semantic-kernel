@@ -9,6 +9,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
@@ -25,113 +26,99 @@ namespace Microsoft.SemanticKernel.Planning;
 /// </summary>
 public class ConditionalFlowHelper
 {
+    private readonly IKernel _kernel;
+
     #region Prompts
 
     internal const string IfStructureCheckPrompt =
         @"Structure:
-<if>
-	<conditiongroup/>
-	<then/>
-	<else/>
+<if condition="""">
 </if>
+<else>
+</else>
 
 Rules:
-. A ""Condition Group"" must exists and have at least one ""Condition"" or ""Condition Group"" child
-. Check recursively if any existing the children ""Condition Group"" follow the Rule 1
-. ""Then"" must exists and have at least one child node
+. A condition attribute must exists in the if tag
+. ""If"" tag must have one or more children nodes
 . ""Else"" is optional
 . If ""Else"" is provided must have one or more children nodes
 . Return true if Test Structure is valid
-. Return false if Test Structure is not valid with a reason
-. Give a json list of variables used inside all the ""Condition Group""s
+. Return false if Test Structure is not valid with a reason with everything that is wrong
+. Give a json list of variables used inside the attribute ""condition"" of the first ""IF"" only
 . All the return should be in Json format.
 . Response Json Structure:
 {
-  ""valid"": bool,
-  ""reason"": string,
-  ""variables"": [string] (only the variables within ""Condition Group"")
+    ""valid"": bool,
+    ""reason"": string,
+    ""variables"": [string] (only the variables within ""Condition"" attribute)
 }
 
 Test Structure:
-{{$IfStatementContent}}";
+{{$IfStatementContent}}
+
+Response: ";
 
     internal const string EvaluateConditionPrompt =
         @"Rules
-1 ""and"" and ""or"" should be self closing tags
-2 Expect should be TRUE, FALSE OR ERROR
+. Response using the following json structure:
+{ ""valid"": bool, ""condition"": bool, ""reason"": string }
 
-Given Example:
-<conditiongroup>
-    <condition variable=""$x"" exact=""1"" />
-    <and/>
-    <condition variable=""$y"" contains=""asd"" />
-    <or/>
-    <not>
-        <condition variable=""$z"" greaterthan=""10"" />
-    </not>
-</conditiongroup>
-
-Expect Example: TRUE
-
-Evaluate Example:
-(x == ""1"" ^ y.Contains(""asd"") ∨ ¬(z > 10))
-(TRUE ^ TRUE ∨ ¬ (FALSE))
-(TRUE ^ TRUE ∨ TRUE) = TRUE
+. A list of variables will be provided for the condition evaluation
+. If condition has an error, valid will be false and property ""reason"" will have all detail why.
+. If condition is valid, update reason with the current evaluation detail.
+. Return ""condition"" as true or false depending on the condition evaluation
 
 Variables Example:
-x = ""2""
+x = 2
 y = ""adfsdasfgsasdddsf""
-z = ""100""
+z = 100
 w = ""sdf""
 
 Given Example:
-<if>
-     <conditiongroup>
-          <condition variable=""$24hour"" exact=""1"" />
-          <and/>
-          <condition variable=""$24hour"" greaterthan=""10"" />
-     </conditiongroup>
-     <then><if>Good Morning</if></then>
-     <else><else>Good afternoon</else></else>
-</if>
+$x equals 1 and $y contains 'asd' or not ($z greaterthan 10)
+
+Reason Example:
+(x == 1 ∧ (y contains ""asd"") ∨ ¬(z > 10))
+(TRUE ∧ TRUE ∨ ¬ (FALSE))
+(TRUE ∧ TRUE ∨ TRUE)
+TRUE
 
 Variables Example:
 24hour = 11
-
-Expect Example: FALSE
-
-Evaluate Example:
-(24hour == 1 ^ 24hour > 10)
-(FALSE ^ TRUE) = FALSE
-
 
 Given Example:
-Invalid XML
+$24hour equals 1 and $24hour greaterthan 10
+
+Response Example:
+{ ""valid"": true, ""condition"": false, ""reason"": ""(24hour == 1 ∧ 24hour > 10) = (FALSE ∧ TRUE) = FALSE"" }
 
 Variables Example:
 24hour = 11
-
-Expect Example: ERROR
-Reason Example: 
 
 Given Example:
-<conditiongroup>
-<condition variable=""$23hour"" exact=""10""/>
-</conditiongroup>
+Some condition
+
+Response Example:
+{ ""valid"": false, ""reason"": ""<detail why>"" }
 
 Variables Example:
-24hour = 11
+a = 1
+b = undefined
+c = ""dome""
 
-Expect Example: ERROR
-Reason Example: 23hour is not a valid variable. 
+Given Example:
+(a is not undefined) and a greaterthan 100 and a greaterthan 10 or (a equals 1 and a equals 10) or (b is undefined and c is not undefined)
 
-Given:
-{{$IfCondition}}
+Response Example:
+{ ""valid"": true, ""condition"": true, ""reason"": ""((a is not undefined) ∧ a > 100 ∧ a > 10) ∨ (a == 1 ∧ a == 10) ∨ (b is undefined ∧ c is not undefined) = ((TRUE ∧ FALSE ∧ FALSE) ∨ (TRUE ∧ FALSE) ∨ (TRUE ∧ TRUE)) = (FALSE ∨ FALSE ∨ TRUE) = TRUE"" }
 
 Variables:
 {{$ConditionalVariables}}
 
-Expect: ";
+Given:
+{{$IfCondition}}
+
+Response: ";
 
     internal const string ExtractThenOrElseFromIfPrompt =
         @"Consider the below structure, ignore any format error:
@@ -164,9 +151,10 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
     /// <param name="completionBackend"> A optional completion backend to run the internal semantic functions </param>
     internal ConditionalFlowHelper(IKernel kernel, ITextCompletion? completionBackend = null)
     {
+        this._kernel = kernel;
         this._ifStructureCheckFunction = kernel.CreateSemanticFunction(
             IfStructureCheckPrompt,
-            skillName: nameof(ConditionalFlowHelper),
+            skillName: "PlannerSkill_Excluded",
             description: "Evaluate if an If structure is valid and returns TRUE or FALSE",
             maxTokens: 100,
             temperature: 0,
@@ -174,7 +162,7 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
 
         this._evaluateConditionFunction = kernel.CreateSemanticFunction(
             EvaluateConditionPrompt,
-            skillName: nameof(ConditionalFlowHelper),
+            skillName: "PlannerSkill_Excluded",
             description: "Evaluate a condition group and returns TRUE or FALSE",
             maxTokens: 100,
             temperature: 0,
@@ -182,7 +170,7 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
 
         this._evaluateIfBranchFunction = kernel.CreateSemanticFunction(
             ExtractThenOrElseFromIfPrompt,
-            skillName: nameof(ConditionalFlowHelper),
+            skillName: "PlannerSkill_Excluded",
             description: "Extract the content of the first child tag from the root If element",
             maxTokens: 1000,
             temperature: 0,
@@ -199,35 +187,30 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
     /// <summary>
     /// Get a planner if statement content and output then or else contents depending on the conditional evaluation.
     /// </summary>
-    /// <param name="ifContent">If statement content.</param>
+    /// <param name="ifFullContent">If statement content.</param>
     /// <param name="context"> The context to use </param>
     /// <returns>Then or Else contents depending on the conditional evaluation</returns>
     /// <remarks>
     /// This skill is initially intended to be used only by the Plan Runner.
     /// </remarks>
-    public async Task<SKContext> IfAsync(string ifContent, SKContext context)
+    public async Task<string> IfAsync(string ifFullContent, SKContext context)
     {
-        var usedVariables = await this.GetVariablesAndEnsureIfStructureIsValidAsync(ifContent, context).ConfigureAwait(false);
+        XmlDocument xmlDoc = new();
+        xmlDoc.LoadXml("<xml>" + ifFullContent + "</xml>");
 
-        bool conditionEvaluation = await this.EvaluateConditionAsync(ifContent, usedVariables, context).ConfigureAwait(false);
+        XmlNode ifNode =
+            xmlDoc.SelectSingleNode("//if")
+            ?? throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "If is not present");
 
-        return await this.GetThenOrElseBranchAsync(ifContent, conditionEvaluation, context).ConfigureAwait(false);
-    }
+        XmlNode? elseNode = xmlDoc.SelectSingleNode("//else");
 
-    /// <summary>
-    /// Returns the content from the Then or the Else branch based in the condition provided
-    /// </summary>
-    /// <param name="ifContent">If Structure content</param>
-    /// <param name="trueCondition">Condition used to decide on Then or Else returning data</param>
-    /// <param name="context">Current context</param>
-    /// <returns>SKContext with the input as the Then or the Else branches data</returns>
-    private async Task<SKContext> GetThenOrElseBranchAsync(string ifContent, bool trueCondition, SKContext context)
-    {
-        var branchVariables = new ContextVariables(ifContent);
-        context.Variables.Set("EvaluateIfBranchTag", trueCondition ? "Then" : "Else");
-        context.Variables.Set("IfStatementContent", ifContent);
+        var usedVariables = await this.GetVariablesAndEnsureIfStructureIsValidAsync(ifNode.OuterXml, context).ConfigureAwait(false);
 
-        return (await this._evaluateIfBranchFunction.InvokeAsync(context).ConfigureAwait(false));
+        bool conditionEvaluation = await this.EvaluateConditionAsync(ifNode, usedVariables, context).ConfigureAwait(false);
+
+        return conditionEvaluation
+            ? ifNode.InnerXml
+            : elseNode?.InnerXml ?? string.Empty;
     }
 
     /// <summary>
@@ -237,22 +220,27 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
     /// <param name="context">Current context</param>
     /// <returns>List of used variables in the if condition</returns>
     /// <exception cref="ConditionException">InvalidStatementStructure</exception>
-    /// <exception cref="ConditionException">JsonResponseNotFound</exception>
+    /// <exception cref="ConditionException">InvalidResponse</exception>
     private async Task<IEnumerable<string>> GetVariablesAndEnsureIfStructureIsValidAsync(string ifContent, SKContext context)
     {
         context.Variables.Set("IfStatementContent", ifContent);
-        var llmCheckFunctionResponse = (await this._ifStructureCheckFunction.InvokeAsync(ifContent, context).ConfigureAwait(false)).ToString();
+        var llmRawResponse = (await this._ifStructureCheckFunction.InvokeAsync(ifContent, context).ConfigureAwait(false)).ToString();
 
-        JsonNode llmResponse = this.IfCheckResponseAsJson(llmCheckFunctionResponse);
-        var valid = llmResponse["valid"]!.GetValue<bool>();
+        JsonNode llmJsonResponse = this.GetLlmResponseAsJsonWithProperties(llmRawResponse, "valid");
+        var valid = llmJsonResponse["valid"]!.GetValue<bool>();
 
         if (!valid)
         {
-            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, llmResponse?["reason"]?.GetValue<string>() ?? NoReasonMessage);
+            var reason = llmJsonResponse?["reason"]?.GetValue<string>();
+
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure,
+                !string.IsNullOrWhiteSpace(reason)
+                    ? reason
+                    : NoReasonMessage);
         }
 
         // Get all variables from the json array and remove the $ prefix, return empty list if no variables are found
-        var usedVariables = llmResponse["variables"]?.Deserialize<string[]>()?
+        var usedVariables = llmJsonResponse["variables"]?.Deserialize<string[]>()?
                                 .Where(v => !string.IsNullOrWhiteSpace(v))
                                 .Select(v => v.TrimStart('$'))
                             ?? Enumerable.Empty<string>();
@@ -263,48 +251,58 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
     /// <summary>
     /// Evaluates a condition group and returns TRUE or FALSE
     /// </summary>
-    /// <param name="ifContent">If structure content</param>
+    /// <param name="ifNode">If structure content</param>
     /// <param name="usedVariables">Used variables to send for evaluation</param>
     /// <param name="context">Current context</param>
     /// <returns>Condition result</returns>
-    /// <exception cref="ConditionException">InvalidConditionFormat</exception>
+    /// <exception cref="ConditionException">InvalidCondition</exception>
     /// <exception cref="ConditionException">ContextVariablesNotFound</exception>
-    private async Task<bool> EvaluateConditionAsync(string ifContent, IEnumerable<string> usedVariables, SKContext context)
+    private async Task<bool> EvaluateConditionAsync(XmlNode ifNode, IEnumerable<string> usedVariables, SKContext context)
     {
-        var conditionContent = this.ExtractConditionalContent(ifContent);
+        var conditionContent = this.ExtractConditionalContent(ifNode);
 
         context.Variables.Set("IfCondition", conditionContent);
         context.Variables.Set("ConditionalVariables", this.GetConditionalVariablesFromContext(usedVariables, context.Variables));
 
-        var llmConditionResponse = (await this._evaluateConditionFunction.InvokeAsync(conditionContent, context).ConfigureAwait(false))
-            .ToString()
-            .Trim();
+        var llmRawResponse =
+            (await this._evaluateConditionFunction.InvokeAsync(conditionContent, context).ConfigureAwait(false))
+            .ToString();
 
-        var reason = this.GetReason(llmConditionResponse);
-        var error = !Regex.Match(llmConditionResponse.Trim(), @"^(true|false)", RegexOptions.IgnoreCase).Success;
-        if (error)
+        JsonNode llmJsonResponse = this.GetLlmResponseAsJsonWithProperties(llmRawResponse, "valid");
+
+        if (llmJsonResponse is null)
         {
-            throw new ConditionException(ConditionException.ErrorCodes.InvalidConditionFormat, reason);
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidResponse, "Response is null");
         }
 
-        return llmConditionResponse.StartsWith("TRUE", StringComparison.OrdinalIgnoreCase);
+        var valid = llmJsonResponse["valid"]!.GetValue<bool>();
+        var reason = llmJsonResponse["reason"]?.GetValue<string>();
+
+        if (!valid)
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidCondition,
+                !string.IsNullOrWhiteSpace(reason)
+                    ? reason
+                    : NoReasonMessage);
+        }
+
+        context.Log.LogWarning("Conditional evaluation: {0}", llmJsonResponse["reason"] ?? NoReasonMessage);
+
+        return llmJsonResponse["condition"]?.GetValue<bool>()
+               ?? throw new ConditionException(ConditionException.ErrorCodes.InvalidResponse, "Condition property null or not found");
     }
 
     /// <summary>
     /// Extracts the condition root group content closest the If structure
     /// </summary>
-    /// <param name="ifContent">If structure content to extract from</param>
+    /// <param name="ifNode">If node to extract condition from</param>
     /// <returns>Conditiongroup contents</returns>
-    private string ExtractConditionalContent(string ifContent)
+    private string ExtractConditionalContent(XmlNode ifNode)
     {
-        XmlDocument xmlDoc = new();
-        xmlDoc.LoadXml("<xml>" + ifContent + "</xml>");
+        var conditionContent = ifNode.Attributes?["condition"]
+                               ?? throw new ConditionException(ConditionException.ErrorCodes.InvalidCondition, "<if> has no condition attribute");
 
-        XmlNode parentConditionGroupNode =
-            xmlDoc.SelectSingleNode("//if/conditiongroup")
-            ?? throw new ConditionException(ConditionException.ErrorCodes.InvalidConditionFormat, "Conditiongroup definition is not present");
-
-        return parentConditionGroupNode.OuterXml;
+        return conditionContent.Value;
     }
 
     /// <summary>
@@ -336,28 +334,13 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
     }
 
     /// <summary>
-    /// Gets the reason from the LLM response
-    /// </summary>
-    /// <param name="llmResponse">Raw LLM response</param>
-    /// <returns>Reason details</returns>
-    private string? GetReason(string llmResponse)
-    {
-        var hasReasonIndex = llmResponse.IndexOf(ReasonIdentifier, StringComparison.OrdinalIgnoreCase);
-        if (hasReasonIndex > -1)
-        {
-            return llmResponse[(hasReasonIndex + ReasonIdentifier.Length)..].Trim();
-        }
-
-        return NoReasonMessage;
-    }
-
-    /// <summary>
     /// Gets a JsonNode traversable structure from the LLM text response
     /// </summary>
-    /// <param name="llmResponse"></param>
-    /// <returns></returns>
-    /// <exception cref="ConditionException"></exception>
-    private JsonNode IfCheckResponseAsJson(string llmResponse)
+    /// <param name="llmResponse">String to parse into a JsonNode format</param>
+    /// <param name="requiredProperties">If provided ensures if the json object has the properties</param>
+    /// <returns>JsonNode with the parseable json form the llmResponse string</returns>
+    /// <exception cref="ConditionException">Throws if cannot find a Json result or any of the required properties</exception>
+    private JsonNode GetLlmResponseAsJsonWithProperties(string llmResponse, params string[] requiredProperties)
     {
         var startIndex = llmResponse?.IndexOf('{', StringComparison.InvariantCultureIgnoreCase) ?? -1;
         JsonNode? response = null;
@@ -366,11 +349,18 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
         {
             var jsonResponse = llmResponse![startIndex..];
             response = JsonSerializer.Deserialize<JsonNode>(jsonResponse);
+
+            foreach (string requiredProperty in requiredProperties)
+            {
+                _ = response?[requiredProperty]
+                    ?? throw new ConditionException(ConditionException.ErrorCodes.InvalidResponse,
+                        $"Response doesn't have the required property: {requiredProperty}");
+            }
         }
 
         if (response is null)
         {
-            throw new ConditionException(ConditionException.ErrorCodes.JsonResponseNotFound);
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidResponse);
         }
 
         return response;

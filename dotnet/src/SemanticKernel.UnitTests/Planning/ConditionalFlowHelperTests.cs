@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Configuration;
@@ -19,6 +20,7 @@ namespace SemanticKernel.UnitTests.Planning;
 public class ConditionalFlowHelperTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
+    private const string ValidIfStructure = "<if condition=\"a equals 0\"><function/></if>";
 
     public ConditionalFlowHelperTests(ITestOutputHelper testOutputHelper)
     {
@@ -48,42 +50,44 @@ public class ConditionalFlowHelperTests
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
-            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], "TRUE" },
-            { ConditionalFlowHelper.ExtractThenOrElseFromIfPrompt[..30], "Something" },
+            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], "{\"valid\": true, \"condition\": true}" },
         });
 
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
 
         // Act
-        var context = await target.IfAsync("<if><conditiongroup/></if>", this.CreateSKContext(kernel));
+        var resultingBranch = await target.IfAsync(ValidIfStructure, this.CreateSKContext(kernel));
 
         // Assert
-        Assert.NotNull(context);
-        Assert.Equal("Something", context.ToString());
+        Assert.NotNull(resultingBranch);
+        Assert.Equal("<function />", resultingBranch);
     }
 
     [Theory]
-    [InlineData("")]
-    [InlineData("Unexpected Result")]
-    public async Task InvalidJsonIfStatementCheckResponseShouldFailContextAsync(string llmResult)
+    [InlineData("{\"valid\": true}")]
+    [InlineData("{\"valid\": true, \"condition\": null}")]
+    public async Task InvalidConditionJsonPropertyShouldFailAsync(string llmConditionResult)
     {
         // Arrange
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
-            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], llmResult }
+            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
+            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], llmConditionResult },
         });
+
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
 
         // Act
         var exception = await Assert.ThrowsAsync<ConditionException>(async () =>
         {
-            await target.IfAsync("Any", this.CreateSKContext(kernel));
+            await target.IfAsync(ValidIfStructure, this.CreateSKContext(kernel));
         });
 
         // Assert
-        Assert.Equal(ConditionException.ErrorCodes.JsonResponseNotFound, exception.ErrorCode);
+        Assert.NotNull(exception);
+        Assert.Equal(ConditionException.ErrorCodes.InvalidResponse, exception.ErrorCode);
     }
 
     [Fact]
@@ -104,15 +108,71 @@ public class ConditionalFlowHelperTests
         // Act
         var exception = await Assert.ThrowsAsync<ConditionException>(async () =>
         {
-            await target.IfAsync("Any", this.CreateSKContext(kernel));
+            await target.IfAsync("<if></if>", this.CreateSKContext(kernel));
         });
 
         // Assert
-        Assert.Equal(ConditionException.ErrorCodes.InvalidConditionFormat, exception.ErrorCode);
+        Assert.Equal(ConditionException.ErrorCodes.InvalidCondition, exception.ErrorCode);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Unexpected Result")]
+    public async Task InvalidJsonIfStatementCheckResponseShouldFailContextAsync(string llmResult)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
+        {
+            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], llmResult }
+        });
+        var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ConditionException>(async () =>
+        {
+            await target.IfAsync(ValidIfStructure, this.CreateSKContext(kernel));
+        });
+
+        // Assert
+        Assert.Equal(ConditionException.ErrorCodes.InvalidResponse, exception.ErrorCode);
+    }
+
+    [Theory]
+    [InlineData("TRUE<else>")]
+    [InlineData("<if condition=\"a contains b\">")]
+    [InlineData("<i f condition=\"a contains b\">")]
+    [InlineData("<else condition=\"a contains b\">")]
+    [InlineData("<if condition=\"a contains b\"><else></if>")]
+    [InlineData("</if>")]
+    public async Task InvalidIfStatementWithoutClosingTagsShouldFailAsync(string ifContentInput)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+
+        // To be able to check the condition need ensure success in the if statement check first
+        var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
+        {
+            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
+        });
+
+        var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<XmlException>(async () =>
+        {
+            await target.IfAsync(ifContentInput, this.CreateSKContext(kernel));
+        });
+
+        // Assert
+        Assert.NotNull(exception);
     }
 
     [Theory]
     [InlineData("{\"valid\": false, \"reason\": null}", ConditionalFlowHelper.NoReasonMessage)]
+    [InlineData("{\"valid\": false, \"reason\": \"\"}", ConditionalFlowHelper.NoReasonMessage)]
     [InlineData("{\"valid\": false, \"reason\": \"Something1 Error\"}", "Something1 Error")]
     [InlineData("{\"valid\": false, \n\"reason\": \"Something2 Error\"}", "Something2 Error")]
     [InlineData("{\"valid\": false, \n\n\"reason\": \"Something3 Error\"}", "Something3 Error")]
@@ -130,7 +190,7 @@ public class ConditionalFlowHelperTests
         // Act
         var exception = await Assert.ThrowsAsync<ConditionException>(async () =>
         {
-            await target.IfAsync("Any", this.CreateSKContext(kernel));
+            await target.IfAsync(ValidIfStructure, this.CreateSKContext(kernel));
         });
 
         // Assert
@@ -139,18 +199,18 @@ public class ConditionalFlowHelperTests
     }
 
     [Theory]
-    [InlineData("", ConditionalFlowHelper.NoReasonMessage)]
-    [InlineData("Unexpected Result", ConditionalFlowHelper.NoReasonMessage)]
-    [InlineData("ERROR", ConditionalFlowHelper.NoReasonMessage)]
-    [InlineData("ERROR reason: Something1 Error", "Something1 Error")]
-    [InlineData("ERROR\nREASON:Something2 Error", "Something2 Error")]
-    [InlineData("ERROR\n\n ReAson:\nSomething3 Error", "Something3 Error")]
+    [InlineData("{\"valid\": false }", ConditionalFlowHelper.NoReasonMessage)]
+    [InlineData("{\"valid\": false \n}", ConditionalFlowHelper.NoReasonMessage)]
+    [InlineData("{\"valid\": false, \n \"reason\":\"\" }", ConditionalFlowHelper.NoReasonMessage)]
+    [InlineData("{\"valid\": false, \n\n\"reason\": \"Something1 Error\"}", "Something1 Error")]
+    [InlineData("{\"valid\": false, \n\n\"reason\": \"Something2 Error\"}", "Something2 Error")]
+    [InlineData("{\"valid\": false, \n\n\"reason\": \"Something3 Error\"}", "Something3 Error")]
     public async Task InvalidEvaluateConditionResponseShouldFailContextWithReasonMessageAsync(string llmResult, string expectedReason)
     {
         // Arrange
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
-        var ifContent = "<if><conditiongroup/></if>";
+        var ifContent = ValidIfStructure;
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
@@ -166,23 +226,20 @@ public class ConditionalFlowHelperTests
         });
 
         // Assert
-        Assert.Equal(ConditionException.ErrorCodes.InvalidConditionFormat, exception.ErrorCode);
-        Assert.Equal($"{nameof(ConditionException.ErrorCodes.InvalidConditionFormat)}: {expectedReason}", exception.Message);
+        Assert.Equal(ConditionException.ErrorCodes.InvalidCondition, exception.ErrorCode);
+        Assert.Equal($"{nameof(ConditionException.ErrorCodes.InvalidCondition)}: {expectedReason}", exception.Message);
     }
 
     [Theory]
-    [InlineData("TRUE", "Then")]
-    [InlineData("True", "Then")]
-    [InlineData("true", "Then")]
-    [InlineData("FALSE", "Else")]
-    [InlineData("False", "Else")]
-    [InlineData("false", "Else")]
-    public async Task ValidEvaluateConditionResponseShouldReturnAsync(string llmResult, string expectedBranchTag)
+    [InlineData("{\"valid\": true, \"condition\": true}", "<if condition=\"a equals 0\"><functionIf/></if>", "<functionIf />")]
+    [InlineData("{\"valid\": true, \"condition\": false}", "<if condition=\"a equals 0\"><functionIf/></if>", "")]
+    [InlineData("{\"valid\": true, \"condition\": true}", "<if condition=\"a equals 0\"><functionIf/></if><else><functionElse/></else>", "<functionIf />")]
+    [InlineData("{\"valid\": true, \"condition\": false}", "<if condition=\"a equals 0\"><functionIf/></if><else><functionElse/></else>", "<functionElse />")]
+    public async Task ValidEvaluateConditionResponseShouldReturnAsync(string llmResult, string inputIfStructure, string expectedResult)
     {
         // Arrange
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
-        var ifContent = "<if><conditiongroup></conditiongroup><then></then></if>";
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
@@ -192,12 +249,11 @@ public class ConditionalFlowHelperTests
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
 
         // Act
-        var context = await target.IfAsync(ifContent, this.CreateSKContext(kernel));
+        var result = await target.IfAsync(inputIfStructure, this.CreateSKContext(kernel));
 
         // Assert
-        Assert.NotNull(context);
-        Assert.True(context.Variables.ContainsKey("EvaluateIfBranchTag"));
-        Assert.Equal(expectedBranchTag, context["EvaluateIfBranchTag"]);
+        Assert.NotNull(result);
+        Assert.Equal(expectedResult, result);
     }
 
     [Theory]
@@ -209,14 +265,14 @@ public class ConditionalFlowHelperTests
         // Arrange
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
-        var ifContent = "<if><conditiongroup></conditiongroup><then></then></if>";
+        var ifContent = ValidIfStructure;
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             {
                 ConditionalFlowHelper.IfStructureCheckPrompt[..30],
                 $"{{\"valid\": true, \"variables\": [\"{string.Join("\",\"", conditionVariables.Split(','))}\"]}}"
             },
-            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], "TRUE" },
+            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], "{ \"valid\": true, \"condition\": true }" },
         });
 
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
@@ -237,7 +293,8 @@ public class ConditionalFlowHelperTests
         }
 
         // Act
-        var context = await target.IfAsync(ifContent, this.CreateSKContext(kernel, contextVariables));
+        var context = this.CreateSKContext(kernel, contextVariables);
+        _ = await target.IfAsync(ifContent, context);
 
         // Assert
         Assert.NotNull(context);
@@ -264,7 +321,8 @@ public class ConditionalFlowHelperTests
         // Arrange
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
-        var ifContent = "<if><conditiongroup></conditiongroup><then></then></if>";
+        var ifContent = ValidIfStructure;
+
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             { ConditionalFlowHelper.IfStructureCheckPrompt[..30], $"{{\"valid\": true, \"variables\": [\"{string.Join("\",\"", conditionVariables.Split(','))}\"]}}" },
@@ -291,38 +349,12 @@ public class ConditionalFlowHelperTests
         // Act
         var exception = await Assert.ThrowsAsync<ConditionException>(async () =>
         {
-            await target.IfAsync("<if><conditiongroup/></if>", this.CreateSKContext(kernel, contextVariables));
+            await target.IfAsync(ifContent, this.CreateSKContext(kernel, contextVariables));
         });
 
         // Assert
         Assert.Equal(ConditionException.ErrorCodes.ContextVariablesNotFound, exception.ErrorCode);
         Assert.Equal($"{nameof(ConditionException.ErrorCodes.ContextVariablesNotFound)}: {string.Join(", ", expectedNotFound)}", exception.Message);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("Result1")]
-    public async Task ValidIfShouldReturnGetThenOrElseBranchResponseAsync(string thenOrElseLlmResult)
-    {
-        // Arrange
-        var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
-        var ifContent = "<if><conditiongroup></conditiongroup><then></then></if>";
-        var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
-        {
-            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{ \"valid\": true }" },
-            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], "TRUE" },
-            { ConditionalFlowHelper.ExtractThenOrElseFromIfPrompt[..30], thenOrElseLlmResult }
-        });
-
-        var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
-        // Act
-        var context = await target.IfAsync(ifContent, this.CreateSKContext(kernel));
-
-        // Assert
-        Assert.NotNull(context);
-        Assert.False(context.ErrorOccurred);
-        Assert.Equal(thenOrElseLlmResult, context.ToString());
     }
 
     private SKContext CreateSKContext(IKernel kernel, ContextVariables? variables = null, CancellationToken cancellationToken = default)
