@@ -62,7 +62,7 @@ export const ChatList: FC = () => {
                     />
                 </div>
             </div>
-            <Label className={classes.label}>Your bot</Label>
+            <Label className={classes.label}>Your Bot</Label>
             <Tree aria-label={'chat list'}>
                 {
                     Object.keys(conversations).map((id) => {

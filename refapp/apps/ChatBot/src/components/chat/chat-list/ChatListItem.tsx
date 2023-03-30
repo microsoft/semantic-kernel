@@ -74,7 +74,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, pr
 
     return (
         <div className={classes.root} onClick={onClick }>
-            <Avatar />
+            <Avatar image={{ src: '/assets/logo-black-512x512.png' }}/>
             <div className={classes.body}>
                 <div className={classes.header}>
                     <Text className={classes.title } style={{color: 'var(--colorNeutralForeground1)'}}> {header} </Text>

@@ -5,5 +5,5 @@ export interface SKBotAudienceMember {
     online: boolean;
     fullName: string;
     emailAddress: string;
-    photo: string;
+    photo: string | undefined; // TODO: change this to required when we enable token / Graph support
 }

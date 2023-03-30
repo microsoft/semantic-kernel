@@ -5,7 +5,6 @@ import { useAppDispatch, useAppSelector } from "../redux/app/hooks";
 import { RootState } from "../redux/app/store";
 import { ChatState, initialBotMessage } from "../redux/features/chat/ChatState";
 import { addConversation, setSelectedConversation, updateConversation } from "../redux/features/conversations/conversationsSlice";
-import { MicrosoftGraph } from './MicrosoftGraph';
 import { ChatUser } from "./models/ChatUser";
 import { useSemanticKernel } from "./semantic-kernel/useSemanticKernel";
 
@@ -30,7 +29,7 @@ export const useChat = () => {
             id: account?.homeAccountId ?? '',
             fullName: account?.name ?? 'Unknown User',
             emailAddress: account?.username ?? '',
-            photo: await MicrosoftGraph.getMyPhotoAsync(),
+            photo: undefined,
             online: true,
             lastTypingTimestamp: 0,
         };

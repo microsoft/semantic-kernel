@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
-import { AudienceList } from './AudienceList';
 import { ChatRoom } from './ChatRoom';
 
 const useClasses = makeStyles({
@@ -107,9 +106,6 @@ export const ChatWindow: React.FC = () => {
                             </Label>)
                         )}
                         {<Button icon={isEditing ? <Save24Regular /> : <EditRegular />} appearance="transparent" onClick={onEdit} />}
-                    </div>
-                    <div className={classes.controls}>
-                        {<AudienceList />}
                     </div>
                 </div>
             </div>
