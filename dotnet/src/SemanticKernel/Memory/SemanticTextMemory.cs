@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Memory.Storage;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -17,10 +16,10 @@ namespace Microsoft.SemanticKernel.Memory;
 public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
 {
     private readonly IEmbeddingGeneration<string, float> _embeddingGenerator;
-    private readonly IMemoryStore<float> _storage;
+    private readonly IMemoryStore _storage;
 
     public SemanticTextMemory(
-        IMemoryStore<float> storage,
+        IMemoryStore storage,
         IEmbeddingGeneration<string, float> embeddingGenerator)
     {
         this._embeddingGenerator = embeddingGenerator;

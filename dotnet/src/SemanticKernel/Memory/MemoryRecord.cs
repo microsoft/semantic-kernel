@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Memory.Storage;
 
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// IMPORTANT: this is a storage schema. Changing the fields will invalidate existing metadata stored in persistent vector DBs.
 /// </summary>
-public class MemoryRecord : IEmbeddingWithMetadata<float>
+public class MemoryRecord : DataEntryBase
 {
     /// <summary>
     /// Source content embeddings.
@@ -28,12 +30,16 @@ public class MemoryRecord : IEmbeddingWithMetadata<float>
     /// <param name="sourceName">Name of the external service, e.g. "MSTeams", "GitHub", "WebSite", "Outlook IMAP", etc.</param>
     /// <param name="description">Optional description of the record. Note: the description is not indexed.</param>
     /// <param name="embedding">Source content embeddings</param>
+    /// <param name="key">Optional existing database key</param>
+    /// <param name="timestamp">optional timestamp</param>
     /// <returns>Memory record</returns>
     public static MemoryRecord ReferenceRecord(
         string externalId,
         string sourceName,
         string? description,
-        Embedding<float> embedding)
+        Embedding<float> embedding,
+        string key,
+        DateTimeOffset? timestamp = null)
     {
         return new MemoryRecord(
             new MemoryRecordMetadata
@@ -44,7 +50,9 @@ public class MemoryRecord : IEmbeddingWithMetadata<float>
                 description: description ?? string.Empty,
                 text: string.Empty
             ),
-            embedding
+            embedding,
+            key,
+            timestamp
         );
     }
 
@@ -55,12 +63,16 @@ public class MemoryRecord : IEmbeddingWithMetadata<float>
     /// <param name="text">Full text used to generate the embeddings</param>
     /// <param name="description">Optional description of the record. Note: the description is not indexed.</param>
     /// <param name="embedding">Source content embeddings</param>
+    /// <param name="key">Optional existing database key</param>
+    /// <param name="timestamp">optional timestamp</param>
     /// <returns>Memory record</returns>
     public static MemoryRecord LocalRecord(
         string id,
         string text,
         string? description,
-        Embedding<float> embedding)
+        Embedding<float> embedding,
+        string? key = null,
+        DateTimeOffset? timestamp = null)
     {
         return new MemoryRecord
         (
@@ -72,18 +84,31 @@ public class MemoryRecord : IEmbeddingWithMetadata<float>
                 description: description ?? string.Empty,
                 externalSourceName: string.Empty
             ),
-            embedding
+            embedding,
+            key,
+            timestamp
         );
     }
 
+    /// <summary>
+    /// Create a memory record from a serialized metadata string.
+    /// </summary>
+    /// <param name="json"></param>
+    /// <param name="embedding"></param>
+    /// <param name="key">Optional existing database key</param>
+    /// <param name="timestamp">optional timestamp</param>
+    /// <returns></returns>
+    /// <exception cref="MemoryException"></exception>
     public static MemoryRecord FromJson(
         string json,
-        Embedding<float> embedding)
+        Embedding<float> embedding,
+        string? key = null,
+        DateTimeOffset? timestamp = null)
     {
         var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
         if (metadata != null)
         {
-            return new MemoryRecord(metadata, embedding);
+            return new MemoryRecord(metadata, embedding, key, timestamp);
         }
 
         throw new MemoryException(
@@ -99,7 +124,11 @@ public class MemoryRecord : IEmbeddingWithMetadata<float>
     /// <summary>
     /// Block constructor, use <see cref="ReferenceRecord"/> or <see cref="LocalRecord"/>
     /// </summary>
-    private MemoryRecord(MemoryRecordMetadata metadata, Embedding<float> embedding)
+    private MemoryRecord(
+        MemoryRecordMetadata metadata,
+        Embedding<float> embedding,
+        string? key,
+        DateTimeOffset? timestamp = null) : base(key, timestamp)
     {
         this.Metadata = metadata;
         this.Embedding = embedding;

@@ -5,17 +5,13 @@ using System.Linq;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory.Collections;
-using Microsoft.SemanticKernel.Memory.Storage;
 
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// A simple volatile memory embeddings store.
-/// TODO: multiple enumerations
 /// </summary>
-/// <typeparam name="TEmbedding">Embedding type</typeparam>
-public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithMetadata<TEmbedding>>, IMemoryStore<TEmbedding>
-    where TEmbedding : unmanaged
+public class VolatileMemoryStore : IMemoryStore
 {
     /// <inheritdoc/>
     public IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(
@@ -78,12 +74,4 @@ public class VolatileMemoryStore<TEmbedding> : VolatileDataStore<IEmbeddingWithM
     }
 
     #endregion
-}
-
-/// <summary>
-/// Default constructor for a simple volatile memory embeddings store for embeddings.
-/// The default embedding type is <see cref="float"/>.
-/// </summary>
-public class VolatileMemoryStore : VolatileMemoryStore<float>
-{
 }
