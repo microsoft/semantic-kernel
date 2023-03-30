@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -13,11 +14,13 @@ public class MemoryRecord : IEmbeddingWithMetadata<float>
     /// <summary>
     /// Source content embeddings.
     /// </summary>
+    [JsonPropertyName("embedding")]
     public Embedding<float> Embedding { get; }
 
     /// <summary>
     /// Metadata associated with a Semantic Kernel memory.
     /// </summary>
+    [JsonPropertyName("metadata")]
     public MemoryRecordMetadata Metadata { get; }
 
     /// <summary>

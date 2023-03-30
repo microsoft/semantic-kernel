@@ -2,24 +2,30 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
 using Microsoft.SemanticKernel.Memory.Storage;
-using Microsoft.SemanticKernel.Memory;
 using SQLiteLibrary.Imported;
-using Microsoft.Data.Sqlite;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace SqliteMemory;
-public class SqliteMemoryStore<TEmbedding> : SqliteDataStore<IEmbeddingWithMetadata<TEmbedding>>, IMemoryStore<TEmbedding>
+namespace Microsoft.SemanticKernel.Skills.Memory.Sqlite;
+public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposable
     where TEmbedding : unmanaged
 {
     public SqliteMemoryStore(SqliteConnection dbConnection)
-        : base(dbConnection)
-    { }
+    {
+        this._dbConnection = dbConnection;
+    }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(
@@ -67,7 +73,113 @@ public class SqliteMemoryStore<TEmbedding> : SqliteDataStore<IEmbeddingWithMetad
         return embeddings.Select(x => (x.Value, x.Score.Value)).ToAsyncEnumerable();
     }
 
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
+    {
+        return this._dbConnection.GetCollectionsAsync(cancel);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> GetAllAsync(string collection,
+        [EnumeratorCancellation] CancellationToken cancel = default)
+    {
+        await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collection, cancel))
+        {
+            var embedding = new Embedding<float>();
+            IEmbeddingWithMetadata<TEmbedding> val = (IEmbeddingWithMetadata<TEmbedding>)MemoryRecord.FromJson(dbEntry.Value, embedding);
+            yield return DataEntry.Create<IEmbeddingWithMetadata<TEmbedding>>(dbEntry.Key, val, ParseTimestamp(dbEntry.Timestamp));
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>?> GetAsync(string collection, string key, CancellationToken cancel = default)
+    {
+        DatabaseEntry? entry = await this._dbConnection.ReadAsync(collection, key, cancel);
+        if (entry.HasValue)
+        {
+            DatabaseEntry dbEntry = entry.Value;
+            var embedding = new Embedding<float>();
+            IEmbeddingWithMetadata<TEmbedding> val = (IEmbeddingWithMetadata<TEmbedding>)MemoryRecord.FromJson(dbEntry.Value, embedding);
+
+            return DataEntry.Create<IEmbeddingWithMetadata<TEmbedding>>(dbEntry.Key, val, ParseTimestamp(dbEntry.Timestamp));
+        }
+
+        return null;
+    }
+
+    /// <inheritdoc/>
+    public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data, CancellationToken cancel = default)
+    {
+        await this._dbConnection.InsertAsync(collection, data.Key, JsonSerializer.Serialize(data.Value), ToTimestampString(data.Timestamp), cancel);
+        return data;
+    }
+
+    /// <inheritdoc/>
+    public Task RemoveAsync(string collection, string key, CancellationToken cancel = default)
+    {
+        return this._dbConnection.DeleteAsync(collection, key, cancel);
+    }
+
+    /// <summary>
+    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+    /// </summary>
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    #region protected ================================================================================
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this._disposedValue)
+        {
+            if (disposing)
+            {
+                this._dbConnection.Dispose();
+            }
+
+            this._disposedValue = true;
+        }
+    }
+
+    protected async IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> TryGetCollectionAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
+    {
+        await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collectionName, cancel))
+        {
+            var embedding = new Embedding<float>();
+            var val = (IEmbeddingWithMetadata<TEmbedding>)MemoryRecord.FromJson(dbEntry.Value, new Embedding<float>());
+
+            //var val = (IEmbeddingWithMetadata<TEmbedding>)JsonSerializer.Deserialize<MemoryRecord>(dbEntry.Value);
+
+            yield return DataEntry.Create<IEmbeddingWithMetadata<TEmbedding>>(dbEntry.Key, val, ParseTimestamp(dbEntry.Timestamp));
+        }
+    }
+
+    #endregion
+
     #region private ================================================================================
+
+    private readonly SqliteConnection _dbConnection;
+    private bool _disposedValue;
+
+    private static string? ToTimestampString(DateTimeOffset? timestamp)
+    {
+        return timestamp?.ToString("u", CultureInfo.InvariantCulture);
+    }
+
+    private static DateTimeOffset? ParseTimestamp(string? str)
+    {
+        if (!string.IsNullOrEmpty(str)
+            && DateTimeOffset.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset timestamp))
+        {
+            return timestamp;
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Calculates the cosine similarity between an <see cref="Embedding{TEmbedding}"/> and an <see cref="IEmbeddingWithMetadata{TEmbedding}"/>
@@ -84,10 +196,3 @@ public class SqliteMemoryStore<TEmbedding> : SqliteDataStore<IEmbeddingWithMetad
 
     #endregion
 }
-
-//public class SqliteMemoryStore : SqliteMemoryStore<float>
-//{
-//    public SqliteMemoryStore(SqliteConnection dbConnection)
-//        : base(dbConnection)
-//    { }
-//}

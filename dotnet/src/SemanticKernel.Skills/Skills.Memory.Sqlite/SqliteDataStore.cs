@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -12,8 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Microsoft.SemanticKernel.Memory.Storage;
+using Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 
-namespace SqliteMemory;
+namespace Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 
 /// <summary>
 /// An implementation of <see cref="IDataStore{TValue}"/> backed by a SQLite database.
@@ -114,28 +113,27 @@ public class SqliteDataStore<TValue> : IDataStore<TValue>, IDisposable
         this._dbConnection = dbConnection;
     }
 
-    protected async IAsyncEnumerable<DataEntry<TValue>> TryGetCollectionAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
+    protected async IAsyncEnumerable<DataEntry<TValue>> TryGetCollectionAsync(string collectionName, string tableName, CancellationToken cancel = default)
     {
-        //filter with query collection name
-        //SqliteCommand cmd = this._dbConnection.CreateCommand();
-        //cmd.CommandText = "SELECT * FROM @collectionName";
+        ///filter with query collection name
+        SqliteCommand cmd = this._dbConnection.CreateCommand();
+        //cmd.CommandText = "SELECT * FROM @tableName WHERE CollectionName = @collectionName";
+        //cmd.Parameters.AddWithValue("@tableName", tableName);
         //cmd.Parameters.AddWithValue("@collectionName", collectionName);
+        cmd.CommandText = "SELECT * FROM @collectionName";
+        cmd.Parameters.AddWithValue("@collectionName", collectionName);
 
-        //// Execute the query and read the results
-        //var dataReader = await cmd.ExecuteReaderAsync(cancel);
-        //while (await dataReader.ReadAsync(cancel))
-        //{
-        //    string key = dataReader.GetFieldValue<string>("key");
-        //    string value = dataReader.GetFieldValue<string>("value");
-        //    string timestamp = dataReader.GetFieldValue<string>("timestamp");
-
-        //    //DatabaseEntry dbEntry = DatabaseEntry() { Key = key, Value = value, Timestamp = timestamp };
-        //    yield return DataEntry.Create<TValue>(key, value, ParseTimestamp(timestamp));
-        //}
-
-        await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collectionName, cancel))
+        // Execute the query and read the results
+        var dataReader = await cmd.ExecuteReaderAsync(cancel);
+        while (await dataReader.ReadAsync(cancel))
         {
-            yield return DataEntry.Create<TValue>(dbEntry.Key, dbEntry.Value, ParseTimestamp(dbEntry.Timestamp));
+            //yield return dataReader.GetFieldValue<string>("collectionName");
+
+            var id = dataReader.GetString(0);
+            var value = dataReader.GetString(1);
+            var timestamp = dataReader.GetDateTime(2);
+
+            yield return DataEntry.Create<TValue>(id, value, timestamp);
         }
     }
 

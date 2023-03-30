@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
-namespace SqliteMemory;
+namespace Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 
 internal struct DatabaseEntry
 {
@@ -32,9 +32,10 @@ internal static class Database
     {
         await CreateTableAsync(conn, cancel);
 
+        //Could potentially use REPLACE instead of IGNORE here
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-             INSERT INTO {TableName}(collection, key, value, timestamp)
+             INSERT or IGNORE into {TableName}(collection, key, value, timestamp)
              VALUES(@collection, @key, @value, @timestamp); ";
         cmd.Parameters.AddWithValue("@collection", collection);
         cmd.Parameters.AddWithValue("@key", key);
