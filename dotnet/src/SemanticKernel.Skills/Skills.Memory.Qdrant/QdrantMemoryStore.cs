@@ -95,7 +95,7 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
         int limit = 1,
         double minRelevanceScore = 0)
     {
-        var results = this._qdrantClient.FindNearestInCollectionAsync(collection, embedding, limit, minRelevanceScore);
+        var results = this._qdrantClient.FindNearestInCollectionAsync(collection, embedding, minRelevanceScore, limit);
         await foreach ((IEmbeddingWithMetadata<TEmbedding>, double) result in results)
         {
             yield return result;
