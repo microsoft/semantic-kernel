@@ -52,6 +52,14 @@ public static class Example19_Qdrant
         MemoryQueryResult? lookup = await kernel.Memory.GetAsync(MemoryCollectionName, "cat1");
         Console.WriteLine(lookup != null ? lookup.Metadata.Text : "ERROR: memory not found");
 
+        Console.WriteLine("== Similarity Searching Memories: My favorite color is orange ==");
+        var searchResults = kernel.Memory.SearchAsync(MemoryCollectionName, "My favorite color is orange", limit: 3, minRelevanceScore: 0.8);
+
+        await foreach (var item in searchResults)
+        {
+            Console.WriteLine(item.Metadata.Text + " : " + item.Relevance);
+        }
+
         Console.WriteLine("== Removing Collection {0} ==", MemoryCollectionName);
         await memoryStore.DeleteCollectionAsync(MemoryCollectionName);
 
