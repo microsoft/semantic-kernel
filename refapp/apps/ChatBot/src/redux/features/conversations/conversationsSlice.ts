@@ -15,8 +15,9 @@ export const conversationsSlice = createSlice({
         editConversationTitle: (state: ConversationsState, action: PayloadAction<ConversationTitleChange>) => {
             const newId = action.payload.newId;
             state.conversations[action.payload.id].id = newId;
-            const updatedChat = state.conversations[action.payload.id];
+            const updatedChat = { ...state.conversations[action.payload.id]};
             delete state.conversations[action.payload.id];
+            // frontload conversation so it's at the top of chatlist
             state.conversations = { [newId]: updatedChat , ...state.conversations}
             state.selectedId = action.payload.newId;
         },
@@ -27,8 +28,14 @@ export const conversationsSlice = createSlice({
             const newId = action.payload.id ?? '';
             state.conversations = { [newId]: action.payload, ...state.conversations };
         },
-        updateConversation: (state: ConversationsState, action: PayloadAction<ChatMessage[]>) => {
-            state.conversations[state.selectedId].messages = action.payload;
+        updateConversation: (state: ConversationsState, action: PayloadAction<{ message: ChatMessage, chatId?: string}>) => {
+            const { message, chatId } = action.payload;
+            const id = chatId ?? state.selectedId;
+            const conversation = state.conversations[id];
+            conversation.messages.push(message);
+            delete state.conversations[id];
+            // frontload conversation so it's at the top of chatlist
+            state.conversations = { [id]: conversation , ...state.conversations}
         },
     },
 });

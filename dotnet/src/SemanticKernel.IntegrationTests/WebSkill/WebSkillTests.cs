@@ -74,7 +74,7 @@ public sealed class WebSkillTests : IDisposable
         contextVariables.Set(WebFileDownloadSkill.Parameters.FilePath, fileWhereToSaveWebPage);
 
         // Act
-        await kernel.RunAsync(contextVariables, download["DownloadToFileAsync"]);
+        await kernel.RunAsync(contextVariables, download["DownloadToFile"]);
 
         // Assert
         var fileInfo = new FileInfo(fileWhereToSaveWebPage);

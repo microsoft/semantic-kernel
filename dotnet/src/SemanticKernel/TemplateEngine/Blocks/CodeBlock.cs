@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Orchestration.Extensions;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;

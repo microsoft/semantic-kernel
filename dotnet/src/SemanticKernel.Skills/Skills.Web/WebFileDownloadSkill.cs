@@ -52,6 +52,7 @@ public class WebFileDownloadSkill : IDisposable
     /// <returns>Task.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when the location where to download the file is not provided</exception>
     [SKFunction("Downloads a file to local storage")]
+    [SKFunctionName("DownloadToFile")]
     [SKFunctionInput(Description = "URL of file to download")]
     [SKFunctionContextParameter(Name = Parameters.FilePath, Description = "Path where to save file locally")]
     public async Task DownloadToFileAsync(string source, SKContext context)
@@ -73,7 +74,7 @@ public class WebFileDownloadSkill : IDisposable
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
         using Stream webStream = await response.Content.ReadAsStreamAsync();
-        using FileStream outputFileStream = new FileStream(filePath, FileMode.Create);
+        using FileStream outputFileStream = new FileStream(Environment.ExpandEnvironmentVariables(filePath), FileMode.Create);
 
         await webStream.CopyToAsync(outputFileStream, context.CancellationToken);
     }
