@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
@@ -26,14 +28,19 @@ internal class Example16_OpenApiSkill
         Console.WriteLine("======== Planning - Create and Execute Azure Plan ========");
         var kernel = InitializeKernelAndPlanner(out var planner);
 
+        static void authorizeRequestCallback(HttpRequestMessage request)
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Env.Var("AZURE_KEYVAULT_TOKEN"));
+        }
+
         //Use OpenApi skill from folder
         //string folder = RepoFiles.SampleSkillsPath();
-        //kernel.ImportOpenApiSkillFromDirectory(folder, "AzureKeyVaultSkill");
+        //kernel.ImportOpenApiSkillFromDirectory(folder, "AzureKeyVaultSkill", authorizeRequestCallback);
 
         //Use OpenApi skill from Skills.OpenAPI package
-        kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, BearerTokenHandler.AddAuthorizationData);
+        kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, authorizeRequestCallback);
 
-        var plan = await kernel.RunAsync("Load 'test-secret' from Azure KeyValut available at https://dev-tests.vault.azure.net using GetSecret function.", planner["CreatePlan"]);
+        var plan = await kernel.RunAsync("Load 'test-secret' from Azure KeyVault available at https://dev-tests.vault.azure.net using GetSecret function.", planner["CreatePlan"]);
 
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.Variables.ToPlan().PlanString);
