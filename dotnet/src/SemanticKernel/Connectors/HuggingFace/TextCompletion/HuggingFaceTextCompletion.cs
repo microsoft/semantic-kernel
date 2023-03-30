@@ -131,7 +131,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     {
         try
         {
-            var completionRequest = new CompletionRequest
+            var completionRequest = new TextCompletionRequest
             {
                 Input = text
             };
@@ -146,7 +146,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
             var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            var completionResponse = JsonSerializer.Deserialize<List<CompletionResponse>>(body);
+            var completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
 
             return completionResponse.First().Text!;
         }

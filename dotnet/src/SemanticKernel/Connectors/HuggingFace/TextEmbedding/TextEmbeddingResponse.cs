@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
 /// <summary>
 /// HTTP Schema for embedding response.
 /// </summary>
-public sealed class EmbeddingResponse
+public sealed class TextEmbeddingResponse
 {
     /// <summary>
     /// Model containing embedding.

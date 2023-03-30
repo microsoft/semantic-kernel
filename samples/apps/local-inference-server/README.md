@@ -13,7 +13,7 @@ are modeled after OpenAI and Azure OpenAI for smooth transition to more capable 
 
 `docker image build -t hf_model_server .`
 
-Note that this step will take some minutes to download Docker image dependencies.
+This step will take some minutes to download Docker image dependencies.
 
 ## Running the Sample Container
 

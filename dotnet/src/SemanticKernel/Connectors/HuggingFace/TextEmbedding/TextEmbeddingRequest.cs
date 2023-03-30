@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
 /// HTTP schema to perform embedding request.
 /// </summary>
 [Serializable]
-public sealed class EmbeddingRequest
+public sealed class TextEmbeddingRequest
 {
     /// <summary>
     /// Data to embed.

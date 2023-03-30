@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
 /// <summary>
 /// HTTP Schema for completion response.
 /// </summary>
-public sealed class CompletionResponse
+public sealed class TextCompletionResponse
 {
     /// <summary>
     /// Completed text.

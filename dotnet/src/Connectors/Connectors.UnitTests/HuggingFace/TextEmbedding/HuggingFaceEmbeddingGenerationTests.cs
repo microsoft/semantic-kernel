@@ -12,7 +12,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextEmbedding;
 
 /// <summary>
-/// Unit tests for <see cref="HuggingFaceEmbeddingGeneration"/> class.
+/// Unit tests for <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
 /// </summary>
 public class HuggingFaceEmbeddingGenerationTests : IDisposable
 {
@@ -25,7 +25,7 @@ public class HuggingFaceEmbeddingGenerationTests : IDisposable
     };
 
     /// <summary>
-    /// Verifies that <see cref="HuggingFaceEmbeddingGeneration.GenerateEmbeddingsAsync(IList{string})"/>
+    /// Verifies that <see cref="HuggingFaceTextEmbeddingGeneration.GenerateEmbeddingsAsync(IList{string})"/>
     /// returns expected list of generated embeddings without errors.
     /// </summary>
     [Fact]
@@ -48,16 +48,16 @@ public class HuggingFaceEmbeddingGenerationTests : IDisposable
     }
 
     /// <summary>
-    /// Initializes <see cref="HuggingFaceEmbeddingGeneration"/> with mocked <see cref="HttpClientHandler"/>.
+    /// Initializes <see cref="HuggingFaceTextEmbeddingGeneration"/> with mocked <see cref="HttpClientHandler"/>.
     /// </summary>
     /// <param name="testResponse">Test response for <see cref="HttpClientHandler"/> to return.</param>
-    private HuggingFaceEmbeddingGeneration CreateService(string testResponse)
+    private HuggingFaceTextEmbeddingGeneration CreateService(string testResponse)
     {
         this._response.Content = new StringContent(testResponse);
 
         var httpClientHandler = HuggingFaceTestHelper.GetHttpClientHandlerMock(this._response);
 
-        return new HuggingFaceEmbeddingGeneration(new Uri(BaseUri), Model, httpClientHandler);
+        return new HuggingFaceTextEmbeddingGeneration(new Uri(BaseUri), Model, httpClientHandler);
     }
 
     public void Dispose()

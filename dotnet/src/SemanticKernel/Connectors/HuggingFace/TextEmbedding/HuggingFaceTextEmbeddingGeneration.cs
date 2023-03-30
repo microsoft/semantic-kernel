@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
 /// <summary>
 /// HuggingFace embedding generation service.
 /// </summary>
-public sealed class HuggingFaceEmbeddingGeneration : IEmbeddingGeneration<string, float>, IDisposable
+public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<string, float>, IDisposable
 {
     private const string HttpUserAgent = "Microsoft Semantic Kernel";
     private const string EmbeddingEndpoint = "/embeddings";
@@ -25,12 +25,12 @@ public sealed class HuggingFaceEmbeddingGeneration : IEmbeddingGeneration<string
     private readonly HttpClientHandler? _httpClientHandler;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceEmbeddingGeneration"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
     /// </summary>
     /// <param name="baseUri">Base URI for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    public HuggingFaceEmbeddingGeneration(Uri baseUri, string model, HttpClientHandler httpClientHandler)
+    public HuggingFaceTextEmbeddingGeneration(Uri baseUri, string model, HttpClientHandler httpClientHandler)
     {
         Verify.NotNull(baseUri, "Base URI cannot be null.");
         Verify.NotEmpty(model, "Model cannot be empty.");
@@ -44,12 +44,12 @@ public sealed class HuggingFaceEmbeddingGeneration : IEmbeddingGeneration<string
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceEmbeddingGeneration"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
     /// <param name="baseUri">Base URI for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
-    public HuggingFaceEmbeddingGeneration(Uri baseUri, string model)
+    public HuggingFaceTextEmbeddingGeneration(Uri baseUri, string model)
     {
         Verify.NotNull(baseUri, "Base URI cannot be null.");
         Verify.NotEmpty(model, "Model cannot be empty.");
@@ -88,7 +88,7 @@ public sealed class HuggingFaceEmbeddingGeneration : IEmbeddingGeneration<string
     {
         try
         {
-            var embeddingRequest = new EmbeddingRequest
+            var embeddingRequest = new TextEmbeddingRequest
             {
                 Input = data
             };
@@ -103,7 +103,7 @@ public sealed class HuggingFaceEmbeddingGeneration : IEmbeddingGeneration<string
             var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            var embeddingResponse = JsonSerializer.Deserialize<EmbeddingResponse>(body);
+            var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
 
             return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding.ToArray())).ToList()!;
         }
