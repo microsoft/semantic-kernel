@@ -1,3 +1,4 @@
+# Copilot Chat Web App
 
 ## Running the sample
 
