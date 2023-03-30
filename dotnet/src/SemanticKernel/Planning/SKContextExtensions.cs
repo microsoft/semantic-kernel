@@ -101,7 +101,7 @@ internal static class SKContextExtensions
         var relevantFunctions = new ConcurrentBag<FunctionView>();
         await foreach (var memoryEntry in memories.WithCancellation(context.CancellationToken))
         {
-            var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Id);
+            var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
             if (function != null)
             {
                 context.Log.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance,
