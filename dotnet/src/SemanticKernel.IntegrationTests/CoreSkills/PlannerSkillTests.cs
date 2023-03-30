@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.IntegrationTests.AI;
+using SemanticKernel.IntegrationTests.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -47,19 +47,19 @@ public sealed class PlannerSkillTests : IDisposable
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                config.AddAzureOpenAICompletionBackend(
-                    label: azureOpenAIConfiguration.Label,
+                config.AddAzureOpenAITextCompletionService(
+                    serviceId: azureOpenAIConfiguration.ServiceId,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
 
-                config.AddAzureOpenAIEmbeddingsBackend(
-                    label: azureOpenAIEmbeddingsConfiguration.Label,
+                config.AddAzureOpenAIEmbeddingGenerationService(
+                    serviceId: azureOpenAIEmbeddingsConfiguration.ServiceId,
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
 
-                config.SetDefaultCompletionBackend(azureOpenAIConfiguration.Label);
+                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
             })
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();

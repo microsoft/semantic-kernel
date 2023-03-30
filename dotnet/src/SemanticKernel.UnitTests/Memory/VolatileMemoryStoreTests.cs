@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
@@ -279,6 +280,11 @@ public class VolatileMemoryStoreTests
         {
             this.Embedding = embedding;
             this.Metadata = metadata;
+        }
+
+        public string GetSerializedMetadata()
+        {
+            return JsonSerializer.Serialize(this.Metadata);
         }
     }
 }
