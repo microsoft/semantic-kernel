@@ -178,9 +178,9 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
 
         if (completionBackend is not null)
         {
-            this._ifStructureCheckFunction.SetAIBackend(() => completionBackend);
-            this._evaluateIfBranchFunction.SetAIBackend(() => completionBackend);
-            this._evaluateConditionFunction.SetAIBackend(() => completionBackend);
+            this._ifStructureCheckFunction.SetAIService(() => completionBackend);
+            this._evaluateIfBranchFunction.SetAIService(() => completionBackend);
+            this._evaluateConditionFunction.SetAIService(() => completionBackend);
         }
     }
 

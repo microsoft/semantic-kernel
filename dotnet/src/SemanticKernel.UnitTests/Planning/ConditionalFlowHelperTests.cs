@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Moq;
@@ -33,7 +32,7 @@ public class ConditionalFlowHelperTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var completionBackendMock = new Mock<ITextCompletion>();
 
         // Act - Assert no exception occurs
@@ -46,7 +45,7 @@ public class ConditionalFlowHelperTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
@@ -70,7 +69,7 @@ public class ConditionalFlowHelperTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
@@ -95,7 +94,7 @@ public class ConditionalFlowHelperTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
 
         // To be able to check the condition need ensure success in the if statement check first
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
@@ -122,7 +121,7 @@ public class ConditionalFlowHelperTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             { ConditionalFlowHelper.IfStructureCheckPrompt[..30], llmResult }
@@ -150,7 +149,7 @@ public class ConditionalFlowHelperTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
 
         // To be able to check the condition need ensure success in the if statement check first
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
@@ -180,7 +179,7 @@ public class ConditionalFlowHelperTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             { ConditionalFlowHelper.IfStructureCheckPrompt[..30], llmResult },
@@ -209,7 +208,7 @@ public class ConditionalFlowHelperTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var ifContent = ValidIfStructure;
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
@@ -239,7 +238,7 @@ public class ConditionalFlowHelperTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
@@ -264,7 +263,7 @@ public class ConditionalFlowHelperTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var ifContent = ValidIfStructure;
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
@@ -320,7 +319,7 @@ public class ConditionalFlowHelperTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        _ = kernel.Config.AddOpenAITextCompletion("test", "test", "test");
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var ifContent = ValidIfStructure;
 
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
