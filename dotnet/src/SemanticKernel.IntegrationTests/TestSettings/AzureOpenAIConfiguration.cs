@@ -8,7 +8,7 @@ namespace SemanticKernel.IntegrationTests.TestSettings;
     Justification = "Configuration classes are instantiated through IConfiguration.")]
 internal sealed class AzureOpenAIConfiguration
 {
-    public string Label { get; set; }
+    public string ServiceId { get; set; }
 
     public string DeploymentName { get; set; }
 
@@ -16,9 +16,9 @@ internal sealed class AzureOpenAIConfiguration
 
     public string ApiKey { get; set; }
 
-    public AzureOpenAIConfiguration(string label, string deploymentName, string endpoint, string apiKey)
+    public AzureOpenAIConfiguration(string serviceId, string deploymentName, string endpoint, string apiKey)
     {
-        this.Label = label;
+        this.ServiceId = serviceId;
         this.DeploymentName = deploymentName;
         this.Endpoint = endpoint;
         this.ApiKey = apiKey;

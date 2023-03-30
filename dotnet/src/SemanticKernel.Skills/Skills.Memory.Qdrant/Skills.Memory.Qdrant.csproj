@@ -2,7 +2,7 @@
     <PropertyGroup>
         <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
     </PropertyGroup>
-    <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+<!--    <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />-->
 
     <PropertyGroup>
         <AssemblyName>Microsoft.SemanticKernel.Skills.Memory.Qdrant</AssemblyName>
@@ -10,11 +10,12 @@
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
-    <PropertyGroup>
-        <!-- NuGet Package Settings -->
-        <PackageId>Microsoft.SemanticKernel.Skills.Memory.Qdrant</PackageId>
-        <Title>Semantic Kernel - Qdrant Connector</Title>
-    </PropertyGroup>
+<!--  Before shipping this nuget we need to bring it under the Connectors terminology -->
+<!--    <PropertyGroup>-->
+<!--        &lt;!&ndash; NuGet Package Settings &ndash;&gt;-->
+<!--        <PackageId>Microsoft.SemanticKernel.Skills.Memory.Qdrant</PackageId>-->
+<!--        <Title>Semantic Kernel - Qdrant Connector</Title>-->
+<!--    </PropertyGroup>-->
 
     <ItemGroup>
         <PackageReference Include="System.Text.Json" />

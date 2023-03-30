@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.Connectors.OpenAI.ChatCompletion;
 using RepoUtils;
 
 /**
@@ -21,24 +21,24 @@ public static class Example17_ChatGPT
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        // Add your chat completion backend
-        kernel.Config.AddOpenAIChatCompletion("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        // Add your chat completion service
+        kernel.Config.AddOpenAIChatCompletionService("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
-        IChatCompletion backend = kernel.GetService<IChatCompletion>();
-        var chat = (OpenAIChatHistory)backend.CreateNewChat("You are a librarian, expert about books");
+        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
+        var chat = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");
 
         // First user message
         chat.AddUserMessage("Hi, I'm looking for book suggestions");
 
         // First bot message
-        string reply = await backend.GenerateMessageAsync(chat, new ChatRequestSettings());
+        string reply = await chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings());
         chat.AddAssistantMessage(reply);
 
         // Second user message
         chat.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
 
         // Second bot message
-        reply = await backend.GenerateMessageAsync(chat, new ChatRequestSettings());
+        reply = await chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings());
         chat.AddAssistantMessage(reply);
 
         Console.WriteLine("Chat content:");

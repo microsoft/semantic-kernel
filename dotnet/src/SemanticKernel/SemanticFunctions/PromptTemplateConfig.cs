@@ -59,7 +59,7 @@ public class PromptTemplateConfig
         public int MaxTokens { get; set; } = 256;
 
         /// <summary>
-        /// Stop sequences are optional sequences that tells the backend when to stop generating tokens.
+        /// Stop sequences are optional sequences that tells the AI model when to stop generating tokens.
         /// </summary>
         [JsonPropertyName("stop_sequences")]
         [JsonPropertyOrder(6)]
@@ -137,12 +137,12 @@ public class PromptTemplateConfig
     public CompletionConfig Completion { get; set; } = new();
 
     /// <summary>
-    /// Default backends to use.
+    /// Default AI services to use.
     /// </summary>
-    [JsonPropertyName("default_backends")]
+    [JsonPropertyName("default_services")]
     [JsonPropertyOrder(5)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<string> DefaultBackends { get; set; } = new();
+    public List<string> DefaultServices { get; set; } = new();
 
     /// <summary>
     /// Input configuration (that is, list of all input parameters).
@@ -163,9 +163,9 @@ public class PromptTemplateConfig
             this.Completion.StopSequences = null!;
         }
 
-        if (this.DefaultBackends.Count == 0)
+        if (this.DefaultServices.Count == 0)
         {
-            this.DefaultBackends = null!;
+            this.DefaultServices = null!;
         }
 
         return this;

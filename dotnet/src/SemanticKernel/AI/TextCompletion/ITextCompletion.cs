@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
 /// <summary>
-/// Interface for text completion backends/services/clients
+/// Interface for text completion services
 /// </summary>
 public interface ITextCompletion
 {
