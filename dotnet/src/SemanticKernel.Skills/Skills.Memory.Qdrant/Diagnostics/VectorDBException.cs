@@ -11,7 +11,7 @@ public class VectorDbException : Exception<VectorDbException.ErrorCodes>
         UnknownError,
         CollectionDoesNotExist,
         InvalidCollectionState,
-        UnableToSerializeRecordPayload,
+        UnableToDeserializeRecordPayload,
         CollectionCreationFailed,
         CollectionRetrievalFailed,
         VectorRetrievalFailed,

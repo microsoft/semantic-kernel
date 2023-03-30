@@ -74,7 +74,7 @@ public class QdrantVectorRecord<TEmbedding> : IEmbeddingWithMetadata<TEmbedding>
         }
         else
         {
-            throw new VectorDbException(VectorDbException.ErrorCodes.UnableToSerializeRecordPayload, "Failed to deserialize payload");
+            throw new VectorDbException(VectorDbException.ErrorCodes.UnableToDeserializeRecordPayload, "Failed to deserialize payload");
         }
     }
 }

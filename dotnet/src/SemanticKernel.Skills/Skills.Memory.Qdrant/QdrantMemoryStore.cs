@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -37,11 +38,17 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
     {
         try
         {
-            // Qdrant entries are uniquely identified by Base-64 or UUID strings
             var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collection, key);
-            return new DataEntry<IEmbeddingWithMetadata<TEmbedding>>(
-                key: key,
-                value: vectorData?.Value);
+            if (vectorData != null)
+            {
+                return new DataEntry<IEmbeddingWithMetadata<TEmbedding>>(
+                    key: key,
+                    value: (IEmbeddingWithMetadata<TEmbedding>)vectorData?.Value);
+            }
+            else
+            {
+                return null;
+            }
         }
         catch (Exception ex)
         {
@@ -88,7 +95,7 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
         int limit = 1,
         double minRelevanceScore = 0)
     {
-        var results = this._qdrantClient.FindNearestInCollectionAsync(collection, embedding, limit);
+        var results = this._qdrantClient.FindNearestInCollectionAsync(collection, embedding, limit, minRelevanceScore);
         await foreach ((IEmbeddingWithMetadata<TEmbedding>, double) result in results)
         {
             yield return result;
