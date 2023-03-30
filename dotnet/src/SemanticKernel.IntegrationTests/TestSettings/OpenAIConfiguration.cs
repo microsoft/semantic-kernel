@@ -8,13 +8,13 @@ namespace SemanticKernel.IntegrationTests.TestSettings;
     Justification = "Configuration classes are instantiated through IConfiguration.")]
 internal sealed class OpenAIConfiguration
 {
-    public string Label { get; set; }
+    public string ServiceId { get; set; }
     public string ModelId { get; set; }
     public string ApiKey { get; set; }
 
-    public OpenAIConfiguration(string label, string modelId, string apiKey)
+    public OpenAIConfiguration(string serviceId, string modelId, string apiKey)
     {
-        this.Label = label;
+        this.ServiceId = serviceId;
         this.ModelId = modelId;
         this.ApiKey = apiKey;
     }

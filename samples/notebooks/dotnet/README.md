@@ -85,7 +85,19 @@ Enter the notebooks folder, and run this to launch the browser interface:
 
 # Troubleshooting
 
-If you are unable to get the Nuget package, run one of the `force-nuget-download` scripts for your machine.
+## Nuget
+
+If you are unable to get the Nuget package, first list your Nuget sources:
+```sh
+dotnet nuget list source
+```
+If you see `No sources found.`, add the NuGet official package source:
+```sh
+dotnet nuget add source "https://api.nuget.org/v3/index.json" --name "nuget.org"
+```
+Run `dotnet nuget list source` again to verify the source was added.
+
+## Polyglot Notebooks
 
 If somehow the notebooks don't work, run these commands:
 

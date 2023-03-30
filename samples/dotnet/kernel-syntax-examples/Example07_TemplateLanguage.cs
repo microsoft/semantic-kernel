@@ -3,9 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.KernelExtensions;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -20,7 +18,7 @@ public static class Example07_TemplateLanguage
         Console.WriteLine("======== TemplateLanguage ========");
 
         IKernel kernel = Kernel.Builder.WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddOpenAITextCompletion("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
         // Functions loaded here are available as "time.*"

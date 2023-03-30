@@ -5,7 +5,8 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.KernelExtensions;
+// ReSharper disable once CheckNamespace // Extension methods
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Kernel extension to configure the semantic memory with custom settings
@@ -13,28 +14,28 @@ namespace Microsoft.SemanticKernel.KernelExtensions;
 public static class MemoryConfiguration
 {
     /// <summary>
-    /// Set the semantic memory to use the given memory storage. Uses the kernel's default embeddings backend.
+    /// Set the semantic memory to use the given memory storage. Uses the kernel's default embeddings service.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="storage">Memory storage</param>
     public static void UseMemory(this IKernel kernel, IMemoryStore<float> storage)
     {
-        UseMemory(kernel, kernel.Config.DefaultTextEmbeddingServiceId, storage);
+        UseMemory(kernel, kernel.Config.DefaultTextEmbeddingGenerationServiceId, storage);
     }
 
     /// <summary>
-    /// Set the semantic memory to use the given memory storage and embeddings backend.
+    /// Set the semantic memory to use the given memory storage and embeddings service.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
-    /// <param name="embeddingsBackendLabel">Kernel backend label for embedding generation</param>
+    /// <param name="embeddingsServiceId">Kernel service id for embedding generation</param>
     /// <param name="storage">Memory storage</param>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The embeddingGenerator object is disposed by the kernel")]
-    public static void UseMemory(this IKernel kernel, string? embeddingsBackendLabel, IMemoryStore<float> storage)
+    public static void UseMemory(this IKernel kernel, string? embeddingsServiceId, IMemoryStore<float> storage)
     {
-        Verify.NotEmpty(embeddingsBackendLabel, "The embedding backend label is empty");
+        Verify.NotEmpty(embeddingsServiceId, "The embedding service id is empty");
 
-        var embeddingGenerator = kernel.GetService<IEmbeddingGenerator<string, float>>();
+        var embeddingGenerator = kernel.GetService<IEmbeddingGeneration<string, float>>();
 
         UseMemory(kernel, embeddingGenerator, storage);
     }
@@ -46,7 +47,7 @@ public static class MemoryConfiguration
     /// <param name="embeddingGenerator">Embedding generator</param>
     /// <param name="storage">Memory storage</param>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The embeddingGenerator object is disposed by the kernel")]
-    public static void UseMemory(this IKernel kernel, IEmbeddingGenerator<string, float> embeddingGenerator, IMemoryStore<float> storage)
+    public static void UseMemory(this IKernel kernel, IEmbeddingGeneration<string, float> embeddingGenerator, IMemoryStore<float> storage)
     {
         Verify.NotNull(storage, "The storage instance provided is NULL");
         Verify.NotNull(embeddingGenerator, "The embedding generator is NULL");

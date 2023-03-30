@@ -40,18 +40,21 @@
       <_Parameter1>SemanticKernel.UnitTests</_Parameter1>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Microsoft.SemanticKernel.Connectors.OpenAI</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>DynamicProxyGenAssembly2</_Parameter1> <!-- Moq -->
     </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="AI\OpenAI\Tokenizers\Settings\encoder.json" />
-    <Content Include="AI\OpenAI\Tokenizers\Settings\encoder.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Remove="Connectors\OpenAI\Tokenizers\Settings\encoder.json" />
+    <Content Include="Connectors\OpenAI\Tokenizers\Settings\encoder.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Remove="AI\OpenAI\Tokenizers\Settings\vocab.bpe" />
-    <Content Include="AI\OpenAI\Tokenizers\Settings\vocab.bpe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Remove="Connectors\OpenAI\Tokenizers\Settings\vocab.bpe" />
+    <Content Include="Connectors\OpenAI\Tokenizers\Settings\vocab.bpe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 </Project>
