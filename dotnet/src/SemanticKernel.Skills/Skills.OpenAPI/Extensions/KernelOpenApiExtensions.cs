@@ -13,9 +13,8 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
-using RestSkills;
-using RestSkills.Authentication;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 
@@ -32,8 +31,10 @@ public static class KernelOpenApiExtensions
     /// <param name="skillName">Skill name.</param>
     /// <param name="url">Url to in which to retrieve the OpenAPI definition.</param>
     /// <param name="httpClient">Optional HttpClient to use for the request.</param>
+    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null)
+    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(
+        this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null, Func<HttpRequestMessage, Task>? authCallback = null)
     {
         Verify.ValidSkillName(skillName);
 
@@ -64,7 +65,7 @@ public static class KernelOpenApiExtensions
                 throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
             }
 
-            return kernel.RegisterOpenApiSkill(stream, skillName);
+            return kernel.RegisterOpenApiSkill(stream, skillName, authCallback);
         }
         finally
         {
@@ -80,8 +81,9 @@ public static class KernelOpenApiExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
+    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromResource(this IKernel kernel, string skillName)
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromResource(this IKernel kernel, string skillName, Func<HttpRequestMessage, Task>? authCallback = null)
     {
         Verify.ValidSkillName(skillName);
 
@@ -95,7 +97,7 @@ public static class KernelOpenApiExtensions
             throw new MissingManifestResourceException($"Unable to load OpenApi skill from assembly resource '{resourceName}'.");
         }
 
-        return kernel.RegisterOpenApiSkill(stream, skillName);
+        return kernel.RegisterOpenApiSkill(stream, skillName, authCallback);
     }
 
     /// <summary>
@@ -104,8 +106,10 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the skill directory.</param>
     /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
+    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromDirectory(this IKernel kernel, string parentDirectory, string skillDirectoryName)
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromDirectory(
+        this IKernel kernel, string parentDirectory, string skillDirectoryName, Func<HttpRequestMessage, Task>? authCallback = null)
     {
         const string OPENAPI_FILE = "openapi.json";
 
@@ -125,7 +129,7 @@ public static class KernelOpenApiExtensions
 
         using var stream = File.OpenRead(openApiDocumentPath);
 
-        return kernel.RegisterOpenApiSkill(stream, skillDirectoryName);
+        return kernel.RegisterOpenApiSkill(stream, skillDirectoryName, authCallback);
     }
 
     /// <summary>
@@ -134,8 +138,9 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Name of the skill to register.</param>
     /// <param name="filePath">File path to the OpenAPI document.</param>
+    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromFile(this IKernel kernel, string skillName, string filePath)
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromFile(this IKernel kernel, string skillName, string filePath, Func<HttpRequestMessage, Task>? authCallback = null)
     {
         if (!File.Exists(filePath))
         {
@@ -147,7 +152,7 @@ public static class KernelOpenApiExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.RegisterOpenApiSkill(stream, skillName);
+        return kernel.RegisterOpenApiSkill(stream, skillName, authCallback);
     }
 
     /// <summary>
@@ -156,8 +161,9 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">OpenApi document stream.</param>
     /// <param name="skillName">Skill name.</param>
+    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> RegisterOpenApiSkill(this IKernel kernel, Stream documentStream, string skillName)
+    public static IDictionary<string, ISKFunction> RegisterOpenApiSkill(this IKernel kernel, Stream documentStream, string skillName, Func<HttpRequestMessage, Task>? authCallback = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
         Verify.ValidSkillName(skillName);
@@ -174,7 +180,7 @@ public static class KernelOpenApiExtensions
             try
             {
                 kernel.Log.LogTrace("Registering Rest function {0}.{1}.", skillName, operation.Id);
-                var function = kernel.RegisterRestApiFunction(skillName, operation);
+                var function = kernel.RegisterRestApiFunction(skillName, operation, authCallback);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
@@ -195,8 +201,9 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
     /// <param name="operation">The REST API operation.</param>
+    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
-    private static ISKFunction RegisterRestApiFunction(this IKernel kernel, string skillName, RestApiOperation operation)
+    private static ISKFunction RegisterRestApiFunction(this IKernel kernel, string skillName, RestApiOperation operation, Func<HttpRequestMessage, Task>? authCallback = null)
     {
         var restOperationParameters = operation.GetParameters();
 
@@ -204,7 +211,7 @@ public static class KernelOpenApiExtensions
         {
             try
             {
-                var runner = new RestApiOperationRunner(new HttpClient(), new BearerTokenHandler());
+                var runner = new RestApiOperationRunner(new HttpClient(), authCallback);
 
                 //Extract function arguments from context
                 var arguments = new Dictionary<string, string>();

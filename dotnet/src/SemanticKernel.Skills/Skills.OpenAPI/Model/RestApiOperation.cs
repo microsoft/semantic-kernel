@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
-using RestSkillsApi;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -13,17 +15,17 @@ internal class Example20_OpenApiSkill
 {
     public static async Task RunAsync()
     {
-        await GetSecretFromAzureKeyValueAsync();
+        await GetSecretFromAzureKeyVaultAsync();
 
-        await AddSecretToAzureKeyValutAsync();
+        await AddSecretToAzureKeyVaultAsync();
     }
 
-    public static async Task GetSecretFromAzureKeyValueAsync()
+    public static async Task GetSecretFromAzureKeyVaultAsync()
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         //Import
-        var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault);
+        var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
 
         //Add arguments
         var contextVariables = new ContextVariables();
@@ -37,12 +39,12 @@ internal class Example20_OpenApiSkill
         Console.WriteLine("GetSecret skill response: {0}", result);
     }
 
-    public static async Task AddSecretToAzureKeyValutAsync()
+    public static async Task AddSecretToAzureKeyVaultAsync()
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         //Import
-        var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault);
+        var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
 
         //Add arguments
         var contextVariables = new ContextVariables();
@@ -56,5 +58,11 @@ internal class Example20_OpenApiSkill
         var result = await kernel.RunAsync(contextVariables, skill["SetSecret"]);
 
         Console.WriteLine("SetSecret skill response: {0}", result);
+    }
+
+    private static Task AuthenticateWithBearerToken(HttpRequestMessage request)
+    {
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Env.Var("AZURE_KEYVAULT_TOKEN"));
+        return Task.CompletedTask;
     }
 }

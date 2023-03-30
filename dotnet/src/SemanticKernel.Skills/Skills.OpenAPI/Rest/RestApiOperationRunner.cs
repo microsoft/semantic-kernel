@@ -9,11 +9,8 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
-using RestSkills.Authentication;
-using RestSkillsApi;
 
-namespace RestSkills;
+namespace Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 
 /// <summary>
 /// Runs REST API operation represented by RestApiOperation model class.
@@ -23,22 +20,31 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     /// <summary>
     /// An instance of the HttpClient class.
     /// </summary>
-    private HttpClient _httpClient;
+    private readonly HttpClient _httpClient;
 
     /// <summary>
-    /// The authentication handler.
+    /// Delegate for authorizing the HTTP request.
     /// </summary>
-    private readonly IAuthenticationHandler _authenticationHandler;
+    private readonly Func<HttpRequestMessage, Task> _authCallback;
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationRunner"/> class.
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
-    /// <param name="authenticationHandler">An instance of authentication handler.</param>
-    public RestApiOperationRunner(HttpClient httpClient, IAuthenticationHandler authenticationHandler)
+    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
+    public RestApiOperationRunner(HttpClient httpClient, Func<HttpRequestMessage, Task>? authCallback = null)
     {
         this._httpClient = httpClient;
-        this._authenticationHandler = authenticationHandler;
+
+        // If no auth callback provided, use empty function
+        if (authCallback == null)
+        {
+            this._authCallback = (request) => { return Task.CompletedTask; };
+        }
+        else
+        {
+            this._authCallback = authCallback;
+        }
     }
 
     /// <inheritdoc/>
@@ -66,7 +72,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     {
         using var requestMessage = new HttpRequestMessage(method, url);
 
-        this._authenticationHandler.AddAuthenticationData(requestMessage);
+        await this._authCallback(requestMessage);
 
         if (payload != null)
         {
