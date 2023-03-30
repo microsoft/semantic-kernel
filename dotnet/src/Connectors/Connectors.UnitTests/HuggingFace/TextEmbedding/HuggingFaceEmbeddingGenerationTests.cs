@@ -16,7 +16,7 @@ namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextEmbedding;
 /// </summary>
 public class HuggingFaceEmbeddingGenerationTests : IDisposable
 {
-    private const string BaseUri = "http://localhost:5000/embeddings";
+    private const string Endpoint = "http://localhost:5000/embeddings";
     private const string Model = "gpt2";
 
     private readonly HttpResponseMessage _response = new()
@@ -57,7 +57,7 @@ public class HuggingFaceEmbeddingGenerationTests : IDisposable
 
         var httpClientHandler = HuggingFaceTestHelper.GetHttpClientHandlerMock(this._response);
 
-        return new HuggingFaceTextEmbeddingGeneration(new Uri(BaseUri), Model, httpClientHandler);
+        return new HuggingFaceTextEmbeddingGeneration(new Uri(Endpoint), Model, httpClientHandler);
     }
 
     public void Dispose()

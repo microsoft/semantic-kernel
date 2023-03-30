@@ -19,9 +19,10 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
 public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
 {
     private const string HttpUserAgent = "Microsoft Semantic Kernel";
-    private const string HuggingFaceApiBaseUri = "https://api-inference.huggingface.co/models";
+    private const string HuggingFaceApiEndpoint = "https://api-inference.huggingface.co/models";
 
     private readonly string _model;
+    private readonly Uri _endpoint;
     private readonly HttpClient _httpClient;
     private readonly HttpClientHandler? _httpClientHandler;
 
@@ -36,11 +37,11 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         Verify.NotNull(endpoint, "Endpoint cannot be null.");
         Verify.NotEmpty(model, "Model cannot be empty.");
 
+        this._endpoint = endpoint;
         this._model = model;
 
         this._httpClient = new(httpClientHandler);
 
-        this._httpClient.BaseAddress = endpoint;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
     }
 
@@ -55,12 +56,12 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         Verify.NotNull(endpoint, "Endpoint cannot be null.");
         Verify.NotEmpty(model, "Model cannot be empty.");
 
+        this._endpoint = endpoint;
         this._model = model;
 
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
         this._httpClient = new(this._httpClientHandler);
 
-        this._httpClient.BaseAddress = endpoint;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
     }
 
@@ -72,7 +73,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
     /// <param name="endpoint">Endpoint for service API call.</param>
-    public HuggingFaceTextCompletion(string apiKey, string model, HttpClientHandler httpClientHandler, string endpoint = HuggingFaceApiBaseUri)
+    public HuggingFaceTextCompletion(string apiKey, string model, HttpClientHandler httpClientHandler, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model, httpClientHandler)
     {
         Verify.NotEmpty(apiKey, "HuggingFace API key cannot be empty.");
@@ -88,7 +89,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="apiKey">HuggingFace API key, see https://huggingface.co/docs/api-inference/quicktour#running-inference-with-api-requests.</param>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="endpoint">Endpoint for service API call.</param>
-    public HuggingFaceTextCompletion(string apiKey, string model, string endpoint = HuggingFaceApiBaseUri)
+    public HuggingFaceTextCompletion(string apiKey, string model, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model)
     {
         Verify.NotEmpty(apiKey, "HuggingFace API key cannot be empty.");
@@ -130,7 +131,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
             using var httpRequestMessage = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri($"/{this._model}", UriKind.Relative),
+                RequestUri = new Uri($"{this._endpoint}/{this._model}"),
                 Content = new StringContent(JsonSerializer.Serialize(completionRequest))
             };
 

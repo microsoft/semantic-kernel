@@ -20,6 +20,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     private const string HttpUserAgent = "Microsoft Semantic Kernel";
 
     private readonly string _model;
+    private readonly Uri _endpoint;
     private readonly HttpClient _httpClient;
     private readonly HttpClientHandler? _httpClientHandler;
 
@@ -34,11 +35,11 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
         Verify.NotNull(endpoint, "Endpoint cannot be null.");
         Verify.NotEmpty(model, "Model cannot be empty.");
 
+        this._endpoint = endpoint;
         this._model = model;
 
         this._httpClient = new(httpClientHandler);
 
-        this._httpClient.BaseAddress = endpoint;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
     }
 
@@ -53,12 +54,12 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
         Verify.NotNull(endpoint, "Endpoint cannot be null.");
         Verify.NotEmpty(model, "Model cannot be empty.");
 
+        this._endpoint = endpoint;
         this._model = model;
 
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
         this._httpClient = new(this._httpClientHandler);
 
-        this._httpClient.BaseAddress = endpoint;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
     }
 
@@ -95,7 +96,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
             using var httpRequestMessage = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri($"/{this._model}", UriKind.Relative),
+                RequestUri = new Uri($"{this._endpoint}/{this._model}"),
                 Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
             };
 

@@ -14,7 +14,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextCompletion;
 /// </summary>
 public sealed class HuggingFaceTextCompletionTests
 {
-    private const string BaseUri = "http://localhost:5000/completions";
+    private const string Endpoint = "http://localhost:5000/completions";
     private const string Model = "gpt2";
 
     private readonly IConfigurationRoot _configuration;
@@ -35,7 +35,7 @@ public sealed class HuggingFaceTextCompletionTests
         // Arrange
         const string input = "This is test";
 
-        using var huggingFaceLocal = new HuggingFaceTextCompletion(new Uri(BaseUri), Model);
+        using var huggingFaceLocal = new HuggingFaceTextCompletion(new Uri(Endpoint), Model);
         using var huggingFaceRemote = new HuggingFaceTextCompletion(this.GetApiKey(), Model);
 
         // Act

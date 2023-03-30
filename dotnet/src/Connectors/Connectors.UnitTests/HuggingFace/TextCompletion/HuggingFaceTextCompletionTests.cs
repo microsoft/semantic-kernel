@@ -16,7 +16,7 @@ namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextCompletion;
 /// </summary>
 public class HuggingFaceTextCompletionTests : IDisposable
 {
-    private const string BaseUri = "http://localhost:5000/completions";
+    private const string Endpoint = "http://localhost:5000/completions";
     private const string Model = "gpt2";
 
     private readonly HttpResponseMessage _response = new()
@@ -54,7 +54,7 @@ public class HuggingFaceTextCompletionTests : IDisposable
 
         var httpClientHandler = HuggingFaceTestHelper.GetHttpClientHandlerMock(this._response);
 
-        return new HuggingFaceTextCompletion(new Uri(BaseUri), Model, httpClientHandler);
+        return new HuggingFaceTextCompletion(new Uri(Endpoint), Model, httpClientHandler);
     }
 
     public void Dispose()
