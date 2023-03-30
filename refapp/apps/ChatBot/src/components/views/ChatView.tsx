@@ -10,7 +10,8 @@ const useClasses = makeStyles({
         alignContent: 'start',
         justifyContent: 'space-between',
         width: '100%',
-        minHeight: '95vh',
+        height: '100%',
+        Flex: '1'
     }
 });
 

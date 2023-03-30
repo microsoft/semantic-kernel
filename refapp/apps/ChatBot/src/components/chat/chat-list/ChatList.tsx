@@ -14,7 +14,8 @@ const useClasses = makeStyles({
     root: {
         width: '25%',
         minHeight: '100%',
-        overflowY: 'scroll',
+        overflowX: 'hidden',
+        overflowY: 'auto',
         scrollbarWidth: 'thin',
         backgroundColor: '#F0F0F0'
     },
@@ -61,7 +62,7 @@ export const ChatList: FC = () => {
                     />
                 </div>
             </div>
-            <Label className={classes.label}>Your bot</Label>
+            <Label className={classes.label}>Your Bot</Label>
             <Tree aria-label={'chat list'}>
                 {
                     Object.keys(conversations).map((id) => {
@@ -89,8 +90,4 @@ export const ChatList: FC = () => {
             </Tree>
         </div>
     </>;
-}
-
-function useEffect(arg0: () => void) {
-    throw new Error("Function not implemented.");
 }

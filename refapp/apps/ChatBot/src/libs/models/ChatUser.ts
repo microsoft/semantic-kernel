@@ -3,6 +3,5 @@
 import { SKBotAudienceMember } from '../semantic-kernel/bot-agent/models/SKBotAudienceMember';
 
 export interface ChatUser extends SKBotAudienceMember {
-    online: boolean;
     lastTypingTimestamp: number;
 }

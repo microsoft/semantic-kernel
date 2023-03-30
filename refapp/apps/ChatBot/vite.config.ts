@@ -55,8 +55,8 @@ export default defineConfig({
     ] as PluginOption[],
     server: {
         https: true,
-        host: '127.0.0.1',
-        port: 4000,
+        host: 'localhost',
+        port: 3000,
     },
     build: {
         sourcemap: true,
