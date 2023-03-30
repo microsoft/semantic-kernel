@@ -39,11 +39,11 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
         try
         {
             var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collection, key);
-            if (vectorData != null)
+            if (vectorData != null && vectorData.Value.HasValue)
             {
                 return new DataEntry<IEmbeddingWithMetadata<TEmbedding>>(
                     key: key,
-                    value: vectorData.Value);
+                    value: vectorData.Value.Value);
             }
             else
             {
