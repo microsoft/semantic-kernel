@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -27,10 +26,11 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
     /// </summary>
     /// <param name="host"></param>
     /// <param name="port"></param>
+    /// <param name="vectorSize"></param>
     /// <param name="logger"></param>
-    public QdrantMemoryStore(string host, int port, ILogger? logger = null)
+    public QdrantMemoryStore(string host, int port, int vectorSize, ILogger? logger = null)
     {
-        this._qdrantClient = new QdrantVectorDbClient<TEmbedding>(endpoint: host, port: port, log: logger);
+        this._qdrantClient = new QdrantVectorDbClient<TEmbedding>(endpoint: host, port: port, vectorSize: vectorSize, log: logger);
     }
 
     /// <inheritdoc />
@@ -135,7 +135,7 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
 /// </summary>
 public class QdrantMemoryStore : QdrantMemoryStore<float>
 {
-    public QdrantMemoryStore(string host, int port, ILogger? logger = null) : base(host, port, logger)
+    public QdrantMemoryStore(string host, int port, int vectorSize, ILogger? logger = null) : base(host, port, vectorSize, logger)
     {
     }
 }
