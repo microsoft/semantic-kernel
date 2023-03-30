@@ -43,7 +43,7 @@ public class QdrantMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
             {
                 return new DataEntry<IEmbeddingWithMetadata<TEmbedding>>(
                     key: key,
-                    value: (IEmbeddingWithMetadata<TEmbedding>)vectorData?.Value);
+                    value: vectorData?.Value);
             }
             else
             {
