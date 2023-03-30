@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+
 /// <summary>
 /// The REST API operation parameter.
 /// </summary>
@@ -10,6 +11,11 @@ internal class RestApiOperationParameter
     /// The parameter name.
     /// </summary>
     public string Name { get; }
+
+    /// <summary>
+    /// The parameter description.
+    /// </summary>
+    public string? Description { get; }
 
     /// <summary>
     /// Flag specifying if the parameter is required or not.
@@ -24,7 +30,7 @@ internal class RestApiOperationParameter
     /// <summary>
     /// The default value.
     /// </summary>
-    public string DefaultValue { get; }
+    public string? DefaultValue { get; }
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationParameter"/> class.
@@ -33,11 +39,13 @@ internal class RestApiOperationParameter
     /// <param name="isRequired">Flag specifying if the parameter is required or not.</param>
     /// <param name="type">The parameter type.</param>
     /// <param name="defaultValue">The parameter default value.</param>
-    public RestApiOperationParameter(string name, bool isRequired, RestApiOperationParameterType type, string defaultValue)
+    /// <param name="description">The parameter description.</param>
+    public RestApiOperationParameter(string name, bool isRequired, RestApiOperationParameterType type, string? defaultValue, string? description = null)
     {
         this.Name = name;
         this.IsRequired = isRequired;
         this.Type = type;
         this.DefaultValue = defaultValue;
+        this.Description = description;
     }
 }

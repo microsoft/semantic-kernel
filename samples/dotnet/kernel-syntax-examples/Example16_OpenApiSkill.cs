@@ -1,13 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Orchestration.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
@@ -18,86 +14,47 @@ internal class Example16_OpenApiSkill
     public static async Task RunAsync()
     {
         await GetSecretFromAzureKeyValutAsync();
+
+        await AddSecretToAzureKeyValutAsync();
     }
 
     public static async Task GetSecretFromAzureKeyValutAsync()
     {
-        Console.WriteLine("======== Planning - Create and Execute Azure Plan ========");
-        var kernel = InitializeKernelAndPlanner(out var planner);
+        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        //Use OpenApi skill from folder
-        //string folder = RepoFiles.SampleSkillsPath();
-        //kernel.ImportOpenApiSkillFromDirectory(folder, "AzureKeyVaultSkill");
+        //Import
+        var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault);
 
-        //Use OpenApi skill from Skills.OpenAPI package
-        kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault);
+        //Add arguments
+        var contextVariables = new ContextVariables();
+        contextVariables.Set("server-url", "https://<keyvault-name>.vault.azure.net");
+        contextVariables.Set("secret-name", "<secret-name>");
+        contextVariables.Set("api-version", "7.0");
 
-        var plan = await kernel.RunAsync("Load 'test-secret' from Azure KeyValut available at https://dev-tests.vault.azure.net using GetSecret function.", planner["CreatePlan"]);
+        //Run
+        var result = await kernel.RunAsync(contextVariables, skill["GetSecret"]);
 
-        Console.WriteLine("Original plan:");
-        Console.WriteLine(plan.Variables.ToPlan().PlanString);
-
-        await ExecutePlanAsync(kernel, planner, plan, 5);
+        Console.WriteLine("GetSecret skill response: {0}", result);
     }
 
-    private static IKernel InitializeKernelAndPlanner(out IDictionary<string, ISKFunction> planner)
+    public static async Task AddSecretToAzureKeyValutAsync()
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddAzureOpenAICompletionBackend(
-            Env.Var("AZURE_OPENAI_DEPLOYMENT_LABEL"),
-            Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-            Env.Var("AZURE_OPENAI_ENDPOINT"),
-            Env.Var("AZURE_OPENAI_KEY"));
 
-        // Load native skill into the kernel skill collection, sharing its functions with prompt templates
-        planner = kernel.ImportSkill(new PlannerSkill(kernel), "planning");
+        //Import
+        var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault);
 
-        return kernel;
-    }
+        //Add arguments
+        var contextVariables = new ContextVariables();
+        contextVariables.Set("server-url", "https://<keyvault-name>.vault.azure.net");
+        contextVariables.Set("secret-name", "<secret-name>");
+        contextVariables.Set("api-version", "7.0");
+        contextVariables.Set("enabled", "true");
+        contextVariables.Set("value", "<secret>");
 
-    private static async Task<SKContext> ExecutePlanAsync(
-        IKernel kernel,
-        IDictionary<string, ISKFunction> planner,
-        SKContext executionResults,
-        int maxSteps = 10)
-    {
-        Stopwatch sw = new();
-        sw.Start();
+        //Run
+        var result = await kernel.RunAsync(contextVariables, skill["SetSecret"]);
 
-        // loop until complete or at most N steps
-        for (int step = 1; !executionResults.Variables.ToPlan().IsComplete && step < maxSteps; step++)
-        {
-            var results = await kernel.RunAsync(executionResults.Variables, planner["ExecutePlan"]);
-            if (results.Variables.ToPlan().IsSuccessful)
-            {
-                Console.WriteLine($"Step {step} - Execution results:");
-                Console.WriteLine(results.Variables.ToPlan().PlanString);
-
-                if (results.Variables.ToPlan().IsComplete)
-                {
-                    Console.WriteLine($"Step {step} - COMPLETE!");
-                    Console.WriteLine(results.Variables.ToPlan().Result);
-
-                    // Console.WriteLine("VARIABLES: ");
-                    // Console.WriteLine(string.Join("\n\n", results.Variables.Select(v => $"{v.Key} = {v.Value}")));
-                    break;
-                }
-
-                // Console.WriteLine($"Step {step} - Results so far:");
-                // Console.WriteLine(results.ToPlan().Result);
-            }
-            else
-            {
-                Console.WriteLine($"Step {step} - Execution failed:");
-                Console.WriteLine(results.Variables.ToPlan().Result);
-                break;
-            }
-
-            executionResults = results;
-        }
-
-        sw.Stop();
-        Console.WriteLine($"Execution complete in {sw.ElapsedMilliseconds} ms!");
-        return executionResults;
+        Console.WriteLine("SetSecret skill response: {0}", result);
     }
 }
