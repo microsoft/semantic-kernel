@@ -20,6 +20,7 @@ public interface ISemanticTextMemory
     /// <param name="description">Optional description</param>
     /// <param name="dbKey">The unique database key.</param>
     /// <param name="cancel">Cancellation token</param>
+    /// <returns>Unique memory record identifier</returns>
     public Task<string> SaveInformationAsync(
         string collection,
         string text,
@@ -38,6 +39,7 @@ public interface ISemanticTextMemory
     /// <param name="description">Optional description</param>
     /// <param name="dbKey">The unique database key.</param>
     /// <param name="cancel">Cancellation token</param>
+    /// <returns>Unique memory record identifier</returns>
     public Task<string> SaveReferenceAsync(
         string collection,
         string text,

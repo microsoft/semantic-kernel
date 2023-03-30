@@ -33,7 +33,7 @@ public struct DataEntry<TValue> : IEquatable<DataEntry<TValue>>
     /// Gets the key of the data.
     /// </summary>
     [JsonPropertyName("key")]
-    public string? Key { get; set; } = null;
+    public string? Key { get; } = null;
 
     /// <summary>
     /// Gets the value of the data.
@@ -208,8 +208,6 @@ public static class DataEntry
     /// <returns>A <see cref="DataEntry{TValue}"/> object.</returns>
     public static DataEntry<TValue> Create<TValue>(string? key, string value, DateTimeOffset? timestamp = null)
     {
-        Verify.NotEmpty(key, "Data entry key cannot be NULL");
-
         TValue? valueObj = ParseValueAs<TValue>(value);
         return new DataEntry<TValue>(key, valueObj, timestamp);
     }

@@ -137,10 +137,10 @@ public class TextMemorySkill
     /// <example>
     /// SKContext["input"] = "the capital of France is Paris"
     /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
-    /// {{memory.save $input }}
+    /// {{memory.save $input }} => "(unique memory key)"
     /// </example>
     /// <param name="text">The information to save</param>
-    /// <param name="context">Contains the 'collection' to save the information and unique 'key' to associate it with.</param>
+    /// <param name="context">Contains the 'collection' to save the information and optional unique 'key' to associate it with.</param>
     [SKFunction("Save information to semantic memory")]
     [SKFunctionName("Save")]
     [SKFunctionInput(Description = "The information to save")]
