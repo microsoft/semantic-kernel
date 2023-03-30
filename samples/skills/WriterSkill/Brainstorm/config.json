@@ -18,6 +18,5 @@
         "defaultValue": ""
       }
     ]
-  },
-  "default_backends": ["text-davinci-003"]
+  }
 }

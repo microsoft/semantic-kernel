@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Orchestration.Extensions;
 
 namespace Microsoft.SemanticKernel.Planning;
 
