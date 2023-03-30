@@ -23,23 +23,23 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "audience", Description = "The audience the chat bot is interacting with.")]
     public async Task<string> ExtractUserIntentAsync(SKContext context)
     {
-        var tokenLimit = SystemPromptDefaults.completionTokenLimit;
+        var tokenLimit = SystemPromptDefaults.CompletionTokenLimit;
         var historyTokenBudget =
             tokenLimit -
-            SystemPromptDefaults.responseTokenLimit -
+            SystemPromptDefaults.ResponseTokenLimit -
             this.EstimateTokenCount(string.Join("\n", new string[]{
-                SystemPromptDefaults.systemDescriptionPrompt,
-                SystemPromptDefaults.systemIntentPrompt,
-                SystemPromptDefaults.systemIntentContinuationPrompt})
+                SystemPromptDefaults.SystemDescriptionPrompt,
+                SystemPromptDefaults.SystemIntentPrompt,
+                SystemPromptDefaults.SystemIntentContinuationPrompt})
             );
 
         var intentExtractionVariables = new ContextVariables();
         intentExtractionVariables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
-        intentExtractionVariables.Set("knowledgeCutoff", SystemPromptDefaults.knowledgeCutoffDate);
+        intentExtractionVariables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
         intentExtractionVariables.Set("audience", context["audience"]);
 
         var completionFunction = this._kernel.CreateSemanticFunction(
-            SystemPromptDefaults.systemIntentExtractionPrompt,
+            SystemPromptDefaults.SystemIntentExtractionPrompt,
             skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
@@ -68,7 +68,7 @@ public class ChatSkill
 
         var remainingToken = Math.Min(
             tokenLimit,
-            Math.Floor(contextTokenLimit * SystemPromptDefaults.memoriesResponseContextWeight)
+            Math.Floor(contextTokenLimit * SystemPromptDefaults.MemoriesResponseContextWeight)
         );
 
         var latestMessage = await this.GetLatestMemoryAsync(context);
@@ -130,14 +130,14 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "audience", Description = "The audience the chat bot is interacting with.")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
-        var tokenLimit = SystemPromptDefaults.completionTokenLimit;
+        var tokenLimit = SystemPromptDefaults.CompletionTokenLimit;
         var remainingToken =
             tokenLimit -
-            SystemPromptDefaults.responseTokenLimit -
+            SystemPromptDefaults.ResponseTokenLimit -
             this.EstimateTokenCount(string.Join("\n", new string[]{
-                SystemPromptDefaults.systemDescriptionPrompt,
-                SystemPromptDefaults.systemResponsePrompt,
-                SystemPromptDefaults.systemChatContinuationPrompt})
+                SystemPromptDefaults.SystemDescriptionPrompt,
+                SystemPromptDefaults.SystemResponsePrompt,
+                SystemPromptDefaults.SystemChatContinuationPrompt})
             );
         var contextTokenLimit = remainingToken;
 
@@ -158,12 +158,12 @@ public class ChatSkill
 
         context.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
         context.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
-        context.Variables.Set("knowledgeCutoff", SystemPromptDefaults.knowledgeCutoffDate);
+        context.Variables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
         context.Variables.Set("userIntent", userIntent);
         context.Variables.Set("audience", context["audience"]);
 
         var completionFunction = this._kernel.CreateSemanticFunction(
-            SystemPromptDefaults.systemChatPrompt,
+            SystemPromptDefaults.SystemChatPrompt,
             skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
@@ -258,28 +258,28 @@ public class ChatSkill
     private CompleteRequestSettings GetChatResponseCompletionSettings()
     {
         var completionSettings = new CompleteRequestSettings();
-        completionSettings.MaxTokens = SystemPromptDefaults.responseTokenLimit;
-        completionSettings.Temperature = SystemPromptDefaults.responseTemperature;
-        completionSettings.TopP = SystemPromptDefaults.responseTopP;
-        completionSettings.FrequencyPenalty = SystemPromptDefaults.responseFrequencyPenalty;
-        completionSettings.PresencePenalty = SystemPromptDefaults.responsePresencePenalty;
+        completionSettings.MaxTokens = SystemPromptDefaults.ResponseTokenLimit;
+        completionSettings.Temperature = SystemPromptDefaults.ResponseTemperature;
+        completionSettings.TopP = SystemPromptDefaults.ResponseTopP;
+        completionSettings.FrequencyPenalty = SystemPromptDefaults.ResponseFrequencyPenalty;
+        completionSettings.PresencePenalty = SystemPromptDefaults.ResponsePresencePenalty;
         return completionSettings;
     }
 
     private CompleteRequestSettings GetIntentCompletionSettings()
     {
         var completionSettings = new CompleteRequestSettings();
-        completionSettings.MaxTokens = SystemPromptDefaults.responseTokenLimit;
-        completionSettings.Temperature = SystemPromptDefaults.intentTemperature;
-        completionSettings.TopP = SystemPromptDefaults.intentTopP;
-        completionSettings.FrequencyPenalty = SystemPromptDefaults.intentFrequencyPenalty;
-        completionSettings.PresencePenalty = SystemPromptDefaults.intentPresencePenalty;
+        completionSettings.MaxTokens = SystemPromptDefaults.ResponseTokenLimit;
+        completionSettings.Temperature = SystemPromptDefaults.IntentTemperature;
+        completionSettings.TopP = SystemPromptDefaults.IntentTopP;
+        completionSettings.FrequencyPenalty = SystemPromptDefaults.IntentFrequencyPenalty;
+        completionSettings.PresencePenalty = SystemPromptDefaults.IntentPresencePenalty;
         completionSettings.StopSequences = new string[] { "] bot:" };
         return completionSettings;
     }
 
     private int EstimateTokenCount(string text)
     {
-        return (int)Math.Floor(text.Length / SystemPromptDefaults.tokenEstimateFactor);
+        return (int)Math.Floor(text.Length / SystemPromptDefaults.TokenEstimateFactor);
     }
 }
