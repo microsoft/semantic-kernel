@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Skills.UnitTests.OpenAPI;
@@ -25,7 +26,8 @@ public class RestApiOperationRunnerTests
         //Arrange
         using var httpMessageHandlerStub = new HttpMessageHandlerStub();
         using var httpClient = new HttpClient(httpMessageHandlerStub);
-        var sut = new RestApiOperationRunner(httpClient, null);
+        var authCallbackMock = new Mock<Func<HttpRequestMessage, Task>>();
+        var sut = new RestApiOperationRunner(httpClient, authCallbackMock.Object);
 
         List<RestApiOperationPayloadProperty> payloadProperties = new()
         {
@@ -80,6 +82,8 @@ public class RestApiOperationRunnerTests
         var enabledProperty = attributesProperty["enabled"]?.AsValue();
         Assert.NotNull(enabledProperty);
         Assert.Equal("true", enabledProperty.ToString());
+
+        authCallbackMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
     }
 
 
