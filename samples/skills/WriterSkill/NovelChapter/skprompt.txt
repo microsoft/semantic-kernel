@@ -16,5 +16,3 @@ Chapter Synopsis:
 {{$input}}
 
 Chapter {{$chapterIndex}}
-
-

@@ -1,6 +1,6 @@
-WRITE PYTHON 3.x command line scripts. WRITE  A SINGLE FUNCTION. 
-USE sys.argv, sys.stdin. 
-HANDLE ERRORS. EXPLANATIONS MUST BE A COMMENT. 
+WRITE PYTHON 3.x command line scripts. WRITE  A SINGLE FUNCTION.
+USE sys.argv, sys.stdin.
+HANDLE ERRORS. EXPLANATIONS MUST BE A COMMENT.
 
 # Start
 # command line script. Read filename from args, open file, copy stdin to file

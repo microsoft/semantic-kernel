@@ -7,11 +7,11 @@ The planner works backwards from a goal that’s provided from a user's ASK.
 ![image](https://user-images.githubusercontent.com/371009/221742094-2920c697-7494-4a7b-a894-4f24fb90965f.png)
 
 We call this approach "goal-oriented AI" — harking back to the early days of AI
-when researchers aspired for computers to beat the world's reigning chess champion. 
+when researchers aspired for computers to beat the world's reigning chess champion.
 That grand goal was achieved eventually, but with the unusual competence of new
 LLM AI models to provide step-by-step directions for practically any goal can be
-attainable when the right 
-[skills](SKILLS.md) 
+attainable when the right
+[skills](SKILLS.md)
 are available.
 
 Because the planner has access to either a pre-defined library of pre-made skills

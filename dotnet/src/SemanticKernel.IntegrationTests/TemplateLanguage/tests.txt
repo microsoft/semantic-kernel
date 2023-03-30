@@ -58,8 +58,8 @@ ERROR
 {{ "{{" }} and {{ "}}" }} x
 {{ and }} x
 
- {{ " nothing special about these sequences: \ \0 \n \t \r \foo" }} 
-  nothing special about these sequences: \ \0 \n \t \r \foo 
+ {{ " nothing special about these sequences: \ \0 \n \t \r \foo" }}
+  nothing special about these sequences: \ \0 \n \t \r \foo
 
 1{{ '\\' }}2
 1\2

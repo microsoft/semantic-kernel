@@ -34,7 +34,7 @@ or a single directory as well.
 SkillName (directory name)
 │
 └─── Function1Name (directory name)
-│   
+│
 └─── Function2Name (directory name)
 ```
 

@@ -23,7 +23,7 @@ steps:
     version: '3.1.x'
 
 - task: Semmle@1
-  env: 
+  env:
      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
   inputs:
     sourceCodeDirectory: '$(Build.SourcesDirectory)'

@@ -44,7 +44,7 @@ if [ -n "$(cat $file | grep -i "<IsPackable>false</IsPackable>")" ]; then
     echo "Project is marked as NOT packable - skipping."
     exit 0;
 fi
-    
+
 if [ -z "$propsFile" ]; then
     echo "ERROR: Parameter propsFile (-f|--file) not provided"
     exit 1;

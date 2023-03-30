@@ -12,7 +12,7 @@
 1. You will need an [Open AI Key](https://openai.com/api/) or
    [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample
-2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps 
+2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps
    to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. You will also need to
    [register your application](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)

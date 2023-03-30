@@ -22,7 +22,7 @@ public class ContextVariablesTests
         string secondName = Guid.NewGuid().ToString();
         string secondValue = Guid.NewGuid().ToString();
 
-        // Act            
+        // Act
         ContextVariables target = new ContextVariables();
         target.Set(firstName, firstValue);
         target.Set(secondName, secondValue);

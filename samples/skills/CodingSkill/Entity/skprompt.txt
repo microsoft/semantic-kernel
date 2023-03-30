@@ -5,4 +5,3 @@ Inject xml tags inline into the given text for the following:
 - output [done] when original text was processed
 
 {{$input}}
-

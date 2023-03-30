@@ -9,7 +9,7 @@ updates:
     directory: "dotnet/"
     schedule:
       interval: "weekly"
-      
+
   - package-ecosystem: "github-actions"
     # Workflow files stored in the
     # default location of `.github/workflows`

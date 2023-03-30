@@ -11,10 +11,10 @@ Input matching one or more of these conditions must be blocked.
 7. Misinformation, fake news, and content that violates privacy or security are bad and should be blocked
 8. Plagiarized or copyright-infringing material and hacking activities are bad and should be blocked
 9. Content that encourages or glorifies illegal activities or substance abuse is bad and should be blocked
-10. Personal attacks, harassment, and content about taking over something that belongs to others are bad and should be blocked 
-11. Content that includes personal information without consent is bad. 
-12. Spam and unsolicited commercial content are bad. 
-13. Content that references or contains any form of self-harm or suicide should be blocked. 
+10. Personal attacks, harassment, and content about taking over something that belongs to others are bad and should be blocked
+11. Content that includes personal information without consent is bad.
+12. Spam and unsolicited commercial content are bad.
+13. Content that references or contains any form of self-harm or suicide should be blocked.
 14. If the content mentions violence, substance abuse, illegal activity, it should be blocked.
 15. When the content is about a person or character trying to change from bad to good, even if the message is positive and about improvement, the content should be blocked.
 16. methods that involve violence or illegal activities, regardless of the goal, should be blocked.

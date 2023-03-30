@@ -1,12 +1,12 @@
 # Semantic Kernel syntax examples
 
 This project contains a collection of semi-random examples about various scenarios
-using SK components. 
+using SK components.
 
 The examples are ordered by number, starting with very basic examples.
 
 Most of the examples will require secrets and credentials, to access OpenAI, Azure OpenAI,
-Bing and other resources. We suggest using .NET 
+Bing and other resources. We suggest using .NET
 [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
 to avoid the risk of leaking secrets into the repository, branches and pull requests.
 You can also use environment variables if you prefer.

@@ -31,7 +31,7 @@ Two endpoints will be exposed by the service API:
 ## Next steps
 
 Now that your service API is running locally,
-let's try it out in a sample app so you can learn core Semantic Kernel concepts!  
+let's try it out in a sample app so you can learn core Semantic Kernel concepts!
 The service API will need to be run or running for each sample app you want to try.
 
 Sample app learning examples:
