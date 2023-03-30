@@ -55,7 +55,7 @@ const App: FC = () => {
             <AuthenticatedTemplate>
                 <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
                     <div className={classes.header} >
-                        <Subtitle1 as="h1">Copilot Starter App</Subtitle1>
+                        <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                         <Avatar
                             className={classes.persona}
                             key={account?.name}
