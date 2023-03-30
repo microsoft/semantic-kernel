@@ -17,9 +17,8 @@ internal interface IRestApiOperationRunner
     /// Runs a REST API operation.
     /// </summary>
     /// <param name="operation">The operation to run.</param>
-    /// <param name="arguments">The arguments.</param>
-    /// <param name="payload">The payload</param>
+    /// <param name="arguments">The operation arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation run.</returns>
-    Task<JsonNode?> RunAsync(RestApiOperation operation, IDictionary<string, string> arguments, JsonNode? payload = null, CancellationToken cancellationToken = default);
+    Task<JsonNode?> RunAsync(RestApiOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default);
 }

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 using RestSkills.Authentication;
+using RestSkillsApi;
 
 namespace RestSkills;
 
@@ -41,15 +42,13 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     }
 
     /// <inheritdoc/>
-    public async Task<JsonNode?> RunAsync(RestApiOperation operation, IDictionary<string, string> arguments, JsonNode? payload = null, CancellationToken cancellationToken = default)
+    public async Task<JsonNode?> RunAsync(RestApiOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
-        var uri = operation.BuildOperationUri(arguments);
+        var url = operation.BuildOperationUrl(arguments);
 
-        var method = operation.Method;
+        var payload = BuildOperationPayload(operation.Payload, arguments);
 
-        var headers = operation.Headers;
-
-        return await this.SendAsync(uri, method, headers, payload, cancellationToken);
+        return await this.SendAsync(url, operation.Method, operation.Headers, payload, cancellationToken);
     }
 
     #region private
@@ -57,21 +56,21 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     /// <summary>
     /// Sends an HTTP request.
     /// </summary>
-    /// <param name="uri">The uri to send request to.</param>
+    /// <param name="url">The url to send request to.</param>
     /// <param name="method">The HTTP request method.</param>
-    /// <param name="payload">The HTTP request payload.</param>
     /// <param name="headers">Headers to include into the HTTP request.</param>
+    /// <param name="payload">HTTP request payload.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    private async Task<JsonNode?> SendAsync(Uri uri, HttpMethod method, IDictionary<string, string>? headers = null, JsonNode? payload = null, CancellationToken cancellationToken = default)
+    private async Task<JsonNode?> SendAsync(Uri url, HttpMethod method, IDictionary<string, string>? headers = null, HttpContent? payload = null, CancellationToken cancellationToken = default)
     {
-        using var requestMessage = new HttpRequestMessage(method, uri);
+        using var requestMessage = new HttpRequestMessage(method, url);
 
         this._authenticationHandler.AddAuthenticationData(requestMessage);
 
         if (payload != null)
         {
-            requestMessage.Content = new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeNames.Application.Json);
+            requestMessage.Content = payload;
         }
 
         if (headers != null)
@@ -91,5 +90,76 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
         return JsonNode.Parse(content);
     }
 
+    /// <summary>
+    /// Builds operation payload.
+    /// </summary>
+    /// <param name="payloadMetadata">The payload meta-data.</param>
+    /// <param name="arguments">The payload arguments.</param>
+    /// <returns>The HttpContent representing the payload.</returns>
+    private static HttpContent? BuildOperationPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, string> arguments)
+    {
+        if (payloadMetadata == null)
+        {
+            return null;
+        }
+
+        if (!s_payloadFactoryByMediaType.TryGetValue(payloadMetadata.MediaType, out var payloadFactory))
+        {
+            throw new RestApiOperationException($"The media type {payloadMetadata.MediaType} is not supported by {nameof(RestApiOperationRunner)}.");
+        }
+
+        return payloadFactory.Invoke(payloadMetadata, arguments);
+    }
+
+    /// <summary>
+    /// Builds "application/json" payload.
+    /// </summary>
+    /// <param name="payloadMetadata">The payload meta-data.</param>
+    /// <param name="arguments">The payload arguments.</param>    /// <returns></returns>
+    /// <returns>The HttpContent representing the payload.</returns>
+    private static HttpContent BuildAppJsonPayload(RestApiOperationPayload payloadMetadata, IDictionary<string, string> arguments)
+    {
+        JsonNode BuildPayload(IList<RestApiOperationPayloadProperty> properties)
+        {
+            var result = new JsonObject();
+
+            foreach (var propertyMetadata in properties)
+            {
+                switch (propertyMetadata.Type)
+                {
+                    case "object":
+                    {
+                        var propertyValue = BuildPayload(propertyMetadata.Properties);
+                        result.Add(propertyMetadata.Name, propertyValue);
+                        break;
+                    }
+                    default: //TODO: Use the default case for unsupported types.
+                    {
+                        if (!arguments.TryGetValue(propertyMetadata.Name, out var propertyValue))
+                        {
+                            throw new RestApiOperationException($"No argument is found for the '{propertyMetadata.Name}' payload property.");
+                        }
+
+                        result.Add(propertyMetadata.Name, propertyValue);
+                        break;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        var payload = BuildPayload(payloadMetadata.Properties);
+
+        return new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeNames.Application.Json); ;
+    }
+
+    /// <summary>
+    /// List of payload builders/factories.
+    /// </summary>
+    private static IDictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>> s_payloadFactoryByMediaType = new Dictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>>()
+    {
+        { MediaTypeNames.Application.Json, BuildAppJsonPayload }
+    };
     #endregion
 }
