@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 // TODO: align with SK naming and expand to have all fields from both AzureOpenAIConfig and OpenAIConfig
+// Or actually split this into two classes
 
 namespace SemanticKernel.Service.Config;
 
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes - Instanciated by deserialing JSON
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes - Instanciated by deserializing JSON
 internal class AIServiceConfig
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
 {

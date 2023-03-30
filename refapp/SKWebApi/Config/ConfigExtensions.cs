@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Reflection;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.OpenAI.Services;
 using Microsoft.SemanticKernel.Configuration;
@@ -18,6 +19,7 @@ internal static class ConfigExtensions
             builder.AddJsonFile("appsettings.json", false, true);
             builder.AddJsonFile($"appsettings.{enviroment}.json", true, true);
             builder.AddEnvironmentVariables();
+            builder.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true, reloadOnChange: true);
             // For settings from Key Vault, see https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-7.0
         });
 

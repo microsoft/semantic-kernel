@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
-using SKWebApi;
 
 namespace SemanticKernel.Service;
 
@@ -80,13 +79,5 @@ public static class Program
         services.AddSingleton(kernelConfig);
 
         services.AddScoped<Kernel>();
-
-        IDictionary<string, Type> mapOfDependenciesToTypes = new Dictionary<string, Type>();
-        string nativeSkillsDirectory = configuration.GetSection(Constants.NativeSkillsDirectory).Get<string>();
-        if (!string.IsNullOrWhiteSpace(nativeSkillsDirectory))
-        {
-            mapOfDependenciesToTypes = services.RegisterNativeSkillDependencies(nativeSkillsDirectory);
-        }
-        services.AddSingleton<IDictionary<string, Type>>(mapOfDependenciesToTypes);
     }
 }

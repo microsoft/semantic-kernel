@@ -12,14 +12,12 @@ namespace SemanticKernel.Service.Controllers;
 [ApiController]
 public class SemanticKernelController : ControllerBase
 {
-    private readonly IDictionary<string, Type> _mapOfDependenciesToTypes;
     private readonly IServiceProvider _serviceProvider;
     private readonly IConfiguration _configuration;
     private readonly ILogger<SemanticKernelController> _logger;
 
-    public SemanticKernelController(IDictionary<string, Type> mapOfDependenciesToTypes, IServiceProvider serviceProvider, IConfiguration configuration, ILogger<SemanticKernelController> logger)
+    public SemanticKernelController(IServiceProvider serviceProvider, IConfiguration configuration, ILogger<SemanticKernelController> logger)
     {
-        this._mapOfDependenciesToTypes = mapOfDependenciesToTypes;
         this._serviceProvider = serviceProvider;
         this._configuration = configuration;
         this._logger = logger;
@@ -48,13 +46,13 @@ public class SemanticKernelController : ControllerBase
     {
         this._logger.LogDebug("Received call to invoke {SkillName}/{FunctionName}", skillName, functionName);
 
-        string semanticSkillsDirectory = this._configuration.GetSection(Constants.SemanticSkillsDirectory).Get<string>();
+        string semanticSkillsDirectory = this._configuration.GetSection(Constants.SemanticSkillsDirectoryConfigKey).Get<string>();
         if (!string.IsNullOrWhiteSpace(semanticSkillsDirectory))
         {
             kernel.RegisterSemanticSkills(semanticSkillsDirectory, this._logger);
         }
 
-        kernel.RegisterNativeSkills(this._serviceProvider, this._mapOfDependenciesToTypes, this._logger);
+        kernel.RegisterNativeSkills(this._logger);
 
         ISKFunction? function = null;
         try

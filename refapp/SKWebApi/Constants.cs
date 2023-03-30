@@ -4,6 +4,5 @@ namespace SKWebApi;
 
 internal static class Constants
 {
-    public const string NativeSkillsDirectory = "NativeSkillsDirectory";
-    public const string SemanticSkillsDirectory = "SemanticSkillsDirectory";
+    public const string SemanticSkillsDirectoryConfigKey = "SemanticSkillsDirectory";
 }

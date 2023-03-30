@@ -28,33 +28,10 @@ internal static class FunctionLoadingExtensions
         }
     }
 
-    internal static Dictionary<string, Type> RegisterNativeSkillDependencies(
-        this IServiceCollection serviceProvider,
-        string skillDirectory)
-    {
-        // TODO: Implement this method
-
-        return new Dictionary<string, Type>();
-    }
-
     internal static void RegisterNativeSkills(
         this IKernel kernel,
-        IServiceProvider serviceProvider,
-        IDictionary<string, Type> skillsToRegister,
         ILogger logger)
     {
-        foreach (KeyValuePair<string, Type> skill in skillsToRegister)
-        {
-            var skillInstance = serviceProvider.GetService(skill.Value);
-
-            if (skillInstance != null)
-            {
-                kernel.ImportSkill(skillInstance, skill.Key);
-            }
-            else
-            {
-                logger.LogError("Failed to get an instance of {SkillName} from DI container", skill.Key);
-            }
-        }
+        // Hardcode your native function registrations here
     }
 }
