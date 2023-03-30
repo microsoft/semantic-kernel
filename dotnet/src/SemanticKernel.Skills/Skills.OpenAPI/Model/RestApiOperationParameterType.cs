@@ -31,9 +31,4 @@ internal enum RestApiOperationParameterType
     /// Body parameter.
     /// </summary>
     Body,
-
-    /// <summary>
-    /// Override parameter.
-    /// </summary>
-    Override,
 }

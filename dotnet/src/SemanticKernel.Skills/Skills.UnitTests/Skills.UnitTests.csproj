@@ -11,6 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="OpenAPI\TestSkills\openapi.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="OpenAPI\TestSkills\v2_0\operation.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />

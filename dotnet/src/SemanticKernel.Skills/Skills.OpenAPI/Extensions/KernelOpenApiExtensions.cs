@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Resources;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -21,7 +20,7 @@ using RestSkills.Authentication;
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 
 /// <summary>
-/// Class for extensions methods for IKernel interface.
+/// Class for extensions methods for <see cref="IKernel"/> interface.
 /// </summary>
 public static class KernelOpenApiExtensions
 {
@@ -175,7 +174,8 @@ public static class KernelOpenApiExtensions
             try
             {
                 kernel.Log.LogTrace("Registering Rest function {0}.{1}.", skillName, operation.Id);
-                skill[skillName] = kernel.RegisterRestFunction(skillName, operation);
+                var function = kernel.RegisterRestApiFunction(skillName, operation);
+                skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -188,7 +188,15 @@ public static class KernelOpenApiExtensions
     }
 
     #region private
-    private static ISKFunction RegisterRestFunction(this IKernel kernel, string skillName, RestApiOperation operation)
+
+    /// <summary>
+    /// Registers SKFunction for a REST API operation.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="skillName">Skill name.</param>
+    /// <param name="operation">The REST API operation.</param>
+    /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
+    private static ISKFunction RegisterRestApiFunction(this IKernel kernel, string skillName, RestApiOperation operation)
     {
         var restOperationParameters = operation.GetParameters();
 
@@ -214,14 +222,7 @@ public static class KernelOpenApiExtensions
                     }
                 }
 
-                //Create payload. It's a workaround that should be removed when payload is automatically created by RestOperation class
-                var payload = default(JsonNode);
-                if (context.Variables.Get("body", out var body))
-                {
-                    payload = JsonValue.Parse(body);
-                }
-
-                var result = await runner.RunAsync(operation, arguments, payload, context.CancellationToken);
+                var result = await runner.RunAsync(operation, arguments, context.CancellationToken);
                 if (result != null)
                 {
                     context.Variables.Update(result.ToString());
@@ -236,15 +237,12 @@ public static class KernelOpenApiExtensions
             return context;
         }
 
-        //Temporary workaround to advertize the 'value' parameter
-        //restOperation.Parameters.Add(new RestParameter() { Location = RestParameterLocation.Body, IsRequired = true, Name = "value" });
-
         //TODO: to be fixed later
 #pragma warning disable CA2000 // Dispose objects before losing scope.
         var function = new SKFunction(
             delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
             delegateFunction: ExecuteAsync,
-            parameters: restOperationParameters.Select(p => new ParameterView() { Name = p.Name, Description = p.Name, DefaultValue = p.DefaultValue }).ToList(), //functionConfig.PromptTemplate.GetParameters(),
+            parameters: restOperationParameters.Select(p => new ParameterView() { Name = p.Name, Description = p.Name, DefaultValue = p.DefaultValue ?? string.Empty }).ToList(), //functionConfig.PromptTemplate.GetParameters(),
             description: operation.Description,
             skillName: skillName,
             functionName: operation.Id,
