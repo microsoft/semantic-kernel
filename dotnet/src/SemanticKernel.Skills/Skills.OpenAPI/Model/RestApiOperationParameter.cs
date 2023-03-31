@@ -13,7 +13,7 @@ internal class RestApiOperationParameter
     public string Name { get; }
 
     /// <summary>
-    /// The parameter type.
+    /// The parameter type - string, integer, number, boolean, array and object.
     /// </summary>
     public string Type { get; }
 

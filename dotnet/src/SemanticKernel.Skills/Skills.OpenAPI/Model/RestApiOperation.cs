@@ -157,7 +157,7 @@ internal class RestApiOperation
             //Add the parameter to the query string if there's an argument for it.
             if (!string.IsNullOrEmpty(argument))
             {
-                if (parameter.Type == "string")
+                if (parameter.Type == StringParameterType)
                 {
                     queryStringSegments.Add($"{parameter.Name}='{argument}'"); //TODO: Consider encoding the string
                 }
@@ -182,6 +182,8 @@ internal class RestApiOperation
     }
 
     private static readonly Regex s_urlParameterMatch = new Regex(@"\{([\w-]+)\}");
+
+    private const string StringParameterType = "string";
 
     # endregion
 }
