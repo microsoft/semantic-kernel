@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
 
 namespace KernelSyntaxExamples;
-internal class Example20_OpenApiSkill
+internal class Example22_OpenApiSkill
 {
     public static async Task RunAsync()
     {

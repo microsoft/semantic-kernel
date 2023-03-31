@@ -410,6 +410,7 @@ FodyWeavers.xsd
 *.key
 
 .env
+certs/
 launchSettings.json
 appsettings.development.json
 testsettings.development.json
@@ -446,3 +447,12 @@ _site
 # Yarn
 .yarn
 .yarnrc.yml
+
+# Python Environments
+.env
+.venv
+.myenv
+env/
+venv/
+myvenv/
+ENV/

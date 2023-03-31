@@ -67,10 +67,13 @@ public static class Program
         await Example19_Qdrant.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example20_OpenApiSkill.RunAsync();
+        await Example20_HuggingFace.RunAsync();
         Console.WriteLine("== DONE ==");
-
+        
         await Example21_ChatGptPlugins.RunAsync();
+        Console.WriteLine("== DONE ==");
+        
+        await Example22_OpenApiSkill.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }

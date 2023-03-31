@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -344,14 +344,6 @@ public abstract class OpenAIClientAbstract : IDisposable
                 AIException.ErrorCodes.UnknownError,
                 $"Something went wrong: {e.Message}", e);
         }
-    }
-
-    /// <summary>
-    /// C# finalizer
-    /// </summary>
-    ~OpenAIClientAbstract()
-    {
-        this.Dispose(false);
     }
 
     #endregion
