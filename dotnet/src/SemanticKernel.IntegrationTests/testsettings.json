@@ -21,6 +21,9 @@
     "Endpoint": "",
     "ApiKey": ""
   },
+  "HuggingFace": {
+    "ApiKey": ""
+  },
   "Bing": {
     "ApiKey": ""
   }

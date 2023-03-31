@@ -1,0 +1,24 @@
+<!-- Copyright (c) Microsoft. All rights reserved. -->
+
+{% extends 'documentation.html' %}
+
+{% block body %}
+
+<h2>Completions</h2>
+
+<h3>Example Request</h3>
+  <div class="code">
+    <p>curl http://localhost:5000/completions/{model} \</p>
+    <p>-X POST \</p>
+    <p>-H "Content-Type: application/json" \</p>
+    <p>-d '{"inputs": "this is a test"}'</p>
+  </div> 
+  
+  <p>
+    <a href=https://huggingface.co/models?pipeline_tag=text-generation&sort=downloads>HF Text Generation Models</a>
+  </p>
+  <p>
+    <a href=https://huggingface.co/models?pipeline_tag=summarization&sort=downloads>HF Text Summarization Models</a>
+  </p>
+
+{% endblock %}

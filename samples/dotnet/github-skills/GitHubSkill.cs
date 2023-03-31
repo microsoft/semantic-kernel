@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -191,12 +191,12 @@ BEGIN SUMMARY:
                     }
                 }
 
-                foreach (var paragraph in paragraphs)
+                for (int i = 0; i < paragraphs.Count; i++)
                 {
                     await this._kernel.Memory.SaveInformationAsync(
                         $"{repositoryUri}-{repositoryBranch}",
-                        text: $"{paragraph} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
-                        id: fileUri);
+                        text: $"{paragraphs[i]} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
+                        id: $"{fileUri}_{i}");
                 }
             }
             else
