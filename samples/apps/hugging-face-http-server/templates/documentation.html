@@ -1,0 +1,27 @@
+<!-- Copyright (c) Microsoft. All rights reserved. -->
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <link rel="stylesheet"  type="text/css" href="{{ url_for('static', filename='./css/styles.css') }}">  
+    <meta charset="UTF-8">
+    <title>Flask Docker</title>
+</head>
+<body>
+    <h1>API Documentation</h1>
+    <a href="{{ url_for('home') }}">Home</a>
+    <a href="{{ url_for('completions_docs') }}">Completions</a>
+    <a href="{{ url_for('embeddings_docs') }}">Embeddings</a>
+    <a href="{{ url_for('images_docs') }}">Images</a>
+
+    {% block body %}
+    
+    
+    <p>Documentation</p>
+    
+    
+    {% endblock %}
+
+</body>
+</html>

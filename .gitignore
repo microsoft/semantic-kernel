@@ -446,3 +446,12 @@ _site
 # Yarn
 .yarn
 .yarnrc.yml
+
+# Python Environments
+.env
+.venv
+.myenv
+env/
+venv/
+myvenv/
+ENV/
