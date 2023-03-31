@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// Structure for storing data which can be scored.
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
-internal struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
+public struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
 {
     public ScoredValue(T item, double score)
     {
@@ -92,6 +92,8 @@ internal struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredV
         return left.CompareTo(right) >= 0;
     }
 
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Min value convenience method")]
     public static ScoredValue<T> Min()
     {
         return new ScoredValue<T>(default!, Score.Min);
