@@ -1,0 +1,11 @@
+/* Copyright (c) Microsoft. All rights reserved. */
+
+.code {
+    background-color: black;
+    height: auto;
+    width: auto;
+    border-style: solid;
+    font-family:'Courier New', Courier, monospace;
+    color: white;
+    font-size: 14px;
+}

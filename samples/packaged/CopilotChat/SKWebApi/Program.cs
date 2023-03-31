@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -67,7 +66,7 @@ public static class Program
         {
             // The same SK memory store is shared with all REST calls and users
             IMemoryStore<float> memoryStore = new VolatileMemoryStore();
-            IEmbeddingGenerator<string, float> embeddingGenerator = embeddingConfig.ToTextEmbeddingsService(/* TODO: add logger - Might need to make SK classes more amenable to DI to do this... */);
+            IEmbeddingGeneration<string, float> embeddingGenerator = embeddingConfig.ToTextEmbeddingsService(/* TODO: add logger - Might need to make SK classes more amenable to DI to do this... */);
             kernelConfig.AddEmbeddingBackend(embeddingConfig);
 #pragma warning disable CA2000 // Dispose objects before losing scope - Used later through DI
             memory = new SemanticTextMemory(memoryStore, embeddingGenerator);

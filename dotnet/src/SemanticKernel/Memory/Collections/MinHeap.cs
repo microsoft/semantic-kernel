@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// Implements the classic 'heap' data structure. By default, the item with the lowest value is at the top of the heap.
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
-internal class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
+public class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 {
     private const int DefaultCapacity = 7;
     private const int MinCapacity = 0;

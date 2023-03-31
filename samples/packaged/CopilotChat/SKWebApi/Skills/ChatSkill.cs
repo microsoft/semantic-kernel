@@ -66,7 +66,7 @@ public class ChatSkill
             settings: this.CreateIntentCompletionSettings()
         );
 
-        return $"User intent: {result.ToString()}";
+        return $"User intent: {result}";
     }
 
     /// <summary>
@@ -248,6 +248,7 @@ public class ChatSkill
             id: messageIdentifier,
             cancel: context.CancellationToken
         );
+
         await context.Memory.SaveInformationAsync(
             collection: messageIdentifier,
             text: formattedMessage,
@@ -300,6 +301,7 @@ public class ChatSkill
     private async Task<MemoryQueryResult?> GetLatestMemoryAsync(SKContext context)
     {
         var allMemories = this.GetAllMemoriesAsync(context);
+
         return await allMemories.FirstAsync();
     }
 
@@ -308,12 +310,15 @@ public class ChatSkill
     /// </summary>
     private CompleteRequestSettings CreateChatResponseCompletionSettings()
     {
-        var completionSettings = new CompleteRequestSettings();
-        completionSettings.MaxTokens = SystemPromptDefaults.ResponseTokenLimit;
-        completionSettings.Temperature = SystemPromptDefaults.ResponseTemperature;
-        completionSettings.TopP = SystemPromptDefaults.ResponseTopP;
-        completionSettings.FrequencyPenalty = SystemPromptDefaults.ResponseFrequencyPenalty;
-        completionSettings.PresencePenalty = SystemPromptDefaults.ResponsePresencePenalty;
+        var completionSettings = new CompleteRequestSettings
+        {
+            MaxTokens = SystemPromptDefaults.ResponseTokenLimit,
+            Temperature = SystemPromptDefaults.ResponseTemperature,
+            TopP = SystemPromptDefaults.ResponseTopP,
+            FrequencyPenalty = SystemPromptDefaults.ResponseFrequencyPenalty,
+            PresencePenalty = SystemPromptDefaults.ResponsePresencePenalty
+        };
+
         return completionSettings;
     }
 
@@ -322,13 +327,16 @@ public class ChatSkill
     /// </summary>
     private CompleteRequestSettings CreateIntentCompletionSettings()
     {
-        var completionSettings = new CompleteRequestSettings();
-        completionSettings.MaxTokens = SystemPromptDefaults.ResponseTokenLimit;
-        completionSettings.Temperature = SystemPromptDefaults.IntentTemperature;
-        completionSettings.TopP = SystemPromptDefaults.IntentTopP;
-        completionSettings.FrequencyPenalty = SystemPromptDefaults.IntentFrequencyPenalty;
-        completionSettings.PresencePenalty = SystemPromptDefaults.IntentPresencePenalty;
-        completionSettings.StopSequences = new string[] { "] bot:" };
+        var completionSettings = new CompleteRequestSettings
+        {
+            MaxTokens = SystemPromptDefaults.ResponseTokenLimit,
+            Temperature = SystemPromptDefaults.IntentTemperature,
+            TopP = SystemPromptDefaults.IntentTopP,
+            FrequencyPenalty = SystemPromptDefaults.IntentFrequencyPenalty,
+            PresencePenalty = SystemPromptDefaults.IntentPresencePenalty,
+            StopSequences = new string[] { "] bot:" }
+        };
+
         return completionSettings;
     }
 
