@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// Automatically flushes out any not in the top N.
 /// By default, items are not sorted by score until you call <see cref="TopNCollection{T}.SortByScore"/>.
 /// </summary>
-internal class TopNCollection<T> : IEnumerable<ScoredValue<T>>
+public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 {
     private readonly int _maxItems;
     private readonly MinHeap<ScoredValue<T>> _heap;
