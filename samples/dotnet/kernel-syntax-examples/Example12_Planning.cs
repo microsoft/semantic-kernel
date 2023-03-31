@@ -62,7 +62,7 @@ internal static class Example12_Planning
         Console.WriteLine("Original plan:");
         Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
 
-        await ExecutePlanAsync(kernel, planner, originalPlan, 5);
+        await ExecutePlanAsync(kernel, planner, originalPlan, 20);
     }
 
     private static async Task PoetrySamplesAsync()
