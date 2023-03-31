@@ -119,21 +119,6 @@ public class SqliteDataStore<TValue> : IDataStore<TValue>, IDisposable
 
     private readonly SqliteConnection _dbConnection;
     private bool _disposedValue;
-    // TODO: never used
-    private static string? ValueToString(TValue? value)
-    {
-        if (value != null)
-        {
-            if (typeof(TValue) == typeof(string))
-            {
-                return value.ToString();
-            }
-
-            return JsonSerializer.Serialize(value);
-        }
-
-        return null;
-    }
 
     private static string? ToTimestampString(DateTimeOffset? timestamp)
     {

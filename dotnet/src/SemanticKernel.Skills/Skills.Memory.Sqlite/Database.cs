@@ -31,11 +31,9 @@ internal static class Database
         string collection, string key, string? value, string? timestamp, CancellationToken cancel = default)
     {
         await CreateTableAsync(conn, cancel);
-
-        //Could potentially use REPLACE instead of IGNORE here
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-             INSERT or IGNORE into {TableName}(collection, key, value, timestamp)
+             INSERT into {TableName}(collection, key, value, timestamp)
              VALUES(@collection, @key, @value, @timestamp); ";
         cmd.Parameters.AddWithValue("@collection", collection);
         cmd.Parameters.AddWithValue("@key", key);
@@ -49,7 +47,6 @@ internal static class Database
     {
         await CreateTableAsync(conn, cancel);
 
-        //Could potentially use REPLACE instead of IGNORE here
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              INSERT or IGNORE into {TableName}(collection, key, value, timestamp)
@@ -62,12 +59,11 @@ internal static class Database
         await cmd.ExecuteNonQueryAsync(cancel);
     }
 
-    public static async Task InsertOrReplaceAsync(this SqliteConnection conn,
+    public static async Task UpsertAsync(this SqliteConnection conn,
     string collection, string key, string? value, string? timestamp, CancellationToken cancel = default)
     {
         await CreateTableAsync(conn, cancel);
 
-        //Could potentially use REPLACE instead of IGNORE here
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              INSERT or REPLACE into {TableName}(collection, key, value, timestamp)

@@ -30,8 +30,6 @@ public static class Program
             })
             .ConfigureServices(services =>
             {
-                //services.AddSingleton<IMemoryStore<float>>(new VolatileMemoryStore());
-
                 services.AddSingleton<IMemoryStore<float>>(new SqliteMemoryStore<float>(dbConnection));
 
                 // return JSON with expected lowercase naming

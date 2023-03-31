@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
 using Microsoft.SemanticKernel.Memory.Storage;
@@ -43,8 +44,7 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
         IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> asyncEmbeddingCollection = this.TryGetCollectionAsync(collection);
         IEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> embeddingCollection = asyncEmbeddingCollection.ToEnumerable();
 
-        bool bEmpty = embeddingCollection?.Any() ?? false;
-        if (bEmpty)
+        if (embeddingCollection == null || !embeddingCollection!.Any())
         {
             return AsyncEnumerable.Empty<(IEmbeddingWithMetadata<TEmbedding>, double)>();
         }
@@ -53,9 +53,7 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
 
         TopNCollection<IEmbeddingWithMetadata<TEmbedding>> embeddings = new(limit);
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-        // We checked to make sure embedding collection is not null a few lines ago.
-        foreach (var item in embeddingCollection)
+        foreach (var item in embeddingCollection!)
         {
             if (item.Value != null)
             {
@@ -67,7 +65,6 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
                 }
             }
         }
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
         embeddings.SortByScore();
 
@@ -84,7 +81,6 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
             yield return elem;
         }
 
-        this._dbConnection.Dispose();
         await this._dbConnection.CloseAsync();
     }
 
@@ -97,11 +93,10 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
         await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collection, cancel))
         {
             var embedding = new Embedding<float>();
-            IEmbeddingWithMetadata<TEmbedding> val = (IEmbeddingWithMetadata<TEmbedding>)MemoryRecord.FromJson(dbEntry.Value, embedding);
+            var val = (IEmbeddingWithMetadata<TEmbedding>)MemoryRecord.FromJson(dbEntry.Value, embedding);
             yield return DataEntry.Create<IEmbeddingWithMetadata<TEmbedding>>(dbEntry.Key, val, ParseTimestamp(dbEntry.Timestamp));
         }
 
-        this._dbConnection.Dispose();
         await this._dbConnection.CloseAsync();
     }
 
@@ -112,14 +107,13 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
 
         DatabaseEntry? entry = await this._dbConnection.ReadAsync(collection, key, cancel);
 
-        this._dbConnection.Dispose();
         await this._dbConnection.CloseAsync();
 
         if (entry.HasValue)
         {
             DatabaseEntry dbEntry = entry.Value;
             var embedding = new Embedding<float>();
-            IEmbeddingWithMetadata<TEmbedding> val = (IEmbeddingWithMetadata<TEmbedding>)MemoryRecord.FromJson(dbEntry.Value, embedding);
+            var val = (IEmbeddingWithMetadata<TEmbedding>)MemoryRecord.FromJson(dbEntry.Value, embedding);
 
             return DataEntry.Create<IEmbeddingWithMetadata<TEmbedding>>(dbEntry.Key, val, ParseTimestamp(dbEntry.Timestamp));
         }
@@ -132,9 +126,8 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
     {
         await this._dbConnection.OpenAsync(cancel);
 
-        await this._dbConnection.InsertOrReplaceAsync(collection, data.Key, JsonSerializer.Serialize(data.Value), ToTimestampString(data.Timestamp), cancel);
+        await this._dbConnection.UpsertAsync(collection, data.Key, JsonSerializer.Serialize(data.Value), ToTimestampString(data.Timestamp), cancel);
 
-        this._dbConnection.Dispose();
         await this._dbConnection.CloseAsync();
         return data;
     }
@@ -146,7 +139,6 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
 
         await this._dbConnection.DeleteAsync(collection, key, cancel);
 
-        this._dbConnection.Dispose();
         await this._dbConnection.CloseAsync();
         return;
     }
@@ -188,7 +180,6 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
             yield return DataEntry.Create<IEmbeddingWithMetadata<TEmbedding>>(dbEntry.Key, val, ParseTimestamp(dbEntry.Timestamp));
         }
 
-        this._dbConnection.Dispose();
         await this._dbConnection.CloseAsync();
     }
 
