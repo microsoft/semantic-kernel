@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// <summary>
 /// Structure for storing score value.
 /// </summary>
-internal struct Score : IComparable<Score>, IEquatable<Score>
+public struct Score : IComparable<Score>, IEquatable<Score>
 {
     public double Value { get; set; }
 
