@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -39,17 +38,17 @@ public class ConditionalFlowHelper
 
 Rules:
 . A condition attribute must exists in the if tag
-. ""If"" tag must have one or more children nodes
-. ""Else"" is optional
-. If ""Else"" is provided must have one or more children nodes
+. ""if"" tag must have one or more children nodes
+. ""else"" is optional
+. If ""else"" is provided must have one or more children nodes
 . Return true if Test Structure is valid
 . Return false if Test Structure is not valid with a reason with everything that is wrong
-. Give a json list of variables used inside the attribute ""condition"" of the first ""IF"" only
+. Give a json list of variables used inside the attribute ""condition"" of the first ""if"" only
 . All the return should be in Json format.
 . Response Json Structure:
 {
     ""valid"": bool,
-    ""reason"": string,
+    ""reason"": string, (only if invalid)
     ""variables"": [string] (only the variables within ""Condition"" attribute)
 }
 
@@ -120,21 +119,6 @@ Given:
 
 Response: ";
 
-    internal const string ExtractThenOrElseFromIfPrompt =
-        @"Consider the below structure, ignore any format error:
-
-{{$IfStatementContent}}
-
-Rules:
-Don't ignore non xml 
-Invalid XML is part of the content
-
-Now, write the exact content inside the first child ""{{$EvaluateIfBranchTag}}"" from the root If element
-
-The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element from the root If element is:
-
-";
-
     #endregion
 
     internal const string ReasonIdentifier = "Reason:";
@@ -168,18 +152,9 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
             temperature: 0,
             topP: 0.5);
 
-        this._evaluateIfBranchFunction = kernel.CreateSemanticFunction(
-            ExtractThenOrElseFromIfPrompt,
-            skillName: "PlannerSkill_Excluded",
-            description: "Extract the content of the first child tag from the root If element",
-            maxTokens: 1000,
-            temperature: 0,
-            topP: 0.5);
-
         if (completionBackend is not null)
         {
             this._ifStructureCheckFunction.SetAIService(() => completionBackend);
-            this._evaluateIfBranchFunction.SetAIService(() => completionBackend);
             this._evaluateConditionFunction.SetAIService(() => completionBackend);
         }
     }

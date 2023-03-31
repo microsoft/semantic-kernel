@@ -2,6 +2,8 @@
 
 using Microsoft.SemanticKernel.SkillDefinition;
 
+#pragma warning disable CA1308
+
 namespace Microsoft.SemanticKernel.CoreSkills;
 
 /// <summary>
