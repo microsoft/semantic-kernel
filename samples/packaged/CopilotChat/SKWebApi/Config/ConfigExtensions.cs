@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System.Reflection;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.OpenAI.Services;
-using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace SemanticKernel.Service.Config;
 
@@ -74,7 +72,7 @@ internal static class ConfigExtensions
         }
     }
 
-    public static IEmbeddingGenerator<string, float> ToTextEmbeddingsService(this AIServiceConfig serviceConfig,
+    public static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceConfig serviceConfig,
                                                                              ILogger? logger = null,
                                                                              IDelegatingHandlerFactory? handlerFactory = null)
     {

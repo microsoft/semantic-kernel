@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33403.182
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SKWebApi", "SKWebApi.csproj", "{0CE96FD2-7590-47D0-B42C-9F6F548117E4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel", "..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj", "{F6E9ADD2-F7C0-4EFC-81E3-A2D66D542544}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel", "..\..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj", "{F6E9ADD2-F7C0-4EFC-81E3-A2D66D542544}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
