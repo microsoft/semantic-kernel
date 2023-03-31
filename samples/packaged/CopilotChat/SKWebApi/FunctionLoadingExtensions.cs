@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.TemplateEngine;
-using SKWebApi.Skills;
+using SemanticKernel.Service.Skills;
 
 namespace SemanticKernel.Service;
 

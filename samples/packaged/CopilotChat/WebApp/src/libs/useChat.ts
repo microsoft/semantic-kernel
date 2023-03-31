@@ -14,7 +14,7 @@ export const useChat = () => {
     const { audience } = useAppSelector((state: RootState) => state.chat);
     const dispatch = useAppDispatch();
     const account = useAccount();
-    const sk = useSemanticKernel(import.meta.env.VITE_REACT_APP_FUNCTION_URI as string);
+    const sk = useSemanticKernel(import.meta.env.VITE_REACT_APP_BACKEND_URI as string);
 
     const getAudienceMemberForId = (id: string) =>
     {
@@ -46,7 +46,7 @@ export const useChat = () => {
 
     const getResponse = async (value: string, chatId: string) => {
         // TODO: generate reply instead of simple ask
-        const ask = { value: value, inputs: [{ key: 'style', value: 'Bill & Ted' }] };
+        const ask = { input: value, variables: [{ key: 'style', value: 'Bill & Ted' }] };
         try {
             var result = await sk.invokeAsync(ask, 'funskill', 'joke');
             const messageResult = {

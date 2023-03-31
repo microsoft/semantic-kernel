@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SKWebApi.Skills;
+namespace SemanticKernel.Service.Skills;
 
 internal static class SystemPromptDefaults
 {

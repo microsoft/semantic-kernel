@@ -2,9 +2,11 @@
 
 import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
 import { Avatar, makeStyles, Subtitle1 } from '@fluentui/react-components';
+import * as React from 'react';
 import { FC, useEffect } from 'react';
 import { Login } from './components/Login';
 import { ChatView } from './components/views/ChatView';
+import BackendProbe from './components/views/BackendProbe';
 import { msalInstance } from './main';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
@@ -35,7 +37,13 @@ const useClasses = makeStyles({
     }
 });
 
+enum AppState {
+    ProbeForBackend,
+    Chat
+}
+
 const App: FC = () => {
+    const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const classes = useClasses();
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
     const dispatch = useAppDispatch();
@@ -53,19 +61,27 @@ const App: FC = () => {
                 <Login />
             </UnauthenticatedTemplate>
             <AuthenticatedTemplate>
-                <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
-                    <div className={classes.header} >
-                        <Subtitle1 as="h1">Copilot Chat</Subtitle1>
-                        <Avatar
-                            className={classes.persona}
-                            key={account?.name}
-                            name={account?.name}
-                            size={28}
-                            badge={{ status: 'available' }}
-                        />
+                {appState === AppState.ProbeForBackend &&
+                    <BackendProbe
+                        uri={import.meta.env.VITE_REACT_APP_BACKEND_URI as string}
+                        onBackendFound={() => setAppState(AppState.Chat)}
+                    />
+                }
+                {appState === AppState.Chat &&
+                    <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
+                        <div className={classes.header} >
+                            <Subtitle1 as="h1">Copilot Chat</Subtitle1>
+                            <Avatar
+                                className={classes.persona}
+                                key={account?.name}
+                                name={account?.name}
+                                size={28}
+                                badge={{ status: 'available' }}
+                            />
+                        </div>
+                        <ChatView />
                     </div>
-                    <ChatView />
-                </div>
+                }
             </AuthenticatedTemplate>
         </div>
     );

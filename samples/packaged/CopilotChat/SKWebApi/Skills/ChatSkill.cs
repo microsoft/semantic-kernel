@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace SKWebApi.Skills;
+namespace SemanticKernel.Service.Skills;
 
 /// <summary>
 /// ChatSkill offers a more coherent chat experience by using memories

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
-using SKWebApi;
 
 namespace SemanticKernel.Service.Controllers;
 
@@ -46,7 +45,7 @@ public class SemanticKernelController : ControllerBase
     {
         this._logger.LogDebug("Received call to invoke {SkillName}/{FunctionName}", skillName, functionName);
 
-        string semanticSkillsDirectory = this._configuration.GetSection(Constants.SemanticSkillsDirectoryConfigKey).Get<string>();
+        string semanticSkillsDirectory = this._configuration.GetSection(SKWebApiConstants.SemanticSkillsDirectoryConfigKey).Get<string>();
         if (!string.IsNullOrWhiteSpace(semanticSkillsDirectory))
         {
             kernel.RegisterSemanticSkills(semanticSkillsDirectory, this._logger);
