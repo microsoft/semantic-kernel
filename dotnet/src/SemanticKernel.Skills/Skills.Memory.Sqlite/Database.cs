@@ -44,17 +44,35 @@ internal static class Database
         await cmd.ExecuteNonQueryAsync(cancel);
     }
 
-    public static async Task UpsertAsync(this SqliteConnection conn,
-        string collection, string key, string? value, string? timestamp, CancellationToken cancel = default)
+    public static async Task InsertOrIgnoreAsync(this SqliteConnection conn,
+    string collection, string key, string? value, string? timestamp, CancellationToken cancel = default)
     {
         await CreateTableAsync(conn, cancel);
 
         //Could potentially use REPLACE instead of IGNORE here
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-             INSERT into {TableName}(collection, key, value, timestamp)
-             VALUES(@collection, @key, @value, @timestamp);
-             ON CONFLICT(@key) DO UPDATE";
+             INSERT or IGNORE into {TableName}(collection, key, value, timestamp)
+             VALUES(@collection, @key, @value, @timestamp); ";
+
+        cmd.Parameters.AddWithValue("@collection", collection);
+        cmd.Parameters.AddWithValue("@key", key);
+        cmd.Parameters.AddWithValue("@value", value ?? string.Empty);
+        cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
+        await cmd.ExecuteNonQueryAsync(cancel);
+    }
+
+    public static async Task InsertOrReplaceAsync(this SqliteConnection conn,
+    string collection, string key, string? value, string? timestamp, CancellationToken cancel = default)
+    {
+        await CreateTableAsync(conn, cancel);
+
+        //Could potentially use REPLACE instead of IGNORE here
+        SqliteCommand cmd = conn.CreateCommand();
+        cmd.CommandText = $@"
+             INSERT or REPLACE into {TableName}(collection, key, value, timestamp)
+             VALUES(@collection, @key, @value, @timestamp); ";
+
         cmd.Parameters.AddWithValue("@collection", collection);
         cmd.Parameters.AddWithValue("@key", key);
         cmd.Parameters.AddWithValue("@value", value ?? string.Empty);

@@ -132,7 +132,7 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
     {
         await this._dbConnection.OpenAsync(cancel);
 
-        await this._dbConnection.InsertAsync(collection, data.Key, JsonSerializer.Serialize(data.Value), ToTimestampString(data.Timestamp), cancel);
+        await this._dbConnection.InsertOrReplaceAsync(collection, data.Key, JsonSerializer.Serialize(data.Value), ToTimestampString(data.Timestamp), cancel);
 
         this._dbConnection.Dispose();
         await this._dbConnection.CloseAsync();
