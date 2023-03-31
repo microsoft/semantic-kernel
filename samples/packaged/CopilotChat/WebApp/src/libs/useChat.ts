@@ -46,7 +46,7 @@ export const useChat = () => {
 
     const getResponse = async (value: string, chatId: string) => {
         // TODO: generate reply instead of simple ask
-        const ask = { value: value, inputs: [{ key: 'style', value: 'Bill & Ted' }] };
+        const ask = { input: value, variables: [{ key: 'style', value: 'Bill & Ted' }] };
         try {
             var result = await sk.invokeAsync(ask, 'funskill', 'joke');
             const messageResult = {

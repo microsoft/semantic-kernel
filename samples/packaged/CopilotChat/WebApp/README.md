@@ -2,11 +2,7 @@
 
 ## Running the sample
 
-1. You will need an
-   [Azure Open AI Service key and endpoint](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
-   for this sample
-2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps 
-   to start it [here](../../dotnet/KernelHttpServer/README.md).
+1. Ensure the SKWebApi running at `https://localhost:40443`.d).
 3. You will also need to
    [register your application](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)
    in the Azure Portal. Follow the steps to register your app
@@ -16,11 +12,7 @@
 4. Create an **[.env](.env)** file to this folder root with the following variables and fill in with your information, where `REACT_APP_GRAPH_CLIENT_ID=` is the GUID copied from the **Application (client) ID** from the Azure Portal:
         
         VITE_REACT_APP_CHAT_CLIENT_ID=
-        VITE_REACT_APP_FUNCTION_URI=http://localhost:7071
-        VITE_REACT_APP_AZURE_OPEN_AI_KEY=
-        VITE_REACT_APP_AZURE_OPEN_AI_COMPLETION_DEPLOYMENT=
-        VITE_REACT_APP_AZURE_OPEN_AI_EMBEDDINGS_DEPLOYMENT=
-        VITE_REACT_APP_AZURE_OPEN_AI_ENDPOINT=
+        VITE_REACT_APP_FUNCTION_URI=http://localhost:40443
 
 5. **Run** the following command `yarn install` (if you have never run the app before)
    and/or `yarn start` from the command line.

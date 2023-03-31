@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
+using SKWebApi;
 
 namespace SemanticKernel.Service;
 
@@ -16,6 +17,14 @@ public static class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Host.ConfigureAppSettings();
+
+        // Set port to run on
+        string serverPortString = builder.Configuration.GetSection("ServicePort").Get<string>();
+        if (!int.TryParse(serverPortString, out int serverPort))
+        {
+            serverPort = SKWebApiConstants.DefaultServerPort;
+        }
+        builder.WebHost.UseUrls($"https://*:{serverPort}");
 
         // Add services to the DI container
         AddServices(builder.Services, builder.Configuration);
@@ -62,7 +71,7 @@ public static class Program
         kernelConfig.AddCompletionBackend(completionConfig);
         ISemanticTextMemory memory = NullMemory.Instance;
         AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
-        if (embeddingConfig.IsValid())
+        if (embeddingConfig?.IsValid() == true)
         {
             // The same SK memory store is shared with all REST calls and users
             IMemoryStore<float> memoryStore = new VolatileMemoryStore();

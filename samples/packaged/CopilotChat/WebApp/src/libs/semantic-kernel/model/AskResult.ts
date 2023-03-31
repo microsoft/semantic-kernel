@@ -2,4 +2,5 @@
 
 export interface IAskResult {
     value: string;
+    variables: [];
 }

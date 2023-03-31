@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 export interface IAsk {
-    value: string;
-    inputs?: IAskInput[];
+    input: string;
+    variables?: IAskVariables[];
 }
 
-export interface IAskInput {
+export interface IAskVariables {
     key: string;
     value: string;
 }
