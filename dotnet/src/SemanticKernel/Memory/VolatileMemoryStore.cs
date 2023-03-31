@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -21,8 +20,7 @@ public class VolatileMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        bool created = this.TryGetCollection(collectionName, out _, create: true);
-        if (!created)
+        if (!this._store.TryAdd(collectionName, new ConcurrentDictionary<string, MemoryRecord>()))
         {
             throw new MemoryException(MemoryException.ErrorCodes.FailedToCreateCollection, $"Could not create collection {collectionName}");
         }
@@ -113,7 +111,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         if (this.TryGetCollection(collectionName, out var collectionDict))
         {
-            collectionDict.Remove(key, out MemoryRecord _);
+            collectionDict.TryRemove(key, out MemoryRecord _);
         }
 
         return Task.CompletedTask;
