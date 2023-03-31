@@ -33,13 +33,13 @@ public class ConditionalFlowHelper
         @"Structure:
 <if condition="""">
 </if>
-<else>
+<else> (optional)
 </else>
 
 Rules:
 . A condition attribute must exists in the if tag
 . ""if"" tag must have one or more children nodes
-. ""else"" is optional
+. ""else"" tag is optional
 . If ""else"" is provided must have one or more children nodes
 . Return true if Test Structure is valid
 . Return false if Test Structure is not valid with a reason with everything that is wrong
@@ -159,9 +159,9 @@ Response: ";
     }
 
     /// <summary>
-    /// Get a planner if statement content and output then or else contents depending on the conditional evaluation.
+    /// Get a planner if statement content and output <if/> or <else/> contents depending on the conditional evaluation.
     /// </summary>
-    /// <param name="ifFullContent">If statement content.</param>
+    /// <param name="ifFullContent">Full statement content including if and else.</param>
     /// <param name="context"> The context to use </param>
     /// <returns>Then or Else contents depending on the conditional evaluation</returns>
     /// <remarks>
@@ -289,11 +289,6 @@ Response: ";
     private string GetConditionalVariablesFromContext(IEnumerable<string> usedVariables, ContextVariables variables)
     {
         var checkNotFoundVariables = usedVariables.Where(u => !variables.ContainsKey(u)).ToArray();
-        if (checkNotFoundVariables.Any())
-        {
-            throw new ConditionException(ConditionException.ErrorCodes.ContextVariablesNotFound, string.Join(", ", checkNotFoundVariables));
-        }
-
         var existingVariables = variables.Where(v => usedVariables.Contains(v.Key));
 
         var conditionalVariables = new StringBuilder();
@@ -302,6 +297,10 @@ Response: ";
             // Numeric don't add quotes
             var value = Regex.IsMatch(v.Value, "^[0-9.,]+$") ? v.Value : JsonSerializer.Serialize(v.Value);
             conditionalVariables.AppendLine($"{v.Key} = {value}");
+        }
+        foreach (string notFoundVariable in checkNotFoundVariables)
+        {
+            conditionalVariables.AppendLine($"{notFoundVariable} = undefined");
         }
 
         return conditionalVariables.ToString();

@@ -325,7 +325,7 @@ public class ConditionalFlowHelperTests
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             { ConditionalFlowHelper.IfStructureCheckPrompt[..30], $"{{\"valid\": true, \"variables\": [\"{string.Join("\",\"", conditionVariables.Split(','))}\"]}}" },
-            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], "TRUE" },
+            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], "{ \"valid\": true, \"condition\": true }" },
         });
 
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
@@ -339,21 +339,24 @@ public class ConditionalFlowHelperTests
             }
         }
 
-        IEnumerable<string> expectedNotFound = Enumerable.Empty<string>();
+        IEnumerable<string> expectedUndefined = Enumerable.Empty<string>();
         if (!string.IsNullOrEmpty(conditionVariables))
         {
-            expectedNotFound = conditionVariables.Split(',').Except(existingVariables?.Split(",") ?? Array.Empty<string>());
+            expectedUndefined = conditionVariables.Split(',').Except(existingVariables?.Split(",") ?? Array.Empty<string>());
         }
 
+        var skContext = this.CreateSKContext(kernel, contextVariables);
+
         // Act
-        var exception = await Assert.ThrowsAsync<ConditionException>(async () =>
-        {
-            await target.IfAsync(ifContent, this.CreateSKContext(kernel, contextVariables));
-        });
+        await target.IfAsync(ifContent, skContext);
 
         // Assert
-        Assert.Equal(ConditionException.ErrorCodes.ContextVariablesNotFound, exception.ErrorCode);
-        Assert.Equal($"{nameof(ConditionException.ErrorCodes.ContextVariablesNotFound)}: {string.Join(", ", expectedNotFound)}", exception.Message);
+        Assert.NotNull(skContext);
+        Assert.True(skContext.Variables.ContainsKey("ConditionalVariables"));
+        foreach (var variableName in expectedUndefined)
+        {
+            Assert.Contains($"{variableName} = undefined", skContext.Variables["ConditionalVariables"], StringComparison.InvariantCulture);
+        }
     }
 
     private SKContext CreateSKContext(IKernel kernel, ContextVariables? variables = null, CancellationToken cancellationToken = default)

@@ -153,7 +153,7 @@ internal class FunctionFlowRunner
         foreach (XmlNode o in nodeList)
         {
             var parentNodeName = o.Name;
-
+            var ignoreElse = false;
             context.Log.LogTrace("{0}: found node", parentNodeName);
             foreach (XmlNode o2 in o.ChildNodes)
             {
@@ -168,10 +168,11 @@ internal class FunctionFlowRunner
                     continue;
                 }
 
-                // Ignore else statements if any (they are handled in the if statement)
-                if (processFunctions && o2.Name.StartsWith(ConditionElseTag, StringComparison.InvariantCultureIgnoreCase))
+                // Ignoring first ELSE after the If that was already processed
+                if (ignoreElse && o2.Name.StartsWith(ConditionElseTag, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    context.Log.LogTrace("{0}: skipping Else tag node", parentNodeName);
+                    context.Log.LogTrace("{0}: ignoring ELSE tag node", parentNodeName);
+                    ignoreElse = false;
                     continue;
                 }
 
@@ -185,6 +186,9 @@ internal class FunctionFlowRunner
                     if (this.CheckIfNextNodeIsElseAndGetItsContents(o2, out var elseContents))
                     {
                         ifFullContent += elseContents;
+
+                        // Ignore the next else sibling tag to avoid adding recursively it to the next plan iteration.
+                        ignoreElse = true;
                     }
 
                     var functionVariables = new ContextVariables();
@@ -192,14 +196,15 @@ internal class FunctionFlowRunner
                     functionVariables.Set("INPUT", ifFullContent);
 
                     var branchIfOrElse = await this._conditionalFlowHelper.IfAsync(ifFullContent,
-                        new SKContext(functionVariables, this._kernel.Memory, this._kernel.Skills, this._kernel.Log, context.CancellationToken));
+                        new SKContext(functionVariables, this._kernel.Memory, this._kernel.Skills, this._kernel.Log,
+                            context.CancellationToken));
 
                     _ = stepAndTextResults.Append(INDENT).AppendLine(branchIfOrElse);
-                    processFunctions = false;
 
-                    // As the branching and order of events in the plan was redefined by the condition, the current sequence of the plan is no
-                    // longer valid and a break is needed to end this iteration
-                    break;
+                    processFunctions = false;
+                    
+                    // We need to continue so we don't ignore any next siblings (If or Function) 
+                    continue;
                 }
 
                 if (o2.Name.StartsWith(FunctionTag, StringComparison.InvariantCultureIgnoreCase))
