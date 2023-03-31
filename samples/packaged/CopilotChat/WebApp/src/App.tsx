@@ -6,7 +6,7 @@ import * as React from 'react';
 import { FC, useEffect } from 'react';
 import { Login } from './components/Login';
 import { ChatView } from './components/views/ChatView';
-import FunctionProbe from './components/views/FunctionProbe';
+import BackendProbe from './components/views/BackendProbe';
 import { msalInstance } from './main';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
@@ -38,12 +38,12 @@ const useClasses = makeStyles({
 });
 
 enum AppState {
-    ProbeForFunction,
+    ProbeForBackend,
     Chat
 }
 
 const App: FC = () => {
-    const [appState, setAppState] = React.useState(AppState.ProbeForFunction);
+    const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const classes = useClasses();
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
     const dispatch = useAppDispatch();
@@ -61,10 +61,10 @@ const App: FC = () => {
                 <Login />
             </UnauthenticatedTemplate>
             <AuthenticatedTemplate>
-                {appState === AppState.ProbeForFunction &&
-                    <FunctionProbe
-                        uri={import.meta.env.VITE_REACT_APP_FUNCTION_URI as string}
-                        onFunctionFound={() => setAppState(AppState.Chat)}
+                {appState === AppState.ProbeForBackend &&
+                    <BackendProbe
+                        uri={import.meta.env.VITE_REACT_APP_BACKEND_URI as string}
+                        onBackendFound={() => setAppState(AppState.Chat)}
                     />
                 }
                 {appState === AppState.Chat &&

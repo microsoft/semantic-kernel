@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
-using SKWebApi;
 
 namespace SemanticKernel.Service.Controllers;
 

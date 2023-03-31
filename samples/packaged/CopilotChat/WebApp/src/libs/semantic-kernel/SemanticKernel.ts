@@ -44,7 +44,7 @@ export class SemanticKernel {
             var additional_error_msg = ''
             if (e instanceof TypeError) {
                 // fetch() will reject with a TypeError when a network error is encountered.
-                additional_error_msg = '\n\nPlease check you have the function running and that it is accessible by the app'
+                additional_error_msg = '\n\nPlease check that your backend is running and that it is accessible by the app'
             }
             throw e + additional_error_msg;
         }

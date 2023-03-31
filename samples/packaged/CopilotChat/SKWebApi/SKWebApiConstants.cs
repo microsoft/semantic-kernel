@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SKWebApi;
+namespace SemanticKernel.Service;
 
 internal static class SKWebApiConstants
 {
