@@ -1,27 +1,93 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
+using Microsoft.SemanticKernel.Memory.Storage;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Skills.Memory.CosmosDB;
-public class CosmosMemoryStore<TEmbedding> : CosmosDataStore<IEmbeddingWithMetadata<TEmbedding>>, IMemoryStore<TEmbedding>
+public class CosmosMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposable
     where TEmbedding : unmanaged
 {
-    public CosmosMemoryStore(CosmosClient client, string databaseName, string containerName)
-    : base(client, databaseName, containerName)
-    { }
+    private bool _disposedValue;
 
-    /// <inheritdoc/>
-    public IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(
-        string collection,
-        Embedding<TEmbedding> embedding,
-        int limit = 1,
-        double minRelevanceScore = 0)
+    private CosmosClient _client;
+    private string _databaseName;
+    private string _containerName;
+
+    public CosmosMemoryStore(CosmosClient client, string databaseName, string containerName)
+    {
+        this._client = client;
+        this._databaseName = databaseName;
+        this._containerName = containerName;
+    }
+
+    public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>?> GetAsync(string collection, string key, CancellationToken cancel = default)
+    {
+        var container = this._client.GetContainer(this._databaseName, this._containerName);
+
+        using (var responseMessage = await container.ReadItemStreamAsync(this._toCosmosFriendlyId(key), new Microsoft.Azure.Cosmos.PartitionKey(collection), cancellationToken: cancel))
+        {
+            if (responseMessage.IsSuccessStatusCode)
+            {
+                using (responseMessage.Content)
+                {
+                    CosmosMemoryRecord record;
+
+                    if (typeof(Stream).IsAssignableFrom(typeof(CosmosMemoryRecord)))
+                    {
+                        record = ((CosmosMemoryRecord)(object)responseMessage.Content);
+                    }
+                    else
+                    {
+                        record = await System.Text.Json.JsonSerializer.DeserializeAsync<CosmosMemoryRecord>(responseMessage.Content!, cancellationToken: cancel);
+                    }
+
+                    var embeddingHost = JsonConvert.DeserializeAnonymousType(
+                        record!.EmbeddingString,
+                        new { Embedding = new { vector = new List<float>() } });
+
+                    var rec = MemoryRecord.FromJson(
+                        record.MetadataString,
+                        new Embedding<float>(embeddingHost.Embedding.vector));
+
+                    return DataEntry.Create<IEmbeddingWithMetadata<TEmbedding>>(
+                                rec.Metadata.Id,
+                                (IEmbeddingWithMetadata<TEmbedding>)rec,
+                                record.Timestamp);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancel = default)
+    {
+        var container = this._client.GetContainer(this._databaseName, this._containerName);
+        var query = new QueryDefinition($"SELECT DISTINCT c.collectionId FROM c");
+        var iterator = container.GetItemQueryIterator<CosmosMemoryRecord>(query);
+
+        var items = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);
+
+        foreach (var item in items)
+        {
+            yield return item.CollectionId;
+        }
+    }
+
+    public IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(string collection, Embedding<TEmbedding> embedding, int limit = 1, double minRelevanceScore = 0)
     {
         if (limit <= 0)
         {
@@ -29,7 +95,7 @@ public class CosmosMemoryStore<TEmbedding> : CosmosDataStore<IEmbeddingWithMetad
         }
 
         var asyncEmbeddingCollection = this.TryGetCollectionAsync(collection);
-        var embeddingCollection = asyncEmbeddingCollection.ToEnumerable();
+        var embeddingCollection = asyncEmbeddingCollection.ToEnumerable().ToArray();
 
         if (embeddingCollection == null || !embeddingCollection.Any())
         {
@@ -58,31 +124,135 @@ public class CosmosMemoryStore<TEmbedding> : CosmosDataStore<IEmbeddingWithMetad
         return embeddings.Select(x => (x.Value, x.Score.Value)).ToAsyncEnumerable();
     }
 
-    #region private ================================================================================
-
-    /// <summary>
-    /// Calculates the cosine similarity between an <see cref="Embedding{TEmbedding}"/> and an <see cref="IEmbeddingWithMetadata{TEmbedding}"/>
-    /// </summary>
-    /// <param name="embedding">The input <see cref="Embedding{TEmbedding}"/> to be compared.</param>
-    /// <param name="embeddingWithData">The input <see cref="IEmbeddingWithMetadata{TEmbedding}"/> to be compared.</param>
-    /// <returns>A tuple consisting of the <see cref="IEmbeddingWithMetadata{TEmbedding}"/> cosine similarity result.</returns>
-    private (IEmbeddingWithMetadata<TEmbedding>, double) PairEmbeddingWithSimilarity(Embedding<TEmbedding> embedding,
-        IEmbeddingWithMetadata<TEmbedding> embeddingWithData)
+    protected async IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> TryGetCollectionAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        var similarity = embedding.Vector.ToArray().CosineSimilarity(embeddingWithData.Embedding.Vector.ToArray());
-        return (embeddingWithData, similarity);
+        var container = this._client.GetContainer(this._databaseName, this._containerName);
+        var query = new QueryDefinition($"SELECT * FROM c WHERE c.collectionId = '{collectionName}'");
+        var iterator = container.GetItemQueryIterator<CosmosMemoryRecord>(query);
+
+        var items = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);
+
+        foreach (var item in items)
+        {
+            var embeddingHost = JsonConvert.DeserializeAnonymousType(
+                item.EmbeddingString,
+                new { Embedding = new { vector = new List<float>() } });
+
+            var rec = MemoryRecord.FromJson(
+                item.MetadataString,
+                new Embedding<float>(embeddingHost.Embedding.vector));
+
+            yield return DataEntry.Create<IEmbeddingWithMetadata<TEmbedding>>(
+                rec.Metadata.Id,
+                (IEmbeddingWithMetadata<TEmbedding>)rec,
+                item.Timestamp);
+        }
     }
 
-    #endregion
+    public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data, CancellationToken cancel = default)
+    {
+        var entity = new CosmosMemoryRecord
+        {
+            CollectionId = collection,
+            Id = this._toCosmosFriendlyId(data.Key),
+            Timestamp = data.Timestamp,
+            EmbeddingString = data.ValueString!,
+            MetadataString = data.Value!.GetSerializedMetadata()
+        };
+
+        var container = this._client.GetContainer(this._databaseName, this._containerName);
+
+        try
+        {
+            await container.CreateItemAsync(entity, cancellationToken: cancel, requestOptions: new ItemRequestOptions()
+            {
+                EnableContentResponseOnWrite = false
+            });
+        }
+        catch (CosmosException ex)
+        {
+            if (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                //TODO: log/handle
+            }
+        }
+
+
+        return data;
+    }
+
+    public Task RemoveAsync(string collection, string key, CancellationToken cancel = default)
+    {
+        var container = this._client.GetContainer(this._databaseName, this._containerName);
+
+        return container.DeleteItemAsync<CosmosMemoryRecord>(
+            this._toCosmosFriendlyId(key),
+            new Microsoft.Azure.Cosmos.PartitionKey(collection),
+            cancellationToken: cancel);
+    }
+
+    private string _toCosmosFriendlyId(string id)
+    {
+        return $"{id.Trim().Replace(' ', '-').Replace('/', '_').Replace('\\', '_').Replace('?', '_').Replace('#', '_').ToUpperInvariant()}";
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this._disposedValue)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+                this._client.Dispose();
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            this._disposedValue = true;
+        }
+    }
+
+    // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+    // ~CosmosMemoryStore()
+    // {
+    //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+    //     Dispose(disposing: false);
+    // }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
 }
 
-/// <summary>
-/// Default constructor for a simple volatile memory embeddings store for embeddings.
-/// The default embedding type is <see cref="float"/>.
-/// </summary>
-public class CosmosMemoryStore : CosmosMemoryStore<float>
+[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+public class CosmosMemoryRecord : IEmbeddingWithMetadata<float>
 {
-    public CosmosMemoryStore(CosmosClient client, string databaseName, string containerName)
-        : base(client, databaseName, containerName)
-    { }
+    public string Id { get; set; } = string.Empty;
+
+    public string CollectionId { get; set; } = string.Empty;
+
+    public DateTimeOffset? Timestamp { get; set; }
+
+    [JsonIgnore]
+    public Embedding<float> Embedding { get; set; } = new();
+
+    public string EmbeddingString { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Metadata associated with a Semantic Kernel memory.
+    /// </summary>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    [JsonIgnore]
+    public MemoryRecordMetadata Metadata { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+    public string MetadataString { get; set; } = string.Empty;
+
+    public string GetSerializedMetadata()
+    {
+        return JsonConvert.SerializeObject(this.Metadata);
+    }
 }

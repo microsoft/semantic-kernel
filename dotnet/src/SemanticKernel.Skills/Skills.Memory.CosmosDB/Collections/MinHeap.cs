@@ -14,8 +14,6 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 internal class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 {
     private const int DefaultCapacity = 7;
-    private const int MinCapacity = 0;
-
     private static readonly T[] s_emptyBuffer = Array.Empty<T>();
 
     private T[] _items;
