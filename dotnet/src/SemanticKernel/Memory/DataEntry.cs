@@ -3,7 +3,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Memory.Storage;
+namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// A base class for data entries.
@@ -18,7 +18,7 @@ public class DataEntryBase
     [JsonConstructor]
     public DataEntryBase(string? key = null, DateTimeOffset? timestamp = null)
     {
-        this.Key = key;
+        this.Key = key ?? string.Empty;
         this.Timestamp = timestamp;
     }
 
@@ -26,7 +26,7 @@ public class DataEntryBase
     /// Gets the key of the data.
     /// </summary>
     [JsonPropertyName("key")]
-    public string? Key { get; }
+    public string Key { get; set; }
 
     /// <summary>
     /// Gets the timestamp of the data.

@@ -37,7 +37,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         var embeddings = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
         MemoryRecord data = MemoryRecord.LocalRecord(id, text, description, embeddings);
 
-        await this._storage.PutValueAsync(collection, key: id, value: data, cancel: cancel);
+        await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
     }
 
     /// <inheritdoc/>
@@ -52,7 +52,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
         var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description, embedding);
 
-        await this._storage.PutValueAsync(collection, key: externalId, value: data, cancel: cancel);
+        await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
     }
 
     /// <inheritdoc/>
@@ -61,13 +61,11 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string key,
         CancellationToken cancel = default)
     {
-        DataEntry<IEmbeddingWithMetadata<float>>? record = await this._storage.GetAsync(collection, key, cancel);
+        MemoryRecord? record = await this._storage.GetAsync(collection, key, cancel);
 
-        if (record == null || record.Value == null || record.Value.Value == null) { return null; }
+        if (record == null) { return null; }
 
-        string metadataString = record.Value.Value.GetSerializedMetadata();
-
-        return MemoryQueryResult.FromJson(metadataString, 1);
+        return MemoryQueryResult.FromMemoryRecord(record, 1);
     }
 
     /// <inheritdoc/>
@@ -89,12 +87,16 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
     {
         Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query);
 
-        IAsyncEnumerable<(IEmbeddingWithMetadata<float>, double)> results = this._storage.GetNearestMatchesAsync(
-            collection, queryEmbedding, limit: limit, minRelevanceScore: minRelevanceScore);
+        IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
+            collectionName: collection,
+            embedding: queryEmbedding,
+            limit: limit,
+            minRelevanceScore: minRelevanceScore,
+            cancel: cancel);
 
-        await foreach ((IEmbeddingWithMetadata<float>, double) result in results.WithCancellation(cancel))
+        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancel))
         {
-            yield return MemoryQueryResult.FromJson(result.Item1.GetSerializedMetadata(), result.Item2);
+            yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
         }
     }
 

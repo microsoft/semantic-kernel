@@ -1,19 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http.ApiSchema;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
-internal class GetVectorsResponse<TEmbedding> : QdrantResponse
-    where TEmbedding : unmanaged
+internal class GetVectorsResponse : QdrantResponse
 {
     internal class Record
     {
         [JsonPropertyName("id")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         [JsonPropertyName("payload")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -21,7 +19,15 @@ internal class GetVectorsResponse<TEmbedding> : QdrantResponse
 
         [JsonPropertyName("vector")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public TEmbedding[]? Vector { get; set; }
+        public IEnumerable<float>? Vector { get; set; }
+
+        [JsonConstructor]
+        public Record(string id, Dictionary<string, object>? payload, IEnumerable<float>? vector)
+        {
+            this.Id = id;
+            this.Payload = payload;
+            this.Vector = vector;
+        }
     }
 
     /// <summary>

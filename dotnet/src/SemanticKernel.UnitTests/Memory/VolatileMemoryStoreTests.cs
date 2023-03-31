@@ -1,23 +1,57 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Memory.Storage;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Memory;
 
 public class VolatileMemoryStoreTests
 {
-    private readonly VolatileMemoryStore<double> _db;
+    private readonly VolatileMemoryStore _db;
 
     public VolatileMemoryStoreTests()
     {
-        this._db = new();
+        this._db = new VolatileMemoryStore();
+    }
+
+    private int _collectionNum = 0;
+    
+    private IEnumerable<MemoryRecord> CreateBatchLocalRecords(int numRecords)
+    {
+        IEnumerable<MemoryRecord> records = new List<MemoryRecord>(numRecords);
+        for (int i = 0; i < numRecords; i++)
+        {
+            var testRecord = MemoryRecord.LocalRecord(
+                id: "test" + i,
+                text: "text" + i,
+                description: "description" + i,
+                embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+            records = records.Append(testRecord);
+        }
+
+        return records;
+    }
+
+    private IEnumerable<MemoryRecord> CreateBatchReferenceRecords(int numRecords)
+    {
+        IEnumerable<MemoryRecord> records = new List<MemoryRecord>(numRecords);
+        for (int i = 0; i < numRecords; i++)
+        {
+            var testRecord = MemoryRecord.ReferenceRecord(
+                externalId: "test" + i,
+                sourceName: "sourceName" + i,
+                description: "description" + i,
+                embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            records = records.Append(testRecord);
+        }
+
+        return records;
     }
 
     [Fact]
@@ -26,173 +60,136 @@ public class VolatileMemoryStoreTests
         // Assert
         Assert.NotNull(this._db);
     }
-
-#pragma warning disable CA5394 // Random is an insecure random number generator
+    
     [Fact]
-    public async Task PutAndRetrieveNoTimestampSucceedsAsync()
+    public async Task UpsertAndRetrieveNoTimestampSucceedsAsync()
     {
         // Arrange
-        int rand = Random.Shared.Next();
-        string collection = "collection" + rand;
-        string key = "key";
-        var embedding = new Embedding<double>(new double[] { 1, 1, 1 });
-        var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "1 1 1");
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test",
+            text: "text",
+            description: "description",
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            key: null,
+            timestamp: null);
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
 
         // Act
-        await this._db.PutValueAsync(collection, key, memory);
-        var actual = await this._db.GetValueAsync(collection, key);
-
-        // Assert
-        Assert.NotNull(actual);
-        Assert.Equal(memory, actual);
-    }
-
-    [Fact]
-    public async Task PutAndRetrieveWithTimestampSucceedsAsync()
-    {
-        // Arrange
-        int rand = Random.Shared.Next();
-        string collection = "collection" + rand;
-        string key = "key";
-        var embedding = new Embedding<double>(new double[] { 1, 2, 3 });
-        var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "1 2 3");
-        DateTimeOffset timestamp = DateTimeOffset.UtcNow;
-
-        // Act
-        await this._db.PutValueAsync(collection, key, memory, timestamp);
+        var key = await this._db.UpsertAsync(collection, testRecord);
         var actual = await this._db.GetAsync(collection, key);
 
         // Assert
         Assert.NotNull(actual);
-        Assert.Equal(memory, actual!.Value.Value);
-        Assert.True(timestamp.Date.Equals(actual!.Value.Timestamp?.Date));
-        Assert.True((int)timestamp.TimeOfDay.TotalSeconds == (int?)actual!.Value.Timestamp?.TimeOfDay.TotalSeconds);
+        Assert.Equal(testRecord, actual);
     }
 
     [Fact]
-    public async Task PutAndRetrieveDataEntryWithTimestampSucceedsAsync()
+    public async Task UpsertAndRetrieveWithTimestampSucceedsAsync()
     {
         // Arrange
-        int rand = Random.Shared.Next();
-        string collection = "collection" + rand;
-        string key = "key";
-        var embedding = new Embedding<double>(new double[] { 3, 2, 1 });
-        var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "3 2 1");
-        DateTimeOffset timestamp = DateTimeOffset.UtcNow;
-        var data = new DataEntry<IEmbeddingWithMetadata<double>>(key, memory, timestamp);
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test",
+            text: "text",
+            description: "description",
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            key: null,
+            timestamp: DateTimeOffset.UtcNow);
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
 
         // Act
-        await this._db.PutAsync(collection, data);
-        DataEntry<IEmbeddingWithMetadata<double>>? actual = await this._db.GetAsync(collection, key);
+        var key = await this._db.UpsertAsync(collection, testRecord);
+        var actual = await this._db.GetAsync(collection, key);
 
         // Assert
         Assert.NotNull(actual);
-        Assert.Equal(memory, actual!.Value.Value);
-        Assert.True(timestamp.Date.Equals(actual!.Value.Timestamp?.Date));
-        Assert.True((int)timestamp.TimeOfDay.TotalSeconds == (int?)actual!.Value.Timestamp?.TimeOfDay.TotalSeconds);
+        Assert.Equal(testRecord, actual);
     }
-
-    [Fact]
-    public async Task PutAndDeleteDataEntrySucceedsAsync()
-    {
-        // Arrange
-        int rand = Random.Shared.Next();
-        string collection = "collection" + rand;
-        string key = "key";
-        var embedding = new Embedding<double>(new double[] { -1, -1, -1 });
-        var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "-1 -1 -1");
-        var data = new DataEntry<IEmbeddingWithMetadata<double>>(key, memory);
-
-        // Act
-        await this._db.PutAsync(collection, data);
-        await this._db.RemoveAsync(collection, key);
-
-        // Assert
-        Assert.Null(await this._db.GetAsync(collection, key));
-    }
-
-#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
+    
     [Fact]
     public async Task ListAllDatabaseCollectionsSucceedsAsync()
     {
         // Arrange
-        int rand = Random.Shared.Next();
-        string collection = "collection" + rand;
-        string key = "key";
-        var embedding = new Embedding<double>(new double[] { 0, 0, 0 });
-        var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "0 0 0");
+        string[] testCollections = { "test_collection5", "test_collection6", "test_collection7" };
+        this._collectionNum += 3;
+        await this._db.CreateCollectionAsync(testCollections[0]);
+        await this._db.CreateCollectionAsync(testCollections[1]);
+        await this._db.CreateCollectionAsync(testCollections[2]);
 
         // Act
-        await this._db.PutValueAsync(collection, key, memory);
         var collections = this._db.GetCollectionsAsync().ToEnumerable();
 
+#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         // Assert
         Assert.NotNull(collections);
         Assert.True(collections.Any(), "Collections is empty");
-        Assert.True(collections.Contains(collection), "Collections do not contain the newly-created collection");
+        Assert.Equal(3, collections.Count());
+        Assert.True(collections.Contains(testCollections[0]),
+            $"Collections does not contain the newly-created collection {testCollections[0]}");
+        Assert.True(collections.Contains(testCollections[1]),
+            $"Collections does not contain the newly-created collection {testCollections[1]}");
+        Assert.True(collections.Contains(testCollections[2]),
+            $"Collections does not contain the newly-created collection {testCollections[2]}");
     }
-
-    [Fact]
-    public async Task GetAllSucceedsAsync()
-    {
-        // Arrange
-        int rand = Random.Shared.Next();
-        string collection = "collection" + rand;
-        string key = "key";
-        var embedding = new Embedding<double>(new double[] { 0, 0, 0 });
-        var memory = new DoubleEmbeddingWithBasicMetadata(embedding, "0 0 0");
-
-        // Act
-        for (int i = 0; i < 15; i++)
-        {
-            await this._db.PutValueAsync(collection, key + i, memory);
-        }
-
-        var getAllResults = this._db.GetAllAsync(collection).ToEnumerable();
-
-        // Assert
-        Assert.NotNull(getAllResults);
-        Assert.True(getAllResults.Any(), "Collections are empty");
-        Assert.True(getAllResults.Count() == 15, "Collections should have 15 entries");
-    }
+#pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
     [Fact]
     public async Task GetNearestAsyncReturnsExpectedNoMinScoreAsync()
     {
         // Arrange
-        var compareEmbedding = new Embedding<double>(new double[] { 1, 1, 1 });
-        int rand = Random.Shared.Next();
-        string collection = "collection" + rand;
+        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         int topN = 4;
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        int i = 0;
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
+        
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { -1, -1, -1 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
+        
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
 
-        string key = "key" + Random.Shared.Next();
-        var memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 1, 1 }), "1 ,1 ,1");
-        await this._db.PutValueAsync(collection, key, memory);
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { -1, -2, -3 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
 
-        key = "key" + Random.Shared.Next();
-        memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -1, -1 }), "-1 ,-1 ,-1");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
-        memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 2, 3 }), "1 ,2 ,3");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
-        memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -2, -3 }), "-1 ,-2 ,-3");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
-        memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, -1, 2 }), "1 ,-1 ,2");
-        await this._db.PutValueAsync(collection, key, memory);
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { 1, -1, -2 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
 
         // Act
         var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: -1).ToEnumerable().ToArray();
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
-        for (int i = 0; i < topN - 1; i++)
+        for (int j = 0; j < topN - 1; j++)
         {
-            int compare = topNResults[i].Item2.CompareTo(topNResults[i + 1].Item2);
+            int compare = topNResults[j].Item2.CompareTo(topNResults[j + 1].Item2);
             Assert.True(compare >= 0);
         }
     }
@@ -201,36 +198,55 @@ public class VolatileMemoryStoreTests
     public async Task GetNearestAsyncReturnsExpectedWithMinScoreAsync()
     {
         // Arrange
-        var compareEmbedding = new Embedding<double>(new double[] { 1, 1, 1 });
-        int rand = Random.Shared.Next();
-        string collection = "collection" + rand;
+        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         int topN = 4;
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        int i = 0;
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
 
-        string key = "key" + Random.Shared.Next();
-        var memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 1, 1 }), "1 ,1 ,1");
-        await this._db.PutValueAsync(collection, key, memory);
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { -1, -1, -1 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
 
-        key = "key" + Random.Shared.Next();
-        memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -1, -1 }), "-1 ,-1 ,-1");
-        await this._db.PutValueAsync(collection, key, memory);
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
 
-        key = "key" + Random.Shared.Next();
-        memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 2, 3 }), "1 ,2 ,3");
-        await this._db.PutValueAsync(collection, key, memory);
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { -1, -2, -3 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
 
-        key = "key" + Random.Shared.Next();
-        memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { -1, -2, -3 }), "-1 ,-2 ,-3");
-        await this._db.PutValueAsync(collection, key, memory);
-
-        key = "key" + Random.Shared.Next();
-        memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, -1, 2 }), "1 ,-1 ,2");
-        await this._db.PutValueAsync(collection, key, memory);
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { 1, -1, -2 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
 
         // Act
         var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToEnumerable().ToArray();
 
         // Assert
-        for (int i = 0; i < topNResults.Length; i++)
+        for (int j = 0; j < topNResults.Length; j++)
         {
             int compare = topNResults[i].Item2.CompareTo(0.75);
             Assert.True(compare >= 0);
@@ -241,27 +257,28 @@ public class VolatileMemoryStoreTests
     public async Task GetNearestAsyncDifferentiatesIdenticalVectorsByKeyAsync()
     {
         // Arrange
-        var compareEmbedding = new Embedding<double>(new double[] { 1, 1, 1 });
-        int rand = Random.Shared.Next();
-        string collection = "collection" + rand;
+        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         int topN = 4;
-
-        string key = "key" + Random.Shared.Next();
-        var memory = new DoubleEmbeddingWithBasicMetadata(new Embedding<double>(new double[] { 1, 1, 1 }), "1 ,2 ,3");
-        await this._db.PutValueAsync(collection, key, memory);
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
 
         for (int i = 0; i < 10; i++)
         {
-            key = "key" + Random.Shared.Next();
-            memory = new DoubleEmbeddingWithBasicMetadata(compareEmbedding, "1 ,1 ,1");
-            await this._db.PutValueAsync(collection, key, memory);
+            MemoryRecord testRecord = MemoryRecord.LocalRecord(
+                id: "test" + i,
+                text: "text" + i,
+                description: "description" + i,
+                embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+            _ = await this._db.UpsertAsync(collection, testRecord);
         }
 
         // Act
         var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToEnumerable().ToArray();
+        IEnumerable<string> topNKeys = topNResults.Select(x => x.Item1.Key).ToImmutableSortedSet();
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
+        Assert.Equal(topNKeys.Count(), topNResults.Length);
 
         for (int i = 0; i < topNResults.Length; i++)
         {
@@ -270,21 +287,79 @@ public class VolatileMemoryStoreTests
         }
     }
 
-    internal class DoubleEmbeddingWithBasicMetadata : IEmbeddingWithMetadata<double>
+    [Fact]
+    public Task CanBatchUpsertRecordsAsync()
     {
-        public Embedding<double> Embedding { get; }
+        // Arrange
+        int numRecords = 5;
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        IEnumerable<MemoryRecord> records = this.CreateBatchLocalRecords(numRecords);
 
-        public string Metadata { get; }
+        // Act
+        var keys = this._db.UpsertBatchAsync(collection, records).ToEnumerable();
+        var resultRecords = this._db.GetBatchAsync(collection, keys).ToEnumerable();
 
-        public DoubleEmbeddingWithBasicMetadata(Embedding<double> embedding, string metadata)
-        {
-            this.Embedding = embedding;
-            this.Metadata = metadata;
-        }
-
-        public string GetSerializedMetadata()
-        {
-            return JsonSerializer.Serialize(this.Metadata);
-        }
+        // Assert
+        Assert.Equal(numRecords, keys.Count());
+        Assert.Equal(numRecords, resultRecords.Count());
     }
+
+    [Fact]
+    public async Task CanBatchGetRecordsAsync()
+    {
+        // Arrange
+        int numRecords = 5;
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        IEnumerable<MemoryRecord> records = this.CreateBatchReferenceRecords(numRecords);
+        var keys = this._db.UpsertBatchAsync(collection, records).ToEnumerable();
+
+        // Act
+        var results = this._db.GetBatchAsync(collection, keys).ToEnumerable();
+
+        // Assert
+        Assert.Equal(numRecords, results.Count());
+    }
+
+    [Fact]
+    public async Task CanBatchRemoveRecordsAsync()
+    {
+        // Arrange
+        int numRecords = 5;
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        IEnumerable<MemoryRecord> records = this.CreateBatchReferenceRecords(numRecords);
+        var keys = this._db.UpsertBatchAsync(collection, records).ToEnumerable();
+
+        // Act
+        await this._db.RemoveBatchAsync(collection, keys);
+        var results = this._db.GetBatchAsync(collection, keys).ToEnumerable();
+
+        // Assert
+        Assert.Empty(results);
+    }
+
+    [Fact]
+    public async Task CollectionsCanBeDeletedAsync()
+    {
+        // Arrange
+        var collections = this._db.GetCollectionsAsync().ToEnumerable();
+#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
+        int numCollections = collections.Count();
+        Assert.True(numCollections == this._collectionNum);
+
+        // Act
+        foreach (var collection in collections)
+        {
+            await this._db.DeleteCollectionAsync(collection);
+        }
+
+        // Assert
+        collections = this._db.GetCollectionsAsync().ToEnumerable();
+        numCollections = collections.Count();
+        Assert.True(numCollections == 0);
+        this._collectionNum = 0;
+    }
+#pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 }

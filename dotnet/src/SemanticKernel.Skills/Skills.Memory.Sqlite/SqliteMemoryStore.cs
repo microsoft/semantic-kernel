@@ -9,18 +9,19 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
-using Microsoft.SemanticKernel.Memory.Storage;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 
 /// <summary>
-/// An implementation of <see cref="IDataStore{TValue}"/> backed by a SQLite database.
+/// An implementation of <see cref="IMemoryStore"/> backed by a SQLite database.
 /// </summary>
 /// <remarks>The data is saved to a database file, specified in the constructor.
 /// The data persists between subsequent instances. Only one instance may access the file at a time.
 /// The caller is responsible for deleting the file.</remarks>
 /// <typeparam name="TValue">The type of data to be stored in this data store.</typeparam>
-public class SqliteDataStore<TValue> : IDataStore<TValue>, IDisposable
+public class SqliteMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>
     /// Connect a Sqlite database
@@ -29,53 +30,66 @@ public class SqliteDataStore<TValue> : IDataStore<TValue>, IDisposable
     /// <param name="cancel">Cancellation token</param>
     [SuppressMessage("Design", "CA1000:Do not declare static members on generic types",
         Justification = "Static factory method used to ensure successful connection.")]
-    public static async Task<SqliteDataStore<TValue>> ConnectAsync(string filename,
+    public static async Task<SqliteMemoryStore> ConnectAsync(string filename,
         CancellationToken cancel = default)
     {
         SqliteConnection dbConnection = await Database.CreateConnectionAsync(filename, cancel);
-        return new SqliteDataStore<TValue>(dbConnection);
+        return new SqliteMemoryStore(dbConnection);
     }
 
-    /// <inheritdoc/>
+    public Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
+    {
+        throw new NotImplementedException();
+    }
+
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
     {
-        return this._dbConnection.GetCollectionsAsync(cancel);
+        throw new NotImplementedException();
     }
 
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<DataEntry<TValue>> GetAllAsync(string collection,
-        [EnumeratorCancellation] CancellationToken cancel = default)
+    public Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collection, cancel))
-        {
-            yield return DataEntry.Create<TValue>(dbEntry.Key, dbEntry.Value, ParseTimestamp(dbEntry.Timestamp));
-        }
+        throw new NotImplementedException();
     }
 
-    /// <inheritdoc/>
-    public async Task<DataEntry<TValue>?> GetAsync(string collection, string key, CancellationToken cancel = default)
+    public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
-        DatabaseEntry? entry = await this._dbConnection.ReadAsync(collection, key, cancel);
-        if (entry.HasValue)
-        {
-            DatabaseEntry dbEntry = entry.Value;
-            return DataEntry.Create<TValue>(dbEntry.Key, dbEntry.Value, ParseTimestamp(dbEntry.Timestamp));
-        }
-
-        return null;
+        throw new NotImplementedException();
     }
 
-    /// <inheritdoc/>
-    public async Task<DataEntry<TValue>> PutAsync(string collection, DataEntry<TValue> data, CancellationToken cancel = default)
+    public IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> record, CancellationToken cancel = default)
     {
-        await this._dbConnection.InsertAsync(collection, data.Key, data.ValueString, ToTimestampString(data.Timestamp), cancel);
-        return data;
+        throw new NotImplementedException();
     }
 
-    /// <inheritdoc/>
-    public Task RemoveAsync(string collection, string key, CancellationToken cancel = default)
+    public Task<MemoryRecord?> GetAsync(string collectionName, string key, CancellationToken cancel = default)
     {
-        return this._dbConnection.DeleteAsync(collection, key, cancel);
+        throw new NotImplementedException();
+    }
+
+    public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, CancellationToken cancel = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, CancellationToken cancel = default)
+    {
+        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -114,25 +128,9 @@ public class SqliteDataStore<TValue> : IDataStore<TValue>, IDisposable
     /// Constructor
     /// </summary>
     /// <param name="dbConnection">DB connection</param>
-    private SqliteDataStore(SqliteConnection dbConnection)
+    private SqliteMemoryStore(SqliteConnection dbConnection)
     {
         this._dbConnection = dbConnection;
-    }
-
-    // TODO: never used
-    private static string? ValueToString(TValue? value)
-    {
-        if (value != null)
-        {
-            if (typeof(TValue) == typeof(string))
-            {
-                return value.ToString();
-            }
-
-            return JsonSerializer.Serialize(value);
-        }
-
-        return null;
     }
 
     private static string? ToTimestampString(DateTimeOffset? timestamp)

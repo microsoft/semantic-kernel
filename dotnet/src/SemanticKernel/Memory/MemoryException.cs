@@ -6,12 +6,12 @@ using Microsoft.SemanticKernel.Diagnostics;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// Kernel logic exception
+/// Memory logic exception
 /// </summary>
 public class MemoryException : Exception<MemoryException.ErrorCodes>
 {
     /// <summary>
-    /// Semantic kernel error codes.
+    /// Semantic kernel memory error codes.
     /// </summary>
     public enum ErrorCodes
     {
@@ -19,6 +19,16 @@ public class MemoryException : Exception<MemoryException.ErrorCodes>
         /// Unknown error.
         /// </summary>
         UnknownError = -1,
+
+        /// <summary>
+        /// Failed to create collection.
+        /// </summary>
+        FailedToCreateCollection,
+
+        /// <summary>
+        /// Failed to delete collection.
+        /// </summary>
+        FailedToDeleteCollection,
 
         /// <summary>
         /// Unable to construct memory from serialized metadata.
@@ -32,21 +42,21 @@ public class MemoryException : Exception<MemoryException.ErrorCodes>
     public ErrorCodes ErrorCode { get; set; }
 
     /// <summary>
-    /// Constructor for KernelException.
+    /// Constructor for MemoryException.
     /// </summary>
-    /// <param name="errCode">Error code to put in KernelException.</param>
-    /// <param name="message">Message to put in KernelException.</param>
+    /// <param name="errCode">Error code to put in MemoryException.</param>
+    /// <param name="message">Message to put in MemoryException.</param>
     public MemoryException(ErrorCodes errCode, string? message = null) : base(errCode, message)
     {
         this.ErrorCode = errCode;
     }
 
     /// <summary>
-    /// Constructor for KernelException.
+    /// Constructor for MemoryException.
     /// </summary>
-    /// <param name="errCode">Error code to put in KernelException.</param>
-    /// <param name="message">Message to put in KernelException.</param>
-    /// <param name="e">Exception to embed in KernelException.</param>
+    /// <param name="errCode">Error code to put in MemoryException.</param>
+    /// <param name="message">Message to put in MemoryException.</param>
+    /// <param name="e">Exception to embed in MemoryException.</param>
     public MemoryException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
     {
         this.ErrorCode = errCode;

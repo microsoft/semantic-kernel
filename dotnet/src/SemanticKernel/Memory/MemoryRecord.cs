@@ -3,7 +3,6 @@
 using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Memory.Storage;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -38,7 +37,7 @@ public class MemoryRecord : DataEntryBase
         string sourceName,
         string? description,
         Embedding<float> embedding,
-        string key,
+        string? key = null,
         DateTimeOffset? timestamp = null)
     {
         return new MemoryRecord(

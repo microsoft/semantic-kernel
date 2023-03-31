@@ -5,19 +5,18 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory.Storage;
 using Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 using Xunit;
 
 namespace SemanticKernel.Skills.UnitTests.Memory.Sqlite;
 
 /// <summary>
-/// Unit tests of <see cref="SqliteDataStore{TValue}"/>.
+/// Unit tests of <see cref="SqliteMemoryStoreMemoryStore"/>.
 /// </summary>
 public class SqliteDataStoreTests : IDisposable
 {
     private const string DatabaseFile = "SqliteDataStoreTests.db";
-    private SqliteDataStore<string>? _db = null;
+    private SqliteMemoryStore? _db = null;
     private bool _disposedValue;
 
     public SqliteDataStoreTests()
@@ -28,7 +27,7 @@ public class SqliteDataStoreTests : IDisposable
     [Fact]
     public async Task InitializeDbConnectionSucceedsAsync()
     {
-        this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
+        this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         // Assert
         Assert.NotNull(this._db);
     }
@@ -43,7 +42,7 @@ public class SqliteDataStoreTests : IDisposable
         string value = "value" + rand;
 
         // Act
-        this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
+        this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         await this._db.PutValueAsync(collection, key, value);
 
         string? actual = await this._db.GetValueAsync(collection, key);
@@ -64,7 +63,7 @@ public class SqliteDataStoreTests : IDisposable
         DateTimeOffset timestamp = DateTimeOffset.UtcNow;
 
         // Act
-        this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
+        this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         await this._db.PutValueAsync(collection, key, value, timestamp);
         DataEntry<string>? actual = await this._db.GetAsync(collection, key);
 
@@ -87,7 +86,7 @@ public class SqliteDataStoreTests : IDisposable
         var data = DataEntry.Create(key, value, timestamp);
 
         // Act
-        this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
+        this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         await this._db.PutAsync(collection, data);
         DataEntry<string>? actual = await this._db.GetAsync(collection, key);
 
@@ -109,7 +108,7 @@ public class SqliteDataStoreTests : IDisposable
         var data = DataEntry.Create(key, value, DateTimeOffset.UtcNow);
 
         // Act
-        this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
+        this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         await this._db.PutAsync(collection, data);
         await this._db.RemoveAsync(collection, key);
 
@@ -128,7 +127,7 @@ public class SqliteDataStoreTests : IDisposable
         string value = "value" + rand;
 
         // Act
-        this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
+        this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         await this._db.PutValueAsync(collection, key, value);
         var collections = this._db.GetCollectionsAsync();
 
@@ -149,7 +148,7 @@ public class SqliteDataStoreTests : IDisposable
         int quantity = 15;
 
         // Act
-        this._db ??= await SqliteDataStore<string>.ConnectAsync(DatabaseFile);
+        this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         for (int i = 0; i < quantity; i++)
         {
             await this._db.PutValueAsync(collection, key + i, value);

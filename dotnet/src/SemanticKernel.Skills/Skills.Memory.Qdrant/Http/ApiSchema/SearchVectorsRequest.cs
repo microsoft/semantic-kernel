@@ -7,11 +7,10 @@ using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http.ApiSchema;
 
-internal class SearchVectorsRequest<TEmbedding> : IValidatable
-    where TEmbedding : unmanaged
+internal class SearchVectorsRequest : IValidatable
 {
     [JsonPropertyName("vector")]
-    public TEmbedding[] StartingVector { get; set; } = System.Array.Empty<TEmbedding>();
+    public IEnumerable<float> StartingVector { get; set; } = System.Array.Empty<float>();
 
     [JsonPropertyName("filter")]
     public Filter Filters { get; set; }
@@ -31,30 +30,30 @@ internal class SearchVectorsRequest<TEmbedding> : IValidatable
     [JsonPropertyName("score_threshold")]
     public double ScoreThreshold { get; set; } = -1;
 
-    public static SearchVectorsRequest<TEmbedding> Create(string collectionName)
+    public static SearchVectorsRequest Create(string collectionName)
     {
-        return new SearchVectorsRequest<TEmbedding>(collectionName);
+        return new SearchVectorsRequest(collectionName);
     }
 
-    public static SearchVectorsRequest<TEmbedding> Create(string collectionName, int vectorSize)
+    public static SearchVectorsRequest Create(string collectionName, int vectorSize)
     {
-        return new SearchVectorsRequest<TEmbedding>(collectionName).SimilarTo(new TEmbedding[vectorSize]);
+        return new SearchVectorsRequest(collectionName).SimilarTo(new float[vectorSize]);
     }
 
-    public SearchVectorsRequest<TEmbedding> SimilarTo(TEmbedding[] vector)
+    public SearchVectorsRequest SimilarTo(IEnumerable<float> vector)
     {
         this.StartingVector = vector;
         return this;
     }
 
-    public SearchVectorsRequest<TEmbedding> HavingExternalId(string id)
+    public SearchVectorsRequest HavingExternalId(string id)
     {
         Verify.NotNull(id, "External ID is NULL");
         this.Filters.ValueMustMatch("id", id);
         return this;
     }
 
-    public SearchVectorsRequest<TEmbedding> HavingTags(IEnumerable<string>? tags)
+    public SearchVectorsRequest HavingTags(IEnumerable<string>? tags)
     {
         if (tags == null) { return this; }
 
@@ -69,37 +68,37 @@ internal class SearchVectorsRequest<TEmbedding> : IValidatable
         return this;
     }
 
-    public SearchVectorsRequest<TEmbedding> WithScoreThreshold(double threshold)
+    public SearchVectorsRequest WithScoreThreshold(double threshold)
     {
         this.ScoreThreshold = threshold;
         return this;
     }
 
-    public SearchVectorsRequest<TEmbedding> IncludePayLoad()
+    public SearchVectorsRequest IncludePayLoad()
     {
         this.WithPayload = true;
         return this;
     }
 
-    public SearchVectorsRequest<TEmbedding> IncludeVectorData()
+    public SearchVectorsRequest IncludeVectorData()
     {
         this.WithVector = true;
         return this;
     }
 
-    public SearchVectorsRequest<TEmbedding> FromPosition(int offset)
+    public SearchVectorsRequest FromPosition(int offset)
     {
         this.Offset = offset;
         return this;
     }
 
-    public SearchVectorsRequest<TEmbedding> Take(int count)
+    public SearchVectorsRequest Take(int count)
     {
         this.Limit = count;
         return this;
     }
 
-    public SearchVectorsRequest<TEmbedding> TakeFirst()
+    public SearchVectorsRequest TakeFirst()
     {
         return this.FromPosition(0).Take(1);
     }

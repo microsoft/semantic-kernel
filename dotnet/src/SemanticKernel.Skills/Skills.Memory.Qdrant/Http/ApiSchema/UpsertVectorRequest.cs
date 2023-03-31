@@ -1,24 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http.ApiSchema;
 
-internal class UpsertVectorRequest<TEmbedding>
-    where TEmbedding : unmanaged
+internal class UpsertVectorRequest
 {
-    public static UpsertVectorRequest<TEmbedding> Create(string collectionName)
+    public static UpsertVectorRequest Create(string collectionName)
     {
-        return new UpsertVectorRequest<TEmbedding>(collectionName);
+        return new UpsertVectorRequest(collectionName);
     }
 
-    public UpsertVectorRequest<TEmbedding> UpsertVector(string pointId, QdrantVectorRecord<TEmbedding> vectorRecord)
+    public UpsertVectorRequest UpsertVector(QdrantVectorRecord vectorRecord)
     {
-        this.Batch.Ids.Add(pointId);
-        this.Batch.Vectors.Add(vectorRecord.Embedding.Vector.ToArray());
+        this.Batch.Ids.Add(vectorRecord.PointId);
+        this.Batch.Vectors.Add(vectorRecord.Embedding);
         this.Batch.Payloads.Add(vectorRecord.Payload);
         return this;
     }
@@ -42,7 +40,7 @@ internal class UpsertVectorRequest<TEmbedding>
         public IList<string> Ids { get; set; }
 
         [JsonPropertyName("vectors")]
-        public IList<TEmbedding[]> Vectors { get; set; }
+        public IList<IEnumerable<float>> Vectors { get; set; }
 
         [JsonPropertyName("payloads")]
         public IList<Dictionary<string, object>> Payloads { get; set; }
@@ -50,7 +48,7 @@ internal class UpsertVectorRequest<TEmbedding>
         internal BatchRequest()
         {
             this.Ids = new List<string>();
-            this.Vectors = new List<TEmbedding[]>();
+            this.Vectors = new List<IEnumerable<float>>();
             this.Payloads = new List<Dictionary<string, object>>();
         }
     }

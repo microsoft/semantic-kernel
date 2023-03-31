@@ -9,8 +9,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Memory.Storage;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http;
 using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http.ApiSchema;
@@ -21,8 +19,7 @@ namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
 /// An implementation of a client for the Qdrant VectorDB. This class is used to
 /// connect, create, delete, and get embeddings data from a Qdrant VectorDB instance.
 /// </summary>
-public class QdrantVectorDbClient<TEmbedding>
-    where TEmbedding : unmanaged
+public class QdrantVectorDbClient
 {
     /// <summary>
     /// The endpoint for the Qdrant service.
@@ -58,7 +55,7 @@ public class QdrantVectorDbClient<TEmbedding>
         Verify.ArgNotNullOrEmpty(endpoint, "Qdrant endpoint cannot be null or empty");
 
         this._vectorSize = vectorSize;
-        this._log = log ?? NullLogger<QdrantVectorDbClient<TEmbedding>>.Instance;
+        this._log = log ?? NullLogger<QdrantVectorDbClient>.Instance;
         this._httpClient = httpClient ?? new HttpClient(HttpHandlers.CheckCertificateRevocation);
         this._httpClient.BaseAddress = SanitizeEndpoint(endpoint, port);
     }
@@ -69,7 +66,7 @@ public class QdrantVectorDbClient<TEmbedding>
     /// <param name="collectionName"></param>
     /// <param name="pointId"></param>
     /// <returns></returns>
-    public async Task<DataEntry<QdrantVectorRecord<TEmbedding>>?> GetVectorByIdAsync(string collectionName, string pointId)
+    public async Task<QdrantVectorRecord?> GetVectorByIdAsync(string collectionName, string pointId)
     {
         this._log.LogDebug("Searching vector by point ID");
 
@@ -90,7 +87,7 @@ public class QdrantVectorDbClient<TEmbedding>
             return null;
         }
 
-        var data = JsonSerializer.Deserialize<GetVectorsResponse<TEmbedding>>(responseContent);
+        var data = JsonSerializer.Deserialize<GetVectorsResponse>(responseContent);
 
         if (data == null)
         {
@@ -107,16 +104,16 @@ public class QdrantVectorDbClient<TEmbedding>
         var recordData = data.Result.First();
 
 #pragma warning disable CS8604 // The request specifically asked for a payload to be in the response
-        var record = new QdrantVectorRecord<TEmbedding>(
-            new Embedding<TEmbedding>(
-                recordData.Vector!.ToArray()), // The request specifically asked for a vector to be in the response
+        var record = new QdrantVectorRecord(
+            pointId: recordData.Id,
+            embedding: recordData.Vector!, // The request specifically asked for a vector to be in the response
             recordData.Payload,
-            null);
+            tags: null);
 #pragma warning restore CS8604
 
         this._log.LogDebug("Vector found");
 
-        return new DataEntry<QdrantVectorRecord<TEmbedding>>(pointId.ToString(), record);
+        return record;
     }
 
     /// <summary>
@@ -125,10 +122,10 @@ public class QdrantVectorDbClient<TEmbedding>
     /// <param name="collectionName"></param>
     /// <param name="metadataId"></param>
     /// <returns></returns>
-    public async Task<DataEntry<QdrantVectorRecord<TEmbedding>>?> GetVectorByPayloadIdAsync(string collectionName, string metadataId)
+    public async Task<QdrantVectorRecord?> GetVectorByPayloadIdAsync(string collectionName, string metadataId)
     {
-        using HttpRequestMessage request = SearchVectorsRequest<TEmbedding>.Create(collectionName)
-            .SimilarTo(new TEmbedding[this._vectorSize])
+        using HttpRequestMessage request = SearchVectorsRequest.Create(collectionName)
+            .SimilarTo(new float[this._vectorSize])
             .HavingExternalId(metadataId)
             .IncludePayLoad()
             .TakeFirst()
@@ -146,7 +143,7 @@ public class QdrantVectorDbClient<TEmbedding>
             return null;
         }
 
-        var data = JsonSerializer.Deserialize<SearchVectorsResponse<TEmbedding>>(responseContent);
+        var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
 
         if (data == null)
         {
@@ -162,14 +159,14 @@ public class QdrantVectorDbClient<TEmbedding>
 
         var point = data.Results.First();
 
-        var record = new QdrantVectorRecord<TEmbedding>(
-            new Embedding<TEmbedding>(
-                point.Vector.ToArray()),
-            point.Payload,
-            null);
+        var record = new QdrantVectorRecord(
+            pointId: point.Id,
+            embedding: point.Vector,
+            payload: point.Payload,
+            tags: null);
         this._log.LogDebug("Vector found}");
 
-        return new DataEntry<QdrantVectorRecord<TEmbedding>>(point.Id, record);
+        return record;
     }
 
     /// <summary>
@@ -219,11 +216,11 @@ public class QdrantVectorDbClient<TEmbedding>
     /// <returns></returns>
     public async Task DeleteVectorByPayloadIdAsync(string collectionName, string metadataId)
     {
-        DataEntry<QdrantVectorRecord<TEmbedding>>? existingRecord = await this.GetVectorByPayloadIdAsync(collectionName, metadataId);
+        QdrantVectorRecord? existingRecord = await this.GetVectorByPayloadIdAsync(collectionName, metadataId);
 
         if (existingRecord == null)
         {
-            this._log.LogDebug("Vector not found");
+            this._log.LogDebug("Vector not found, nothing to delete");
             return;
         }
 
@@ -231,7 +228,7 @@ public class QdrantVectorDbClient<TEmbedding>
 
         using var request = DeleteVectorsRequest
             .DeleteFrom(collectionName)
-            .DeleteVector(existingRecord.Value.Key)
+            .DeleteVector(existingRecord.PointId)
             .Build();
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
@@ -261,23 +258,22 @@ public class QdrantVectorDbClient<TEmbedding>
     /// <param name="collectionName"></param>
     /// <param name="vectorData"></param>
     /// <returns></returns>
-    public async Task UpsertVectorAsync(string collectionName, DataEntry<QdrantVectorRecord<TEmbedding>> vectorData)
+    public async Task UpsertVectorAsync(string collectionName, QdrantVectorRecord vectorData)
     {
         this._log.LogDebug("Upserting vector");
         Verify.NotNull(vectorData, "The vector data entry is NULL");
-        Verify.NotNull(vectorData.Value, "The vector data entry contains NULL value");
+        Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
 
-        DataEntry<QdrantVectorRecord<TEmbedding>>? existingRecord = await this.GetVectorByPayloadIdAsync(collectionName, vectorData.Key);
+        QdrantVectorRecord? existingRecord = await this.GetVectorByIdAsync(collectionName, vectorData.PointId);
 
         if (existingRecord != null)
         {
             return;
         }
-
-        // Generate a new ID for the new vector
-        using var request = UpsertVectorRequest<TEmbedding>
+        
+        using var request = UpsertVectorRequest
             .Create(collectionName)
-            .UpsertVector(Guid.NewGuid().ToString(), vectorData.Value).Build();
+            .UpsertVector(vectorData).Build();
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
 
         try
@@ -308,9 +304,9 @@ public class QdrantVectorDbClient<TEmbedding>
     /// <param name="top"></param>
     /// <param name="requiredTags"></param>
     /// <returns></returns>
-    public async IAsyncEnumerable<(QdrantVectorRecord<TEmbedding>, double)> FindNearestInCollectionAsync(
+    public async IAsyncEnumerable<(QdrantVectorRecord, double)> FindNearestInCollectionAsync(
         string collectionName,
-        Embedding<TEmbedding> target,
+        IEnumerable<float> target,
         double threshold,
         int top = 1,
         IEnumerable<string>? requiredTags = null)
@@ -319,9 +315,9 @@ public class QdrantVectorDbClient<TEmbedding>
 
         Verify.NotNull(target, "The given vector is NULL");
 
-        using HttpRequestMessage request = SearchVectorsRequest<TEmbedding>
+        using HttpRequestMessage request = SearchVectorsRequest
             .Create(collectionName)
-            .SimilarTo(target.Vector.ToArray())
+            .SimilarTo(target)
             .HavingTags(requiredTags)
             .WithScoreThreshold(threshold)
             .IncludePayLoad()
@@ -332,7 +328,7 @@ public class QdrantVectorDbClient<TEmbedding>
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
         response.EnsureSuccessStatusCode();
 
-        var data = JsonSerializer.Deserialize<SearchVectorsResponse<TEmbedding>>(responseContent);
+        var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
 
         if (data == null)
         {
@@ -346,13 +342,14 @@ public class QdrantVectorDbClient<TEmbedding>
             yield break;
         }
 
-        var result = new List<(QdrantVectorRecord<TEmbedding>, double)>();
+        var result = new List<(QdrantVectorRecord, double)>();
 
         foreach (var v in data.Results)
         {
-            var record = new QdrantVectorRecord<TEmbedding>(
-                new Embedding<TEmbedding>(v.Vector),
-                v.Payload);
+            var record = new QdrantVectorRecord(
+                pointId: v.Id,
+                embedding: v.Vector,
+                payload: v.Payload);
 
             result.Add((record, v.Score ?? 0));
         }
@@ -478,8 +475,8 @@ public class QdrantVectorDbClient<TEmbedding>
     private readonly HttpClient _httpClient;
     private readonly int _vectorSize;
 
-    private static List<(QdrantVectorRecord<TEmbedding>, double)> SortSearchResultByScore(
-        List<(QdrantVectorRecord<TEmbedding>, double)> tuplesList)
+    private static List<(QdrantVectorRecord, double)> SortSearchResultByScore(
+        List<(QdrantVectorRecord, double)> tuplesList)
     {
         // Sort list in place
         tuplesList.Sort((a, b) => b.Item2.CompareTo(a.Item2));
