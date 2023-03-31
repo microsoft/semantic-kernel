@@ -306,7 +306,7 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public async Task CanBatchGetRecordsAsync()
+    public Task CanBatchGetRecordsAsync()
     {
         // Arrange
         int numRecords = 5;

@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel.Design;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,29 +35,29 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName))
+        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel))
         {
-            await this._qdrantClient.CreateCollectionAsync(collectionName);
+            await this._qdrantClient.CreateCollectionAsync(collectionName, cancel: cancel);
         }
     }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
     {
-        return this._qdrantClient.ListCollectionsAsync();
+        return this._qdrantClient.ListCollectionsAsync(cancel: cancel);
     }
 
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        await this._qdrantClient.DeleteCollectionAsync(collectionName);
+        await this._qdrantClient.DeleteCollectionAsync(collectionName, cancel: cancel);
     }
 
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
-        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName))
+        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel))
         {
-            await this._qdrantClient.CreateCollectionAsync(collectionName);
+            await this._qdrantClient.CreateCollectionAsync(collectionName, cancel: cancel);
         }
 
         string pointId;
@@ -73,7 +71,7 @@ public class QdrantMemoryStore : IMemoryStore
         // Check if the data store contains a record with the provided metadata ID
         else
         {
-            existingRecord = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, record.Metadata.Id);
+            existingRecord = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, record.Metadata.Id, cancel: cancel);
             
             if (existingRecord != null)
             {
@@ -91,7 +89,7 @@ public class QdrantMemoryStore : IMemoryStore
             embedding: record.Embedding.Vector,
             json: record.GetSerializedMetadata());
         
-        await this._qdrantClient.UpsertVectorAsync(collectionName, vectorData);
+        await this._qdrantClient.UpsertVectorAsync(collectionName, vectorData, cancel: cancel);
 
         return pointId;
     }
@@ -105,7 +103,7 @@ public class QdrantMemoryStore : IMemoryStore
     {
         try
         {
-            var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key);
+            var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, cancel: cancel);
             if (vectorData != null)
             {
                 return MemoryRecord.FromJson(vectorData.GetSerializedPayload(), new Embedding<float>(vectorData.Embedding));
@@ -125,7 +123,7 @@ public class QdrantMemoryStore : IMemoryStore
     {
         try
         {
-            var vectorData = await this._qdrantClient.GetVectorByIdAsync(collectionName, pointId);
+            var vectorData = await this._qdrantClient.GetVectorByIdAsync(collectionName, pointId, cancel: cancel);
             if (vectorData != null)
             {
                 return MemoryRecord.FromJson(
@@ -152,7 +150,7 @@ public class QdrantMemoryStore : IMemoryStore
     {
         try
         {
-            await this._qdrantClient.DeleteVectorByIdAsync(collectionName, key);
+            await this._qdrantClient.DeleteVectorByIdAsync(collectionName, key, cancel: cancel);
         }
         catch (Exception ex)
         {
@@ -176,7 +174,8 @@ public class QdrantMemoryStore : IMemoryStore
             collectionName: collectionName,
             target: embedding.Vector,
             threshold: minRelevanceScore,
-            top: limit);
+            top: limit,
+            cancel: cancel);
         
         await foreach ((QdrantVectorRecord, double) result in results)
         {

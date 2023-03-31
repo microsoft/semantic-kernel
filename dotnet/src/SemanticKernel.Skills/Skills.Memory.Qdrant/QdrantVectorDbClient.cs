@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -65,8 +66,9 @@ public class QdrantVectorDbClient
     /// </summary>
     /// <param name="collectionName"></param>
     /// <param name="pointId"></param>
+    /// <param name="cancel"></param>
     /// <returns></returns>
-    public async Task<QdrantVectorRecord?> GetVectorByIdAsync(string collectionName, string pointId)
+    public async Task<QdrantVectorRecord?> GetVectorByIdAsync(string collectionName, string pointId, CancellationToken cancel = default)
     {
         this._log.LogDebug("Searching vector by point ID");
 
@@ -76,7 +78,7 @@ public class QdrantVectorDbClient
             .WithVectors(true)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
         try
         {
             response.EnsureSuccessStatusCode();
@@ -121,8 +123,9 @@ public class QdrantVectorDbClient
     /// </summary>
     /// <param name="collectionName"></param>
     /// <param name="metadataId"></param>
+    /// <param name="cancel"></param>
     /// <returns></returns>
-    public async Task<QdrantVectorRecord?> GetVectorByPayloadIdAsync(string collectionName, string metadataId)
+    public async Task<QdrantVectorRecord?> GetVectorByPayloadIdAsync(string collectionName, string metadataId, CancellationToken cancel = default)
     {
         using HttpRequestMessage request = SearchVectorsRequest.Create(collectionName)
             .SimilarTo(new float[this._vectorSize])
@@ -132,7 +135,7 @@ public class QdrantVectorDbClient
             .IncludeVectorData()
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
         try
         {
             response.EnsureSuccessStatusCode();
@@ -174,8 +177,9 @@ public class QdrantVectorDbClient
     /// </summary>
     /// <param name="collectionName"></param>
     /// <param name="pointId"></param>
+    /// <param name="cancel"></param>
     /// <returns></returns>
-    public async Task DeleteVectorByIdAsync(string collectionName, string pointId)
+    public async Task DeleteVectorByIdAsync(string collectionName, string pointId, CancellationToken cancel = default)
     {
         this._log.LogDebug("Deleting vector by point ID");
 
@@ -187,7 +191,7 @@ public class QdrantVectorDbClient
             .DeleteVector(pointId)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
 
         try
         {
@@ -213,8 +217,9 @@ public class QdrantVectorDbClient
     /// </summary>
     /// <param name="collectionName"></param>
     /// <param name="metadataId"></param>
+    /// <param name="cancel"></param>
     /// <returns></returns>
-    public async Task DeleteVectorByPayloadIdAsync(string collectionName, string metadataId)
+    public async Task DeleteVectorByPayloadIdAsync(string collectionName, string metadataId, CancellationToken cancel = default)
     {
         QdrantVectorRecord? existingRecord = await this.GetVectorByPayloadIdAsync(collectionName, metadataId);
 
@@ -231,7 +236,7 @@ public class QdrantVectorDbClient
             .DeleteVector(existingRecord.PointId)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
 
         try
         {
@@ -257,8 +262,9 @@ public class QdrantVectorDbClient
     /// </summary>
     /// <param name="collectionName"></param>
     /// <param name="vectorData"></param>
+    /// <param name="cancel"></param>
     /// <returns></returns>
-    public async Task UpsertVectorAsync(string collectionName, QdrantVectorRecord vectorData)
+    public async Task UpsertVectorAsync(string collectionName, QdrantVectorRecord vectorData, CancellationToken cancel = default)
     {
         this._log.LogDebug("Upserting vector");
         Verify.NotNull(vectorData, "The vector data entry is NULL");
@@ -274,7 +280,7 @@ public class QdrantVectorDbClient
         using var request = UpsertVectorRequest
             .Create(collectionName)
             .UpsertVector(vectorData).Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
 
         try
         {
@@ -303,13 +309,15 @@ public class QdrantVectorDbClient
     /// <param name="threshold"></param>
     /// <param name="top"></param>
     /// <param name="requiredTags"></param>
+    /// <param name="cancel"></param>
     /// <returns></returns>
     public async IAsyncEnumerable<(QdrantVectorRecord, double)> FindNearestInCollectionAsync(
         string collectionName,
         IEnumerable<float> target,
         double threshold,
         int top = 1,
-        IEnumerable<string>? requiredTags = null)
+        IEnumerable<string>? requiredTags = null,
+        CancellationToken cancel = default)
     {
         this._log.LogDebug("Searching top {0} closest vectors in {1}", top);
 
@@ -325,7 +333,7 @@ public class QdrantVectorDbClient
             .Take(top)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
         response.EnsureSuccessStatusCode();
 
         var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
@@ -366,8 +374,9 @@ public class QdrantVectorDbClient
     /// Create a Qdrant vector collection.
     /// </summary>
     /// <param name="collectionName"></param>
+    /// <param name="cancel"></param>
     /// <returns></returns>
-    public async Task CreateCollectionAsync(string collectionName)
+    public async Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
         this._log.LogDebug("Creating collection {0}", collectionName);
 
@@ -375,7 +384,7 @@ public class QdrantVectorDbClient
             .Create(collectionName, this._vectorSize, QdrantDistanceType.Cosine)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
 
         // Creation is idempotent, ignore error (and for now ignore vector size)
         if (response.StatusCode == HttpStatusCode.BadRequest)
@@ -398,13 +407,14 @@ public class QdrantVectorDbClient
     /// Delete a Qdrant vector collection.
     /// </summary>
     /// <param name="collectionName"></param>
+    /// <param name="cancel"></param>
     /// <returns></returns>
-    public async Task DeleteCollectionAsync(string collectionName)
+    public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
         this._log.LogDebug("Deleting collection {0}", collectionName);
 
         using var request = DeleteCollectionRequest.Create(collectionName).Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
 
         // Deletion is idempotent, ignore error
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -427,14 +437,15 @@ public class QdrantVectorDbClient
     /// Check if a vector collection exists.
     /// </summary>
     /// <param name="collectionName"></param>
+    /// <param name="cancel"></param>
     /// <returns></returns>
     /// <exception cref="VectorDbException"></exception>
-    public async Task<bool> DoesCollectionExistAsync(string collectionName)
+    public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
     {
         this._log.LogDebug("Fetching collection {0}", collectionName);
 
         using var request = GetCollectionsRequest.Create(collectionName).Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -453,13 +464,14 @@ public class QdrantVectorDbClient
     /// <summary>
     /// List all vector collections.
     /// </summary>
+    /// <param name="cancel"></param>
     /// <returns></returns>
-    public async IAsyncEnumerable<string> ListCollectionsAsync()
+    public async IAsyncEnumerable<string> ListCollectionsAsync(CancellationToken cancel = default)
     {
         this._log.LogDebug("Listing collections");
 
         using var request = ListCollectionsRequest.Create().Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
 
         var collections = JsonSerializer.Deserialize<ListCollectionsResponse>(responseContent);
 
@@ -493,9 +505,11 @@ public class QdrantVectorDbClient
         return builder.Uri;
     }
 
-    private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(HttpRequestMessage request)
+    private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
+        HttpRequestMessage request,
+        CancellationToken cancel = default)
     {
-        HttpResponseMessage response = await this._httpClient.SendAsync(request);
+        HttpResponseMessage response = await this._httpClient.SendAsync(request, cancel);
 
         string responseContent = await response.Content.ReadAsStringAsync();
         if (response.IsSuccessStatusCode)
