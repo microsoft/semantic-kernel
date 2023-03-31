@@ -33,7 +33,7 @@ internal static class Database
 
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-             INSERT INTO {TableName}(collection, key, value, timestamp)
+             INSERT INTO {TableName}(collection)
              VALUES(@collection); ";
         cmd.Parameters.AddWithValue("@collection", collection);
         await cmd.ExecuteNonQueryAsync(cancel);
@@ -138,6 +138,17 @@ internal static class Database
                 AND key=@key ";
         cmd.Parameters.AddWithValue("@collection", collection);
         cmd.Parameters.AddWithValue("@key", key);
+        return cmd.ExecuteNonQueryAsync(cancel);
+    }
+    
+    public static Task DeleteEmptyAsync(this SqliteConnection conn, string collection, CancellationToken cancel = default)
+    {
+        SqliteCommand cmd = conn.CreateCommand();
+        cmd.CommandText = $@"
+             DELETE FROM {TableName}
+             WHERE collection=@collection
+                AND key IS NULL";
+        cmd.Parameters.AddWithValue("@collection", collection);
         return cmd.ExecuteNonQueryAsync(cancel);
     }
 

@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -62,6 +64,9 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     {
         record.Key = record.Metadata.Id;
         
+        // delete existing record if it exists
+        await this._dbConnection.DeleteAsync(collectionName, record.Key, cancel);
+
         await this._dbConnection.InsertAsync(
             collection: collectionName,
             key: record.Key,
@@ -231,9 +236,12 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         return null;
     }
 
-    private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collection, [EnumeratorCancellation] CancellationToken cancel = default)
+    private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collection, cancel))
+        // delete empty entry in the database if it exists (see CreateCollection)
+        await this._dbConnection.DeleteEmptyAsync(collectionName, cancel);
+        
+        await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collectionName, cancel))
         {
             yield return JsonSerializer.Deserialize<MemoryRecord>(dbEntry.ValueString);
         }

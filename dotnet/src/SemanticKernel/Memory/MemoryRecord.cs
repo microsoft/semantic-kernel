@@ -25,6 +25,20 @@ public class MemoryRecord : DataEntryBase
     public MemoryRecordMetadata Metadata { get; }
 
     /// <summary>
+    /// Constructor, use <see cref="ReferenceRecord"/> or <see cref="LocalRecord"/>
+    /// </summary>
+    [JsonConstructor]
+    public MemoryRecord(
+        MemoryRecordMetadata metadata,
+        Embedding<float> embedding,
+        string? key,
+        DateTimeOffset? timestamp = null) : base(key, timestamp)
+    {
+        this.Metadata = metadata;
+        this.Embedding = embedding;
+    }
+
+    /// <summary>
     /// Prepare an instance about a memory which source is stored externally.
     /// The universal resource identifies points to the URL (or equivalent) to find the original source.
     /// </summary>
@@ -121,19 +135,5 @@ public class MemoryRecord : DataEntryBase
     public string GetSerializedMetadata()
     {
         return JsonSerializer.Serialize(this.Metadata);
-    }
-
-    /// <summary>
-    /// Internal constructor, use <see cref="ReferenceRecord"/> or <see cref="LocalRecord"/>
-    /// </summary>
-    [JsonConstructor]
-    internal MemoryRecord(
-        MemoryRecordMetadata metadata,
-        Embedding<float> embedding,
-        string? key,
-        DateTimeOffset? timestamp = null) : base(key, timestamp)
-    {
-        this.Metadata = metadata;
-        this.Embedding = embedding;
     }
 }
