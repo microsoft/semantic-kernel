@@ -288,7 +288,7 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public Task CanBatchUpsertRecordsAsync()
+    public void CanBatchUpsertRecordsAsync()
     {
         // Arrange
         int numRecords = 5;
@@ -297,29 +297,32 @@ public class VolatileMemoryStoreTests
         IEnumerable<MemoryRecord> records = this.CreateBatchLocalRecords(numRecords);
 
         // Act
-        var keys = this._db.UpsertBatchAsync(collection, records).ToEnumerable();
-        var resultRecords = this._db.GetBatchAsync(collection, keys).ToEnumerable();
+        var keys = this._db.UpsertBatchAsync(collection, records);
+        var resultRecords = this._db.GetBatchAsync(collection, keys.ToEnumerable());
 
         // Assert
-        Assert.Equal(numRecords, keys.Count());
-        Assert.Equal(numRecords, resultRecords.Count());
+        Assert.NotNull(keys);
+        Assert.Equal(numRecords, keys.ToEnumerable().Count());
+        Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
     }
 
     [Fact]
-    public Task CanBatchGetRecordsAsync()
+    public void CanBatchGetRecordsAsync()
     {
         // Arrange
         int numRecords = 5;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         IEnumerable<MemoryRecord> records = this.CreateBatchReferenceRecords(numRecords);
-        var keys = this._db.UpsertBatchAsync(collection, records).ToEnumerable();
+        var keys = this._db.UpsertBatchAsync(collection, records);
 
         // Act
-        var results = this._db.GetBatchAsync(collection, keys).ToEnumerable();
+        var results = this._db.GetBatchAsync(collection, keys.ToEnumerable());
 
         // Assert
-        Assert.Equal(numRecords, results.Count());
+        Assert.NotNull(keys);
+        Assert.NotNull(results);
+        Assert.Equal(numRecords, results.ToEnumerable().Count());
     }
 
     [Fact]
