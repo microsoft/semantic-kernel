@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Reflection;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.OpenAI.Services;
-using Microsoft.SemanticKernel.Configuration;
+using Microsoft.SemanticKernel.Connectors.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Reliability;
 
 namespace SemanticKernel.Service.Config;
@@ -36,13 +36,13 @@ internal static class ConfigExtensions
         switch (serviceConfig.AIService.ToUpperInvariant())
         {
             case AIServiceConfig.AzureOpenAI:
-                kernelConfig.AddAzureOpenAICompletionBackend(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                                                             serviceConfig.Endpoint, serviceConfig.Key);
+                kernelConfig.AddAzureOpenAITextCompletionService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
+                                                                 serviceConfig.Endpoint, serviceConfig.Key);
                 break;
 
             case AIServiceConfig.OpenAI:
-                kernelConfig.AddOpenAICompletionBackend(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                                                        serviceConfig.Key);
+                kernelConfig.AddOpenAITextCompletionService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
+                                                            serviceConfig.Key);
                 break;
 
             default:
@@ -60,13 +60,13 @@ internal static class ConfigExtensions
         switch (serviceConfig.AIService.ToUpperInvariant())
         {
             case AIServiceConfig.AzureOpenAI:
-                kernelConfig.AddAzureOpenAIEmbeddingsBackend(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                                                             serviceConfig.Endpoint, serviceConfig.Key);
+                kernelConfig.AddAzureOpenAIEmbeddingGenerationService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
+                                                                      serviceConfig.Endpoint, serviceConfig.Key);
                 break;
 
             case AIServiceConfig.OpenAI:
-                kernelConfig.AddOpenAIEmbeddingsBackend(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                                                        serviceConfig.Key);
+                kernelConfig.AddOpenAIEmbeddingGenerationService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
+                                                                 serviceConfig.Key);
                 break;
 
             default:
@@ -74,7 +74,7 @@ internal static class ConfigExtensions
         }
     }
 
-    public static IEmbeddingGenerator<string, float> ToTextEmbeddingsService(this AIServiceConfig serviceConfig,
+    public static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceConfig serviceConfig,
                                                                              ILogger? logger = null,
                                                                              IDelegatingHandlerFactory? handlerFactory = null)
     {
@@ -86,12 +86,12 @@ internal static class ConfigExtensions
         switch (serviceConfig.AIService.ToUpperInvariant())
         {
             case AIServiceConfig.AzureOpenAI:
-                return new AzureTextEmbeddings(serviceConfig.DeploymentOrModelId, serviceConfig.Endpoint,
-                                               serviceConfig.Key, "2022-12-01", logger, handlerFactory);
+                return new AzureTextEmbeddingGeneration(serviceConfig.DeploymentOrModelId, serviceConfig.Endpoint,
+                                                        serviceConfig.Key, "2022-12-01", logger, handlerFactory);
 
             case AIServiceConfig.OpenAI:
-                return new OpenAITextEmbeddings(serviceConfig.DeploymentOrModelId, serviceConfig.Key,
-                                                log: logger, handlerFactory: handlerFactory);
+                return new OpenAITextEmbeddingGeneration(serviceConfig.DeploymentOrModelId, serviceConfig.Key,
+                                                         log: logger, handlerFactory: handlerFactory);
 
             default:
                 throw new ArgumentException("Invalid AIService value in embeddings backend settings");

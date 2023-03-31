@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.TemplateEngine;
+using SKWebApi.Skills;
 
 namespace SemanticKernel.Service;
 
@@ -33,5 +35,11 @@ internal static class FunctionLoadingExtensions
         ILogger logger)
     {
         // Hardcode your native function registrations here
+
+        var timeSkil = new TimeSkill();
+        kernel.ImportSkill(timeSkil, nameof(TimeSkill));
+
+        var chatSkill = new ChatSkill(kernel);
+        kernel.ImportSkill(chatSkill, nameof(ChatSkill));
     }
 }
