@@ -126,7 +126,6 @@ Response: ";
 
     private readonly ISKFunction _ifStructureCheckFunction;
     private readonly ISKFunction _evaluateConditionFunction;
-    private readonly ISKFunction _evaluateIfBranchFunction;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConditionalFlowHelper"/> class.
