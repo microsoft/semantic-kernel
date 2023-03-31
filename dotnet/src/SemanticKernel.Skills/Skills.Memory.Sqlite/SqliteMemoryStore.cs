@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
+using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -73,27 +75,46 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancel = default)
     {
-        return this._dbConnection.GetCollectionsAsync(cancel);
+        await this._dbConnection.OpenAsync(cancel);
+
+        await foreach (var elem in this._dbConnection.GetCollectionsAsync(cancel))
+        {
+            yield return elem;
+        }
+
+        this._dbConnection.Dispose();
+        await this._dbConnection.CloseAsync();
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> GetAllAsync(string collection,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
+        await this._dbConnection.OpenAsync(cancel);
+
         await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collection, cancel))
         {
             var embedding = new Embedding<float>();
             IEmbeddingWithMetadata<TEmbedding> val = (IEmbeddingWithMetadata<TEmbedding>)MemoryRecord.FromJson(dbEntry.Value, embedding);
             yield return DataEntry.Create<IEmbeddingWithMetadata<TEmbedding>>(dbEntry.Key, val, ParseTimestamp(dbEntry.Timestamp));
         }
+
+        this._dbConnection.Dispose();
+        await this._dbConnection.CloseAsync();
     }
 
     /// <inheritdoc/>
     public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>?> GetAsync(string collection, string key, CancellationToken cancel = default)
     {
+        await this._dbConnection.OpenAsync(cancel);
+
         DatabaseEntry? entry = await this._dbConnection.ReadAsync(collection, key, cancel);
+
+        this._dbConnection.Dispose();
+        await this._dbConnection.CloseAsync();
+
         if (entry.HasValue)
         {
             DatabaseEntry dbEntry = entry.Value;
@@ -109,14 +130,25 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
     /// <inheritdoc/>
     public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data, CancellationToken cancel = default)
     {
+        await this._dbConnection.OpenAsync(cancel);
+
         await this._dbConnection.InsertAsync(collection, data.Key, JsonSerializer.Serialize(data.Value), ToTimestampString(data.Timestamp), cancel);
+
+        this._dbConnection.Dispose();
+        await this._dbConnection.CloseAsync();
         return data;
     }
 
     /// <inheritdoc/>
-    public Task RemoveAsync(string collection, string key, CancellationToken cancel = default)
+    public async Task RemoveAsync(string collection, string key, CancellationToken cancel = default)
     {
-        return this._dbConnection.DeleteAsync(collection, key, cancel);
+        await this._dbConnection.OpenAsync(cancel);
+
+        await this._dbConnection.DeleteAsync(collection, key, cancel);
+
+        this._dbConnection.Dispose();
+        await this._dbConnection.CloseAsync();
+        return;
     }
 
     /// <summary>
@@ -146,6 +178,8 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
 
     protected async IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> TryGetCollectionAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
     {
+        await this._dbConnection.OpenAsync(cancel);
+
         await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collectionName, cancel))
         {
             var embedding = new Embedding<float>();
@@ -153,6 +187,9 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
 
             yield return DataEntry.Create<IEmbeddingWithMetadata<TEmbedding>>(dbEntry.Key, val, ParseTimestamp(dbEntry.Timestamp));
         }
+
+        this._dbConnection.Dispose();
+        await this._dbConnection.CloseAsync();
     }
 
     #endregion

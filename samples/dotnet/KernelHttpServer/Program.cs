@@ -28,11 +28,10 @@ public static class Program
 
                 var builtConfig = config.Build();
             })
-            .ConfigureServices(async services =>
+            .ConfigureServices(services =>
             {
                 //services.AddSingleton<IMemoryStore<float>>(new VolatileMemoryStore());
 
-                await dbConnection.OpenAsync();
                 services.AddSingleton<IMemoryStore<float>>(new SqliteMemoryStore<float>(dbConnection));
 
                 // return JSON with expected lowercase naming
@@ -46,6 +45,5 @@ public static class Program
         host.Run();
 
         dbConnection.Dispose();
-        dbConnection.CloseAsync();
     }
 }
