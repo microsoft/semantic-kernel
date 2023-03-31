@@ -162,21 +162,10 @@ public class CosmosMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
 
         var container = this._client.GetContainer(this._databaseName, this._containerName);
 
-        try
+        await container.CreateItemAsync(entity, cancellationToken: cancel, requestOptions: new ItemRequestOptions()
         {
-            await container.CreateItemAsync(entity, cancellationToken: cancel, requestOptions: new ItemRequestOptions()
-            {
-                EnableContentResponseOnWrite = false
-            });
-        }
-        catch (CosmosException ex)
-        {
-            if (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
-            {
-                //TODO: log/handle
-            }
-        }
-
+            EnableContentResponseOnWrite = false
+        });
 
         return data;
     }
@@ -202,57 +191,17 @@ public class CosmosMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
         {
             if (disposing)
             {
-                // TODO: dispose managed state (managed objects)
                 this._client.Dispose();
             }
 
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
             this._disposedValue = true;
         }
     }
-
-    // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-    // ~CosmosMemoryStore()
-    // {
-    //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-    //     Dispose(disposing: false);
-    // }
 
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         this.Dispose(disposing: true);
         GC.SuppressFinalize(this);
-    }
-}
-
-[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class CosmosMemoryRecord : IEmbeddingWithMetadata<float>
-{
-    public string Id { get; set; } = string.Empty;
-
-    public string CollectionId { get; set; } = string.Empty;
-
-    public DateTimeOffset? Timestamp { get; set; }
-
-    [JsonIgnore]
-    public Embedding<float> Embedding { get; set; } = new();
-
-    public string EmbeddingString { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Metadata associated with a Semantic Kernel memory.
-    /// </summary>
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    [JsonIgnore]
-    public MemoryRecordMetadata Metadata { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
-    public string MetadataString { get; set; } = string.Empty;
-
-    public string GetSerializedMetadata()
-    {
-        return JsonConvert.SerializeObject(this.Metadata);
     }
 }
