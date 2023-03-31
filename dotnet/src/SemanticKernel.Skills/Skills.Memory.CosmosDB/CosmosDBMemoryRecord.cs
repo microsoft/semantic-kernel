@@ -12,7 +12,7 @@ using Newtonsoft.Json.Serialization;
 namespace Skills.Memory.CosmosDB;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class CosmosMemoryRecord : IEmbeddingWithMetadata<float>
+public class CosmosDBMemoryRecord : IEmbeddingWithMetadata<float>
 {
     public string Id { get; set; } = string.Empty;
 
