@@ -2,6 +2,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -14,11 +15,13 @@ public class MemoryRecord : DataEntryBase
     /// <summary>
     /// Source content embeddings.
     /// </summary>
+    [JsonPropertyName("embedding")]
     public Embedding<float> Embedding { get; }
 
     /// <summary>
     /// Metadata associated with a Semantic Kernel memory.
     /// </summary>
+    [JsonPropertyName("metadata")]
     public MemoryRecordMetadata Metadata { get; }
 
     /// <summary>
@@ -121,9 +124,10 @@ public class MemoryRecord : DataEntryBase
     }
 
     /// <summary>
-    /// Block constructor, use <see cref="ReferenceRecord"/> or <see cref="LocalRecord"/>
+    /// Internal constructor, use <see cref="ReferenceRecord"/> or <see cref="LocalRecord"/>
     /// </summary>
-    private MemoryRecord(
+    [JsonConstructor]
+    internal MemoryRecord(
         MemoryRecordMetadata metadata,
         Embedding<float> embedding,
         string? key,

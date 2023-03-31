@@ -68,7 +68,6 @@ public class VolatileMemoryStore : IMemoryStore
         IEnumerable<MemoryRecord> record,
         CancellationToken cancel = default)
     {
-        IEnumerable<string> keys = new List<string>();
         foreach (var r in record)
         {
             yield return await this.UpsertAsync(collectionName, r, cancel);

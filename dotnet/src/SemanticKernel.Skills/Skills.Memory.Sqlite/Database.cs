@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 internal struct DatabaseEntry
 {
     public string Key { get; set; }
-    public string Value { get; set; }
+    public string ValueString { get; set; }
     public string? Timestamp { get; set; }
 }
 
@@ -25,6 +25,18 @@ internal static class Database
         var connection = new SqliteConnection(@"Data Source={filename};");
         await connection.OpenAsync(cancel);
         return connection;
+    }
+
+    public static async Task CreateCollectionAsync(this SqliteConnection conn, string collection, CancellationToken cancel = default)
+    {
+        await CreateTableAsync(conn, cancel);
+
+        SqliteCommand cmd = conn.CreateCommand();
+        cmd.CommandText = $@"
+             INSERT INTO {TableName}(collection, key, value, timestamp)
+             VALUES(@collection); ";
+        cmd.Parameters.AddWithValue("@collection", collection);
+        await cmd.ExecuteNonQueryAsync(cancel);
     }
 
     public static async Task InsertAsync(this SqliteConnection conn,
@@ -74,7 +86,7 @@ internal static class Database
             string key = dataReader.GetFieldValue<string>("key");
             string value = dataReader.GetFieldValue<string>("value");
             string timestamp = dataReader.GetFieldValue<string>("timestamp");
-            yield return new DatabaseEntry() { Key = key, Value = value, Timestamp = timestamp };
+            yield return new DatabaseEntry() { Key = key, ValueString = value, Timestamp = timestamp };
         }
     }
 
@@ -99,12 +111,22 @@ internal static class Database
             return new DatabaseEntry()
             {
                 Key = key,
-                Value = value,
+                ValueString = value,
                 Timestamp = timestamp
             };
         }
 
         return null;
+    }
+
+    public static Task DeleteCollectionAsync(this SqliteConnection conn, string collection, CancellationToken cancel = default)
+    {
+        SqliteCommand cmd = conn.CreateCommand();
+        cmd.CommandText = $@"
+             DELETE FROM {TableName}
+             WHERE collection=@collection";
+        cmd.Parameters.AddWithValue("@collection", collection);
+        return cmd.ExecuteNonQueryAsync(cancel);
     }
 
     public static Task DeleteAsync(this SqliteConnection conn, string collection, string key, CancellationToken cancel = default)

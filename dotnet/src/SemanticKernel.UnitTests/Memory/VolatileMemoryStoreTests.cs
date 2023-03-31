@@ -89,7 +89,7 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public async Task ItCanUpsertAndRetrieveARecordWithNoTimestamp()
+    public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
         // Arrange
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
@@ -112,7 +112,7 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public async Task ItCanUpsertAndRetrieveARecordWithTimestamp()
+    public async Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
     {
         // Arrange
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
@@ -381,7 +381,7 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public void ItCanBatchUpsertRecordsAsync()
+    public void ItCanBatchUpsertRecords()
     {
         // Arrange
         int numRecords = 10;
@@ -400,7 +400,7 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public void ItCanBatchGetRecordsAsync()
+    public void ItCanBatchGetRecords()
     {
         // Arrange
         int numRecords = 10;

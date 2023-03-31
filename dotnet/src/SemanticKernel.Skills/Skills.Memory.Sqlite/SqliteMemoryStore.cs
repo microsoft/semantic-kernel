@@ -4,13 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Memory.Collections;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 
@@ -20,7 +23,6 @@ namespace Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 /// <remarks>The data is saved to a database file, specified in the constructor.
 /// The data persists between subsequent instances. Only one instance may access the file at a time.
 /// The caller is responsible for deleting the file.</remarks>
-/// <typeparam name="TValue">The type of data to be stored in this data store.</typeparam>
 public class SqliteMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>
@@ -37,59 +39,139 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         return new SqliteMemoryStore(dbConnection);
     }
 
+    /// <inheritdoc/>
     public Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        return this._dbConnection.CreateCollectionAsync(collectionName, cancel);
     }
 
+    /// <inheritdoc/>
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        return this._dbConnection.GetCollectionsAsync(cancel);
     }
 
+    /// <inheritdoc/>
     public Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        return this._dbConnection.DeleteCollectionAsync(collectionName, cancel);
     }
 
-    public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
+    /// <inheritdoc/>
+    public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        record.Key = record.Metadata.Id;
+        
+        await this._dbConnection.InsertAsync(
+            collection: collectionName,
+            key: record.Key,
+            value: JsonSerializer.Serialize(record),
+            timestamp: ToTimestampString(record.Timestamp),
+            cancel: cancel);
+        
+        return record.Key;
     }
 
-    public IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> record, CancellationToken cancel = default)
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> record, CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        foreach (var r in record)
+        {
+            yield return await this.UpsertAsync(collectionName, r, cancel);
+        }
     }
 
-    public Task<MemoryRecord?> GetAsync(string collectionName, string key, CancellationToken cancel = default)
+    /// <inheritdoc/>
+    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        DatabaseEntry? entry = await this._dbConnection.ReadAsync(collectionName, key, cancel);
+
+        if (entry.HasValue)
+        {
+            return JsonSerializer.Deserialize<MemoryRecord>(entry.Value.ValueString);
+        }
+        else
+        {
+            return null;
+        }
     }
 
-    public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        foreach (var key in keys)
+        {
+            var record = await this.GetAsync(collectionName, key, cancel);
+
+            if (record != null)
+            {
+                yield return record;
+            }
+        }
     }
 
+    /// <inheritdoc/>
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        return this._dbConnection.DeleteAsync(collectionName, key, cancel);
     }
 
-    public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+    /// <inheritdoc/>
+    public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        foreach (var key in keys)
+        {
+            await this.RemoveAsync(collectionName, key, cancel);
+        }
     }
 
-    public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, CancellationToken cancel = default)
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
+        string collectionName,
+        Embedding<float> embedding,
+        int limit,
+        double minRelevanceScore = 0,
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        if (limit <= 0)
+        {
+            yield break;
+        }
+        
+        var collectionMemories = new List<MemoryRecord>();
+        TopNCollection<MemoryRecord> embeddings = new(limit);
+
+        await foreach (var entry in this.GetAllAsync(collectionName, cancel))
+        {
+            if (entry != null)
+            {
+                double similarity = embedding
+                    .AsReadOnlySpan()
+                    .CosineSimilarity(entry.Embedding.AsReadOnlySpan());
+                if (similarity >= minRelevanceScore)
+                {
+                    embeddings.Add(new(entry, similarity));
+                }
+            }
+        }
+
+        embeddings.SortByScore();
+
+        foreach (var item in embeddings)
+        {
+            yield return (item.Value, item.Score.Value);
+        }
     }
 
-    public Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, CancellationToken cancel = default)
+    /// <inheritdoc/>
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        return await this.GetNearestMatchesAsync(
+            collectionName: collectionName,
+            embedding: embedding,
+            limit: 1,
+            minRelevanceScore: minRelevanceScore,
+            cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
     }
 
     /// <summary>
@@ -147,6 +229,14 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         }
 
         return null;
+    }
+
+    private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collection, [EnumeratorCancellation] CancellationToken cancel = default)
+    {
+        await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collection, cancel))
+        {
+            yield return JsonSerializer.Deserialize<MemoryRecord>(dbEntry.ValueString);
+        }
     }
 
     #endregion
