@@ -3,9 +3,9 @@
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
 /// <summary>
-/// The REST API operation parameter type.
+/// The REST API operation parameter location.
 /// </summary>
-internal enum RestApiOperationParameterType
+internal enum RestApiOperationParameterLocation
 {
     /// <summary>
     /// Query parameter.
