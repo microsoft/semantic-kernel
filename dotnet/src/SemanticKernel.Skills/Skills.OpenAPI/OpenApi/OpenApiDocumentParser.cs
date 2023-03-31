@@ -105,9 +105,11 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
             var restParameter = new RestApiOperationParameter(
                 parameter.Name,
+                parameter.Schema.Type,
                 parameter.Required,
-                (RestApiOperationParameterType)parameter.In, //TODO: Do a proper enum mapping,
-                (parameter.Schema.Default as OpenApiString)?.Value
+                (RestApiOperationParameterLocation)parameter.In, //TODO: Do a proper enum mapping,
+                (parameter.Schema.Default as OpenApiString)?.Value,
+                parameter.Description
             );
 
             result.Add(restParameter);

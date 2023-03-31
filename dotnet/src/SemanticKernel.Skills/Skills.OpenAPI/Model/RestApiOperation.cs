@@ -98,7 +98,7 @@ internal class RestApiOperation
             serverUrl = this.ServerUrl;
         }
 
-        return new Uri(new Uri(serverUrl, UriKind.Absolute), path);
+        return new Uri($"{serverUrl.TrimEnd('/')}/{path.TrimStart('/')}", UriKind.Absolute);
     }
 
     #region private
@@ -122,7 +122,7 @@ internal class RestApiOperation
             }
 
             //A try to find default value for the parameter            
-            var parameterMetadata = this.Parameters.First(p => p.Type == RestApiOperationParameterType.Path && p.Name == parameterName);
+            var parameterMetadata = this.Parameters.First(p => p.Location == RestApiOperationParameterLocation.Path && p.Name == parameterName);
             if (parameterMetadata?.DefaultValue == null)
             {
                 throw new RestApiOperationException($"No argument found for parameter - '{parameterName}' for operation - '{this.Id}'");
@@ -142,23 +142,30 @@ internal class RestApiOperation
     /// <returns>Path with query string.</returns>
     private string AddQueryString(string path, IDictionary<string, string> arguments)
     {
-        var builder = new StringBuilder();
+        var queryStringSegments = new List<string>();
 
-        var queryStringParameters = this.Parameters.Where(p => p.Type == RestApiOperationParameterType.Query);
+        var queryStringParameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Query);
 
         foreach (var parameter in queryStringParameters)
         {
-            //Add the parameter to the query string if there's an argument for it
-            if (arguments.TryGetValue(parameter.Name, out var argument))
+            //Resolve argument for the parameter.
+            if (!arguments.TryGetValue(parameter.Name, out var argument))
             {
-                builder.AppendJoin('&', $"{parameter.Name}={argument}");
-                continue;
+                argument = parameter.DefaultValue;
             }
 
-            //Add the parameter to the query string if there's a default value for it.
-            if (!string.IsNullOrEmpty(parameter.DefaultValue))
+            //Add the parameter to the query string if there's an argument for it.
+            if (!string.IsNullOrEmpty(argument))
             {
-                builder.AppendJoin('&', $"{parameter.Name}={parameter.DefaultValue}");
+                if (parameter.Type == StringParameterType)
+                {
+                    queryStringSegments.Add($"{parameter.Name}='{argument}'"); //TODO: Consider encoding the string
+                }
+                else
+                {
+                    queryStringSegments.Add($"{parameter.Name}={argument}");
+                }
+
                 continue;
             }
 
@@ -169,12 +176,14 @@ internal class RestApiOperation
             }
         }
 
-        var queryString = builder.ToString();
+        var queryString = string.Join('&', queryStringSegments);
 
         return string.IsNullOrEmpty(queryString) ? path : $"{path}?{queryString}";
     }
 
     private static readonly Regex s_urlParameterMatch = new Regex(@"\{([\w-]+)\}");
+
+    private const string StringParameterType = "string";
 
     # endregion
 }

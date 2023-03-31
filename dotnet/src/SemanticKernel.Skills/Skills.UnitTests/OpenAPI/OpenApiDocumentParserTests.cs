@@ -88,28 +88,28 @@ public class OpenApiDocumentParserTests
 
         var pathParameter = parameters.Single(p => p.Name == "secret-name"); //'secret-name' path parameter.
         Assert.True(pathParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterType.Path, pathParameter.Type);
+        Assert.Equal(RestApiOperationParameterLocation.Path, pathParameter.Location);
         Assert.Null(pathParameter.DefaultValue);
 
         var apiVersionParameter = parameters.Single(p => p.Name == "api-version"); //'api-version' query string parameter.
         Assert.True(apiVersionParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterType.Query, apiVersionParameter.Type);
+        Assert.Equal(RestApiOperationParameterLocation.Query, apiVersionParameter.Location);
         Assert.Equal("7.0", apiVersionParameter.DefaultValue);
 
         var serverUrlParameter = parameters.Single(p => p.Name == "server-url"); //'server-url' artificial parameter.
         Assert.False(serverUrlParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterType.Path, serverUrlParameter.Type);
+        Assert.Equal(RestApiOperationParameterLocation.Path, serverUrlParameter.Location);
         Assert.Equal("https://my-key-vault.vault.azure.net", serverUrlParameter.DefaultValue);
 
         var valueParameter = parameters.Single(p => p.Name == "value"); //'value' body parameter.
         Assert.True(valueParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterType.Body, valueParameter.Type);
+        Assert.Equal(RestApiOperationParameterLocation.Body, valueParameter.Location);
         Assert.Null(valueParameter.DefaultValue);
         Assert.Equal("The value of the secret.", valueParameter.Description);
 
         var enabledParameter = parameters.Single(p => p.Name == "enabled"); //'attributes.enabled' body parameter.
         Assert.False(enabledParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterType.Body, enabledParameter.Type);
+        Assert.Equal(RestApiOperationParameterLocation.Body, enabledParameter.Location);
         Assert.Null(enabledParameter.DefaultValue);
         Assert.Equal("Determines whether the object is enabled.", enabledParameter.Description);
     }
