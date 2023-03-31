@@ -5,7 +5,8 @@
 1. **Azure OpenAI**: go to the [Azure OpenAI Quickstart](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart)
    and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
 2. **OpenAI**: go to [OpenAI](https://openai.com/api/) to register and procure your API key.
-3. **Azure Bing Web Search API**: go to [Bing Web Seach API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
+3. **HuggingFace API key**: see https://huggingface.co/docs/huggingface_hub/guides/inference for details.
+4. **Azure Bing Web Search API**: go to [Bing Web Seach API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
    and select `Try Now` to get started.
 
 ## Setup
@@ -42,6 +43,9 @@ For example:
     "Endpoint": "https://contoso.openai.azure.com/",
     "ApiKey": "...."
   },
+  "HuggingFace": {
+    "ApiKey": ""
+  },
   "Bing": {
     "ApiKey": "...."
   }
@@ -58,6 +62,7 @@ For example:
       export AzureOpenAI__DeploymentName="azure-text-davinci-003"
       export AzureOpenAIEmbeddings__DeploymentName="azure-text-embedding-ada-002"
       export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
+      export HuggingFace__ApiKey="...."
       export Bing__ApiKey="...."
       ```
 
@@ -69,5 +74,6 @@ For example:
       $env:AzureOpenAI__DeploymentName = "azure-text-davinci-003"
       $env:AzureOpenAIEmbeddings__DeploymentName = "azure-text-embedding-ada-002"
       $env:AzureOpenAI__Endpoint = "https://contoso.openai.azure.com/"
+      $env:HuggingFace__ApiKey = "...."
       $env:Bing__ApiKey = "...."
       ```
