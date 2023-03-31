@@ -34,6 +34,13 @@ public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDispos
     private string _containerName;
     private ILogger? _log;
 
+    /// <summary>
+    /// Constructor for a memory store backed by an Azure Cosmos DB instance.
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="databaseName"></param>
+    /// <param name="containerName"></param>
+    /// <param name="log"></param>
     public CosmosDBMemoryStore(CosmosClient client, string databaseName, string containerName, ILogger? log = null)
     {
         this._client = client;
@@ -42,6 +49,7 @@ public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDispos
         this._log = log ?? NullLogger<CosmosDBMemoryStore<TEmbedding>>.Instance;
     }
 
+    /// <inheritdoc />
     public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>?> GetAsync(string collection, string key, CancellationToken cancel = default)
     {
         var container = this._client.GetContainer(this._databaseName, this._containerName);
@@ -83,6 +91,7 @@ public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDispos
         }
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancel = default)
     {
         var container = this._client.GetContainer(this._databaseName, this._containerName);
@@ -97,6 +106,7 @@ public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDispos
         }
     }
 
+    /// <inheritdoc />
     public IAsyncEnumerable<(IEmbeddingWithMetadata<TEmbedding>, double)> GetNearestMatchesAsync(string collection, Embedding<TEmbedding> embedding, int limit = 1, double minRelevanceScore = 0)
     {
         if (limit <= 0)
@@ -161,6 +171,7 @@ public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDispos
         }
     }
 
+    /// <inheritdoc />
     public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data, CancellationToken cancel = default)
     {
         var entity = new CosmosDBMemoryRecord
@@ -174,14 +185,15 @@ public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDispos
 
         var container = this._client.GetContainer(this._databaseName, this._containerName);
 
-        await container.CreateItemAsync(entity, cancellationToken: cancel, requestOptions: new ItemRequestOptions()
+        await container.UpsertItemAsync(entity, cancellationToken: cancel, requestOptions: new ItemRequestOptions()
         {
-            EnableContentResponseOnWrite = false
+            EnableContentResponseOnWrite = false,
         });
 
         return data;
     }
 
+    /// <inheritdoc />
     public Task RemoveAsync(string collection, string key, CancellationToken cancel = default)
     {
         var container = this._client.GetContainer(this._databaseName, this._containerName);
