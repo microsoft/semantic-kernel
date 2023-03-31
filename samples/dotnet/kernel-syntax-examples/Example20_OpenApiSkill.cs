@@ -11,31 +11,13 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
 
 namespace KernelSyntaxExamples;
-
 internal class Example20_OpenApiSkill
 {
     public static async Task RunAsync()
     {
-        await DisplayKlarnaSuggestionsAsync();
-    }
+        await GetSecretFromAzureKeyVaultAsync();
 
-    private static async Task DisplayKlarnaSuggestionsAsync()
-    {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        string folder = RepoFiles.SampleSkillsPath();
-        var skill = kernel.ImportOpenApiSkillFromDirectory(folder, "Wolframalpha");
-        //var skill = await kernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
-
-        //Add arguments
-        var contextVariables = new ContextVariables();
-        contextVariables.Set("query", "test query");
-
-        //Run
-        var result = await kernel.RunAsync(contextVariables, skill["getWolframCloudResults"]);
-
-        Console.WriteLine("Klarna skill response: {0}", result);
-        Console.ReadLine();
+        await AddSecretToAzureKeyVaultAsync();
     }
 
     public static async Task GetSecretFromAzureKeyVaultAsync()
