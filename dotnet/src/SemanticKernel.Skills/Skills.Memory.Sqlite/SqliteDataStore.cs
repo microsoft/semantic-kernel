@@ -113,30 +113,6 @@ public class SqliteDataStore<TValue> : IDataStore<TValue>, IDisposable
         this._dbConnection = dbConnection;
     }
 
-    protected async IAsyncEnumerable<DataEntry<TValue>> TryGetCollectionAsync(string collectionName, string tableName, CancellationToken cancel = default)
-    {
-        ///filter with query collection name
-        SqliteCommand cmd = this._dbConnection.CreateCommand();
-        //cmd.CommandText = "SELECT * FROM @tableName WHERE CollectionName = @collectionName";
-        //cmd.Parameters.AddWithValue("@tableName", tableName);
-        //cmd.Parameters.AddWithValue("@collectionName", collectionName);
-        cmd.CommandText = "SELECT * FROM @collectionName";
-        cmd.Parameters.AddWithValue("@collectionName", collectionName);
-
-        // Execute the query and read the results
-        var dataReader = await cmd.ExecuteReaderAsync(cancel);
-        while (await dataReader.ReadAsync(cancel))
-        {
-            //yield return dataReader.GetFieldValue<string>("collectionName");
-
-            var id = dataReader.GetString(0);
-            var value = dataReader.GetString(1);
-            var timestamp = dataReader.GetDateTime(2);
-
-            yield return DataEntry.Create<TValue>(id, value, timestamp);
-        }
-    }
-
     #endregion
 
     #region private ================================================================================

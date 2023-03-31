@@ -16,7 +16,6 @@ using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
 using Microsoft.SemanticKernel.Memory.Storage;
-using SQLiteLibrary.Imported;
 
 namespace Microsoft.SemanticKernel.Skills.Memory.Sqlite;
 public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposable
@@ -110,7 +109,7 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
     /// <inheritdoc/>
     public async Task<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> PutAsync(string collection, DataEntry<IEmbeddingWithMetadata<TEmbedding>> data, CancellationToken cancel = default)
     {
-        await this._dbConnection.UpsertAsync(collection, data.Key, JsonSerializer.Serialize(data.Value), ToTimestampString(data.Timestamp), cancel);
+        await this._dbConnection.InsertAsync(collection, data.Key, JsonSerializer.Serialize(data.Value), ToTimestampString(data.Timestamp), cancel);
         return data;
     }
 
@@ -151,8 +150,6 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
         {
             var embedding = new Embedding<float>();
             var val = (IEmbeddingWithMetadata<TEmbedding>)MemoryRecord.FromJson(dbEntry.Value, new Embedding<float>());
-
-            //var val = (IEmbeddingWithMetadata<TEmbedding>)JsonSerializer.Deserialize<MemoryRecord>(dbEntry.Value);
 
             yield return DataEntry.Create<IEmbeddingWithMetadata<TEmbedding>>(dbEntry.Key, val, ParseTimestamp(dbEntry.Timestamp));
         }
