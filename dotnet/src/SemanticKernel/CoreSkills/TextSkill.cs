@@ -79,7 +79,7 @@ public class TextSkill
     [SKFunction("Convert a string to uppercase.")]
     public string Uppercase(string text)
     {
-        return text.ToUpper(System.Globalization.CultureInfo.CurrentCulture);
+        return text.ToUpperInvariant();
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public class TextSkill
     [SKFunction("Convert a string to lowercase.")]
     public string Lowercase(string text)
     {
-        return text.ToLower(System.Globalization.CultureInfo.CurrentCulture);
+        return text.ToLowerInvariant();
     }
 
     /// <summary>
@@ -109,6 +109,6 @@ public class TextSkill
     [SKFunction("Get the length of a string.")]
     public string Length(string text)
     {
-        return (text?.Length ?? 0).ToString(System.Globalization.CultureInfo.CurrentCulture);
+        return (text?.Length ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 }

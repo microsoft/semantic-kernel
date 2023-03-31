@@ -286,7 +286,7 @@ The exact content inside the first child ""{{$EvaluateIfBranchTag}}"" element fr
                     : NoReasonMessage);
         }
 
-        context.Log.LogWarning("Conditional evaluation: {0}", llmJsonResponse["reason"] ?? NoReasonMessage);
+        context.Log.LogDebug("Conditional evaluation: {0}", llmJsonResponse["reason"] ?? NoReasonMessage);
 
         return llmJsonResponse["condition"]?.GetValue<bool>()
                ?? throw new ConditionException(ConditionException.ErrorCodes.InvalidResponse, "Condition property null or not found");
