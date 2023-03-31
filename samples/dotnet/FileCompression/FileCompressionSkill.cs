@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace FileCompression;
+namespace Microsoft.SemanticKernel.Skills.FileCompression;
 
 /// <summary>
 /// Skill for compressing and decompressing files.
@@ -67,21 +67,20 @@ public class FileCompressionSkill
     [SKFunctionContextParameter(Name = Parameters.DestinationFilePath, Description = "Path of compressed file to create")]
     public async Task<string?> CompressFileAsync(string sourceFilePath, SKContext context)
     {
-        this._logger.LogTrace($"{nameof(this.CompressFileAsync)} got called");
+        this._logger.LogTrace($"{nameof(CompressFileAsync)} got called");
 
         if (!context.Variables.Get(Parameters.DestinationFilePath, out string destinationFilePath))
         {
-            const string errorMessage = $"Missing context variable {Parameters.DestinationFilePath} in {nameof(this.CompressFileAsync)}";
+            const string errorMessage = $"Missing context variable {Parameters.DestinationFilePath} in {nameof(CompressFileAsync)}";
             this._logger.LogError(errorMessage);
             context.Fail(errorMessage);
 
             return null;
         }
 
-        await this._fileCompressor.CompressFileAsync(
-            Environment.ExpandEnvironmentVariables(sourceFilePath),
-            Environment.ExpandEnvironmentVariables(destinationFilePath),
-            context.CancellationToken);
+        await this._fileCompressor.CompressFileAsync(Environment.ExpandEnvironmentVariables(sourceFilePath),
+                                                     Environment.ExpandEnvironmentVariables(destinationFilePath),
+                                                     context.CancellationToken);
 
         return destinationFilePath;
     }
@@ -98,21 +97,20 @@ public class FileCompressionSkill
     [SKFunctionContextParameter(Name = Parameters.DestinationFilePath, Description = "Path of compressed file to create")]
     public async Task<string?> CompressDirectoryAsync(string sourceDirectoryPath, SKContext context)
     {
-        this._logger.LogTrace($"{nameof(this.CompressDirectoryAsync)} got called");
+        this._logger.LogTrace($"{nameof(CompressDirectoryAsync)} got called");
 
         if (!context.Variables.Get(Parameters.DestinationFilePath, out string destinationFilePath))
         {
-            const string errorMessage = $"Missing context variable {Parameters.DestinationFilePath} in {nameof(this.CompressDirectoryAsync)}";
+            const string errorMessage = $"Missing context variable {Parameters.DestinationFilePath} in {nameof(CompressDirectoryAsync)}";
             this._logger.LogError(errorMessage);
             context.Fail(errorMessage);
 
             return null;
         }
 
-        await this._fileCompressor.CompressDirectoryAsync(
-            Environment.ExpandEnvironmentVariables(sourceDirectoryPath),
-            Environment.ExpandEnvironmentVariables(destinationFilePath),
-            context.CancellationToken);
+        await this._fileCompressor.CompressDirectoryAsync(Environment.ExpandEnvironmentVariables(sourceDirectoryPath),
+                                                          Environment.ExpandEnvironmentVariables(destinationFilePath),
+                                                          context.CancellationToken);
 
         return destinationFilePath;
     }
@@ -129,11 +127,11 @@ public class FileCompressionSkill
     [SKFunctionContextParameter(Name = Parameters.DestinationDirectoryPath, Description = "Directory into which to extract the decompressed content")]
     public async Task<string?> DecompressFileAsync(string sourceFilePath, SKContext context)
     {
-        this._logger.LogTrace($"{nameof(this.DecompressFileAsync)} got called");
+        this._logger.LogTrace($"{nameof(DecompressFileAsync)} got called");
 
         if (!context.Variables.Get(Parameters.DestinationDirectoryPath, out string destinationDirectoryPath))
         {
-            const string errorMessage = $"Missing context variable {Parameters.DestinationDirectoryPath} in {nameof(this.DecompressFileAsync)}";
+            const string errorMessage = $"Missing context variable {Parameters.DestinationDirectoryPath} in {nameof(DecompressFileAsync)}";
             this._logger.LogError(errorMessage);
             context.Fail(errorMessage);
 
@@ -145,10 +143,9 @@ public class FileCompressionSkill
             Directory.CreateDirectory(destinationDirectoryPath);
         }
 
-        await this._fileCompressor.DecompressFileAsync(
-            Environment.ExpandEnvironmentVariables(sourceFilePath),
-            Environment.ExpandEnvironmentVariables(destinationDirectoryPath),
-            context.CancellationToken);
+        await this._fileCompressor.DecompressFileAsync(Environment.ExpandEnvironmentVariables(sourceFilePath),
+                                                       Environment.ExpandEnvironmentVariables(destinationDirectoryPath),
+                                                       context.CancellationToken);
 
         return destinationDirectoryPath;
     }
