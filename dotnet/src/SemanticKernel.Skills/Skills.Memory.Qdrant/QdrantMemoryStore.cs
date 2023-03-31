@@ -81,6 +81,11 @@ public class QdrantMemoryStore : IMemoryStore
             {
                 // If no matching record can be found, generate an ID for the new record
                 pointId = Guid.NewGuid().ToString();
+                existingRecord = await this._qdrantClient.GetVectorByIdAsync(collectionName, pointId, cancel: cancel);
+                if (existingRecord != null)
+                {
+                    throw new VectorDbException(VectorDbException.ErrorCodes.NewGuidAlreadyExistsInCollection, $"Failed to generate unique ID for new record");
+                }
             }
         }
         

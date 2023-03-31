@@ -9,14 +9,8 @@ public class VectorDbException : Exception<VectorDbException.ErrorCodes>
     public enum ErrorCodes
     {
         UnknownError,
-        CollectionDoesNotExist,
-        InvalidCollectionState,
         UnableToDeserializeRecordPayload,
-        CollectionCreationFailed,
-        CollectionRetrievalFailed,
-        VectorRetrievalFailed,
-        SimilaritySearchFailed,
-        InvalidHttpResponseContent
+        NewGuidAlreadyExistsInCollection
     }
 
     public VectorDbException(string message)
