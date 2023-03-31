@@ -171,6 +171,7 @@ _dev/
 **/.vscode/chrome
 **/.vscode/.ropeproject/objectdb
 .jython_cache/
+**/.vscode/
 
 # codespaces
 .devcontainer/**
