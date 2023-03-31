@@ -24,10 +24,15 @@ internal class Example20_OpenApiSkill
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        //Import
+        //Import a OpenApi skill using one of the following Kernel extension methods
+        //kernel.ImportOpenApiSkillFromResource
+        //kernel.ImportOpenApiSkillFromDirectory
+        //kernel.ImportOpenApiSkillFromFile
+        //kernel.ImportOpenApiSkillFromUrlAsync
+        //kernel.RegisterOpenApiSkill
         var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
 
-        //Add arguments
+        //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
         contextVariables.Set("server-url", "https://<keyvault-name>.vault.azure.net");
         contextVariables.Set("secret-name", "<secret-name>");
@@ -43,10 +48,15 @@ internal class Example20_OpenApiSkill
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        //Import
+        //Import a OpenApi skill using one of the following Kernel extension methods
+        //kernel.ImportOpenApiSkillFromResource
+        //kernel.ImportOpenApiSkillFromDirectory
+        //kernel.ImportOpenApiSkillFromFile
+        //kernel.ImportOpenApiSkillFromUrlAsync
+        //kernel.RegisterOpenApiSkill
         var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
 
-        //Add arguments
+        //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
         contextVariables.Set("server-url", "https://<keyvault-name>.vault.azure.net");
         contextVariables.Set("secret-name", "<secret-name>");

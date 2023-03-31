@@ -13,6 +13,11 @@ internal class RestApiOperationParameter
     public string Name { get; }
 
     /// <summary>
+    /// The parameter type - string, integer, number, boolean, array and object.
+    /// </summary>
+    public string Type { get; }
+
+    /// <summary>
     /// The parameter description.
     /// </summary>
     public string? Description { get; }
@@ -23,9 +28,9 @@ internal class RestApiOperationParameter
     public bool IsRequired { get; }
 
     /// <summary>
-    /// The parameter type.
+    /// The parameter location.
     /// </summary>
-    public RestApiOperationParameterType Type { get; }
+    public RestApiOperationParameterLocation Location { get; }
 
     /// <summary>
     /// The default value.
@@ -36,15 +41,17 @@ internal class RestApiOperationParameter
     /// Creates an instance of a <see cref="RestApiOperationParameter"/> class.
     /// </summary>
     /// <param name="name">The parameter name.</param>
-    /// <param name="isRequired">Flag specifying if the parameter is required or not.</param>
     /// <param name="type">The parameter type.</param>
+    /// <param name="isRequired">Flag specifying if the parameter is required or not.</param>
+    /// <param name="location">The parameter location.</param>
     /// <param name="defaultValue">The parameter default value.</param>
     /// <param name="description">The parameter description.</param>
-    public RestApiOperationParameter(string name, bool isRequired, RestApiOperationParameterType type, string? defaultValue, string? description = null)
+    public RestApiOperationParameter(string name, string type, bool isRequired, RestApiOperationParameterLocation location, string? defaultValue, string? description = null)
     {
         this.Name = name;
-        this.IsRequired = isRequired;
         this.Type = type;
+        this.IsRequired = isRequired;
+        this.Location = location;
         this.DefaultValue = defaultValue;
         this.Description = description;
     }

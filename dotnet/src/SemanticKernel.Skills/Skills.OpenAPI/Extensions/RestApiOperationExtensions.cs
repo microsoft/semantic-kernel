@@ -20,7 +20,7 @@ internal static class RestApiOperationExtensions
         var parameters = new List<RestApiOperationParameter>(operation.Parameters);
 
         //Register "server-url" as a parameter so that it's possible to override it if needed.
-        parameters.Add(new RestApiOperationParameter(RestApiOperation.ServerUrlArgumentName, false, RestApiOperationParameterType.Path, operation.ServerUrl));
+        parameters.Add(new RestApiOperationParameter(RestApiOperation.ServerUrlArgumentName, "string", false, RestApiOperationParameterLocation.Path, operation.ServerUrl));
 
         //Add Payload properties.
         parameters.AddRange(CreateParametersFromPayloadProperties(operation.Payload));
@@ -46,7 +46,7 @@ internal static class RestApiOperationExtensions
 
             if (!property.Properties.Any()) //It's a leaf property
             {
-                parameters.Add(new RestApiOperationParameter(property.Name, property.IsRequired, RestApiOperationParameterType.Body, null, property.Description));
+                parameters.Add(new RestApiOperationParameter(property.Name, property.Type, property.IsRequired, RestApiOperationParameterLocation.Body, null, property.Description));
             }
 
             foreach (var childProperty in property.Properties)

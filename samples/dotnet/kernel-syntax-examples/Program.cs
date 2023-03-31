@@ -69,6 +69,9 @@ public static class Program
 
         await Example20_OpenApiSkill.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example21_ChatGptPlugins.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
 #pragma warning restore CS1591
