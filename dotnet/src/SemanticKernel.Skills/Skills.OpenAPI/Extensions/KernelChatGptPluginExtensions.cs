@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
@@ -29,7 +30,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromUrlAsync(
-        this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null, Func<HttpRequestMessage, Task>? authCallback = null)
+        this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null, AuthenticateRequestAsyncCallback? authCallback = null)
     {
         Verify.ValidSkillName(skillName);
 
@@ -77,7 +78,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromResourceAsync(
-        this IKernel kernel, string skillName, HttpClient? httpClient = null, Func<HttpRequestMessage, Task>? authCallback = null)
+        this IKernel kernel, string skillName, HttpClient? httpClient = null, AuthenticateRequestAsyncCallback? authCallback = null)
     {
         Verify.ValidSkillName(skillName);
 
@@ -109,7 +110,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static IDictionary<string, ISKFunction> ImportChatGptPluginSkillSkillFromDirectory(
-        this IKernel kernel, string parentDirectory, string skillDirectoryName, HttpClient? httpClient = null, Func<HttpRequestMessage, Task>? authCallback = null)
+        this IKernel kernel, string parentDirectory, string skillDirectoryName, HttpClient? httpClient = null, AuthenticateRequestAsyncCallback? authCallback = null)
     {
         const string CHATGPT_PLUGIN_FILE = "ai-plugin.json";
 
@@ -142,7 +143,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static IDictionary<string, ISKFunction> ImportChatGptPluginSkillSkillFromFile(
-        this IKernel kernel, string skillName, string filePath, HttpClient? httpClient = null, Func<HttpRequestMessage, Task>? authCallback = null)
+        this IKernel kernel, string skillName, string filePath, HttpClient? httpClient = null, AuthenticateRequestAsyncCallback? authCallback = null)
     {
         if (!File.Exists(filePath))
         {
