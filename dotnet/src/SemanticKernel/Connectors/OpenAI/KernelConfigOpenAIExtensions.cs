@@ -173,6 +173,39 @@ public static class KernelConfigOpenAIExtensions
     }
 
     /// <summary>
+    /// Adds an Azure OpenAI chat completion service to the list.
+    /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
+    /// </summary>
+    /// <param name="config">The kernel config instance</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
+    /// <param name="chatApiVersion">Azure OpenAI gpt-35 API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
+    /// <param name="overwrite">Whether to overwrite an existing configuration if the same id exists</param>
+    /// <returns>Self instance</returns>
+    public static KernelConfig AddAzureChatCompletionService(this KernelConfig config,
+        string serviceId, string deploymentName, string endpoint, string apiKey, string apiVersion = "2022-12-01", string chatApiVersion = "2023-03-15-preview", bool overwrite = false)
+    {
+        Verify.NotEmpty(serviceId, "The service Id provided is empty");
+
+        if (!overwrite && config.ChatCompletionServices.ContainsKey(serviceId))
+        {
+            throw new KernelException(
+                KernelException.ErrorCodes.InvalidServiceConfiguration,
+                $"A chat completion service with the id '{serviceId}' already exists");
+        }
+
+        IChatCompletion Factory(IKernel kernel) => new AzureChatCompletion(
+            deploymentName, endpoint, apiKey, apiVersion, chatApiVersion, kernel.Log, kernel.Config.HttpHandlerFactory);
+
+        config.AddChatCompletionService(serviceId, Factory, overwrite);
+
+        return config;
+    }
+
+    /// <summary>
     /// Add the OpenAI DallE image generation service to the list
     /// </summary>
     /// <param name="config">The kernel config instance</param>
