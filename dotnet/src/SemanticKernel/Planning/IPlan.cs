@@ -8,22 +8,20 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Planning;
 
+/// <summary>
+/// Interface for a plan executable by the kernel
+/// </summary>
 public interface IPlan
 {
-    /// <summary>
-    /// Goal of the plan
-    /// </summary>
-    string Goal { get; }
-
     /// <summary>
     /// State of the plan
     /// </summary>
     ContextVariables State { get; }
 
     /// <summary>
-    /// Steps of the plan
+    /// Root step of the plan
     /// </summary>
-    PlanStep Steps { get; }
+    PlanStep Root { get; }
 
     /// <summary>
     /// Run the next step of the plan
@@ -38,6 +36,9 @@ public interface IPlan
         CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// An executable step in a plan
+/// </summary>
 public class PlanStep
 {
     /// <summary>
@@ -77,8 +78,8 @@ public class PlanStep
     public string ResultKey { get; set; } = string.Empty;
 
     /// <summary>
-    /// Children steps
+    /// Sub-steps of the step
     /// </summary>
-    [JsonPropertyName("children")]
-    public IList<PlanStep> Children { get; } = new List<PlanStep>();
+    [JsonPropertyName("steps")]
+    public IList<PlanStep> Steps { get; } = new List<PlanStep>();
 }

@@ -23,7 +23,7 @@ public class SkillPlan
     /// <summary>
     /// Internal constant string representing the plan key.
     /// </summary>
-    internal const string PlanKey = "PLAN__PLAN"; // TODO Will probably remove eventually
+    internal const string PlanKey = "PLAN__PLAN";
 
     /// <summary>
     /// Internal constant string representing the is complete key.
