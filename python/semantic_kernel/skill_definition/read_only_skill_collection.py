@@ -49,3 +49,8 @@ class ReadOnlySkillCollection(ReadOnlySkillCollectionBase):
         return self._skill_collection.get_functions_view(
             include_semantic, include_native
         )
+
+    def get_function(
+        self, skill_name: Optional[str], function_name: str
+    ) -> "SKFunctionBase":
+        return self._skill_collection.get_function(skill_name, function_name)
