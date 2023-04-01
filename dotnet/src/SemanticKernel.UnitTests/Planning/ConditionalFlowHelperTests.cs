@@ -48,8 +48,8 @@ public class ConditionalFlowHelperTests
         _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
-            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
-            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], "{\"valid\": true, \"condition\": true}" },
+            { ConditionalFlowConstants.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
+            { ConditionalFlowConstants.EvaluateConditionPrompt[..30], "{\"valid\": true, \"condition\": true}" },
         });
 
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
@@ -72,8 +72,8 @@ public class ConditionalFlowHelperTests
         _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
-            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
-            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], llmConditionResult },
+            { ConditionalFlowConstants.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
+            { ConditionalFlowConstants.EvaluateConditionPrompt[..30], llmConditionResult },
         });
 
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
@@ -99,7 +99,7 @@ public class ConditionalFlowHelperTests
         // To be able to check the condition need ensure success in the if statement check first
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
-            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
+            { ConditionalFlowConstants.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
         });
 
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
@@ -124,7 +124,7 @@ public class ConditionalFlowHelperTests
         _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
-            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], llmResult }
+            { ConditionalFlowConstants.IfStructureCheckPrompt[..30], llmResult }
         });
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
 
@@ -154,7 +154,7 @@ public class ConditionalFlowHelperTests
         // To be able to check the condition need ensure success in the if statement check first
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
-            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
+            { ConditionalFlowConstants.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
         });
 
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
@@ -182,7 +182,7 @@ public class ConditionalFlowHelperTests
         _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
-            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], llmResult },
+            { ConditionalFlowConstants.IfStructureCheckPrompt[..30], llmResult },
         });
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
 
@@ -212,8 +212,8 @@ public class ConditionalFlowHelperTests
         var ifContent = ValidIfStructure;
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
-            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
-            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], llmResult },
+            { ConditionalFlowConstants.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
+            { ConditionalFlowConstants.EvaluateConditionPrompt[..30], llmResult },
         });
 
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
@@ -241,8 +241,8 @@ public class ConditionalFlowHelperTests
         _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
-            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
-            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], llmResult },
+            { ConditionalFlowConstants.IfStructureCheckPrompt[..30], "{\"valid\": true}" },
+            { ConditionalFlowConstants.EvaluateConditionPrompt[..30], llmResult },
         });
 
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
@@ -268,10 +268,10 @@ public class ConditionalFlowHelperTests
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             {
-                ConditionalFlowHelper.IfStructureCheckPrompt[..30],
+                ConditionalFlowConstants.IfStructureCheckPrompt[..30],
                 $"{{\"valid\": true, \"variables\": [\"{string.Join("\",\"", conditionVariables.Split(','))}\"]}}"
             },
-            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], "{ \"valid\": true, \"condition\": true }" },
+            { ConditionalFlowConstants.EvaluateConditionPrompt[..30], "{ \"valid\": true, \"condition\": true }" },
         });
 
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);
@@ -324,8 +324,8 @@ public class ConditionalFlowHelperTests
 
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
-            { ConditionalFlowHelper.IfStructureCheckPrompt[..30], $"{{\"valid\": true, \"variables\": [\"{string.Join("\",\"", conditionVariables.Split(','))}\"]}}" },
-            { ConditionalFlowHelper.EvaluateConditionPrompt[..30], "{ \"valid\": true, \"condition\": true }" },
+            { ConditionalFlowConstants.IfStructureCheckPrompt[..30], $"{{\"valid\": true, \"variables\": [\"{string.Join("\",\"", conditionVariables.Split(','))}\"]}}" },
+            { ConditionalFlowConstants.EvaluateConditionPrompt[..30], "{ \"valid\": true, \"condition\": true }" },
         });
 
         var target = new ConditionalFlowHelper(kernel, completionBackendMock.Object);

@@ -168,12 +168,23 @@ internal class FunctionFlowRunner
                     continue;
                 }
 
-                // Ignoring first ELSE after the If that was already processed
-                if (ignoreElse && o2.Name.StartsWith(ConditionElseTag, StringComparison.InvariantCultureIgnoreCase))
+                if (o2.Name.StartsWith(ConditionElseTag, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    context.Log.LogTrace("{0}: ignoring ELSE tag node", parentNodeName);
-                    ignoreElse = false;
-                    continue;
+                    //If else is the first node throws
+                    if (o2.PreviousSibling == null)
+                    {
+                        throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "ELSE tag cannot be the first node in the plan.");
+                    }
+
+                    if (ignoreElse)
+                    {
+                        ignoreElse = false;
+
+                        context.Log.LogTrace("{0}: Skipping processed If's else tag from appending to the plan", parentNodeName);
+
+                        //Continue here will avoid adding this else to the next iteration of the plan
+                        continue;
+                    }
                 }
 
                 if (processFunctions && o2.Name.StartsWith(ConditionIfTag, StringComparison.InvariantCultureIgnoreCase))
@@ -187,12 +198,11 @@ internal class FunctionFlowRunner
                     {
                         ifFullContent += elseContents;
 
-                        // Ignore the next else sibling tag to avoid adding recursively it to the next plan iteration.
+                        // Ignore the next immediate sibling else tag from this IF to the plan since we already processed it
                         ignoreElse = true;
                     }
 
-                    var functionVariables = new ContextVariables();
-                    functionVariables.Update(context.Variables);
+                    var functionVariables = context.Variables.Clone();
                     functionVariables.Set("INPUT", ifFullContent);
 
                     var branchIfOrElse = await this._conditionalFlowHelper.IfAsync(ifFullContent,
@@ -202,7 +212,7 @@ internal class FunctionFlowRunner
                     _ = stepAndTextResults.Append(INDENT).AppendLine(branchIfOrElse);
 
                     processFunctions = false;
-                    
+
                     // We need to continue so we don't ignore any next siblings (If or Function) 
                     continue;
                 }

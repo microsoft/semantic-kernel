@@ -79,7 +79,7 @@ public class TextSkill
     [SKFunction("Convert a string to uppercase.")]
     public string Uppercase(string text)
     {
-        return text.ToUpperInvariant();
+        return text.ToUpper(System.Globalization.CultureInfo.CurrentCulture);
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public class TextSkill
     [SKFunction("Convert a string to lowercase.")]
     public string Lowercase(string text)
     {
-        return text.ToLowerInvariant();
+        return text.ToLower(System.Globalization.CultureInfo.CurrentCulture);
     }
 
     /// <summary>

@@ -19,10 +19,10 @@ internal static class Example12_Planning
 {
     public static async Task RunAsync()
     {
-        //await PoetrySamplesAsync();
-        //await EmailSamplesAsync();
-        //await BookSamplesAsync();
-        //await MemorySampleAsync();
+        await PoetrySamplesAsync();
+        await EmailSamplesAsync();
+        await BookSamplesAsync();
+        await MemorySampleAsync();
         await ConditionalSampleAsync();
     }
 
