@@ -91,6 +91,9 @@ public class SqliteDataStore<TValue> : IDataStore<TValue>, IDisposable
 
     #region protected ================================================================================
 
+    /// <summary>
+    /// Performs dispose specifically on the SqliteConnection
+    /// </summary>
     protected virtual void Dispose(bool disposing)
     {
         if (!this._disposedValue)
@@ -120,11 +123,17 @@ public class SqliteDataStore<TValue> : IDataStore<TValue>, IDisposable
     private readonly SqliteConnection _dbConnection;
     private bool _disposedValue;
 
+    /// <summary>
+    /// Convert timestamp to string
+    /// </summary>
     private static string? ToTimestampString(DateTimeOffset? timestamp)
     {
         return timestamp?.ToString("u", CultureInfo.InvariantCulture);
     }
 
+    /// <summary>
+    /// Convert string to timestamp
+    /// </summary>
     private static DateTimeOffset? ParseTimestamp(string? str)
     {
         if (!string.IsNullOrEmpty(str)

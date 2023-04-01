@@ -155,6 +155,9 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
 
     #region protected ================================================================================
 
+    /// <summary>
+    /// Performs dispose specifically on the SqliteConnection
+    /// </summary>
     protected virtual void Dispose(bool disposing)
     {
         if (!this._disposedValue)
@@ -168,6 +171,9 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
         }
     }
 
+    /// <summary>
+    /// Get all entries in the database that match the collectionName; Limited to the datatable initially supplied when openning the SqliteConnection.
+    /// </summary>
     protected async IAsyncEnumerable<DataEntry<IEmbeddingWithMetadata<TEmbedding>>> TryGetCollectionAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
     {
         await this._dbConnection.OpenAsync(cancel);
@@ -190,11 +196,17 @@ public class SqliteMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposab
     private readonly SqliteConnection _dbConnection;
     private bool _disposedValue;
 
+    /// <summary>
+    /// Convert string to timestamp
+    /// </summary>
     private static string? ToTimestampString(DateTimeOffset? timestamp)
     {
         return timestamp?.ToString("u", CultureInfo.InvariantCulture);
     }
 
+    /// <summary>
+    /// Convert timestamp to string
+    /// </summary>
     private static DateTimeOffset? ParseTimestamp(string? str)
     {
         if (!string.IsNullOrEmpty(str)
