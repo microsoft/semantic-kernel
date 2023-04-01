@@ -1,8 +1,9 @@
 import os
-import pytest
-import semantic_kernel as sk
 import tempfile
 
+import pytest
+
+import semantic_kernel as sk
 from semantic_kernel.core_skills.file_io_skill import FileIOSkill
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
