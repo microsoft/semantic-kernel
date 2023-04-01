@@ -2,16 +2,18 @@
 
 from logging import Logger
 from numpy import array, linalg, ndarray
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.storage.volatile_data_store import VolatileDataStore
+from semantic_kernel.utils.null_logger import NullLogger
 
 
 class VolatileMemoryStore(VolatileDataStore, MemoryStoreBase):
-    def __init__(self) -> None:
+    def __init__(self, logger: Optional[Logger] = None) -> None:
         super().__init__()
+        self._logger = logger or NullLogger()
 
     async def get_nearest_matches_async(
         self,
@@ -77,14 +79,13 @@ class VolatileMemoryStore(VolatileDataStore, MemoryStoreBase):
                 embedding_array[valid_indices].T
             ) / (query_norm * collection_norm[valid_indices])
             if not valid_indices.all():
-                Logger.warning(
+                self._logger.warning(
                     "Some vectors in the embedding collection are zero vectors."
-                    "Cosine similarity scores cannot be computed for those vectors"
+                    "Ignoring cosine similarity score computation for those vectors."
                 )
         else:
-            Logger.error(
-                "The query embedding or the entire embedding collection contains zero vectors."
-                "Cosine similarity scores cannot be computed"
+            raise ValueError(
+                f"Invalid vectors, cannot compute cosine similarity scores for zero vectors"
+                f"{embedding_array} or {embedding}"
             )
-            raise Exception(f"Invalid vectors, cannot compute cosine similarity scores for zero vectors")
         return similarity_scores
