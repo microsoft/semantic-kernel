@@ -20,8 +20,6 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.Text;
 
-#pragma warning disable IDE0032
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
