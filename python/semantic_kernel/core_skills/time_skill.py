@@ -32,7 +32,7 @@ class TimeSkill:
         {{time.timeZoneName}}    => PST
     """
 
-    @sk_function(description="Get the current time.")
+    @sk_function()
     def date(self) -> str:
         """
         Get the current date
@@ -43,7 +43,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%A, %d %B, %Y")
 
-    @sk_function(description="Get the current date and time in the local time zone")
+    @sk_function()
     def now(self) -> str:
         """
         Get the current date and time in the local time zone"
@@ -54,7 +54,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%A, %B %d, %Y %I:%M %p")
 
-    @sk_function(description="Get the current date and time in UTC", name="utcNow")
+    @sk_function()
     def utc_now(self) -> str:
         """
         Get the current date and time in UTC
@@ -65,7 +65,7 @@ class TimeSkill:
         now = datetime.datetime.utcnow()
         return now.strftime("%A, %B %d, %Y %I:%M %p")
 
-    @sk_function(description="Get the current time in the local time zone")
+    @sk_function()
     def time(self) -> str:
         """
         Get the current time in the local time zone
@@ -76,7 +76,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%I:%M:%S %p")
 
-    @sk_function(description="Get the current year")
+    @sk_function()
     def year(self) -> str:
         """
         Get the current year
@@ -87,7 +87,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%Y")
 
-    @sk_function(description="Get the current month")
+    @sk_function()
     def month(self) -> str:
         """
         Get the current month
@@ -98,7 +98,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%B")
 
-    @sk_function(description="Get the current month number")
+    @sk_function()
     def month_number(self) -> str:
         """
         Get the current month number
@@ -109,7 +109,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%m")
 
-    @sk_function(description="Get the current day")
+    @sk_function()
     def day(self) -> str:
         """
         Get the current day of the month
@@ -120,7 +120,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%d")
 
-    @sk_function(description="Get the current day of the week", name="dayOfWeek")
+    @sk_function()
     def day_of_week(self) -> str:
         """
         Get the current day of the week
@@ -131,7 +131,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%A")
 
-    @sk_function(description="Get the current hour")
+    @sk_function()
     def hour(self) -> str:
         """
         Get the current hour
@@ -142,7 +142,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%I %p")
 
-    @sk_function(description="Get the current hour number", name="hourNumber")
+    @sk_function()
     def hour_number(self) -> str:
         """
         Get the current hour number
@@ -153,7 +153,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%H")
 
-    @sk_function(description="Get the current minute")
+    @sk_function()
     def minute(self) -> str:
         """
         Get the current minute
@@ -164,7 +164,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%M")
 
-    @sk_function(description="Get the seconds on the current minute")
+    @sk_function()
     def second(self) -> str:
         """
         Get the seconds on the current minute
@@ -175,7 +175,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%S")
 
-    @sk_function(description="Get the current time zone offset", name="timeZoneOffset")
+    @sk_function()
     def time_zone_offset(self) -> str:
         """
         Get the current time zone offset
@@ -186,7 +186,7 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%z")
 
-    @sk_function(description="Get the current time zone name", name="timeZoneName")
+    @sk_function()
     def time_zone_name(self) -> str:
         """
         Get the current time zone name

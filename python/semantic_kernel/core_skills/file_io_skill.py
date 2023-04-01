@@ -1,12 +1,9 @@
 import os
 
 import aiofiles
-from semantic_kernel.orchestration.sk_context import SKContext
 
-from semantic_kernel.skill_definition import (
-    sk_function,
-    sk_function_context_parameter,
-)
+from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
 
 class FileIOSkill:
@@ -22,11 +19,7 @@ class FileIOSkill:
     {{file.writeAsync}}
     """
 
-    @sk_function(
-        description="Read a file",
-        name="readAsync",
-        input_description="Path of the source file",
-    )
+    @sk_function(input_description="Path of the source file")
     async def read_async(self, path: str) -> str:
         """
         Read a file
@@ -46,10 +39,7 @@ class FileIOSkill:
             content = await fp.read()
             return content
 
-    @sk_function(
-        description="Write a file",
-        name="writeAsync",
-    )
+    @sk_function()
     @sk_function_context_parameter(name="path", description="Destination path")
     @sk_function_context_parameter(name="content", description="File content")
     async def write_async(self, context: SKContext):

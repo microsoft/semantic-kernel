@@ -25,7 +25,7 @@ class TextSkill:
         {{text.lowercase $input}} => "hello world"
     """
 
-    @sk_function(description="Trim whitespace from the start and end of a string.")
+    @sk_function()
     def trim(self, text: str) -> str:
         """
         Trim whitespace from the start and end of a string.
@@ -36,7 +36,7 @@ class TextSkill:
         """
         return text.strip()
 
-    @sk_function(description="Trim whitespace from the start of a string.")
+    @sk_function()
     def trim_start(self, text: str) -> str:
         """
         Trim whitespace from the start of a string.
@@ -47,7 +47,7 @@ class TextSkill:
         """
         return text.lstrip()
 
-    @sk_function(description="Trim whitespace from the end of a string.")
+    @sk_function()
     def trim_end(self, text: str) -> str:
         """
         Trim whitespace from the end of a string.
@@ -58,7 +58,7 @@ class TextSkill:
         """
         return text.rstrip()
 
-    @sk_function(description="Convert a string to uppercase.")
+    @sk_function()
     def uppercase(self, text: str) -> str:
         """
         Convert a string to uppercase.
@@ -69,7 +69,7 @@ class TextSkill:
         """
         return text.upper()
 
-    @sk_function(description="Convert a string to lowercase.")
+    @sk_function()
     def lowercase(self, text: str) -> str:
         """
         Convert a string to lowercase.
