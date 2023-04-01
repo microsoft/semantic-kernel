@@ -15,8 +15,8 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
-from semantic_kernel.template_engine.prompt_template_engine_base import (
-    PromptTemplateEngineBase,
+from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
+    PromptTemplatingEngine,
 )
 
 
@@ -38,7 +38,7 @@ class KernelBase(ABC):
 
     @property
     @abstractmethod
-    def prompt_template_engine(self) -> PromptTemplateEngineBase:
+    def prompt_template_engine(self) -> PromptTemplatingEngine:
         pass
 
     @property
