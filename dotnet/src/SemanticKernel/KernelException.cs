@@ -46,12 +46,12 @@ public class KernelException : Exception<KernelException.ErrorCodes>
         InvalidFunctionType,
 
         /// <summary>
-        /// Invalid backend configuration.
+        /// Invalid service configuration.
         /// </summary>
         InvalidServiceConfiguration,
 
         /// <summary>
-        /// Backend not found.
+        /// Service not found.
         /// </summary>
         ServiceNotFound,
 

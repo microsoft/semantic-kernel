@@ -1,0 +1,21 @@
+<!-- Copyright (c) Microsoft. All rights reserved. -->
+
+{% extends 'documentation.html' %}
+
+{% block body %}
+
+<h2>Images</h2>
+
+<h3>Example Request</h3>
+  <div class="code">
+   <p>curl http://localhost:5000/images/generations/{model} \</p>
+   <p>-X POST \</p>
+   <p>-H "Content-Type: application/json" \</p>
+   <p>-d '{"inputs": "a test image", "n": 1, "size": "256x256"}'</p>
+  </div> 
+
+  <p>
+    <a href=https://huggingface.co/models?pipeline_tag=text-to-image&sort=downloads>HF Text-to-Image Models</a>
+  </p>
+  
+{% endblock %}

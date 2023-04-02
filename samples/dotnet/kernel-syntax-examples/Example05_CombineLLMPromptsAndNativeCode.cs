@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
@@ -19,8 +18,8 @@ public static class Example05_CombineLLMPromptsAndNativeCode
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         // OpenAI settings
-        kernel.Config.AddOpenAITextCompletion("text-davinci-002", "text-davinci-002", Env.Var("OPENAI_API_KEY"));
-        kernel.Config.AddOpenAITextCompletion("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-002", "text-davinci-002", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
         kernel.Config.SetDefaultTextCompletionService("text-davinci-003");
 
         // Load native skill

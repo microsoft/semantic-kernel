@@ -7,7 +7,8 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
-namespace Microsoft.SemanticKernel.KernelExtensions;
+// ReSharper disable once CheckNamespace // Extension methods
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class for extensions methods to define semantic functions.
