@@ -7,8 +7,8 @@ from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
 )
-from semantic_kernel.template_engine.prompt_template_engine_base import (
-    PromptTemplateEngineBase,
+from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
+    PromptTemplatingEngine,
 )
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ class ChatPromptTemplate(PromptTemplate):
     def __init__(
         self,
         template: str,
-        template_engine: PromptTemplateEngineBase,
+        template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
         log: Optional[Logger] = None,
     ) -> None:

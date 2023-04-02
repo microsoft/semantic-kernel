@@ -42,3 +42,9 @@ class ReadOnlySkillCollectionBase(ABC):
         self, include_semantic: bool = True, include_native: bool = True
     ) -> "FunctionsView":
         pass
+
+    @abstractmethod
+    def get_function(
+        self, skill_name: Optional[str], function_name: str
+    ) -> "SKFunctionBase":
+        pass

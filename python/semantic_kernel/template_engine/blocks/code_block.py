@@ -1,154 +1,125 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from re import match as regex_match
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine.blocks.var_block import VarBlock
-from semantic_kernel.template_engine.template_exception import TemplateException
+from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
+from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
+from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
 
 
-class CodeBlock(Block):
-    _validated: bool = False
+class CodeBlock(Block, CodeRenderer):
+    def __init__(
+        self,
+        content: str,
+        tokens: Optional[List[Block]] = None,
+        log: Optional[Logger] = None,
+    ):
+        super().__init__(content=content and content.strip(), log=log)
 
-    def __init__(self, content: str, log: Logger) -> None:
-        super().__init__(BlockTypes.Code, content, log)
+        self._tokens = tokens or CodeTokenizer(log).tokenize(content)
+        self._validated = False
 
-    def _is_valid_function_name(self, name: str) -> bool:
-        return regex_match(r"^[a-zA-Z_][a-zA-Z0-9_.]*$", name) is not None
+    @property
+    def type(self) -> BlockTypes:
+        return BlockTypes.CODE
 
     def is_valid(self) -> Tuple[bool, str]:
-        error = ""
+        error_msg = ""
 
-        if self._content is None:
-            error = "This code block's content is None"
-        elif self._content.strip() == "":
-            error = "This code block's content is empty"
+        for token in self._tokens:
+            is_valid, error_msg = token.is_valid()
+            if not is_valid:
+                self.log.error(error_msg)
+                return False, error_msg
 
-        if error != "":
-            self._log.error(error)
-            return False, error
+        if len(self._tokens) > 1:
+            if self._tokens[0].type != BlockTypes.FUNCTION_ID:
+                error_msg = f"Unexpected second token found: {self._tokens[1].content}"
+                self.log.error(error_msg)
+                return False, error_msg
 
-        # split content on ' ', '\t', '\r', and '\n' and
-        # remove any empty parts
-        parts = [part for part in self._content.split() if part != ""]
+            if (
+                self._tokens[1].type != BlockTypes.VALUE
+                and self._tokens[1].type != BlockTypes.VARIABLE
+            ):
+                error_msg = "Functions support only one parameter"
+                self.log.error(error_msg)
+                return False, error_msg
 
-        for index, part in enumerate(parts):
-            if index == 0:  # there is only a function name
-                if VarBlock.has_var_prefix(part):
-                    error = f"Variables cannot be used as function names [`{part}`]"
-                    break
-
-                if not self._is_valid_function_name(part):
-                    error = f"Invalid function name [`{part}`]"
-                    break
-            else:  # the function has parameters
-                if not VarBlock.has_var_prefix(part):
-                    error = (
-                        f"[`{part}`] is not a valid function parameter: "
-                        "parameters must be valid variables (invalid prefix)."
-                    )
-                    break
-                if len(part) < 2:
-                    error = (
-                        f"[`{part}`] is not a valid function parameter: "
-                        "parameters must be valid variables (too short)."
-                    )
-                if not VarBlock.is_valid_var_name(part[1:]):
-                    error = (
-                        f"[`{part}`] is not a valid function parameter: "
-                        "parameters must be valid variables (invalid characters)."
-                    )
-                    break
-
-        if error != "":
-            self._log.error(error)
-            return False, error
+        if len(self._tokens) > 2:
+            error_msg = f"Unexpected second token found: {self._tokens[1].content}"
+            self.log.error(error_msg)
+            return False, error_msg
 
         self._validated = True
+
         return True, ""
 
-    def render(self, variable: Optional[ContextVariables]) -> str:
-        raise NotImplementedError(
-            "Code block rendering requires using the render_code_async method call."
-        )
-
-    async def render_code_async(self, context: SKContext) -> str:
+    async def render_code_async(self, context):
         if not self._validated:
-            valid, error = self.is_valid()
-            if not valid:
-                raise TemplateException(TemplateException.ErrorCodes.SyntaxError, error)
+            is_valid, error = self.is_valid()
+            if not is_valid:
+                raise ValueError(error)
 
-        self._log.debug(f"Rendering code block: `{self._content}`")
+        self.log.debug(f"Rendering code: `{self.content}`")
 
-        parts = [part for part in self._content.split() if part != ""]
-        function_name = parts[0]
+        if self._tokens[0].type in (BlockTypes.VALUE, BlockTypes.VARIABLE):
+            return self._tokens[0].render(context.variables)
 
-        context.throw_if_skill_collection_not_set()
-        # hack to get types to check, should never fail
-        assert context.skills is not None
-        found, function = self._get_function_from_skill_collection(
-            context.skills, function_name
-        )
+        if self._tokens[0].type == BlockTypes.FUNCTION_ID:
+            return await self._render_function_call_async(self._tokens[0], context)
 
-        if not found:
-            self._log.warning(f"Function not found: `{function_name}`")
-            return ""
-        assert function is not None  # for type checker
+        raise ValueError(f"Unexpected first token type: {self._tokens[0].type}")
 
-        if context.variables is None:
-            self._log.error("Context variables are not set")
-            return ""
+    async def _render_function_call_async(self, f_block: FunctionIdBlock, context):
+        if not context.skills:
+            raise ValueError("Skill collection not set")
+
+        function = self._get_function_from_skill_collection(context.skills, f_block)
+
+        if not function:
+            error_msg = f"Function `{f_block.content}` not found"
+            self.log.error(error_msg)
+            raise ValueError(error_msg)
 
         variables_clone = context.variables.clone()
-        if len(parts) > 1:
-            self._log.debug(f"Passing required parameter: `{parts[1]}`")
-            value = VarBlock(parts[1], self._log).render(variables_clone)
-            variables_clone.update(value)
+
+        if len(self._tokens) > 1:
+            self.log.debug(f"Passing variable/value: `{self._tokens[1].content}`")
+            input_value = self._tokens[1].render(variables_clone)
+            variables_clone.update(input_value)
 
         result = await function.invoke_with_custom_input_async(
-            variables_clone, context.memory, context.skills, self._log
+            variables_clone, context.memory, context.skills, self.log
         )
 
         if result.error_occurred:
-            self._log.error(
-                "Semantic function references a function `{function_name}` "
-                f"of incompatible type `{function.__class__.__name__}`"
+            error_msg = (
+                f"Function `{f_block.content}` execution failed. "
+                f"{result.last_exception.__class__.__name__}: "
+                f"{result.last_error_description}"
             )
-            return ""
+            self.log.error(error_msg)
+            raise ValueError(error_msg)
 
         return result.result
 
     def _get_function_from_skill_collection(
-        self, skills: ReadOnlySkillCollectionBase, function_name: str
-    ) -> Tuple[bool, Optional[SKFunctionBase]]:
-        if skills.has_native_function(None, function_name):
-            return True, skills.get_native_function(None, function_name)
+        self, skills: ReadOnlySkillCollectionBase, f_block: FunctionIdBlock
+    ) -> Optional[SKFunctionBase]:
+        if not f_block.skill_name and skills.has_function(None, f_block.function_name):
+            return skills.get_function(None, f_block.function_name)
 
-        if "." in function_name:
-            parts = function_name.split(".")
-            if len(parts) > 2:
-                self._log.error(f"Invalid function name: `{function_name}`")
-                raise TemplateException(
-                    TemplateException.ErrorCodes.SyntaxError,
-                    f"Invalid function name: `{function_name}`"
-                    "A function name can only contain one `.` to "
-                    "delineate the skill name from the function name.",
-                )
+        if f_block.skill_name and skills.has_function(
+            f_block.skill_name, f_block.function_name
+        ):
+            return skills.get_function(f_block.skill_name, f_block.function_name)
 
-            skill_name, function_name = parts
-            if skills.has_native_function(skill_name, function_name):
-                return True, skills.get_native_function(skill_name, function_name)
-
-            if skills.has_semantic_function(skill_name, function_name):
-                return True, skills.get_semantic_function(skill_name, function_name)
-
-        return False, None
+        return None
