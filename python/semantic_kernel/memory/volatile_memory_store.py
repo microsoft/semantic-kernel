@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from numpy import array, linalg, ndarray
 from typing import List, Optional, Tuple
+
+from numpy import array, linalg, ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -50,18 +51,21 @@ class VolatileMemoryStore(VolatileDataStore, MemoryStoreBase):
         top_results = filtered_results[:limit]
         return top_results
 
-    async def compute_similarity_scores(
+    def compute_similarity_scores(
         self, embedding: ndarray, embedding_array: ndarray
     ) -> ndarray:
-        """Compute the similarity scores between the query embedding and all the embeddings in the collection.
-        Ignore the corresponding operation if zero vectors are involved (in query embedding or the embedding collection)
+        """Compute the similarity scores between the
+        query embedding and all the embeddings in the collection.
+        Ignore the corresponding operation if zero vectors
+        are involved (in query embedding or the embedding collection)
 
         Args:
             embedding (ndarray): The query embedding.
             embedding_array (ndarray): The collection of embeddings.
 
         Returns:
-            ndarray: The similarity scores between the query embedding and all the embeddings in the collection.
+            ndarray: The similarity scores between the query embedding
+            and all the embeddings in the collection.
         """
 
         query_norm = linalg.norm(embedding)
@@ -85,7 +89,8 @@ class VolatileMemoryStore(VolatileDataStore, MemoryStoreBase):
                 )
         else:
             raise ValueError(
-                f"Invalid vectors, cannot compute cosine similarity scores for zero vectors"
+                f"Invalid vectors, cannot compute cosine similarity scores"
+                f"for zero vectors"
                 f"{embedding_array} or {embedding}"
             )
         return similarity_scores
