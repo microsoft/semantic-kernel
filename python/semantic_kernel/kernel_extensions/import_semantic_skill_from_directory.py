@@ -42,7 +42,7 @@ def import_semantic_skill_from_directory(
         config = PromptTemplateConfig()
         config_path = os.path.join(directory, CONFIG_FILE)
         with open(config_path, "r") as config_file:
-            config.from_json(config_file.read())
+            config = config.from_json(config_file.read())
 
         # Load Prompt Template
         with open(prompt_path, "r") as prompt_file:
