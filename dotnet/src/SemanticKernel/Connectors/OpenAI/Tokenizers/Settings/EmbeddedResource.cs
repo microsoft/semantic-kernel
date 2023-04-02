@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI.Tokenizers.Settings;
 
@@ -37,16 +38,46 @@ internal static class EmbeddedResource
     /// <exception cref="FileNotFoundException">Error in case the file doesn't exist</exception>
     private static string ReadFile(string fileName)
     {
-        // Assume the class namespace matches the directory structure to find the file
-        var dir = s_namespace
+        // Assume the class namespace matches the directory structure
+        var currentClassDir = s_namespace
             .Replace(PrefixToIgnore, "", StringComparison.OrdinalIgnoreCase)
             .Trim('.')
             .Replace('.', Path.DirectorySeparatorChar);
 
-        var file = Path.Join(dir, fileName);
+        // Check the execution assembly directory first
+        var assembly1 = Assembly.GetExecutingAssembly();
+        var assembly1Dir = Path.GetDirectoryName(Path.GetFullPath(assembly1.Location));
 
-        if (!File.Exists(file)) { throw new FileNotFoundException(file); }
+        // Concatenate assembly location with class namespace with file name
+        var filePath1 = Path.Join(assembly1Dir, currentClassDir, fileName);
+        if (File.Exists(filePath1))
+        {
+            return File.ReadAllText(filePath1);
+        }
 
-        return File.ReadAllText(file);
+        // Check the current assembly, in case that's a different file on a different directory
+        Assembly? assembly2 = Assembly.GetAssembly(typeof(EmbeddedResource));
+        if (assembly2 == null)
+        {
+            throw new FileNotFoundException($"{fileName} not found, path: '{filePath1}'");
+        }
+
+        // Path where the assembly is
+        var assembly2Dir = Path.GetDirectoryName(Path.GetFullPath(assembly2.Location));
+
+        // No need to continue if the path is the same
+        if (assembly2Dir == assembly1Dir)
+        {
+            throw new FileNotFoundException($"{fileName} not found, path: '{filePath1}'");
+        }
+
+        // Concatenate assembly location with class namespace with file name
+        var filePath2 = Path.Join(assembly2Dir, currentClassDir, fileName);
+        if (File.Exists(filePath2))
+        {
+            return File.ReadAllText(filePath2);
+        }
+
+        throw new FileNotFoundException($"{fileName} not found, paths: '{filePath1}', '{filePath2}'");
     }
 }
