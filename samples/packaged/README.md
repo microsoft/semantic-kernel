@@ -1,1 +1,0 @@
-Each directory in this folder is meant to be served as one package (server + webapp).
