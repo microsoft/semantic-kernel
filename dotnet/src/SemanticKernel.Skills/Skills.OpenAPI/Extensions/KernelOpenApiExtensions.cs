@@ -217,14 +217,14 @@ public static class KernelOpenApiExtensions
                 foreach (var parameter in restOperationParameters)
                 {
                     //A try to resolve argument by alternative parameter name
-                    if (context.Variables.Get(parameter.AlternativeName!, out var value))
+                    if (!string.IsNullOrEmpty(parameter.AlternativeName) && context.Variables.Get(parameter.AlternativeName, out var value))
                     {
                         arguments.Add(parameter.Name, value);
                         continue;
                     }
 
                     //A try to resolve argument by original parameter name
-                    if (context.Variables.Get(parameter.Name!, out value))
+                    if (context.Variables.Get(parameter.Name, out value))
                     {
                         arguments.Add(parameter.Name, value);
                         continue;
@@ -256,7 +256,7 @@ public static class KernelOpenApiExtensions
         var function = new SKFunction(
             delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
             delegateFunction: ExecuteAsync,
-            parameters: restOperationParameters.Select(p => new ParameterView() { Name = p.AlternativeName!, Description = p.Name, DefaultValue = p.DefaultValue ?? string.Empty }).ToList(), //functionConfig.PromptTemplate.GetParameters(),
+            parameters: restOperationParameters.Select(p => new ParameterView() { Name = p.AlternativeName ?? p.Name, Description = p.Name, DefaultValue = p.DefaultValue ?? string.Empty }).ToList(), //functionConfig.PromptTemplate.GetParameters(),
             description: operation.Description,
             skillName: skillName,
             functionName: operation.Id,
