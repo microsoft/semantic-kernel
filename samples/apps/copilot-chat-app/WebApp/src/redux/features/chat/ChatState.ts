@@ -8,6 +8,7 @@ export interface ChatState {
     audience: ChatUser[];
     messages: ChatMessage[];
     botTypingTimestamp: number;
+    botProfilePicture: string;
 }
 
 export const initialBotMessage = (name: string) => {
@@ -25,4 +26,5 @@ export const initialState: ChatState = {
     audience: [],
     messages: [initialBotMessage('there')],
     botTypingTimestamp: 0,
+    botProfilePicture: '/assets/bot-icon-1.png',
 };
