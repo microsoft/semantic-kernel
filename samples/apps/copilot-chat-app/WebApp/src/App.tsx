@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
-import { Avatar, makeStyles, Subtitle1 } from '@fluentui/react-components';
+import { Avatar, Subtitle1, makeStyles } from '@fluentui/react-components';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
 import { msalInstance } from '.';
