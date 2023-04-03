@@ -89,8 +89,7 @@ public sealed class PlannerSkillTests : IDisposable
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [SkippableTheory]
-    [Trait("Model", "text-davinci-003")]
+    [Theory]
     [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun but if its night I want a joke about the moon",
         "function._GLOBAL_FUNCTIONS_.Hour",
         "function.FunSkill.Joke",
@@ -100,14 +99,8 @@ public sealed class PlannerSkillTests : IDisposable
         "</else>")]
     public async Task CreatePlanShouldHaveConditionalStatementsAsync(string prompt, params string[] expectedAnswerContainsArray)
     {
-        string[] unsupportedModels = { "text-davinci-002" };
-
         // Arrange
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        if (unsupportedModels.Contains(azureOpenAIConfiguration?.DeploymentName))
-        {
-            throw new SkipTestException($"Unsupported model {azureOpenAIConfiguration?.DeploymentName}");
-        }
 
         Assert.NotNull(azureOpenAIConfiguration);
 
