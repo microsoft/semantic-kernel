@@ -3,10 +3,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 
 // ReSharper disable once CheckNamespace // Extension methods
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Extension methods for running plans using a kernel
@@ -19,7 +18,7 @@ public static class KernelPlanningExtensions
     /// <param name="kernel">Kernel instance to use</param>
     /// <param name="plan">Plan to run</param>
     /// <returns>Result of the plan execution</returns>
-    public static Task<IPlan> RunAsync(this IKernel kernel, IPlan plan)
+    public static Task<Plan> RunAsync(this IKernel kernel, Plan plan)
     {
         return kernel.RunAsync(plan.State, plan, CancellationToken.None);
     }
@@ -31,7 +30,7 @@ public static class KernelPlanningExtensions
     /// <param name="plan">Plan to run</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result of the plan execution</returns>
-    public static Task<IPlan> RunAsync(this IKernel kernel, IPlan plan, CancellationToken cancellationToken)
+    public static Task<Plan> RunAsync(this IKernel kernel, Plan plan, CancellationToken cancellationToken)
     {
         return kernel.RunAsync(plan.State, plan, cancellationToken);
     }
@@ -43,7 +42,7 @@ public static class KernelPlanningExtensions
     /// <param name="input">Input to use</param>
     /// <param name="plan">Plan to run</param>
     /// <returns>Result of the plan execution</returns>
-    public static Task<IPlan> RunAsync(this IKernel kernel, string input, IPlan plan)
+    public static Task<Plan> RunAsync(this IKernel kernel, string input, Plan plan)
     {
         return kernel.RunAsync(input, plan, CancellationToken.None);
     }
@@ -55,7 +54,7 @@ public static class KernelPlanningExtensions
     /// <param name="input">Input to use</param>
     /// <param name="plan">Plan to run</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    public static Task<IPlan> RunAsync(this IKernel kernel, string input, IPlan plan, CancellationToken cancellationToken)
+    public static Task<Plan> RunAsync(this IKernel kernel, string input, Plan plan, CancellationToken cancellationToken)
     {
         return kernel.RunAsync(new ContextVariables(input), plan, cancellationToken);
     }
@@ -67,7 +66,7 @@ public static class KernelPlanningExtensions
     /// <param name="variables">Input to process</param>
     /// <param name="plan">Plan to run</param>
     /// <returns>Result of the plan execution</returns>
-    public static Task<IPlan> RunAsync(this IKernel kernel, ContextVariables variables, IPlan plan)
+    public static Task<Plan> RunAsync(this IKernel kernel, ContextVariables variables, Plan plan)
     {
         return kernel.RunAsync(variables, plan, CancellationToken.None);
     }
@@ -80,7 +79,7 @@ public static class KernelPlanningExtensions
     /// <param name="plan">Plan to run</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result of the plan execution</returns>
-    public static Task<IPlan> RunAsync(this IKernel kernel, ContextVariables variables, IPlan plan, CancellationToken cancellationToken)
+    public static Task<Plan> RunAsync(this IKernel kernel, ContextVariables variables, Plan plan, CancellationToken cancellationToken)
     {
         return plan.RunNextStepAsync(kernel, variables, cancellationToken);
     }
