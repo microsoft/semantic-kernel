@@ -8,8 +8,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.FileCompression;
 
-namespace Microsoft.SemanticKernel.Skills.FileCompression;
+namespace FileCompression;
 
 /// <summary>
 /// Skill for compressing and decompressing files.
@@ -79,8 +80,8 @@ public class FileCompressionSkill
         }
 
         await this._fileCompressor.CompressFileAsync(Environment.ExpandEnvironmentVariables(sourceFilePath),
-                                                     Environment.ExpandEnvironmentVariables(destinationFilePath),
-                                                     context.CancellationToken);
+            Environment.ExpandEnvironmentVariables(destinationFilePath),
+            context.CancellationToken);
 
         return destinationFilePath;
     }
@@ -109,8 +110,8 @@ public class FileCompressionSkill
         }
 
         await this._fileCompressor.CompressDirectoryAsync(Environment.ExpandEnvironmentVariables(sourceDirectoryPath),
-                                                          Environment.ExpandEnvironmentVariables(destinationFilePath),
-                                                          context.CancellationToken);
+            Environment.ExpandEnvironmentVariables(destinationFilePath),
+            context.CancellationToken);
 
         return destinationFilePath;
     }
@@ -144,8 +145,8 @@ public class FileCompressionSkill
         }
 
         await this._fileCompressor.DecompressFileAsync(Environment.ExpandEnvironmentVariables(sourceFilePath),
-                                                       Environment.ExpandEnvironmentVariables(destinationDirectoryPath),
-                                                       context.CancellationToken);
+            Environment.ExpandEnvironmentVariables(destinationDirectoryPath),
+            context.CancellationToken);
 
         return destinationDirectoryPath;
     }

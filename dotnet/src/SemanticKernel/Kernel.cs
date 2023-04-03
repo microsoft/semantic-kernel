@@ -123,7 +123,7 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction RegisterCustomFunction(string skillName, SKFunction customFunction)
+    public ISKFunction RegisterCustomFunction(string skillName, ISKFunction customFunction)
     {
         // Future-proofing the name not to contain special chars
         Verify.ValidSkillName(skillName);
