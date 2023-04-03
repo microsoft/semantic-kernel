@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -12,7 +14,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.IntegrationTests.Connectors.OpenAI;
-using SemanticKernel.IntegrationTests.TestExtensions;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -90,18 +91,40 @@ public sealed class PlannerSkillTests : IDisposable
     }
 
     [Theory]
+    [InlineData("If is morning tell me a joke about coffee",
+        "function._GLOBAL_FUNCTIONS_.Hour", 1,
+        "function.FunSkill.Joke", 1,
+        "<if condition=\"", 1,
+        "</if>", 1,
+        "<else>", 0,
+        "</else>", 0)]
+    [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun ",
+        "function._GLOBAL_FUNCTIONS_.Hour", 1,
+        "function.FunSkill.Joke", 2,
+        "<if condition=\"", 1,
+        "</if>", 1,
+        "<else>", 1,
+        "</else>", 1)]
     [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun but if its night I want a joke about the moon",
-        "function._GLOBAL_FUNCTIONS_.Hour",
-        "function.FunSkill.Joke",
-        "<if condition=\"",
-        "</if>",
-        "<else>",
-        "</else>")]
-    public async Task CreatePlanShouldHaveConditionalStatementsAsync(string prompt, params string[] expectedAnswerContainsArray)
+        "function._GLOBAL_FUNCTIONS_.Hour", 1,
+        "function.FunSkill.Joke", 3,
+        "<if condition=\"", 2,
+        "</if>", 2,
+        "<else>", 2,
+        "</else>", 2)]
+    public async Task CreatePlanShouldHaveConditionalStatementsAndBeAbleToExecuteAsync(string prompt, params object[] expectedAnswerContains)
     {
         // Arrange
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
+        Dictionary<string, int> expectedAnswerContainsDictionary = new();
+        for (int i = 0; i < expectedAnswerContains.Length; i += 2)
+        {
+            string? key = expectedAnswerContains[i].ToString();
+            int value = Convert.ToInt32(expectedAnswerContains[i + 1], CultureInfo.InvariantCulture);
+            expectedAnswerContainsDictionary.Add(key!, value);
+        }
+
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
         IKernel target = Kernel.Builder
@@ -118,20 +141,31 @@ public sealed class PlannerSkillTests : IDisposable
             })
             .Build();
 
-        // Import all sample skills available for demonstration purposes.
         TestHelpers.GetSkill("FunSkill", target);
         target.ImportSkill(new TimeSkill());
-
         var plannerSKill = target.ImportSkill(new PlannerSkill(target));
 
-        SKContext actual = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
+        // Act
+        SKContext createdPlanContext = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
+        await target.RunAsync(createdPlanContext.Variables.Clone(), plannerSKill["ExecutePlan"]).ConfigureAwait(false);
 
         // Assert
-        Assert.Empty(actual.LastErrorDescription);
-        Assert.False(actual.ErrorOccurred);
-        foreach (string expectedAnswerContains in expectedAnswerContainsArray)
+        Assert.Empty(createdPlanContext.LastErrorDescription);
+        Assert.False(createdPlanContext.ErrorOccurred);
+
+        foreach ((string? matchingExpression, int expectedCount) in expectedAnswerContainsDictionary)
         {
-            Assert.Contains(expectedAnswerContains, actual.Variables[Plan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+            if (expectedCount > 0)
+            {
+                Assert.Contains(matchingExpression, createdPlanContext.Variables[Plan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+            }
+            else
+            {
+                Assert.DoesNotContain(matchingExpression, createdPlanContext.Variables[Plan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+            }
+
+            var numberOfMatches = Regex.Matches(createdPlanContext.Variables[Plan.PlanKey], matchingExpression, RegexOptions.IgnoreCase).Count;
+            Assert.Equal(expectedCount, numberOfMatches);
         }
     }
 
