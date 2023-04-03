@@ -4,9 +4,20 @@
 > production use case. It is intended to highlight concepts of Semantic Kernel and not
 > any architectural / security design practices to be used.
 
-The Copilot Chat sample showcases how you can create an enriched experience with multiple dynamic components, including command messages, user intent, and memories, etc. The chat prompt will evolve as the conversation between the user and the application proceeds. This chat experience is a chat skill containing multiple functions that work together to construct the final prompt for each exchange.  
+## Introduction
+This chat experience is a chat skill containing multiple functions that work together to construct the final prompt for each exchange.
+
+The Copilot Chat sameple showcases how to build an enriched intelligent app, with multiple dynamic components, including command messages, user intent, and context.  The chat prompt will evolve as the conversation between user and application proceeds.  
      
 ### Watch the Copilot Chat Sample Quick Start Video [here](https://aka.ms/SK-Copilotchat-video).
+
+## Requirements to run this app
+1. Azure Open AI Service Key and working End point. (https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?tabs=command-line&pivots=programming-language-studio)
+2.	A registered App in Azure Portal (https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
+   o	Select Single-page application (SPA) as platform type, and the Redirect URI will be https://localhost:3000
+   o	Select Personal Microsoft accounts only as supported account types for this sample
+3.	Local API service is running. (https://learn.microsoft.com/en-us/semantic-kernel/samples/localapiservice)
+4.	Yarn - used for installing the app's dependencies (https://yarnpkg.com/getting-started/install)
 
 ## Running the sample
 
@@ -28,7 +39,6 @@ The Copilot Chat sample showcases how you can create an enriched experience with
    and/or `yarn start` from the command line.
 6. A browser will automatically open, otherwise you can navigate to `http://localhost:3000/` to use the ChatBot.
 
-## About the Copilot Chat Sample
 
 ### Authentication in this sample
 This sample uses the Microsoft Authentication Library (MSAL) for React to sign in users. Learn more about it here: https://learn.microsoft.com/en-us/azure/active-directory/develop/tutorial-v2-react.
