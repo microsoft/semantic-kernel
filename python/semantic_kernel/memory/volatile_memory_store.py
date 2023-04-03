@@ -59,12 +59,9 @@ class VolatileMemoryStore(VolatileDataStore, MemoryStoreBase):
         Ignore the corresponding operation if zero vectors
         are involved (in query embedding or the embedding collection)
 
-        Args:
-            embedding (ndarray): The query embedding.
-            embedding_array (ndarray): The collection of embeddings.
-
-        Returns:
-            ndarray: The similarity scores between the query embedding
+        :param embedding: The query embedding.
+        :param embedding_array: The collection of embeddings.
+        :return: similarity_scores: The similarity scores between the query embedding
             and all the embeddings in the collection.
         """
 

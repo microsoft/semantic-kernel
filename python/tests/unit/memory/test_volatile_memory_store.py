@@ -1,11 +1,10 @@
 import numpy as np
-import pytest
-from pytest import raises
+from pytest import raises, mark
 
 from semantic_kernel.memory import VolatileMemoryStore
 
 
-@pytest.mark.asyncio
+@mark.asyncio
 async def test_cosine_similarity_valid():
     """Test the cosine similarity computation"""
     volatile_memory_store = VolatileMemoryStore()
@@ -21,7 +20,7 @@ async def test_cosine_similarity_valid():
     np.testing.assert_allclose(scores, expected_scores)
 
 
-@pytest.mark.asyncio
+@mark.asyncio
 async def test_cosine_similarity_zero_query():
     volatile_memory_store = VolatileMemoryStore()
     # Test case 2: Zero vector as query_embedding
@@ -33,7 +32,7 @@ async def test_cosine_similarity_zero_query():
         )
 
 
-@pytest.mark.asyncio
+@mark.asyncio
 async def test_cosine_similarity_zero_collection():
     volatile_memory_store = VolatileMemoryStore()
     # Test case 3: Zero vector as collection_embeddings
@@ -45,7 +44,7 @@ async def test_cosine_similarity_zero_collection():
         )
 
 
-@pytest.mark.asyncio
+@mark.asyncio
 async def test_cosine_similarity_partial_zero_collection():
     volatile_memory_store = VolatileMemoryStore()
     # Test case 4: Partial zero vector as collection_embeddings
