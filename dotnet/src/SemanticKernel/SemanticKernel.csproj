@@ -71,4 +71,17 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Connectors\OpenAI\Tokenizers\Settings\encoder.json" />
+    <Content Include="Connectors\OpenAI\Tokenizers\Settings\encoder.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+    <None Remove="Connectors\OpenAI\Tokenizers\Settings\vocab.bpe" />
+    <Content Include="Connectors\OpenAI\Tokenizers\Settings\vocab.bpe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+  </ItemGroup>
 </Project>
