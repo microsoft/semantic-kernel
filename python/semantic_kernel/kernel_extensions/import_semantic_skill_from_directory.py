@@ -3,8 +3,8 @@
 import glob
 import os
 from typing import Dict
+from re import match as re_match
 
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
@@ -22,10 +22,17 @@ def import_semantic_skill_from_directory(
     CONFIG_FILE = "config.json"
     PROMPT_FILE = "skprompt.txt"
 
-    Verify.valid_skill_name(skill_directory_name)
+    if not re_match(SKFunctionBase.SKILL_NAME_REGEX, skill_directory_name):
+        raise ValueError(
+            f"Invalid skill name: {skill_directory_name}. Skill names "
+            f"must match the regex: {SKFunctionBase.SKILL_NAME_REGEX}"
+        )
+
     skill_directory = os.path.join(parent_directory, skill_directory_name)
     skill_directory = os.path.abspath(skill_directory)
-    Verify.directory_exists(skill_directory)
+
+    if not os.path.exists(skill_directory):
+        raise ValueError(f"Skill directory does not exist: {skill_directory}")
 
     skill = {}
 

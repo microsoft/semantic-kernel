@@ -2,8 +2,8 @@
 
 from typing import TYPE_CHECKING, List, Optional
 from uuid import uuid4
+from re import match as re_match
 
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -53,9 +53,17 @@ def create_semantic_function(
         ),
     )
 
-    Verify.valid_function_name(function_name)
+    if not re_match(SKFunctionBase.FUNCTION_NAME_REGEX, function_name):
+        raise ValueError(
+            f"Invalid function name: {function_name}. Function names "
+            f"must match the regex: {SKFunctionBase.FUNCTION_NAME_REGEX}"
+        )
     if skill_name is not None:
-        Verify.valid_skill_name(skill_name)
+        if not re_match(SKFunctionBase.SKILL_NAME_REGEX, skill_name):
+            raise ValueError(
+                f"Invalid skill name: {skill_name}. Skill names "
+                f"must match the regex: {SKFunctionBase.SKILL_NAME_REGEX}"
+            )
 
     template = PromptTemplate(prompt_template, kernel.prompt_template_engine, config)
     function_config = SemanticFunctionConfig(config, template)

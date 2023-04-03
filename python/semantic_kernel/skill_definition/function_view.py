@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from typing import List
+from re import match as re_match
 
-from semantic_kernel.diagnostics.verify import Verify
+from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition.parameter_view import ParameterView
 
 
@@ -23,7 +24,11 @@ class FunctionView:
         is_semantic: bool,
         is_asynchronous: bool = True,
     ) -> None:
-        Verify.valid_function_name(name)
+        if not re_match(SKFunctionBase.FUNCTION_NAME_REGEX, name):
+            raise ValueError(
+                f"Invalid function name: {name}. Function names "
+                f"must match the regex: {SKFunctionBase.FUNCTION_NAME_REGEX}"
+            )
 
         self._name = name
         self._skill_name = skill_name
@@ -58,7 +63,11 @@ class FunctionView:
 
     @name.setter
     def name(self, value: str) -> None:
-        Verify.valid_function_name(value)
+        if not re_match(SKFunctionBase.FUNCTION_NAME_REGEX, value):
+            raise ValueError(
+                f"Invalid function name: {value}. Function names "
+                f"must match the regex: {SKFunctionBase.FUNCTION_NAME_REGEX}"
+            )
         self._name = value
 
     @skill_name.setter

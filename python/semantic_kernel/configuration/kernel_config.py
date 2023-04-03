@@ -6,7 +6,6 @@ from semantic_kernel.ai.open_ai.services.azure_open_ai_config import AzureOpenAI
 from semantic_kernel.ai.open_ai.services.open_ai_config import OpenAIConfig
 from semantic_kernel.configuration.backend_config import BackendConfig
 from semantic_kernel.configuration.backend_types import BackendType
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
@@ -31,7 +30,8 @@ class KernelConfig:
         org_id: Optional[str] = None,
         overwrite: bool = False,
     ) -> "KernelConfig":
-        Verify.not_empty(name, "The backend name is empty")
+        if not name:
+            raise ValueError("The backend name cannot be empty")
 
         if not overwrite and name in self._chat_backends:
             raise KernelException(
@@ -58,7 +58,8 @@ class KernelConfig:
         api_version: str = "2022-12-01",
         overwrite: bool = False,
     ) -> "KernelConfig":
-        Verify.not_empty(name, "The backend name is empty")
+        if not name:
+            raise ValueError("The backend name cannot be empty")
 
         if not overwrite and name in self._chat_backends:
             raise KernelException(
@@ -87,7 +88,8 @@ class KernelConfig:
         api_version: str = "2022-12-01",
         overwrite: bool = False,
     ) -> "KernelConfig":
-        Verify.not_empty(name, "The backend name is empty")
+        if not name:
+            raise ValueError("The backend name cannot be empty")
 
         if not overwrite and name in self._completion_backends:
             raise KernelException(
@@ -115,7 +117,8 @@ class KernelConfig:
         org_id: Optional[str] = None,
         overwrite: bool = False,
     ) -> "KernelConfig":
-        Verify.not_empty(name, "The backend name is empty")
+        if not name:
+            raise ValueError("The backend name cannot be empty")
 
         if not overwrite and name in self._completion_backends:
             raise KernelException(
@@ -142,7 +145,8 @@ class KernelConfig:
         api_version: str = "2022-12-01",
         overwrite: bool = False,
     ) -> "KernelConfig":
-        Verify.not_empty(name, "The backend name is empty")
+        if not name:
+            raise ValueError("The backend name cannot be empty")
 
         if not overwrite and name in self._embeddings_backends:
             raise KernelException(
@@ -170,7 +174,8 @@ class KernelConfig:
         org_id: Optional[str] = None,
         overwrite: bool = False,
     ) -> "KernelConfig":
-        Verify.not_empty(name, "The backend name is empty")
+        if not name:
+            raise ValueError("The backend name cannot be empty")
 
         if not overwrite and name in self._embeddings_backends:
             raise KernelException(

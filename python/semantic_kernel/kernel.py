@@ -18,7 +18,6 @@ from semantic_kernel.ai.open_ai.services.open_ai_text_completion import (
 )
 from semantic_kernel.configuration.backend_types import BackendType
 from semantic_kernel.configuration.kernel_config import KernelConfig
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
@@ -90,8 +89,17 @@ class Kernel(KernelBase):
             skill_name = SkillCollection.GLOBAL_SKILL
         assert skill_name is not None  # for type checker
 
-        Verify.valid_skill_name(skill_name)
-        Verify.valid_function_name(function_name)
+        validate_skill_name(skill_name)
+        if not re_match(SKFunctionBase.SKILL_NAME_REGEX, skill_name):
+            raise ValueError(
+                f"Invalid skill name: {skill_name}. Skill names "
+                f"must match the regex: {SKFunctionBase.SKILL_NAME_REGEX}"
+            )
+        if not re_match(SKFunctionBase.FUNCTION_NAME_REGEX, function_name):
+            raise ValueError(
+                f"Invalid function name: {function_name}. Function names "
+                f"must match the regex: {SKFunctionBase.FUNCTION_NAME_REGEX}"
+            )
 
         function = self._create_semantic_function(
             skill_name, function_name, function_config
@@ -256,7 +264,9 @@ class Kernel(KernelBase):
                     "Azure OpenAI Chat backend is not implemented yet"
                 )
             elif backend.backend_type == BackendType.OpenAI:
-                Verify.not_null(backend.open_ai, "OpenAI configuration is missing")
+                if backend.open_ai is None:
+                    raise ValueError("OpenAI configuration is missing")
+
                 function.set_chat_backend(
                     lambda: OpenAIChatCompletion(
                         backend.open_ai.model_id,  # type: ignore
@@ -287,9 +297,8 @@ class Kernel(KernelBase):
             )
 
             if backend.backend_type == BackendType.AzureOpenAI:
-                Verify.not_null(
-                    backend.azure_open_ai, "Azure OpenAI configuration is missing"
-                )
+                if backend.azure_open_ai is None:
+                    raise ValueError("Azure OpenAI configuration is missing")
                 function.set_ai_backend(
                     lambda: AzureTextCompletion(
                         backend.azure_open_ai.deployment_name,  # type: ignore
@@ -300,7 +309,8 @@ class Kernel(KernelBase):
                     )
                 )
             elif backend.backend_type == BackendType.OpenAI:
-                Verify.not_null(backend.open_ai, "OpenAI configuration is missing")
+                if backend.open_ai is None:
+                    raise ValueError("OpenAI configuration is missing")
                 function.set_ai_backend(
                     lambda: OpenAITextCompletion(
                         backend.open_ai.model_id,  # type: ignore

@@ -4,7 +4,6 @@ from logging import Logger
 from typing import Callable, Optional
 
 from semantic_kernel.configuration.kernel_config import KernelConfig
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_extensions import KernelExtensions
@@ -31,22 +30,26 @@ class KernelBuilder:
         self._log = log
 
     def with_configuration(self, config: KernelConfig) -> "KernelBuilder":
-        Verify.not_null(config, "The configuration instance provided is None")
+        if config is None:
+            raise ValueError("The configuration instance provided is None")
         self._config = config
         return self
 
     def with_memory(self, memory: SemanticTextMemoryBase) -> "KernelBuilder":
-        Verify.not_null(memory, "The memory instance provided is None")
+        if memory is None:
+            raise ValueError("The memory instance provided is None")
         self._memory = memory
         return self
 
     def with_memory_storage(self, storage: MemoryStoreBase) -> "KernelBuilder":
-        Verify.not_null(storage, "The memory storage instance provided is None")
+        if storage is None:
+            raise ValueError("The memory storage instance provided is None")
         self._memory_storage = storage
         return self
 
     def with_logger(self, log: Logger) -> "KernelBuilder":
-        Verify.not_null(log, "The logger instance provided is None")
+        if log is None:
+            raise ValueError("The logger instance provided is None")
         self._log = log
         return self
 

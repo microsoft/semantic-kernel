@@ -2,8 +2,6 @@
 
 from typing import Optional
 
-from semantic_kernel.diagnostics.verify import Verify
-
 
 # TODO: allow for overriding endpoints
 class OpenAIConfig:
@@ -33,8 +31,10 @@ class OpenAIConfig:
                 This is usually optional unless your
                 account belongs to multiple organizations.
         """
-        Verify.not_empty(model_id, "The model ID is empty")
-        Verify.not_empty(api_key, "The API key is empty")
+        if not model_id:
+            raise ValueError("The model ID cannot be empty")
+        if not api_key:
+            raise ValueError("The API key cannot be empty")
 
         self.model_id = model_id
         self.api_key = api_key

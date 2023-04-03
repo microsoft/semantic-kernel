@@ -1,7 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.diagnostics.verify import Verify
-
 
 # TODO: support for AAD auth.
 class AzureOpenAIConfig:
@@ -41,12 +39,14 @@ class AzureOpenAIConfig:
             api_version {str} -- Azure OpenAI API version,
             https://learn.microsoft.com/azure/cognitive-services/openai/reference
         """
-        Verify.not_empty(deployment_name, "The deployment name is empty")
-        Verify.not_empty(endpoint, "The endpoint is empty")
-        Verify.starts_with(
-            endpoint, "https://", "The endpoint URL must start with https://"
-        )
-        Verify.not_empty(api_key, "The API key is empty")
+        if not deployment_name:
+            raise ValueError("The deployment name cannot be empty")
+        if not endpoint:
+            raise ValueError("The endpoint cannot be empty")
+        if not endpoint.startswith("https://"):
+            raise ValueError("The endpoint must start with https://")
+        if not api_key:
+            raise ValueError("The API key cannot be empty")
 
         self.deployment_name = deployment_name
         self.endpoint = endpoint
