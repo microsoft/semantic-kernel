@@ -45,10 +45,9 @@ export const useChat = () => {
     };
 
     const getResponse = async (value: string, chatId: string) => {
-        // TODO: generate reply instead of simple ask
-        const ask = { input: value, variables: [{ key: 'style', value: 'Bill & Ted' }] };
+        const ask = { input: value, variables: [{ key: 'audience', value: account?.name ?? 'Unknown User' }] };
         try {
-            var result = await sk.invokeAsync(ask, 'funskill', 'joke');
+            var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat');
             const messageResult = {
                 timestamp: new Date().getTime(),
                 sender: 'bot',
