@@ -22,7 +22,7 @@ The Copilot Chat sample showcases how you can create an enriched experience with
    `APP_BACKEND_URI=` is the URI where your backend is running:
         
         APP_CHAT_CLIENT_ID=
-        APP_BACKEND_URI=http://localhost:40443
+        APP_BACKEND_URI=https://localhost:40443
 
 5. **Run** the following command `yarn install` (if you have never run the app before)
    and/or `yarn start` from the command line.
