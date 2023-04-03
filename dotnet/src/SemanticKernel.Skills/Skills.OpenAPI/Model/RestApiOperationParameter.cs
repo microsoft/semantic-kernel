@@ -10,7 +10,12 @@ internal class RestApiOperationParameter
     /// <summary>
     /// The parameter name.
     /// </summary>
-    public string Name { get; }
+    public string Name { get;  }
+
+    /// <summary>
+    /// The property alternative name. It can be used as an alternative name in contexts where the original name can't be used.
+    /// </summary>
+    public string? AlternativeName { get; set; }
 
     /// <summary>
     /// The parameter type - string, integer, number, boolean, array and object.
