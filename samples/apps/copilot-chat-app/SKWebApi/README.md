@@ -16,5 +16,5 @@ To build and run the service, you can use Visual Studio, or simply the dotnet bu
 - Press F5
 
 ### dotnet Build Tools
-- cd into **..\semantic-kernel\samples\apps\copilot-chat-app\SKWebApi\**
+- cd into **..\semantic-kernel\samples\apps\copilot-chat-app\SKWebApi\\**
 - Enter **dotnet run**
