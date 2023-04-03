@@ -36,6 +36,7 @@ public static class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        app.UseCors();
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.MapControllers();
@@ -45,6 +46,20 @@ public static class Program
 
     private static void AddServices(IServiceCollection services, ConfigurationManager configuration)
     {
+        string[] allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
+        if (allowedOrigins is not null && allowedOrigins.Length > 0)
+        {
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                    policy =>
+                    {
+                        policy.WithOrigins(allowedOrigins)
+                              .AllowAnyHeader();
+                    });
+            });
+        }
+
         services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
