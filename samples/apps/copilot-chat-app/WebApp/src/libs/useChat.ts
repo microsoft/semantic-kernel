@@ -11,7 +11,7 @@ export const useChat = () => {
     const { audience } = useAppSelector((state: RootState) => state.chat);
     const dispatch = useAppDispatch();
     const account = useAccount();
-    const sk = useSemanticKernel(process.env.APP_BACKEND_URI as string);
+    const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
     const botProfilePictures : string[] = [
