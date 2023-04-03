@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
@@ -24,6 +25,12 @@ internal static class RestApiOperationExtensions
 
         //Add Payload properties.
         parameters.AddRange(CreateParametersFromPayloadProperties(operation.Payload));
+
+        //Create a property alternative name without special symbols that are not supported by SK template language.
+        foreach (var parameter in parameters)
+        {
+            parameter.AlternativeName = Regex.Replace(parameter.Name, @"[^0-9A-Za-z_]+", "_");
+        }
 
         return parameters;
     }
