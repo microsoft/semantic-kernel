@@ -63,7 +63,7 @@ const App: FC = () => {
             <AuthenticatedTemplate>
                 {appState === AppState.ProbeForBackend &&
                     <BackendProbe
-                        uri={process.env.APP_BACKEND_URI as string}
+                        uri={process.env.REACT_APP_BACKEND_URI as string}
                         onBackendFound={() => setAppState(AppState.Chat)}
                     />
                 }
