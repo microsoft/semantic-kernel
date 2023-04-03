@@ -21,7 +21,7 @@ The Copilot Chat sameple showcases how to build an enriched intelligent app, wit
 
 ## Running the sample
 
-1. Ensure the SKWebApi is running at `https://localhost:40443`. See (SKWebApi README)[samples/apps/copilot-chat-app/SKWebApi/README.md] for instructions.
+1. Ensure the SKWebApi is running at `https://localhost:40443`. See [SKWebApi README](../SKWebApi/README.md) for instructions.
 2. Create an **[.env](.env)** file to this folder root with the following variables and fill in with your information, where
    `REACT_APP_CHAT_CLIENT_ID=` is the GUID copied from the **Application (client) ID** from your app registration in the Azure Portal and 
    `REACT_APP_BACKEND_URI=` is the URI where your backend is running.
