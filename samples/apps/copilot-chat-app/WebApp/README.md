@@ -14,8 +14,8 @@ The Copilot Chat sameple showcases how to build an enriched intelligent app, wit
 ## Requirements to run this app
 1. Azure Open AI Service Key and working End point. (https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?tabs=command-line&pivots=programming-language-studio)
 2.	A registered App in Azure Portal (https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
-   o	Select Single-page application (SPA) as platform type, and the Redirect URI will be https://localhost:3000
-   o	Select Personal Microsoft accounts only as supported account types for this sample
+   -	Select Single-page application (SPA) as platform type, and the Redirect URI will be https://localhost:3000
+   -	Accounts in any organizational directory and personal Microsoft accounts
 3.	Local API service is running. (https://learn.microsoft.com/en-us/semantic-kernel/samples/localapiservice)
 4.	Yarn - used for installing the app's dependencies (https://yarnpkg.com/getting-started/install)
 
