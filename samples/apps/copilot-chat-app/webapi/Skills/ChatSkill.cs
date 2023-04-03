@@ -162,6 +162,8 @@ public class ChatSkill
     [SKFunction("Get chat response")]
     [SKFunctionName("Chat")]
     [SKFunctionInput(Description = "The new message")]
+    [SKFunctionContextParameter(Name = "userId", Description = "Unique and persistent identifier for the user")]
+    [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     [SKFunctionContextParameter(Name = "audience", Description = "The audience the chat bot is interacting with.")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
@@ -232,6 +234,8 @@ public class ChatSkill
     [SKFunction("Save a new message to the chat history")]
     [SKFunctionName("SaveNewMessage")]
     [SKFunctionInput(Description = "The new message")]
+    [SKFunctionContextParameter(Name = "userId", Description = "Unique and persistent identifier for the user")]
+    [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     [SKFunctionContextParameter(Name = "audience", Description = "The audience who created the message.")]
     public async Task SaveNewMessageAsync(string message, SKContext context)
     {
