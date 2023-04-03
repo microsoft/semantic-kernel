@@ -241,7 +241,15 @@ internal class FunctionFlowRunner
                             foreach (XmlAttribute attr in o2.Attributes)
                             {
                                 context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
-                                if (attr.InnerText.StartsWith("$", StringComparison.InvariantCultureIgnoreCase))
+                                bool innerTextStartWithSign = attr.InnerText.StartsWith("$", StringComparison.InvariantCultureIgnoreCase);
+
+                                if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    variableTargetName = innerTextStartWithSign
+                                        ? attr.InnerText[1..]
+                                        : attr.InnerText;
+                                }
+                                else if (innerTextStartWithSign)
                                 {
                                     // Split the attribute value on the comma or ; character
                                     var attrValues = attr.InnerText.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
@@ -262,10 +270,6 @@ internal class FunctionFlowRunner
                                             functionVariables.Set(attr.Name, string.Concat(attrValueList));
                                         }
                                     }
-                                }
-                                else if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    variableTargetName = attr.InnerText;
                                 }
                                 else if (attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
                                 {

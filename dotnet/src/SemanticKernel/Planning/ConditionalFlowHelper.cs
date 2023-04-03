@@ -174,7 +174,8 @@ public class ConditionalFlowHelper
 
         foreach (Match foundVariable in foundVariables)
         {
-            yield return foundVariable.Value;
+            // Return the variables without the $
+            yield return foundVariable.Value[1..];
         }
     }
 

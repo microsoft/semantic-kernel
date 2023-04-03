@@ -93,7 +93,7 @@ internal static class Example12_Planning
     private static async Task EmailSamplesAsync()
     {
         Console.WriteLine("======== Planning - Create and Execute Email Plan ========");
-        var kernel = InitializeKernelAndPlanner(out var planner);
+        var kernel = InitializeKernelAndPlanner(out var planner, 512);
         kernel.ImportSkill(new EmailSkill(), "email");
 
         // Load additional skills to enable planner to do non-trivial asks.
@@ -216,7 +216,7 @@ internal static class Example12_Planning
         Console.WriteLine(executionResults.Variables.ToPlan().PlanString);
     }
 
-    private static IKernel InitializeKernelAndPlanner(out IDictionary<string, ISKFunction> planner)
+    private static IKernel InitializeKernelAndPlanner(out IDictionary<string, ISKFunction> planner, int maxTokens = 1024)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         kernel.Config.AddAzureOpenAITextCompletionService(
@@ -226,7 +226,7 @@ internal static class Example12_Planning
             Env.Var("AZURE_OPENAI_KEY"));
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
-        planner = kernel.ImportSkill(new PlannerSkill(kernel), "planning");
+        planner = kernel.ImportSkill(new PlannerSkill(kernel, maxTokens), "planning");
         return kernel;
     }
 
