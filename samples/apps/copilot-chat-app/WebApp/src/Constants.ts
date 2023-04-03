@@ -7,7 +7,7 @@ export const Constants = {
         method: 'redirect', // 'redirect' | 'popup'
         auth: {
             clientId: process.env.REACT_APP_CHAT_CLIENT_ID as string, 
-            authority: `https://login.microsoftonline.com/${process.env.REACT_APP_TENANT_ID}`,
+            authority: `https://login.microsoftonline.com/common`,
         },
         cache: {
             cacheLocation: 'localStorage',
