@@ -37,7 +37,6 @@ public static class Program
             app.UseSwaggerUI();
         }
         app.UseHttpsRedirection();
-        // app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
 
@@ -46,16 +45,15 @@ public static class Program
 
     private static void AddServices(IServiceCollection services, ConfigurationManager configuration)
     {
-        /*services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
-        services.AddAuthorization();*/
-
         services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
 
         services.AddSingleton<IConfiguration>(configuration);
+
+        // To support ILogger (as opposed to the generic ILogger<T>)
+        services.AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Kernel>>());
 
         services.AddSemanticKernelServices(configuration);
     }
@@ -71,11 +69,19 @@ public static class Program
 
         services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
 
+        services.AddScoped<ISkillCollection, SkillCollection>();
+
         services.AddScoped<KernelConfig>(sp =>
         {
             var kernelConfig = new KernelConfig();
             AIServiceConfig completionConfig = configuration.GetRequiredSection("CompletionConfig").Get<AIServiceConfig>();
             kernelConfig.AddCompletionBackend(completionConfig);
+
+            AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
+            if (embeddingConfig?.IsValid() == true)
+            {
+                kernelConfig.AddEmbeddingBackend(embeddingConfig);
+            }
 
             return kernelConfig;
         });
@@ -99,24 +105,6 @@ public static class Program
         });
 
         // Each REST call gets a fresh new SK instance
-        services.AddScoped<Kernel>(sp =>
-        {
-            var promptTemplateEngine = sp.GetRequiredService<IPromptTemplateEngine>();
-            var memory = sp.GetRequiredService<ISemanticTextMemory>();
-            var kernelConfig = sp.GetRequiredService<KernelConfig>();
-            var logger = sp.GetRequiredService<ILogger<Kernel>>();
-
-            AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
-            if (embeddingConfig?.IsValid() == true)
-            {
-                kernelConfig.AddEmbeddingBackend(embeddingConfig);
-            }
-
-            return new Kernel(new SkillCollection(),
-                              promptTemplateEngine,
-                              memory,
-                              kernelConfig,
-                              logger);
-        });
+        services.AddScoped<Kernel>();
     }
 }
