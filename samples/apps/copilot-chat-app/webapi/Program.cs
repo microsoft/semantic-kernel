@@ -7,6 +7,8 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
+using SKWebApi.Skills;
+using SKWebApi.Storage;
 
 namespace CopilotChatApi.Service;
 
@@ -137,7 +139,20 @@ public static class Program
             return NullMemory.Instance;
         });
 
+        // Add persistent storage
+        // InMemory version
+        var chatInMemoryContext = new InMemoryContext<Chat>();
+        var chatMessageInMemoryContext = new InMemoryContext<ChatMessage>();
+        services.AddSingleton<ChatRepository>(new ChatRepository(chatInMemoryContext));
+        services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
+        // CosmosDB version
+        // var chatCosmosDbContext = new CosmosDbContext<Chat>("<connectionString>", "<db>", "<container>");
+        // var chatMessageCosmosDbContext = new CosmosDbContext<ChatMessage>("<connectionString>", "<db>", "<container>");
+        // services.AddSingleton<ChatRepository>(new ChatRepository(chatCosmosDbContext));
+        // services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatCosmosDbContext));
+
         // Each REST call gets a fresh new SK instance
         services.AddScoped<Kernel>();
+
     }
 }
