@@ -302,7 +302,7 @@ public class ChatSkill
     {
         var allMemories = this.GetAllMemoriesAsync(context);
 
-        return await allMemories.FirstAsync();
+        return await allMemories.FirstOrDefaultAsync();
     }
 
     /// <summary>

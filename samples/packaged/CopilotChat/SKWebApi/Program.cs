@@ -46,10 +46,10 @@ public static class Program
 
     private static void AddServices(IServiceCollection services, ConfigurationManager configuration)
     {
-        /*builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        /*services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
-        builder.Services.AddAuthorization();*/
-	
+        services.AddAuthorization();*/
+
         services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
@@ -57,34 +57,66 @@ public static class Program
 
         services.AddSingleton<IConfiguration>(configuration);
 
-        services.AddSingleton<ILogger>(s => s.GetRequiredService<ILogger<Kernel>>()); // To support ILogger (as opposed to generic ILogger<T>)
-
         services.AddSemanticKernelServices(configuration);
     }
 
     private static void AddSemanticKernelServices(this IServiceCollection services, ConfigurationManager configuration)
     {
-        // Each REST call gets a fresh new SK instance
-        var kernelConfig = new KernelConfig();
-        AIServiceConfig completionConfig = configuration.GetRequiredSection("CompletionConfig").Get<AIServiceConfig>();
-        kernelConfig.AddCompletionBackend(completionConfig);
-        ISemanticTextMemory memory = NullMemory.Instance;
+        // Add memory store only if we have a valid embedding config
         AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
         if (embeddingConfig?.IsValid() == true)
         {
-            // The same SK memory store is shared with all REST calls and users
-            IMemoryStore<float> memoryStore = new VolatileMemoryStore();
-            IEmbeddingGeneration<string, float> embeddingGenerator = embeddingConfig.ToTextEmbeddingsService(/* TODO: add logger - Might need to make SK classes more amenable to DI to do this... */);
-            kernelConfig.AddEmbeddingBackend(embeddingConfig);
-#pragma warning disable CA2000 // Dispose objects before losing scope - Used later through DI
-            memory = new SemanticTextMemory(memoryStore, embeddingGenerator);
-#pragma warning restore CA2000 // Dispose objects before losing scope
+            services.AddSingleton<IMemoryStore<float>, VolatileMemoryStore>();
         }
-        services.AddSingleton<ISkillCollection, SkillCollection>(); // Keep skill list empty?
-        services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
-        services.AddSingleton(memory);
-        services.AddSingleton(kernelConfig);
 
-        services.AddScoped<Kernel>();
+        services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
+
+        services.AddScoped<KernelConfig>(sp =>
+        {
+            var kernelConfig = new KernelConfig();
+            AIServiceConfig completionConfig = configuration.GetRequiredSection("CompletionConfig").Get<AIServiceConfig>();
+            kernelConfig.AddCompletionBackend(completionConfig);
+
+            return kernelConfig;
+        });
+
+        services.AddScoped<ISemanticTextMemory>(sp =>
+        {
+            var memoryStore = sp.GetService<IMemoryStore<float>>();
+            if (memoryStore is not null)
+            {
+                AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
+                if (embeddingConfig?.IsValid() == true)
+                {
+                    var logger = sp.GetRequiredService<ILogger<AIServiceConfig>>();
+                    IEmbeddingGeneration<string, float> embeddingGenerator = embeddingConfig.ToTextEmbeddingsService(logger);
+
+                    return new SemanticTextMemory(memoryStore, embeddingGenerator);
+                }
+            }
+
+            return NullMemory.Instance;
+        });
+
+        // Each REST call gets a fresh new SK instance
+        services.AddScoped<Kernel>(sp =>
+        {
+            var promptTemplateEngine = sp.GetRequiredService<IPromptTemplateEngine>();
+            var memory = sp.GetRequiredService<ISemanticTextMemory>();
+            var kernelConfig = sp.GetRequiredService<KernelConfig>();
+            var logger = sp.GetRequiredService<ILogger<Kernel>>();
+
+            AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
+            if (embeddingConfig?.IsValid() == true)
+            {
+                kernelConfig.AddEmbeddingBackend(embeddingConfig);
+            }
+
+            return new Kernel(new SkillCollection(),
+                              promptTemplateEngine,
+                              memory,
+                              kernelConfig,
+                              logger);
+        });
     }
 }
