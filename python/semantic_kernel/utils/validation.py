@@ -16,7 +16,7 @@ def validate_skill_name(value: Optional[str]) -> None:
     :raises ValueError: If the skill name is invalid.
     """
     if not value:
-        raise ValueError("The skill name cannot be empty")
+        raise ValueError("The skill name cannot be `None` or empty")
 
     SKILL_NAME_REGEX = r"^[0-9A-Za-z_]*$"
     if not re_match(SKILL_NAME_REGEX, value):
@@ -38,7 +38,7 @@ def validate_function_name(value: Optional[str]) -> None:
     :raises ValueError: If the function name is invalid.
     """
     if not value:
-        raise ValueError("The function name cannot be empty")
+        raise ValueError("The function name cannot be `None` or empty")
 
     FUNCTION_NAME_REGEX = r"^[0-9A-Za-z_]*$"
     if not re_match(FUNCTION_NAME_REGEX, value):
@@ -60,7 +60,7 @@ def validate_function_param_name(value: Optional[str]) -> None:
     :raises ValueError: If the function parameter name is invalid.
     """
     if not value:
-        raise ValueError("The function parameter name cannot be empty")
+        raise ValueError("The function parameter name cannot be `None` or empty")
 
     FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]*$"
     if not re_match(FUNCTION_PARAM_NAME_REGEX, value):

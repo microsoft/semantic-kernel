@@ -35,7 +35,7 @@ class ContextVariables:
 
     def set(self, name: str, value: str) -> "ContextVariables":
         if not name:
-            raise ValueError("The variable name cannot be empty")
+            raise ValueError("The variable name cannot be `None` or empty")
         name = name.lower()
 
         if value is not None:
@@ -58,7 +58,7 @@ class ContextVariables:
 
     def __setitem__(self, name: str, value: str) -> None:
         if not name:
-            raise ValueError("The variable name cannot be empty")
+            raise ValueError("The variable name cannot be `None` or empty")
         name = name.lower()
         self._variables[name] = value
 

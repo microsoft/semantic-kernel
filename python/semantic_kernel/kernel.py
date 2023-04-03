@@ -257,7 +257,10 @@ class Kernel(KernelBase):
                 )
             elif backend.backend_type == BackendType.OpenAI:
                 if backend.open_ai is None:
-                    raise ValueError("OpenAI configuration is missing")
+                    raise ValueError(
+                        "The OpenAI backend was requested, but is not configured: "
+                        "unable to prepare the semantic function. "
+                    )
 
                 function.set_chat_backend(
                     lambda: OpenAIChatCompletion(
@@ -290,7 +293,10 @@ class Kernel(KernelBase):
 
             if backend.backend_type == BackendType.AzureOpenAI:
                 if backend.azure_open_ai is None:
-                    raise ValueError("Azure OpenAI configuration is missing")
+                    raise ValueError(
+                        "The Azure OpenAI backend was requested, but is "
+                        "not configured: unable to prepare the semantic function. "
+                    )
                 function.set_ai_backend(
                     lambda: AzureTextCompletion(
                         backend.azure_open_ai.deployment_name,  # type: ignore
@@ -302,7 +308,10 @@ class Kernel(KernelBase):
                 )
             elif backend.backend_type == BackendType.OpenAI:
                 if backend.open_ai is None:
-                    raise ValueError("OpenAI configuration is missing")
+                    raise ValueError(
+                        "The OpenAI backend was requested, but is not configured: "
+                        "unable to prepare the semantic function. "
+                    )
                 function.set_ai_backend(
                     lambda: OpenAITextCompletion(
                         backend.open_ai.model_id,  # type: ignore

@@ -31,25 +31,25 @@ class KernelBuilder:
 
     def with_configuration(self, config: KernelConfig) -> "KernelBuilder":
         if config is None:
-            raise ValueError("The configuration instance provided is None")
+            raise ValueError("The configuration instance cannot be `None`")
         self._config = config
         return self
 
     def with_memory(self, memory: SemanticTextMemoryBase) -> "KernelBuilder":
         if memory is None:
-            raise ValueError("The memory instance provided is None")
+            raise ValueError("The memory instance cannot be `None`")
         self._memory = memory
         return self
 
     def with_memory_storage(self, storage: MemoryStoreBase) -> "KernelBuilder":
         if storage is None:
-            raise ValueError("The memory storage instance provided is None")
+            raise ValueError("The memory storage instance cannot be `None`")
         self._memory_storage = storage
         return self
 
     def with_logger(self, log: Logger) -> "KernelBuilder":
         if log is None:
-            raise ValueError("The logger instance provided is None")
+            raise ValueError("The logger instance cannot be `None`")
         self._log = log
         return self
 

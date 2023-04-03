@@ -23,7 +23,7 @@ def use_memory(
     if embeddings_generator is None:
         backend_label = kernel.config.default_embeddings_backend
         if not backend_label:
-            raise ValueError("The embedding backend label is empty")
+            raise ValueError("The embedding backend label cannot be `None` or empty")
 
         embeddings_backend_config = kernel.config.get_embeddings_backend(backend_label)
         if embeddings_backend_config is None:
@@ -53,8 +53,8 @@ def use_memory(
             )
 
     if storage is None:
-        raise ValueError("The storage instance provided is None")
+        raise ValueError("The storage instance provided cannot be `None`")
     if embeddings_generator is None:
-        raise ValueError("The embedding generator is None")
+        raise ValueError("The embedding generator cannot be `None`")
 
     kernel.register_memory(SemanticTextMemory(storage, embeddings_generator))

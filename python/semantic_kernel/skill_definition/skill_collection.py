@@ -35,7 +35,7 @@ class SkillCollection(SkillCollectionBase):
 
     def add_semantic_function(self, function: "SKFunctionBase") -> None:
         if function is None:
-            raise ValueError("The function provided cannot be None")
+            raise ValueError("The function provided cannot be `None`")
 
         s_name, f_name = function.skill_name, function.name
         s_name, f_name = s_name.lower(), f_name.lower()
@@ -47,7 +47,7 @@ class SkillCollection(SkillCollectionBase):
 
     def add_native_function(self, function: "SKFunctionBase") -> None:
         if function is None:
-            raise ValueError("The function provided cannot be None")
+            raise ValueError("The function provided cannot be `None`")
 
         s_name, f_name = function.skill_name, function.name
         s_name, f_name = self._normalize_names(s_name, f_name, True)
@@ -143,7 +143,7 @@ class SkillCollection(SkillCollectionBase):
             s_name = self.GLOBAL_SKILL
 
         if s_name is None:
-            raise ValueError("The skill name provided cannot be None")
+            raise ValueError("The skill name provided cannot be `None`")
 
         s_name, f_name = s_name.lower(), f_name.lower()
         return s_name, f_name

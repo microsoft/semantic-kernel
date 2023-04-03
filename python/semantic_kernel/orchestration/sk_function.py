@@ -43,7 +43,7 @@ class SKFunction(SKFunctionBase):
     @staticmethod
     def from_native_method(method, skill_name="", log=None) -> "SKFunction":
         if method is None:
-            raise ValueError("Method cannot be empty")
+            raise ValueError("Method cannot be `None`")
 
         assert method.__sk_function__ is not None, "Method is not a SK function"
         assert method.__sk_function_name__ is not None, "Method name is empty"
@@ -89,11 +89,11 @@ class SKFunction(SKFunctionBase):
         log: Optional[Logger] = None,
     ) -> "SKFunction":
         if function_config is None:
-            raise ValueError("Function configuration cannot be empty")
+            raise ValueError("Function configuration cannot be `None`")
 
         async def _local_func(client, request_settings, context):
             if client is None:
-                raise ValueError("AI LLM backend cannot be empty")
+                raise ValueError("AI LLM backend cannot be `None`")
 
             try:
                 if function_config.has_chat_prompt:
@@ -203,7 +203,7 @@ class SKFunction(SKFunctionBase):
         self, ai_backend: Callable[[], TextCompletionClientBase]
     ) -> "SKFunction":
         if ai_backend is None:
-            raise ValueError("AI LLM backend factory cannot be empty")
+            raise ValueError("AI LLM backend factory cannot be `None`")
         self._verify_is_semantic()
         self._ai_backend = ai_backend()
         return self
@@ -212,21 +212,21 @@ class SKFunction(SKFunctionBase):
         self, chat_backend: Callable[[], ChatCompletionClientBase]
     ) -> "SKFunction":
         if chat_backend is None:
-            raise ValueError("Chat LLM backend factory cannot be empty")
+            raise ValueError("Chat LLM backend factory cannot be `None`")
         self._verify_is_semantic()
         self._chat_backend = chat_backend()
         return self
 
     def set_ai_configuration(self, settings: CompleteRequestSettings) -> "SKFunction":
         if settings is None:
-            raise ValueError("AI LLM request settings cannot be empty")
+            raise ValueError("AI LLM request settings cannot be `None`")
         self._verify_is_semantic()
         self._ai_request_settings = settings
         return self
 
     def set_chat_configuration(self, settings: ChatRequestSettings) -> "SKFunction":
         if settings is None:
-            raise ValueError("Chat LLM request settings cannot be empty")
+            raise ValueError("Chat LLM request settings cannot be `None`")
         self._verify_is_semantic()
         self._chat_request_settings = settings
         return self
@@ -249,7 +249,7 @@ class SKFunction(SKFunctionBase):
     ) -> SKContext:
         if context is None:
             if self._skill_collection is None:
-                raise ValueError("Skill collection cannot be empty")
+                raise ValueError("Skill collection cannot be `None`")
             assert self._skill_collection is not None
 
             context = SKContext(

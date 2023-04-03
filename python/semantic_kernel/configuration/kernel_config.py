@@ -31,7 +31,7 @@ class KernelConfig:
         overwrite: bool = False,
     ) -> "KernelConfig":
         if not name:
-            raise ValueError("The backend name cannot be empty")
+            raise ValueError("The backend name cannot be `None` or empty")
 
         if not overwrite and name in self._chat_backends:
             raise KernelException(
@@ -59,7 +59,7 @@ class KernelConfig:
         overwrite: bool = False,
     ) -> "KernelConfig":
         if not name:
-            raise ValueError("The backend name cannot be empty")
+            raise ValueError("The backend name cannot be `None` or empty")
 
         if not overwrite and name in self._chat_backends:
             raise KernelException(
@@ -89,7 +89,7 @@ class KernelConfig:
         overwrite: bool = False,
     ) -> "KernelConfig":
         if not name:
-            raise ValueError("The backend name cannot be empty")
+            raise ValueError("The backend name cannot be `None` or empty")
 
         if not overwrite and name in self._completion_backends:
             raise KernelException(
@@ -118,7 +118,7 @@ class KernelConfig:
         overwrite: bool = False,
     ) -> "KernelConfig":
         if not name:
-            raise ValueError("The backend name cannot be empty")
+            raise ValueError("The backend name cannot be `None` or empty")
 
         if not overwrite and name in self._completion_backends:
             raise KernelException(
@@ -146,7 +146,7 @@ class KernelConfig:
         overwrite: bool = False,
     ) -> "KernelConfig":
         if not name:
-            raise ValueError("The backend name cannot be empty")
+            raise ValueError("The backend name cannot be `None` or empty")
 
         if not overwrite and name in self._embeddings_backends:
             raise KernelException(
@@ -175,7 +175,7 @@ class KernelConfig:
         overwrite: bool = False,
     ) -> "KernelConfig":
         if not name:
-            raise ValueError("The backend name cannot be empty")
+            raise ValueError("The backend name cannot be `None` or empty")
 
         if not overwrite and name in self._embeddings_backends:
             raise KernelException(

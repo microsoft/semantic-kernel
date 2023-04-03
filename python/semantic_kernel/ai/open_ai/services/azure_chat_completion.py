@@ -22,11 +22,11 @@ class AzureChatCompletion(OpenAIChatCompletion):
         logger: Optional[Logger] = None,
     ) -> None:
         if not deployment_name:
-            raise ValueError("The deployment name cannot be empty")
+            raise ValueError("The deployment name cannot be `None` or empty")
         if not api_key:
-            raise ValueError("The Azure API key cannot be empty")
+            raise ValueError("The Azure API key cannot be `None` or empty`")
         if not endpoint:
-            raise ValueError("The Azure endpoint cannot be empty")
+            raise ValueError("The Azure endpoint cannot be `None` or empty")
         if not endpoint.startswith("https://"):
             raise ValueError("The Azure endpoint must start with https://")
 

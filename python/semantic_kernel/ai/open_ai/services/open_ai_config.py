@@ -32,9 +32,9 @@ class OpenAIConfig:
                 account belongs to multiple organizations.
         """
         if not model_id:
-            raise ValueError("The model ID cannot be empty")
+            raise ValueError("The model ID cannot be `None` or empty")
         if not api_key:
-            raise ValueError("The API key cannot be empty")
+            raise ValueError("The API key cannot be `None` or empty")
 
         self.model_id = model_id
         self.api_key = api_key

@@ -65,7 +65,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase):
             str -- The completed text.
         """
         if request_settings is None:
-            raise ValueError("The request settings cannot be empty")
+            raise ValueError("The request settings cannot be `None`")
 
         if request_settings.max_tokens < 1:
             raise AIException(

@@ -65,9 +65,9 @@ class OpenAITextCompletion(TextCompletionClientBase):
             str -- The completed text.
         """
         if not prompt:
-            raise ValueError("The prompt cannot be empty")
+            raise ValueError("The prompt cannot be `None` or empty")
         if request_settings is None:
-            raise ValueError("The request settings cannot be empty")
+            raise ValueError("The request settings cannot be `None`")
 
         if request_settings.max_tokens < 1:
             raise AIException(

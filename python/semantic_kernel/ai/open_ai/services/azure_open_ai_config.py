@@ -40,13 +40,13 @@ class AzureOpenAIConfig:
             https://learn.microsoft.com/azure/cognitive-services/openai/reference
         """
         if not deployment_name:
-            raise ValueError("The deployment name cannot be empty")
-        if not endpoint:
-            raise ValueError("The endpoint cannot be empty")
-        if not endpoint.startswith("https://"):
-            raise ValueError("The endpoint must start with https://")
+            raise ValueError("The deployment name cannot be `None` or empty")
         if not api_key:
-            raise ValueError("The API key cannot be empty")
+            raise ValueError("The Azure API key cannot be `None` or empty`")
+        if not endpoint:
+            raise ValueError("The Azure endpoint cannot be `None` or empty")
+        if not endpoint.startswith("https://"):
+            raise ValueError("The Azure endpoint must start with https://")
 
         self.deployment_name = deployment_name
         self.endpoint = endpoint
