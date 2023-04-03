@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -8,8 +9,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.IntegrationTests.Connectors.OpenAI;
+using SemanticKernel.IntegrationTests.TestExtensions;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -84,6 +87,59 @@ public sealed class PlannerSkillTests : IDisposable
         Assert.Empty(actual.LastErrorDescription);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [SkippableTheory]
+    [Trait("Model", "text-davinci-003")]
+    [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun but if its night I want a joke about the moon",
+        "function._GLOBAL_FUNCTIONS_.Hour",
+        "function.FunSkill.Joke",
+        "<if condition=\"",
+        "</if>",
+        "<else>",
+        "</else>")]
+    public async Task CreatePlanShouldHaveConditionalStatementsAsync(string prompt, params string[] expectedAnswerContainsArray)
+    {
+        string[] unsupportedModels = { "text-davinci-002" };
+
+        // Arrange
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        if (unsupportedModels.Contains(azureOpenAIConfiguration?.DeploymentName))
+        {
+            throw new SkipTestException($"Unsupported model {azureOpenAIConfiguration?.DeploymentName}");
+        }
+
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        IKernel target = Kernel.Builder
+            .WithLogger(this._logger)
+            .Configure(config =>
+            {
+                config.AddAzureOpenAITextCompletionService(
+                    serviceId: azureOpenAIConfiguration.ServiceId,
+                    deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+
+                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
+            })
+            .Build();
+
+        // Import all sample skills available for demonstration purposes.
+        TestHelpers.GetSkill("FunSkill", target);
+        target.ImportSkill(new TimeSkill());
+
+        var plannerSKill = target.ImportSkill(new PlannerSkill(target));
+
+        SKContext actual = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
+
+        // Assert
+        Assert.Empty(actual.LastErrorDescription);
+        Assert.False(actual.ErrorOccurred);
+        foreach (string expectedAnswerContains in expectedAnswerContainsArray)
+        {
+            Assert.Contains(expectedAnswerContains, actual.Variables[Plan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+        }
     }
 
     private readonly XunitLogger<object> _logger;
