@@ -53,7 +53,7 @@ export const Constants = {
             id: 'bot',
             fullName: 'SK Chatbot',
             emailAddress: '',
-            photo: '/assets/logo-black-512x512.png',
+            photo: '/assets/bot-icon-1.png',
         },
         fileExtension: 'skcb',
         typingIndicatorTimeoutMs: 5000,
