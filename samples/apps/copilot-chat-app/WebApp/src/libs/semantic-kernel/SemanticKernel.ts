@@ -30,7 +30,8 @@ export class SemanticKernel {
         const { commandPath, method, body } = request;
 
         try {
-            const response = await fetch(`${this.serviceUrl}${commandPath}`, {
+            const requestUrl = new URL(commandPath, this.serviceUrl);
+            const response = await fetch(requestUrl, {
                 method: method ?? 'GET',
                 body: JSON.stringify(body),
                 headers: { "Content-Type": "application/json" }
