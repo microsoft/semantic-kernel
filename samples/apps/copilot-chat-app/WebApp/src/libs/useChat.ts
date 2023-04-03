@@ -1,5 +1,4 @@
 import { useAccount } from "@azure/msal-react";
-import debug from "debug";
 import { Constants } from "../Constants";
 import { useAppDispatch, useAppSelector } from "../redux/app/hooks";
 import { RootState } from "../redux/app/store";
@@ -8,13 +7,11 @@ import { addConversation, setSelectedConversation, updateConversation } from "..
 import { ChatUser } from "./models/ChatUser";
 import { useSemanticKernel } from "./semantic-kernel/useSemanticKernel";
 
-const log = debug(Constants.debug.root).extend('use-chat');
-
 export const useChat = () => {
     const { audience } = useAppSelector((state: RootState) => state.chat);
     const dispatch = useAppDispatch();
     const account = useAccount();
-    const sk = useSemanticKernel(import.meta.env.VITE_REACT_APP_BACKEND_URI as string);
+    const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
 
     const getAudienceMemberForId = (id: string) =>
     {

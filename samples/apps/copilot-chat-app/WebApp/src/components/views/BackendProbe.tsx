@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { Body1, Spinner, Title3 } from '@fluentui/react-components';
-import * as React from 'react';
 import { FC, useEffect } from 'react';
 
 interface IData {

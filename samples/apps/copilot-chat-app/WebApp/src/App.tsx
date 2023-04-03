@@ -4,10 +4,10 @@ import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-reac
 import { Avatar, makeStyles, Subtitle1 } from '@fluentui/react-components';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
+import { msalInstance } from '.';
 import { Login } from './components/Login';
-import { ChatView } from './components/views/ChatView';
 import BackendProbe from './components/views/BackendProbe';
-import { msalInstance } from './main';
+import { ChatView } from './components/views/ChatView';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { setSelectedConversation } from './redux/features/conversations/conversationsSlice';
@@ -63,7 +63,7 @@ const App: FC = () => {
             <AuthenticatedTemplate>
                 {appState === AppState.ProbeForBackend &&
                     <BackendProbe
-                        uri={import.meta.env.VITE_REACT_APP_BACKEND_URI as string}
+                        uri={process.env.REACT_APP_BACKEND_URI as string}
                         onBackendFound={() => setAppState(AppState.Chat)}
                     />
                 }

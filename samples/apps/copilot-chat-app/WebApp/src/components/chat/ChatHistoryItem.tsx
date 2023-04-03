@@ -66,7 +66,6 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
     const chat = useChat();
     const account = useAccount();
     const classes = useClasses();
-    const [isHovered, setIsHovered] = React.useState(false);
 
     const content = message.content
         .trim()
@@ -106,8 +105,6 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
                 {!isMe && <Persona className={classes.persona} avatar={avatar} />}
                 <div
                     className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
                 >
                     <div className={classes.header}>
                         {!isMe && <Label weight="semibold">{fullName}</Label>}
