@@ -179,7 +179,7 @@ public class ChatSkill
         {
             await this.SaveNewMessageAsync(message, context);
         }
-        catch (Exception ex) when (!e.IsCriticalException())
+        catch (Exception ex) when (!ex.IsCriticalException())
         {
             context.Fail($"Unable to save new message: {ex.Message}", ex);
             return context;
@@ -211,7 +211,7 @@ public class ChatSkill
             context.Variables.Set("audience", "bot");
             await this.SaveNewMessageAsync(context.Result, context);
         }
-        catch (Exception ex) when (!e.IsCriticalException())
+        catch (Exception ex) when (!ex.IsCriticalException())
         {
             context.Fail($"Unable to save new response: {ex.Message}", ex);
             return context;
