@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from typing import List
-from re import match as re_match
 
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition.parameter_view import ParameterView
+from semantic_kernel.utils.validation import valid_function_name
 
 
 class FunctionView:
@@ -24,7 +24,7 @@ class FunctionView:
         is_semantic: bool,
         is_asynchronous: bool = True,
     ) -> None:
-        if not re_match(SKFunctionBase.FUNCTION_NAME_REGEX, name):
+        if not valid_function_name(name):
             raise ValueError(
                 f"Invalid function name: {name}. Function names "
                 f"must match the regex: {SKFunctionBase.FUNCTION_NAME_REGEX}"
@@ -63,7 +63,7 @@ class FunctionView:
 
     @name.setter
     def name(self, value: str) -> None:
-        if not re_match(SKFunctionBase.FUNCTION_NAME_REGEX, value):
+        if not valid_function_name(value):
             raise ValueError(
                 f"Invalid function name: {value}. Function names "
                 f"must match the regex: {SKFunctionBase.FUNCTION_NAME_REGEX}"

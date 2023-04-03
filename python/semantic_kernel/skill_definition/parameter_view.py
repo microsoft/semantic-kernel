@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from re import match as re_match
-
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.utils.validation import validate_function_param_name
 
 
 class ParameterView:
@@ -11,11 +10,7 @@ class ParameterView:
     _default_value: str
 
     def __init__(self, name: str, description: str, default_value: str) -> None:
-        if not re_match(SKFunctionBase.FUNCTION_PARAM_NAME_REGEX, name):
-            raise ValueError(
-                f"Invalid function parameter name: {name}. Function parameter names "
-                f"must match the regex: {SKFunctionBase.FUNCTION_PARAM_NAME_REGEX}"
-            )
+        validate_function_param_name(name)
 
         self._name = name
         self._description = description
@@ -35,11 +30,7 @@ class ParameterView:
 
     @name.setter
     def name(self, value: str) -> None:
-        if not re_match(SKFunctionBase.FUNCTION_PARAM_NAME_REGEX, value):
-            raise ValueError(
-                f"Invalid function parameter name: {value}. Function parameter names "
-                f"must match the regex: {SKFunctionBase.FUNCTION_PARAM_NAME_REGEX}"
-            )
+        validate_function_param_name(value)
         self._name = value
 
     @description.setter

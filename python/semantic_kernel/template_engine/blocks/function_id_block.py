@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from re import match as re_match
 from typing import Optional, Tuple
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
+from semantic_kernel.utils.validation import validate_function_name
 
 
 class FunctionIdBlock(Block, TextRenderer):
@@ -38,13 +38,10 @@ class FunctionIdBlock(Block, TextRenderer):
             error_msg = "The function identifier is empty"
             return False, error_msg
 
-        if not re_match(r"^[a-zA-Z0-9_.]*$", self.content):
-            error_msg = (
-                f"The function identifier '{self.content}' contains invalid "
-                "characters. Only alphanumeric chars, underscore and a single "
-                "dot are allowed."
-            )
-            return False, error_msg
+        try:
+            validate_function_name(self.content)
+        except ValueError as ex:
+            return False, str(ex)
 
         if self._has_more_than_one_dot(self.content):
             error_msg = (
