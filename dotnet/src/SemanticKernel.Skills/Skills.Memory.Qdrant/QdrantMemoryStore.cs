@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -30,6 +32,14 @@ public class QdrantMemoryStore : IMemoryStore
     public QdrantMemoryStore(string host, int port, int vectorSize, ILogger? logger = null)
     {
         this._qdrantClient = new QdrantVectorDbClient(endpoint: host, port: port, vectorSize: vectorSize, log: logger);
+    }
+
+    /// <summary>
+    /// Constructor for a memory store backed by a <see cref="IQdrantVectorDbClient"/>
+    /// </summary>
+    public QdrantMemoryStore(IQdrantVectorDbClient client)
+    {
+        this._qdrantClient = client;
     }
 
     /// <inheritdoc/>
@@ -60,48 +70,37 @@ public class QdrantMemoryStore : IMemoryStore
             await this._qdrantClient.CreateCollectionAsync(collectionName, cancel: cancel);
         }
 
-        string pointId;
-        QdrantVectorRecord? existingRecord = null;
+        var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancel);
 
-        // Check if a database key has been provided for update
-        if (!string.IsNullOrEmpty(record.Key))
+        if (vectorData == null)
         {
-            pointId = record.Key;
+            throw new VectorDbException($"Failed to convert MemoryRecord to QdrantVectorRecord");
         }
-        // Check if the data store contains a record with the provided metadata ID
-        else
-        {
-            existingRecord = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, record.Metadata.Id, cancel: cancel);
-            
-            if (existingRecord != null)
-            {
-                pointId = existingRecord.PointId;
-            }
-            else
-            {
-                // If no matching record can be found, generate an ID for the new record
-                pointId = Guid.NewGuid().ToString();
-                existingRecord = await this._qdrantClient.GetVectorByIdAsync(collectionName, pointId, cancel: cancel);
-                if (existingRecord != null)
-                {
-                    throw new VectorDbException(VectorDbException.ErrorCodes.NewGuidAlreadyExistsInCollection, $"Failed to generate unique ID for new record");
-                }
-            }
-        }
-        
-        var vectorData = QdrantVectorRecord.FromJson(
-            pointId: pointId,
-            embedding: record.Embedding.Vector,
-            json: record.GetSerializedMetadata());
-        
-        await this._qdrantClient.UpsertVectorAsync(collectionName, vectorData, cancel: cancel);
 
-        return pointId;
+        await this._qdrantClient.UpsertVectorsAsync(
+            collectionName,
+            new[] { vectorData },
+            cancel: cancel);
+
+        return vectorData.PointId;
     }
 
-    public IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> record, CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> record, [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel))
+        {
+            await this._qdrantClient.CreateCollectionAsync(collectionName, cancel: cancel);
+        }
+
+        var tasks = Task.WhenAll(record.Select(async r => await this.ConvertFromMemoryRecordAsync(collectionName, r, cancel)));
+        var vectorData = await tasks;
+
+        await this._qdrantClient.UpsertVectorsAsync(collectionName, vectorData, cancel: cancel);
+
+        foreach (var v in vectorData)
+        {
+            yield return v.PointId;
+        }
     }
 
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, CancellationToken cancel = default)
@@ -123,12 +122,36 @@ public class QdrantMemoryStore : IMemoryStore
             throw new VectorDbException($"Failed to get vector data from Qdrant {ex.Message}");
         }
     }
+    
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, [EnumeratorCancellation] CancellationToken cancel = default)
+    {
+        foreach (var key in keys)
+        {
+            MemoryRecord? record = await this.GetAsync(collectionName, key, cancel);
+            if (record != null)
+            {
+                yield return record;
+            }
+        }
+    }
 
+    /// <summary>
+    /// Get a MemoryRecord from the Qdrant Vector database by pointId.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <param name="pointId"></param>
+    /// <param name="cancel"></param>
+    /// <returns></returns>
+    /// <exception cref="VectorDbException"></exception>
     public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, CancellationToken cancel = default)
     {
         try
         {
-            var vectorData = await this._qdrantClient.GetVectorByIdAsync(collectionName, pointId, cancel: cancel);
+            var vectorDataList = this._qdrantClient
+                .GetVectorsByIdAsync(collectionName, new[] { pointId }, cancel: cancel);
+
+            var vectorData = await vectorDataList.FirstOrDefaultAsync(cancel);
+
             if (vectorData != null)
             {
                 return MemoryRecord.FromJson(
@@ -146,16 +169,40 @@ public class QdrantMemoryStore : IMemoryStore
         }
     }
 
-    public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+    /// <summary>
+    /// Get a MemoryRecord from the Qdrant Vector database by given a group of pointIds.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <param name="pointIds"></param>
+    /// <param name="cancel"></param>
+    /// <returns></returns>
+    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds,
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        var vectorDataList = this._qdrantClient
+            .GetVectorsByIdAsync(collectionName, pointIds, cancel: cancel);
+
+        await foreach (var vectorData in vectorDataList)
+        {
+            yield return MemoryRecord.FromJson(
+                json: vectorData.GetSerializedPayload(),
+                embedding: new Embedding<float>(vectorData.Embedding));
+        }
     }
 
-    public async Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
+    /// <summary>
+    /// Remove a MemoryRecord from the Qdrant Vector database by pointId.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <param name="pointId"></param>
+    /// <param name="cancel"></param>
+    /// <returns></returns>
+    /// <exception cref="VectorDbException"></exception>
+    public async Task RemoveWithPointIdAsync(string collectionName, string pointId, CancellationToken cancel = default)
     {
         try
         {
-            await this._qdrantClient.DeleteVectorByIdAsync(collectionName, key, cancel: cancel);
+            await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, new[] { pointId }, cancel: cancel);
         }
         catch (Exception ex)
         {
@@ -163,9 +210,46 @@ public class QdrantMemoryStore : IMemoryStore
         }
     }
 
-    public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+    /// <summary>
+    /// Remove a MemoryRecord from the Qdrant Vector database by given a group of pointIds.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <param name="pointIds"></param>
+    /// <param name="cancel"></param>
+    /// <returns></returns>
+    /// <exception cref="VectorDbException"></exception>
+    public async Task RemoveWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancel = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, pointIds, cancel: cancel);
+        }
+        catch (Exception ex)
+        {
+            throw new VectorDbException($"Error in batch removing data from Qdrant {ex.Message}");
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
+    {
+        try
+        {
+            await this._qdrantClient.DeleteVectorByPayloadIdAsync(collectionName, key, cancel: cancel);
+        }
+        catch (Exception ex)
+        {
+            throw new VectorDbException($"Failed to remove vector data from Qdrant {ex.Message}");
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+    {
+        foreach (var key in keys)
+        {
+            await this.RemoveAsync(collectionName, key, cancel);
+        }
     }
 
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -173,7 +257,7 @@ public class QdrantMemoryStore : IMemoryStore
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
-        CancellationToken cancel = default)
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var results = this._qdrantClient.FindNearestInCollectionAsync(
             collectionName: collectionName,
@@ -216,7 +300,50 @@ public class QdrantMemoryStore : IMemoryStore
     /// Concurrent dictionary consisting of Qdrant Collection names mapped to
     /// a concurrent dictionary of cached Qdrant vector entries mapped by plaintext key
     /// </summary>
-    private readonly QdrantVectorDbClient _qdrantClient;
-    
+    private readonly IQdrantVectorDbClient _qdrantClient;
+
+    private async Task<QdrantVectorRecord> ConvertFromMemoryRecordAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
+    {
+        string pointId;
+
+        // Check if a database key has been provided for update
+        if (!string.IsNullOrEmpty(record.Key))
+        {
+            pointId = record.Key;
+        }
+        // Check if the data store contains a record with the provided metadata ID
+        else
+        {
+            var existingRecord = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, record.Metadata.Id, cancel: cancel);
+
+            if (existingRecord != null)
+            {
+                pointId = existingRecord.PointId;
+            }
+            else
+            {
+                // If no matching record can be found, generate an ID for the new record
+                pointId = Guid.NewGuid().ToString();
+                existingRecord = await this._qdrantClient.GetVectorsByIdAsync(collectionName, new[] { pointId }, cancel: cancel).FirstOrDefaultAsync(cancel);
+                if (existingRecord != null)
+                {
+                    throw new VectorDbException(VectorDbException.ErrorCodes.NewGuidAlreadyExistsInCollection, $"Failed to generate unique ID for new record");
+                }
+            }
+        }
+
+        var vectorData = QdrantVectorRecord.FromJson(
+            pointId: pointId,
+            embedding: record.Embedding.Vector,
+            json: record.GetSerializedMetadata());
+
+        if (vectorData == null)
+        {
+            throw new VectorDbException(VectorDbException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord, $"Failed to convert MemoryRecord to QdrantVectorRecord");
+        }
+
+        return vectorData;
+    }
+
     #endregion
 }

@@ -14,7 +14,7 @@ using Xunit;
 namespace SemanticKernel.Skills.UnitTests.Memory.Sqlite;
 
 /// <summary>
-/// Unit tests of <see cref="SqliteMemoryStoreMemoryStore"/>.
+/// Unit tests of <see cref="SqliteMemoryStore"/>.
 /// </summary>
 public class SqliteDataStoreTests : IDisposable
 {
@@ -350,7 +350,6 @@ public class SqliteDataStoreTests : IDisposable
         // Arrange
         this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
-        int topN = 4;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         int i = 0;
