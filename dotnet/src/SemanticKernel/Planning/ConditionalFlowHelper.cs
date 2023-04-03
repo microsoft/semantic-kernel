@@ -78,19 +78,48 @@ public class ConditionalFlowHelper
         XmlDocument xmlDoc = new();
         xmlDoc.LoadXml("<xml>" + ifFullContent + "</xml>");
 
-        XmlNode ifNode =
-            xmlDoc.SelectSingleNode("//if")
-            ?? throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "If is not present");
+        this.EnsureIfStructure(xmlDoc, out var ifNode, out var elseNode);
 
-        XmlNode? elseNode = xmlDoc.SelectSingleNode("//else");
+        var usedVariables = this.GetUsedVariables(ifNode);
 
-        var usedVariables = await this.GetVariablesAndEnsureIfStructureIsValidAsync(ifNode.OuterXml, context).ConfigureAwait(false);
+        // Temporarily avoiding going to LLM to resolve variable and If structure
+        // await this.GetVariablesAndEnsureIfStructureIsValidAsync(ifNode.OuterXml, context).ConfigureAwait(false);
 
         bool conditionEvaluation = await this.EvaluateConditionAsync(ifNode, usedVariables, context).ConfigureAwait(false);
 
         return conditionEvaluation
             ? ifNode.InnerXml
             : elseNode?.InnerXml ?? string.Empty;
+    }
+
+    private void EnsureIfStructure(XmlDocument xmlDoc, out XmlNode ifNode, out XmlNode? elseNode)
+    {
+        ifNode =
+            xmlDoc.SelectSingleNode("//if")
+            ?? throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "If is not present");
+
+        XmlAttribute? conditionContents = ifNode.Attributes?["condition"];
+
+        if (conditionContents is null)
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "Condition attribute is not present");
+        }
+
+        if (string.IsNullOrWhiteSpace(conditionContents.Value))
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "Condition attribute value cannot be empty");
+        }
+
+        if (!ifNode.HasChildNodes)
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "If has no children");
+        }
+
+        elseNode = xmlDoc.SelectSingleNode("//else");
+        if (elseNode is not null && !elseNode.HasChildNodes)
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "Else has no children");
+        }
     }
 
     /// <summary>
@@ -126,6 +155,27 @@ public class ConditionalFlowHelper
                             ?? Enumerable.Empty<string>();
 
         return usedVariables;
+    }
+
+    /// <summary>
+    /// Get the variables used in the If statement condition
+    /// </summary>
+    /// <param name="ifNode">If Xml Node</param>
+    /// <returns>List of used variables in the if node condition attribute</returns>
+    /// <exception cref="ConditionException">InvalidStatementStructure</exception>
+    /// <exception cref="ConditionException">InvalidCondition</exception>
+    private IEnumerable<string> GetUsedVariables(XmlNode ifNode)
+    {
+        var foundVariables = Regex.Matches(ifNode.Attributes!["condition"].Value, "\\$[0-9A-Za-z_]+");
+        if (foundVariables.Count == 0)
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidCondition, "No variables found in the condition");
+        }
+
+        foreach (Match foundVariable in foundVariables)
+        {
+            yield return foundVariable.Value;
+        }
     }
 
     /// <summary>
@@ -204,6 +254,7 @@ public class ConditionalFlowHelper
             var value = Regex.IsMatch(v.Value, "^[0-9.,]+$") ? v.Value : JsonSerializer.Serialize(v.Value);
             conditionalVariables.AppendLine($"{v.Key} = {value}");
         }
+
         foreach (string notFoundVariable in checkNotFoundVariables)
         {
             conditionalVariables.AppendLine($"{notFoundVariable} = undefined");

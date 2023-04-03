@@ -19,7 +19,7 @@ namespace SemanticKernel.UnitTests.Planning;
 public class ConditionalFlowHelperTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
-    private const string ValidIfStructure = "<if condition=\"a equals 0\"><function/></if>";
+    private const string ValidIfStructure = "<if condition=\"$a equals 0\"><function/></if>";
 
     public ConditionalFlowHelperTests(ITestOutputHelper testOutputHelper)
     {
@@ -41,7 +41,7 @@ public class ConditionalFlowHelperTests
     }
 
     [Fact]
-    public async Task ItCanRunIfAsync()
+    public async Task IfIfAsyncCanRunIfAsync()
     {
         // Arrange
         var kernel = KernelBuilder.Create();
@@ -65,7 +65,7 @@ public class ConditionalFlowHelperTests
     [Theory]
     [InlineData("{\"valid\": true}")]
     [InlineData("{\"valid\": true, \"condition\": null}")]
-    public async Task InvalidConditionJsonPropertyShouldFailAsync(string llmConditionResult)
+    public async Task IfIfAsyncInvalidConditionJsonPropertyShouldFailAsync(string llmConditionResult)
     {
         // Arrange
         var kernel = KernelBuilder.Create();
@@ -90,7 +90,7 @@ public class ConditionalFlowHelperTests
     }
 
     [Fact]
-    public async Task InvalidIfStatementWithoutConditionShouldFailAsync()
+    public async Task IfIfAsyncInvalidIfStatementWithoutConditionShouldFailAsync()
     {
         // Arrange
         var kernel = KernelBuilder.Create();
@@ -107,7 +107,7 @@ public class ConditionalFlowHelperTests
         // Act
         var exception = await Assert.ThrowsAsync<ConditionException>(async () =>
         {
-            await target.IfAsync("<if></if>", this.CreateSKContext(kernel));
+            await target.IfAsync("<if condition=\"something\"><function/></if>", this.CreateSKContext(kernel));
         });
 
         // Assert
@@ -117,7 +117,7 @@ public class ConditionalFlowHelperTests
     [Theory]
     [InlineData("")]
     [InlineData("Unexpected Result")]
-    public async Task InvalidJsonIfStatementCheckResponseShouldFailContextAsync(string llmResult)
+    public async Task IfIfAsyncInvalidJsonIfStatementCheckResponseShouldFailContextAsync(string llmResult)
     {
         // Arrange
         var kernel = KernelBuilder.Create();
@@ -145,7 +145,7 @@ public class ConditionalFlowHelperTests
     [InlineData("<else condition=\"a contains b\">")]
     [InlineData("<if condition=\"a contains b\"><else></if>")]
     [InlineData("</if>")]
-    public async Task InvalidIfStatementWithoutClosingTagsShouldFailAsync(string ifContentInput)
+    public async Task IfIfAsyncInvalidIfStatementXmlShouldFailAsync(string ifContentInput)
     {
         // Arrange
         var kernel = KernelBuilder.Create();
@@ -170,12 +170,37 @@ public class ConditionalFlowHelperTests
     }
 
     [Theory]
+    [InlineData("<if/>")]
+    [InlineData("<if></if>")]
+    [InlineData("<if><function/></if>")]
+    [InlineData("<if condition=\"\"></if>")]
+    [InlineData("<if condition=\"something\"></if>")]
+    [InlineData("<if condition=\"something\"><function/></if><else/>")]
+    [InlineData("<if condition=\"something\"><function/></if><else></else>")]
+    public async Task IfIfAsyncInvalidIfStatementStructureShouldFailAsync(string ifContentInput)
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+        _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
+        var target = new ConditionalFlowHelper(kernel);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ConditionException>(async () =>
+        {
+            await target.IfAsync(ifContentInput, this.CreateSKContext(kernel));
+        });
+
+        // Assert
+        Assert.Equal(ConditionException.ErrorCodes.InvalidStatementStructure, exception.ErrorCode);
+    }
+
+    [Theory(Skip = "LLM IfStatementCheck is disabled")]
     [InlineData("{\"valid\": false, \"reason\": null}", ConditionalFlowHelper.NoReasonMessage)]
     [InlineData("{\"valid\": false, \"reason\": \"\"}", ConditionalFlowHelper.NoReasonMessage)]
     [InlineData("{\"valid\": false, \"reason\": \"Something1 Error\"}", "Something1 Error")]
     [InlineData("{\"valid\": false, \n\"reason\": \"Something2 Error\"}", "Something2 Error")]
     [InlineData("{\"valid\": false, \n\n\"reason\": \"Something3 Error\"}", "Something3 Error")]
-    public async Task InvalidIfStatementCheckResponseShouldFailContextWithReasonMessageAsync(string llmResult, string expectedReason)
+    public async Task IfIfAsyncInvalidIfStatementCheckResponseShouldFailContextWithReasonMessageAsync(string llmResult, string expectedReason)
     {
         // Arrange
         var kernel = KernelBuilder.Create();
@@ -204,7 +229,7 @@ public class ConditionalFlowHelperTests
     [InlineData("{\"valid\": false, \n\n\"reason\": \"Something1 Error\"}", "Something1 Error")]
     [InlineData("{\"valid\": false, \n\n\"reason\": \"Something2 Error\"}", "Something2 Error")]
     [InlineData("{\"valid\": false, \n\n\"reason\": \"Something3 Error\"}", "Something3 Error")]
-    public async Task InvalidEvaluateConditionResponseShouldFailContextWithReasonMessageAsync(string llmResult, string expectedReason)
+    public async Task IfIfAsyncInvalidEvaluateConditionResponseShouldFailContextWithReasonMessageAsync(string llmResult, string expectedReason)
     {
         // Arrange
         var kernel = KernelBuilder.Create();
@@ -230,11 +255,11 @@ public class ConditionalFlowHelperTests
     }
 
     [Theory]
-    [InlineData("{\"valid\": true, \"condition\": true}", "<if condition=\"a equals 0\"><functionIf/></if>", "<functionIf />")]
-    [InlineData("{\"valid\": true, \"condition\": false}", "<if condition=\"a equals 0\"><functionIf/></if>", "")]
-    [InlineData("{\"valid\": true, \"condition\": true}", "<if condition=\"a equals 0\"><functionIf/></if><else><functionElse/></else>", "<functionIf />")]
-    [InlineData("{\"valid\": true, \"condition\": false}", "<if condition=\"a equals 0\"><functionIf/></if><else><functionElse/></else>", "<functionElse />")]
-    public async Task ValidEvaluateConditionResponseShouldReturnAsync(string llmResult, string inputIfStructure, string expectedResult)
+    [InlineData("{\"valid\": true, \"condition\": true}", "<if condition=\"$a equals 0\"><functionIf/></if>", "<functionIf />")]
+    [InlineData("{\"valid\": true, \"condition\": false}", "<if condition=\"$a equals 0\"><functionIf/></if>", "")]
+    [InlineData("{\"valid\": true, \"condition\": true}", "<if condition=\"$a equals 0\"><functionIf/></if><else><functionElse/></else>", "<functionIf />")]
+    [InlineData("{\"valid\": true, \"condition\": false}", "<if condition=\"$a equals 0\"><functionIf/></if><else><functionElse/></else>", "<functionElse />")]
+    public async Task IfIfAsyncValidEvaluateConditionResponseShouldReturnAsync(string llmResult, string inputIfStructure, string expectedResult)
     {
         // Arrange
         var kernel = KernelBuilder.Create();
@@ -257,14 +282,16 @@ public class ConditionalFlowHelperTests
 
     [Theory]
     [InlineData("Variable1,Variable2", "Variable1")]
-    [InlineData("Variable1,Variable2", "")]
+    [InlineData("Variable1,Variable2", "a")]
     [InlineData("Variable1,Variable2,Variable3", "Variable2")]
-    public async Task EvaluateShouldUseExistingConditionVariablesOnlyAsync(string existingVariables, string conditionVariables)
+    public async Task IfIfAsyncEvaluateShouldUseExistingConditionVariablesOnlyAsync(string existingVariables, string conditionVariables)
     {
         // Arrange
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
-        var ifContent = ValidIfStructure;
+        var fakeConditionVariables = string.Join(" AND ", conditionVariables.Split(",").Select(x => $"${x} equals 0"));
+        var ifContent = ValidIfStructure.Replace("$a equals 0", fakeConditionVariables, StringComparison.InvariantCultureIgnoreCase);
+
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
             {
@@ -315,12 +342,13 @@ public class ConditionalFlowHelperTests
     [Theory]
     [InlineData("Variable1,Variable2", "Variable4")]
     [InlineData("Variable1,Variable2,Variable3", "Variable5,Variable2")]
-    public async Task InvalidEvaluateWhenConditionVariablesDontExistsAsync(string existingVariables, string conditionVariables)
+    public async Task IfIfAsyncInvalidEvaluateWhenConditionVariablesDontExistsAsync(string existingVariables, string conditionVariables)
     {
         // Arrange
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
-        var ifContent = ValidIfStructure;
+        var fakeConditionVariables = string.Join(" AND ", conditionVariables.Split(",").Select(x => $"${x} equals 0"));
+        var ifContent = ValidIfStructure.Replace("$a equals 0", fakeConditionVariables, StringComparison.InvariantCultureIgnoreCase);
 
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
