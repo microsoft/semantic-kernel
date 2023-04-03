@@ -3,11 +3,19 @@
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-  
+
   <PropertyGroup>
+    <AssemblyName>Microsoft.SemanticKernel.Skills.CosmosDB</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Skills.CosmosDB</RootNamespace>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <!--  Before shipping this nuget we need to bring it under the Connectors terminology -->
+  <!--<PropertyGroup>
+    --><!-- NuGet Package Settings --><!--
+    <PackageId>Microsoft.SemanticKernel.Skills.CosmosDB</PackageId>
+    <Title>Semantic Kernel - Document Skill</Title>
+  </PropertyGroup>-->
   
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Cosmos" />

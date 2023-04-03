@@ -9,11 +9,11 @@ namespace SemanticKernel.Service.Skills;
 
 [Route("[controller]")]
 [ApiController]
-public class ProbeController : ControllerBase
+public class HealthProbeController : ControllerBase
 {
     [HttpGet]
-    public ActionResult<string> Get()
+    public ActionResult<string> VerifyLiveness()
     {
-        return "Semantic Kernel service up and running";
+        return "Semantic Kernel service is live.";
     }
 }

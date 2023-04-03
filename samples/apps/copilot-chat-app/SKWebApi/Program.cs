@@ -23,7 +23,7 @@ public static class Program
         string serverPortString = builder.Configuration.GetSection("ServicePort").Get<string>();
         if (!int.TryParse(serverPortString, out int serverPort))
         {
-            serverPort = SKWebApiConstants.DefaultServerPort;
+            serverPort = Constants.DefaultServerPort;
         }
         builder.WebHost.UseUrls($"https://*:{serverPort}");
 
