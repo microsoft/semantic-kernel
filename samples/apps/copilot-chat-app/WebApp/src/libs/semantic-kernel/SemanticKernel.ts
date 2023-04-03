@@ -33,6 +33,7 @@ export class SemanticKernel {
             const response = await fetch(`${this.serviceUrl}${commandPath}`, {
                 method: method ?? 'GET',
                 body: JSON.stringify(body),
+                headers: { "Content-Type": "application/json" }
             });
 
             if (!response.ok) {
