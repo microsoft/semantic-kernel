@@ -1,9 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
-import pytest
+
 import semantic_kernel as sk
-import semantic_kernel.kernel_extensions.import_semantic_skill_from_directory as importer
+import semantic_kernel.ai.open_ai as sk_oai
+from semantic_kernel.kernel_extensions.import_semantic_skill_from_directory import (
+    import_semantic_skill_from_directory,
+)
 
 
 def test_can_be_imported():
@@ -11,12 +14,17 @@ def test_can_be_imported():
     kernel = sk.create_kernel()
     api_key = "test-api-key"
     org_id = "test-org-id"
-    kernel.config.add_openai_completion_backend("test-completion-backend", api_key, org_id)
+    kernel.config.add_text_backend(
+        "test-completion-backend",
+        sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id),
+    )
 
     # import skills
     skills_directory = os.path.join(os.path.dirname(__file__), "test_skills")
     # path to skills directory
-    skill_config_dict = importer.import_semantic_skill_from_directory(kernel, skills_directory, "TestSkill")
+    skill_config_dict = import_semantic_skill_from_directory(
+        kernel, skills_directory, "TestSkill"
+    )
 
     assert skill_config_dict is not None
     assert len(skill_config_dict) == 1
