@@ -1,4 +1,10 @@
 # Copilot Chat Web App
+> **!IMPORTANT**
+> This learning sample is for educational purposes only and should not be used in any
+> production use case. It is intended to highlight concepts of Semantic Kernel and not
+> any architectural / security design practices to be used.
+
+### Watch the Copilot Chat Sample Quick Start [Video](https://aka.ms/SK-Copilotchat-video).
 
 ## Running the sample
 
@@ -20,5 +26,7 @@
    and/or `yarn start` from the command line.
 6. A browser will automatically open, otherwise you can navigate to `http://localhost:3000/` to use the ChatBot.
 
-## Authentication in this sample:
-This sample uses the Microsoft Authentication Library (MSAL) for React to sign in users. Learn more about here: https://learn.microsoft.com/en-us/azure/active-directory/develop/tutorial-v2-react. 
+## About the Copilot Chat Sample
+
+### Authentication in this sample
+This sample uses the Microsoft Authentication Library (MSAL) for React to sign in users. Learn more about here: https://learn.microsoft.com/en-us/azure/active-directory/develop/tutorial-v2-react.

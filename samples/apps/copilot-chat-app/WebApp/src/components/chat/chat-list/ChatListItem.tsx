@@ -61,10 +61,11 @@ interface IChatListItemProps {
     header: string;
     timestamp: string;
     preview: string;
+    botProfilePicture: string;
 }
 
 // TODO: populate Avatar
-export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, preview }) => {
+export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, preview, botProfilePicture }) => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
 
@@ -74,7 +75,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, pr
 
     return (
         <div className={classes.root} onClick={onClick }>
-            <Avatar image={{ src: '/assets/logo-black-512x512.png' }}/>
+            <Avatar image={{ src: botProfilePicture }}/>
             <div className={classes.body}>
                 <div className={classes.header}>
                     <Text className={classes.title } style={{color: 'var(--colorNeutralForeground1)'}}> {header} </Text>

@@ -12,6 +12,15 @@ export const useChat = () => {
     const dispatch = useAppDispatch();
     const account = useAccount();
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+
+    const botProfilePictures : string[] = [
+        '/assets/bot-icon-1.png',
+        '/assets/bot-icon-2.png',
+        '/assets/bot-icon-3.png',
+        '/assets/bot-icon-4.png',
+        '/assets/bot-icon-5.png',
+    ];
 
     const getAudienceMemberForId = (id: string) =>
     {
@@ -30,11 +39,14 @@ export const useChat = () => {
             online: true,
             lastTypingTimestamp: 0,
         };
+
+        const botProfilePictureIndex = Object.keys(conversations).length % botProfilePictures.length;
         const newChat: ChatState = {
             id: name,
             messages: [initialBotMessage(account?.name ?? 'there')],
             audience: [user],
             botTypingTimestamp: 0,
+            botProfilePicture: botProfilePictures.at(botProfilePictureIndex) ?? '/assets/bot-icon-1.png',
         }
         dispatch(addConversation(newChat));
         dispatch(setSelectedConversation(name));
@@ -42,10 +54,9 @@ export const useChat = () => {
     };
 
     const getResponse = async (value: string, chatId: string) => {
-        // TODO: generate reply instead of simple ask
-        const ask = { input: value, variables: [{ key: 'style', value: 'Bill & Ted' }] };
+        const ask = { input: value, variables: [{ key: 'audience', value: account?.name ?? 'Unknown User' }] };
         try {
-            var result = await sk.invokeAsync(ask, 'funskill', 'joke');
+            var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat');
             const messageResult = {
                 timestamp: new Date().getTime(),
                 sender: 'bot',

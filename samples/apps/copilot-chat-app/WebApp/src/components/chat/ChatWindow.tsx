@@ -66,7 +66,7 @@ const useClasses = makeStyles({
 export const ChatWindow: React.FC = () => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
-    const { selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -95,7 +95,7 @@ export const ChatWindow: React.FC = () => {
                         <Persona
                             key={'SK Bot'}
                             size="medium"
-                            avatar={{ image: { src: '/assets/logo-black-512x512.png' } }}
+                            avatar={{ image: { src: conversations[selectedId].botProfilePicture } }}
                             presence={{ status: 'available' }}
                         />
                         {title && (isEditing ?

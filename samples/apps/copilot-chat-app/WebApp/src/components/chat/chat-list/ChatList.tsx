@@ -82,6 +82,7 @@ export const ChatList: FC = () => {
                                     header={id}
                                     timestamp={new Date(messages[lastMessage].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     preview={messages.length > 0 ? messages[lastMessage].content : 'Click to start the chat'}
+                                    botProfilePicture={convo.botProfilePicture}
                                 />
                             </TreeItem>
                         );

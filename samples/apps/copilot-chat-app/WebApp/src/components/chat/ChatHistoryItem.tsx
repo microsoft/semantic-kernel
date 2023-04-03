@@ -6,6 +6,8 @@ import React from 'react';
 import { ChatMessage } from '../../libs/models/ChatMessage';
 import { SKBotAudienceMember } from '../../libs/semantic-kernel/bot-agent/models/SKBotAudienceMember';
 import { useChat } from '../../libs/useChat';
+import { useAppSelector } from '../../redux/app/hooks';
+import { RootState } from '../../redux/app/store';
 
 const useClasses = makeStyles({
     root: {
@@ -66,6 +68,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
     const chat = useChat();
     const account = useAccount();
     const classes = useClasses();
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     const content = message.content
         .trim()
@@ -96,7 +99,9 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
 
     const isMe = message.sender === account?.homeAccountId;
     const member = chat.getAudienceMemberForId(message.sender);
-    const avatar = member?.photo ? { image: { src: member.photo } } : undefined;
+    const avatar = isMe ?
+        member?.photo ? { image: { src: member.photo } } : undefined
+        : { image: { src: conversations[selectedId].botProfilePicture } };
     const fullName = member?.fullName ?? message.sender;
 
     return (
