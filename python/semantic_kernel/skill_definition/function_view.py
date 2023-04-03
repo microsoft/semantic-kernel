@@ -56,6 +56,19 @@ class FunctionView:
     def is_asynchronous(self) -> bool:
         return self._is_asynchronous
 
+    def to_fully_qualified_name(self) -> str:
+        return f"{self.skill_name}.{self.name}"
+
+    def to_manual_string(self) -> str:
+        inputs = "\n".join(
+            [f"    - {p.name}: {p.description}" for p in self.parameters]
+        )
+        return f"""
+            {self.to_fully_qualified_name()}:
+                description: {self.description}
+                inputs:\n{inputs}
+        """
+
     @name.setter
     def name(self, value: str) -> None:
         Verify.valid_function_name(value)
