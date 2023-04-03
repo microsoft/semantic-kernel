@@ -36,6 +36,7 @@ from semantic_kernel.skill_definition.skill_collection_base import SkillCollecti
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
+from semantic_kernel.utils.validation import validate_function_name, validate_skill_name
 
 
 class Kernel(KernelBase):
@@ -90,16 +91,7 @@ class Kernel(KernelBase):
         assert skill_name is not None  # for type checker
 
         validate_skill_name(skill_name)
-        if not re_match(SKFunctionBase.SKILL_NAME_REGEX, skill_name):
-            raise ValueError(
-                f"Invalid skill name: {skill_name}. Skill names "
-                f"must match the regex: {SKFunctionBase.SKILL_NAME_REGEX}"
-            )
-        if not re_match(SKFunctionBase.FUNCTION_NAME_REGEX, function_name):
-            raise ValueError(
-                f"Invalid function name: {function_name}. Function names "
-                f"must match the regex: {SKFunctionBase.FUNCTION_NAME_REGEX}"
-            )
+        validate_function_name(function_name)
 
         function = self._create_semantic_function(
             skill_name, function_name, function_config

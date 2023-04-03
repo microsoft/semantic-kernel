@@ -11,10 +11,7 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
-from semantic_kernel.utils.validation import (
-    validate_function_name,
-    validate_skill_name,
-)
+from semantic_kernel.utils.validation import validate_function_name, validate_skill_name
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
