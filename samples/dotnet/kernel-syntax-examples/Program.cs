@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using KernelSyntaxExamples;
 
 public static class Program
 {
@@ -66,6 +67,12 @@ public static class Program
         Console.WriteLine("== DONE ==");
 
         await Example20_HuggingFace.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example21_ChatGptPlugins.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example22_OpenApiSkill.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
