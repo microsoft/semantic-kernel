@@ -179,7 +179,7 @@ public class ChatSkill
         {
             await this.SaveNewMessageAsync(message, context);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!e.IsCriticalException())
         {
             context.Fail($"Unable to save new message: {ex.Message}", ex);
             return context;
@@ -211,7 +211,7 @@ public class ChatSkill
             context.Variables.Set("audience", "bot");
             await this.SaveNewMessageAsync(context.Result, context);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!e.IsCriticalException())
         {
             context.Fail($"Unable to save new response: {ex.Message}", ex);
             return context;
@@ -282,9 +282,8 @@ public class ChatSkill
         }
         catch (AIException ex)
         {
-            var msg = $"Exception while retrieving memories: {ex.Message}";
-            context.Log.LogWarning(msg);
-            context.Fail(msg, ex);
+            context.Log.LogWarning("Exception while retrieving memories: {0}", ex);
+            context.Fail($"Exception while retrieving memories: {ex.Message}", ex);
             yield break;
         }
 
