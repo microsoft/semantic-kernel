@@ -22,6 +22,7 @@ class SKContext:
     _memory: SemanticTextMemoryBase
     _skill_collection: ReadOnlySkillCollectionBase
     _variables: ContextVariables
+    _cancellation_token: Optional[Any] = None
 
     def __init__(
         self,
@@ -29,7 +30,8 @@ class SKContext:
         memory: SemanticTextMemoryBase,
         skill_collection: ReadOnlySkillCollectionBase,
         logger: Logger,
-        # TODO: cancellation token?
+        # TODO: cancellation token? in addition, do we want to store it as a protected member?
+        cancellation_token: Optional[Any] = None,
     ) -> None:
         """
         Initializes a new instance of the SKContext class.
@@ -44,6 +46,7 @@ class SKContext:
         self._memory = memory
         self._skill_collection = skill_collection
         self._logger = logger
+        self._cancellation_token = cancellation_token
 
     def fail(self, error_description: str, exception: Optional[Exception] = None):
         """
