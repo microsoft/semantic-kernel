@@ -7,7 +7,6 @@ import {
     RedirectRequest
 } from '@azure/msal-browser';
 import debug from 'debug';
-import { Dispatch } from 'react';
 import { Constants } from '../Constants';
 
 const log = debug(Constants.debug.root).extend('authHelper');
@@ -75,17 +74,6 @@ const logoutAsync = async (instance: IPublicClientApplication) => {
     }
 };
 
-// TODO: error handling
-const aquireToken = async(instance: IPublicClientApplication, setAccessToken: Dispatch<React.SetStateAction<string>>) => {
-    instance.acquireTokenSilent(loginRequest).then((response) => {
-            setAccessToken(response.accessToken);
-        }).catch((_error: any) => {
-            instance.acquireTokenPopup(loginRequest).then((response) => {
-                setAccessToken(response.accessToken);
-            });
-        });
-};
-
 export const AuthHelper = {
     msalConfig,
     loginRequest,
@@ -93,5 +81,4 @@ export const AuthHelper = {
     ssoSilentRequest,
     loginAsync,
     logoutAsync,
-    aquireToken
 };

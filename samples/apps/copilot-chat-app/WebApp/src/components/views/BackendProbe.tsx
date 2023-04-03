@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { Body1, Spinner, Title3 } from '@fluentui/react-components';
-import * as React from 'react';
 import { FC, useEffect } from 'react';
 
 interface IData {
@@ -29,7 +28,7 @@ const BackendProbe: FC<IData> = ({ uri, onBackendFound }) => {
             <Title3>Looking for your backend</Title3>
             <Spinner />
             <Body1>
-                This sample expects to find a Semantic Kernel service from <strong>samples/packaged/SKWebAPI</strong>{' '}
+                This sample expects to find a Semantic Kernel service from <strong>samples/apps/copilot-chat-app/SKWebApi</strong>{' '}
                 running at <strong>{uri}</strong>
             </Body1>
             <Body1>
