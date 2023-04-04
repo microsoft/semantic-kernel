@@ -85,7 +85,7 @@ const ModelConfig: FC<IData> = ({
 
                 const sortedCompletionModelsArray = completionModels?.sort((a, b) => a.id.localeCompare(b.id));
                 const sortedEmbeddingsModelArray = embeddingsModels?.sort((a, b) => a.id.localeCompare(b.id));
-                if (modelType == ModelType.Embeddings) {
+                if (modelType === ModelType.Embeddings) {
                     setModelIds(sortedCompletionModelsArray);
                     setSuggestedModels(sortedEmbeddingsModelArray);
                 } else {
