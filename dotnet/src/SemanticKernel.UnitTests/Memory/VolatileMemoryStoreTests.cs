@@ -293,7 +293,6 @@ public class VolatileMemoryStoreTests
     {
         // Arrange
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
-        int topN = 4;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         int i = 0;
