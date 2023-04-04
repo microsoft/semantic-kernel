@@ -4,12 +4,9 @@ import os
 
 import semantic_kernel as sk
 import semantic_kernel.ai.open_ai as sk_oai
-from semantic_kernel.kernel_extensions.import_semantic_skill_from_directory import (
-    import_semantic_skill_from_directory,
-)
 
 
-def test_can_be_imported():
+def test_skill_can_be_imported():
     # create a kernel
     kernel = sk.create_kernel()
     api_key = "test-api-key"
@@ -20,10 +17,10 @@ def test_can_be_imported():
     )
 
     # import skills
-    skills_directory = os.path.join(os.path.dirname(__file__), "test_skills")
+    skills_directory = os.path.join(os.path.dirname(__file__), "../..", "test_skills")
     # path to skills directory
-    skill_config_dict = import_semantic_skill_from_directory(
-        kernel, skills_directory, "TestSkill"
+    skill_config_dict = kernel.import_semantic_skill_from_directory(
+        skills_directory, "TestSkill"
     )
 
     assert skill_config_dict is not None

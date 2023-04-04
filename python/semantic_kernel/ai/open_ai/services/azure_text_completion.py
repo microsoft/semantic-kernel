@@ -19,7 +19,7 @@ class AzureTextCompletion(OpenAITextCompletion):
         deployment_name: str,
         endpoint: str,
         api_key: str,
-        api_version: str,
+        api_version: str = "2022-12-01",
         logger: Optional[Logger] = None,
     ) -> None:
         Verify.not_empty(deployment_name, "You must provide a deployment name")

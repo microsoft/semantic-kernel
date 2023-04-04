@@ -106,7 +106,8 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 max_tokens=request_settings.max_tokens,
                 stop=(
                     request_settings.stop_sequences
-                    if len(request_settings.stop_sequences) > 0
+                    if request_settings.stop_sequences is not None
+                    and len(request_settings.stop_sequences) > 0
                     else None
                 ),
             )

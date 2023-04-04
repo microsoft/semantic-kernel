@@ -1,16 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-# TODO: fix/complete the memory integration
-
 import asyncio
 from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.ai.open_ai as sk_oai
-from semantic_kernel.core_skills import TextMemorySkill
 
 
-def build_kernel() -> sk.KernelBase:
+def build_kernel() -> sk.Kernel:
     # Setup kernel with OpenAI completion and embedding backends
     api_key, org_id = sk.openai_settings_from_dot_env()
 
@@ -32,12 +29,12 @@ def build_kernel() -> sk.KernelBase:
         .build()
     )
 
-    kernel.import_skill(TextMemorySkill())
+    kernel.import_skill(sk.core_skills.TextMemorySkill())
 
     return kernel
 
 
-async def populate_memory(kernel: sk.KernelBase) -> None:
+async def populate_memory(kernel: sk.Kernel) -> None:
     # Add some documents to the semantic memory
     await kernel.memory.save_information_async(
         "aboutMe", id="info1", text="My name is Andrea"
@@ -56,7 +53,7 @@ async def populate_memory(kernel: sk.KernelBase) -> None:
     )
 
 
-async def search_memory_examples(kernel: sk.KernelBase) -> None:
+async def search_memory_examples(kernel: sk.Kernel) -> None:
     questions = [
         "what's my name",
         "where do I live?",
@@ -72,7 +69,7 @@ async def search_memory_examples(kernel: sk.KernelBase) -> None:
 
 
 async def setup_chat_with_memory(
-    kernel: sk.KernelBase,
+    kernel: sk.Kernel,
 ) -> Tuple[sk.SKFunctionBase, sk.SKContext]:
     sk_prompt = """
     ChatBot can have a conversation with you about any topic.
@@ -91,8 +88,8 @@ async def setup_chat_with_memory(
     User: {{$user_input}}
     ChatBot: """.strip()
 
-    chat_func = sk.extensions.create_semantic_function(
-        kernel, sk_prompt, max_tokens=200, temperature=0.8
+    chat_func = kernel.create_semantic_function(
+        sk_prompt, max_tokens=200, temperature=0.8
     )
 
     context = kernel.create_new_context()
@@ -102,8 +99,8 @@ async def setup_chat_with_memory(
     context["fact4"] = "where have I traveled?"
     context["fact5"] = "what do I do for work?"
 
-    context[TextMemorySkill.COLLECTION_PARAM] = "aboutMe"
-    context[TextMemorySkill.RELEVANCE_PARAM] = 0.8
+    context[sk.core_skills.TextMemorySkill.COLLECTION_PARAM] = "aboutMe"
+    context[sk.core_skills.TextMemorySkill.RELEVANCE_PARAM] = 0.8
 
     context["chat_history"] = ""
 
@@ -111,7 +108,7 @@ async def setup_chat_with_memory(
 
 
 async def chat(
-    kernel: sk.KernelBase, chat_func: sk.SKFunctionBase, context: sk.SKContext
+    kernel: sk.Kernel, chat_func: sk.SKFunctionBase, context: sk.SKContext
 ) -> bool:
     try:
         user_input = input("User:> ")
