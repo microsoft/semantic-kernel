@@ -128,7 +128,7 @@ public class QdrantMemoryStoreTests
     }
 
     [Fact]
-    public async Task ItThrowsIfUpsertRequestFails()
+    public async Task ItThrowsIfUpsertRequestFailsAsync()
     {
         // Arrange
         var memoryRecord = MemoryRecord.LocalRecord(
