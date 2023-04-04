@@ -1,8 +1,7 @@
 import datetime
-import semantic_kernel as sk
-
 from unittest import mock
 
+import semantic_kernel as sk
 from semantic_kernel.core_skills.time_skill import TimeSkill
 
 test_mock_now = datetime.datetime(2031, 1, 12, 12, 24, 56, tzinfo=datetime.timezone.utc)
