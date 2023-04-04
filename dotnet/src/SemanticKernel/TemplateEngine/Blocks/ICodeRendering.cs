@@ -15,5 +15,5 @@ public interface ICodeRendering
     /// </summary>
     /// <param name="context">SK execution context</param>
     /// <returns>Rendered content</returns>
-    internal Task<string> RenderCodeAsync(SKContext context);
+    public Task<string> RenderCodeAsync(SKContext context);
 }
