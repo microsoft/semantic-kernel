@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
-/// Plan class that is executable by the kernel
+/// An abstract plan class that is executable by the kernel
 /// </summary>
 public abstract class Plan : ISKFunction
 {
