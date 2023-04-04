@@ -34,10 +34,7 @@ function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
 
-async def chat() -> bool:
-    context = sk.ContextVariables()
-    context["chat_history"] = ""
-
+async def chat(context: sk.ContextVariables) -> bool:
     try:
         user_input = input("User:> ")
         context["user_input"] = user_input
@@ -60,9 +57,12 @@ async def chat() -> bool:
 
 
 async def main() -> None:
+    context = sk.ContextVariables()
+    context["chat_history"] = ""
+
     chatting = True
     while chatting:
-        chatting = await chat()
+        chatting = await chat(context)
 
 
 if __name__ == "__main__":
