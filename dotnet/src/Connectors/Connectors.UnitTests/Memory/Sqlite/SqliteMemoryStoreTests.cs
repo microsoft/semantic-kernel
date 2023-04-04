@@ -16,7 +16,7 @@ namespace SemanticKernel.Connectors.UnitTests.Memory.Sqlite;
 /// <summary>
 /// Unit tests of <see cref="SqliteMemoryStore"/>.
 /// </summary>
-public class SqliteMemoryStoreTests : IDisposable
+public class SqliteMemoryStoreTests
 {
     private const string DatabaseFile = "SqliteMemoryStoreTests.db";
     private bool _disposedValue = false;
@@ -24,26 +24,6 @@ public class SqliteMemoryStoreTests : IDisposable
     public SqliteMemoryStoreTests()
     {
         File.Delete(DatabaseFile);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this._disposedValue)
-        {
-            if (disposing)
-            {
-                File.Delete(DatabaseFile);
-            }
-
-            this._disposedValue = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 
     private int _collectionNum = 0;
@@ -84,7 +64,7 @@ public class SqliteMemoryStoreTests : IDisposable
         // Assert
         Assert.NotNull(db);
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -103,7 +83,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.NotEmpty(collections.ToEnumerable());
         Assert.True(await collections.ContainsAsync(collection));
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -121,7 +101,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.True(await db.DoesCollectionExistAsync("my_collection"));
         Assert.False(await db.DoesCollectionExistAsync("my_collection2"));
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -141,7 +121,7 @@ public class SqliteMemoryStoreTests : IDisposable
         var collections2 = db.GetCollectionsAsync();
         Assert.Equal(await collections.CountAsync(), await collections.CountAsync());
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -164,7 +144,7 @@ public class SqliteMemoryStoreTests : IDisposable
         numCollections = await collections2.CountAsync();
         Assert.True(numCollections == 0);
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -194,7 +174,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -227,7 +207,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -260,7 +240,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -297,7 +277,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.NotEqual(testRecord.Metadata.Text, actual.Metadata.Text);
         Assert.Equal(testRecord2.Metadata.Description, actual.Metadata.Description);
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -322,7 +302,7 @@ public class SqliteMemoryStoreTests : IDisposable
         // Assert
         Assert.Null(actual);
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -341,7 +321,7 @@ public class SqliteMemoryStoreTests : IDisposable
         // Assert
         Assert.Null(actual);
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -375,7 +355,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.True(collections.Contains(testCollections[2]),
             $"Collections does not contain the newly-created collection {testCollections[2]}");
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
@@ -442,7 +422,7 @@ public class SqliteMemoryStoreTests : IDisposable
         }
 
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -503,7 +483,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.Equal("test0", topNResult.Value.Item1.Metadata.Id);
         Assert.True(topNResult.Value.Item2 >= threshold);
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -542,7 +522,7 @@ public class SqliteMemoryStoreTests : IDisposable
         }
 
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -565,7 +545,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.Equal(numRecords, keys.ToEnumerable().Count());
         Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -588,7 +568,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.NotNull(results);
         Assert.Equal(numRecords, results.ToEnumerable().Count());
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -619,7 +599,7 @@ public class SqliteMemoryStoreTests : IDisposable
         }
 
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 
     [Fact]
@@ -633,6 +613,6 @@ public class SqliteMemoryStoreTests : IDisposable
         // Act
         await db.DeleteCollectionAsync(collection);
         db.Dispose();
-        this.Dispose();
+        File.Delete(DatabaseFile);
     }
 }
