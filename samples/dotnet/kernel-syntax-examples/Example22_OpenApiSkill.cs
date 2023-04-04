@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
 
-public class Example22_OpenApiSkill
+public static class Example22_OpenApiSkill
 {
     public static async Task RunAsync()
     {

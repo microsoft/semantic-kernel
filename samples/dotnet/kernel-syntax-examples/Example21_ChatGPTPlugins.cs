@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using RepoUtils;
 
-public class Example21_ChatGptPlugins
+public static class Example21_ChatGptPlugins
 {
     public static async Task RunAsync()
     {
