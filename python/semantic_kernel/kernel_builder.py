@@ -3,10 +3,10 @@
 from logging import Logger
 from typing import Callable, Optional
 
-from semantic_kernel.configuration.kernel_config import KernelConfig
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_base import KernelBase
+from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.kernel_extensions import KernelExtensions
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
