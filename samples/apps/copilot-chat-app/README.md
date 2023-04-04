@@ -35,7 +35,7 @@ Before following these instructions, please ensure your development environment 
 
             * `“AIService”: “AzureOpenAI”`, or whichever option is appropriate for your instance.
             * `“DeploymentOrModelID”: “text-davinci-003”,` or whichever option is appropriate for your instance.  
-            * `“Endpoint”:` “Your Endpoint address, i.e. http://contoso.openai.azure.com”
+            * `“Endpoint”:` “Your Azure Endpoint address, i.e. http://contoso.openai.azure.com”  If you are using OpenAI, leave this blank.
             * You will insert your Azure endpoint key during build of the backend API Server
 
         * Under the `“EmbeddingConfig”` block, make sure the following configuration changes to match your instance:
