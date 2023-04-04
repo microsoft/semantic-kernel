@@ -1,5 +1,5 @@
 import numpy as np
-from pytest import raises, mark
+from pytest import mark, raises
 
 from semantic_kernel.memory import VolatileMemoryStore
 
