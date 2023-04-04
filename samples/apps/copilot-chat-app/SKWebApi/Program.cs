@@ -26,10 +26,10 @@ public static class Program
 
         string protocol = "https";
         builder.WebHost.UseUrls($"{protocol}://*:{serverPort}");
-        
+
         // Add services to the DI container
         AddServices(builder.Services, builder.Configuration);
-        
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline
