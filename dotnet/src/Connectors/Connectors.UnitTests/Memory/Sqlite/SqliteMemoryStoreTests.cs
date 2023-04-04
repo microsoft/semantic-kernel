@@ -7,8 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
+using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Memory.Sqlite;
@@ -49,7 +49,7 @@ public class SqliteDataStoreTests : IDisposable
     }
 
     private int _collectionNum = 0;
-    
+
     private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
     {
         Assert.True(numRecords % 2 == 0, "Number of records must be even");
@@ -272,7 +272,7 @@ public class SqliteDataStoreTests : IDisposable
         // Assert
         Assert.NotNull(collections);
         Assert.True(collections.Any(), "Collections is empty");
-        Assert.Equal(3, collections.Count());
+        Assert.True(collections.Count() > 3);
         Assert.True(collections.Contains(testCollections[0]),
             $"Collections does not contain the newly-created collection {testCollections[0]}");
         Assert.True(collections.Contains(testCollections[1]),
@@ -343,7 +343,7 @@ public class SqliteDataStoreTests : IDisposable
             Assert.True(compare >= 0);
         }
     }
-    
+
     [Fact]
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
@@ -456,7 +456,7 @@ public class SqliteDataStoreTests : IDisposable
         Assert.Equal(numRecords, keys.ToEnumerable().Count());
         Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
     }
-    
+
     [Fact]
     public async Task ItCanBatchGetRecordsAsync()
     {

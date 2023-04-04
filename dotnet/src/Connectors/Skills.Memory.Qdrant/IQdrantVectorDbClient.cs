@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading.Tasks;
-using System.Threading;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;

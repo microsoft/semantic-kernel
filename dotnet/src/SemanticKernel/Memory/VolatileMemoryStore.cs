@@ -24,7 +24,7 @@ public class VolatileMemoryStore : IMemoryStore
         {
             throw new MemoryException(MemoryException.ErrorCodes.FailedToCreateCollection, $"Could not create collection {collectionName}");
         }
-        
+
         return Task.CompletedTask;
     }
 

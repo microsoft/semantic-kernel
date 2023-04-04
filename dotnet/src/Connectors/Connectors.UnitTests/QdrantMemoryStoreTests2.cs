@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using Moq;
+using System.Threading.Tasks;
+using System.Threading;
+using Xunit;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
-using Moq;
-using Xunit;
+using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace SemanticKernel.Connectors.UnitTests.Memory.Qdrant;
 
@@ -45,7 +45,7 @@ public class QdrantMemoryStoreTests2
         mockQdrantClient
             .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((QdrantVectorRecord?)null);
-
+        
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
@@ -231,7 +231,7 @@ public class QdrantMemoryStoreTests2
         Assert.Equal(key, getBatchResult[0].Key);
         Assert.Equal(key2, getBatchResult[1].Key);
     }
-
+    
     [Fact]
     public async Task GetBatchAsyncSearchesByMetadataIdReturnsEmptyListIfNoneFoundAsync()
     {
@@ -287,7 +287,7 @@ public class QdrantMemoryStoreTests2
             Times.Once());
         Assert.Null(getResult);
     }
-
+    
     [Fact]
     public async Task GetByQdrantPointIdReturnsMemoryRecordIfFoundAsync()
     {
@@ -320,7 +320,7 @@ public class QdrantMemoryStoreTests2
         mockQdrantClient.Verify<IAsyncEnumerable<QdrantVectorRecord>>(
             x => x.GetVectorsByIdAsync("test_collection", new[] { memoryRecord.Key }, It.IsAny<CancellationToken>()),
             Times.Once());
-
+        
         Assert.NotNull(getResult);
         Assert.Equal(memoryRecord.Metadata.Id, getResult.Metadata.Id);
         Assert.Equal(memoryRecord.Metadata.Text, getResult.Metadata.Text);
@@ -433,7 +433,7 @@ public class QdrantMemoryStoreTests2
 
         // Act
         await vectorStore.RemoveAsync("test_collection", this._id);
-
+        
         // Assert
         mockQdrantClient.Verify<Task>(x =>
             x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), this._id, It.IsAny<CancellationToken>()), Times.Once());

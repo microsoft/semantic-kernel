@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -9,8 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
@@ -125,7 +124,7 @@ public class QdrantMemoryStore : IMemoryStore
             throw new VectorDbException($"Failed to get vector data from Qdrant {ex.Message}");
         }
     }
-    
+
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
@@ -269,7 +268,7 @@ public class QdrantMemoryStore : IMemoryStore
             threshold: minRelevanceScore,
             top: limit,
             cancel: cancel);
-        
+
         await foreach ((QdrantVectorRecord, double) result in results)
         {
             yield return (

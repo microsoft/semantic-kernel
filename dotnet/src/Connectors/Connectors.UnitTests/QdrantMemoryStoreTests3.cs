@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using System.Threading.Tasks;
+using Moq;
+using Xunit;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
-using Moq;
-using Xunit;
+using System;
 
 namespace SemanticKernel.Connectors.UnitTests.Memory.Qdrant;
 

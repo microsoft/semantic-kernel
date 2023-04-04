@@ -18,7 +18,7 @@ public class QdrantVectorRecord
     /// </summary>
     [JsonIgnore]
     public string PointId { get; }
-    
+
     /// <summary>
     /// The embedding data.
     /// </summary>

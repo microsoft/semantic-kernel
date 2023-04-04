@@ -18,7 +18,7 @@ internal struct DatabaseEntry
 
 internal static class Database
 {
-    private const string TableName = "SKDataTable";
+    private const string TableName = "SKMemoryTable";
 
     public static async Task<SqliteConnection> CreateConnectionAsync(string filename, CancellationToken cancel = default)
     {
@@ -140,7 +140,7 @@ internal static class Database
         cmd.Parameters.AddWithValue("@key", key);
         return cmd.ExecuteNonQueryAsync(cancel);
     }
-    
+
     public static Task DeleteEmptyAsync(this SqliteConnection conn, string collection, CancellationToken cancel = default)
     {
         SqliteCommand cmd = conn.CreateCommand();

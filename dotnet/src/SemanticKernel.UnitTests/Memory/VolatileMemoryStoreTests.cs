@@ -37,7 +37,7 @@ public class VolatileMemoryStoreTests
                 embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
             records = records.Append(testRecord);
         }
-        
+
         for (int i = numRecords / 2; i < numRecords; i++)
         {
             var testRecord = MemoryRecord.ReferenceRecord(
@@ -242,7 +242,7 @@ public class VolatileMemoryStoreTests
             description: "description" + i,
             embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
         _ = await this._db.UpsertAsync(collection, testRecord);
-        
+
         i++;
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
@@ -250,7 +250,7 @@ public class VolatileMemoryStoreTests
             description: "description" + i,
             embedding: new Embedding<float>(new float[] { -1, -1, -1 }));
         _ = await this._db.UpsertAsync(collection, testRecord);
-        
+
         i++;
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,

@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net.Http;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using Moq;
+using System.Threading.Tasks;
+using System.Threading;
+using Xunit;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
-using Moq;
-using Xunit;
+using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace SemanticKernel.Connectors.UnitTests.Memory.Qdrant;
 
@@ -135,7 +135,7 @@ public class QdrantMemoryStoreTests
             text: this._text,
             description: this._description,
             embedding: this._embedding);
-
+        
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<Task<bool>>(x => x.DoesCollectionExistAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))

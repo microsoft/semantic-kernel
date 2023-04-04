@@ -92,7 +92,7 @@ public class MemoryRecordTests
 
         // Act
         var memoryRecord = MemoryRecord.FromJson(jsonString, this._embedding);
-        
+
         // Assert
         Assert.Equal(this._isReference, memoryRecord.Metadata.IsReference);
         Assert.Equal(this._id, memoryRecord.Metadata.Id);
@@ -185,7 +185,7 @@ public class MemoryRecordTests
                 ""description"": ""description"",
                 ""text"": ""text""
             }";
-        
+
         var metadata = new MemoryRecordMetadata(
             isReference: this._isReference,
             id: this._id,

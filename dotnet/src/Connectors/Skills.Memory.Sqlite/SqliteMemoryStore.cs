@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -63,7 +61,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
         record.Key = record.Metadata.Id;
-        
+
         // delete existing record if it exists
         await this._dbConnection.DeleteAsync(collectionName, record.Key, cancel);
 
@@ -73,12 +71,12 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             value: JsonSerializer.Serialize(record),
             timestamp: ToTimestampString(record.Timestamp),
             cancel: cancel);
-        
+
         return record.Key;
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> record, CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> record, [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var r in record)
         {
@@ -102,7 +100,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
         {
@@ -142,7 +140,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         {
             yield break;
         }
-        
+
         var collectionMemories = new List<MemoryRecord>();
         TopNCollection<MemoryRecord> embeddings = new(limit);
 
@@ -240,10 +238,14 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     {
         // delete empty entry in the database if it exists (see CreateCollection)
         await this._dbConnection.DeleteEmptyAsync(collectionName, cancel);
-        
+
         await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collectionName, cancel))
         {
-            yield return JsonSerializer.Deserialize<MemoryRecord>(dbEntry.ValueString);
+            var record = JsonSerializer.Deserialize<MemoryRecord>(dbEntry.ValueString);
+            if (record != null)
+            {
+                yield return record;
+            }
         }
     }
 
