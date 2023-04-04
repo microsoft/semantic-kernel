@@ -20,6 +20,10 @@ from semantic_kernel.skill_definition.function_view import FunctionView
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.planning.function_flow_runner import FunctionFlowRunner
 from semantic_kernel.planning.plan import Plan
+from semantic_kernel.planning.planning_exception import (
+    PlanningException,
+    PlanningErrorCode,
+)
 
 
 @dataclass
@@ -328,7 +332,7 @@ class PlannerSkill(SKContextPlanning):
         full_plan = f"<{self._function_flow_runner.GOAL_TAG}>{goal}</{self._function_flow_runner.GOAL_TAG}>\n{plan.result.strip()}"
 
         _ = PlannerSkill.update_context_with_plan_entry(
-            plan=Plan(id=str(uuid.uuid4()), goal=goal, plan_string=full_plan),
+            plan=Plan(id=uuid.uuid4().hex, goal=goal, plan_string=full_plan),
             context=context,
         )
 
@@ -340,3 +344,84 @@ class PlannerSkill(SKContextPlanning):
     )
     async def execute_plan_async(self, context: SKContext) -> SKContext:
         plan_to_execute = Plan.from_json(context.variables)
+        try:
+            execute_result_context = (
+                await self._function_flow_runner.execute_xml_plan_async(
+                    context, plan_to_execute.plan_string
+                )
+            )
+            _, plan_progress = execute_result_context.variables.get(Plan.PLAN_KEY)
+            _, results = execute_result_context.variables.get(Plan.RESULT_KEY)
+
+            is_complete = (
+                FunctionFlowRunner.SOLUTION_TAG.casefold() in plan_progress.casefold()
+                and FunctionFlowRunner.FUNCTION_TAG.casefold()
+                not in plan_progress.casefold()
+            )
+            is_successful = (
+                not execute_result_context.error_occurred
+                and FunctionFlowRunner.SOLUTION_TAG.casefold()
+                in plan_progress.casefold()
+            )
+
+            if not results and is_complete and is_successful:
+                results = str(execute_result_context.variables)
+            elif execute_result_context.error_occurred:
+                results = execute_result_context.last_error_description
+
+            self.update_context_with_plan_entry(
+                Plan(
+                    id=plan_to_execute.id,
+                    goal=plan_to_execute.goal,
+                    plan_string=plan_progress,
+                    is_complete=is_complete,
+                    is_successful=is_successful,
+                    result=results,
+                ),
+                context,
+            )
+
+            return context
+        except PlanningException as e:  # pylint: disable=invalid-name
+            if e.error_code == PlanningErrorCode.INVALID_PLAN:
+                context.log.warning(
+                    f"[InvalidPlan] Error executing plan: {e.message} ({type(e).__name__})"
+                )
+                self.update_context_with_plan_entry(
+                    Plan(
+                        id=uuid.uuid4().hex,
+                        goal=plan_to_execute.goal,
+                        plan_string=plan_to_execute.plan_string,
+                        is_complete=True,  # Plan was invalid, mark complete so it's not attempted further.
+                        is_successful=False,
+                        result=e.message,
+                    ),
+                    context,
+                )
+
+                return context
+            elif e.error_code in [
+                PlanningErrorCode.UNKNOWN_ERROR,
+                PlanningErrorCode.INVALID_CONFIGURATION,
+            ]:
+                context.log.warning(
+                    f"[UnknownError] Error executing plan: {e.message} ({type(e).__name__})"
+                )
+            else:
+                raise
+        except Exception as e:  # pylint: disable=invalid-name
+            context.log.warning(f"Error executing plan.")
+            context.variables.update_with_plan_entry(
+                Plan(
+                    id=uuid.uuid4().hex,
+                    goal=plan_to_execute.goal,
+                    plan_string=plan_to_execute.plan_string,
+                    is_complete=False,
+                    is_successful=False,
+                    result=str(e),
+                )
+            )
+
+            return context
+
+        return context
