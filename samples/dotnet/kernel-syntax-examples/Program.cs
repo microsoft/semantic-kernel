@@ -10,44 +10,44 @@ public static class Program
     // ReSharper disable once InconsistentNaming
     public static async Task Main()
     {
-        //Example01_NativeFunctions.Run();
-        //Console.WriteLine("== DONE ==");
+        Example01_NativeFunctions.Run();
+        Console.WriteLine("== DONE ==");
 
-        //await Example02_Pipeline.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example02_Pipeline.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //await Example03_Variables.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example03_Variables.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //await Example04_BingSkillAndConnector.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example04_BingSkillAndConnector.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //await Example05_CombineLLMPromptsAndNativeCode.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example05_CombineLLMPromptsAndNativeCode.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //await Example06_InlineFunctionDefinition.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example06_InlineFunctionDefinition.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //await Example07_TemplateLanguage.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example07_TemplateLanguage.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //await Example08_RetryHandler.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example08_RetryHandler.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //await Example09_FunctionTypes.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example09_FunctionTypes.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //Example10_DescribeAllSkillsAndFunctions.Run();
-        //Console.WriteLine("== DONE ==");
+        Example10_DescribeAllSkillsAndFunctions.Run();
+        Console.WriteLine("== DONE ==");
 
-        //await Example11_WebSearchQueries.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example11_WebSearchQueries.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //await Example12_Planning.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example12_Planning.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //await Example13_ConversationSummarySkill.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example13_ConversationSummarySkill.RunAsync();
+        Console.WriteLine("== DONE ==");
 
         await Example14_Memory.RunAsync();
         Console.WriteLine("== DONE ==");
@@ -55,14 +55,14 @@ public static class Program
         await Example15_MemorySkill.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        //await Example16_CustomLLM.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example16_CustomLLM.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //await Example17_ChatGPT.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example17_ChatGPT.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        //await Example18_DallE.RunAsync();
-        //Console.WriteLine("== DONE ==");
+        await Example18_DallE.RunAsync();
+        Console.WriteLine("== DONE ==");
 
         await Example19_Qdrant.RunAsync();
         Console.WriteLine("== DONE ==");

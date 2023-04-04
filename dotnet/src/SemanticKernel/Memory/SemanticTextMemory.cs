@@ -37,6 +37,11 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         var embeddings = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
         MemoryRecord data = MemoryRecord.LocalRecord(id, text, description, embeddings);
 
+        if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
+        {
+            await this._storage.CreateCollectionAsync(collection, cancel);
+        }
+
         await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
     }
 
@@ -51,6 +56,11 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
     {
         var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
         var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description, embedding);
+
+        if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
+        {
+            await this._storage.CreateCollectionAsync(collection, cancel);
+        }
 
         await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
     }
