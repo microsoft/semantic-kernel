@@ -127,6 +127,7 @@ public class MemoryRecordTests
         var memoryRecord = JsonSerializer.Deserialize<MemoryRecord>(jsonString);
 
         // Assert
+        Assert.NotNull(memoryRecord);
         Assert.Equal(this._isReference, memoryRecord.Metadata.IsReference);
         Assert.Equal(this._id, memoryRecord.Metadata.Id);
         Assert.Equal(this._text, memoryRecord.Metadata.Text);
@@ -167,8 +168,8 @@ public class MemoryRecordTests
 
         // Act
         string serializedRecord = JsonSerializer.Serialize(memoryRecord);
-        jsonString = jsonString.Replace("\n", string.Empty);
-        jsonString = jsonString.Replace(" ", string.Empty);
+        jsonString = jsonString.Replace("\n", string.Empty, StringComparison.Ordinal);
+        jsonString = jsonString.Replace(" ", string.Empty, StringComparison.Ordinal);
 
         // Assert
         Assert.Equal(jsonString, serializedRecord);
@@ -196,8 +197,8 @@ public class MemoryRecordTests
 
         // Act
         string serializedMetadata = memoryRecord.GetSerializedMetadata();
-        jsonString = jsonString.Replace("\n", string.Empty);
-        jsonString = jsonString.Replace(" ", string.Empty);
+        jsonString = jsonString.Replace("\n", string.Empty, StringComparison.Ordinal);
+        jsonString = jsonString.Replace(" ", string.Empty, StringComparison.Ordinal);
 
         // Assert
         Assert.Equal(jsonString, serializedMetadata);
