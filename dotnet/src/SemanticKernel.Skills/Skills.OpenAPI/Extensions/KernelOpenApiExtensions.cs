@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
@@ -33,7 +34,7 @@ public static class KernelOpenApiExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(
-        this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null, Func<HttpRequestMessage, Task>? authCallback = null)
+        this IKernel kernel, string skillName, Uri url, HttpClient? httpClient = null, AuthenticateRequestAsyncCallback? authCallback = null)
     {
         Verify.ValidSkillName(skillName);
 
@@ -82,7 +83,7 @@ public static class KernelOpenApiExtensions
     /// <param name="skillName">Skill name.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromResource(this IKernel kernel, string skillName, Func<HttpRequestMessage, Task>? authCallback = null)
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromResource(this IKernel kernel, string skillName, AuthenticateRequestAsyncCallback? authCallback = null)
     {
         Verify.ValidSkillName(skillName);
 
@@ -108,7 +109,7 @@ public static class KernelOpenApiExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromDirectory(
-        this IKernel kernel, string parentDirectory, string skillDirectoryName, Func<HttpRequestMessage, Task>? authCallback = null)
+        this IKernel kernel, string parentDirectory, string skillDirectoryName, AuthenticateRequestAsyncCallback? authCallback = null)
     {
         const string OPENAPI_FILE = "openapi.json";
 
@@ -139,7 +140,7 @@ public static class KernelOpenApiExtensions
     /// <param name="filePath">File path to the OpenAPI document.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromFile(this IKernel kernel, string skillName, string filePath, Func<HttpRequestMessage, Task>? authCallback = null)
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromFile(this IKernel kernel, string skillName, string filePath, AuthenticateRequestAsyncCallback? authCallback = null)
     {
         if (!File.Exists(filePath))
         {
@@ -162,7 +163,7 @@ public static class KernelOpenApiExtensions
     /// <param name="skillName">Skill name.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> RegisterOpenApiSkill(this IKernel kernel, Stream documentStream, string skillName, Func<HttpRequestMessage, Task>? authCallback = null)
+    public static IDictionary<string, ISKFunction> RegisterOpenApiSkill(this IKernel kernel, Stream documentStream, string skillName, AuthenticateRequestAsyncCallback? authCallback = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
         Verify.ValidSkillName(skillName);
@@ -202,7 +203,7 @@ public static class KernelOpenApiExtensions
     /// <param name="operation">The REST API operation.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
-    private static ISKFunction RegisterRestApiFunction(this IKernel kernel, string skillName, RestApiOperation operation, Func<HttpRequestMessage, Task>? authCallback = null)
+    private static ISKFunction RegisterRestApiFunction(this IKernel kernel, string skillName, RestApiOperation operation, AuthenticateRequestAsyncCallback? authCallback = null)
     {
         var restOperationParameters = operation.GetParameters();
 
