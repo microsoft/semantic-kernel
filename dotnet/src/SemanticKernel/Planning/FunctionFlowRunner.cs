@@ -94,7 +94,7 @@ internal class FunctionFlowRunner
                 // planInput should then be the context.Variables.ToString() only if it's not a plan json
                 try
                 {
-                    var plan = Plan.FromJson(context.Variables.ToString());
+                    var plan = SkillPlan.FromJson(context.Variables.ToString());
                     planInput = string.IsNullOrEmpty(plan.Goal) ? context.Variables.ToString() : goalTxt;
                 }
                 catch (Exception e) when (!e.IsCriticalException())
@@ -119,7 +119,7 @@ internal class FunctionFlowRunner
             var updatedPlan = goalXmlString + solutionContent.Replace("\r\n", "\n");
             updatedPlan = updatedPlan.Trim();
 
-            context.Variables.Set(Plan.PlanKey, updatedPlan);
+            context.Variables.Set(SkillPlan.PlanKey, updatedPlan);
             context.Variables.Set("PLAN__INPUT", context.Variables.ToString());
 
             return context;
@@ -214,6 +214,7 @@ internal class FunctionFlowRunner
                         var keysToIgnore = functionVariables.Select(x => x.Key).ToList();
 
                         var result = await this._kernel.RunAsync(functionVariables, skillFunction);
+                        // TODO respect ErrorOccurred
 
                         // copy all values for VariableNames in functionVariables not in keysToIgnore to context.Variables
                         foreach (var (key, _) in functionVariables)
@@ -232,8 +233,8 @@ internal class FunctionFlowRunner
 
                         if (!string.IsNullOrEmpty(appendToResultName))
                         {
-                            _ = context.Variables.Get(Plan.ResultKey, out var resultsSoFar);
-                            context.Variables.Set(Plan.ResultKey,
+                            _ = context.Variables.Get(SkillPlan.ResultKey, out var resultsSoFar);
+                            context.Variables.Set(SkillPlan.ResultKey,
                                 string.Join(Environment.NewLine + Environment.NewLine, resultsSoFar, appendToResultName, result.ToString()).Trim());
                         }
 
