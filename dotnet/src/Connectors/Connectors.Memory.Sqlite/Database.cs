@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,22 +64,8 @@ internal static class Database
         string collectionName,
         CancellationToken cancel = default)
     {
-        SqliteCommand cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-            SELECT EXISTS(SELECT 1 FROM {TableName}
-                WHERE collection=@collection LIMIT 1)
-            ";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
-        var dataReader = await cmd.ExecuteReaderAsync(cancel);
-        if (await dataReader.ReadAsync(cancel))
-        {
-            // EXISTS states that it will return 1 or 0, not null.
-            return dataReader.GetBoolean(0);
-        }
-        else
-        {
-            return false;
-        }
+        var collections = await GetCollectionsAsync(conn, cancel).ToListAsync(cancel);
+        return collections.Contains(collectionName);
     }
 
     public static async IAsyncEnumerable<string> GetCollectionsAsync(this SqliteConnection conn,
