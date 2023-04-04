@@ -60,13 +60,14 @@ class FunctionView:
         return f"{self.skill_name}.{self.name}"
 
     def to_manual_string(self) -> str:
-        inputs = "\n".join(
-            [f"    - {p.name}: {p.description}" for p in self.parameters]
+        inputs = "\n\t".join(
+            [f"\t\t- {p.name}: {p.description}" for p in self.parameters]
         )
         return f"""
             {self.to_fully_qualified_name()}:
                 description: {self.description}
-                inputs:\n{inputs}
+                inputs: 
+            {inputs}
         """
 
     @name.setter

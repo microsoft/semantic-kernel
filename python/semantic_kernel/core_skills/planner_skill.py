@@ -62,7 +62,7 @@ class SKContextPlanning:
             context, config, semantic_query
         )
 
-        return "\n\n".join(x.to_manual_string() for x in functions)
+        return "".join(x.to_manual_string() for x in functions)
 
     @staticmethod
     async def get_available_functions_async(
@@ -343,7 +343,11 @@ class PlannerSkill(SKContextPlanning):
         description="Execute a plan using registered functions to accomplish a goal.",
     )
     async def execute_plan_async(self, context: SKContext) -> SKContext:
-        plan_to_execute = Plan.from_json(context.variables)
+        plan_to_execute = Plan.from_json(context.result)
+
+        # TODO: FIX PLAN CREATION AS DOUBLE QUOTES RESUTLS IN ERRORS:
+        plan_to_execute.plan_string = plan_to_execute.plan_string.replace('""', '"')
+
         try:
             execute_result_context = (
                 await self._function_flow_runner.execute_xml_plan_async(
@@ -411,7 +415,7 @@ class PlannerSkill(SKContextPlanning):
                 raise
         except Exception as e:  # pylint: disable=invalid-name
             context.log.warning(f"Error executing plan.")
-            context.variables.update_with_plan_entry(
+            self.update_context_with_plan_entry(
                 Plan(
                     id=uuid.uuid4().hex,
                     goal=plan_to_execute.goal,
@@ -419,7 +423,8 @@ class PlannerSkill(SKContextPlanning):
                     is_complete=False,
                     is_successful=False,
                     result=str(e),
-                )
+                ),
+                context,
             )
 
             return context
