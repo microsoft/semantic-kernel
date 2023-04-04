@@ -7,10 +7,7 @@ name: dotnet-ci
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
-    paths:
-      - "dotnet/**"
-      - "samples/dotnet/**"
+    branches: [ "main", "feature*" ]
 
 permissions:
   contents: read
