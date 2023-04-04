@@ -10,7 +10,7 @@ public class VectorDbException : Exception<VectorDbException.ErrorCodes>
     {
         UnknownError,
         UnableToDeserializeRecordPayload,
-        NewGuidAlreadyExistsInCollection,
+        FailedToUpsertVectors,
         FailedToConvertMemoryRecordToQdrantVectorRecord
     }
 

@@ -34,6 +34,11 @@ public class MemoryException : Exception<MemoryException.ErrorCodes>
         /// Unable to construct memory from serialized metadata.
         /// </summary>
         UnableToDeserializeMetadata,
+
+        /// <summary>
+        /// Attempted to access a memory collection that does not exist.
+        /// </summary>
+        AttemptedToAccessNonexistentCollection,
     }
 
     /// <summary>

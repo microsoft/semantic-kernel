@@ -27,23 +27,27 @@ internal static class Database
         return connection;
     }
 
-    public static async Task CreateCollectionAsync(this SqliteConnection conn, string collection, CancellationToken cancel = default)
+    public static async Task CreateCollectionAsync(this SqliteConnection conn, string collectionName, CancellationToken cancel = default)
     {
+        if (await DoesCollectionExistsAsync(conn, collectionName, cancel))
+        {
+            // Collection already exists
+            return;
+        }
+
         await CreateTableAsync(conn, cancel);
 
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              INSERT INTO {TableName}(collection)
              VALUES(@collection); ";
-        cmd.Parameters.AddWithValue("@collection", collection);
+        cmd.Parameters.AddWithValue("@collection", collectionName);
         await cmd.ExecuteNonQueryAsync(cancel);
     }
 
     public static async Task InsertAsync(this SqliteConnection conn,
         string collection, string key, string? value, string? timestamp, CancellationToken cancel = default)
     {
-        await CreateTableAsync(conn, cancel);
-
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              INSERT INTO {TableName}(collection, key, value, timestamp)
@@ -53,6 +57,28 @@ internal static class Database
         cmd.Parameters.AddWithValue("@value", value ?? string.Empty);
         cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
         await cmd.ExecuteNonQueryAsync(cancel);
+    }
+
+    public static async Task<bool> DoesCollectionExistsAsync(this SqliteConnection conn,
+        string collectionName,
+        CancellationToken cancel = default)
+    {
+        SqliteCommand cmd = conn.CreateCommand();
+        cmd.CommandText = $@"
+            SELECT EXISTS(SELECT 1 FROM {TableName}
+                WHERE collection=@collection LIMIT 1)
+            ";
+        cmd.Parameters.AddWithValue("@collection", collectionName);
+        var dataReader = await cmd.ExecuteReaderAsync(cancel);
+        if (await dataReader.ReadAsync(cancel))
+        {
+            // EXISTS states that it will return 1 or 0, not null.
+            return dataReader.GetBoolean(0);
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public static async IAsyncEnumerable<string> GetCollectionsAsync(this SqliteConnection conn,
@@ -71,14 +97,14 @@ internal static class Database
     }
 
     public static async IAsyncEnumerable<DatabaseEntry> ReadAllAsync(this SqliteConnection conn,
-        string collection,
+        string collectionName,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
             SELECT * FROM {TableName}
             WHERE collection=@collection";
-        cmd.Parameters.AddWithValue("@collection", collection);
+        cmd.Parameters.AddWithValue("@collection", collectionName);
 
         var dataReader = await cmd.ExecuteReaderAsync(cancel);
         while (await dataReader.ReadAsync(cancel))
@@ -91,7 +117,7 @@ internal static class Database
     }
 
     public static async Task<DatabaseEntry?> ReadAsync(this SqliteConnection conn,
-        string collection,
+        string collectionName,
         string key,
         CancellationToken cancel = default)
     {
@@ -100,7 +126,7 @@ internal static class Database
              SELECT * FROM {TableName}
              WHERE collection=@collection
                 AND key=@key ";
-        cmd.Parameters.AddWithValue("@collection", collection);
+        cmd.Parameters.AddWithValue("@collection", collectionName);
         cmd.Parameters.AddWithValue("@key", key);
 
         var dataReader = await cmd.ExecuteReaderAsync(cancel);
@@ -119,36 +145,36 @@ internal static class Database
         return null;
     }
 
-    public static Task DeleteCollectionAsync(this SqliteConnection conn, string collection, CancellationToken cancel = default)
+    public static Task DeleteCollectionAsync(this SqliteConnection conn, string collectionName, CancellationToken cancel = default)
     {
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              DELETE FROM {TableName}
              WHERE collection=@collection";
-        cmd.Parameters.AddWithValue("@collection", collection);
+        cmd.Parameters.AddWithValue("@collection", collectionName);
         return cmd.ExecuteNonQueryAsync(cancel);
     }
 
-    public static Task DeleteAsync(this SqliteConnection conn, string collection, string key, CancellationToken cancel = default)
+    public static Task DeleteAsync(this SqliteConnection conn, string collectionName, string key, CancellationToken cancel = default)
     {
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              DELETE FROM {TableName}
              WHERE collection=@collection
                 AND key=@key ";
-        cmd.Parameters.AddWithValue("@collection", collection);
+        cmd.Parameters.AddWithValue("@collection", collectionName);
         cmd.Parameters.AddWithValue("@key", key);
         return cmd.ExecuteNonQueryAsync(cancel);
     }
 
-    public static Task DeleteEmptyAsync(this SqliteConnection conn, string collection, CancellationToken cancel = default)
+    public static Task DeleteEmptyAsync(this SqliteConnection conn, string collectionName, CancellationToken cancel = default)
     {
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              DELETE FROM {TableName}
              WHERE collection=@collection
                 AND key IS NULL";
-        cmd.Parameters.AddWithValue("@collection", collection);
+        cmd.Parameters.AddWithValue("@collection", collectionName);
         return cmd.ExecuteNonQueryAsync(cancel);
     }
 

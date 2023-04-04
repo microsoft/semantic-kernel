@@ -46,6 +46,12 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
+    public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
+    {
+        return await this._dbConnection.DoesCollectionExistsAsync(collectionName, cancel);
+    }
+
+    /// <inheritdoc/>
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
     {
         return this._dbConnection.GetCollectionsAsync(cancel);

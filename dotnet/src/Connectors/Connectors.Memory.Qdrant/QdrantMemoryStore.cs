@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,6 +52,12 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
+    public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
+    {
+        return await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel);
+    }
+
+    /// <inheritdoc/>
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
     {
         return this._qdrantClient.ListCollectionsAsync(cancel: cancel);
@@ -59,42 +66,52 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        await this._qdrantClient.DeleteCollectionAsync(collectionName, cancel: cancel);
+        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel))
+        {
+            await this._qdrantClient.DeleteCollectionAsync(collectionName, cancel: cancel);
+        }
     }
 
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
-        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel))
-        {
-            await this._qdrantClient.CreateCollectionAsync(collectionName, cancel: cancel);
-        }
-
         var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancel);
 
         if (vectorData == null)
         {
-            throw new VectorDbException($"Failed to convert MemoryRecord to QdrantVectorRecord");
+            throw new VectorDbException(VectorDbException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord, $"Failed to convert MemoryRecord to QdrantVectorRecord");
         }
 
-        await this._qdrantClient.UpsertVectorsAsync(
-            collectionName,
-            new[] { vectorData },
-            cancel: cancel);
+        try
+        {
+            await this._qdrantClient.UpsertVectorsAsync(
+                collectionName,
+                new[] { vectorData },
+                cancel: cancel);
+        }
+        catch (HttpRequestException e)
+        {
+            throw new VectorDbException(VectorDbException.ErrorCodes.FailedToUpsertVectors, $"Failed to upsert, check if the target collection exists.");
+        }
 
         return vectorData.PointId;
     }
 
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> record, [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel))
-        {
-            await this._qdrantClient.CreateCollectionAsync(collectionName, cancel: cancel);
-        }
-
         var tasks = Task.WhenAll(record.Select(async r => await this.ConvertFromMemoryRecordAsync(collectionName, r, cancel)));
         var vectorData = await tasks;
 
-        await this._qdrantClient.UpsertVectorsAsync(collectionName, vectorData, cancel: cancel);
+        try
+        {
+            await this._qdrantClient.UpsertVectorsAsync(
+                collectionName,
+                vectorData,
+                cancel: cancel);
+        }
+        catch (HttpRequestException e)
+        {
+            throw new VectorDbException(VectorDbException.ErrorCodes.FailedToUpsertVectors, $"Failed to upsert, check if the target collection exists.");
+        }
 
         foreach (var v in vectorData)
         {

@@ -27,6 +27,14 @@ public interface IMemoryStore
     IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default);
 
     /// <summary>
+    /// Determines if a collection exists in the datastore.
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <param name="cancel"></param>
+    /// <returns>True if given collection exists, false if not</returns>
+    Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default);
+
+    /// <summary>
     /// Deletes a collection from the datastore.
     /// </summary>
     /// <param name="collectionName"></param>

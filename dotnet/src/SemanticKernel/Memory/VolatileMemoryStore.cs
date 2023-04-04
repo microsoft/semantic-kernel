@@ -29,6 +29,12 @@ public class VolatileMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
+    public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
+    {
+        return Task.FromResult(this._store.ContainsKey(collectionName));
+    }
+
+    /// <inheritdoc/>
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
     {
         return this._store.Keys.ToAsyncEnumerable();
@@ -51,10 +57,14 @@ public class VolatileMemoryStore : IMemoryStore
         Verify.NotNull(record, "Memory record cannot be NULL");
         Verify.NotNull(record.Metadata.Id, "Memory metadata ID cannot be NULL");
 
-        if (this.TryGetCollection(collectionName, out var collectionDict, create: true))
+        if (this.TryGetCollection(collectionName, out var collectionDict, create: false))
         {
             record.Key = record.Metadata.Id;
             collectionDict[record.Key] = record;
+        }
+        else
+        {
+            throw new MemoryException(MemoryException.ErrorCodes.AttemptedToAccessNonexistentCollection, $"Attempted to access a memory collection that does not exist: {collectionName}");
         }
 
         return Task.FromResult(record.Key);

@@ -105,6 +105,22 @@ public class SqliteDataStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task ItCanCheckIfCollectionExistsAsync()
+    {
+        // Arrange
+        this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        string collection = "my_collection";
+        this._collectionNum++;
+
+        // Act
+        await this._db.CreateCollectionAsync(collection);
+
+        // Assert
+        Assert.True(await this._db.DoesCollectionExistAsync("my_collection"));
+        Assert.False(await this._db.DoesCollectionExistAsync("my_collection2"));
+    }
+
+    [Fact]
     public async Task CreatingDuplicateCollectionDoesNothingAsync()
     {
         // Arrange
@@ -123,6 +139,58 @@ public class SqliteDataStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task CollectionsCanBeDeletedAsync()
+    {
+        // Arrange
+        this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        var collections = await this._db.GetCollectionsAsync().ToListAsync();
+#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
+        int numCollections = collections.Count();
+        Assert.True(numCollections > 0);
+
+        // Act
+        foreach (var collection in collections)
+        {
+            await this._db.DeleteCollectionAsync(collection);
+        }
+
+        // Assert
+        var collections2 = this._db.GetCollectionsAsync();
+        numCollections = await collections2.CountAsync();
+        Assert.True(numCollections == 0);
+        this._collectionNum = 0;
+    }
+#pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
+
+    [Fact]
+    public async Task ItCanInsertIntoNonExistentCollectionAsync()
+    {
+        // Arrange
+        this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test",
+            text: "text",
+            description: "description",
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            key: null,
+            timestamp: null);
+
+        // Arrange
+        var key = await this._db.UpsertAsync("random collection", testRecord);
+        var actual = await this._db.GetAsync("random collection", key);
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Equal(testRecord.Metadata.Id, key);
+        Assert.Equal(testRecord.Metadata.Id, actual.Key);
+        Assert.Equal(testRecord.Embedding.Vector, actual.Embedding.Vector);
+        Assert.Equal(testRecord.Metadata.Text, actual.Metadata.Text);
+        Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
+        Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
+        Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
+    }
+
+    [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
         // Arrange
@@ -138,6 +206,7 @@ public class SqliteDataStoreTests : IDisposable
         this._collectionNum++;
 
         // Act
+        await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
         var actual = await this._db.GetAsync(collection, key);
 
@@ -168,6 +237,7 @@ public class SqliteDataStoreTests : IDisposable
         this._collectionNum++;
 
         // Act
+        await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
         var actual = await this._db.GetAsync(collection, key);
 
@@ -202,6 +272,7 @@ public class SqliteDataStoreTests : IDisposable
         this._collectionNum++;
 
         // Act
+        await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
         var key2 = await this._db.UpsertAsync(collection, testRecord2);
         var actual = await this._db.GetAsync(collection, key);
@@ -230,6 +301,7 @@ public class SqliteDataStoreTests : IDisposable
         this._collectionNum++;
 
         // Act
+        await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
         await this._db.RemoveAsync(collection, key);
         var actual = await this._db.GetAsync(collection, key);
@@ -247,6 +319,7 @@ public class SqliteDataStoreTests : IDisposable
         this._collectionNum++;
 
         // Act
+        await this._db.CreateCollectionAsync(collection);
         await this._db.RemoveAsync(collection, "key");
         var actual = await this._db.GetAsync(collection, "key");
 
@@ -259,20 +332,25 @@ public class SqliteDataStoreTests : IDisposable
     {
         // Arrange
         this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
-        string[] testCollections = { "test_collection5", "test_collection6", "test_collection7" };
+        string[] testCollections = { "random_collection1", "random_collection2", "random_collection3" };
         this._collectionNum += 3;
         await this._db.CreateCollectionAsync(testCollections[0]);
         await this._db.CreateCollectionAsync(testCollections[1]);
         await this._db.CreateCollectionAsync(testCollections[2]);
 
         // Act
-        var collections = this._db.GetCollectionsAsync().ToEnumerable();
+        var collections = await this._db.GetCollectionsAsync().ToListAsync();
 
 #pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         // Assert
+        foreach (var collection in testCollections)
+        {
+            Assert.True(await this._db.DoesCollectionExistAsync(collection));
+        }
+
         Assert.NotNull(collections);
-        Assert.True(collections.Any(), "Collections is empty");
-        Assert.True(collections.Count() > 3);
+        Assert.NotEmpty(collections);
+        Assert.True(collections.Count > 3);
         Assert.True(collections.Contains(testCollections[0]),
             $"Collections does not contain the newly-created collection {testCollections[0]}");
         Assert.True(collections.Contains(testCollections[1]),
@@ -291,6 +369,7 @@ public class SqliteDataStoreTests : IDisposable
         int topN = 4;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
         int i = 0;
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
@@ -352,6 +431,7 @@ public class SqliteDataStoreTests : IDisposable
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
         int i = 0;
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
@@ -411,6 +491,7 @@ public class SqliteDataStoreTests : IDisposable
         int topN = 4;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
 
         for (int i = 0; i < 10; i++)
         {
@@ -448,6 +529,7 @@ public class SqliteDataStoreTests : IDisposable
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
 
         // Act
+        await this._db.CreateCollectionAsync(collection);
         var keys = this._db.UpsertBatchAsync(collection, records);
         var resultRecords = this._db.GetBatchAsync(collection, keys.ToEnumerable());
 
@@ -469,6 +551,7 @@ public class SqliteDataStoreTests : IDisposable
         var keys = this._db.UpsertBatchAsync(collection, records);
 
         // Act
+        await this._db.CreateCollectionAsync(collection);
         var results = this._db.GetBatchAsync(collection, keys.ToEnumerable());
 
         // Assert
@@ -486,14 +569,16 @@ public class SqliteDataStoreTests : IDisposable
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+        await this._db.CreateCollectionAsync(collection);
 
         List<string> keys = new List<string>();
+
+        // Act
         await foreach (var key in this._db.UpsertBatchAsync(collection, records))
         {
             keys.Add(key);
         }
 
-        // Act
         await this._db.RemoveBatchAsync(collection, keys);
 
         // Assert
@@ -502,30 +587,6 @@ public class SqliteDataStoreTests : IDisposable
             Assert.Null(result);
         }
     }
-
-    [Fact]
-    public async Task CollectionsCanBeDeletedAsync()
-    {
-        // Arrange
-        this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
-        var collections = this._db.GetCollectionsAsync().ToEnumerable();
-#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
-        int numCollections = collections.Count();
-        Assert.True(numCollections > 0);
-
-        // Act
-        foreach (var collection in collections)
-        {
-            await this._db.DeleteCollectionAsync(collection);
-        }
-
-        // Assert
-        var collections2 = this._db.GetCollectionsAsync();
-        numCollections = await collections2.CountAsync();
-        Assert.True(numCollections == 0);
-        this._collectionNum = 0;
-    }
-#pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
     [Fact]
     public async Task DeletingNonExistentCollectionDoesNothingAsync()

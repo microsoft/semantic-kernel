@@ -89,6 +89,24 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
+    public async Task ItCannotInsertIntoNonExistentCollectionAsync()
+    {
+        // Arrange
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test",
+            text: "text",
+            description: "description",
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            key: null,
+            timestamp: null);
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+
+        // Assert
+        await Assert.ThrowsAsync<MemoryException>(async () => await this._db.UpsertAsync(collection, testRecord));
+    }
+
+    [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
         // Arrange
@@ -103,6 +121,7 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
 
         // Act
+        await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
         var actual = await this._db.GetAsync(collection, key);
 
@@ -126,6 +145,7 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
 
         // Act
+        await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
         var actual = await this._db.GetAsync(collection, key);
 
@@ -153,6 +173,7 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
 
         // Act
+        await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
         var key2 = await this._db.UpsertAsync(collection, testRecord2);
         var actual = await this._db.GetAsync(collection, key);
@@ -177,6 +198,7 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
 
         // Act
+        await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
         await this._db.RemoveAsync(collection, key);
         var actual = await this._db.GetAsync(collection, key);
@@ -235,6 +257,7 @@ public class VolatileMemoryStoreTests
         int topN = 4;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
         int i = 0;
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
@@ -295,6 +318,7 @@ public class VolatileMemoryStoreTests
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
         int i = 0;
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
@@ -353,6 +377,7 @@ public class VolatileMemoryStoreTests
         int topN = 4;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
 
         for (int i = 0; i < 10; i++)
         {
@@ -380,12 +405,13 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public void ItCanBatchUpsertRecords()
+    public async Task ItCanBatchUpsertRecordsAsync()
     {
         // Arrange
         int numRecords = 10;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
 
         // Act
@@ -399,12 +425,13 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public void ItCanBatchGetRecords()
+    public async Task ItCanBatchGetRecordsAsync()
     {
         // Arrange
         int numRecords = 10;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
         var keys = this._db.UpsertBatchAsync(collection, records);
 
@@ -424,6 +451,7 @@ public class VolatileMemoryStoreTests
         int numRecords = 10;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
 
         List<string> keys = new List<string>();
