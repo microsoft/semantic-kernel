@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
@@ -24,13 +25,22 @@ public static class Program
             serverPort = SKWebApiConstants.DefaultServerPort;
         }
 
+        // Set the protocol to use
         string protocol = "https";
+        bool useHttp = builder.Configuration.GetSection("UseHttp").Get<bool>();
+        if (useHttp)
+        {
+            protocol = "http";
+        }
+
         builder.WebHost.UseUrls($"{protocol}://*:{serverPort}");
 
         // Add services to the DI container
         AddServices(builder.Services, builder.Configuration);
 
         var app = builder.Build();
+
+        var logger = app.Services.GetRequiredService<ILogger>();
 
         // Configure the HTTP request pipeline
         if (app.Environment.IsDevelopment())
@@ -39,13 +49,18 @@ public static class Program
             app.UseSwaggerUI();
         }
         app.UseCors();
-        app.UseHttpsRedirection();
         app.UseAuthorization();
         app.MapControllers();
 
         // Log the health probe URL
-        var logger = app.Services.GetService<ILogger>()!;
-        logger.LogInformation("Health probe: https://{0}:{1}/probe", protocol, serverPort);
+        string hostName = Dns.GetHostName();
+        logger.LogInformation("Health probe: {Protocol}://{Host}:{Port}/probe", protocol, hostName, serverPort);
+
+        if (useHttp)
+        {
+            logger.LogWarning("Server is using HTTP instead of HTTPS. Do not use HTTP in production.\n" +
+                              "All tokens and secrets sent to the server can be intercepted over the network!");
+        }
 
         app.Run();
     }
