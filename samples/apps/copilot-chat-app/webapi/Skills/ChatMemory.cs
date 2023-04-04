@@ -191,6 +191,16 @@ public class ChatMessage
     }
 
     /// <summary>
+    /// Deserialize a JSON string to a ChatMessage object.
+    /// </summary>
+    /// <param name="json">A json string</param>
+    /// <returns>A ChatMessage object</returns>
+    public static ChatMessage? FromJsonString(string json)
+    {
+        return JsonSerializer.Deserialize<ChatMessage>(json);
+    }
+
+    /// <summary>
     /// Deserialize a MemoryRecordMetadata to a ChatMessage object.
     /// </summary>
     /// <param name="memoryMetadata"></param>

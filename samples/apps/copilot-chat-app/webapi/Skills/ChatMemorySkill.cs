@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
@@ -282,6 +283,64 @@ public class ChatMemorySkill
             context.Log.LogError($"Message {messageId} is corrupted: {messageMemory.Metadata.Text}.");
             context.Fail($"Message {messageId} is corrupted: {messageMemory.Metadata.Text}.");
         }
+
+        return context;
+    }
+
+    /// <summary>
+    /// Get all chat messages by chat ID.
+    /// </summary>
+    /// <param name="chatId">The chat ID</param>
+    /// <param name="context"></param>
+    [SKFunction("Get all chat messages by chat ID.")]
+    [SKFunctionName("GetAllChatMessages")]
+    [SKFunctionInput(Description = "The chat id")]
+    public async Task<SKContext> GetAllChatMessagesAsync(string chatId, SKContext context)
+    {
+        var messageIdsContext = await this.GetAllChatMessageIdsAsync(chatId, context);
+        var messageIds = messageIdsContext.Variables.ToString().Split(',');
+
+        var messages = new List<ChatMessage>();
+        foreach (var messageId in messageIds)
+        {
+            var messageContext = await this.GetMessageByIdAsync(messageId, context);
+            var message = ChatMessage.FromJsonString(messageContext.Variables.ToString());
+            if (message != null)
+            {
+                messages.Add(message);
+            }
+            else
+            {
+                context.Log.LogError($"Message {messageId} is corrupted.");
+                context.Fail($"Message {messageId} is corrupted.");
+                return context;
+            }
+        }
+
+        context.Variables.Update(JsonSerializer.Serialize(messages));
+        return context;
+    }
+
+    /// <summary>
+    /// Get the latest chat messages by chat ID.
+    /// </summary>
+    /// <param name="chatId">The chat ID</param>
+    /// <param name="context"></param>
+    [SKFunction("Get the latest chat message by chat ID.")]
+    [SKFunctionName("GetLatestChatMessage")]
+    [SKFunctionInput(Description = "The chat id")]
+    public async Task<SKContext> GetLatestChatMessageAsync(string chatId, SKContext context)
+    {
+        var allMessagesContext = await this.GetAllChatMessagesAsync(chatId, context);
+        var allMessages = JsonSerializer.Deserialize<List<ChatMessage>>(allMessagesContext.Variables.ToString());
+        if (allMessages == null)
+        {
+            context.Log.LogError($"Chat {chatId} doesn't have any messages.");
+            context.Fail($"Chat {chatId} doesn't have any messages.");
+            return context;
+        }
+        var latestMessage = allMessages.OrderByDescending(m => m.Timestamp).First();
+        context.Variables.Update(latestMessage.ToJsonString());
 
         return context;
     }
