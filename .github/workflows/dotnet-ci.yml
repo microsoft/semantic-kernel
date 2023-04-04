@@ -7,7 +7,7 @@ name: dotnet-ci
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "feature*" ]
     paths:
       - "dotnet/**"
       - "samples/dotnet/**"
@@ -52,7 +52,7 @@ jobs:
         echo "$allProjectFiles"
 
         propsFile="./dotnet/nuget/nuget-package.props"
-        
+
         buildAndRevisionNumber="${{ github.run_number }}.${{ github.run_attempt }}"
         echo "buildAndRevisionNumber: $buildAndRevisionNumber"
 
@@ -95,12 +95,12 @@ jobs:
         name: dotnet-testresults-${{ matrix.configuration }}
         path: ./TestResults
       if: ${{ always() }}
-    
+
     - name: Stage artifacts
       shell: bash
       run: mkdir ./out; find . | grep "/bin/" | xargs cp -r --parents -t ./out
       if: ${{ github.event_name == 'push' }}
-    
+
     - name: Archive artifacts ${{ matrix.os }}-${{ matrix.configuration }}
       uses: actions/upload-artifact@v3
       with:
