@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Planning;
+
 internal class ConditionalFlowConstants
 {
     internal const string IfStructureCheckPrompt =

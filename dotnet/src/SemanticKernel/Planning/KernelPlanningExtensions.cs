@@ -3,6 +3,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 
 // ReSharper disable once CheckNamespace // Extension methods
 namespace Microsoft.SemanticKernel;

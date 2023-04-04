@@ -44,7 +44,7 @@ public class FunctionFlowRunnerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.NotNull(result.Variables[Plan.PlanKey]);
+        Assert.NotNull(result.Variables[SkillPlan.PlanKey]);
     }
 
     [Theory]
@@ -289,15 +289,15 @@ public class FunctionFlowRunnerTests
         evaluateConditionResultContext.Variables.Update($"{{\"valid\": true, \"condition\": {((conditionResult ?? false) ? "true" : "false")}}}");
 
         mockFunction.Setup(f => f.InvokeAsync(It.Is<string>(i => i.StartsWith("<if")),
-            It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(),
-            It.IsAny<ILogger?>(),
-            It.IsAny<CancellationToken?>()))
+                It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(),
+                It.IsAny<ILogger?>(),
+                It.IsAny<CancellationToken?>()))
             .ReturnsAsync(ifStructureResultContext);
 
         mockFunction.Setup(f => f.InvokeAsync(It.Is<string>(i => i.StartsWith("$a equals b")),
-            It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(),
-            It.IsAny<ILogger?>(),
-            It.IsAny<CancellationToken?>()))
+                It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(),
+                It.IsAny<ILogger?>(),
+                It.IsAny<CancellationToken?>()))
             .ReturnsAsync(evaluateConditionResultContext);
 
         skillMock.Setup(s => s.HasSemanticFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
@@ -314,10 +314,10 @@ public class FunctionFlowRunnerTests
         // Assert
         Assert.NotNull(result);
         Assert.False(result.ErrorOccurred);
-        Assert.True(result.Variables.ContainsKey(Plan.PlanKey));
+        Assert.True(result.Variables.ContainsKey(SkillPlan.PlanKey));
         Assert.Equal(
             NormalizeSpacesBeforeFunctions(expectedPlanOutput),
-            NormalizeSpacesBeforeFunctions(result.Variables[Plan.PlanKey]));
+            NormalizeSpacesBeforeFunctions(result.Variables[SkillPlan.PlanKey]));
 
         // Removes line breaks and spaces before <function, <if, </if, <else, </else, </plan
         string NormalizeSpacesBeforeFunctions(string input)

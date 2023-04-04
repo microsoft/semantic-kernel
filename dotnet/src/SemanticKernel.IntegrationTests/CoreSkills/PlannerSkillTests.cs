@@ -156,14 +156,14 @@ public sealed class PlannerSkillTests : IDisposable
         {
             if (expectedCount > 0)
             {
-                Assert.Contains(matchingExpression, createdPlanContext.Variables[Plan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+                Assert.Contains(matchingExpression, createdPlanContext.Variables[SkillPlan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
             }
             else
             {
-                Assert.DoesNotContain(matchingExpression, createdPlanContext.Variables[Plan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+                Assert.DoesNotContain(matchingExpression, createdPlanContext.Variables[SkillPlan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
             }
 
-            var numberOfMatches = Regex.Matches(createdPlanContext.Variables[Plan.PlanKey], matchingExpression, RegexOptions.IgnoreCase).Count;
+            var numberOfMatches = Regex.Matches(createdPlanContext.Variables[SkillPlan.PlanKey], matchingExpression, RegexOptions.IgnoreCase).Count;
             Assert.Equal(expectedCount, numberOfMatches);
         }
     }
