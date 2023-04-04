@@ -16,13 +16,13 @@ namespace SemanticKernel.Connectors.UnitTests.Memory.Sqlite;
 /// <summary>
 /// Unit tests of <see cref="SqliteMemoryStore"/>.
 /// </summary>
-public class SqliteDataStoreTests : IDisposable
+public class SqliteMemoryStoreTests : IDisposable
 {
     private const string DatabaseFile = "SqliteMemoryStoreTests.db";
     private SqliteMemoryStore? _db = null;
     private bool _disposedValue;
 
-    public SqliteDataStoreTests()
+    public SqliteMemoryStoreTests()
     {
         File.Delete(DatabaseFile);
     }
@@ -85,6 +85,7 @@ public class SqliteDataStoreTests : IDisposable
         this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         // Assert
         Assert.NotNull(this._db);
+        this.Dispose();
     }
 
     [Fact]
@@ -102,6 +103,7 @@ public class SqliteDataStoreTests : IDisposable
         // Assert
         Assert.NotEmpty(collections.ToEnumerable());
         Assert.True(await collections.ContainsAsync(collection));
+        this.Dispose();
     }
 
     [Fact]
@@ -118,6 +120,7 @@ public class SqliteDataStoreTests : IDisposable
         // Assert
         Assert.True(await this._db.DoesCollectionExistAsync("my_collection"));
         Assert.False(await this._db.DoesCollectionExistAsync("my_collection2"));
+        this.Dispose();
     }
 
     [Fact]
@@ -136,6 +139,7 @@ public class SqliteDataStoreTests : IDisposable
         // Assert
         var collections2 = this._db.GetCollectionsAsync();
         Assert.Equal(await collections.CountAsync(), await collections.CountAsync());
+        this.Dispose();
     }
 
     [Fact]
@@ -144,7 +148,6 @@ public class SqliteDataStoreTests : IDisposable
         // Arrange
         this._db ??= await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         var collections = await this._db.GetCollectionsAsync().ToListAsync();
-#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         int numCollections = collections.Count();
         Assert.True(numCollections > 0);
 
@@ -158,9 +161,8 @@ public class SqliteDataStoreTests : IDisposable
         var collections2 = this._db.GetCollectionsAsync();
         numCollections = await collections2.CountAsync();
         Assert.True(numCollections == 0);
-        this._collectionNum = 0;
+        this.Dispose();
     }
-#pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
     [Fact]
     public async Task ItCanInsertIntoNonExistentCollectionAsync()
@@ -188,6 +190,7 @@ public class SqliteDataStoreTests : IDisposable
         Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
+        this.Dispose();
     }
 
     [Fact]
@@ -219,6 +222,7 @@ public class SqliteDataStoreTests : IDisposable
         Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
+        this.Dispose();
     }
 
     [Fact]
@@ -250,6 +254,7 @@ public class SqliteDataStoreTests : IDisposable
         Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
+        this.Dispose();
     }
 
     [Fact]
@@ -285,6 +290,7 @@ public class SqliteDataStoreTests : IDisposable
         Assert.Equal(testRecord2.Embedding.Vector, actual.Embedding.Vector);
         Assert.NotEqual(testRecord.Metadata.Text, actual.Metadata.Text);
         Assert.Equal(testRecord2.Metadata.Description, actual.Metadata.Description);
+        this.Dispose();
     }
 
     [Fact]
@@ -308,6 +314,7 @@ public class SqliteDataStoreTests : IDisposable
 
         // Assert
         Assert.Null(actual);
+        this.Dispose();
     }
 
     [Fact]
@@ -325,6 +332,7 @@ public class SqliteDataStoreTests : IDisposable
 
         // Assert
         Assert.Null(actual);
+        this.Dispose();
     }
 
     [Fact]
@@ -357,6 +365,7 @@ public class SqliteDataStoreTests : IDisposable
             $"Collections does not contain the newly-created collection {testCollections[1]}");
         Assert.True(collections.Contains(testCollections[2]),
             $"Collections does not contain the newly-created collection {testCollections[2]}");
+        this.Dispose();
     }
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
@@ -421,6 +430,8 @@ public class SqliteDataStoreTests : IDisposable
             int compare = topNResults[j].Item2.CompareTo(topNResults[j + 1].Item2);
             Assert.True(compare >= 0);
         }
+
+        this.Dispose();
     }
 
     [Fact]
@@ -480,6 +491,7 @@ public class SqliteDataStoreTests : IDisposable
         Assert.NotNull(topNResult);
         Assert.Equal("test0", topNResult.Value.Item1.Metadata.Id);
         Assert.True(topNResult.Value.Item2 >= threshold);
+        this.Dispose();
     }
 
     [Fact]
@@ -516,6 +528,8 @@ public class SqliteDataStoreTests : IDisposable
             int compare = topNResults[i].Item2.CompareTo(0.75);
             Assert.True(compare >= 0);
         }
+
+        this.Dispose();
     }
 
     [Fact]
@@ -537,6 +551,7 @@ public class SqliteDataStoreTests : IDisposable
         Assert.NotNull(keys);
         Assert.Equal(numRecords, keys.ToEnumerable().Count());
         Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
+        this.Dispose();
     }
 
     [Fact]
@@ -558,6 +573,7 @@ public class SqliteDataStoreTests : IDisposable
         Assert.NotNull(keys);
         Assert.NotNull(results);
         Assert.Equal(numRecords, results.ToEnumerable().Count());
+        this.Dispose();
     }
 
     [Fact]
@@ -586,6 +602,8 @@ public class SqliteDataStoreTests : IDisposable
         {
             Assert.Null(result);
         }
+
+        this.Dispose();
     }
 
     [Fact]
@@ -598,5 +616,6 @@ public class SqliteDataStoreTests : IDisposable
 
         // Act
         await this._db.DeleteCollectionAsync(collection);
+        this.Dispose();
     }
 }
