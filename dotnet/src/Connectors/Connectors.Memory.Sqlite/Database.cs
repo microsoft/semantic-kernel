@@ -25,6 +25,7 @@ internal static class Database
     {
         var connection = new SqliteConnection(@"Data Source={filename};");
         await connection.OpenAsync(cancel);
+        await CreateTableAsync(connection, cancel);
         return connection;
     }
 
@@ -35,8 +36,6 @@ internal static class Database
             // Collection already exists
             return;
         }
-
-        await CreateTableAsync(conn, cancel);
 
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"

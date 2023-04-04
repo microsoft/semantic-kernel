@@ -19,7 +19,7 @@ namespace SemanticKernel.Connectors.UnitTests.Memory.Sqlite;
 public class SqliteMemoryStoreTests : IDisposable
 {
     private const string DatabaseFile = "SqliteMemoryStoreTests.db";
-    private bool _disposedValue;
+    private bool _disposedValue = false;
 
     public SqliteMemoryStoreTests()
     {
