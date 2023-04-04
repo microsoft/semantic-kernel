@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 using Moq;
@@ -26,7 +27,7 @@ public class RestApiOperationRunnerTests
         //Arrange
         using var httpMessageHandlerStub = new HttpMessageHandlerStub();
         using var httpClient = new HttpClient(httpMessageHandlerStub);
-        var authCallbackMock = new Mock<Func<HttpRequestMessage, Task>>();
+        var authCallbackMock = new Mock<AuthenticateRequestAsyncCallback>();
         var sut = new RestApiOperationRunner(httpClient, authCallbackMock.Object);
 
         List<RestApiOperationPayloadProperty> payloadProperties = new()
