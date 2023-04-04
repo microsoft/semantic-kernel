@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Data.Common;
 using System.IO;
 using System.Text.Json;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Skills.Memory.Sqlite;
-using Microsoft.Data.Sqlite;
-using System.Data.Common;
 
 namespace KernelHttpServer;
 
