@@ -13,9 +13,9 @@ using Microsoft.SemanticKernel.SkillDefinition;
 namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
-/// An abstract plan class that is executable by the kernel
+/// A plan class that is executable by the kernel
 /// </summary>
-public abstract class Plan : ISKFunction
+public class Plan : ISKFunction
 {
     /// <summary>
     /// State of the plan
@@ -42,10 +42,11 @@ public abstract class Plan : ISKFunction
     /// <param name="variables">Variables to use</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated plan</returns>
-    public abstract Task<Plan> RunNextStepAsync(
-        IKernel kernel,
-        ContextVariables variables,
-        CancellationToken cancellationToken = default);
+    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+    {
+        // no-op, return self
+        return Task.FromResult<Plan>(this);
+    }
 
     // ISKFunction implementation
 
@@ -70,20 +71,38 @@ public abstract class Plan : ISKFunction
     public CompleteRequestSettings RequestSettings { get; } = new();
 
     /// <inheritdoc/>
-    public abstract FunctionView Describe();
+    public FunctionView Describe()
+    {
+        throw new NotImplementedException();
+    }
 
     /// <inheritdoc/>
-    public abstract Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null, CancellationToken? cancel = null);
+    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null, CancellationToken? cancel = null)
+    {
+        throw new NotImplementedException();
+    }
 
     /// <inheritdoc/>
-    public abstract Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null, CancellationToken? cancel = null);
+    public Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null, CancellationToken? cancel = null)
+    {
+        throw new NotImplementedException();
+    }
 
     /// <inheritdoc/>
-    public abstract ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
+    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    {
+        throw new NotImplementedException();
+    }
 
     /// <inheritdoc/>
-    public abstract ISKFunction SetAIService(Func<ITextCompletion> serviceFactory);
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        throw new NotImplementedException();
+    }
 
     /// <inheritdoc/>
-    public abstract ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills);
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    {
+        throw new NotImplementedException();
+    }
 }
