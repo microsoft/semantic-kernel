@@ -61,10 +61,8 @@ import asyncio
 
 kernel = sk.create_kernel()
 
-kernel.config.add_openai_completion_backend(
-    "davinci",
-    "text-davinci-003",
-    "...OpenAI Key...")
+kernel.config.add_text_backend(
+    "davinci-003", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
 
 sk_prompt = """
 {{$input}}
