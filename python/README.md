@@ -30,13 +30,18 @@ AZURE_OPENAI_ENDPOINT=""
 
 ```python
 import semantic_kernel as sk
+import semantic_kernel.ai.open_ai as sk_oai
 
 kernel = sk.create_kernel()
 
+# This requires a `.env` file in your current
+# directory (see above)
 api_key, org_id = sk.openai_settings_from_dot_env()
 
-kernel.config.add_openai_completion_backend(
-    "davinci-002", "text-davinci-002", api_key, org_id
+kernel.config.add_text_backend(
+    "davinci-002", sk_oai.OpenAITextCompletion(
+        "text-davinci-002", api_key, org_id
+    )
 )
 
 sk_prompt = """
@@ -70,3 +75,11 @@ print("Output: " + output)
 
 # Output: Protect humans, follow orders, survive.
 ```
+
+Hint: if you want to run this in a Jupyter notebook, you will need to
+import `asyncio` and replace the `await kernel.run_on_str_async(...)` with
+`asyncio.run(kernel.run_on_str_async(...))`.
+
+Hint: if you want to try this directly in your terminal, run `python3 -m asyncio`
+and then paste the code above into the Python REPL. (This is to enable the
+top-level `await` syntax.)
