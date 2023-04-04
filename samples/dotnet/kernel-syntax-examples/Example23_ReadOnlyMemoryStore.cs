@@ -46,7 +46,6 @@ public static class Example23_ReadOnlyMemoryStore
             s_jsonVectorEntries = s_jsonVectorEntries.Replace(" ", string.Empty, StringComparison.Ordinal);
             this._memoryRecords = JsonSerializer.Deserialize<MemoryRecord[]>(valueString);
 
-
 #pragma warning disable CA2201 // System.Exception is not sufficiently specific - this is a sample
             if (this._memoryRecords == null)
             {
