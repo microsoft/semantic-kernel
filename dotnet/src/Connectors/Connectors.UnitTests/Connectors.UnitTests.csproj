@@ -11,25 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Memory\**" />
-    <EmbeddedResource Remove="Memory\**" />
-    <None Remove="Memory\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="QdrantMemoryStoreTests.cs" />
-    <Compile Remove="QdrantMemoryStoreTests2.cs" />
-    <Compile Remove="QdrantMemoryStoreTests3.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Memory\Qdrant\QdrantMemoryStoreTests.cs" />
-    <Compile Include="Memory\Qdrant\QdrantMemoryStoreTests2.cs" />
-    <Compile Include="Memory\Qdrant\QdrantMemoryStoreTests3.cs" />
-    <Compile Include="Memory\Sqlite\SqliteMemoryStoreTests.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />
@@ -41,8 +22,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
-    <ProjectReference Include="..\Skills.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
-    <ProjectReference Include="..\Skills.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
+    <ProjectReference Include="..\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
+    <ProjectReference Include="..\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
   </ItemGroup>
 
   <ItemGroup>
