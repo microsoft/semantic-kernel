@@ -7,7 +7,7 @@ name: dotnet-pr
 on:
   workflow_dispatch:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "feature*" ]
     paths:
       - "dotnet/**"
       - "samples/dotnet/**"
