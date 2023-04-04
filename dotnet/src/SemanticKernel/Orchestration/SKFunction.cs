@@ -250,7 +250,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         public string Description { get; set; }
     }
 
-    private enum DelegateTypes
+    internal enum DelegateTypes
     {
         Unknown = 0,
         Void = 1,
@@ -273,7 +273,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         OutTask = 18
     }
 
-    private SKFunction(
+    internal SKFunction(
         DelegateTypes delegateType,
         Delegate delegateFunction,
         IList<ParameterView> parameters,
