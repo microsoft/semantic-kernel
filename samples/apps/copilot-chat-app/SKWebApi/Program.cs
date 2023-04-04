@@ -23,11 +23,13 @@ public static class Program
         {
             serverPort = SKWebApiConstants.DefaultServerPort;
         }
-        builder.WebHost.UseUrls($"https://*:{serverPort}");
 
+        string protocol = "https";
+        builder.WebHost.UseUrls($"{protocol}://*:{serverPort}");
+        
         // Add services to the DI container
         AddServices(builder.Services, builder.Configuration);
-
+        
         var app = builder.Build();
 
         // Configure the HTTP request pipeline
@@ -40,6 +42,10 @@ public static class Program
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.MapControllers();
+
+        // Log the health probe URL
+        var logger = app.Services.GetService<ILogger>()!;
+        logger.LogInformation("Health probe: https://{0}:{1}/probe", protocol, serverPort);
 
         app.Run();
     }
