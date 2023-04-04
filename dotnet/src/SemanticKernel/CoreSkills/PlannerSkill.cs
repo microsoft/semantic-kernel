@@ -244,7 +244,7 @@ public class PlannerSkill
         var plan = await this._functionFlowFunction.InvokeAsync(context);
 
         string fullPlan = $"<{FunctionFlowRunner.GoalTag}>\n{goal}\n</{FunctionFlowRunner.GoalTag}>\n{plan.ToString().Trim()}";
-        _ = context.Variables.UpdateWithPlanEntry(new Plan
+        _ = context.Variables.UpdateWithPlanEntry(new SkillPlan
         {
             Id = Guid.NewGuid().ToString("N"),
             Goal = goal,
@@ -270,8 +270,8 @@ public class PlannerSkill
         try
         {
             var executeResultContext = await this._functionFlowRunner.ExecuteXmlPlanAsync(context, planToExecute.PlanString);
-            _ = executeResultContext.Variables.Get(Plan.PlanKey, out var planProgress);
-            _ = executeResultContext.Variables.Get(Plan.ResultKey, out var results);
+            _ = executeResultContext.Variables.Get(SkillPlan.PlanKey, out var planProgress);
+            _ = executeResultContext.Variables.Get(SkillPlan.ResultKey, out var results);
 
             var isComplete = planProgress.Contains($"<{FunctionFlowRunner.SolutionTag}>", StringComparison.InvariantCultureIgnoreCase) &&
                              !planProgress.Contains($"<{FunctionFlowRunner.FunctionTag}", StringComparison.InvariantCultureIgnoreCase);
@@ -287,7 +287,7 @@ public class PlannerSkill
                 results = executeResultContext.LastErrorDescription;
             }
 
-            _ = context.Variables.UpdateWithPlanEntry(new Plan
+            _ = context.Variables.UpdateWithPlanEntry(new SkillPlan
             {
                 Id = planToExecute.Id,
                 Goal = planToExecute.Goal,
@@ -305,7 +305,7 @@ public class PlannerSkill
             {
                 case PlanningException.ErrorCodes.InvalidPlan:
                     context.Log.LogWarning("[InvalidPlan] Error executing plan: {0} ({1})", e.Message, e.GetType().Name);
-                    _ = context.Variables.UpdateWithPlanEntry(new Plan
+                    _ = context.Variables.UpdateWithPlanEntry(new SkillPlan
                     {
                         Id = Guid.NewGuid().ToString("N"),
                         Goal = planToExecute.Goal,
@@ -327,7 +327,7 @@ public class PlannerSkill
         catch (Exception e) when (!e.IsCriticalException())
         {
             context.Log.LogWarning("Error executing plan: {0} ({1})", e.Message, e.GetType().Name);
-            _ = context.Variables.UpdateWithPlanEntry(new Plan
+            _ = context.Variables.UpdateWithPlanEntry(new SkillPlan
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Goal = planToExecute.Goal,
