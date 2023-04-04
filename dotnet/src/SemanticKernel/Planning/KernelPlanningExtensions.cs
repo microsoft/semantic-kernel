@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 
 // ReSharper disable once CheckNamespace // Extension methods
-namespace Microsoft.SemanticKernel.Planning;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods for running plans using a kernel
