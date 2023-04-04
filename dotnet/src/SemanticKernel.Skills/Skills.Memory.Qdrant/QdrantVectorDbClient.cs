@@ -11,11 +11,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Http.ApiSchema;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
+namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
 /// <summary>
 /// An implementation of a client for the Qdrant VectorDB. This class is used to
@@ -290,7 +290,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         IEnumerable<string>? requiredTags = null,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        this._log.LogDebug("Searching top {0} closest vectors in {1}", top);
+        this._log.LogDebug("Searching top {0} nearest vectors", top);
 
         Verify.NotNull(target, "The given vector is NULL");
 
@@ -330,11 +330,11 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
                 embedding: v.Vector,
                 payload: v.Payload);
 
-            result.Add((record, v.Score ?? 0));
+            result.Add((record, v.Score ?? 0.0));
         }
 
-        // Qdrant search results are currently sorted by id, alphabetically
-        result = SortSearchResultByScore(result);
+        // Qdrant search results are currently sorted by id, alphabetically, sort list in place
+        result.Sort((a, b) => b.Item2.CompareTo(a.Item2));
         foreach (var kv in result)
         {
             yield return kv;
@@ -437,14 +437,6 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     private readonly ILogger _log;
     private readonly HttpClient _httpClient;
     private readonly int _vectorSize;
-
-    private static List<(QdrantVectorRecord, double)> SortSearchResultByScore(
-        List<(QdrantVectorRecord, double)> tuplesList)
-    {
-        // Sort list in place
-        tuplesList.Sort((a, b) => b.Item2.CompareTo(a.Item2));
-        return tuplesList;
-    }
 
     private static Uri SanitizeEndpoint(string endpoint, int? port)
     {

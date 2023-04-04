@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming

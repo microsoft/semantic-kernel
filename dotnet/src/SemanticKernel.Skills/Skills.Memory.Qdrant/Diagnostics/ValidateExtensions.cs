@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
+namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 internal static class ValidateExtensions
 {

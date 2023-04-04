@@ -3,9 +3,9 @@
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant;
+namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
 public interface IQdrantVectorDbClient
 {

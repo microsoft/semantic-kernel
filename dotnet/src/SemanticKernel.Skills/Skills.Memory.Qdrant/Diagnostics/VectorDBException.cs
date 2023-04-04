@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Qdrant.Diagnostics;
+namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 public class VectorDbException : Exception<VectorDbException.ErrorCodes>
 {

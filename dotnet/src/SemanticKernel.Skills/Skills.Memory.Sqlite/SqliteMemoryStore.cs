@@ -17,7 +17,7 @@ using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Sqlite;
+namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a SQLite database.

@@ -6,14 +6,14 @@
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.SemanticKernel.Skills.Memory.Sqlite</AssemblyName>
-    <RootNamespace>Microsoft.SemanticKernel.Skills.Memory.Sqlite</RootNamespace>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Sqlite</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Connectors.Memory.Sqlite</RootNamespace>
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <PackageId>Microsoft.SemanticKernel.Skills.Memory.Sqlite</PackageId>
+    <PackageId>Microsoft.SemanticKernel.Connectors.Memory.Sqlite</PackageId>
     <Title>Semantic Kernel - SQLite Connector</Title>
   </PropertyGroup>
 

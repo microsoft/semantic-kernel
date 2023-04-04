@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.Memory.Sqlite;
+namespace SemanticKernel.Connectors.UnitTests.Memory.Sqlite;
 
 /// <summary>
 /// Unit tests of <see cref="SqliteMemoryStore"/>.

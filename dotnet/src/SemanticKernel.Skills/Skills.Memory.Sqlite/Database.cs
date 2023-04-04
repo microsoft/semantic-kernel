@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
-namespace Microsoft.SemanticKernel.Skills.Memory.Sqlite;
+namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 
 internal struct DatabaseEntry
 {
