@@ -51,7 +51,7 @@ public class MemoryRecordTests
             embedding: this._embedding);
 
         // Assert
-        Assert.Equal(false, memoryRecord.Metadata.IsReference);
+        Assert.False(memoryRecord.Metadata.IsReference);
         Assert.Equal(this._id, memoryRecord.Metadata.Id);
         Assert.Equal(this._text, memoryRecord.Metadata.Text);
         Assert.Equal(this._description, memoryRecord.Metadata.Description);
@@ -70,7 +70,7 @@ public class MemoryRecordTests
             embedding: this._embedding);
 
         // Assert
-        Assert.Equal(true, memoryRecord.Metadata.IsReference);
+        Assert.True(memoryRecord.Metadata.IsReference);
         Assert.Equal(this._id, memoryRecord.Metadata.Id);
         Assert.Equal(string.Empty, memoryRecord.Metadata.Text);
         Assert.Equal(this._description, memoryRecord.Metadata.Description);
