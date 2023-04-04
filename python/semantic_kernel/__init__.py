@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import semantic_kernel.memory as memory
-from semantic_kernel.configuration.kernel_config import KernelConfig
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_builder import KernelBuilder
+from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.kernel_extensions import KernelExtensions as extensions
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
