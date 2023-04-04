@@ -33,6 +33,13 @@ class VolatileMemoryStore(VolatileDataStore, MemoryStoreBase):
         )
         embedding_array = embedding_array.reshape(embedding_array.shape[0], -1)
 
+        # If the query embedding has shape (1, embedding_size),
+        # reshape it to (embedding_size,)
+        if len(embedding.shape) == 2:
+            embedding = embedding.reshape(
+                embedding.shape[1],
+            )
+
         # Use numpy to get the cosine similarity between the query
         # embedding and all the embeddings in the collection
         similarity_scores = self.compute_similarity_scores(embedding, embedding_array)

@@ -4,7 +4,6 @@ from logging import Logger
 from typing import Callable, Optional
 
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.kernel_extensions import KernelExtensions
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -59,7 +58,7 @@ class KernelBuilder:
         self._config = config_func(self._config)
         return self
 
-    def build(self) -> KernelBase:
+    def build(self) -> Kernel:
         instance = Kernel(
             SkillCollection(self._log),
             PromptTemplateEngine(self._log),
@@ -78,7 +77,7 @@ class KernelBuilder:
         config: Optional[KernelConfig] = None,
         log: Optional[Logger] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
-    ) -> KernelBase:
+    ) -> Kernel:
         builder = KernelBuilder(KernelConfig(), NullMemory(), NullLogger())
 
         if config is not None:
