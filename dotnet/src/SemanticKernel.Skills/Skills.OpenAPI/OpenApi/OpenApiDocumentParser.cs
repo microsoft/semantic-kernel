@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
+using System.Text;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
@@ -77,6 +80,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
                 new HttpMethod(method),
                 operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
+                CreateRestApiOperationHeaders(operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody)
             );
 
@@ -103,12 +107,19 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
                 throw new OpenApiDocumentParsingException($"Parameter location of {parameter.Name} parameter of {operationId} operation is undefined.");
             }
 
+            if (parameter.Style == null)
+            {
+                throw new OpenApiDocumentParsingException($"Parameter style of {parameter.Name} parameter of {operationId} operation is undefined.");
+            }
+
             var restParameter = new RestApiOperationParameter(
                 parameter.Name,
                 parameter.Schema.Type,
                 parameter.Required,
-                (RestApiOperationParameterLocation)parameter.In, //TODO: Do a proper enum mapping,
-                (parameter.Schema.Default as OpenApiString)?.Value,
+                Enum.Parse<RestApiOperationParameterLocation>(parameter.In.ToString()),
+                Enum.Parse<RestApiOperationParameterStyle>(parameter.Style.ToString()),
+                parameter.Schema.Items?.Type,
+                GetParameterValue(parameter.Name, parameter.Schema.Default),
                 parameter.Description
             );
 
@@ -116,6 +127,25 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Creates REST API operation headers.
+    /// </summary>
+    /// <param name="parameters">The OpenApi parameters</param>
+    /// <returns>The headers.</returns>
+    private static IDictionary<string, string> CreateRestApiOperationHeaders(IList<OpenApiParameter> parameters)
+    {
+        var headers = new Dictionary<string, string>();
+
+        var headerParameters = parameters.Where(p => p.In == ParameterLocation.Header);
+
+        foreach (var parameter in headerParameters)
+        {
+            headers.Add(parameter.Name, string.Empty);
+        }
+
+        return headers;
     }
 
     /// <summary>
@@ -184,6 +214,71 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Returns parameter value.
+    /// </summary>
+    /// <param name="name">The parameter name.</param>
+    /// <param name="valueMetadata">The value metadata.</param>
+    /// <returns>The parameter value.</returns>
+    private static string? GetParameterValue(string name, IOpenApiAny valueMetadata)
+    {
+        var value = valueMetadata as IOpenApiPrimitive;
+        if (value == null)
+        {
+            return null;
+        }
+
+        switch (value.PrimitiveType)
+        {
+            case PrimitiveType.Integer:
+                var intValue = (OpenApiInteger)(IOpenApiPrimitive)value;
+                return intValue.Value.ToString(CultureInfo.InvariantCulture);
+
+            case PrimitiveType.Long:
+                var longValue = (OpenApiLong)(IOpenApiPrimitive)value;
+                return longValue.Value.ToString(CultureInfo.InvariantCulture);
+
+            case PrimitiveType.Float:
+                var floatValue = (OpenApiFloat)(IOpenApiPrimitive)value;
+                return floatValue.Value.ToString(CultureInfo.InvariantCulture);
+
+            case PrimitiveType.Double:
+                var doubleValue = (OpenApiDouble)(IOpenApiPrimitive)value;
+                return doubleValue.Value.ToString(CultureInfo.InvariantCulture);
+
+            case PrimitiveType.String:
+                var stringValue = (OpenApiString)(IOpenApiPrimitive)value;
+                return stringValue.Value.ToString(CultureInfo.InvariantCulture);
+
+            case PrimitiveType.Byte:
+                var byteValue = (OpenApiByte)(IOpenApiPrimitive)value;
+                return Convert.ToBase64String(byteValue.Value);
+
+            case PrimitiveType.Binary:
+                var binaryValue = (OpenApiBinary)(IOpenApiPrimitive)value;
+                return Encoding.UTF8.GetString(binaryValue.Value);
+
+            case PrimitiveType.Boolean:
+                var boolValue = (OpenApiBoolean)(IOpenApiPrimitive)value;
+                return boolValue.Value.ToString(CultureInfo.InvariantCulture);
+
+            case PrimitiveType.Date:
+                var dateValue = (OpenApiDate)(IOpenApiPrimitive)value;
+                return dateValue.Value.ToString("o").Substring(0, 10);
+
+            case PrimitiveType.DateTime:
+                var dateTimeValue = (OpenApiDateTime)(IOpenApiPrimitive)value;
+                return dateTimeValue.Value.ToString(CultureInfo.InvariantCulture);
+
+            case PrimitiveType.Password:
+                var passwordValue = (OpenApiPassword)(IOpenApiPrimitive)value;
+                return passwordValue.Value.ToString(CultureInfo.InvariantCulture);
+
+            default:
+                throw new OpenApiDocumentParsingException($"The value type - {value.PrimitiveType} is not supported.");
+        }
     }
 
     /// <summary>

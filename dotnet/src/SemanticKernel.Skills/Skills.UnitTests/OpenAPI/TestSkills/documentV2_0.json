@@ -55,6 +55,38 @@
               ],
               "type": "object"
             }
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "required": false,
+            "description": "Indicates which content types, expressed as MIME types, the client is able to understand.",
+            "type": "string",
+            "default": "application/json",
+            "x-ms-visibility": "internal"
+          },
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "description": "Requested API version.",
+            "required": true,
+            "type": "integer",
+            "default": 10,
+            "x-ms-visibility": "internal",
+            "x-ms-summary": "X-API-Version"
+          },
+          {
+            "collectionFormat": "csv",
+            "description": "The comma separated list of operation ids.",
+            "in": "header",
+            "items": {
+              "type": "string"
+            },
+            "name": "X-Operation-Csv-Ids",
+            "required": false,
+            "type": "array",
+            "x-ms-summary": "Ids",
+            "x-ms-visibility": "advanced"
           }
         ],
         "responses": {
