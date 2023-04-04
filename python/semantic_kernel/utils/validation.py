@@ -22,7 +22,8 @@ def validate_skill_name(value: Optional[str]) -> None:
     if not re_match(SKILL_NAME_REGEX, value):
         raise ValueError(
             f"Invalid skill name: {value}. Skill "
-            f"names must match the regex: {SKILL_NAME_REGEX}"
+            f"names may only contain ASCII letters, "
+            f"digits, and underscores."
         )
 
 
@@ -44,7 +45,8 @@ def validate_function_name(value: Optional[str]) -> None:
     if not re_match(FUNCTION_NAME_REGEX, value):
         raise ValueError(
             f"Invalid function name: {value}. Function "
-            f"names must match the regex: {FUNCTION_NAME_REGEX}"
+            f"names may only contain ASCII letters, "
+            f"digits, and underscores."
         )
 
 
@@ -66,5 +68,5 @@ def validate_function_param_name(value: Optional[str]) -> None:
     if not re_match(FUNCTION_PARAM_NAME_REGEX, value):
         raise ValueError(
             f"Invalid function parameter name: {value}. Function parameter "
-            f"names must match the regex: {FUNCTION_PARAM_NAME_REGEX}"
+            f"names may only contain ASCII letters, digits, and underscores."
         )
