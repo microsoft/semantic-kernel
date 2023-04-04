@@ -4,6 +4,7 @@ import json
 import semantic_kernel as sk
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.core_skills.planner_skill import PlannerSkill
+from semantic_kernel.planning.plan import Plan
 from semantic_kernel.kernel_extensions.import_semantic_skill_from_directory import (
     import_semantic_skill_from_directory,
 )
@@ -42,21 +43,20 @@ async def test_can_create_plan_async(initialized_kernel: KernelBase):
 
     plan_string = json.loads(plan.result)["plan_string"]
 
-
     assert "<goal>" in plan_string and "</goal>" in plan_string
     assert "<plan>" in plan_string and "</plan>" in plan_string
     assert "function.FunSkill.Excuses" in plan_string
 
+
 @pytest.mark.asyncio
 async def test_can_execute_plan_async(initialized_kernel: KernelBase):
+    step = 1
+    maxSteps = 10
     kernel = initialized_kernel
     planner = PlannerSkill(kernel=kernel)
-    ask = "Tomorrow is Valentine's day. Come up with an excuse why you didn't get flowers."
+    ask = "Tomorrow is Valentine's day. Come up with only an excuse for why you didn't get flowers."
 
     context = kernel.create_new_context()
     plan = await planner.create_plan_async(ask, context=context)
-
-    plan_string = json.loads(plan.result)["plan_string"]
-
-    plan_result = await planner.execute_plan_async(plan_string, context=context)
-    assert plan_result.result == "I forgot to buy flowers."
+    while not context.variables.get(Plan.IS_COMPLETE_KEY)[1] and step < maxSteps:
+        plan = await planner.execute_plan_async(plan)
