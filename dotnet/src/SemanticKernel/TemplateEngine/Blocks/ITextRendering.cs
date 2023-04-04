@@ -14,5 +14,5 @@ public interface ITextRendering
     /// </summary>
     /// <param name="variables">Optional variables used to render the block</param>
     /// <returns>Rendered content</returns>
-    internal string Render(ContextVariables? variables);
+    public string Render(ContextVariables? variables);
 }
