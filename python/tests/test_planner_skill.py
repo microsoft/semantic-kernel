@@ -1,4 +1,5 @@
 import pytest
+import json
 
 import semantic_kernel as sk
 from semantic_kernel.kernel_base import KernelBase
@@ -14,8 +15,8 @@ def initialized_kernel() -> KernelBase:
 
     # configure backend as Azure OpenAI
     model_id, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-    kernel.config.add_openai_completion_backend(
-        "davinci-003", model_id, api_key, endpoint
+    kernel.config.add_azure_openai_completion_backend(
+        "davinci-003", model_id, endpoint, api_key
     )
 
     # TODO: determine if we want to create a dependency on samples folder?
@@ -24,10 +25,38 @@ def initialized_kernel() -> KernelBase:
     return kernel
 
 
-@pytest.mark.asyncio
-async def test_can_create_plan(initialized_kernel: KernelBase):
+def test_function_can_be_imported(initialized_kernel: KernelBase):
     kernel = initialized_kernel
-    planner = kernel.import_skill(PlannerSkill(kernel=kernel))
+    planner = kernel.import_skill(PlannerSkill(kernel=kernel), "planner")
+    assert kernel.skills.has_function("planner", "CreatePlan")
 
+
+@pytest.mark.asyncio
+async def test_can_create_plan_async(initialized_kernel: KernelBase):
+    kernel = initialized_kernel
+    planner = PlannerSkill(kernel=kernel)
     ask = "Tomorrow is Valentine's day. Come up with an excuse why you didn't get flowers."
-    base_plan = await kernel.run_on_str_async(ask, planner["CreatePlan"])
+
+    context = kernel.create_new_context()
+    plan = await planner.create_plan_async(ask, context=context)
+
+    plan_string = json.loads(plan.result)["plan_string"]
+
+
+    assert "<goal>" in plan_string and "</goal>" in plan_string
+    assert "<plan>" in plan_string and "</plan>" in plan_string
+    assert "function.FunSkill.Excuses" in plan_string
+
+@pytest.mark.asyncio
+async def test_can_execute_plan_async(initialized_kernel: KernelBase):
+    kernel = initialized_kernel
+    planner = PlannerSkill(kernel=kernel)
+    ask = "Tomorrow is Valentine's day. Come up with an excuse why you didn't get flowers."
+
+    context = kernel.create_new_context()
+    plan = await planner.create_plan_async(ask, context=context)
+
+    plan_string = json.loads(plan.result)["plan_string"]
+
+    plan_result = await planner.execute_plan_async(plan_string, context=context)
+    assert plan_result.result == "I forgot to buy flowers."
