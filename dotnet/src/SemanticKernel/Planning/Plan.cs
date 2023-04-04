@@ -1,104 +1,108 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
+using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
-/// Object that contains details about a plan and its goal and details of its execution.
+/// A plan class that is executable by the kernel
 /// </summary>
-public class Plan
+public class Plan : ISKFunction
 {
     /// <summary>
-    /// Internal constant string representing the ID key.
+    /// State of the plan
     /// </summary>
-    internal const string IdKey = "PLAN__ID";
+    [JsonPropertyName("state")]
+    public ContextVariables State { get; } = new();
 
     /// <summary>
-    /// Internal constant string representing the goal key.
+    /// Steps of the plan
     /// </summary>
-    internal const string GoalKey = "PLAN__GOAL";
+    [JsonPropertyName("steps")]
+    public List<Plan> Steps { get; } = new();
 
     /// <summary>
-    /// Internal constant string representing the plan key.
+    /// Named parameters for the function
     /// </summary>
-    internal const string PlanKey = "PLAN__PLAN";
+    [JsonPropertyName("named_parameters")]
+    public ContextVariables NamedParameters { get; set; } = new();
 
     /// <summary>
-    /// Internal constant string representing the is complete key.
+    /// Run the next step of the plan
     /// </summary>
-    internal const string IsCompleteKey = "PLAN__ISCOMPLETE";
-
-    /// <summary>
-    /// Internal constant string representing the is successful key.
-    /// </summary>
-    internal const string IsSuccessfulKey = "PLAN__ISSUCCESSFUL";
-
-    /// <summary>
-    /// Internal constant string representing the result key.
-    /// </summary>
-    internal const string ResultKey = "PLAN__RESULT";
-
-    /// <summary>
-    /// The ID of the plan.
-    /// Can be used to track creation of a plan and execution over multiple steps.
-    /// </summary>
-    [JsonPropertyName("id")]
-    public string Id { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The goal of the plan.
-    /// </summary>
-    [JsonPropertyName("goal")]
-    public string Goal { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The plan details in string.
-    /// </summary>
-    [JsonPropertyName("plan")]
-    public string PlanString { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The arguments for the plan.
-    /// </summary>
-    [JsonPropertyName("arguments")]
-    public string Arguments { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Flag indicating if the plan is complete.
-    /// </summary>
-    [JsonPropertyName("is_complete")]
-    public bool IsComplete { get; set; }
-
-    /// <summary>
-    /// Flag indicating if the plan is successful.
-    /// </summary>
-    [JsonPropertyName("is_successful")]
-    public bool IsSuccessful { get; set; }
-
-    /// <summary>
-    /// The result of the plan execution.
-    /// </summary>
-    [JsonPropertyName("result")]
-    public string Result { get; set; } = string.Empty;
-
-    /// <summary>
-    /// To help with writing plans to <see cref="Orchestration.ContextVariables"/>.
-    /// </summary>
-    /// <returns>JSON string representation of the Plan</returns>
-    public string ToJson()
+    /// <param name="kernel">Kernel instance to use</param>
+    /// <param name="variables">Variables to use</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated plan</returns>
+    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
-        return JsonSerializer.Serialize(this);
+        // no-op, return self
+        return Task.FromResult<Plan>(this);
     }
 
-    /// <summary>
-    /// To help with reading plans from <see cref="Orchestration.ContextVariables"/>.
-    /// </summary>
-    /// <param name="json">JSON string representation of aPlan</param>
-    /// <returns>An instance of a Plan object.</returns>
-    public static Plan FromJson(string json)
+    // ISKFunction implementation
+
+    /// <inheritdoc/>
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    /// <inheritdoc/>
+    [JsonPropertyName("skill_name")]
+    public string SkillName { get; set; } = string.Empty;
+
+    /// <inheritdoc/>
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = string.Empty;
+
+    /// <inheritdoc/>
+    [JsonPropertyName("is_semantic")]
+    public bool IsSemantic { get; } = false;
+
+    /// <inheritdoc/>
+    [JsonPropertyName("request_settings")]
+    public CompleteRequestSettings RequestSettings { get; } = new();
+
+    /// <inheritdoc/>
+    public FunctionView Describe()
     {
-        return JsonSerializer.Deserialize<Plan>(json) ?? new Plan();
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null, CancellationToken? cancel = null)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null, CancellationToken? cancel = null)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    {
+        throw new NotImplementedException();
     }
 }

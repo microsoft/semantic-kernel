@@ -123,6 +123,19 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
+    public ISKFunction RegisterCustomFunction(string skillName, ISKFunction customFunction)
+    {
+        // Future-proofing the name not to contain special chars
+        Verify.ValidSkillName(skillName);
+        Verify.NotNull(customFunction, $"The {nameof(customFunction)} parameter is not set to an instance of an object.");
+
+        customFunction.SetDefaultSkillCollection(this.Skills);
+        this._skillCollection.AddSemanticFunction(customFunction);
+
+        return customFunction;
+    }
+
+    /// <inheritdoc/>
     public void RegisterMemory(ISemanticTextMemory memory)
     {
         this._memory = memory;
