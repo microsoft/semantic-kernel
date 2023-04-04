@@ -29,8 +29,8 @@ Give me the TLDR in 5 words.
 """
 
 # Create the semantic function
-tldr_function = sk.extensions.create_semantic_function(
-    kernel, sk_prompt, max_tokens=200, temperature=0, top_p=0.5
+tldr_function = kernel.create_semantic_function(
+    sk_prompt, max_tokens=200, temperature=0, top_p=0.5
 )
 
 # User input
