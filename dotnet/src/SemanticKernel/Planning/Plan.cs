@@ -36,18 +36,6 @@ public abstract class Plan : ISKFunction
     public ContextVariables NamedParameters { get; set; } = new();
 
     /// <summary>
-    /// Key used to store the function output of the step in the state
-    /// </summary>
-    [JsonPropertyName("output_key")]
-    public string OutputKey { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Key used to store the function output as a plan result in the state
-    /// </summary>
-    [JsonPropertyName("result_key")]
-    public string ResultKey { get; set; } = string.Empty;
-
-    /// <summary>
     /// Run the next step of the plan
     /// </summary>
     /// <param name="kernel">Kernel instance to use</param>
