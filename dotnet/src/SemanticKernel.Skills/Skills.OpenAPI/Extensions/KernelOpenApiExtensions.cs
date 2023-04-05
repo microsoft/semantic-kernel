@@ -233,7 +233,7 @@ public static class KernelOpenApiExtensions
 
                     if (parameter.IsRequired)
                     {
-                        throw new KeyNotFoundException($"No variable found in context to use as an argument for the '{parameter.Name}' of the '{skillName}.{operation.Id}' Rest function.");
+                        throw new KeyNotFoundException($"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{skillName}.{operation.Id}' Rest function.");
                     }
                 }
 
