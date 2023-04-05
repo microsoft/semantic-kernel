@@ -1,10 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import semantic_kernel.memory as memory
-from semantic_kernel.kernel_base import KernelBase
+from semantic_kernel import core_skills, memory
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_builder import KernelBuilder
 from semantic_kernel.kernel_config import KernelConfig
-from semantic_kernel.kernel_extensions import KernelExtensions as extensions
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -24,7 +23,7 @@ from semantic_kernel.utils.settings import (
 )
 
 
-def create_kernel() -> KernelBase:
+def create_kernel() -> Kernel:
     return KernelBuilder.create_kernel()
 
 
@@ -36,7 +35,6 @@ __all__ = [
     "create_kernel",
     "openai_settings_from_dot_env",
     "azure_openai_settings_from_dot_env",
-    "extensions",
     "PromptTemplateConfig",
     "PromptTemplate",
     "ChatPromptTemplate",
@@ -45,4 +43,5 @@ __all__ = [
     "SKFunctionBase",
     "SKContext",
     "memory",
+    "core_skills",
 ]

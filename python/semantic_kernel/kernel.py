@@ -13,6 +13,7 @@ from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_extensions import KernelExtensions
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -31,7 +32,7 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 )
 
 
-class Kernel(KernelBase):
+class Kernel(KernelBase, KernelExtensions):
     _log: Logger
     _config: KernelConfig
     _skill_collection: SkillCollectionBase
@@ -51,6 +52,9 @@ class Kernel(KernelBase):
         self._skill_collection = skill_collection
         self._prompt_template_engine = prompt_template_engine
         self._memory = memory
+
+    def kernel(self) -> KernelBase:
+        return self
 
     @property
     def config(self) -> KernelConfig:
