@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-class SemanticFunctionConstants:
-    GET_CONVERSATION_ACTION_ITEMS_DEFINITION = '''You are an action item extractor. You will be given chat history and need to make note of action items mentioned in the chat.
+GET_CONVERSATION_ACTION_ITEMS_DEFINITION = '''You are an action item extractor. You will be given chat history and need to make note of action items mentioned in the chat.
 Extract action items from the content if there are any. If there are no action, return nothing. If a single field is missing, use an empty string.
 Return the action items in json.
 
@@ -43,7 +42,7 @@ CONTENT STOPS HERE.
 
 OUTPUT:'''
 
-    GET_CONVERSATION_TOPICS_DEFINITION = '''Analyze the following extract taken from a conversation transcript and extract key topics.
+GET_CONVERSATION_TOPICS_DEFINITION = """Analyze the following extract taken from a conversation transcript and extract key topics.
 - Topics only worth remembering.
 - Be brief. Short phrases.
 - Can use broken English.
@@ -70,9 +69,9 @@ My tragic story was immortalized by Shakespeare in a play.
 +++++
 [Input]
 {{$INPUT}}
-[Output]'''
+[Output]"""
 
-    SUMMARIZE_CONVERSATION_DEFINITION = '''BEGIN CONTENT TO SUMMARIZE:
+SUMMARIZE_CONVERSATION_DEFINITION = """BEGIN CONTENT TO SUMMARIZE:
 {{$INPUT}}
 
 END CONTENT TO SUMMARIZE.
@@ -82,4 +81,4 @@ Do not incorporate other general knowledge.
 Summary is in plain text, in complete sentences, with no markup or tags.
 
 BEGIN SUMMARY:
-'''
+"""
