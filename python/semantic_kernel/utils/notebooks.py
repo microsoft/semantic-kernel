@@ -14,8 +14,8 @@ def try_get_api_info_from_synapse_mlflow() -> Optional[Tuple[str, str]]:
 
         mlflow_env_config = get_mlflow_env_config()
         return (
-            mlflow_env_config.driver_aad_token,
             f"{mlflow_env_config.workload_endpoint}cognitive/openai",
+            mlflow_env_config.driver_aad_token,
         )
     except ImportError:
         return None
