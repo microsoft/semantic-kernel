@@ -330,10 +330,6 @@ public class QdrantMemoryStore : IMemoryStore
 
     #region private ================================================================================
 
-    /// <summary>
-    /// Concurrent dictionary consisting of Qdrant Collection names mapped to
-    /// a concurrent dictionary of cached Qdrant vector entries mapped by plaintext key
-    /// </summary>
     private readonly IQdrantVectorDbClient _qdrantClient;
 
     private async Task<QdrantVectorRecord> ConvertFromMemoryRecordAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)

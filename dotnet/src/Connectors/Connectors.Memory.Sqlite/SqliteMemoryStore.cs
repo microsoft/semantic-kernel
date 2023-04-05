@@ -75,7 +75,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             value: JsonSerializer.Serialize(record),
             timestamp: ToTimestampString(record.Timestamp),
             cancel: cancel);
-        
+
         // Insert if entry does not exists
         await this._dbConnection.InsertOrIgnoreAsync(
             collection: collectionName,
