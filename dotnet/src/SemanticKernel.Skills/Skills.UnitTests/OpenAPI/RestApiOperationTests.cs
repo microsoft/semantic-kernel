@@ -12,7 +12,7 @@ namespace SemanticKernel.Skills.UnitTests.OpenAPI;
 public class RestApiOperationTests
 {
     [Fact]
-    public void ItShoudRenderHeaderValuesFromArguments()
+    public void ItShouldRenderHeaderValuesFromArguments()
     {
         //Arrange
         var rawHeaders = new Dictionary<string, string>();
@@ -39,7 +39,7 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ItShoudUseHeaderValuesIfTheyAreAlreadySupplied()
+    public void ItShouldUseHeaderValuesIfTheyAreAlreadySupplied()
     {
         //Arrange
         var rawHeaders = new Dictionary<string, string>();
@@ -62,7 +62,7 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ItShoudThrowExceptionIfHeadersHaveNoValuesAndHeadersMetadataNotSupplied()
+    public void ItShouldThrowExceptionIfHeadersHaveNoValuesAndHeadersMetadataNotSupplied()
     {
         //Arrange
         var rawHeaders = new Dictionary<string, string>();
@@ -81,7 +81,7 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ItShoudThrowExceptionIfHeadersHaveNoValuesAndSomeHeadersAreRequired()
+    public void ItShouldThrowExceptionIfHeadersHaveNoValuesAndSomeHeadersAreRequired()
     {
         //Arrange
         var rawHeaders = new Dictionary<string, string>();
@@ -102,7 +102,7 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ItShoudSkipNotRequiredHeaderHavingNeitherValueNorDefaultValue()
+    public void ItShouldSkipNotRequiredHeaderHavingNeitherValueNorDefaultValue()
     {
         //Arrange
         var rawHeaders = new Dictionary<string, string>();
@@ -129,7 +129,7 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ItShoudUseParameterDefaultValueForNotRequiredHeaderAndIfValueNotSupplied()
+    public void ItShouldUseParameterDefaultValueForNotRequiredHeaderAndIfValueNotSupplied()
     {
         //Arrange
         var rawHeaders = new Dictionary<string, string>();
