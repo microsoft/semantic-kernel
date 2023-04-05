@@ -39,13 +39,10 @@ internal static class GPT3Settings
     {
         string json = EmbeddedResource.ReadEncodingTable();
         var encoder = JsonSerializer.Deserialize<Dictionary<string, int>>(json, new JsonSerializerOptions());
-        if (encoder == null)
-        {
-            throw new AIException(AIException.ErrorCodes.InvalidConfiguration,
-                "Encoding table deserialization returned NULL");
-        }
 
-        return encoder;
+        return encoder
+               ?? throw new AIException(AIException.ErrorCodes.InvalidConfiguration,
+                   "Encoding table deserialization returned NULL");
     }
 
     private static Dictionary<Tuple<string, string>, int> DictZip(List<Tuple<string, string>> x, List<int> y)

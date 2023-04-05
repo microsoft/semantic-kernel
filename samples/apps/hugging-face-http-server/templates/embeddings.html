@@ -1,0 +1,21 @@
+<!-- Copyright (c) Microsoft. All rights reserved. -->
+
+{% extends 'documentation.html' %}
+
+{% block body %}
+
+<h2>Embeddings</h2>
+
+<h3>Example Request</h3>
+  <div class="code">
+    <p>curl http://localhost:5000/embeddings/{model} \</p>
+    <p>-X POST \</p>
+    <p>-H "Content-Type: application/json" \</p>
+    <p>-d '{"inputs": ["test string 1", "test string 2", ...]}'</p>
+  </div> 
+
+  <p>
+    <a href=https://huggingface.co/models?pipeline_tag=sentence-similarity&sort=downloads>HF Text Embedding Models</a>
+  </p>
+  
+{% endblock %}
