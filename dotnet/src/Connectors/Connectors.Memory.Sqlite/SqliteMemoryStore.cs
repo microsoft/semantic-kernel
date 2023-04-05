@@ -82,9 +82,9 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> record, [EnumeratorCancellation] CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        foreach (var r in record)
+        foreach (var r in records)
         {
             yield return await this.UpsertAsync(collectionName, r, cancel);
         }

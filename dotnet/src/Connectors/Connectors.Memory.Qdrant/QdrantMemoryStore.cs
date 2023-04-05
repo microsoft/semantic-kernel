@@ -91,16 +91,18 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException e)
         {
-            throw new VectorDbException(VectorDbException.ErrorCodes.FailedToUpsertVectors, $"Failed to upsert, check if the target collection exists.");
+            throw new VectorDbException(
+                VectorDbException.ErrorCodes.FailedToUpsertVectors,
+                $"Failed to upsert due to HttpRequestException: {e.Message}");
         }
 
         return vectorData.PointId;
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> record, [EnumeratorCancellation] CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        var tasks = Task.WhenAll(record.Select(async r => await this.ConvertFromMemoryRecordAsync(collectionName, r, cancel)));
+        var tasks = Task.WhenAll(records.Select(async r => await this.ConvertFromMemoryRecordAsync(collectionName, r, cancel)));
         var vectorData = await tasks;
 
         try
@@ -112,7 +114,7 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException e)
         {
-            throw new VectorDbException(VectorDbException.ErrorCodes.FailedToUpsertVectors, $"Failed to upsert, check if the target collection exists.");
+            throw new VectorDbException(VectorDbException.ErrorCodes.FailedToUpsertVectors, $"Failed to upsert due to HttpRequestException: {e.Message}");
         }
 
         foreach (var v in vectorData)

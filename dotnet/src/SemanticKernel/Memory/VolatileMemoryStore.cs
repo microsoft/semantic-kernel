@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -75,10 +76,10 @@ public class VolatileMemoryStore : IMemoryStore
     public async IAsyncEnumerable<string> UpsertBatchAsync(
 #pragma warning restore CS8425 // Async-iterator member has one or more parameters of type 'CancellationToken' but none of them is decorated with the 'EnumeratorCancellation' attribute, so the cancellation token parameter from the generated 'IAsyncEnumerable<>.GetAsyncEnumerator' will be unconsumed
         string collectionName,
-        IEnumerable<MemoryRecord> record,
-        CancellationToken cancel = default)
+        IEnumerable<MemoryRecord> records,
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        foreach (var r in record)
+        foreach (var r in records)
         {
             yield return await this.UpsertAsync(collectionName, r, cancel);
         }
@@ -102,7 +103,7 @@ public class VolatileMemoryStore : IMemoryStore
 #pragma warning restore CS8425 // Async-iterator member has one or more parameters of type 'CancellationToken' but none of them is decorated with the 'EnumeratorCancellation' attribute, so the cancellation token parameter from the generated 'IAsyncEnumerable<>.GetAsyncEnumerator' will be unconsumed
         string collectionName,
         IEnumerable<string> keys,
-        CancellationToken cancel = default)
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
         {
