@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Text.Json;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SKWebApi.Skills;
@@ -337,8 +338,8 @@ public class ChatMemorySkill
         var count = -1;
         try
         {
-            startIdx = int.Parse(context["startIdx"]);
-            count = int.Parse(context["count"]);
+            startIdx = Math.Max(startIdx, int.Parse(context["startIdx"], new NumberFormatInfo()));
+            count = Math.Max(count, int.Parse(context["count"], new NumberFormatInfo()));
         }
         catch (FormatException)
         {
@@ -361,6 +362,16 @@ public class ChatMemorySkill
             context.Log.LogError("Unable to deserialize message IDs for chat {0}.", chatId);
             context.Fail($"Unable to deserialize message IDs for chat {chatId}.");
             return context;
+        }
+
+        if (startIdx > messageIds.Count)
+        {
+            context.Variables.Update(JsonSerializer.Serialize<List<ChatMessage>>(new List<ChatMessage>()));
+            return context;
+        }
+        else if (startIdx + count > messageIds.Count || count == -1)
+        {
+            count = messageIds.Count - startIdx;
         }
 
         // Clone the context to avoid modifying the original context variables.
@@ -398,7 +409,7 @@ public class ChatMemorySkill
         }
 
         messages.Sort();
-        messages.Skip(startIdx).Take(count);
+        messages = messages.GetRange(startIdx, count);
         context.Variables.Update(JsonSerializer.Serialize(messages));
         return context;
     }
