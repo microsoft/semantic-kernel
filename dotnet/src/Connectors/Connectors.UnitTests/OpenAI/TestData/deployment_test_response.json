@@ -1,0 +1,53 @@
+﻿{
+  "data": [
+    {
+      "scale_settings": {
+        "scale_type": "standard"
+      },
+      "model": "gpt-35-turbo",
+      "owner": "organization-owner",
+      "id": "gpt-35-turbo",
+      "status": "succeeded",
+      "created_at": 1646126127,
+      "updated_at": 1646127311,
+      "object": "deployment"
+    },
+    {
+      "scale_settings": {
+        "scale_type": "standard"
+      },
+      "model": "text-davinci-003",
+      "owner": "organization-owner",
+      "id": "text-davinci-003",
+      "status": "succeeded",
+      "created_at": 1646126127,
+      "updated_at": 1646127311,
+      "object": "deployment"
+    },
+    {
+      "scale_settings": {
+        "scale_type": "standard"
+      },
+      "model": "text-embedding-ada-002",
+      "owner": "organization-owner",
+      "id": "text-embedding-ada-002",
+      "status": "succeeded",
+      "created_at": 1646126127,
+      "updated_at": 1646127311,
+      "object": "deployment"
+    },
+    {
+      "scale_settings": {
+        "scale_type": "standard"
+      },
+      "model": "code-davinci-002",
+      "owner": "organization-owner",
+      "id": "code-davinci-002",
+      "status": "succeeded",
+      "created_at": 1646126127,
+      "updated_at": 1646127311,
+      "object": "deployment"
+    }
+  ],
+  "object": "list"
+}
