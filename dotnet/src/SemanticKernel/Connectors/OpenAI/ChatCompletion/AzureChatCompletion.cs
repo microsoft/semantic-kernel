@@ -79,7 +79,7 @@ public class AzureChatCompletion : AzureOpenAIClientAbstract, IChatCompletion
     }
 
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string instructions = "")
+    public ChatHistory CreateNewChat(string? instructions = null)
     {
         return new OpenAIChatHistory(instructions);
     }
