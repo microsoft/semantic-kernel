@@ -72,7 +72,15 @@ internal class RestApiOperation
     /// <param name="parameters">The operation parameters.</param>
     /// <param name="headers">The operation headers.</param>
     /// <param name="payload">The operation payload.</param>
-    public RestApiOperation(string id, string serverUrl, string path, HttpMethod method, string description, IList<RestApiOperationParameter> parameters, IDictionary<string, string> headers, RestApiOperationPayload? payload = null)
+    public RestApiOperation(
+        string id,
+        string serverUrl,
+        string path,
+        HttpMethod method,
+        string description,
+        IList<RestApiOperationParameter> parameters,
+        IDictionary<string, string> headers,
+        RestApiOperationPayload? payload = null)
     {
         this.Id = id;
         this.ServerUrl = serverUrl;
@@ -134,7 +142,7 @@ internal class RestApiOperation
 
             //Getting metadata for the header
             var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName);
-            if (headerMetadata == null)
+            if (headerMetadata == null || headerMetadata.IsRequired)
             {
                 //No metadata found for the header.
                 throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
@@ -232,8 +240,6 @@ internal class RestApiOperation
     }
 
     private static readonly Regex s_urlParameterMatch = new Regex(@"\{([\w-]+)\}");
-
-    private const string StringParameterType = "string";
 
     # endregion
 }

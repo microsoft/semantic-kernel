@@ -136,16 +136,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <returns>The headers.</returns>
     private static IDictionary<string, string> CreateRestApiOperationHeaders(IList<OpenApiParameter> parameters)
     {
-        var headers = new Dictionary<string, string>();
-
-        var headerParameters = parameters.Where(p => p.In == ParameterLocation.Header);
-
-        foreach (var parameter in headerParameters)
-        {
-            headers.Add(parameter.Name, string.Empty);
-        }
-
-        return headers;
+        return parameters.Where(p => p.In == ParameterLocation.Header).ToDictionary(p => p.Name, p => string.Empty);
     }
 
     /// <summary>
@@ -224,8 +215,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <returns>The parameter value.</returns>
     private static string? GetParameterValue(string name, IOpenApiAny valueMetadata)
     {
-        var value = valueMetadata as IOpenApiPrimitive;
-        if (value == null)
+        if (valueMetadata is not IOpenApiPrimitive value)
         {
             return null;
         }
@@ -233,47 +223,47 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
         switch (value.PrimitiveType)
         {
             case PrimitiveType.Integer:
-                var intValue = (OpenApiInteger)(IOpenApiPrimitive)value;
+                var intValue = (OpenApiInteger)value;
                 return intValue.Value.ToString(CultureInfo.InvariantCulture);
 
             case PrimitiveType.Long:
-                var longValue = (OpenApiLong)(IOpenApiPrimitive)value;
+                var longValue = (OpenApiLong)value;
                 return longValue.Value.ToString(CultureInfo.InvariantCulture);
 
             case PrimitiveType.Float:
-                var floatValue = (OpenApiFloat)(IOpenApiPrimitive)value;
+                var floatValue = (OpenApiFloat)value;
                 return floatValue.Value.ToString(CultureInfo.InvariantCulture);
 
             case PrimitiveType.Double:
-                var doubleValue = (OpenApiDouble)(IOpenApiPrimitive)value;
+                var doubleValue = (OpenApiDouble)value;
                 return doubleValue.Value.ToString(CultureInfo.InvariantCulture);
 
             case PrimitiveType.String:
-                var stringValue = (OpenApiString)(IOpenApiPrimitive)value;
+                var stringValue = (OpenApiString)value;
                 return stringValue.Value.ToString(CultureInfo.InvariantCulture);
 
             case PrimitiveType.Byte:
-                var byteValue = (OpenApiByte)(IOpenApiPrimitive)value;
+                var byteValue = (OpenApiByte)value;
                 return Convert.ToBase64String(byteValue.Value);
 
             case PrimitiveType.Binary:
-                var binaryValue = (OpenApiBinary)(IOpenApiPrimitive)value;
+                var binaryValue = (OpenApiBinary)value;
                 return Encoding.UTF8.GetString(binaryValue.Value);
 
             case PrimitiveType.Boolean:
-                var boolValue = (OpenApiBoolean)(IOpenApiPrimitive)value;
+                var boolValue = (OpenApiBoolean)value;
                 return boolValue.Value.ToString(CultureInfo.InvariantCulture);
 
             case PrimitiveType.Date:
-                var dateValue = (OpenApiDate)(IOpenApiPrimitive)value;
+                var dateValue = (OpenApiDate)value;
                 return dateValue.Value.ToString("o").Substring(0, 10);
 
             case PrimitiveType.DateTime:
-                var dateTimeValue = (OpenApiDateTime)(IOpenApiPrimitive)value;
+                var dateTimeValue = (OpenApiDateTime)value;
                 return dateTimeValue.Value.ToString(CultureInfo.InvariantCulture);
 
             case PrimitiveType.Password:
-                var passwordValue = (OpenApiPassword)(IOpenApiPrimitive)value;
+                var passwordValue = (OpenApiPassword)value;
                 return passwordValue.Value.ToString(CultureInfo.InvariantCulture);
 
             default:

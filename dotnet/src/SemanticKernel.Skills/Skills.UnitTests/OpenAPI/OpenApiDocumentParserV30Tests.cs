@@ -79,7 +79,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     }
 
     [Fact]
-    public void ItCanParsePutOperationMetadataOfSuccessfully()
+    public void ItCanParsePutOperationMetadataSuccessfully()
     {
         //Act
         var operations = this._sut.Parse(this._openApiDocument);
@@ -164,7 +164,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.Equal("array", acceptParameter.Type);
         Assert.Equal(RestApiOperationParameterStyle.Simple, acceptParameter.Style);
         Assert.Equal("The comma separated list of operation ids.", acceptParameter.Description);
-        Assert.Equal("string", acceptParameter.ItemsType);
+        Assert.Equal("string", acceptParameter.ArrayItemType);
     }
 
     [Fact]

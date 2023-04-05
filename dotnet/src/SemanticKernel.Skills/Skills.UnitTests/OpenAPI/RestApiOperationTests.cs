@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Globalization;
 using System.Net.Http;
 using System.Web;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
@@ -13,7 +12,7 @@ namespace SemanticKernel.Skills.UnitTests.OpenAPI;
 public class RestApiOperationTests
 {
     [Fact]
-    public void ItShoudRenderHeaderValuesFormArguments()
+    public void ItShoudRenderHeaderValuesFromArguments()
     {
         //Arrange
         var rawHeaders = new Dictionary<string, string>();
