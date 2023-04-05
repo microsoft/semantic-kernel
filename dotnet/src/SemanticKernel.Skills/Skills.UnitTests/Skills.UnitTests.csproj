@@ -15,7 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="OpenAPI\TestSkills\v2_0\operation.json" />
+    <EmbeddedResource Include="OpenAPI\TestSkills\documentV2_0.json" />
+    <EmbeddedResource Include="OpenAPI\TestSkills\documentV3_0.json" />
   </ItemGroup>
 
   <ItemGroup>
