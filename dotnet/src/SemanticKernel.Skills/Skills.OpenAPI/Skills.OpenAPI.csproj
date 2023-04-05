@@ -18,6 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Skills\AzureKeyVaultSkill\documentV2_0.json" />
+    <None Remove="Skills\AzureKeyVaultSkill\documentV3_0.json" />
     <None Remove="Skills\AzureKeyVaultSkill\openapi.json" />
   </ItemGroup>
 
@@ -31,10 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Skills\AzureKeyVaultSkill\openapi.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="Microsoft.OpenApi.Readers" />
     <PackageReference Include="Newtonsoft.Json" />
@@ -42,6 +40,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Skills\AzureKeyVaultSkill\openapi.json" />
   </ItemGroup>
   
 </Project>

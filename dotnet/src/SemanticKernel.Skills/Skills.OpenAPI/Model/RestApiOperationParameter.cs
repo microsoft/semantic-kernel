@@ -38,6 +38,16 @@ internal class RestApiOperationParameter
     public RestApiOperationParameterLocation Location { get; }
 
     /// <summary>
+    /// The parameter style - defines how multiple values are delimited.
+    /// </summary>
+    public RestApiOperationParameterStyle? Style { get; }
+
+    /// <summary>
+    /// Type of array item for parameters of "array" type.
+    /// </summary>
+    public string? ArrayItemType { get; }
+
+    /// <summary>
     /// The default value.
     /// </summary>
     public string? DefaultValue { get; }
@@ -49,14 +59,26 @@ internal class RestApiOperationParameter
     /// <param name="type">The parameter type.</param>
     /// <param name="isRequired">Flag specifying if the parameter is required or not.</param>
     /// <param name="location">The parameter location.</param>
+    /// <param name="style">The parameter style - defines how multiple values are delimited.</param>
+    /// <param name="arrayItemType">Type of array item for parameters of "array" type.</param>
     /// <param name="defaultValue">The parameter default value.</param>
     /// <param name="description">The parameter description.</param>
-    public RestApiOperationParameter(string name, string type, bool isRequired, RestApiOperationParameterLocation location, string? defaultValue, string? description = null)
+    public RestApiOperationParameter(
+        string name,
+        string type,
+        bool isRequired,
+        RestApiOperationParameterLocation location,
+        RestApiOperationParameterStyle? style,
+        string? arrayItemType = null,
+        string? defaultValue = null,
+        string? description = null)
     {
         this.Name = name;
         this.Type = type;
         this.IsRequired = isRequired;
         this.Location = location;
+        this.Style = style;
+        this.ArrayItemType = arrayItemType;
         this.DefaultValue = defaultValue;
         this.Description = description;
     }
