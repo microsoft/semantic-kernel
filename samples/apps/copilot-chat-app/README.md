@@ -58,8 +58,8 @@ Before following these instructions, please ensure your development environment 
     1. Navigate to `\apps\copilot-chat-app\webapp`
     2.	Copy `.env.example` into a new file with the name “`.env`” and make the following configuration changes to match your instance:
     3. Use the Application (client) ID from the Azure Portal steps above and paste the GUID into the .env file next to `REACT_APP_GRAPH_CLIENT_ID= `
-    4.	Execute the command `Yarn Install`
-    5.	Execute the command `Yarn Start`
+    4.	Execute the command `yarn install`
+    5.	Execute the command `yarn start`
 
     6. Wait for the startup to complete.
     7. With the back end and front end running, your web browser should automatically launch and navigate to `https://localhost:3000`
