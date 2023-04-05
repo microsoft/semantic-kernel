@@ -6,7 +6,7 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ "main", experimental, "feature*" ]
+    branches: [ "main", "experimental*", "feature*" ]
   schedule:
     - cron: '17 11 * * 2'
 

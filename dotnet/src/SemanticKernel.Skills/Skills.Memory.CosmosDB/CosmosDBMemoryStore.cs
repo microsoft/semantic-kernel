@@ -24,11 +24,9 @@ namespace Skills.Memory.CosmosDB;
 /// <remarks>The Embedding data is saved to the Azure Cosmos DB database container specified in the constructor.
 /// The embedding data persists between subsequent instances and has similarity search capability, handled by the client as Azure Cosmos DB is not a vector-native DB.
 /// </remarks>
-public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposable
+public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
     where TEmbedding : unmanaged
 {
-    private bool _disposedValue;
-
     private CosmosClient _client;
     private string _databaseName;
     private string _containerName;
@@ -207,19 +205,5 @@ public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDispos
     private string _toCosmosFriendlyId(string id)
     {
         return $"{id.Trim().Replace(' ', '-').Replace('/', '_').Replace('\\', '_').Replace('?', '_').Replace('#', '_').ToUpperInvariant()}";
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this._disposedValue)
-        {
-            this._disposedValue = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }

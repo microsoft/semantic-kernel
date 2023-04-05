@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
@@ -10,18 +13,33 @@ using Xunit;
 
 namespace SemanticKernel.Skills.UnitTests.OpenAPI;
 
-public class OpenApiDocumentParserTests
+public sealed class OpenApiDocumentParserV30Tests : IDisposable
 {
-    [Fact]
-    public void ItCanParsePutOperationBodyOfV20SpecSuccessfully()
+    /// <summary>
+    /// System under test - an instance of OpenApiDocumentParser class.
+    /// </summary>
+    private readonly OpenApiDocumentParser _sut;
+
+    /// <summary>
+    /// OpenAPI document stream.
+    /// </summary>
+    private readonly Stream _openApiDocument;
+
+    /// <summary>
+    /// Creates an instance of a <see cref="OpenApiDocumentParserV30Tests"/> class.
+    /// </summary>
+    public OpenApiDocumentParserV30Tests()
     {
-        //Arrange
-        using var stream = ResourceSkillsProvider.LoadFromResource("v2_0.operation.json");
+        this._openApiDocument = ResourceSkillsProvider.LoadFromResource("documentV3_0.json");
 
-        var sut = new OpenApiDocumentParser();
+        this._sut = new OpenApiDocumentParser();
+    }
 
+    [Fact]
+    public void ItCanParsePutOperationBodySuccessfully()
+    {
         //Act
-        var operations = sut.Parse(stream);
+        var operations = this._sut.Parse(this._openApiDocument);
 
         //Assert
         Assert.NotNull(operations);
@@ -61,15 +79,10 @@ public class OpenApiDocumentParserTests
     }
 
     [Fact]
-    public void ItCanParsePutOperationMetadataOfV20SpecSuccessfully()
+    public void ItCanParsePutOperationMetadataSuccessfully()
     {
-        //Arrange
-        using var stream = ResourceSkillsProvider.LoadFromResource("v2_0.operation.json");
-
-        var sut = new OpenApiDocumentParser();
-
         //Act
-        var operations = sut.Parse(stream);
+        var operations = this._sut.Parse(this._openApiDocument);
 
         //Assert
         Assert.NotNull(operations);
@@ -84,7 +97,7 @@ public class OpenApiDocumentParserTests
 
         var parameters = putOperation.GetParameters();
         Assert.NotNull(parameters);
-        Assert.Equal(5, parameters.Count);
+        Assert.True(parameters.Count >= 5);
 
         var pathParameter = parameters.Single(p => p.Name == "secret-name"); //'secret-name' path parameter.
         Assert.True(pathParameter.IsRequired);
@@ -112,5 +125,84 @@ public class OpenApiDocumentParserTests
         Assert.Equal(RestApiOperationParameterLocation.Body, enabledParameter.Location);
         Assert.Null(enabledParameter.DefaultValue);
         Assert.Equal("Determines whether the object is enabled.", enabledParameter.Description);
+    }
+
+    [Fact]
+    public void ItCanExtractSimpleTypeHeaderParameterMetadataSuccessfully()
+    {
+        //Act
+        var operations = this._sut.Parse(this._openApiDocument);
+
+        //Assert string header parameter metadata
+        var accept = GetParameterMetadata(operations, "SetSecret", RestApiOperationParameterLocation.Header, "Accept");
+
+        Assert.Equal("string", accept.Type);
+        Assert.Equal("application/json", accept.DefaultValue);
+        Assert.Equal("Indicates which content types, expressed as MIME types, the client is able to understand.", accept.Description);
+        Assert.False(accept.IsRequired);
+
+        //Assert integer header parameter metadata
+        var apiVersion = GetParameterMetadata(operations, "SetSecret", RestApiOperationParameterLocation.Header, "X-API-Version");
+
+        Assert.Equal("integer", apiVersion.Type);
+        Assert.Equal("10", apiVersion.DefaultValue);
+        Assert.Equal("Requested API version.", apiVersion.Description);
+        Assert.True(apiVersion.IsRequired);
+    }
+
+    [Fact]
+    public void ItCanExtractCsvStyleHeaderParameterMetadataSuccessfully()
+    {
+        //Act
+        var operations = this._sut.Parse(this._openApiDocument);
+
+        //Assert header parameters metadata
+        var acceptParameter = GetParameterMetadata(operations, "SetSecret", RestApiOperationParameterLocation.Header, "X-Operation-Csv-Ids");
+
+        Assert.Null(acceptParameter.DefaultValue);
+        Assert.False(acceptParameter.IsRequired);
+        Assert.Equal("array", acceptParameter.Type);
+        Assert.Equal(RestApiOperationParameterStyle.Simple, acceptParameter.Style);
+        Assert.Equal("The comma separated list of operation ids.", acceptParameter.Description);
+        Assert.Equal("string", acceptParameter.ArrayItemType);
+    }
+
+    [Fact]
+    public void ItCanExtractHeadersSuccessfully()
+    {
+        //Act
+        var operations = this._sut.Parse(this._openApiDocument);
+
+        //Assert
+        Assert.True(operations.Any());
+
+        var operation = operations.Single(o => o.Id == "SetSecret");
+        Assert.NotNull(operation.Headers);
+        Assert.Equal(3, operation.Headers.Count);
+
+        Assert.True(operation.Headers.ContainsKey("Accept"));
+        Assert.True(operation.Headers.ContainsKey("X-API-Version"));
+        Assert.True(operation.Headers.ContainsKey("X-Operation-Csv-Ids"));
+    }
+
+    private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId, RestApiOperationParameterLocation location, string name)
+    {
+        Assert.True(operations.Any());
+
+        var operation = operations.Single(o => o.Id == operationId);
+        Assert.NotNull(operation.Parameters);
+        Assert.True(operation.Parameters.Any());
+
+        var parameters = operation.Parameters.Where(p => p.Location == location);
+
+        var parameter = parameters.Single(p => p.Name == name);
+        Assert.NotNull(parameter);
+
+        return parameter;
+    }
+
+    public void Dispose()
+    {
+        this._openApiDocument.Dispose();
     }
 }

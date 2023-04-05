@@ -89,4 +89,24 @@ public class TextSkillTests
         // Assert
         Assert.Equal("hello world", result);
     }
+
+    [Theory]
+    [InlineData("hello world ", 12)]
+    [InlineData("hello World", 11)]
+    [InlineData("HELLO", 5)]
+    [InlineData("World", 5)]
+    [InlineData("", 0)]
+    [InlineData(" ", 1)]
+    [InlineData(null, 0)]
+    public void ItCanLength(string textToLength, int expectedLength)
+    {
+        // Arrange
+        var target = new TextSkill();
+
+        // Act
+        var result = target.Length(textToLength);
+
+        // Assert
+        Assert.Equal(expectedLength.ToString(System.Globalization.CultureInfo.InvariantCulture), result);
+    }
 }

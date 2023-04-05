@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using KernelSyntaxExamples;
 
-#pragma warning disable CS1591
 public static class Program
 {
     // ReSharper disable once InconsistentNaming
@@ -77,4 +76,3 @@ public static class Program
         Console.WriteLine("== DONE ==");
     }
 }
-#pragma warning restore CS1591

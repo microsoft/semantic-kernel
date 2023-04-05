@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -8,6 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -83,6 +87,85 @@ public sealed class PlannerSkillTests : IDisposable
         Assert.Empty(actual.LastErrorDescription);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("If is morning tell me a joke about coffee",
+        "function._GLOBAL_FUNCTIONS_.Hour", 1,
+        "function.FunSkill.Joke", 1,
+        "<if condition=\"", 1,
+        "</if>", 1,
+        "<else>", 0,
+        "</else>", 0)]
+    [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun ",
+        "function._GLOBAL_FUNCTIONS_.Hour", 1,
+        "function.FunSkill.Joke", 2,
+        "<if condition=\"", 1,
+        "</if>", 1,
+        "<else>", 1,
+        "</else>", 1)]
+    [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun but if its night I want a joke about the moon",
+        "function._GLOBAL_FUNCTIONS_.Hour", 1,
+        "function.FunSkill.Joke", 3,
+        "<if condition=\"", 2,
+        "</if>", 2,
+        "<else>", 2,
+        "</else>", 2)]
+    public async Task CreatePlanShouldHaveConditionalStatementsAndBeAbleToExecuteAsync(string prompt, params object[] expectedAnswerContains)
+    {
+        // Arrange
+
+        Dictionary<string, int> expectedAnswerContainsDictionary = new();
+        for (int i = 0; i < expectedAnswerContains.Length; i += 2)
+        {
+            string? key = expectedAnswerContains[i].ToString();
+            int value = Convert.ToInt32(expectedAnswerContains[i + 1], CultureInfo.InvariantCulture);
+            expectedAnswerContainsDictionary.Add(key!, value);
+        }
+
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        IKernel target = Kernel.Builder
+            .WithLogger(this._logger)
+            .Configure(config =>
+            {
+                config.AddAzureOpenAITextCompletionService(
+                    serviceId: azureOpenAIConfiguration.ServiceId,
+                    deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+
+                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
+            })
+            .Build();
+
+        TestHelpers.GetSkill("FunSkill", target);
+        target.ImportSkill(new TimeSkill());
+        var plannerSKill = target.ImportSkill(new PlannerSkill(target));
+
+        // Act
+        SKContext createdPlanContext = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
+        await target.RunAsync(createdPlanContext.Variables.Clone(), plannerSKill["ExecutePlan"]).ConfigureAwait(false);
+
+        // Assert
+        Assert.Empty(createdPlanContext.LastErrorDescription);
+        Assert.False(createdPlanContext.ErrorOccurred);
+
+        foreach ((string? matchingExpression, int expectedCount) in expectedAnswerContainsDictionary)
+        {
+            if (expectedCount > 0)
+            {
+                Assert.Contains(matchingExpression, createdPlanContext.Variables[SkillPlan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+            }
+            else
+            {
+                Assert.DoesNotContain(matchingExpression, createdPlanContext.Variables[SkillPlan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+            }
+
+            var numberOfMatches = Regex.Matches(createdPlanContext.Variables[SkillPlan.PlanKey], matchingExpression, RegexOptions.IgnoreCase).Count;
+            Assert.Equal(expectedCount, numberOfMatches);
+        }
     }
 
     private readonly XunitLogger<object> _logger;

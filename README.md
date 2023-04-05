@@ -97,8 +97,6 @@ Here is a quick example of how to use Semantic Kernel from a C# console app.
 
 ```csharp
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.KernelExtensions;
-using Microsoft.SemanticKernel.Configuration;
 
 var kernel = Kernel.Builder.Build();
 
