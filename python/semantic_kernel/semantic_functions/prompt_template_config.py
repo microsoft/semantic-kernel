@@ -51,7 +51,7 @@ class PromptTemplateConfig:
         config.completion.presence_penalty = completion_dict.get("presence_penalty")
         config.completion.frequency_penalty = completion_dict.get("frequency_penalty")
         config.completion.max_tokens = completion_dict.get("max_tokens")
-        config.completion.stop_sequences = completion_dict.get("stop_sequences")
+        config.completion.stop_sequences = completion_dict.get("stop_sequences", [])
         config.default_backends = data.get("default_backends", [])
 
         # Some skills may not have input parameters defined
