@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -13,37 +12,43 @@ namespace SemanticKernel.Service.Skills;
 /// </summary>
 public class ChatMemorySkill
 {
-    private readonly string ChatCollectionName = "chats";
-    private readonly string UserCollectionName = "users";
-    private readonly string MessageCollectionName = "messages";
-
     /// <summary>
-    /// TODO:
+    /// Name of the collection that stores chat session information.
     /// </summary>
-    private readonly IKernel _kernel;
-
-    public ChatMemorySkill(IKernel kernel)
-    {
-        this._kernel = kernel;
-    }
+    public readonly string ChatCollectionName = "chats";
+    /// <summary>
+    /// Name of the collection that stores user information.
+    /// </summary>
+    public readonly string UserCollectionName = "users";
+    /// <summary>
+    /// Returns the name of the collection that stores chat message information.
+    /// </summary>
+    /// <param name="chatId">Chat ID that is persistent and unique for the chat session.</param>
+    public static string MessageCollectionName(string chatId) => $"{chatId}-messages";
+    /// <summary>
+    /// Returns the name of the collection that stores chat bot information.
+    /// </summary>
+    /// <param name="chatId">Chat ID that is persistent and unique for the chat session.</param>
+    public static string ChatBotID(string chatId) => $"{chatId}-bot";
 
     /// <summary>
     /// Create a new chat session in memory.
     /// </summary>
+    /// <param name="chatId">Chat ID that is persistent and unique for the chat session.</param>
     /// <param name="context">Contains 'chatId' and 'title'.</param>
     [SKFunction("Create a new chat session in memory.")]
     [SKFunctionName("CreateChat")]
-    [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat session.")]
+    [SKFunctionInput(Description = "Chat ID that is persistent and unique for the chat session.")]
     [SKFunctionContextParameter(Name = "title", Description = "The title of the chat.")]
-    public async Task CreateChatAsync(SKContext context)
+    public async Task CreateChatAsync(string chatId, SKContext context)
     {
-        if (!(await this.DoesChatExistAsync(context["chatId"], context)))
+        if (await this.DoesChatExistAsync(chatId, context) == "true")
         {
-            context.Fail($"Chat {context["chatId"]} already exists.");
+            context.Fail($"Chat {chatId} already exists.");
             return;
         }
 
-        var newChat = new Chat(context["chatId"], context["title"]);
+        var newChat = new Chat(chatId, context["title"]);
 
         await context.Memory.SaveInformationAsync(
             collection: ChatCollectionName,
@@ -51,26 +56,38 @@ public class ChatMemorySkill
             id: newChat.Id,
             cancel: context.CancellationToken
         );
+
+        // Create a new chat bot for this chat.
+        var newBotContext = new SKContext(context.Variables, context.Memory, context.Skills, context.Log, context.CancellationToken);
+        newBotContext.Variables.Set("name", "Bot");
+        newBotContext.Variables.Set("email", "N/A");
+        await CreateUserAsync(ChatBotID(chatId), newBotContext);
+        if (newBotContext.ErrorOccurred)
+        {
+            context.Fail(newBotContext.LastErrorDescription, newBotContext.LastException);
+            return;
+        }
     }
 
     /// <summary>
     /// Create a new user in memory.
     /// </summary>
+    /// <param name="userId">User ID that is persistent and unique.</param>
     /// <param name="context">Contains 'userId', 'name', and 'email'.</param>
     [SKFunction("Create a new user in memory.")]
     [SKFunctionName("CreateUser")]
-    [SKFunctionContextParameter(Name = "userId", Description = "Unique and persistent identifier for the user.")]
+    [SKFunctionInput(Description = "User ID that is persistent and unique.")]
     [SKFunctionContextParameter(Name = "name", Description = "Name of the user.")]
     [SKFunctionContextParameter(Name = "email", Description = "Email of the user.", DefaultValue = "N/A")]
-    public async Task CreateUserAsync(SKContext context)
+    public async Task CreateUserAsync(string userId, SKContext context)
     {
-        if (!(await this.DoesUserExistAsync(context["userId"], context)))
+        if (await this.DoesUserExistAsync(userId, context) == "true")
         {
-            context.Fail($"User {context["userId"]} already exists.");
+            context.Fail($"User {userId} already exists.");
             return;
         }
 
-        var newChatUser = new ChatUser(context["userId"], context["name"], context["email"]);
+        var newChatUser = new ChatUser(userId, context["name"], context["email"]);
 
         await context.Memory.SaveInformationAsync(
             collection: UserCollectionName,
@@ -85,12 +102,12 @@ public class ChatMemorySkill
     /// </summary>
     /// <param name="context">Contains 'userId' and 'chatId'.</param>
     [SKFunction("Add a user to an existing chat session.")]
-    [SKFunctionName("CreateUser")]
+    [SKFunctionName("AddUserToChat")]
     [SKFunctionContextParameter(Name = "userId", Description = "Unique and persistent identifier for a user.")]
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for a chat session.")]
     public async Task AddUserToChatAsync(SKContext context)
     {
-        if (!(await this.DoesChatExistAsync(context["chatId"], context)))
+        if (await this.DoesChatExistAsync(context["chatId"], context) == "false")
         {
             context.Fail($"User {context["userId"]} doesn't exists.");
             return;
@@ -194,10 +211,10 @@ public class ChatMemorySkill
 
         var timeSkill = new TimeSkill();
         var currentTime = $"{timeSkill.Now()} {timeSkill.Second()}";
-        var chatMessage = new ChatMessage(currentTime, chatUser.Id, message);
+        var chatMessage = new ChatMessage(currentTime, chatUser.FullName, message);
 
         await context.Memory.SaveInformationAsync(
-            collection: MessageCollectionName,
+            collection: MessageCollectionName(context["chatId"]),
             text: chatMessage.ToString(),
             id: chatMessage.Id,
             cancel: context.CancellationToken
@@ -239,6 +256,7 @@ public class ChatMemorySkill
     /// </summary>
     /// <param name="chatId">The chat ID</param>
     /// <param name="context"></param>
+    /// <returns>A serialized Json string of a hash set of strings representing the IDs.</returns>
     [SKFunction("Get IDs all message in a chat session.")]
     [SKFunctionName("GetAllChatMessageIds")]
     [SKFunctionInput(Description = "The chat id")]
@@ -251,7 +269,9 @@ public class ChatMemorySkill
             return context;
         }
 
-        context.Variables.Update(string.Join(",", chat.MessageIds));
+        var test = await context.Memory.GetAsync(ChatCollectionName, chat.Id);
+
+        context.Variables.Update(JsonSerializer.Serialize<HashSet<string>>(chat.MessageIds));
         return context;
     }
 
@@ -263,9 +283,10 @@ public class ChatMemorySkill
     [SKFunction("Get a chat message by ID.")]
     [SKFunctionName("GetMessageById")]
     [SKFunctionInput(Description = "The message id")]
+    [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for a chat session.")]
     public async Task<SKContext> GetMessageByIdAsync(string messageId, SKContext context)
     {
-        var messageMemory = await context.Memory.GetAsync(MessageCollectionName, messageId);
+        var messageMemory = await context.Memory.GetAsync(MessageCollectionName(context["chatId"]), messageId);
         if (messageMemory == null)
         {
             context.Log.LogError($"Message {messageId} doesn't exists.");
@@ -298,12 +319,33 @@ public class ChatMemorySkill
     public async Task<SKContext> GetAllChatMessagesAsync(string chatId, SKContext context)
     {
         var messageIdsContext = await this.GetAllChatMessageIdsAsync(chatId, context);
-        var messageIds = messageIdsContext.Variables.ToString().Split(',');
+        if (messageIdsContext.ErrorOccurred)
+        {
+            context.Log.LogError($"Unable to retrieve message IDs for chat {chatId}.");
+            context.Fail($"Unable to retrieve message IDs for chat {chatId}.");
+            return context;
+        }
+
+        var messageIds = JsonSerializer.Deserialize<HashSet<string>>(messageIdsContext.Result);
+        if (messageIds == null)
+        {
+            context.Log.LogError($"Unable to deserialize message IDs for chat {chatId}.");
+            context.Fail($"Unable to deserialize message IDs for chat {chatId}.");
+            return context;
+        }
 
         var messages = new List<ChatMessage>();
+        var chatIDContext = new SKContext(context.Variables, context.Memory, context.Skills, context.Log, context.CancellationToken);
+        chatIDContext.Variables.Set("chatId", chatId);
         foreach (var messageId in messageIds)
         {
-            var messageContext = await this.GetMessageByIdAsync(messageId, context);
+            var messageContext = await this.GetMessageByIdAsync(messageId, chatIDContext);
+            if (messageContext.ErrorOccurred)
+            {
+                context.Log.LogError($"Unable to retrieve message {messageId}.");
+                context.Fail($"Unable to retrieve message {messageId}.");
+                return context;
+            }
             var message = ChatMessage.FromJsonString(messageContext.Variables.ToString());
             if (message != null)
             {
@@ -351,9 +393,12 @@ public class ChatMemorySkill
     /// <param name="chatId">The Id of the chat</param>
     /// <param name="context">The context containing the memory</param>
     /// <returns>true if exists otherwise false</returns>
-    private Task<bool> DoesChatExistAsync(string chatId, SKContext context)
+    [SKFunction("Check if a chat already exists in memory.")]
+    [SKFunctionName("DoesChatExist")]
+    [SKFunctionInput(Description = "Chat ID that is persistent and unique for the chat session.")]
+    public async Task<string> DoesChatExistAsync(string chatId, SKContext context)
     {
-        return Task.FromResult(context.Memory.GetAsync(ChatCollectionName, chatId) != null);
+        return await context.Memory.GetAsync(ChatCollectionName, chatId) != null ? "true" : "false";
     }
 
     /// <summary>
@@ -362,9 +407,12 @@ public class ChatMemorySkill
     /// <param name="userId">The Id of the user</param>
     /// <param name="context">The context containing the memory</param>
     /// <returns>true if exists otherwise false</returns>
-    private Task<bool> DoesUserExistAsync(string userId, SKContext context)
+    [SKFunction("Check if a user already exists in memory.")]
+    [SKFunctionName("DoesUserExist")]
+    [SKFunctionInput(Description = "User ID that is persistent and unique.")]
+    public async Task<string> DoesUserExistAsync(string userId, SKContext context)
     {
-        return Task.FromResult(context.Memory.GetAsync(UserCollectionName, userId) != null);
+        return await context.Memory.GetAsync(UserCollectionName, userId) != null ? "true" : "false";
     }
 
     /// <summary>
@@ -373,7 +421,7 @@ public class ChatMemorySkill
     /// <param name="chatId">The chat id</param>
     /// <param name="context">The context containing the memory</param>
     /// <returns>A chat object</returns>
-    private async Task<Chat?> GetChatAsync(string chatId, SKContext context)
+    public async Task<Chat?> GetChatAsync(string chatId, SKContext context)
     {
         var chatMemory = await context.Memory.GetAsync(ChatCollectionName, chatId);
         if (chatMemory == null)
@@ -397,9 +445,9 @@ public class ChatMemorySkill
     /// <param name="userId">The user id</param>
     /// <param name="context">The context containing the memory</param>
     /// <returns>A chat user object</returns>
-    private async Task<ChatUser?> GetChatUserAsync(string userId, SKContext context)
+    public async Task<ChatUser?> GetChatUserAsync(string userId, SKContext context)
     {
-        var chatUserMemory = await context.Memory.GetAsync(ChatCollectionName, userId);
+        var chatUserMemory = await context.Memory.GetAsync(UserCollectionName, userId);
         if (chatUserMemory == null)
         {
             context.Log.LogError($"Chat user {userId} doesn't exists.");

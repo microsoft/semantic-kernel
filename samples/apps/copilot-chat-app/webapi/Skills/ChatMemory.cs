@@ -37,7 +37,7 @@ public class ChatUser
     /// </summary>
     [JsonPropertyName("chatIds")]
     [JsonPropertyOrder(4)]
-    public HashSet<string> ChatIds { get; private set; } = new HashSet<string>();
+    public HashSet<string> ChatIds { get; set; } = new HashSet<string>();
 
     public ChatUser(string id, string fullName, string email)
     {
@@ -96,7 +96,7 @@ public class Chat
     /// </summary>
     [JsonPropertyName("messageIds")]
     [JsonPropertyOrder(2)]
-    public HashSet<string> MessageIds { get; private set; } = new HashSet<string>();
+    public HashSet<string> MessageIds { get; set; } = new HashSet<string>();
 
     public Chat(string id, string title)
     {

@@ -41,5 +41,8 @@ internal static class FunctionLoadingExtensions
 
         var chatSkill = new ChatSkill(kernel);
         kernel.ImportSkill(chatSkill, nameof(ChatSkill));
+
+        var chatMemorySkill = new ChatMemorySkill();
+        kernel.ImportSkill(chatMemorySkill, nameof(ChatMemorySkill));
     }
 }
