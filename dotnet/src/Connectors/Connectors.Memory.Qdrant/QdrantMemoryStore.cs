@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -141,9 +142,13 @@ public class QdrantMemoryStore : IMemoryStore
                 return null;
             }
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex)
         {
-            throw new VectorDbException($"Failed to get vector data from Qdrant {ex.Message}");
+            throw new VectorDbException($"Failed to get vector data from Qdrant: {ex.Message}");
+        }
+        catch (MemoryException ex)
+        {
+            throw new VectorDbException($"Failed deserialize Qdrant response to Memory Record: {ex.Message}");
         }
     }
 
@@ -188,9 +193,13 @@ public class QdrantMemoryStore : IMemoryStore
                 return null;
             }
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex)
         {
-            throw new VectorDbException($"Failed to get vector data from Qdrant {ex.Message}");
+            throw new VectorDbException($"Failed to get vector data from Qdrant: {ex.Message}");
+        }
+        catch (MemoryException ex)
+        {
+            throw new VectorDbException($"Failed deserialize Qdrant response to Memory Record: {ex.Message}");
         }
     }
 
@@ -223,7 +232,7 @@ public class QdrantMemoryStore : IMemoryStore
         {
             await this._qdrantClient.DeleteVectorByPayloadIdAsync(collectionName, key, cancel: cancel);
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex)
         {
             throw new VectorDbException($"Failed to remove vector data from Qdrant {ex.Message}");
         }
@@ -252,7 +261,7 @@ public class QdrantMemoryStore : IMemoryStore
         {
             await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, new[] { pointId }, cancel: cancel);
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex)
         {
             throw new VectorDbException($"Failed to remove vector data from Qdrant {ex.Message}");
         }
@@ -272,7 +281,7 @@ public class QdrantMemoryStore : IMemoryStore
         {
             await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, pointIds, cancel: cancel);
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex)
         {
             throw new VectorDbException($"Error in batch removing data from Qdrant {ex.Message}");
         }
