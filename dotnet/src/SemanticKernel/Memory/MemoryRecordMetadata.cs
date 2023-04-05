@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -8,7 +7,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Class representing the metadata associated with a Semantic Kernel memory.
 /// </summary>
-public class MemoryRecordMetadata : ICloneable
+public class MemoryRecordMetadata
 {
     /// <summary>
     /// Whether the source data used to calculate embeddings are stored in the local
@@ -47,6 +46,14 @@ public class MemoryRecordMetadata : ICloneable
     [JsonPropertyName("text")]
     public string Text { get; }
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="isReference">True if source data is local, false if source data comes from an external service</param>
+    /// <param name="id">Unique string used to identify the <see cref="MemoryRecord"/>.</param>
+    /// <param name="text">Local source data associated with a <see cref="MemoryRecord"/> embedding.</param>
+    /// <param name="description"><see cref="MemoryRecord"/> description.</param>
+    /// <param name="externalSourceName">Name of the external source if isReference is true.</param>
     [JsonConstructor]
     public MemoryRecordMetadata(
         bool isReference,
@@ -61,10 +68,5 @@ public class MemoryRecordMetadata : ICloneable
         this.Id = id;
         this.Text = text;
         this.Description = description;
-    }
-
-    public object Clone()
-    {
-        return this.MemberwiseClone();
     }
 }

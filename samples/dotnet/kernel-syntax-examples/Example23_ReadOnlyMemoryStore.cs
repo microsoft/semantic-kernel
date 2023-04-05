@@ -12,6 +12,13 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
 
+/// <summary>
+/// This sample provides a custom implementation of <see cref="IMemoryStore"/> that is read only.
+///     In this sample, the data is stored in a JSON string and deserialized into an
+///     <see cref="IEnumerable{MemoryRecord}"/>. For this specific sample, the implementation
+///     of <see cref="IMemoryStore"/> has a single collection, and thus does not need to be named.
+///     It also assumes that the JSON formatted data can be deserialized into <see cref="MemoryRecord"/> objects.
+/// </summary>
 public static class Example23_ReadOnlyMemoryStore
 {
     public static async Task RunAsync()
