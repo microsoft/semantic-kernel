@@ -38,12 +38,12 @@ public static class GPT3Tokenizer
         if (string.IsNullOrEmpty(text)) { return new List<int>(); }
 
         ConcurrentDictionary<int, char> byteEncoder = BytesToUnicode();
-        MatchCollection matches = s_encodingRegex.Matches(text);
+        IReadOnlyCollection<Match> matches = s_encodingRegex.Matches(text);
 
         var bpeTokens = new List<int>();
-        foreach (Match? match in matches)
+        foreach (var match in matches)
         {
-            string token = new string(Encoding.UTF8.GetBytes(match!.Value).Select(x => byteEncoder[x]).ToArray());
+            var token = new string(Encoding.UTF8.GetBytes(match.Value).Select(x => byteEncoder[x]).ToArray());
             List<int> newTokens = BytePairEncoding(token).Split(' ').Select(x => GPT3Settings.Encoder[x]).ToList();
             bpeTokens.AddRange(newTokens);
         }
