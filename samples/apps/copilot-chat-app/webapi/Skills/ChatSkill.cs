@@ -47,9 +47,18 @@ public class ChatSkill
                 })
             );
 
-        var intentExtractionContext = new SKContext(context.Variables, context.Memory, context.Skills, context.Log, context.CancellationToken);
-        intentExtractionContext.Variables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
-        intentExtractionContext.Variables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
+        // Clone the context to avoid modifying the original context variables.
+        var intentExtractionVariables = context.Variables.Clone();
+        intentExtractionVariables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
+        intentExtractionVariables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
+
+        var intentExtractionContext = new SKContext(
+            intentExtractionVariables,
+            context.Memory,
+            context.Skills,
+            context.Log,
+            context.CancellationToken
+        );
 
         var completionFunction = this._kernel.CreateSemanticFunction(
             SystemPromptDefaults.SystemIntentExtractionPrompt,
@@ -216,11 +225,19 @@ public class ChatSkill
             return context;
         }
 
-        var chatContext = new SKContext(context.Variables, context.Memory, context.Skills, context.Log, context.CancellationToken);
-        chatContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
-        chatContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
-        chatContext.Variables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
-        chatContext.Variables.Set("audience", chatUser.FullName);
+        // Clone the context to avoid modifying the original context variables.
+        var chatVariables = context.Variables.Clone();
+        chatVariables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
+        chatVariables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
+        chatVariables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
+        chatVariables.Set("audience", chatUser.FullName);
+        var chatContext = new SKContext(
+            chatVariables,
+            context.Memory,
+            context.Skills,
+            context.Log,
+            context.CancellationToken
+        );
 
         // Extract user intent and update remaining token count
         var userIntent = await this.ExtractUserIntentAsync(chatContext);

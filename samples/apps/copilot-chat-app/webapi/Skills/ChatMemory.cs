@@ -158,7 +158,6 @@ public class ChatMessage
     [JsonPropertyOrder(3)]
     public string Content { get; set; }
 
-
     /// <summary>
     /// Id of the message.
     /// </summary>
