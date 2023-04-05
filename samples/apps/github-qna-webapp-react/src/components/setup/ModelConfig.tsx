@@ -71,7 +71,7 @@ const ModelConfig: FC<IData> = ({
                     error += `. Check that you've entered your key ${isOpenAI ? '' : 'and endpoint '}correctly.`;
                 setSuggestedModels(undefined);
                 setModelIds(undefined);
-                setErrorMessage(`${error}`);
+                setErrorMessage(error);
                 setIsBusy(false);
                 setSelectedModel('');
                 return undefined;
@@ -130,7 +130,7 @@ const ModelConfig: FC<IData> = ({
             setIsValidModel(false);
             setErrorMessage(undefined);
 
-            isValidOpenAIConfig(resourceInput, model.optionValue ?? '', modelType, setErrorMessage)
+            isValidOpenAIConfig(resourceInput, model.optionValue ?? '', modelType)
                 .then((response) => {
                     setIsValidModel(response);
                     if (response) {
@@ -358,12 +358,7 @@ const getOpenAiModels = async (apiKey: string, onFailureCallback: (errorMessage?
     return ids;
 };
 
-const isValidOpenAIConfig = async (
-    resourceInput: IResourceInput,
-    model: string,
-    modelType: ModelType,
-    setErrorMessage: (value: React.SetStateAction<string | undefined>) => void,
-) => {
+const isValidOpenAIConfig = async (resourceInput: IResourceInput, model: string, modelType: ModelType) => {
     const modelObject = modelType === ModelType.Completion ? 'completions' : 'embeddings';
     const inputText = 'Tell me a short joke.';
     const bodyInput = modelType === ModelType.Completion ? { prompt: inputText } : { input: inputText };
