@@ -4,7 +4,6 @@ import glob
 import os
 from typing import Dict
 
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_extensions.extends_kernel import ExtendsKernel
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
@@ -14,6 +13,7 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
+from semantic_kernel.utils.validation import validate_skill_name
 
 
 class ImportSkills(ExtendsKernel):
@@ -25,10 +25,13 @@ class ImportSkills(ExtendsKernel):
 
         kernel = self.kernel()
 
-        Verify.valid_skill_name(skill_directory_name)
+        validate_skill_name(skill_directory_name)
+
         skill_directory = os.path.join(parent_directory, skill_directory_name)
         skill_directory = os.path.abspath(skill_directory)
-        Verify.directory_exists(skill_directory)
+
+        if not os.path.exists(skill_directory):
+            raise ValueError(f"Skill directory does not exist: {skill_directory_name}")
 
         skill = {}
 
