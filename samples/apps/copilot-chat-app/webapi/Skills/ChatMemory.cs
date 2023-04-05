@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Memory;
@@ -135,7 +136,7 @@ public class Chat
 /// <summary>
 /// Information about a single chat message.
 /// </summary>
-public class ChatMessage
+public class ChatMessage : IComparable<ChatMessage>
 {
     /// <summary>
     /// timestamp of the message.
@@ -163,7 +164,24 @@ public class ChatMessage
     /// </summary>
     public string Id { get; private set; }
 
-    public ChatMessage(string timestamp, string sender, string content)
+    /// <summary>
+    /// Create a new chat message. Timestamp is automatically generated.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="content"></param>
+    public ChatMessage(string sender, string content)
+    {
+        this.Timestamp = DateTimeOffset.Now.ToString("G", CultureInfo.CurrentCulture);
+        this.Sender = sender;
+        this.Content = content;
+        this.Id = $"[{this.Timestamp}] {this.Sender}";
+    }
+
+    /// <summary>
+    /// Create a new chat message with a specified timestamp.
+    /// This is used when deserializing a message from memory.
+    /// </summary>
+    private ChatMessage(string timestamp, string sender, string content)
     {
         this.Timestamp = timestamp;
         this.Sender = sender;
@@ -224,5 +242,27 @@ public class ChatMessage
         var content = text.Substring(id.Length + 2);
 
         return new ChatMessage(timestamp, sender, content);
+    }
+
+    /// <summary>
+    /// Compare two chat messages by their timestamp. Newer messages are considered smaller.
+    /// </summary>
+    public int CompareTo(ChatMessage? other)
+    {
+        if (other == null)
+        {
+            return 1;
+        }
+
+        return other.GetDateTimeOffset().CompareTo(this.GetDateTimeOffset());
+    }
+
+    /// <summary>
+    /// Get the timestamp as a DateTime object for easier comparison.
+    /// </summary>
+    /// <returns>A DateTimeOffset object</returns>
+    private DateTimeOffset GetDateTimeOffset()
+    {
+        return DateTimeOffset.ParseExact(this.Timestamp, "G", CultureInfo.CurrentCulture);
     }
 }

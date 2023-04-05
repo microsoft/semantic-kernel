@@ -92,10 +92,23 @@ public class ChatSkill
             Math.Floor(contextTokenLimit * SystemPromptDefaults.MemoriesResponseContextWeight)
         );
 
+        // Clone the context to avoid modifying the original context variables.
+        var latestMessageVariable = context.Variables.Clone();
+        latestMessageVariable.Set("startIdx", "0");
+        latestMessageVariable.Set("count", "1");
+
+        var latestMessageContext = new SKContext(
+            latestMessageVariable,
+            context.Memory,
+            context.Skills,
+            context.Log,
+            context.CancellationToken
+        );
+
         var chatMemorySkill = new ChatMemorySkill();
-        var latestMessageContext = await chatMemorySkill.GetLatestChatMessageAsync(context["chatId"], context);
-        var latestChatMessage = JsonSerializer.Deserialize<ChatMessage>(latestMessageContext.Result);
-        if (latestChatMessage == null)
+        latestMessageContext = await chatMemorySkill.GetChatMessagesAsync(context["chatId"], latestMessageContext);
+        var messages = JsonSerializer.Deserialize<List<ChatMessage>>(latestMessageContext.Result);
+        if (messages == null)
         {
             context.Log.LogError("Failed to deserialize the latest chat message");
             return string.Empty;
@@ -103,7 +116,7 @@ public class ChatSkill
 
         string memoryText = "";
         var results = context.Memory.SearchAsync(
-            ChatMemorySkill.MessageCollectionName(context["chatId"]), latestChatMessage.ToString(), limit: 1000);
+            ChatMemorySkill.MessageCollectionName(context["chatId"]), messages[0].ToString(), limit: 1000);
         await foreach (var memory in results)
         {
             var estimatedTokenCount = this.EstimateTokenCount(memory.Metadata.Text);
@@ -140,8 +153,21 @@ public class ChatSkill
         var remainingToken = tokenLimit;
         string historyText = "";
 
+        // Clone the context to avoid modifying the original context variables.
+        var chatMessagesVariable = context.Variables.Clone();
+        chatMessagesVariable.Set("startIdx", "0");
+        chatMessagesVariable.Set("count", "-1");
+
+        var chatMessagesContext = new SKContext(
+            chatMessagesVariable,
+            context.Memory,
+            context.Skills,
+            context.Log,
+            context.CancellationToken
+        );
+
         var chatMemorySkill = new ChatMemorySkill();
-        var chatMessagesContext = await chatMemorySkill.GetAllChatMessagesAsync(context["chatId"], context);
+        chatMessagesContext = await chatMemorySkill.GetChatMessagesAsync(context["chatId"], chatMessagesContext);
         if (chatMessagesContext.ErrorOccurred)
         {
             context.Log.LogError("Failed to get chat messages");

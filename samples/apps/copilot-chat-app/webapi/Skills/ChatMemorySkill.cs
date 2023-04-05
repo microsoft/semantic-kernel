@@ -1,5 +1,4 @@
-using System.Text.Json;
-using Microsoft.SemanticKernel.CoreSkills;
+﻿using System.Text.Json;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SKWebApi.Skills;
@@ -15,11 +14,11 @@ public class ChatMemorySkill
     /// <summary>
     /// Name of the collection that stores chat session information.
     /// </summary>
-    public readonly string ChatCollectionName = "chats";
+    public const string ChatCollectionName = "chats";
     /// <summary>
     /// Name of the collection that stores user information.
     /// </summary>
-    public readonly string UserCollectionName = "users";
+    public const string UserCollectionName = "users";
     /// <summary>
     /// Returns the name of the collection that stores chat message information.
     /// </summary>
@@ -45,7 +44,7 @@ public class ChatMemorySkill
         var chatId = Guid.NewGuid().ToString();
         while (await this.DoesChatExistAsync(chatId, context) == "true")
         {
-            context.Log.LogDebug($"Chat {chatId} already exists. Regenerating a new chat ID.");
+            context.Log.LogDebug("Chat {0} already exists. Regenerating a new chat ID.", chatId);
             chatId = Guid.NewGuid().ToString();
         }
 
@@ -62,10 +61,10 @@ public class ChatMemorySkill
             context.CancellationToken
         );
 
-        await CreateUserAsync(ChatBotID(chatId), newBotContext);
+        await this.CreateUserAsync(ChatBotID(chatId), newBotContext);
         if (newBotContext.ErrorOccurred)
         {
-            context.Log.LogError($"Failed to create a new chat bot for chat {chatId}.");
+            context.Log.LogError("Failed to create a new chat bot for chat {0}.", chatId);
             context.Fail(newBotContext.LastErrorDescription, newBotContext.LastException);
             return context;
         }
@@ -222,10 +221,7 @@ public class ChatMemorySkill
             return;
         }
 
-        var timeSkill = new TimeSkill();
-        var currentTime = $"{timeSkill.Now()} {timeSkill.Second()}";
-        var chatMessage = new ChatMessage(currentTime, chatUser.FullName, message);
-
+        var chatMessage = new ChatMessage(chatUser.FullName, message);
         await context.Memory.SaveInformationAsync(
             collection: MessageCollectionName(context["chatId"]),
             text: chatMessage.ToString(),
@@ -302,7 +298,7 @@ public class ChatMemorySkill
         var messageMemory = await context.Memory.GetAsync(MessageCollectionName(context["chatId"]), messageId);
         if (messageMemory == null)
         {
-            context.Log.LogError($"Message {messageId} doesn't exists.");
+            context.Log.LogError("Message {0} doesn't exists.", messageId);
             context.Fail($"Message {messageId} doesn't exists.");
             return context;
         }
@@ -314,7 +310,7 @@ public class ChatMemorySkill
         }
         catch (ArgumentException)
         {
-            context.Log.LogError($"Message {messageId} is corrupted: {messageMemory.Metadata.Text}.");
+            context.Log.LogError("Message {0} is corrupted: {1}.", messageId, messageMemory.Metadata.Text);
             context.Fail($"Message {messageId} is corrupted: {messageMemory.Metadata.Text}.");
         }
 
@@ -322,19 +318,39 @@ public class ChatMemorySkill
     }
 
     /// <summary>
-    /// Get all chat messages by chat ID.
+    /// Get all chat messages by chat ID The list will be ordered with the first entry being the most recent message.
     /// </summary>
     /// <param name="chatId">The chat ID</param>
     /// <param name="context"></param>
     [SKFunction("Get all chat messages by chat ID.")]
     [SKFunctionName("GetAllChatMessages")]
     [SKFunctionInput(Description = "The chat id")]
-    public async Task<SKContext> GetAllChatMessagesAsync(string chatId, SKContext context)
+    [SKFunctionContextParameter(Name = "startIdx",
+        Description = "The index of the first message to return. Lower values are more recent messages.",
+        DefaultValue = "0")]
+    [SKFunctionContextParameter(Name = "count",
+        Description = "The number of messages to return. -1 will return all messages starting from startIdx.",
+        DefaultValue = "-1")]
+    public async Task<SKContext> GetChatMessagesAsync(string chatId, SKContext context)
     {
+        var startIdx = 0;
+        var count = -1;
+        try
+        {
+            startIdx = int.Parse(context["startIdx"]);
+            count = int.Parse(context["count"]);
+        }
+        catch (FormatException)
+        {
+            context.Log.LogError("Unable to parse startIdx: {0} or count: {1}.", context["startIdx"], context["count"]);
+            context.Fail($"Unable to parse startIdx: {context["startIdx"]} or count: {context["count"]}.");
+            return context;
+        }
+
         var messageIdsContext = await this.GetAllChatMessageIdsAsync(chatId, context);
         if (messageIdsContext.ErrorOccurred)
         {
-            context.Log.LogError($"Unable to retrieve message IDs for chat {chatId}.");
+            context.Log.LogError("Unable to retrieve message IDs for chat {0}.", chatId);
             context.Fail($"Unable to retrieve message IDs for chat {chatId}.");
             return context;
         }
@@ -342,7 +358,7 @@ public class ChatMemorySkill
         var messageIds = JsonSerializer.Deserialize<HashSet<string>>(messageIdsContext.Result);
         if (messageIds == null)
         {
-            context.Log.LogError($"Unable to deserialize message IDs for chat {chatId}.");
+            context.Log.LogError("Unable to deserialize message IDs for chat {0}.", chatId);
             context.Fail($"Unable to deserialize message IDs for chat {chatId}.");
             return context;
         }
@@ -364,7 +380,7 @@ public class ChatMemorySkill
             var messageContext = await this.GetMessageByIdAsync(messageId, chatIDContext);
             if (messageContext.ErrorOccurred)
             {
-                context.Log.LogError($"Unable to retrieve message {messageId}.");
+                context.Log.LogError("Unable to retrieve message {0}.", messageId);
                 context.Fail($"Unable to retrieve message {messageId}.");
                 return context;
             }
@@ -375,37 +391,15 @@ public class ChatMemorySkill
             }
             else
             {
-                context.Log.LogError($"Message {messageId} is corrupted.");
+                context.Log.LogError("Message {0} is corrupted.", messageId);
                 context.Fail($"Message {messageId} is corrupted.");
                 return context;
             }
         }
 
+        messages.Sort();
+        messages.Skip(startIdx).Take(count);
         context.Variables.Update(JsonSerializer.Serialize(messages));
-        return context;
-    }
-
-    /// <summary>
-    /// Get the latest chat messages by chat ID.
-    /// </summary>
-    /// <param name="chatId">The chat ID</param>
-    /// <param name="context"></param>
-    [SKFunction("Get the latest chat message by chat ID.")]
-    [SKFunctionName("GetLatestChatMessage")]
-    [SKFunctionInput(Description = "The chat id")]
-    public async Task<SKContext> GetLatestChatMessageAsync(string chatId, SKContext context)
-    {
-        var allMessagesContext = await this.GetAllChatMessagesAsync(chatId, context);
-        var allMessages = JsonSerializer.Deserialize<List<ChatMessage>>(allMessagesContext.Variables.ToString());
-        if (allMessages == null)
-        {
-            context.Log.LogError($"Chat {chatId} doesn't have any messages.");
-            context.Fail($"Chat {chatId} doesn't have any messages.");
-            return context;
-        }
-        var latestMessage = allMessages.OrderByDescending(m => m.Timestamp).First();
-        context.Variables.Update(latestMessage.ToJsonString());
-
         return context;
     }
 
@@ -448,13 +442,13 @@ public class ChatMemorySkill
         var chatMemory = await context.Memory.GetAsync(ChatCollectionName, chatId);
         if (chatMemory == null)
         {
-            context.Log.LogError($"Chat {chatId} doesn't exists.");
+            context.Log.LogError("Chat {0} doesn't exists.", chatId);
             return null;
         }
         var chat = Chat.FromString(chatMemory.Metadata.Text);
         if (chat == null)
         {
-            context.Log.LogError($"Chat {chatId} is corrupted: {chatMemory.Metadata.Text}.");
+            context.Log.LogError("Chat {0} is corrupted: {1}.", chatId, chatMemory.Metadata.Text);
             return null;
         }
 
@@ -472,13 +466,13 @@ public class ChatMemorySkill
         var chatUserMemory = await context.Memory.GetAsync(UserCollectionName, userId);
         if (chatUserMemory == null)
         {
-            context.Log.LogError($"Chat user {userId} doesn't exists.");
+            context.Log.LogError("Chat user {0} doesn't exists.", userId);
             return null;
         }
         var chatUser = ChatUser.FromString(chatUserMemory.Metadata.Text);
         if (chatUser == null)
         {
-            context.Log.LogError($"Chat user {userId} is corrupted: {chatUserMemory.Metadata.Text}.");
+            context.Log.LogError("Chat user {0} is corrupted: {1}.", userId, chatUserMemory.Metadata.Text);
             return null;
         }
 
