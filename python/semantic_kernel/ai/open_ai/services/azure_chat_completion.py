@@ -36,7 +36,7 @@ class AzureChatCompletion(OpenAIChatCompletion):
             raise ValueError("The Azure API key cannot be `None` or empty`")
         if not endpoint:
             raise ValueError("The Azure endpoint cannot be `None` or empty")
-        if not endpoint.startswith("https://"):
+        if not endpoint.startswith("https://") and api_type == "azure":
             raise ValueError("The Azure endpoint must start with https://")
         if api_type not in ["azure", "azure_ad"]:
             raise ValueError("api_type must be either 'azure' or 'azure_ad'")
