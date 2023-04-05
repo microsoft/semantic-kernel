@@ -40,6 +40,8 @@ type OpenAIModels = {
     probableEmbeddingsModels: ModelOption[];
 };
 
+const GenericFetchErrorMessage = 'Failed to fetch';
+
 const ModelConfig: FC<IData> = ({
     isOpenAI,
     modelType,
@@ -65,7 +67,7 @@ const ModelConfig: FC<IData> = ({
             ((backendConfig?.backend === 1 && isOpenAI) || (backendConfig?.backend === 0 && !isOpenAI))
         ) {
             const onFailure = (error?: string) => {
-                if (error?.includes('Failed to fetch'))
+                if (error?.includes(GenericFetchErrorMessage))
                     error += `. Check that you've entered your key ${isOpenAI ? '' : 'and endpoint '}correctly.`;
                 setSuggestedModels(undefined);
                 setModelIds(undefined);
@@ -230,7 +232,7 @@ const getAzureOpenAiDeployments = async (
     try {
         modelsRequestUrl = new URL(modelsPath, aoaiEndpoint);
     } catch (_e) {
-        return onFailureCallback('Failed to fetch');
+        return onFailureCallback(GenericFetchErrorMessage);
     }
 
     let init: RequestInit = {
@@ -301,7 +303,7 @@ const getAzureOpenAiDeployments = async (
             });
         })
         .catch((e) => {
-            return onFailureCallback(e.message ?? 'Failed to fetch');
+            return onFailureCallback(e.message ?? GenericFetchErrorMessage);
         });
 };
 
@@ -391,7 +393,7 @@ const isValidOpenAIConfig = async (
 };
 
 const getResponseMessage = async (response: Response) => {
-    const responseMessage = `Failed to fetch: ${response.status} error`;
+    const responseMessage = `${GenericFetchErrorMessage}: ${response.status} error`;
     if (response.status >= 500 && response.status < 600) {
         return responseMessage;
     }
