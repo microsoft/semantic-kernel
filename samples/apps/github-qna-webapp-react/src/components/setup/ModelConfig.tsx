@@ -65,9 +65,11 @@ const ModelConfig: FC<IData> = ({
             ((backendConfig?.backend === 1 && isOpenAI) || (backendConfig?.backend === 0 && !isOpenAI))
         ) {
             const onFailure = (error?: string) => {
+                if (error?.includes('Failed to fetch'))
+                    error += `. Check that you've entered your key ${isOpenAI ? '' : 'and endpoint '}correctly.`;
                 setSuggestedModels(undefined);
                 setModelIds(undefined);
-                setErrorMessage(error);
+                setErrorMessage(`${error}`);
                 setIsBusy(false);
                 setSelectedModel('');
                 return undefined;
@@ -99,11 +101,13 @@ const ModelConfig: FC<IData> = ({
                 setIsBusy(true);
                 setErrorMessage(undefined);
                 if (isOpenAI) {
-                    getOpenAiModels(resourceInput.key, onFailure).then((value) => setModels(value));
+                    getOpenAiModels(resourceInput.key, onFailure).then((value) => {
+                        if (value) setModels(value);
+                    });
                 } else {
-                    getAzureOpenAiDeployments(resourceInput.key, resourceInput.endpoint, onFailure).then((value) =>
-                        setModels(value),
-                    );
+                    getAzureOpenAiDeployments(resourceInput.key, resourceInput.endpoint, onFailure).then((value) => {
+                        if (value) setModels(value);
+                    });
                 }
             } else {
                 setSuggestedModels(undefined);
@@ -168,9 +172,7 @@ const ModelConfig: FC<IData> = ({
             >
                 {modelTitle[1]} Model
             </InfoLabel>
-            {!!errorMessage ? (
-                <Text style={{ color: 'rgb(163, 21, 21)' }}> {`${errorMessage}. Please select a different one.`}</Text>
-            ) : null}
+            {!!errorMessage ? <Text style={{ color: 'rgb(163, 21, 21)' }}> {`${errorMessage}`}</Text> : null}
             <div style={{ display: 'flex', gap: 10, flexDirection: 'row', alignItems: 'left' }}>
                 {isBusy ? <Spinner size="tiny" /> : null}
                 <Dropdown
@@ -224,7 +226,12 @@ const getAzureOpenAiDeployments = async (
     const aoaiEmbeddingsModels = new Set();
 
     const modelsPath = `/openai/models?api-version=${currentAoaiApiVersion}`;
-    const modelsRequestUrl = aoaiEndpoint + modelsPath;
+    let modelsRequestUrl: URL;
+    try {
+        modelsRequestUrl = new URL(modelsPath, aoaiEndpoint);
+    } catch (_e) {
+        return onFailureCallback('Failed to fetch');
+    }
 
     let init: RequestInit = {
         method: 'GET',
@@ -236,8 +243,7 @@ const getAzureOpenAiDeployments = async (
     return fetch(modelsRequestUrl, init)
         .then(async (response) => {
             if (!response || !response.ok) {
-                const responseJson = await response?.clone().json();
-                throw new Error(responseJson.error.message);
+                throw new Error(await getResponseMessage(response));
             }
 
             const models = await response!
@@ -295,7 +301,7 @@ const getAzureOpenAiDeployments = async (
             });
         })
         .catch((e) => {
-            return onFailureCallback(e);
+            return onFailureCallback(e.message ?? 'Failed to fetch');
         });
 };
 
@@ -305,7 +311,7 @@ const getAzureOpenAiDeployments = async (
  * See more: https://platform.openai.com/docs/models/model-endpoint-compatibility
  */
 const getOpenAiModels = async (apiKey: string, onFailureCallback: (errorMessage?: string) => undefined) => {
-    const requestUrl = 'https://api.openai.com/v1/models';
+    const requestUrl = new URL('https://api.openai.com/v1/models');
 
     let init: RequestInit = {
         method: 'GET',
@@ -319,8 +325,7 @@ const getOpenAiModels = async (apiKey: string, onFailureCallback: (errorMessage?
         return onFailureCallback(e as string);
     }
     if (!response || !response.ok) {
-        const responseJson = await response?.clone().json();
-        return onFailureCallback(responseJson.error.message);
+        return onFailureCallback(await getResponseMessage(response));
     }
 
     const models = await response!
@@ -374,14 +379,22 @@ const isValidOpenAIConfig = async (
         }),
     }).then(async (response) => {
         if (!response || !response.ok) {
-            const responseJson = await response?.clone().json();
-            let errorMessage = responseJson.error.message;
+            let errorMessage = await getResponseMessage(response);
             if (response.status === 404 || response.status === 500) {
                 errorMessage = `This is not a supported ${modelType} model`;
             }
-            throw new Error(errorMessage);
+            throw new Error(`${errorMessage}. Please select a different one.`);
         }
 
         return true;
     });
+};
+
+const getResponseMessage = async (response: Response) => {
+    const responseMessage = `Failed to fetch: ${response.status} error`;
+    if (response.status >= 500 && response.status < 600) {
+        return responseMessage;
+    }
+    const responseJson = await response?.clone().json();
+    return responseJson.error?.message ?? responseMessage;
 };
