@@ -3,7 +3,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FileCompression;
+namespace Microsoft.SemanticKernel.Skills.FileCompression;
 
 /// <summary>
 /// Interface for file compression / decompression.
