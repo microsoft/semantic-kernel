@@ -111,8 +111,6 @@ internal class RestApiOperation
     /// <returns>The rendered request headers.</returns>
     public IDictionary<string, string> RenderHeaders(IDictionary<string, string> arguments)
     {
-        var headersMetadata = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Header);
-
         var headers = new Dictionary<string, string>();
 
         foreach (var header in this.Headers)
@@ -135,9 +133,10 @@ internal class RestApiOperation
             }
 
             //Getting metadata for the header
-            var headerMetadata = headersMetadata.FirstOrDefault(hm => hm.Name == headerName);
-            if (headerMetadata == null)//No metadata found for the header.
+            var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName);
+            if (headerMetadata == null)
             {
+                //No metadata found for the header.
                 throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
             }
 
