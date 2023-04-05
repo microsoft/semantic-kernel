@@ -3,8 +3,6 @@
 
 from typing import Dict, Tuple
 
-from semantic_kernel.diagnostics.verify import Verify
-
 
 class ContextVariables:
     def __init__(self, content: str = "", variables: Dict[str, str] = None) -> None:
@@ -36,7 +34,8 @@ class ContextVariables:
         return self
 
     def set(self, name: str, value: str) -> "ContextVariables":
-        Verify.not_empty(name, "The variable name is empty")
+        if not name:
+            raise ValueError("The variable name cannot be `None` or empty")
         name = name.lower()
 
         if value is not None:
@@ -58,7 +57,8 @@ class ContextVariables:
         return self._variables[name]
 
     def __setitem__(self, name: str, value: str) -> None:
-        Verify.not_empty(name, "The variable name is empty")
+        if not name:
+            raise ValueError("The variable name cannot be `None` or empty")
         name = name.lower()
         self._variables[name] = value
 
