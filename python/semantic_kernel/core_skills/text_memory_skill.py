@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
@@ -44,19 +43,18 @@ class TextMemorySkill:
         Returns:
             The nearest item from the memory store
         """
-        Verify.not_null(context.variables, "Context has no variables")
-        assert context.variables is not None  # for type checker
-        Verify.not_null(context.memory, "Context has no memory")
-        assert context.memory is not None  # for type checker
+        if context.variables is None:
+            raise ValueError("Context has no variables")
+        if context.memory is None:
+            raise ValueError("Context has no memory")
 
         collection = (
             context.variables[TextMemorySkill.COLLECTION_PARAM]
             if context.variables.contains_key(TextMemorySkill.COLLECTION_PARAM)
             else TextMemorySkill.DEFAULT_COLLECTION
         )
-        Verify.not_empty(
-            collection, "Memory collection not defined for TextMemorySkill"
-        )
+        if not collection:
+            raise ValueError("Memory collection not defined for TextMemorySkill")
 
         relevance = (
             context.variables[TextMemorySkill.RELEVANCE_PARAM]
@@ -104,26 +102,25 @@ class TextMemorySkill:
             context -- Contains the 'collection' to save the information
                 and unique 'key' to associate with the information
         """
-        Verify.not_null(context.variables, "Context has no variables")
-        assert context.variables is not None  # for type checker
-        Verify.not_null(context.memory, "Context has no memory")
-        assert context.memory is not None  # for type checker
+        if context.variables is None:
+            raise ValueError("Context has no variables")
+        if context.memory is None:
+            raise ValueError("Context has no memory")
 
         collection = (
             context.variables[TextMemorySkill.COLLECTION_PARAM]
             if context.variables.contains_key(TextMemorySkill.COLLECTION_PARAM)
             else TextMemorySkill.DEFAULT_COLLECTION
         )
-        Verify.not_empty(
-            collection, "Memory collection not defined for TextMemorySkill"
-        )
+        if not collection:
+            raise ValueError("Memory collection not defined for TextMemorySkill")
 
         key = (
             context.variables[TextMemorySkill.KEY_PARAM]
             if context.variables.contains_key(TextMemorySkill.KEY_PARAM)
             else None
         )
-        Verify.not_empty(key, "Memory key not defined for TextMemorySkill")
-        assert key is not None  # for type checker
+        if not key:
+            raise ValueError("Memory key not defined for TextMemorySkill")
 
         await context.memory.save_information_async(collection, text=text, id=key)
