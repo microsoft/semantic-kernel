@@ -204,7 +204,7 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <summary>
-    /// Get a MemoryRecord from the Qdrant Vector database by given a group of pointIds.
+    /// Get a MemoryRecord from the Qdrant Vector database by a group of pointIds.
     /// </summary>
     /// <param name="collectionName"></param>
     /// <param name="pointIds"></param>
@@ -241,10 +241,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
-        foreach (var key in keys)
-        {
-            await this.RemoveAsync(collectionName, key, cancel);
-        }
+        await Task.WhenAll(keys.Select(async k => await this.RemoveAsync(collectionName, k, cancel)));
     }
 
     /// <summary>
@@ -268,7 +265,7 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <summary>
-    /// Remove a MemoryRecord from the Qdrant Vector database by given a group of pointIds.
+    /// Remove a MemoryRecord from the Qdrant Vector database by a group of pointIds.
     /// </summary>
     /// <param name="collectionName"></param>
     /// <param name="pointIds"></param>

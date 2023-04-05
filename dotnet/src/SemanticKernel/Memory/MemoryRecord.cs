@@ -109,8 +109,8 @@ public class MemoryRecord : DataEntryBase
     /// <summary>
     /// Create a memory record from a serialized metadata string.
     /// </summary>
-    /// <param name="json"></param>
-    /// <param name="embedding"></param>
+    /// <param name="json">Json string representing a memory record's metadata.</param>
+    /// <param name="embedding">The embedding associated with a memory record.</param>
     /// <param name="key">Optional existing database key</param>
     /// <param name="timestamp">optional timestamp</param>
     /// <returns></returns>
@@ -132,6 +132,10 @@ public class MemoryRecord : DataEntryBase
             "Unable to create memory record from serialized metadata");
     }
 
+    /// <summary>
+    /// Serialize the metadata of a memory record.
+    /// </summary>
+    /// <returns>The memory record's metadata serialized to a json string.</returns>
     public string GetSerializedMetadata()
     {
         return JsonSerializer.Serialize(this.Metadata);

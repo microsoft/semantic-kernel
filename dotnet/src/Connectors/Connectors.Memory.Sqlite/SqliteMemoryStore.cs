@@ -68,10 +68,16 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     {
         record.Key = record.Metadata.Id;
 
-        // delete existing record if it exists
-        await this._dbConnection.DeleteAsync(collectionName, record.Key, cancel);
-
-        await this._dbConnection.InsertAsync(
+        // Update
+        await this._dbConnection.UpdateAsync(
+            collection: collectionName,
+            key: record.Key,
+            value: JsonSerializer.Serialize(record),
+            timestamp: ToTimestampString(record.Timestamp),
+            cancel: cancel);
+        
+        // Insert if entry does not exists
+        await this._dbConnection.InsertOrIgnoreAsync(
             collection: collectionName,
             key: record.Key,
             value: JsonSerializer.Serialize(record),
@@ -128,10 +134,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
-        foreach (var key in keys)
-        {
-            await this.RemoveAsync(collectionName, key, cancel);
-        }
+        await Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancel)));
     }
 
     /// <inheritdoc/>

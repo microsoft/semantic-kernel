@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -45,12 +46,28 @@ internal static class Database
         await cmd.ExecuteNonQueryAsync(cancel);
     }
 
-    public static async Task InsertAsync(this SqliteConnection conn,
+    public static async Task UpdateAsync(this SqliteConnection conn,
         string collection, string key, string? value, string? timestamp, CancellationToken cancel = default)
     {
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-             INSERT INTO {TableName}(collection, key, value, timestamp)
+             UPDATE {TableName}
+             SET value=@value, timestamp=@timestamp
+             WHERE collection=@collection
+                AND key=@key ";
+        cmd.Parameters.AddWithValue("@collection", collection);
+        cmd.Parameters.AddWithValue("@key", key);
+        cmd.Parameters.AddWithValue("@value", value ?? string.Empty);
+        cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
+        await cmd.ExecuteNonQueryAsync(cancel);
+    }
+
+    public static async Task InsertOrIgnoreAsync(this SqliteConnection conn,
+        string collection, string key, string? value, string? timestamp, CancellationToken cancel = default)
+    {
+        SqliteCommand cmd = conn.CreateCommand();
+        cmd.CommandText = $@"
+             INSERT OR IGNORE INTO {TableName}(collection, key, value, timestamp)
              VALUES(@collection, @key, @value, @timestamp); ";
         cmd.Parameters.AddWithValue("@collection", collection);
         cmd.Parameters.AddWithValue("@key", key);

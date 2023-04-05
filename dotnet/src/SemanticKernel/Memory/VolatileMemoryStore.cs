@@ -130,10 +130,7 @@ public class VolatileMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
-        foreach (var key in keys)
-        {
-            await this.RemoveAsync(collectionName, key, cancel);
-        }
+        await Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancel)));
     }
 
     public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
