@@ -26,12 +26,8 @@ public static class Program
         }
 
         // Set the protocol to use
-        string protocol = "https";
         bool useHttp = builder.Configuration.GetSection("UseHttp").Get<bool>();
-        if (useHttp)
-        {
-            protocol = "http";
-        }
+        string protocol = useHttp ? "http" : "https";
 
         builder.WebHost.UseUrls($"{protocol}://*:{serverPort}");
 
@@ -58,8 +54,8 @@ public static class Program
 
         if (useHttp)
         {
-            logger.LogWarning("Server is using HTTP instead of HTTPS. Do not use HTTP in production.\n" +
-                              "All tokens and secrets sent to the server can be intercepted over the network!");
+            logger.LogWarning("Server is using HTTP instead of HTTPS. Do not use HTTP in production." +
+                              "All tokens and secrets sent to the server can be intercepted over the network.");
         }
 
         app.Run();
