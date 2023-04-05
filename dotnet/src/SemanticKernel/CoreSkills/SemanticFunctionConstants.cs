@@ -86,6 +86,10 @@ internal static class SemanticFunctionConstants
   </if>
 </plan><!-- END -->
 
+[AVAILABLE FUNCTIONS]
+{{$available_functions}}
+[END AVAILABLE FUNCTIONS]
+
 Create an XML plan step by step, to satisfy the goal given.
 To create a plan, follow these steps:
 1. From a <goal> create a <plan> as a series of <functions>.
@@ -95,15 +99,11 @@ To create a plan, follow these steps:
 5. 'input' does not need to be specified if it consumes the 'output' of the previous function.
 6. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""$<UNIQUE_VARIABLE_KEY>""/>
 7. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
-8. Only use ""if"" and ""else"" tags
-9. ""if"" and ""else"" tags must be closed
+8. Only use ""if"", ""else"" or ""while"" tags when needed
+9. ""if"", ""else"" and ""while"" tags must be closed
 10. Comparison operators must be literals.
 11. Append an ""END"" XML comment at the end of the plan.
-12. Use only the [AVAILABLE FUNCTIONS].
-
-[AVAILABLE FUNCTIONS]
-{{$available_functions}}
-[END AVAILABLE FUNCTIONS]
+12. Use only AVAILABLE FUNCTIONS deck
 
 <goal>{{$input}}</goal>
 ";
