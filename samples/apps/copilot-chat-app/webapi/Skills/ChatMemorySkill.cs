@@ -34,28 +34,20 @@ public class ChatMemorySkill
     /// <summary>
     /// Create a new chat session in memory.
     /// </summary>
-    /// <param name="chatId">Chat ID that is persistent and unique for the chat session.</param>
-    /// <param name="context">Contains 'chatId' and 'title'.</param>
+    /// <param name="title">The title of the chat.</param>
+    /// <param name="context">Contains the memory</param>
+    /// <returns>An unique chat ID.</returns>
     [SKFunction("Create a new chat session in memory.")]
     [SKFunctionName("CreateChat")]
-    [SKFunctionInput(Description = "Chat ID that is persistent and unique for the chat session.")]
-    [SKFunctionContextParameter(Name = "title", Description = "The title of the chat.")]
-    public async Task CreateChatAsync(string chatId, SKContext context)
+    [SKFunctionInput(Description = "The title of the chat.")]
+    public async Task<SKContext> CreateChatAsync(string title, SKContext context)
     {
-        if (await this.DoesChatExistAsync(chatId, context) == "true")
+        var chatId = Guid.NewGuid().ToString();
+        while (await this.DoesChatExistAsync(chatId, context) == "true")
         {
-            context.Fail($"Chat {chatId} already exists.");
-            return;
+            context.Log.LogDebug($"Chat {chatId} already exists. Regenerating a new chat ID.");
+            chatId = Guid.NewGuid().ToString();
         }
-
-        var newChat = new Chat(chatId, context["title"]);
-
-        await context.Memory.SaveInformationAsync(
-            collection: ChatCollectionName,
-            text: newChat.ToString(),
-            id: newChat.Id,
-            cancel: context.CancellationToken
-        );
 
         // Create a new chat bot for this chat.
         // Clone the context to avoid modifying the original context variables.
@@ -73,9 +65,21 @@ public class ChatMemorySkill
         await CreateUserAsync(ChatBotID(chatId), newBotContext);
         if (newBotContext.ErrorOccurred)
         {
+            context.Log.LogError($"Failed to create a new chat bot for chat {chatId}.");
             context.Fail(newBotContext.LastErrorDescription, newBotContext.LastException);
-            return;
+            return context;
         }
+
+        var newChat = new Chat(chatId, title);
+        await context.Memory.SaveInformationAsync(
+            collection: ChatCollectionName,
+            text: newChat.ToString(),
+            id: newChat.Id,
+            cancel: context.CancellationToken
+        );
+
+        context.Variables.Update(chatId);
+        return context;
     }
 
     /// <summary>
