@@ -18,8 +18,8 @@ class AzureTextEmbedding(OpenAITextEmbedding):
     def __init__(
         self,
         deployment_name: str,
-        endpoint: str,
-        api_key: str,
+        endpoint: Optional[str] = None,
+        api_key: Optional[str] = None,
         api_version: str = "2022-12-01",
         logger: Optional[Logger] = None,
         api_type: Union[Literal["azure"], Literal["azure_ad"]] = "azure",
