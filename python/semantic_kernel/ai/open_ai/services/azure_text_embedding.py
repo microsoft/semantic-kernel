@@ -2,7 +2,7 @@
 
 
 from logging import Logger
-from typing import Any, Literal, Optional, Union
+from typing import Any, Optional
 
 from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
@@ -22,9 +22,9 @@ class AzureTextEmbedding(OpenAITextEmbedding):
         api_key: Optional[str] = None,
         api_version: str = "2022-12-01",
         logger: Optional[Logger] = None,
-        api_type: Union[Literal["azure"], Literal["azure_ad"]] = "azure",
+        use_ad_auth=False,
     ) -> None:
-        if endpoint is None or api_key is None:
+        if use_ad_auth and (endpoint is None or api_key is None):
             # Try to get endpoint/api_key via alternative methods
             results = try_get_api_info_from_synapse_mlflow()
             if results is not None:
@@ -36,14 +36,12 @@ class AzureTextEmbedding(OpenAITextEmbedding):
             raise ValueError("The Azure API key cannot be `None` or empty`")
         if not endpoint:
             raise ValueError("The Azure endpoint cannot be `None` or empty")
-        if not endpoint.startswith("https://") and api_type == "azure":
+        if not endpoint.startswith("https://") and not use_ad_auth:
             raise ValueError("The Azure endpoint must start with https://")
-        if api_type not in ["azure", "azure_ad"]:
-            raise ValueError("api_type must be either 'azure' or 'azure_ad'")
 
         self._endpoint = endpoint
         self._api_version = api_version
-        self._api_type = api_type
+        self._api_type = "azure_ad" if use_ad_auth else "azure"
 
         super().__init__(deployment_name, api_key, org_id=None, log=logger)
 
