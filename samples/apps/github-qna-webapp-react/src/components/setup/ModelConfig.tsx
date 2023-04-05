@@ -102,6 +102,7 @@ const ModelConfig: FC<IData> = ({
             if (fetchModels) {
                 setIsBusy(true);
                 setErrorMessage(undefined);
+                console.log(`Fetching models: key ${resourceInput.key}, endpoint ${resourceInput.endpoint}`);
                 if (isOpenAI) {
                     getOpenAiModels(resourceInput.key, onFailure).then((value) => {
                         if (value) setModels(value);
