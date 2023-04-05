@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 public interface IQdrantVectorDbClient
 {
     /// <summary>
-    /// Get a specific vector by its unique Qdrant ID.
+    /// Get vectors by their unique Qdrant IDs.
     /// </summary>
     /// <param name="collectionName">The name assigned to the collection of vectors.</param>
     /// <param name="pointIds">The unique IDs used to index Qdrant vector entries.</param>
@@ -32,7 +32,7 @@ public interface IQdrantVectorDbClient
     public Task<QdrantVectorRecord?> GetVectorByPayloadIdAsync(string collectionName, string metadataId, CancellationToken cancel = default);
 
     /// <summary>
-    /// Delete a vector by its unique Qdrant ID.
+    /// Delete vectors by their unique Qdrant IDs.
     /// </summary>
     /// <param name="collectionName">The name assigned to a collection of vectors.</param>
     /// <param name="pointIds">The unique IDs used to index Qdrant vector entries.</param>
