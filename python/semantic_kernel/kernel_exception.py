@@ -3,10 +3,8 @@
 from enum import Enum
 from typing import Optional
 
-from semantic_kernel.diagnostics.sk_exception import SKException
 
-
-class KernelException(SKException):
+class KernelException(Exception):
     class ErrorCodes(Enum):
         # Unknown error.
         UnknownError = -1

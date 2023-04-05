@@ -7,7 +7,6 @@ from typing import Any, Optional
 from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
 )
-from semantic_kernel.diagnostics.verify import Verify
 
 
 class AzureTextEmbedding(OpenAITextEmbedding):
@@ -22,12 +21,14 @@ class AzureTextEmbedding(OpenAITextEmbedding):
         api_version: str = "2022-12-01",
         logger: Optional[Logger] = None,
     ) -> None:
-        Verify.not_empty(deployment_name, "You must provide a deployment name")
-        Verify.not_empty(api_key, "The Azure API key cannot be empty")
-        Verify.not_empty(endpoint, "The Azure endpoint cannot be empty")
-        Verify.starts_with(
-            endpoint, "https://", "The Azure endpoint must start with https://"
-        )
+        if not deployment_name:
+            raise ValueError("The deployment name cannot be `None` or empty")
+        if not api_key:
+            raise ValueError("The Azure API key cannot be `None` or empty`")
+        if not endpoint:
+            raise ValueError("The Azure endpoint cannot be `None` or empty")
+        if not endpoint.startswith("https://"):
+            raise ValueError("The Azure endpoint must start with https://")
 
         self._endpoint = endpoint
         self._api_version = api_version
