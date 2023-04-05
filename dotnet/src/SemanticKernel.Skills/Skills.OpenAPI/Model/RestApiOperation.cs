@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
@@ -48,7 +49,7 @@ internal class RestApiOperation
     /// <summary>
     /// The operation headers.
     /// </summary>
-    public IDictionary<string, string> Headers { get; private set; } = new Dictionary<string, string>();
+    public IDictionary<string, string> Headers { get; }
 
     /// <summary>
     /// The operation parameters.
@@ -69,8 +70,17 @@ internal class RestApiOperation
     /// <param name="method">The operation method.</param>
     /// <param name="description">The operation description.</param>
     /// <param name="parameters">The operation parameters.</param>
+    /// <param name="headers">The operation headers.</param>
     /// <param name="payload">The operation payload.</param>
-    public RestApiOperation(string id, string serverUrl, string path, HttpMethod method, string description, IList<RestApiOperationParameter> parameters, RestApiOperationPayload? payload = null)
+    public RestApiOperation(
+        string id,
+        string serverUrl,
+        string path,
+        HttpMethod method,
+        string description,
+        IList<RestApiOperationParameter> parameters,
+        IDictionary<string, string> headers,
+        RestApiOperationPayload? payload = null)
     {
         this.Id = id;
         this.ServerUrl = serverUrl;
@@ -78,6 +88,7 @@ internal class RestApiOperation
         this.Method = method;
         this.Description = description;
         this.Parameters = parameters;
+        this.Headers = headers;
         this.Payload = payload;
     }
 
@@ -99,6 +110,61 @@ internal class RestApiOperation
         }
 
         return new Uri($"{serverUrl.TrimEnd('/')}/{path.TrimStart('/')}", UriKind.Absolute);
+    }
+
+    /// <summary>
+    /// Renders operation request headers.
+    /// </summary>
+    /// <param name="arguments">The operation arguments.</param>
+    /// <returns>The rendered request headers.</returns>
+    public IDictionary<string, string> RenderHeaders(IDictionary<string, string> arguments)
+    {
+        var headers = new Dictionary<string, string>();
+
+        foreach (var header in this.Headers)
+        {
+            var headerName = header.Key;
+            var headerValue = header.Value;
+
+            //A try to resolve header value in arguments.
+            if (arguments.TryGetValue(headerName, out var value))
+            {
+                headers.Add(headerName, value);
+                continue;
+            }
+
+            //Header value is already supplied.
+            if (!string.IsNullOrEmpty(headerValue))
+            {
+                headers.Add(headerName, headerValue);
+                continue;
+            }
+
+            //Getting metadata for the header
+            var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName);
+            if (headerMetadata == null || headerMetadata.IsRequired)
+            {
+                //No metadata found for the header.
+                throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
+            }
+
+            //If parameter is required it's value should always be provided.
+            if (headerMetadata.IsRequired)
+            {
+                throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
+            }
+
+            //Parameter is not required and no default value provided.
+            if (string.IsNullOrEmpty(headerMetadata.DefaultValue))
+            {
+                continue;
+            }
+
+            //Using default value.
+            headers.Add(headerName, headerMetadata.DefaultValue);
+        }
+
+        return headers;
     }
 
     #region private
@@ -157,15 +223,7 @@ internal class RestApiOperation
             //Add the parameter to the query string if there's an argument for it.
             if (!string.IsNullOrEmpty(argument))
             {
-                if (parameter.Type == StringParameterType)
-                {
-                    queryStringSegments.Add($"{parameter.Name}='{argument}'"); //TODO: Consider encoding the string
-                }
-                else
-                {
-                    queryStringSegments.Add($"{parameter.Name}={argument}");
-                }
-
+                queryStringSegments.Add($"{parameter.Name}={HttpUtility.UrlEncode(argument)}");
                 continue;
             }
 
@@ -182,8 +240,6 @@ internal class RestApiOperation
     }
 
     private static readonly Regex s_urlParameterMatch = new Regex(@"\{([\w-]+)\}");
-
-    private const string StringParameterType = "string";
 
     # endregion
 }
