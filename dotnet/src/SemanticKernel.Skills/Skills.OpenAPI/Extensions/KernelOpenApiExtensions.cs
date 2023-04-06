@@ -57,6 +57,7 @@ public static class KernelOpenApiExtensions
             {
                 response = await httpClient.GetAsync(url);
             }
+
             response.EnsureSuccessStatusCode();
 
             Stream stream = await response.Content.ReadAsStreamAsync();
@@ -83,7 +84,8 @@ public static class KernelOpenApiExtensions
     /// <param name="skillName">Skill name.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromResource(this IKernel kernel, string skillName, AuthenticateRequestAsyncCallback? authCallback = null)
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromResource(this IKernel kernel, string skillName,
+        AuthenticateRequestAsyncCallback? authCallback = null)
     {
         Verify.ValidSkillName(skillName);
 
@@ -123,6 +125,7 @@ public static class KernelOpenApiExtensions
         {
             throw new FileNotFoundException($"No OpenApi document for the specified path - {openApiDocumentPath} is found.");
         }
+
         kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document.", openApiDocumentPath);
 
         var skill = new Dictionary<string, ISKFunction>();
@@ -140,12 +143,14 @@ public static class KernelOpenApiExtensions
     /// <param name="filePath">File path to the OpenAPI document.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromFile(this IKernel kernel, string skillName, string filePath, AuthenticateRequestAsyncCallback? authCallback = null)
+    public static IDictionary<string, ISKFunction> ImportOpenApiSkillFromFile(this IKernel kernel, string skillName, string filePath,
+        AuthenticateRequestAsyncCallback? authCallback = null)
     {
         if (!File.Exists(filePath))
         {
             throw new FileNotFoundException($"No OpenApi document for the specified path - {filePath} is found.");
         }
+
         kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document.", filePath);
 
         var skill = new Dictionary<string, ISKFunction>();
@@ -163,7 +168,8 @@ public static class KernelOpenApiExtensions
     /// <param name="skillName">Skill name.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> RegisterOpenApiSkill(this IKernel kernel, Stream documentStream, string skillName, AuthenticateRequestAsyncCallback? authCallback = null)
+    public static IDictionary<string, ISKFunction> RegisterOpenApiSkill(this IKernel kernel, Stream documentStream, string skillName,
+        AuthenticateRequestAsyncCallback? authCallback = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
         Verify.ValidSkillName(skillName);
@@ -186,7 +192,8 @@ public static class KernelOpenApiExtensions
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other Rest functions
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id, ex.Message);
+                kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
+                    ex.Message);
             }
         }
 
@@ -203,7 +210,8 @@ public static class KernelOpenApiExtensions
     /// <param name="operation">The REST API operation.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
-    private static ISKFunction RegisterRestApiFunction(this IKernel kernel, string skillName, RestApiOperation operation, AuthenticateRequestAsyncCallback? authCallback = null)
+    private static ISKFunction RegisterRestApiFunction(this IKernel kernel, string skillName, RestApiOperation operation,
+        AuthenticateRequestAsyncCallback? authCallback = null)
     {
         var restOperationParameters = operation.GetParameters();
 
@@ -233,7 +241,8 @@ public static class KernelOpenApiExtensions
 
                     if (parameter.IsRequired)
                     {
-                        throw new KeyNotFoundException($"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{skillName}.{operation.Id}' Rest function.");
+                        throw new KeyNotFoundException(
+                            $"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{skillName}.{operation.Id}' Rest function.");
                     }
                 }
 
@@ -245,7 +254,8 @@ public static class KernelOpenApiExtensions
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id, ex.Message);
+                kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
+                    ex.Message);
                 context.Fail(ex.Message, ex);
             }
 
@@ -257,7 +267,9 @@ public static class KernelOpenApiExtensions
         var function = new SKFunction(
             delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
             delegateFunction: ExecuteAsync,
-            parameters: restOperationParameters.Select(p => new ParameterView() { Name = p.AlternativeName ?? p.Name, Description = p.Name, DefaultValue = p.DefaultValue ?? string.Empty }).ToList(), //functionConfig.PromptTemplate.GetParameters(),
+            parameters: restOperationParameters.Select(p => new ParameterView()
+            { Name = p.AlternativeName ?? p.Name, Description = p.Name, DefaultValue = p.DefaultValue ?? string.Empty })
+                .ToList(), //functionConfig.PromptTemplate.GetParameters(),
             description: operation.Description,
             skillName: skillName,
             functionName: operation.Id,
@@ -267,5 +279,6 @@ public static class KernelOpenApiExtensions
 
         return kernel.RegisterCustomFunction(skillName, function);
     }
+
     #endregion
 }

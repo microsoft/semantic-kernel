@@ -77,13 +77,15 @@ public class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null, CancellationToken? cancel = null)
+    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+        CancellationToken? cancel = null)
     {
         throw new NotImplementedException();
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null, CancellationToken? cancel = null)
+    public Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+        CancellationToken? cancel = null)
     {
         throw new NotImplementedException();
     }
