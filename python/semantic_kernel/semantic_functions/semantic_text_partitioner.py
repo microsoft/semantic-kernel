@@ -5,7 +5,6 @@ For plain text, split looking at new lines first, then periods, and so on.
 For markdown, split looking at punctuation first, and so on.
 """
 import os
-import re
 from typing import List
 
 NEWLINE = os.linesep
@@ -132,7 +131,6 @@ def _split_markdown_lines(text: str, max_token_per_line: int, trim: bool) -> Lis
     """
 
     lines = _split_str_lines(text, max_token_per_line, MD_SPLIT_OPTIONS, trim)
-
     return lines
 
 
