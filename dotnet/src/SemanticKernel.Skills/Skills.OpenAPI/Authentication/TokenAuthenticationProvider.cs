@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -7,18 +8,18 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 
 /// <summary>
-/// Stores an access token and uses it to authenticate HTTP requests.
+/// Retrieves an access token via the provided delegate and uses it to authenticate HTTP requests.
 /// This class implements the <see cref="AuthenticateRequestAsyncCallback"/> delegate.
 /// </summary>
 public class TokenAuthenticationProvider
 {
-    private readonly string _accessToken;
+    private readonly Func<string> _accessToken;
 
     /// <summary>
-    /// Create an instance of the TokenAuthenticationProvider class with the given access token.
+    /// Create an instance of the TokenAuthenticationProvider class.
     /// </summary>
-    /// <param name="accessToken">Access token.</param>
-    public TokenAuthenticationProvider(string accessToken)
+    /// <param name="accessToken">Delegate to retrieve the access token.</param>
+    public TokenAuthenticationProvider(Func<string> accessToken)
     {
         this._accessToken = accessToken;
     }
@@ -31,7 +32,7 @@ public class TokenAuthenticationProvider
     /// <returns></returns>
     public Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._accessToken);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._accessToken());
         return Task.CompletedTask;
     }
 }
