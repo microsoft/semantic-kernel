@@ -43,7 +43,7 @@ public class SemanticSkillGenerator : ISourceGenerator
             {
                 continue;
             }
-            
+
             string classSource = GenerateClassSource(rootNamespace, skillName, skillGroup);
             context.AddSource(skillName, SourceText.From(classSource, Encoding.UTF8));
         }
@@ -105,7 +105,7 @@ public class {skillName}
         return AIPluginHelpers.GenerateAIPluginJsonResponseAsync(req, ""{skillName}"", ""{skillDescription}"");
     }}";
     }
-    
+
     private static string? GenerateFunctionSource(string skillName, AdditionalText promptFile, AdditionalText configFile)
     {
         // Get the function name from the directory name
@@ -118,7 +118,7 @@ public class {skillName}
         // Get the function description from the config file
         PromptConfig? config = JsonConvert.DeserializeObject<PromptConfig>(metadataJson!);
         if (config == null) { return null; }
-        
+
         string descriptionProperty = string.IsNullOrWhiteSpace(config?.Description)
             ? string.Empty
             : $@", Description = ""{config?.Description}""";
