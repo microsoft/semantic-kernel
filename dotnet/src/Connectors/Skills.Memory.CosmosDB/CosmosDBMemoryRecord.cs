@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Skills.Memory.CosmosDB;
+namespace Connectors.Memory.CosmosDB;
 
 /// <summary>
 /// A CosmosDB memory record.
 /// </summary>
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class CosmosDBMemoryRecord : IEmbeddingWithMetadata<float>
+public class CosmosDBMemoryRecord
 {
     /// <summary>
     /// Unique identifier of the memory record.
@@ -33,7 +34,7 @@ public class CosmosDBMemoryRecord : IEmbeddingWithMetadata<float>
     /// The embedding data.
     /// </summary>
     [JsonIgnore]
-    public Embedding<float> Embedding { get; set; } = new();
+    public IEnumerable<float> Embedding { get; set; } = Array.Empty<float>();
 
     /// <summary>
     /// The embedding data as a string.

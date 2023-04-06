@@ -61,10 +61,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.UnitTests", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SKWebApi", "..\samples\apps\copilot-chat-app\SKWebApi\SKWebApi.csproj", "{CCABF515-2C79-453E-A5A2-69C69B8D172E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Memory.CosmosDB", "src\SemanticKernel.Skills\Skills.Memory.CosmosDB\Skills.Memory.CosmosDB.csproj", "{8C340BC0-21A7-45CC-B024-7855F09DB584}"
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Qdrant", "src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Sqlite", "src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.CosmosDB", "src\Connectors\Skills.Memory.CosmosDB\Connectors.Memory.CosmosDB.csproj", "{B959B67D-D29B-4C03-BB40-BABCC3737AF5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -140,10 +141,6 @@ Global
 		{CCABF515-2C79-453E-A5A2-69C69B8D172E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCABF515-2C79-453E-A5A2-69C69B8D172E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCABF515-2C79-453E-A5A2-69C69B8D172E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C340BC0-21A7-45CC-B024-7855F09DB584}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C340BC0-21A7-45CC-B024-7855F09DB584}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C340BC0-21A7-45CC-B024-7855F09DB584}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C340BC0-21A7-45CC-B024-7855F09DB584}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5DEBAA62-F117-496A-8778-FED3604B70E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5DEBAA62-F117-496A-8778-FED3604B70E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DEBAA62-F117-496A-8778-FED3604B70E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -152,6 +149,10 @@ Global
 		{EC004F12-2F60-4EDD-B3CD-3A504900D929}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC004F12-2F60-4EDD-B3CD-3A504900D929}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC004F12-2F60-4EDD-B3CD-3A504900D929}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B959B67D-D29B-4C03-BB40-BABCC3737AF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B959B67D-D29B-4C03-BB40-BABCC3737AF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B959B67D-D29B-4C03-BB40-BABCC3737AF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B959B67D-D29B-4C03-BB40-BABCC3737AF5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -177,9 +178,9 @@ Global
 		{0247C2C9-86C3-45BA-8873-28B0948EDC0C} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{EB3FC57F-E591-4C88-BCD5-B6A1BC635168} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{CCABF515-2C79-453E-A5A2-69C69B8D172E} = {FA3720F1-C99A-49B2-9577-A940257098BF}
-		{8C340BC0-21A7-45CC-B024-7855F09DB584} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
 		{5DEBAA62-F117-496A-8778-FED3604B70E2} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{EC004F12-2F60-4EDD-B3CD-3A504900D929} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{B959B67D-D29B-4C03-BB40-BABCC3737AF5} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
