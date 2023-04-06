@@ -26,18 +26,12 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <summary>
     /// The endpoint for the Qdrant service.
     /// </summary>
-    public string BaseAddress
-    {
-        get { return this._httpClient.BaseAddress.ToString(); }
-    }
+    public string BaseAddress => this._httpClient.BaseAddress.ToString();
 
     /// <summary>
     /// The port for the Qdrant service.
     /// </summary>
-    public int Port
-    {
-        get { return this._httpClient.BaseAddress.Port; }
-    }
+    public int Port => this._httpClient.BaseAddress.Port;
 
     /// <summary>
     /// The constructor for the QdrantVectorDbClient.
@@ -412,8 +406,8 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         else
         {
-            return false;
             this._log.LogError("Collection fetch failed: {0}, {1}", response.StatusCode, responseContent);
+            return false;
         }
     }
 

@@ -129,7 +129,7 @@ public class SqliteMemoryStoreTests
         // Arrange
         SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         var collections = await db.GetCollectionsAsync().ToListAsync();
-        int numCollections = collections.Count();
+        int numCollections = collections.Count;
         Assert.True(numCollections > 0);
 
         // Act
@@ -581,7 +581,7 @@ public class SqliteMemoryStoreTests
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
         await db.CreateCollectionAsync(collection);
 
-        List<string> keys = new List<string>();
+        List<string> keys = new();
 
         // Act
         await foreach (var key in db.UpsertBatchAsync(collection, records))

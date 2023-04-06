@@ -114,7 +114,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                log?.LogWarning(ex, "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}", skillName, functionName, ex.Message);
+                log?.LogWarning(ex,
+                    "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}",
+                    skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
 

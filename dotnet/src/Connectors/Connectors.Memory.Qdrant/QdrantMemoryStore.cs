@@ -80,7 +80,8 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord, $"Failed to convert MemoryRecord to QdrantVectorRecord");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord,
+                $"Failed to convert MemoryRecord to QdrantVectorRecord");
         }
 
         try
@@ -102,7 +103,8 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records,
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var tasks = Task.WhenAll(records.Select(async r => await this.ConvertFromMemoryRecordAsync(collectionName, r, cancel)));
         var vectorData = await tasks;
@@ -163,7 +165,8 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, [EnumeratorCancellation] CancellationToken cancel = default)
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys,
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
         {
@@ -394,7 +397,8 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord, $"Failed to convert MemoryRecord to QdrantVectorRecord");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord,
+                $"Failed to convert MemoryRecord to QdrantVectorRecord");
         }
 
         return vectorData;
