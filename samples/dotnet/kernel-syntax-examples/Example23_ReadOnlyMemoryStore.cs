@@ -90,7 +90,8 @@ public static class Example23_ReadOnlyMemoryStore
             throw new System.NotImplementedException();
         }
 
-        public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, CancellationToken cancel = default)
+        public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0,
+            CancellationToken cancel = default)
         {
             return await this.GetNearestMatchesAsync(
                 collectionName: collectionName,
@@ -100,7 +101,8 @@ public static class Example23_ReadOnlyMemoryStore
                 cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
         }
 
-        public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, CancellationToken cancel = default)
+        public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit,
+            double minRelevanceScore = 0, CancellationToken cancel = default)
         {
             if (this._memoryRecords == null || !this._memoryRecords.Any())
             {
