@@ -13,7 +13,7 @@
     "parameters": [
       {
         "name": "input",
-        "description": "A single string that summarizes what the chapter should be about.",
+        "description": "A synopsis of what the chapter should be about.",
         "defaultValue": ""
       },
       {
@@ -23,7 +23,7 @@
       },
       {
         "name": "previousChapter",
-        "description": "A single string that summarizes the main events or points of the previous chapter.",
+        "description": "The synopsis of the previous chapter.",
         "defaultValue": ""
       },
       {
