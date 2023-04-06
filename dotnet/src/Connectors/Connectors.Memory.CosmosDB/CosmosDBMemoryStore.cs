@@ -1,21 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Cosmos.Serialization.HybridRow;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
-using Newtonsoft.Json;
 
 namespace Connectors.Memory.CosmosDB;
 
@@ -27,50 +24,38 @@ namespace Connectors.Memory.CosmosDB;
 /// </remarks>
 public class CosmosDBMemoryStore : IMemoryStore
 {
-    private Database _database;
-    private string _databaseName;
-    private ILogger _log;
+    private readonly Database _database;
+    private readonly string _databaseName;
+    private readonly ILogger _log;
 
     /// <summary>
-    /// Private constructor for a memory store backed by an Azure Cosmos DB instance.
+    /// Initializes a new instance of the <see cref="CosmosDBMemoryStore"/> class.
     /// </summary>
-    private CosmosDBMemoryStore(CosmosClient client, string databaseName, ILogger? log = null)
+    /// <param name="client">Client with endpoint and authentication to the Azure CosmosDB Account.</param>
+    /// <param name="databaseName">The name of the database to back the memory store.</param>
+    /// <param name="log">Optional logger.</param>
+    /// <param name="cancel">Optional cancellation token.</param>
+    /// <exception cref="CosmosException"></exception>
+    public CosmosDBMemoryStore(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancel = default)
     {
         this._databaseName = databaseName;
         this._log = log ?? NullLogger<CosmosDBMemoryStore>.Instance;
-    }
-
-    /// <summary>
-    /// Create an instance of <see cref="CosmosDBMemoryStore"/>
-    /// </summary>
-    /// <param name="client"></param>
-    /// <param name="databaseName"></param>
-    /// <param name="log"></param>
-    /// <param name="cancel"></param>
-    /// <returns></returns>
-    /// <exception cref="CosmosException"></exception>
-    public static async Task<CosmosDBMemoryStore> CreateAndConnectAsync(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancel = default)
-    {
-        var newStore = new CosmosDBMemoryStore(client: client, databaseName: databaseName, log: log);
-
-        var response = await client.CreateDatabaseIfNotExistsAsync(newStore._databaseName, cancellationToken: cancel);
+        var response = await client.CreateDatabaseIfNotExistsAsync(this._databaseName, cancellationToken: cancel);
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
-            newStore._log.LogInformation("Created database {0}", newStore._databaseName);
+            this._log.LogInformation("Created database {0}", this._databaseName);
         }
         else if (response.StatusCode == HttpStatusCode.OK)
         {
-            newStore._log.LogInformation("Database {0}", newStore._databaseName);
+            this._log.LogInformation("Database {0}", this._databaseName);
         }
         else
         {
             throw new CosmosException("Database does not exist and was not created", response.StatusCode, 0, newStore._databaseName, 0);
         }
 
-        newStore._database = response.Database;
-
-        return newStore;
+        this._database = response.Database;
     }
 
     /// <inheritdoc />
@@ -128,7 +113,7 @@ public class CosmosDBMemoryStore : IMemoryStore
 
         if (response == null)
         {
-            this._log?.LogWarning("Received no get response collection {1}", key, collectionName);
+            this._log?.LogWarning("Received no get response collection {1}", collectionName);
         }
         else if (response.StatusCode != HttpStatusCode.OK)
         {
