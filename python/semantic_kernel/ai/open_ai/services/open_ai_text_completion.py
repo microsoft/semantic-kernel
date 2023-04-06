@@ -6,7 +6,6 @@ from typing import Any, Optional
 from semantic_kernel.ai.ai_exception import AIException
 from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
 from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.utils.null_logger import NullLogger
 
 
@@ -40,6 +39,17 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
 
+        self.open_ai_instance = self._setup_open_ai()
+
+    def _setup_open_ai(self) -> Any:
+        import openai
+
+        openai.api_key = self._api_key
+        if self._org_id is not None:
+            openai.organization = self._org_id
+
+        return openai
+
     async def complete_simple_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> str:
@@ -54,10 +64,10 @@ class OpenAITextCompletion(TextCompletionClientBase):
         Returns:
             str -- The completed text.
         """
-        import openai
-
-        Verify.not_empty(prompt, "The prompt is empty")
-        Verify.not_null(request_settings, "The request settings cannot be empty")
+        if not prompt:
+            raise ValueError("The prompt cannot be `None` or empty")
+        if request_settings is None:
+            raise ValueError("The request settings cannot be `None`")
 
         if request_settings.max_tokens < 1:
             raise AIException(
@@ -80,13 +90,15 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 f"but logprobs={request_settings.logprobs} was requested",
             )
 
-        openai.api_key = self._api_key
-        if self._org_id is not None:
-            openai.organization = self._org_id
+        model_args = {}
+        if self.open_ai_instance.api_type == "azure":
+            model_args["engine"] = self._model_id
+        else:
+            model_args["model"] = self._model_id
 
         try:
-            response: Any = await openai.Completion.acreate(
-                model=self._model_id,
+            response: Any = await self.open_ai_instance.Completion.acreate(
+                **model_args,
                 prompt=prompt,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
@@ -95,7 +107,8 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 max_tokens=request_settings.max_tokens,
                 stop=(
                     request_settings.stop_sequences
-                    if len(request_settings.stop_sequences) > 0
+                    if request_settings.stop_sequences is not None
+                    and len(request_settings.stop_sequences) > 0
                     else None
                 ),
             )

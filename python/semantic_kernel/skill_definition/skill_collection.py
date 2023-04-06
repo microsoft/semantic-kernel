@@ -3,7 +3,6 @@
 from logging import Logger
 from typing import TYPE_CHECKING, Dict, Literal, Optional, Tuple
 
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.read_only_skill_collection import (
@@ -35,7 +34,8 @@ class SkillCollection(SkillCollectionBase):
         self._skill_collection = {}
 
     def add_semantic_function(self, function: "SKFunctionBase") -> None:
-        Verify.not_null(function, "The function provided is None")
+        if function is None:
+            raise ValueError("The function provided cannot be `None`")
 
         s_name, f_name = function.skill_name, function.name
         s_name, f_name = s_name.lower(), f_name.lower()
@@ -46,7 +46,8 @@ class SkillCollection(SkillCollectionBase):
         self._skill_collection[s_name][f_name] = function
 
     def add_native_function(self, function: "SKFunctionBase") -> None:
-        Verify.not_null(function, "The function provided is None")
+        if function is None:
+            raise ValueError("The function provided cannot be `None`")
 
         s_name, f_name = function.skill_name, function.name
         s_name, f_name = self._normalize_names(s_name, f_name, True)
@@ -118,6 +119,19 @@ class SkillCollection(SkillCollectionBase):
 
         return result
 
+    def get_function(
+        self, skill_name: Optional[str], function_name: str
+    ) -> "SKFunctionBase":
+        s_name, f_name = self._normalize_names(skill_name, function_name, True)
+        if self.has_function(s_name, f_name):
+            return self._skill_collection[s_name][f_name]
+
+        self._log.error(f"Function not available: {s_name}.{f_name}")
+        raise KernelException(
+            KernelException.ErrorCodes.FunctionNotAvailable,
+            f"Function not available: {s_name}.{f_name}",
+        )
+
     def _normalize_names(
         self,
         skill_name: Optional[str],
@@ -128,8 +142,8 @@ class SkillCollection(SkillCollectionBase):
         if s_name is None and allow_substitution:
             s_name = self.GLOBAL_SKILL
 
-        Verify.not_null(s_name, "The skill name provided is None")
-        assert s_name is not None  # to make type checker happy
+        if s_name is None:
+            raise ValueError("The skill name provided cannot be `None`")
 
         s_name, f_name = s_name.lower(), f_name.lower()
         return s_name, f_name
