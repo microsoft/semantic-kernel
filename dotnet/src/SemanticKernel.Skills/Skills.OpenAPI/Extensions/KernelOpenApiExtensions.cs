@@ -270,7 +270,11 @@ public static class KernelOpenApiExtensions
             delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
             delegateFunction: ExecuteAsync,
             parameters: restOperationParameters.Select(p => new ParameterView()
-                    { Name = p.AlternativeName ?? p.Name, Description = p.Name, DefaultValue = p.DefaultValue ?? string.Empty })
+            {
+                Name = p.AlternativeName ?? p.Name,
+                Description = p.Name,
+                DefaultValue = p.DefaultValue ?? string.Empty
+            })
                 .ToList(), //functionConfig.PromptTemplate.GetParameters(),
             description: operation.Description,
             skillName: skillName,
