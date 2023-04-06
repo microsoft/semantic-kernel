@@ -27,7 +27,8 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
         if (diagnostic.Errors.Any())
         {
-            throw new OpenApiDocumentParsingException($"Parsing of '{openApiDocument.Info?.Title}' OpenAPI document failed. Details: {string.Join(';', diagnostic.Errors)}");
+            throw new OpenApiDocumentParsingException(
+                $"Parsing of '{openApiDocument.Info?.Title}' OpenAPI document failed. Details: {string.Join(';', diagnostic.Errors)}");
         }
 
         return ExtractRestApiOperations(openApiDocument);
@@ -173,7 +174,8 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="requiredProperties">List of required properties.</param>
     /// <param name="level">Current level in OpenApi schema.</param>
     /// <returns>The REST API operation payload properties.</returns>
-    private static IList<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties, int level = 0)
+    private static IList<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties,
+        int level = 0)
     {
         if (schema == null)
         {
@@ -182,7 +184,8 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
         if (level > s_payloadPropertiesHierarchyMaxDepth)
         {
-            throw new OpenApiDocumentParsingException($"Max level {s_payloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
+            throw new OpenApiDocumentParsingException(
+                $"Max level {s_payloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
         }
 
         var result = new List<RestApiOperationPayloadProperty>();

@@ -4,6 +4,7 @@ using System.IO;
 using System.Resources;
 
 namespace SemanticKernel.Skills.UnitTests.OpenAPI.TestSkills;
+
 internal class ResourceSkillsProvider
 {
     /// <summary>

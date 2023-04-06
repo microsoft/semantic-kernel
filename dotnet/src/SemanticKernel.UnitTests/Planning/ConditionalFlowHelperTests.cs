@@ -352,7 +352,10 @@ public class ConditionalFlowHelperTests
 
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
-            { ConditionalFlowConstants.IfStructureCheckPrompt[..30], $"{{\"valid\": true, \"variables\": [\"{string.Join("\",\"", conditionVariables.Split(','))}\"]}}" },
+            {
+                ConditionalFlowConstants.IfStructureCheckPrompt[..30],
+                $"{{\"valid\": true, \"variables\": [\"{string.Join("\",\"", conditionVariables.Split(','))}\"]}}"
+            },
             { ConditionalFlowConstants.EvaluateConditionPrompt[..30], "{ \"valid\": true, \"condition\": true }" },
         });
 
