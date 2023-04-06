@@ -12,7 +12,7 @@ from semantic_kernel.ai.open_ai.services.open_ai_text_completion import (
     OpenAITextCompletion,
 )
 
-MODULE_PREFIX = "semantic_kernel.ai.open_ai.services.azure_text_completion"
+MODULE_PREFIX = "semantic_kernel.utils.auth_providers"
 
 
 def test_azure_text_completion_init() -> None:
@@ -105,58 +105,61 @@ def test_azure_text_completion_init_with_invalid_endpoint() -> None:
         )
 
 
-@patch(f"{MODULE_PREFIX}.try_get_api_info_from_synapse_mlflow")
-def test_azure_text_completion_init_with_ad_auth(
-    mock_try_get_api_info_from_synapse_mlflow,
-) -> None:
+def test_azure_chat_completion_init_with_auth_provider() -> None:
     deployment_name = "test_deployment"
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
     logger = Logger("test_logger")
 
-    mock_try_get_api_info_from_synapse_mlflow.return_value = (endpoint, api_key)
-    azure_text_completion = AzureTextCompletion(
-        deployment_name=deployment_name,
-        endpoint=None,
-        api_key=None,
-        api_version=api_version,
-        logger=logger,
-        use_ad_auth=True,
-    )
-
-    assert azure_text_completion._endpoint == endpoint
-    assert azure_text_completion._api_version == api_version
-    assert azure_text_completion._api_type == "azure_ad"
-    assert isinstance(azure_text_completion, OpenAITextCompletion)
-
-
-@patch(f"{MODULE_PREFIX}.try_get_api_info_from_synapse_mlflow")
-def test_azure_text_completion_init_with_ad_auth_and_missing_endpoint(
-    mock_try_get_api_info_from_synapse_mlflow,
-) -> None:
-    deployment_name = "test_deployment"
-    # endpoint = "https://test-endpoint.com"
-    # api_key = "test_api_key"
-    api_version = "2023-03-15-preview"
-    logger = Logger("test_logger")
-
-    mock_try_get_api_info_from_synapse_mlflow.return_value = None
-    with raises(
-        ValueError,
-        match=(
-            "Azure AD authentication failed. Alternatively "
-            "provide an endpoint and API key."
-        ),
+    with patch(
+        f"{MODULE_PREFIX}.__sk_auth_providers",
+        {"test": lambda: (endpoint, api_key, True)},
     ):
-        AzureTextCompletion(
+        azure_chat_completion = AzureTextCompletion(
             deployment_name=deployment_name,
             endpoint=None,
             api_key=None,
             api_version=api_version,
             logger=logger,
-            use_ad_auth=True,
+            auth_provider="test",
         )
+
+        assert azure_chat_completion._endpoint == endpoint
+        assert azure_chat_completion._api_version == api_version
+        assert azure_chat_completion._api_type == "azure_ad"
+        assert isinstance(azure_chat_completion, OpenAITextCompletion)
+
+
+def test_azure_chat_completion_init_with_missing_auth_provider() -> None:
+    deployment_name = "test_deployment"
+    endpoint = "https://test-endpoint.com"
+    api_key = "test_api_key"
+    api_version = "2023-03-15-preview"
+    logger = Logger("test_logger")
+
+    with patch(
+        f"{MODULE_PREFIX}.__sk_auth_providers",
+        {
+            "test": lambda: (endpoint, api_key, True),
+            "test2": lambda: (endpoint, api_key, False),
+        },
+    ):
+        with raises(
+            ValueError,
+            match=(
+                "Failed to get auth from provider wrong: "
+                "Auth provider 'wrong' not found. Registered providers: test, test2"
+            ),
+        ):
+            AzureTextCompletion(
+                deployment_name=deployment_name,
+                endpoint=None,
+                api_key=None,
+                api_version=api_version,
+                logger=logger,
+                auth_provider="wrong",
+            )
 
 
 def test_azure_text_completion_setup_open_ai() -> None:
