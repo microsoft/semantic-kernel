@@ -97,13 +97,15 @@ To create a plan, follow these steps:
 3. A function has an 'input' and an 'output'.
 4. The 'output' from each function is automatically passed as 'input' to the subsequent <function>.
 5. 'input' does not need to be specified if it consumes the 'output' of the previous function.
-6. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""$<UNIQUE_VARIABLE_KEY>""/>
+6. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""<UNIQUE_VARIABLE_KEY>""/>
 7. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
 8. Only use ""if"", ""else"" or ""while"" tags when needed
 9. ""if"", ""else"" and ""while"" tags must be closed
-10. Comparison operators must be literals.
-11. Append an ""END"" XML comment at the end of the plan.
-12. Use only AVAILABLE FUNCTIONS deck
+10. Comparison operators must be literals
+11. Append an ""END"" XML comment at the end of the plan
+12. Dont use arrays or objects for variables
+13. Only use variables that where assigned before with setContextVariables
+14. Use only the AVAILABLE FUNCTIONS in the deck
 
 <goal>{{$input}}</goal>
 ";

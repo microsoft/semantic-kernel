@@ -92,6 +92,31 @@ public class ConditionalFlowHelper
             : elseNode?.InnerXml ?? string.Empty;
     }
 
+    /// <summary>
+    /// Get a planner while statement content and output or not its contents depending on the conditional evaluation.
+    /// </summary>
+    /// <param name="whileContent">While content.</param>
+    /// <param name="context"> The context to use </param>
+    /// <returns>None if evaluates to false or the children steps appended of a copy of the while structure</returns>
+    /// <remarks>
+    /// This skill is initially intended to be used only by the Plan Runner.
+    /// </remarks>
+    public async Task<string> WhileAsync(string whileContent, SKContext context)
+    {
+        XmlDocument xmlDoc = new();
+        xmlDoc.LoadXml("<xml>" + whileContent + "</xml>");
+
+        this.EnsureWhileStructure(xmlDoc, out var whileNode);
+
+        var usedVariables = this.GetUsedVariables(whileNode);
+
+        bool conditionEvaluation = await this.EvaluateConditionAsync(whileNode, usedVariables, context).ConfigureAwait(false);
+
+        return conditionEvaluation
+            ? whileNode.InnerXml + whileContent
+            : string.Empty;
+    }
+
     private void EnsureIfStructure(XmlDocument xmlDoc, out XmlNode ifNode, out XmlNode? elseNode)
     {
         ifNode =
@@ -119,6 +144,30 @@ public class ConditionalFlowHelper
         if (elseNode is not null && !elseNode.HasChildNodes)
         {
             throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "Else has no children");
+        }
+    }
+
+    private void EnsureWhileStructure(XmlDocument xmlDoc, out XmlNode whileNode)
+    {
+        whileNode =
+            xmlDoc.SelectSingleNode("//while")
+            ?? throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "While is not present");
+
+        XmlAttribute? conditionContents = whileNode.Attributes?["condition"];
+
+        if (conditionContents is null)
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "Condition attribute is not present");
+        }
+
+        if (string.IsNullOrWhiteSpace(conditionContents.Value))
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "Condition attribute value cannot be empty");
+        }
+
+        if (!whileNode.HasChildNodes)
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "While has no children");
         }
     }
 

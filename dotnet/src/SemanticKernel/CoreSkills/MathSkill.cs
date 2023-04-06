@@ -17,18 +17,22 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 public class MathSkill
 {
     /// <summary>
-    /// Returns the Sum of two SKContext numbers provided.
+    /// Returns the Addition result of initial and amount values provided.
     /// </summary>
-    /// <param name="context">Contains the context to get the numbersFrom</param>
+    /// <param name="initialValue">Initial value to add the specified amount</param>
+    /// <param name="context">Contains the context to get the numbers from</param>
     /// <returns>The resulting sum as a string.</returns>
-    [SKFunction("Returns the sum of two values")]
-    [SKFunctionName("Sum")]
-    [SKFunctionContextParameter(Name = "FirstNumber", Description = "The first number to make the sum")]
-    [SKFunctionContextParameter(Name = "SecondNumber", Description = "The second number to make the sum")]
-    public async Task<string> SumAsync(SKContext context)
+    [SKFunction("Adds value to a value")]
+    [SKFunctionName("Add")]
+    [SKFunctionInput(Description = "The value to add")]
+    [SKFunctionContextParameter(Name = "Amount", Description = "Amount to add")]
+    public async Task<string> AddAsync(string initialValue, SKContext context)
     {
-        var targetValue = int.Parse(context["FirstNumber"], CultureInfo.InvariantCulture);
-        var amount = int.Parse(context["SecondNumber"], CultureInfo.InvariantCulture);
+#pragma warning disable CA1806
+        int.TryParse(initialValue, out var targetValue);
+#pragma warning restore CA1806
+
+        var amount = int.Parse(context["Amount"], CultureInfo.InvariantCulture);
 
         var result = targetValue + amount;
 
@@ -38,21 +42,23 @@ public class MathSkill
     /// <summary>
     /// Returns the Sum of two SKContext numbers provided.
     /// </summary>
-    /// <param name="context">Contains the context to get the numbersFrom</param>
-    /// <returns>The resulting sum as a string.</returns>
-    [SKFunction("Adds value to an existing")]
-    [SKFunctionName("Add")]
-    [SKFunctionContextParameter(Name = "Target", Description = "The target variable to add")]
-    [SKFunctionContextParameter(Name = "Amount", Description = "Amount to add")]
-    public async Task<SKContext> AddAsync(SKContext context)
+    /// <param name="initialValue">Initial value to subtract the specified amount</param>
+    /// <param name="context">Contains the context to get the numbers from</param>
+    /// <returns>The resulting substraction as a string.</returns>
+    [SKFunction("Subtracts value to a value")]
+    [SKFunctionName("Subtract")]
+    [SKFunctionInput(Description = "The value to subtract")]
+    [SKFunctionContextParameter(Name = "Amount", Description = "Amount to subtract")]
+    public async Task<string> SubtractAsync(string initialValue, SKContext context)
     {
-        var targetValue = int.Parse(context[context["Target"]], CultureInfo.InvariantCulture);
+#pragma warning disable CA1806
+        int.TryParse(initialValue, out var targetValue);
+#pragma warning restore CA1806
+
         var amount = int.Parse(context["Amount"], CultureInfo.InvariantCulture);
 
-        var result = targetValue + amount;
+        var result = targetValue - amount;
 
-        context[context["Target"]] = result.ToString(CultureInfo.InvariantCulture);
-
-        return await Task.FromResult(context);
+        return await Task.FromResult(result.ToString(CultureInfo.InvariantCulture));
     }
 }

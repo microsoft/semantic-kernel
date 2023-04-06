@@ -27,6 +27,6 @@ public class WaitSkill
     [SKFunctionInput(DefaultValue = "0", Description = "The number of seconds to wait")]
     public async Task SecondsAsync(string secondsText)
     {
-        await Task.Delay(int.Parse(secondsText, CultureInfo.InvariantCulture));
+        await Task.Delay(int.Parse(secondsText, CultureInfo.InvariantCulture) * 1000);
     }
 }
