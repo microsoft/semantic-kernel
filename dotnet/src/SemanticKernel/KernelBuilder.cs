@@ -21,7 +21,7 @@ public sealed class KernelBuilder
     private KernelConfig _config = new();
     private ISemanticTextMemory _memory = NullMemory.Instance;
     private ILogger _log = NullLogger.Instance;
-    private IMemoryStore<float>? _memoryStorage = null;
+    private IMemoryStore? _memoryStorage = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
 
     /// <summary>
@@ -91,7 +91,7 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="storage">Storage to add.</param>
     /// <returns>Updated kernel builder including the memory storage.</returns>
-    public KernelBuilder WithMemoryStorage(IMemoryStore<float> storage)
+    public KernelBuilder WithMemoryStorage(IMemoryStore storage)
     {
         Verify.NotNull(storage, "The memory instance provided is NULL");
         this._memoryStorage = storage;
@@ -105,7 +105,7 @@ public sealed class KernelBuilder
     /// <param name="embeddingGenerator">Embedding generator to add.</param>
     /// <returns>Updated kernel builder including the memory storage and embedding generator.</returns>
     public KernelBuilder WithMemoryStorageAndTextEmbeddingGeneration(
-        IMemoryStore<float> storage, IEmbeddingGeneration<string, float> embeddingGenerator)
+        IMemoryStore storage, IEmbeddingGeneration<string, float> embeddingGenerator)
     {
         Verify.NotNull(storage, "The memory instance provided is NULL");
         Verify.NotNull(embeddingGenerator, "The embedding generator instance provided is NULL");

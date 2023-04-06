@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT License.
 
 using System.Linq;
 using System.Net;
@@ -15,9 +14,9 @@ namespace KernelHttpServer;
 
 public class SemanticKernelEndpoint
 {
-    private readonly IMemoryStore<float> _memoryStore;
+    private readonly IMemoryStore _memoryStore;
 
-    public SemanticKernelEndpoint(IMemoryStore<float> memoryStore)
+    public SemanticKernelEndpoint(IMemoryStore memoryStore)
     {
         this._memoryStore = memoryStore;
     }

@@ -250,7 +250,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         public string Description { get; set; }
     }
 
-    private enum DelegateTypes
+    internal enum DelegateTypes
     {
         Unknown = 0,
         Void = 1,
@@ -273,7 +273,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         OutTask = 18
     }
 
-    private SKFunction(
+    internal SKFunction(
         DelegateTypes delegateType,
         Delegate delegateFunction,
         IList<ParameterView> parameters,
@@ -484,7 +484,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private void EnsureContextHasSkills(SKContext context)
     {
         // If the function is invoked manually, the user might have left out the skill collection
-        if (context.Skills == null) { context.Skills = this._skillCollection; }
+        context.Skills ??= this._skillCollection;
     }
 
     private static MethodDetails GetMethodDetails(MethodInfo methodSignature, object? methodContainerInstance, ILogger? log = null)
