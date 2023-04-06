@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
@@ -6,7 +6,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    <RootNamespace>AIPlugins.AzureFunctions.SKExtensions</RootNamespace>
+    <RootNamespace>AIPlugins.AzureFunctions.Extensions</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.TemplateEngine;
 
-namespace AIPlugins.AzureFunctions.SKExtensions;
+namespace AIPlugins.AzureFunctions.Extensions;
 public static class KernelExtensions
 {
     public static void RegisterSemanticSkills(

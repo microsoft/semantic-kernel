@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace AIPlugins.AzureFunctions.SKExtensions;
+namespace AIPlugins.AzureFunctions.Extensions;
 
 public class KernelAIPluginRunner : IAIPluginRunner
 {

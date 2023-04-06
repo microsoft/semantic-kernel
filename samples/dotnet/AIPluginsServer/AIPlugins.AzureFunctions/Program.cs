@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using AIPlugins.AzureFunctions;
-using AIPlugins.AzureFunctions.SKExtensions;
+using AIPlugins.AzureFunctions.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel;

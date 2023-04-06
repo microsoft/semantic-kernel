@@ -5,7 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker.Http;
 
-namespace AIPlugins.AzureFunctions.SKExtensions;
+namespace AIPlugins.AzureFunctions.Extensions;
 
 public static class AIPluginHelpers
 {

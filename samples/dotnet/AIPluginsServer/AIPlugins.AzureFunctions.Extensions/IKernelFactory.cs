@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel;
 
-namespace AIPlugins.AzureFunctions.SKExtensions;
+namespace AIPlugins.AzureFunctions.Extensions;
 
 public interface IKernelFactory
 {
