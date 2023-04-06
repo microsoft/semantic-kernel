@@ -119,11 +119,11 @@ public class {skillName}
         PromptConfig? config = JsonConvert.DeserializeObject<PromptConfig>(metadataJson!);
         if (config == null) { return null; }
 
-        string descriptionProperty = string.IsNullOrWhiteSpace(config?.Description)
+        string descriptionProperty = string.IsNullOrWhiteSpace(config.Description)
             ? string.Empty
-            : $@", Description = ""{config?.Description}""";
+            : $@", Description = ""{config.Description}""";
 
-        string parameterAttributes = GenerateParameterAttributesSource(config?.Input?.Parameters);
+        string parameterAttributes = GenerateParameterAttributesSource(config.Input.Parameters);
 
         return $@"
     [Function(""{skillName}/{functionName}"")]
@@ -140,7 +140,6 @@ public class {skillName}
         List<PromptConfig.ParameterConfig>? parameters)
     {
         string inputDescription = string.Empty;
-        string parameterAttributes = string.Empty;
         if (parameters == null || !parameters.Any())
         {
             return string.Empty;
