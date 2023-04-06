@@ -99,7 +99,7 @@ Solve the equation x^2 = 2.
         Assert.NotNull(plan);
         Assert.NotNull(plan.Id);
 
-        // Since not using Plan or PlanExecution object, this won't be present.
+        // Since not using SkillPlan or PlanExecution object, this won't be present.
         // Maybe we do work to parse this out. Not doing too much though since we might move to json instead of xml.
         // Assert.Equal(GoalText, plan.Goal);
     }
@@ -112,7 +112,7 @@ Solve the equation x^2 = 2.
         var factory = new Mock<Func<IKernel, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
-        Plan createdPlan = new()
+        SkillPlan createdPlan = new()
         {
             Goal = GoalText,
             PlanString = FunctionFlowRunnerText
@@ -160,7 +160,7 @@ Solve the equation x^2 = 2.
         var factory = new Mock<Func<IKernel, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
-        Plan createdPlan = new()
+        SkillPlan createdPlan = new()
         {
             Goal = GoalText,
             PlanString = FunctionFlowRunnerText
@@ -238,7 +238,7 @@ Solve the equation x^2 = 2.
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
-        Plan createdPlan = new()
+        SkillPlan createdPlan = new()
         {
             Goal = goalText,
             PlanString = planText
@@ -272,7 +272,7 @@ This is some text
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
-        Plan createdPlan = new()
+        SkillPlan createdPlan = new()
         {
             Goal = goalText,
             PlanString = planText
@@ -308,7 +308,7 @@ This is some text
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
-        Plan createdPlan = new()
+        SkillPlan createdPlan = new()
         {
             Goal = goalText,
             PlanString = planText
@@ -348,7 +348,7 @@ This is some text
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
-        Plan createdPlan = new()
+        SkillPlan createdPlan = new()
         {
             Goal = goalText,
             PlanString = planText
@@ -391,7 +391,7 @@ This is some text
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
-        Plan createdPlan = new()
+        SkillPlan createdPlan = new()
         {
             Goal = goalText,
             PlanString = planText
@@ -430,7 +430,7 @@ This is some text
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
-        Plan createdPlan = new()
+        SkillPlan createdPlan = new()
         {
             Goal = goalText,
             PlanString = planText
@@ -464,7 +464,7 @@ This is some text
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
-        Plan createdPlan = new()
+        SkillPlan createdPlan = new()
         {
             Goal = goalText,
             PlanString = planText
