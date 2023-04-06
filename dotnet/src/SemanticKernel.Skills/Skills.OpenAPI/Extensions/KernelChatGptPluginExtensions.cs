@@ -53,6 +53,7 @@ public static class KernelChatGptPluginExtensions
             {
                 response = await httpClient.GetAsync(url);
             }
+
             response.EnsureSuccessStatusCode();
 
             string gptPluginJson = await response.Content.ReadAsStringAsync();
@@ -110,7 +111,8 @@ public static class KernelChatGptPluginExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static IDictionary<string, ISKFunction> ImportChatGptPluginSkillSkillFromDirectory(
-        this IKernel kernel, string parentDirectory, string skillDirectoryName, HttpClient? httpClient = null, AuthenticateRequestAsyncCallback? authCallback = null)
+        this IKernel kernel, string parentDirectory, string skillDirectoryName, HttpClient? httpClient = null,
+        AuthenticateRequestAsyncCallback? authCallback = null)
     {
         const string CHATGPT_PLUGIN_FILE = "ai-plugin.json";
 
@@ -124,6 +126,7 @@ public static class KernelChatGptPluginExtensions
         {
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {chatGptPluginPath} is found.");
         }
+
         kernel.Log.LogTrace("Registering Rest functions from {0} ChatGPT Plugin.", chatGptPluginPath);
 
         var skill = new Dictionary<string, ISKFunction>();
@@ -149,6 +152,7 @@ public static class KernelChatGptPluginExtensions
         {
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {filePath} is found.");
         }
+
         kernel.Log.LogTrace("Registering Rest functions from {0} ChatGPT Plugin.", filePath);
 
         var skill = new Dictionary<string, ISKFunction>();
