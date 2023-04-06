@@ -1,14 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 import os
 
-NEWLINE = os.linesep
-
-from semantic_kernel.semantic_functions.partitioning import (
-    split_plaintext_lines,
+from semantic_kernel.semantic_functions import (
+    split_markdown_lines,
     split_markdown_paragraph,
+    split_plaintext_lines,
     split_plaintext_paragraph,
 )
-from semantic_kernel.semantic_functions.partitioning import split_markdown_lines
+
+NEWLINE = os.linesep
 
 
 def test_split_plain_text_lines():
@@ -16,7 +16,7 @@ def test_split_plain_text_lines():
 
     text = "This is a test of the emergency broadcast system. This is only a test."
 
-    max_token_per_line = 10
+    max_token_per_line = 13
 
     expected = [
         "This is a test of the emergency broadcast system.",
@@ -34,7 +34,7 @@ def test_split_markdown_paragraph():
         "We repeat, this is only a test. A unit test.",
     ]
 
-    max_token_per_line = 11
+    max_token_per_line = 15
 
     expected = [
         "This is a test of the emergency broadcast system.",
@@ -70,7 +70,7 @@ def test_split_markdown_lines():
 
     text = "This is a test of the emergency broadcast system. This is only a test."
 
-    max_token_per_line = 11
+    max_token_per_line = 15
 
     expected = [
         "This is a test of the emergency broadcast system.",
@@ -108,18 +108,19 @@ def test_split_text_paragraph_evenly():
     text = [
         "This is a test of the emergency broadcast system. This is only a test.",
         "We repeat, this is only a test. A unit test.",
-        "A small note. And another. And once again. Seriously, this is the end. We're finished. All set. Bye.",
+        "A small note. And another. And once again. Seriously, this is the end. "
+        + "We're finished. All set. Bye.",
         "Done.",
     ]
 
-    max_token_per_line = 11
+    max_token_per_line = 15
 
     expected = [
         "This is a test of the emergency broadcast system.",
         "This is only a test.",
         "We repeat, this is only a test. A unit test.",
         "A small note. And another. And once again.",
-        "Seriously, this is the end. We're finished. All set. Bye. Done.",
+        f"Seriously, this is the end. We're finished. All set. Bye.{NEWLINE}Done.",
     ]
     split = split_plaintext_paragraph(text, max_token_per_line)
     assert expected == split
@@ -129,23 +130,26 @@ def test_split_text_paragraph_evenly_2():
     """Test split_paragraph() with evenly split input"""
 
     text = [
-        "The gentle breeze rustled the autumn leaves on the tree branches. She smiled and walked away.",
-        "The sun set over the horizon peacefully, the beautiful star. Cats love boxes",
-        "That is something. Incredible news that is. What a beautiful day to be alive. Seriously, this is the end. We're finished once of for all. All set. Ok.",
+        "The gentle breeze rustled the autumn leaves on the tree branches. "
+        + "She smiled and walked away.",
+        "The sun set over the horizon peacefully, the beautiful star. Cats love boxes.",
+        "That is something. Incredible news that is. "
+        + "What a beautiful day to be alive. Seriously, this is the end. "
+        + "We're finished once of for all. All set. Ok. ",
         "Done.",
         "Or is it?",
         "Surprise!",
     ]
 
-    max_token_per_line = 15
+    max_token_per_line = 17
 
     expected = [
         "The gentle breeze rustled the autumn leaves on the tree branches.",
         "She smiled and walked away.",
-        "The sun set over the horizon peacefully, the beautiful star. Cats love boxes",
-        "That is something. Incredible news that is. What a beautiful day to be alive.",
-        "Seriously, this is the end. We're finished once of for all. All set. Ok.",
-        f"Done.{NEWLINE}Or is it?{NEWLINE}Surprise!",
+        "The sun set over the horizon peacefully, the beautiful star.",
+        f"Cats love boxes.{NEWLINE}That is something. Incredible news that is.",
+        f"What a beautiful day to be alive.{NEWLINE}Seriously, this is the end.",
+        f"We're finished once of for all. All set. Ok.{NEWLINE}Done.{NEWLINE}Or is it?{NEWLINE}Surprise!",
     ]
     split = split_plaintext_paragraph(text, max_token_per_line)
     assert expected == split
@@ -158,7 +162,8 @@ def test_split_paragraph_newline():
     text = [
         "This is a test of the emergency broadcast system\r\nThis is only a test",
         "We repeat this is only a test\nA unit test",
-        "A small note\nAnd another\r\nAnd once again\rSeriously this is the end\nWe're finished\nAll set\nBye\n",
+        "A small note\nAnd another\r\nAnd once again\rSeriously this is the end\n"
+        + "We're finished\nAll set\nBye\n",
         "Done",
     ]
     expected = [
@@ -166,9 +171,9 @@ def test_split_paragraph_newline():
         "This is only a test",
         "We repeat this is only a test\nA unit test",
         "A small note\nAnd another\nAnd once again",
-        "Seriously this is the end\nWe're finished\nAll set\nBye Done",
+        f"Seriously this is the end\nWe're finished\nAll set\nBye{NEWLINE}Done",
     ]
-    max_token_per_line = 11
+    max_token_per_line = 15
     split = split_plaintext_paragraph(text, max_token_per_line)
     assert expected == split
 
@@ -180,7 +185,8 @@ def test_split_paragraph_punctuation():
     text = [
         "This is a test of the emergency broadcast system. This is only a test",
         "We repeat, this is only a test? A unit test",
-        "A small note! And another? And once again! Seriously, this is the end. We're finished. All set. Bye.",
+        "A small note! And another? And once again! Seriously, this is the end. "
+        + "We're finished. All set. Bye.",
         "Done.",
     ]
     expected = [
@@ -191,29 +197,183 @@ def test_split_paragraph_punctuation():
         "Seriously, this is the end.",
         f"We're finished. All set. Bye.{NEWLINE}Done.",
     ]
-    max_token_per_line = 12
+    max_token_per_line = 15
     split = split_plaintext_paragraph(text, max_token_per_line)
     assert expected == split
 
 
-def test_split_paragraph_punctuation_2():
+def test_split_paragraph_semicolon():
     """
-    a plaintext example that splits on ? or !
+    a plaintext example that splits on ;
     """
     text = [
-        "The gentle breeze rustled the autumn leaves on the tree branches. She smiled and walked away.",
-        "The sun set over the horizon peacefully. Cats love boxes",
-        "Are you sure? Incredible news! What a beautiful day! Seriously, this is the end. We're finished. All set. Ok.",
+        "This is a test of the emergency broadcast system; This is only a test",
+        "We repeat; this is only a test; A unit test",
+        "A small note; And another; And once again; Seriously, this is the end; We're finished; All set; Bye.",
         "Done.",
     ]
     expected = [
-        "The gentle breeze rustled the autumn leaves on the tree branches.",
-        "She smiled and walked away.",
-        "The sun set over the horizon peacefully. Cats love boxes",
-        "Are you sure? Incredible news!",
-        "What a beautiful day! Seriously, this is the end.",
-        f"We're finished. All set. Ok.{NEWLINE}Done.",
+        "This is a test of the emergency broadcast system;",
+        "This is only a test",
+        "We repeat; this is only a test; A unit test",
+        "A small note; And another; And once again;",
+        f"Seriously, this is the end; We're finished; All set; Bye.{NEWLINE}Done.",
     ]
-    max_token_per_line = 11
+    max_token_per_line = 15
     split = split_plaintext_paragraph(text, max_token_per_line)
+    assert expected == split
+
+
+def test_split_paragraph_colon():
+    """
+    a plaintext example that splits on :
+    """
+    text = [
+        "This is a test of the emergency broadcast system: This is only a test",
+        "We repeat: this is only a test: A unit test",
+        "A small note: And another: And once again: Seriously, this is the end: We're finished: All set: Bye.",
+        "Done.",
+    ]
+    expected = [
+        "This is a test of the emergency broadcast system:",
+        "This is only a test",
+        "We repeat: this is only a test: A unit test",
+        "A small note: And another: And once again:",
+        f"Seriously, this is the end: We're finished: All set: Bye.{NEWLINE}Done.",
+    ]
+    max_token_per_line = 15
+    split = split_plaintext_paragraph(text, max_token_per_line)
+    assert expected == split
+
+
+def test_split_paragraph_commas():
+    """
+    a plaintext example that splits on ,
+    """
+    text = [
+        "This is a test of the emergency broadcast system, This is only a test",
+        "We repeat, this is only a test, A unit test",
+        "A small note, And another, And once again, Seriously this is the end, We're finished, All set, Bye.",
+        "Done.",
+    ]
+    expected = [
+        "This is a test of the emergency broadcast system,",
+        "This is only a test",
+        "We repeat, this is only a test, A unit test",
+        "A small note, And another, And once again,",
+        f"Seriously this is the end, We're finished, All set, Bye.{NEWLINE}Done.",
+    ]
+    max_token_per_line = 15
+    split = split_plaintext_paragraph(text, max_token_per_line)
+    assert expected == split
+
+
+def test_split_paragraph_closing_brackets():
+    """
+    a plaintext example that splits on closing brackets
+    """
+    text = [
+        "This is a test of the emergency broadcast system) This is only a test",
+        "We repeat) this is only a test) A unit test",
+        "A small note] And another) And once again] Seriously this is the end} We're finished} All set} Bye.",
+        "Done.",
+    ]
+    expected = [
+        "This is a test of the emergency broadcast system)",
+        "This is only a test",
+        "We repeat) this is only a test) A unit test",
+        "A small note] And another) And once again]",
+        f"Seriously this is the end\u007d We're finished\u007d All set\u007d Bye.{NEWLINE}Done.",
+    ]
+    max_token_per_line = 15
+    split = split_plaintext_paragraph(text, max_token_per_line)
+    assert expected == split
+
+
+def test_split_paragraph_spaces():
+    """
+    a plaintext example that splits on spaces
+    """
+    text = [
+        "This is a test of the emergency broadcast system This is only a test",
+        "We repeat this is only a test A unit test",
+        "A small note And another And once again Seriously this is the end We're finished All set Bye.",
+        "Done.",
+    ]
+    expected = [
+        "This is a test of the emergency",
+        "broadcast system This is only a test",
+        "We repeat this is only a test A unit test",
+        "A small note And another And once again Seriously",
+        f"this is the end We're finished All set Bye.{NEWLINE}Done.",
+    ]
+    max_token_per_line = 15
+    split = split_plaintext_paragraph(text, max_token_per_line)
+    assert expected == split
+
+
+def test_split_paragraph_hypens():
+    """
+    a plaintext example that splits on hypens
+    """
+    text = [
+        "This is a test of the emergency broadcast system-This is only a test",
+        "We repeat-this is only a test-A unit test",
+        "A small note-And another-And once again-Seriously, this is the end-We're finished-All set-Bye.",
+        "Done.",
+    ]
+    expected = [
+        "This is a test of the emergency",
+        "broadcast system-This is only a test",
+        "We repeat-this is only a test-A unit test",
+        "A small note-And another-And once again-Seriously,",
+        f"this is the end-We're finished-All set-Bye.{NEWLINE}Done.",
+    ]
+    max_token_per_line = 15
+    split = split_plaintext_paragraph(text, max_token_per_line)
+    assert expected == split
+
+
+def test_split_paragraph_nodelimiters():
+    """
+    a plaintext example that splits on spaces
+    """
+    text = [
+        "Thisisatestoftheemergencybroadcastsystem",
+        "Thisisonlyatest",
+        "WerepeatthisisonlyatestAunittest",
+        "AsmallnoteAndanotherAndonceagain",
+        "SeriouslythisistheendWe'refinishedAllsetByeDoneThisOneWillBeSplitToMeetTheLimit",
+    ]
+    expected = [
+        f"Thisisatestoftheemergencybroadcastsystem{NEWLINE}Thisisonlyatest",
+        "WerepeatthisisonlyatestAunittest",
+        "AsmallnoteAndanotherAndonceagain",
+        "SeriouslythisistheendWe'refinishedAllse",
+        "tByeDoneThisOneWillBeSplitToMeetTheLimit",
+    ]
+    max_token_per_line = 15
+    split = split_plaintext_paragraph(text, max_token_per_line)
+    assert expected == split
+
+
+def test_split_md_on_colon():
+    """
+    a markdown example that splits on :
+    """
+    text = [
+        "This is a test of the emergency broadcast system: This is only a test",
+        "We repeat: this is only a test: A unit test",
+        "A small note: And another: And once again: Seriously, this is the end: We're finished: All set: Bye.",
+        "Done.",
+    ]
+    expected = [
+        "This is a test of the emergency broadcast system:",
+        "This is only a test",
+        "We repeat: this is only a test: A unit test",
+        "A small note: And another: And once again:",
+        f"Seriously, this is the end: We're finished: All set: Bye.{NEWLINE}Done.",
+    ]
+    max_token_per_line = 15
+    split = split_markdown_paragraph(text, max_token_per_line)
     assert expected == split
