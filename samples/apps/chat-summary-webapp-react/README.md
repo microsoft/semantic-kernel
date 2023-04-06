@@ -18,6 +18,10 @@ Watch the [Chat Summary Quick Start Video](https://aka.ms/SK-Samples-SimChat-Vid
    and/or `yarn start` from the command line.
 4. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
 
+### Working with Secrets
+
+We need keys to work with various aspects of the project including accessing openAI models. This opens up the possibility of exposing keys in commits. There are a [couple of options](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows) to safe guard developers from exposing keys. Outside of using the Secret Manager and environment variables, we've also added *.development.config to the .gitignore if developers want to use config files for secret storage.
+
 ## About the Simple Chat Summary Sample
 
 The Simple Chat Summary sample allows you to see the power of semantic functions used in a chat.
