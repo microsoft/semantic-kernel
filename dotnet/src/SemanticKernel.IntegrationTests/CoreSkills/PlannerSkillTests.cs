@@ -6,13 +6,11 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -189,35 +187,6 @@ public sealed class PlannerSkillTests : IDisposable
         {
             this._logger.Dispose();
             this._testOutputHelper.Dispose();
-        }
-    }
-
-    internal class EmailSkill
-    {
-        [SKFunction("Given an e-mail and message body, send an email")]
-        [SKFunctionInput(Description = "The body of the email message to send.")]
-        [SKFunctionContextParameter(Name = "email_address", Description = "The email address to send email to.")]
-        public Task<SKContext> SendEmailAsync(string input, SKContext context)
-        {
-            context.Variables.Update($"Sent email to: {context.Variables["email_address"]}. Body: {input}");
-            return Task.FromResult(context);
-        }
-
-        [SKFunction("Given a name, find email address")]
-        [SKFunctionInput(Description = "The name of the person to email.")]
-        public Task<SKContext> GetEmailAddressAsync(string input, SKContext context)
-        {
-            context.Log.LogDebug("Returning hard coded email for {0}", input);
-            context.Variables.Update("johndoe1234@example.com");
-            return Task.FromResult(context);
-        }
-
-        [SKFunction("Write a short poem for an e-mail")]
-        [SKFunctionInput(Description = "The topic of the poem.")]
-        public Task<SKContext> WritePoemAsync(string input, SKContext context)
-        {
-            context.Variables.Update($"Roses are red, violets are blue, {input} is hard, so is this test.");
-            return Task.FromResult(context);
         }
     }
 }
