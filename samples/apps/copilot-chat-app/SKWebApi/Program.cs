@@ -96,7 +96,7 @@ public static class Program
         AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
         if (embeddingConfig?.IsValid() == true)
         {
-            services.AddSingleton<IMemoryStore<float>, VolatileMemoryStore>();
+            services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
         }
 
         services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
@@ -120,7 +120,7 @@ public static class Program
 
         services.AddScoped<ISemanticTextMemory>(sp =>
         {
-            var memoryStore = sp.GetService<IMemoryStore<float>>();
+            var memoryStore = sp.GetService<IMemoryStore>();
             if (memoryStore is not null)
             {
                 AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
