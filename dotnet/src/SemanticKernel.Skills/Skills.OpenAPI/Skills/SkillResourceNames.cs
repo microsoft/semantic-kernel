@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 public static class SkillResourceNames
 {
     /// <summary>
-    /// Azure KeyValut skill name.
+    /// Azure KeyVault skill name.
     /// </summary>
     public const string AzureKeyVault = "AzureKeyVaultSkill";
 }

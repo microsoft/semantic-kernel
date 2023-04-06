@@ -12,12 +12,12 @@ internal static class ConfigExtensions
 {
     public static IHostBuilder ConfigureAppSettings(this IHostBuilder host)
     {
-        string? enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        string? environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
         host.ConfigureAppConfiguration((ctx, builder) =>
         {
             builder.AddJsonFile("appsettings.json", false, true);
-            builder.AddJsonFile($"appsettings.{enviroment}.json", true, true);
+            builder.AddJsonFile($"appsettings.{environment}.json", true, true);
             builder.AddEnvironmentVariables();
             builder.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true, reloadOnChange: true);
             // For settings from Key Vault, see https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-7.0
@@ -37,12 +37,12 @@ internal static class ConfigExtensions
         {
             case AIServiceConfig.AzureOpenAI:
                 kernelConfig.AddAzureOpenAITextCompletionService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                                                                 serviceConfig.Endpoint, serviceConfig.Key);
+                    serviceConfig.Endpoint, serviceConfig.Key);
                 break;
 
             case AIServiceConfig.OpenAI:
                 kernelConfig.AddOpenAITextCompletionService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                                                            serviceConfig.Key);
+                    serviceConfig.Key);
                 break;
 
             default:
@@ -61,12 +61,12 @@ internal static class ConfigExtensions
         {
             case AIServiceConfig.AzureOpenAI:
                 kernelConfig.AddAzureOpenAIEmbeddingGenerationService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                                                                      serviceConfig.Endpoint, serviceConfig.Key);
+                    serviceConfig.Endpoint, serviceConfig.Key);
                 break;
 
             case AIServiceConfig.OpenAI:
                 kernelConfig.AddOpenAIEmbeddingGenerationService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                                                                 serviceConfig.Key);
+                    serviceConfig.Key);
                 break;
 
             default:
@@ -75,8 +75,8 @@ internal static class ConfigExtensions
     }
 
     public static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceConfig serviceConfig,
-                                                                             ILogger? logger = null,
-                                                                             IDelegatingHandlerFactory? handlerFactory = null)
+        ILogger? logger = null,
+        IDelegatingHandlerFactory? handlerFactory = null)
     {
         if (!serviceConfig.IsValid())
         {
@@ -87,11 +87,11 @@ internal static class ConfigExtensions
         {
             case AIServiceConfig.AzureOpenAI:
                 return new AzureTextEmbeddingGeneration(serviceConfig.DeploymentOrModelId, serviceConfig.Endpoint,
-                                                        serviceConfig.Key, "2022-12-01", logger, handlerFactory);
+                    serviceConfig.Key, "2022-12-01", logger, handlerFactory);
 
             case AIServiceConfig.OpenAI:
                 return new OpenAITextEmbeddingGeneration(serviceConfig.DeploymentOrModelId, serviceConfig.Key,
-                                                         log: logger, handlerFactory: handlerFactory);
+                    log: logger, handlerFactory: handlerFactory);
 
             default:
                 throw new ArgumentException("Invalid AIService value in embeddings backend settings");

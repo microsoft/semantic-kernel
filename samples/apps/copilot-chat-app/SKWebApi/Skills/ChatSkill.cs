@@ -39,10 +39,12 @@ public class ChatSkill
         var historyTokenBudget =
             tokenLimit -
             SystemPromptDefaults.ResponseTokenLimit -
-            this.EstimateTokenCount(string.Join("\n", new string[]{
-                SystemPromptDefaults.SystemDescriptionPrompt,
-                SystemPromptDefaults.SystemIntentPrompt,
-                SystemPromptDefaults.SystemIntentContinuationPrompt})
+            this.EstimateTokenCount(string.Join("\n", new string[]
+                {
+                    SystemPromptDefaults.SystemDescriptionPrompt,
+                    SystemPromptDefaults.SystemIntentPrompt,
+                    SystemPromptDefaults.SystemIntentContinuationPrompt
+                })
             );
 
         var intentExtractionVariables = new ContextVariables();
@@ -167,10 +169,12 @@ public class ChatSkill
         var remainingToken =
             tokenLimit -
             SystemPromptDefaults.ResponseTokenLimit -
-            this.EstimateTokenCount(string.Join("\n", new string[]{
-                SystemPromptDefaults.SystemDescriptionPrompt,
-                SystemPromptDefaults.SystemResponsePrompt,
-                SystemPromptDefaults.SystemChatContinuationPrompt})
+            this.EstimateTokenCount(string.Join("\n", new string[]
+                {
+                    SystemPromptDefaults.SystemDescriptionPrompt,
+                    SystemPromptDefaults.SystemResponsePrompt,
+                    SystemPromptDefaults.SystemChatContinuationPrompt
+                })
             );
         var contextTokenLimit = remainingToken;
 
@@ -272,7 +276,7 @@ public class ChatSkill
             {
                 var results = await context.Memory.SearchAsync(
                     collection,
-                    "abc",                  // dummy query since we don't care about relevance. An empty string will cause exception.
+                    "abc", // dummy query since we don't care about relevance. An empty string will cause exception.
                     limit: 1,
                     minRelevanceScore: 0.0, // no relevance required since the collection only has one entry
                     cancel: context.CancellationToken

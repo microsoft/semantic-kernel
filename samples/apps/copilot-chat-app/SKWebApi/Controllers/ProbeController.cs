@@ -5,7 +5,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace SemanticKernel.Service.Skills;
+namespace SemanticKernel.Service.Controllers;
 
 [Route("[controller]")]
 [ApiController]

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Web;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
@@ -37,7 +36,7 @@ internal class RestApiOperation
 
     /// <summary>
     /// The operation method - GET, POST, PUT, DELETE.
-    /// </summary>
+    /// </summary>o
     public HttpMethod Method { get; }
 
     /// <summary>

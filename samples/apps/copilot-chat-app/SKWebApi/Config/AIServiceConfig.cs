@@ -5,7 +5,7 @@
 
 namespace SemanticKernel.Service.Config;
 
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes - Instanciated by deserializing JSON
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes - Instantiated by deserializing JSON
 internal class AIServiceConfig
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
 {
@@ -17,6 +17,7 @@ internal class AIServiceConfig
     public string DeploymentOrModelId { get; set; } = string.Empty;
     public string Endpoint { get; set; } = string.Empty;
     public string Key { get; set; } = string.Empty;
+
     // TODO: add orgId and pass it all the way down
 
     public bool IsValid()

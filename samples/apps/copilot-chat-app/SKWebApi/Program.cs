@@ -44,6 +44,7 @@ public static class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
         app.UseCors();
         app.UseAuthorization();
         app.MapControllers();
@@ -72,7 +73,7 @@ public static class Program
                     policy =>
                     {
                         policy.WithOrigins(allowedOrigins)
-                              .AllowAnyHeader();
+                            .AllowAnyHeader();
                     });
             });
         }

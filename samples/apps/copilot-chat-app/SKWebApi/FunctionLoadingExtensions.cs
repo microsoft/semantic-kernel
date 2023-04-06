@@ -36,8 +36,8 @@ internal static class FunctionLoadingExtensions
     {
         // Hardcode your native function registrations here
 
-        var timeSkil = new TimeSkill();
-        kernel.ImportSkill(timeSkil, nameof(TimeSkill));
+        var timeSkill = new TimeSkill();
+        kernel.ImportSkill(timeSkill, nameof(TimeSkill));
 
         var chatSkill = new ChatSkill(kernel);
         kernel.ImportSkill(chatSkill, nameof(ChatSkill));

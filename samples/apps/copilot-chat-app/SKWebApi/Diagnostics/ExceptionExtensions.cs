@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading;
-
 // ReSharper disable once CheckNamespace // Extension methods
+
 namespace System;
 
 /// <summary>

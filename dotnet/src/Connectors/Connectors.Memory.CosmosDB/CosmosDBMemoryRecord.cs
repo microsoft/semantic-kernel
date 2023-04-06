@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -60,4 +59,3 @@ public class CosmosDBMemoryRecord
         return JsonConvert.SerializeObject(this.Metadata);
     }
 }
-
