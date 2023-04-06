@@ -3,7 +3,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace // Extension methods
@@ -13,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods for running plans using a kernel
 /// </summary>
-public static class KernelPlanningExtensions
+public static class KernelPlanExtensions
 {
     /// <summary>
     /// Run the next step in a plan asynchronously

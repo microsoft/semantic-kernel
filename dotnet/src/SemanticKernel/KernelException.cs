@@ -59,6 +59,11 @@ public class KernelException : Exception<KernelException.ErrorCodes>
         /// Skill collection not set.
         /// </summary>
         SkillCollectionNotSet,
+
+        /// <summary>
+        /// Represents an error that occurs when invoking a function.
+        /// </summary>
+        FunctionInvokeError,
     }
 
     /// <summary>
