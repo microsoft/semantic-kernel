@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace AIPlugins.AzureFunctions.Extensions;
+namespace AIPlugins.AzureFunctions.SKExtensions;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 public class AIPluginModel

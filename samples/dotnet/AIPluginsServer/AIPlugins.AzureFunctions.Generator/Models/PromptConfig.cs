@@ -22,7 +22,7 @@ internal class PromptConfig
     public CompletionConfig Completion { get; set; }
 
     [JsonProperty("input")]
-    public InputConfig Input { get; set; }
+    public InputConfig? Input { get; set; }
 
     public class CompletionConfig
     {

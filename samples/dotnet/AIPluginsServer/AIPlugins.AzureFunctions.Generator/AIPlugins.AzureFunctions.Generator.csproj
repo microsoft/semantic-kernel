@@ -24,18 +24,4 @@
       <TargetPathWithTargetPlatformMoniker Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" IncludeRuntimeDependency="false" />
     </ItemGroup>
   </Target>
-
-  <!--<ItemGroup>
-    <PackageReference Include="Newtonsoft.Json"
-                      Version="13.0.3"
-                      PrivateAssets="all"
-                      GeneratePathProperty="true" />
-
-    <None Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\*.dll"
-          Pack="true"
-          PackagePath="analyzers/dotnet/cs"
-          Visible="false" />
-  </ItemGroup>-->
-
-
 </Project>

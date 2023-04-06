@@ -4,9 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
@@ -16,17 +13,10 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Directory = System.IO.Directory;
 
-namespace AIPlugins.AzureFunctions;
+namespace AIPlugins.AzureFunctions.SKExtensions;
 
 internal static class KernelExtensions
 {
-    internal static async Task<HttpResponseData> CreateResponseWithMessageAsync(this HttpRequestData req, HttpStatusCode statusCode, string message)
-    {
-        HttpResponseData response = req.CreateResponse(statusCode);
-        await response.WriteStringAsync(message);
-        return response;
-    }
-
     internal static ISKFunction GetFunction(this IReadOnlySkillCollection skills, string skillName, string functionName)
     {
         return skills.HasNativeFunction(skillName, functionName)

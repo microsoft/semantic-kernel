@@ -20,8 +20,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
-    <ProjectReference Include="..\AIPlugins.AzureFunctions.Extensions\AIPlugins.AzureFunctions.Extensions.csproj" />
+    <ProjectReference Include="..\AIPlugins.AzureFunctions.Extensions\AIPlugins.AzureFunctions.SKExtensions.csproj" />
     <ProjectReference Include="..\AIPlugins.AzureFunctions.Generator\AIPlugins.AzureFunctions.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>

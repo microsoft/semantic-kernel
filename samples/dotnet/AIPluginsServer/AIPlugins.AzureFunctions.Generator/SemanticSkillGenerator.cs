@@ -54,7 +54,7 @@ public class SemanticSkillGenerator : ISourceGenerator
     {
         // Use a StringBuilder to build the class source
         StringBuilder functionsCode = new();
-
+        
         foreach (var functionGroup in skillGroup)
         {
             // Get the "skprompt.txt" and "config.json" files for this function
@@ -65,7 +65,7 @@ public class SemanticSkillGenerator : ISourceGenerator
                 functionsCode.AppendLine(GenerateFunctionSource(skillName, promptFile, configFile) ?? string.Empty);
             }
         }
-
+        
         string aiPluginEndpointCode = GenerateAIPluginEndpointCode(skillName);
 
         return $@"/* ### GENERATED CODE - Do not modify. Edits will be lost on build. ### */
@@ -77,7 +77,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using {rootNamespace}.Extensions;
+using AIPlugins.AzureFunctions.SKExtensions;
 
 namespace {rootNamespace};
 
@@ -123,7 +123,7 @@ public class {skillName}
             ? string.Empty
             : $@", Description = ""{config.Description}""";
 
-        string parameterAttributes = GenerateParameterAttributesSource(config.Input.Parameters);
+        string parameterAttributes = GenerateParameterAttributesSource(config.Input?.Parameters);
 
         return $@"
     [Function(""{skillName}/{functionName}"")]
@@ -162,7 +162,7 @@ public class {skillName}
 
             parameterStringBuilder.AppendLine(); // Start with a newline
             parameterStringBuilder.Append($@"    [OpenApiParameter(name: ""{parameter.Name}""");
-
+            
             if (!string.IsNullOrWhiteSpace(parameter.Description))
             {
                 parameterStringBuilder.Append($@", Description = ""{parameter.Description}""");

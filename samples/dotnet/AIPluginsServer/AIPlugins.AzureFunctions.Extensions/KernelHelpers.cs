@@ -9,9 +9,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace AIPlugins.AzureFunctions;
+namespace AIPlugins.AzureFunctions.SKExtensions;
 
-internal static class KernelHelpers
+public static class KernelHelpers
 {
     public static async Task<HttpResponseData> RunHttpKernelFunctionAsync(HttpRequestData req, string skillName, string functionName, ILogger logger)
     {
@@ -22,9 +22,9 @@ internal static class KernelHelpers
         var result = await kernel.RunAsync(contextVariables, function);
         if (result.ErrorOccurred)
         {
-            {
-                return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, result.LastErrorDescription);
-            }
+            HttpResponseData errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+            await errorResponse.WriteStringAsync(result.LastErrorDescription);
+            return errorResponse;
         }
 
         var response = req.CreateResponse(HttpStatusCode.OK);
