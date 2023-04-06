@@ -45,7 +45,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     #region private
 
     /// <summary>
-    /// Downgrades the version of an OpenAPI document higher than latest supported one, 3.0.1.
+    /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
     /// This class relies on Microsoft.OpenAPI.NET library to work with OpenApi documents.
     /// The library, at the moment, does not support 3.1 spec, and the latest supported version is 3.0.1.
     /// There's an open issue tracking the support progress - https://github.com/microsoft/OpenAPI.NET/issues/795
