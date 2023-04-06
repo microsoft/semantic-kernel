@@ -5,7 +5,7 @@ using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Skills.FileCompression;
+namespace FileCompression;
 
 /// <summary>
 /// Implementation of <see cref="IFileCompressor"/> that uses the Zip format.
