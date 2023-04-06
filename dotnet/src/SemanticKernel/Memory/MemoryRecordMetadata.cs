@@ -47,6 +47,14 @@ public class MemoryRecordMetadata : ICloneable
     [JsonPropertyName("text")]
     public string Text { get; }
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="isReference">True if source data is local, false if source data comes from an external service</param>
+    /// <param name="id">Unique string used to identify the <see cref="MemoryRecord"/>.</param>
+    /// <param name="text">Local source data associated with a <see cref="MemoryRecord"/> embedding.</param>
+    /// <param name="description"><see cref="MemoryRecord"/> description.</param>
+    /// <param name="externalSourceName">Name of the external source if isReference is true.</param>
     [JsonConstructor]
     public MemoryRecordMetadata(
         bool isReference,
@@ -63,6 +71,10 @@ public class MemoryRecordMetadata : ICloneable
         this.Description = description;
     }
 
+    /// <summary>
+    /// Creates a shallow copy of <see cref="MemoryRecordMetadata"/>.
+    /// </summary>
+    /// <returns>A shallow copy of this object</returns>
     public object Clone()
     {
         return this.MemberwiseClone();
