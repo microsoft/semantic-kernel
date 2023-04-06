@@ -84,8 +84,6 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
         if (version > s_latestSupportedVersion)
         {
             jsonObject[OpenApiVersionPropetyName] = s_latestSupportedVersion.ToString();
-
-            return jsonObject;
         }
 
         return jsonObject;
