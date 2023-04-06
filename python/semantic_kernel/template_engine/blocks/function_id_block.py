@@ -39,6 +39,8 @@ class FunctionIdBlock(Block, TextRenderer):
             return False, error_msg
 
         if not re_match(r"^[a-zA-Z0-9_.]*$", self.content):
+            # NOTE: this is not quite the same as
+            # utils.validation.validate_function_name
             error_msg = (
                 f"The function identifier '{self.content}' contains invalid "
                 "characters. Only alphanumeric chars, underscore and a single "

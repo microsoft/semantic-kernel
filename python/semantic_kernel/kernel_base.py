@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from logging import Logger
 from typing import Any, Dict, Optional
 
-from semantic_kernel.configuration.kernel_config import KernelConfig
+from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext

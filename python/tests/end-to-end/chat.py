@@ -3,6 +3,7 @@
 import asyncio
 
 import semantic_kernel as sk
+import semantic_kernel.ai.open_ai as sk_oai
 
 sk_prompt = """
 ChatBot can have a conversation with you about any topic.
@@ -17,8 +18,8 @@ ChatBot:>
 kernel = sk.create_kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.config.add_openai_completion_backend(
-    "davinci-003", "text-davinci-003", api_key, org_id
+kernel.config.add_text_backend(
+    "davinci-003", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
 )
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
@@ -33,10 +34,7 @@ function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
 
-async def chat() -> bool:
-    context = sk.ContextVariables()
-    context["chat_history"] = ""
-
+async def chat(context: sk.ContextVariables) -> bool:
     try:
         user_input = input("User:> ")
         context["user_input"] = user_input
@@ -59,9 +57,12 @@ async def chat() -> bool:
 
 
 async def main() -> None:
+    context = sk.ContextVariables()
+    context["chat_history"] = ""
+
     chatting = True
     while chatting:
-        chatting = await chat()
+        chatting = await chat(context)
 
 
 if __name__ == "__main__":

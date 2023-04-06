@@ -5,22 +5,14 @@ from logging import Logger
 from typing import Any, Dict, Optional
 
 from semantic_kernel.ai.ai_exception import AIException
+from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.ai.open_ai.services.azure_text_completion import (
-    AzureTextCompletion,
-)
-from semantic_kernel.ai.open_ai.services.open_ai_chat_completion import (
-    OpenAIChatCompletion,
-)
-from semantic_kernel.ai.open_ai.services.open_ai_text_completion import (
-    OpenAITextCompletion,
-)
-from semantic_kernel.configuration.backend_types import BackendType
-from semantic_kernel.configuration.kernel_config import KernelConfig
-from semantic_kernel.diagnostics.verify import Verify
+from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.kernel_base import KernelBase
+from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_extensions import KernelExtensions
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -37,9 +29,10 @@ from semantic_kernel.skill_definition.skill_collection_base import SkillCollecti
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
+from semantic_kernel.utils.validation import validate_function_name, validate_skill_name
 
 
-class Kernel(KernelBase):
+class Kernel(KernelBase, KernelExtensions):
     _log: Logger
     _config: KernelConfig
     _skill_collection: SkillCollectionBase
@@ -59,6 +52,9 @@ class Kernel(KernelBase):
         self._skill_collection = skill_collection
         self._prompt_template_engine = prompt_template_engine
         self._memory = memory
+
+    def kernel(self) -> KernelBase:
+        return self
 
     @property
     def config(self) -> KernelConfig:
@@ -90,8 +86,8 @@ class Kernel(KernelBase):
             skill_name = SkillCollection.GLOBAL_SKILL
         assert skill_name is not None  # for type checker
 
-        Verify.valid_skill_name(skill_name)
-        Verify.valid_function_name(function_name)
+        validate_skill_name(skill_name)
+        validate_function_name(function_name)
 
         function = self._create_semantic_function(
             skill_name, function_name, function_config
@@ -234,14 +230,12 @@ class Kernel(KernelBase):
         # without a context and without a way to find other functions.
         function.set_default_skill_collection(self.skills)
 
-        # TODO: allow to postpone this (use lazy init)
-        # allow to create semantic functions without
-        # a default backend
         if function_config.has_chat_prompt:
-            backend = self._config.get_chat_backend(
+            backend = self._config.get_ai_backend(
+                ChatCompletionClientBase,
                 function_config.prompt_template_config.default_backends[0]
                 if len(function_config.prompt_template_config.default_backends) > 0
-                else None
+                else None,
             )
 
             function.set_chat_configuration(
@@ -250,34 +244,21 @@ class Kernel(KernelBase):
                 )
             )
 
-            if backend.backend_type == BackendType.AzureOpenAI:
-                # TODO: azure impl
-                raise NotImplementedError(
-                    "Azure OpenAI Chat backend is not implemented yet"
-                )
-            elif backend.backend_type == BackendType.OpenAI:
-                Verify.not_null(backend.open_ai, "OpenAI configuration is missing")
-                function.set_chat_backend(
-                    lambda: OpenAIChatCompletion(
-                        backend.open_ai.model_id,  # type: ignore
-                        backend.open_ai.api_key,  # type: ignore
-                        backend.open_ai.org_id,  # type: ignore
-                        self._log,
-                    )
-                )
-            else:
+            if backend is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    f"Unknown/unsupported backend type: {backend.backend_type.name}, "
-                    f"unable to prepare semantic function. Function description: "
-                    f"{function_config.prompt_template_config.description}",
+                    "Could not load chat backend, unable to prepare semantic function. "
+                    "Function description: "
+                    "{function_config.prompt_template_config.description}",
                 )
 
+            function.set_chat_backend(lambda: backend(self))
         else:
-            backend = self._config.get_completion_backend(
+            backend = self._config.get_ai_backend(
+                TextCompletionClientBase,
                 function_config.prompt_template_config.default_backends[0]
                 if len(function_config.prompt_template_config.default_backends) > 0
-                else None
+                else None,
             )
 
             function.set_ai_configuration(
@@ -286,35 +267,14 @@ class Kernel(KernelBase):
                 )
             )
 
-            if backend.backend_type == BackendType.AzureOpenAI:
-                Verify.not_null(
-                    backend.azure_open_ai, "Azure OpenAI configuration is missing"
-                )
-                function.set_ai_backend(
-                    lambda: AzureTextCompletion(
-                        backend.azure_open_ai.deployment_name,  # type: ignore
-                        backend.azure_open_ai.endpoint,  # type: ignore
-                        backend.azure_open_ai.api_key,  # type: ignore
-                        backend.azure_open_ai.api_version,  # type: ignore
-                        self._log,
-                    )
-                )
-            elif backend.backend_type == BackendType.OpenAI:
-                Verify.not_null(backend.open_ai, "OpenAI configuration is missing")
-                function.set_ai_backend(
-                    lambda: OpenAITextCompletion(
-                        backend.open_ai.model_id,  # type: ignore
-                        backend.open_ai.api_key,  # type: ignore
-                        backend.open_ai.org_id,  # type: ignore
-                        self._log,
-                    )
-                )
-            else:
+            if backend is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    f"Unknown/unsupported backend type: {backend.backend_type.name}, "
-                    f"unable to prepare semantic function. Function description: "
-                    f"{function_config.prompt_template_config.description}",
+                    "Could not load text backend, unable to prepare semantic function. "
+                    "Function description: "
+                    "{function_config.prompt_template_config.description}",
                 )
+
+            function.set_ai_backend(lambda: backend(self))
 
         return function

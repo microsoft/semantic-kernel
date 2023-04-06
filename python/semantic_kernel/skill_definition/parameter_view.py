@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.diagnostics.verify import Verify
+from semantic_kernel.utils.validation import validate_function_param_name
 
 
 class ParameterView:
@@ -9,7 +9,7 @@ class ParameterView:
     _default_value: str
 
     def __init__(self, name: str, description: str, default_value: str) -> None:
-        Verify.valid_function_param_name(name)
+        validate_function_param_name(name)
 
         self._name = name
         self._description = description
@@ -29,7 +29,7 @@ class ParameterView:
 
     @name.setter
     def name(self, value: str) -> None:
-        Verify.valid_function_param_name(value)
+        validate_function_param_name(value)
         self._name = value
 
     @description.setter
