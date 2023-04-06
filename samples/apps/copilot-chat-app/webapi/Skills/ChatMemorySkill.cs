@@ -51,16 +51,9 @@ public class ChatMemorySkill
 
         // Create a new chat bot for this chat.
         // Clone the context to avoid modifying the original context variables.
-        var newBotVariables = context.Variables.Clone();
-        newBotVariables.Set("name", "Bot");
-        newBotVariables.Set("email", "N/A");
-        var newBotContext = new SKContext(
-            newBotVariables,
-            context.Memory,
-            context.Skills,
-            context.Log,
-            context.CancellationToken
-        );
+        var newBotContext = Utils.CopyContextWithVariablesClone(context);
+        newBotContext.Variables.Set("name", "Bot");
+        newBotContext.Variables.Set("email", "N/A");
 
         await this.CreateUserAsync(ChatBotID(chatId), newBotContext);
         if (newBotContext.ErrorOccurred)
@@ -375,15 +368,8 @@ public class ChatMemorySkill
         }
 
         // Clone the context to avoid modifying the original context variables.
-        var chatIDVariables = context.Variables.Clone();
-        chatIDVariables.Set("chatId", chatId);
-        var chatIDContext = new SKContext(
-            chatIDVariables,
-            context.Memory,
-            context.Skills,
-            context.Log,
-            context.CancellationToken
-        );
+        var chatIDContext = Utils.CopyContextWithVariablesClone(context);
+        chatIDContext.Variables.Set("chatId", chatId);
 
         var messages = new List<ChatMessage>();
         foreach (var messageId in messageIds)

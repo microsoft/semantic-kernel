@@ -48,17 +48,9 @@ public class ChatSkill
             );
 
         // Clone the context to avoid modifying the original context variables.
-        var intentExtractionVariables = context.Variables.Clone();
-        intentExtractionVariables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
-        intentExtractionVariables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
-
-        var intentExtractionContext = new SKContext(
-            intentExtractionVariables,
-            context.Memory,
-            context.Skills,
-            context.Log,
-            context.CancellationToken
-        );
+        var intentExtractionContext = Utils.CopyContextWithVariablesClone(context);
+        intentExtractionContext.Variables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
+        intentExtractionContext.Variables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
 
         var completionFunction = this._kernel.CreateSemanticFunction(
             SystemPromptDefaults.SystemIntentExtractionPrompt,
@@ -93,17 +85,9 @@ public class ChatSkill
         );
 
         // Clone the context to avoid modifying the original context variables.
-        var latestMessageVariable = context.Variables.Clone();
-        latestMessageVariable.Set("startIdx", "0");
-        latestMessageVariable.Set("count", "1");
-
-        var latestMessageContext = new SKContext(
-            latestMessageVariable,
-            context.Memory,
-            context.Skills,
-            context.Log,
-            context.CancellationToken
-        );
+        var latestMessageContext = Utils.CopyContextWithVariablesClone(context);
+        latestMessageContext.Variables.Set("startIdx", "0");
+        latestMessageContext.Variables.Set("count", "1");
 
         var chatMemorySkill = new ChatMemorySkill();
         latestMessageContext = await chatMemorySkill.GetChatMessagesAsync(context["chatId"], latestMessageContext);
@@ -155,17 +139,9 @@ public class ChatSkill
         // TODO: relevant history
 
         // Clone the context to avoid modifying the original context variables.
-        var chatMessagesVariable = context.Variables.Clone();
-        chatMessagesVariable.Set("startIdx", "0");
-        chatMessagesVariable.Set("count", "-1");
-
-        var chatMessagesContext = new SKContext(
-            chatMessagesVariable,
-            context.Memory,
-            context.Skills,
-            context.Log,
-            context.CancellationToken
-        );
+        var chatMessagesContext = Utils.CopyContextWithVariablesClone(context);
+        chatMessagesContext.Variables.Set("startIdx", "0");
+        chatMessagesContext.Variables.Set("count", "-1");
 
         var chatMemorySkill = new ChatMemorySkill();
         chatMessagesContext = await chatMemorySkill.GetChatMessagesAsync(context["chatId"], chatMessagesContext);
@@ -254,18 +230,11 @@ public class ChatSkill
         }
 
         // Clone the context to avoid modifying the original context variables.
-        var chatVariables = context.Variables.Clone();
-        chatVariables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
-        chatVariables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
-        chatVariables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
-        chatVariables.Set("audience", chatUser.FullName);
-        var chatContext = new SKContext(
-            chatVariables,
-            context.Memory,
-            context.Skills,
-            context.Log,
-            context.CancellationToken
-        );
+        var chatContext = Utils.CopyContextWithVariablesClone(context);
+        chatContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
+        chatContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
+        chatContext.Variables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
+        chatContext.Variables.Set("audience", chatUser.FullName);
 
         // Extract user intent and update remaining token count
         var userIntent = await this.ExtractUserIntentAsync(chatContext);
