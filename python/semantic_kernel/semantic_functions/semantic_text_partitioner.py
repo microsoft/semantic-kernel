@@ -4,9 +4,8 @@ Split text in chunks, attempting to leave meaning intact.
 For plain text, split looking at new lines first, then periods, and so on.
 For markdown, split looking at punctuation first, and so on.
 """
-import re
 import os
-
+import re
 from typing import List
 
 NEWLINE = os.linesep
@@ -21,6 +20,7 @@ TEXT_SPLIT_OPTIONS = [
     [")", "]", "}"],
     [" "],
     ["-"],
+    None,
 ]
 
 MD_SPLIT_OPTIONS = [
@@ -33,6 +33,7 @@ MD_SPLIT_OPTIONS = [
     [" "],
     ["-"],
     ["\n", "\r"],
+    None,
 ]
 
 
@@ -56,6 +57,7 @@ def split_plaintext_paragraph(text: List[str], max_tokens: int) -> List[str]:
     """
     Split plain text into paragraphs.
     """
+
     split_lines = []
     for line in text:
         split_lines.extend(_split_text_lines(line, max_tokens, True))
@@ -115,8 +117,10 @@ def _split_text_paragraph(text: List[str], max_tokens: int) -> List[str]:
             sec_last_para_token_count = len(sec_last_para_tokens)
 
             if last_para_token_count + sec_last_para_token_count <= max_tokens:
-                new_sec_last_para = sec_last_para_tokens + last_para_tokens
-                paragraphs[-2] = " ".join(new_sec_last_para).strip()
+                sec_last_para = " ".join(sec_last_para_tokens) + NEWLINE
+                last_para = " ".join(last_para_tokens)
+                new_sec_last_para = sec_last_para + last_para
+                paragraphs[-2] = new_sec_last_para.strip()
                 paragraphs.pop()
 
     return paragraphs
@@ -185,8 +189,8 @@ def _split_string(
 
     if not separators:
         cutpoint = half
-    elif set(separators) & set(text) and len(text) > 2:
 
+    elif set(separators) & set(text) and len(text) > 2:
         for index, text_char in enumerate(text):
             if text_char not in separators:
                 continue
@@ -238,7 +242,7 @@ def _split_list(
 def _token_count(text: str) -> int:
     """
     Count the number of tokens in a string.
+    TODO: partitioning methods should be configurable to allow for different tokenization strategies
+          depending on the model to be called. For now, we use an extremely rough estimate.
     """
-    tokens = re.findall(r"\w+", text)
-    return len(tokens)
-    # return len(text) / 4
+    return int(len(text) / 4)
