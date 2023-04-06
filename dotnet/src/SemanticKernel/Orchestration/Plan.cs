@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Planning;
+namespace Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
 /// A plan class that is executable by the kernel
