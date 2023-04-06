@@ -60,49 +60,15 @@ public class SemanticSkillGenerator : ISourceGenerator
             // Get the "skprompt.txt" and "config.json" files for this function
             AdditionalText? configFile = functionGroup.FirstOrDefault(f => Path.GetFileName(f.Path).Equals(FunctionConfigFilename, StringComparison.InvariantCultureIgnoreCase));
             AdditionalText? promptFile = functionGroup.FirstOrDefault(f => Path.GetFileName(f.Path).Equals(FunctionPromptFilename, StringComparison.InvariantCultureIgnoreCase));
-            if (promptFile == default || configFile == default)
+            if (promptFile != default && configFile != default)
             {
-                continue;
+                functionsCode.AppendLine(GenerateFunctionSource(skillName, promptFile, configFile) ?? string.Empty);
             }
-
-            // Get the function name from the directory name
-            string? functionName = Path.GetFileName(Path.GetDirectoryName(promptFile.Path));
-            if (string.IsNullOrWhiteSpace(functionName)) { continue; }
-
-            string? metadataJson = configFile.GetText()?.ToString();
-            if (string.IsNullOrWhiteSpace(metadataJson)) { continue; }
-
-            // Get the function description from the config file
-            PromptConfig? config = JsonConvert.DeserializeObject<PromptConfig>(metadataJson!);
-            if (config == null) { continue; }
-
-            string functionSource = GenerateFunctionSource(
-                skillName,
-                functionName,
-                config?.Description ?? string.Empty,
-                config?.Input?.Parameters);
-            if (string.IsNullOrWhiteSpace(functionSource)) { continue; }
-
-            functionsCode.AppendLine(functionSource);
         }
-        
-        AIPluginModel aiPlugin = new()
-        {
-            SchemaVersion = "1.0",
-            NameForModel = skillName,
-            NameForHuman = skillName,
-            DescriptionForModel = $"API for {skillName}",
-            DescriptionForHuman = $"API for {skillName}",
-            Api = new()
-            {
-                Url = "INSERT_SKILL_OPENAPI_PATH"
-            }
-        };
 
-        string aiPluginJson = JsonConvert.SerializeObject(aiPlugin, Formatting.Indented)
-            .Replace(@"""", @"""""");
+        string aiPluginEndpointCode = GenerateAIPluginEndpointCode(skillName);
 
-        string classSource = $@"/* ### GENERATED CODE - Do not modify. Edits will be lost on build. ### */
+        return $@"/* ### GENERATED CODE - Do not modify. Edits will be lost on build. ### */
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -110,8 +76,6 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.OpenApi.Models;
 using {rootNamespace}.Extensions;
 
@@ -126,96 +90,92 @@ public class {skillName}
         this._logger = loggerFactory.CreateLogger<{skillName}>();
     }}
 
-    [Function(""{skillName}/.well-known/ai-plugin.json"")]
-    public async Task<HttpResponseData> GetAIPluginSpecAsync([HttpTrigger(AuthorizationLevel.Anonymous, ""get"")] HttpRequestData req)
-    {{
-        const string aiPluginJson = @""{aiPluginJson}"";
-
-        this._logger.LogInformation(""HTTP trigger processed a request for function GetAIPluginSpecAsync."");
-
-        string skillUri = req.Url.GetLeftPart(UriPartial.Path);
-        skillUri = skillUri.Remove(skillUri.IndexOf(""skill/.well-known"", StringComparison.InvariantCultureIgnoreCase));
-        Uri openApiSpecUri = new(baseUri: new(skillUri), $""swagger.json?tag={skillName}"");
-
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        response.Headers.Add(""Content-Type"", ""application/json; charset=utf-8"");
-        await response.WriteStringAsync(aiPluginJson.Replace(""{aiPlugin.Api.Url}"", openApiSpecUri.ToString()));
-        await Task.CompletedTask;
-        return response;
-    }}
-
+    {aiPluginEndpointCode}
     {functionsCode}
 }}";
-
-        return classSource;
     }
 
-    // Generate the source code for a function
-    private static string GenerateFunctionSource(string skillName, string functionName, string functionDescription, List<PromptConfig.ParameterConfig>? parameters)
+    private static string GenerateAIPluginEndpointCode(string skillName)
     {
-        string descriptionProperty = string.IsNullOrWhiteSpace(functionDescription)
+        string skillDescription = $"API for {skillName}";
+        return $@"[Function(""{skillName}/.well-known/ai-plugin.json"")]
+    public Task<HttpResponseData> GetAIPluginSpecAsync([HttpTrigger(AuthorizationLevel.Anonymous, ""get"")] HttpRequestData req)
+    {{
+        this._logger.LogInformation(""HTTP trigger processed a request for function GetAIPluginSpecAsync."");
+        return AIPluginHelpers.GenerateAIPluginJsonResponseAsync(req, ""{skillName}"", ""{skillDescription}"");
+    }}";
+    }
+    
+    private static string? GenerateFunctionSource(string skillName, AdditionalText promptFile, AdditionalText configFile)
+    {
+        // Get the function name from the directory name
+        string? functionName = Path.GetFileName(Path.GetDirectoryName(promptFile.Path));
+        if (string.IsNullOrWhiteSpace(functionName)) { return null; }
+
+        string? metadataJson = configFile.GetText()?.ToString();
+        if (string.IsNullOrWhiteSpace(metadataJson)) { return null; }
+
+        // Get the function description from the config file
+        PromptConfig? config = JsonConvert.DeserializeObject<PromptConfig>(metadataJson!);
+        if (config == null) { return null; }
+        
+        string descriptionProperty = string.IsNullOrWhiteSpace(config?.Description)
             ? string.Empty
-            : $@", Description = ""{functionDescription}""";
+            : $@", Description = ""{config?.Description}""";
 
-        string inputDescription = string.Empty;
-        string parameterAttributes = string.Empty;
-        if (parameters != null && parameters.Any())
-        {
-            StringBuilder parameterStringBuilder = new();
-            foreach (var parameter in parameters)
-            {
-                if (parameter.Name.Equals("input", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    // "input" is a special parameter that is handled differently. It must be added as
-                    // the body attribute.
-                    if (!string.IsNullOrWhiteSpace(parameter.Description))
-                    {
-                        inputDescription = $@", Description = ""{parameter.Description}""";
-                    }
-
-                    continue;
-                }
-
-                parameterStringBuilder.AppendLine(); // Start with a newline
-                parameterStringBuilder.Append($@"    [OpenApiParameter(name: ""{parameter.Name}""");
-
-                if (!string.IsNullOrWhiteSpace(parameter.Description))
-                {
-                    parameterStringBuilder.Append($@", Description = ""{parameter.Description}""");
-                }
-                
-                parameterStringBuilder.Append(", In = ParameterLocation.Query");
-
-                parameterStringBuilder.Append(", Type = typeof(string))]");
-            }
-            
-            parameterAttributes = parameterStringBuilder.ToString();
-        }
+        string parameterAttributes = GenerateParameterAttributesSource(config?.Input?.Parameters);
 
         return $@"
     [Function(""{skillName}/{functionName}"")]
-    [OpenApiOperation(operationId: ""{functionName}"", tags: new[] {{ ""{skillName}"", ""{functionName}"" }}{descriptionProperty})]
-    [OpenApiRequestBody(""application/json"", typeof(string){inputDescription})]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ""text/plain"", bodyType: typeof(string), Description = ""The OK response"")]{parameterAttributes}
-    public async Task<HttpResponseData> {functionName}Async([HttpTrigger(AuthorizationLevel.Anonymous, ""post"")] HttpRequestData req)
+    [OpenApiOperation(operationId: ""{functionName}"", tags: new[] {{ ""{skillName}"", ""{functionName}"" }}{descriptionProperty})]{parameterAttributes}
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: ""text/plain"", bodyType: typeof(string), Description = ""The OK response"")]
+    public Task<HttpResponseData> {functionName}Async([HttpTrigger(AuthorizationLevel.Anonymous, ""post"")] HttpRequestData req)
     {{
         this._logger.LogInformation(""HTTP trigger processed a request for function {functionName}."");
-
-        ContextVariables contextVariables = KernelHelpers.LoadContextVariablesFromRequest(req);
-
-        IKernel kernel = KernelHelpers.CreateKernel(this._logger);
-        var function = kernel.Skills.GetFunction(""{skillName}"", ""{functionName}"");
-        var result = await kernel.RunAsync(contextVariables, function);
-        if (result.ErrorOccurred)
-        {{
-            return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, result.LastErrorDescription);
-        }}
-
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        response.Headers.Add(""Content-Type"", ""text/plain; charset=utf-8"");
-        await response.WriteStringAsync(result.Result);
-        return response;
+        return KernelHelpers.RunHttpKernelFunctionAsync(req, ""{skillName}"", ""{functionName}"", this._logger);
     }}";
+    }
+
+    private static string GenerateParameterAttributesSource(
+        List<PromptConfig.ParameterConfig>? parameters)
+    {
+        string inputDescription = string.Empty;
+        string parameterAttributes = string.Empty;
+        if (parameters == null || !parameters.Any())
+        {
+            return string.Empty;
+        }
+
+        StringBuilder parameterStringBuilder = new();
+        foreach (var parameter in parameters)
+        {
+            if (parameter.Name.Equals("input", StringComparison.InvariantCultureIgnoreCase))
+            {
+                // "input" is a special parameter that is handled differently. It must be added as
+                // the body attribute.
+                if (!string.IsNullOrWhiteSpace(parameter.Description))
+                {
+                    inputDescription = $@", Description = ""{parameter.Description}""";
+                }
+
+                continue;
+            }
+
+            parameterStringBuilder.AppendLine(); // Start with a newline
+            parameterStringBuilder.Append($@"    [OpenApiParameter(name: ""{parameter.Name}""");
+
+            if (!string.IsNullOrWhiteSpace(parameter.Description))
+            {
+                parameterStringBuilder.Append($@", Description = ""{parameter.Description}""");
+            }
+
+            parameterStringBuilder.Append(", In = ParameterLocation.Query");
+            parameterStringBuilder.Append(", Type = typeof(string))]");
+        }
+
+        parameterStringBuilder.Append($@"[OpenApiRequestBody(""text/plain"", typeof(string){inputDescription})]");
+
+        return parameterStringBuilder.ToString();
     }
 
     public void Initialize(GeneratorInitializationContext context)

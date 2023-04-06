@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Directory = System.IO.Directory;
 
-namespace AIPlugins.AzureFunctions.Extensions;
+namespace AIPlugins.AzureFunctions;
 
 internal static class KernelExtensions
 {

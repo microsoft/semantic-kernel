@@ -1,16 +1,38 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.IO;
+using System.Net;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace AIPlugins.AzureFunctions.Extensions;
+namespace AIPlugins.AzureFunctions;
 
 internal static class KernelHelpers
 {
+    public static async Task<HttpResponseData> RunHttpKernelFunctionAsync(HttpRequestData req, string skillName, string functionName, ILogger logger)
+    {
+        ContextVariables contextVariables = LoadContextVariablesFromRequest(req);
+
+        IKernel kernel = CreateKernel(logger);
+        var function = kernel.Skills.GetFunction(skillName, functionName);
+        var result = await kernel.RunAsync(contextVariables, function);
+        if (result.ErrorOccurred)
+        {
+            {
+                return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, result.LastErrorDescription);
+            }
+        }
+
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        response.Headers.Add("Content-Type", "text/plain;charset=utf-8");
+        await response.WriteStringAsync(result.Result);
+        return response;
+    }
+
     public static IKernel CreateKernel(ILogger logger)
     {
         KernelBuilder builder = Kernel.Builder;

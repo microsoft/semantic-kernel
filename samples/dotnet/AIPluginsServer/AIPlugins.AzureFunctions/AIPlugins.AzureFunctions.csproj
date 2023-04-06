@@ -9,7 +9,7 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <RootNamespace>AIPlugins.AzureFunctions</RootNamespace>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>.generated</CompilerGeneratedFilesOutputPath>
+    <CompilerGeneratedFilesOutputPath>$(IntDir).generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.13.0" />
@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\AIPlugins.AzureFunctions.Extensions\AIPlugins.AzureFunctions.Extensions.csproj" />
     <ProjectReference Include="..\AIPlugins.AzureFunctions.Generator\AIPlugins.AzureFunctions.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
@@ -39,7 +40,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AdditionalFiles>
 
-    <None Include=".generated\AIPlugins.AzureFunctions.Generator\AIPlugins.AzureFunctions.Generator.SemanticSkillGenerator\**">
+    <None Include="$(IntDir).generated\AIPlugins.AzureFunctions.Generator\AIPlugins.AzureFunctions.Generator.SemanticSkillGenerator\**">
       <Link>.generated\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
   </ItemGroup>
