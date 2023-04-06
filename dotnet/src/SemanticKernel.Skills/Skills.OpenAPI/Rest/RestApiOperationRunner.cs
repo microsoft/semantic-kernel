@@ -53,9 +53,11 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     {
         var url = operation.BuildOperationUrl(arguments);
 
+        var headers = operation.RenderHeaders(arguments);
+
         var payload = BuildOperationPayload(operation.Payload, arguments);
 
-        return await this.SendAsync(url, operation.Method, operation.Headers, payload, cancellationToken);
+        return await this.SendAsync(url, operation.Method, headers, payload, cancellationToken);
     }
 
     #region private

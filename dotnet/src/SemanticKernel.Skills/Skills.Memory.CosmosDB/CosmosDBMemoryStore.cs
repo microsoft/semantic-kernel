@@ -24,11 +24,9 @@ namespace Skills.Memory.CosmosDB;
 /// <remarks>The Embedding data is saved to the Azure Cosmos DB database container specified in the constructor.
 /// The embedding data persists between subsequent instances and has similarity search capability, handled by the client as Azure Cosmos DB is not a vector-native DB.
 /// </remarks>
-public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDisposable
+public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>
     where TEmbedding : unmanaged
 {
-    private bool _disposedValue;
-
     private CosmosClient _client;
     private string _databaseName;
     private string _containerName;
@@ -54,7 +52,7 @@ public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDispos
     {
         var container = this._client.GetContainer(this._databaseName, this._containerName);
 
-        using (var responseMessage = await container.ReadItemStreamAsync(this._toCosmosFriendlyId(key), new Microsoft.Azure.Cosmos.PartitionKey(collection), cancellationToken: cancel))
+        using (var responseMessage = await container.ReadItemStreamAsync(this.ToCosmosFriendlyId(key), new Microsoft.Azure.Cosmos.PartitionKey(collection), cancellationToken: cancel))
         {
             if (!responseMessage.IsSuccessStatusCode)
             {
@@ -177,7 +175,7 @@ public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDispos
         var entity = new CosmosDBMemoryRecord
         {
             CollectionId = collection,
-            Id = this._toCosmosFriendlyId(data.Key),
+            Id = this.ToCosmosFriendlyId(data.Key),
             Timestamp = data.Timestamp,
             EmbeddingString = data.ValueString!,
             MetadataString = data.Value!.GetSerializedMetadata()
@@ -199,27 +197,13 @@ public class CosmosDBMemoryStore<TEmbedding> : IMemoryStore<TEmbedding>, IDispos
         var container = this._client.GetContainer(this._databaseName, this._containerName);
 
         return container.DeleteItemAsync<CosmosDBMemoryRecord>(
-            this._toCosmosFriendlyId(key),
+            this.ToCosmosFriendlyId(key),
             new Microsoft.Azure.Cosmos.PartitionKey(collection),
             cancellationToken: cancel);
     }
 
-    private string _toCosmosFriendlyId(string id)
+    private string ToCosmosFriendlyId(string id)
     {
         return $"{id.Trim().Replace(' ', '-').Replace('/', '_').Replace('\\', '_').Replace('?', '_').Replace('#', '_').ToUpperInvariant()}";
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this._disposedValue)
-        {
-            this._disposedValue = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }

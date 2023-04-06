@@ -19,17 +19,39 @@ using Xunit;
 
 namespace SemanticKernel.Skills.UnitTests.OpenAPI;
 
-public class RestApiOperationRunnerTests
+public sealed class RestApiOperationRunnerTests : IDisposable
 {
+    /// <summary>
+    /// A mock instance of the authentication callback.
+    /// </summary>
+    private readonly Mock<AuthenticateRequestAsyncCallback> _authenticationHandlerMock;
+
+    /// <summary>
+    /// An instance of HttpMessageHandlerStub class used to get access to various properties of HttpRequestMessage sent by HTTP client.
+    /// </summary>
+    private readonly HttpMessageHandlerStub _httpMessageHandlerStub;
+
+    /// <summary>
+    /// An instance of HttpClient class used by the tests.
+    /// </summary>
+    private readonly HttpClient _httpClient;
+
+    /// <summary>
+    /// Creates an instance of a <see cref="RestApiOperationRunnerTests"/> class.
+    /// </summary>
+    public RestApiOperationRunnerTests()
+    {
+        this._authenticationHandlerMock = new Mock<AuthenticateRequestAsyncCallback>();
+
+        this._httpMessageHandlerStub = new HttpMessageHandlerStub();
+
+        this._httpClient = new HttpClient(this._httpMessageHandlerStub);
+    }
+
     [Fact]
     public async Task ItCanRunCrudOperationWithJsonPayloadSuccessfullyAsync()
     {
         //Arrange
-        using var httpMessageHandlerStub = new HttpMessageHandlerStub();
-        using var httpClient = new HttpClient(httpMessageHandlerStub);
-        var authCallbackMock = new Mock<AuthenticateRequestAsyncCallback>();
-        var sut = new RestApiOperationRunner(httpClient, authCallbackMock.Object);
-
         List<RestApiOperationPayloadProperty> payloadProperties = new()
         {
             new("value", "string", true, new List<RestApiOperationPayloadProperty>() , "fake-value-description"),
@@ -48,6 +70,7 @@ public class RestApiOperationRunnerTests
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
+            new Dictionary<string, string>(),
             payload
          );
 
@@ -55,19 +78,21 @@ public class RestApiOperationRunnerTests
         arguments.Add("value", "fake-value");
         arguments.Add("enabled", "true");
 
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
         //Act
         await sut.RunAsync(operation, arguments);
 
         //Assert
-        Assert.NotNull(httpMessageHandlerStub.RequestUri);
-        Assert.Equal("https://fake-random-test-host/fake-path", httpMessageHandlerStub.RequestUri.AbsoluteUri);
+        Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
+        Assert.Equal("https://fake-random-test-host/fake-path", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
 
-        Assert.Equal(HttpMethod.Post, httpMessageHandlerStub.Method);
+        Assert.Equal(HttpMethod.Post, this._httpMessageHandlerStub.Method);
 
-        Assert.NotNull(httpMessageHandlerStub.ContentHeaders);
-        Assert.Contains(httpMessageHandlerStub.ContentHeaders, h => h.Key == "Content-Type" && h.Value.Contains("application/json; charset=utf-8"));
+        Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
+        Assert.Contains(this._httpMessageHandlerStub.ContentHeaders, h => h.Key == "Content-Type" && h.Value.Contains("application/json; charset=utf-8"));
 
-        var messageContent = httpMessageHandlerStub.RequestContent;
+        var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
         Assert.True(messageContent.Any());
 
@@ -84,10 +109,50 @@ public class RestApiOperationRunnerTests
         Assert.NotNull(enabledProperty);
         Assert.Equal("true", enabledProperty.ToString());
 
-        authCallbackMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
+        this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
     }
 
+    [Fact]
+    public async Task ItShouldAddHeadersToHttpRequestAsync()
+    {
+        //Arrange
+        var headers = new Dictionary<string, string>();
+        headers.Add("fake-header", string.Empty);
 
+        var operation = new RestApiOperation(
+            "fake-id",
+            "https://fake-random-test-host",
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            headers
+         );
+
+        var arguments = new Dictionary<string, string>();
+        arguments.Add("fake-header", "fake-header-value");
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        //Act
+        await sut.RunAsync(operation, arguments);
+
+        //Assert
+        Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
+        Assert.Single(this._httpMessageHandlerStub.RequestHeaders);
+
+        Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "fake-header" && h.Value.Contains("fake-header-value"));
+    }
+
+    /// <summary>
+    /// Disposes resources used by this class.
+    /// </summary>
+    public void Dispose()
+    {
+        this._httpMessageHandlerStub.Dispose();
+
+        this._httpClient.Dispose();
+    }
 
     private class HttpMessageHandlerStub : DelegatingHandler
     {
