@@ -240,7 +240,9 @@ def _split_list(
 def _token_count(text: str) -> int:
     """
     Count the number of tokens in a string.
-    TODO: partitioning methods should be configurable to allow for different tokenization strategies
-          depending on the model to be called. For now, we use an extremely rough estimate.
+
+    TODO: partitioning methods should be configurable to allow for different
+          tokenization strategies depending on the model to be called.
+          For now, we use an extremely rough estimate.
     """
     return int(len(text) / 4)

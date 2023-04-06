@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from typing import List
+
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function import SKFunction
 

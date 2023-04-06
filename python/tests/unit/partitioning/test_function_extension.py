@@ -1,28 +1,32 @@
-import semantic_kernel as sk
 import pytest
+
+import semantic_kernel as sk
+import semantic_kernel.ai.open_ai as sk_oai
 from semantic_kernel.semantic_functions.function_extension import (
     aggregate_partionned_results_async,
-)
-from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
-from semantic_kernel.semantic_functions.prompt_template_config import (
-    PromptTemplateConfig,
-)
-from semantic_kernel.semantic_functions.semantic_function_config import (
-    SemanticFunctionConfig,
 )
 
 
 @pytest.mark.asyncio
 async def test_aggregate_results():
     kernel = sk.create_kernel()
-    kernel.config.add_openai_completion_backend("test", "test", "test", "test")
+
+    kernel.config.add_text_backend(
+        "davinci-002", sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none")
+    )
+    sk_prompt = """
+        {{$input}}
+        How is that ?
+    """
 
     context = kernel.create_new_context()
-    config = PromptTemplateConfig.from_completion_parameters()
-    template = PromptTemplate("Hello", kernel.prompt_template_engine, config)
-    function_config = SemanticFunctionConfig(config, template)
 
-    func = kernel.register_semantic_function("test", "test", function_config)
+    func = kernel.create_semantic_function(
+        sk_prompt,
+        max_tokens=200,
+        temperature=0,
+        top_p=0.5,
+    )
 
     partitioned = [
         "This is a test of the emergency broadcast system.",
