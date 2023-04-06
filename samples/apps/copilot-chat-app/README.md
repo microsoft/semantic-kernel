@@ -79,6 +79,4 @@ If you are stopped at an error message similar to the one above, your browser ma
 3.	If your browser asks you to acknowledge the risks of visiting an insecure website, you must acknowledge the message before the front end will be allowed to connect to the back-end server.  Please acknowledge, and navigate until you see the message Semantic Kernel service is up and running
 4.	Return to your original browser window, or navigate to `https://localhost:3000`, and refresh the page.  You should now successfully see the Copilot Chat application and can interact with the prompt.
 
-* If you continue to expereince trouble using ssl based linking, you may wish to run the back-end API server without an SSL certificate, you may change `"UseHttp": false,` to `True` to overide the default use of https.
-
-
+* If you continue to experience trouble using ssl based linking, you may wish to run the back-end API server without an SSL certificate, you may change `"UseHttp": false,` to `True` to overide the default use of https.
