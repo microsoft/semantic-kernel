@@ -18,7 +18,7 @@ internal static class SemanticKernelFactory
         HttpRequestData req,
         ILogger logger,
         IEnumerable<string>? skillsToLoad = null,
-        IMemoryStore<float>? memoryStore = null)
+        IMemoryStore? memoryStore = null)
     {
         var apiConfig = req.ToApiKeyConfig();
 
@@ -41,7 +41,7 @@ internal static class SemanticKernelFactory
         return _CompleteKernelSetup(req, builder, logger, skillsToLoad);
     }
 
-    private static KernelBuilder _ConfigureKernelBuilder(ApiKeyConfig config, KernelBuilder builder, IMemoryStore<float>? memoryStore)
+    private static KernelBuilder _ConfigureKernelBuilder(ApiKeyConfig config, KernelBuilder builder, IMemoryStore? memoryStore)
     {
         return builder.Configure(c =>
         {

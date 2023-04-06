@@ -24,7 +24,7 @@ public static class Program
             })
             .ConfigureServices(services =>
             {
-                services.AddSingleton<IMemoryStore<float>>(new VolatileMemoryStore());
+                services.AddSingleton<IMemoryStore>(new VolatileMemoryStore());
 
                 // return JSON with expected lowercase naming
                 services.Configure<JsonSerializerOptions>(options =>

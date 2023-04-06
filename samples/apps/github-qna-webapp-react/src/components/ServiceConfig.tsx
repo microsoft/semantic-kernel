@@ -91,7 +91,7 @@ const ServiceConfig: FC<IData> = ({
             modelType === ModelType.Completion
             ? (process.env.REACT_APP_AZURE_OPEN_AI_COMPLETION_ENDPOINT as string)
             : (process.env.REACT_APP_AZURE_OPEN_AI_EMBEDDING_ENDPOINT as string);
-        console.log(defaultEndpoint);
+
         if ((backendConfig?.backend === 1 && isOpenAi) || (backendConfig?.backend === 0 && !isOpenAi)) {
             setResourceInput({ ...resourceInput, key: backendConfig.key, endpoint: backendConfig.endpoint });
             setDeploymentOrModelId(backendConfig.deploymentOrModelId);
@@ -105,10 +105,6 @@ const ServiceConfig: FC<IData> = ({
     useEffect(() => {
         setDefaults(isOpenAI);
     }, [setDefaults, isOpenAI]);
-
-    useEffect(() => {
-        console.log(completionOrEmbeddingConfig);
-    }, [completionOrEmbeddingConfig]);
 
     useEffect(() => {
         setCompletionOrEmbeddingConfig({
