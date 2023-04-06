@@ -33,6 +33,5 @@ public class TokenAuthenticationProvider
     public async Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await this._accessToken());
-        return Task.CompletedTask;
     }
 }
