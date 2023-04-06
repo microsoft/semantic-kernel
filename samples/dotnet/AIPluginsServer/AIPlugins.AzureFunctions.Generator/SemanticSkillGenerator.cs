@@ -54,7 +54,7 @@ public class SemanticSkillGenerator : ISourceGenerator
     {
         // Use a StringBuilder to build the class source
         StringBuilder functionsCode = new();
-        
+
         foreach (var functionGroup in skillGroup)
         {
             // Get the "skprompt.txt" and "config.json" files for this function
@@ -65,7 +65,7 @@ public class SemanticSkillGenerator : ISourceGenerator
                 functionsCode.AppendLine(GenerateFunctionSource(skillName, promptFile, configFile) ?? string.Empty);
             }
         }
-        
+
         string aiPluginEndpointCode = GenerateAIPluginEndpointCode(skillName);
 
         return $@"/* ### GENERATED CODE - Do not modify. Edits will be lost on build. ### */
@@ -84,9 +84,11 @@ namespace {rootNamespace};
 public class {skillName}
 {{
     private readonly ILogger _logger;
+    private readonly IAIPluginRunner _pluginRunner;
 
-    public {skillName}(ILoggerFactory loggerFactory)
+    public {skillName}(IAIPluginRunner pluginRunner, ILoggerFactory loggerFactory)
     {{
+        this._pluginRunner = pluginRunner;
         this._logger = loggerFactory.CreateLogger<{skillName}>();
     }}
 
@@ -132,7 +134,7 @@ public class {skillName}
     public Task<HttpResponseData> {functionName}Async([HttpTrigger(AuthorizationLevel.Anonymous, ""post"")] HttpRequestData req)
     {{
         this._logger.LogInformation(""HTTP trigger processed a request for function {functionName}."");
-        return KernelHelpers.RunHttpKernelFunctionAsync(req, ""{skillName}"", ""{functionName}"", this._logger);
+        return this._pluginRunner.RunAIPluginOperationAsync(req, ""{skillName}/{functionName}"");
     }}";
     }
 
@@ -162,7 +164,7 @@ public class {skillName}
 
             parameterStringBuilder.AppendLine(); // Start with a newline
             parameterStringBuilder.Append($@"    [OpenApiParameter(name: ""{parameter.Name}""");
-            
+
             if (!string.IsNullOrWhiteSpace(parameter.Description))
             {
                 parameterStringBuilder.Append($@", Description = ""{parameter.Description}""");
