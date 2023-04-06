@@ -65,7 +65,8 @@ public class VolatileMemoryStore : IMemoryStore
         }
         else
         {
-            throw new MemoryException(MemoryException.ErrorCodes.AttemptedToAccessNonexistentCollection, $"Attempted to access a memory collection that does not exist: {collectionName}");
+            throw new MemoryException(MemoryException.ErrorCodes.AttemptedToAccessNonexistentCollection,
+                $"Attempted to access a memory collection that does not exist: {collectionName}");
         }
 
         return Task.FromResult(record.Key);
