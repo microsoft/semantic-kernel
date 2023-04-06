@@ -29,6 +29,11 @@ class AzureTextEmbedding(OpenAITextEmbedding):
             results = try_get_api_info_from_synapse_mlflow()
             if results is not None:
                 endpoint, api_key = results
+            else:
+                raise ValueError(
+                    "When using Azure AD authentication, you must provide "
+                    "an endpoint and API key."
+                )
 
         if not deployment_name:
             raise ValueError("The deployment name cannot be `None` or empty")
