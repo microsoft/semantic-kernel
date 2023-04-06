@@ -1,16 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from pytest import raises
-from unittest.mock import Mock, patch
 from logging import Logger
+from unittest.mock import Mock, patch
 
-from semantic_kernel.ai.open_ai.services.azure_text_embedding import (
-    AzureTextEmbedding,
-)
+from pytest import raises
+
+from semantic_kernel.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
 from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
 )
-
 
 MODULE_PREFIX = "semantic_kernel.ai.open_ai.services.azure_text_embedding"
 
@@ -144,7 +142,10 @@ def test_azure_text_embedding_init_with_ad_auth_and_missing_endpoint(
     mock_try_get_api_info_from_synapse_mlflow.return_value = None
     with raises(
         ValueError,
-        match="When using Azure AD authentication, you must provide an endpoint and API key.",
+        match=(
+            "Azure AD authentication failed. Alternatively "
+            "provide an endpoint and API key."
+        ),
     ):
         AzureTextEmbedding(
             deployment_name=deployment_name,

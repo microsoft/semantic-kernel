@@ -31,8 +31,8 @@ class AzureTextCompletion(OpenAITextCompletion):
                 endpoint, api_key = results
             else:
                 raise ValueError(
-                    "When using Azure AD authentication, you must provide "
-                    "an endpoint and API key."
+                    "Azure AD authentication failed. Alternatively "
+                    "provide an endpoint and API key."
                 )
 
         if not deployment_name:
