@@ -65,7 +65,8 @@ public class SKContextExtensionsTests
 
         // Arrange Mock Memory and Result
         var skills = new Mock<ISkillCollection>();
-        var memoryQueryResult = new MemoryQueryResult(new MemoryRecordMetadata(false, "sourceName", functionView.ToFullyQualifiedName(), "description", "text"), 0.8);
+        var memoryQueryResult = new MemoryQueryResult(new MemoryRecordMetadata(false, "sourceName", functionView.ToFullyQualifiedName(), "description", "text"),
+            0.8);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
@@ -124,7 +125,10 @@ public class SKContextExtensionsTests
 
         // Arrange Mock Memory and Result
         var skills = new Mock<ISkillCollection>();
-        var memoryQueryResult = new MemoryQueryResult(new MemoryRecordMetadata(isReference: false, id: functionView.ToFullyQualifiedName(), text: "text", description: "description", externalSourceName: "sourceName"), relevance: 0.8);
+        var memoryQueryResult =
+            new MemoryQueryResult(
+                new MemoryRecordMetadata(isReference: false, id: functionView.ToFullyQualifiedName(), text: "text", description: "description",
+                    externalSourceName: "sourceName"), relevance: 0.8);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))

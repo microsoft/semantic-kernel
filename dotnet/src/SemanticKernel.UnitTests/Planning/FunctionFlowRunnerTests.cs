@@ -16,6 +16,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace SemanticKernel.UnitTests.Planning;
+
 public class FunctionFlowRunnerTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
@@ -143,8 +144,7 @@ public class FunctionFlowRunnerTests
     <function.SkillA.FunctionD />
   </if>
 </plan>",
-
-@"<goal>Some goal</goal>
+        @"<goal>Some goal</goal>
 <plan>
   <function.SkillA.FunctionC />
   <if condition=""$a equals b"">
@@ -158,8 +158,7 @@ public class FunctionFlowRunnerTests
     <function.SkillA.FunctionD />
   </if>
 </plan>",
-
-@"<goal>Some goal</goal>
+        @"<goal>Some goal</goal>
 <plan>
     <function.SkillA.FunctionD />
 </plan>", true)]
@@ -170,11 +169,9 @@ public class FunctionFlowRunnerTests
     <function.SkillA.FunctionD />
   </if>
 </plan>",
-
-@"<goal>Some goal</goal>
+        @"<goal>Some goal</goal>
 <plan>
 </plan>", false)]
-
     [InlineData(
         @"<goal>Some goal</goal>
 <plan>
@@ -185,12 +182,10 @@ public class FunctionFlowRunnerTests
     <function.SkillX.FunctionW />
   </else>
 </plan>",
-
-@"<goal>Some goal</goal>
+        @"<goal>Some goal</goal>
 <plan>
   <function.SkillX.FunctionW />
 </plan>", false)]
-
     [InlineData(
         @"<goal>Some goal</goal>
 <plan>
@@ -204,15 +199,13 @@ public class FunctionFlowRunnerTests
     <function.SkillD.FunctionG />
   </if>
 </plan>",
-
-@"<goal>Some goal</goal>
+        @"<goal>Some goal</goal>
 <plan>
   <function.SkillA.FunctionD />
   <if condition=""$b equals c"">
     <function.SkillD.FunctionG />
   </if>
 </plan>", true)]
-
     [InlineData(
         @"<goal>Some goal</goal>
 <plan>
@@ -226,15 +219,13 @@ public class FunctionFlowRunnerTests
     <function.SkillD.FunctionG />
   </if>
 </plan>",
-
-@"<goal>Some goal</goal>
+        @"<goal>Some goal</goal>
 <plan>
   <function.SkillB.FunctionH />
   <if condition=""$b equals c"">
     <function.SkillD.FunctionG />
   </if>
 </plan>", false)]
-
     [InlineData(
         @"<goal>Some goal</goal>
 <plan>
@@ -248,15 +239,13 @@ public class FunctionFlowRunnerTests
     <function.SkillB.FunctionH />
   </else>
 </plan>",
-
-@"<goal>Some goal</goal>
+        @"<goal>Some goal</goal>
 <plan>
   <function.SkillA.FunctionD />
   <if condition=""$b equals c"">
     <function.SkillD.FunctionG />
   </if>
 </plan>", true)]
-
     [InlineData(
         @"<goal>Some goal</goal>
 <plan>
@@ -270,8 +259,7 @@ public class FunctionFlowRunnerTests
     <function.SkillB.FunctionH />
   </else>
 </plan>",
-
-@"<goal>Some goal</goal>
+        @"<goal>Some goal</goal>
 <plan>
   <function.SkillB.FunctionH />
 </plan>", false)]
@@ -303,7 +291,8 @@ public class FunctionFlowRunnerTests
         skillMock.Setup(s => s.HasSemanticFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
         skillMock.Setup(s => s.GetSemanticFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
         kernelMock.Setup(k => k.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<ISKFunction>())).ReturnsAsync(this.CreateSKContext(kernel));
-        kernelMock.Setup(k => k.RegisterSemanticFunction(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SemanticFunctionConfig>())).Returns(mockFunction.Object);
+        kernelMock.Setup(k => k.RegisterSemanticFunction(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SemanticFunctionConfig>()))
+            .Returns(mockFunction.Object);
 
         var target = new FunctionFlowRunner(kernel);
 

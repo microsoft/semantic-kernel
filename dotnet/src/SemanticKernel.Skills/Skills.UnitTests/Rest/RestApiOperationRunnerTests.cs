@@ -54,10 +54,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         //Arrange
         List<RestApiOperationPayloadProperty> payloadProperties = new()
         {
-            new("value", "string", true, new List<RestApiOperationPayloadProperty>() , "fake-value-description"),
+            new("value", "string", true, new List<RestApiOperationPayloadProperty>(), "fake-value-description"),
             new("attributes", "object", false, new List<RestApiOperationPayloadProperty>()
             {
-                new("enabled", "boolean", false, new List<RestApiOperationPayloadProperty>() , "fake-enabled-description"),
+                new("enabled", "boolean", false, new List<RestApiOperationPayloadProperty>(), "fake-enabled-description"),
             })
         };
 
@@ -72,7 +72,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             new List<RestApiOperationParameter>(),
             new Dictionary<string, string>(),
             payload
-         );
+        );
 
         var arguments = new Dictionary<string, string>();
         arguments.Add("value", "fake-value");
@@ -127,7 +127,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             "fake-description",
             new List<RestApiOperationParameter>(),
             headers
-         );
+        );
 
         var arguments = new Dictionary<string, string>();
         arguments.Add("fake-header", "fake-header-value");

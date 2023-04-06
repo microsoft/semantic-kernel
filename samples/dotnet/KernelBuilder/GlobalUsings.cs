@@ -11,4 +11,3 @@ global using Microsoft.SemanticKernel.SkillDefinition;
 global using Microsoft.SemanticKernel.TemplateEngine;
 global using Polly;
 global using Polly.Retry;
-
