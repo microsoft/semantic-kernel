@@ -37,6 +37,7 @@ public class ChatMemorySkill
     /// <param name="title">The title of the chat.</param>
     /// <param name="context">Contains the memory</param>
     /// <returns>An unique chat ID.</returns>
+    /// <returns>The initial chat message in a serialized Json string.</returns>
     [SKFunction("Create a new chat session in memory.")]
     [SKFunctionName("CreateChat")]
     [SKFunctionInput(Description = "The title of the chat.")]
@@ -441,6 +442,38 @@ public class ChatMemorySkill
     }
 
     /// <summary>
+    /// Get the latest chat message by chat ID.
+    /// </summary>
+    /// <param name="chatId">The chat ID</param>
+    /// <param name="context">Context containing the memory.</param>
+    /// <returns>The latest message as a serialized Json string in a context.</returns>
+    [SKFunction("Get the latest chat message by chat ID.")]
+    [SKFunctionName("GetLatestChatMessage")]
+    [SKFunctionInput(Description = "The chat id")]
+    public async Task<SKContext> GetLatestChatMessageAsync(string chatId, SKContext context)
+    {
+        var chatMessagesContext = Utils.CopyContextWithVariablesClone(context);
+        chatMessagesContext.Variables.Set("startIdx", "0");
+        chatMessagesContext.Variables.Set("count", "1");
+
+        chatMessagesContext = await this.GetChatMessagesAsync(chatId, chatMessagesContext);
+        var messages = JsonSerializer.Deserialize<List<ChatMessage>>(chatMessagesContext.Result);
+        if (messages == null)
+        {
+            context.Log.LogError("Failed to deserialize the latest chat message");
+            return context;
+        }
+        else if (messages.Count == 0)
+        {
+            context.Log.LogError("There are no messages in the chat");
+            return context;
+        }
+
+        context.Variables.Update(messages.First().ToJsonString());
+        return context;
+    }
+
+    /// <summary>
     /// Check if a chat session exists.
     /// </summary>
     /// <param name="chatId">The Id of the chat</param>
@@ -546,6 +579,13 @@ public class ChatMemorySkill
             return null;
         }
 
-        return initialBotMessage;
+        saveNewMessageContext = await this.GetLatestChatMessageAsync(chatId, saveNewMessageContext);
+        if (saveNewMessageContext.ErrorOccurred)
+        {
+            context.Log.LogError("Failed to get the initial message for chat {0}.", chatId);
+            return null;
+        }
+
+        return saveNewMessageContext.Result;
     }
 }

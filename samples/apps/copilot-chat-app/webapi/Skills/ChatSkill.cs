@@ -86,25 +86,24 @@ public class ChatSkill
 
         // Clone the context to avoid modifying the original context variables.
         var latestMessageContext = Utils.CopyContextWithVariablesClone(context);
-        latestMessageContext.Variables.Set("startIdx", "0");
-        latestMessageContext.Variables.Set("count", "1");
 
         var chatMemorySkill = new ChatMemorySkill();
-        latestMessageContext = await chatMemorySkill.GetChatMessagesAsync(context["chatId"], latestMessageContext);
-        var messages = JsonSerializer.Deserialize<List<ChatMessage>>(latestMessageContext.Result);
-        if (messages == null)
+        latestMessageContext = await chatMemorySkill.GetLatestChatMessageAsync(context["chatId"], latestMessageContext);
+        if (latestMessageContext.ErrorOccurred)
         {
-            context.Log.LogError("Failed to deserialize the latest chat message");
+            context.Log.LogError("Failed to get latest chat message");
             return string.Empty;
         }
-        else if (messages.Count == 0)
+        var latestMessage = JsonSerializer.Deserialize<ChatMessage>(latestMessageContext.Result);
+        if (latestMessage == null)
         {
+            context.Log.LogError("Failed to deserialize the latest chat message");
             return string.Empty;
         }
 
         string memoryText = "";
         var results = context.Memory.SearchAsync(
-            ChatMemorySkill.MessageCollectionName(context["chatId"]), messages.First().ToString(), limit: 1000);
+            ChatMemorySkill.MessageCollectionName(context["chatId"]), latestMessage.ToString(), limit: 1000);
         await foreach (var memory in results)
         {
             var estimatedTokenCount = this.EstimateTokenCount(memory.Metadata.Text);
