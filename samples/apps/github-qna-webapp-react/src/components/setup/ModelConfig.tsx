@@ -102,7 +102,6 @@ const ModelConfig: FC<IData> = ({
             if (fetchModels) {
                 setIsBusy(true);
                 setErrorMessage(undefined);
-                console.log(`Fetching models: key ${resourceInput.key}, endpoint ${resourceInput.endpoint}`);
                 if (isOpenAI) {
                     getOpenAiModels(resourceInput.key, onFailure).then((value) => {
                         if (value) setModels(value);
@@ -246,7 +245,7 @@ const getAzureOpenAiDeployments = async (
     return fetch(modelsRequestUrl, init)
         .then(async (response) => {
             if (!response || !response.ok) {
-                throw new Error(await getResponseMessage(response));
+                throw new Error(await getErrorMessage(response));
             }
 
             const models = await response!
@@ -328,7 +327,7 @@ const getOpenAiModels = async (apiKey: string, onFailureCallback: (errorMessage?
         return onFailureCallback(e as string);
     }
     if (!response || !response.ok) {
-        return onFailureCallback(await getResponseMessage(response));
+        return onFailureCallback(await getErrorMessage(response));
     }
 
     const models = await response!
@@ -377,7 +376,7 @@ const isValidOpenAIConfig = async (resourceInput: IResourceInput, model: string,
         }),
     }).then(async (response) => {
         if (!response || !response.ok) {
-            let errorMessage = await getResponseMessage(response);
+            let errorMessage = await getErrorMessage(response);
             if (response.status === 404 || response.status === 500) {
                 errorMessage = `This is not a supported ${modelType} model`;
             }
@@ -388,7 +387,7 @@ const isValidOpenAIConfig = async (resourceInput: IResourceInput, model: string,
     });
 };
 
-const getResponseMessage = async (response: Response) => {
+const getErrorMessage = async (response: Response) => {
     const responseMessage = `${GenericFetchErrorMessage}: ${response.status} error`;
     if (response.status >= 500 && response.status < 600) {
         return responseMessage;
