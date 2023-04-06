@@ -55,7 +55,7 @@ def sk_function(
         # we want to remove the `_async` suffix. (So, in a
         # Prompt Template, we can call `read` instead of
         # `read_async`)
-        def _cleanup(name: str) -> str:
+        def _cleanup_name(name: str) -> str:
             """
             Removes a trailing _async from the function name.
             """
@@ -63,10 +63,37 @@ def sk_function(
                 return name[:-6]
             return name
 
+        # We'll also want to cleanup the function's docstring
+        def _cleanup_doc(doc: str) -> str:
+            """
+            We want to take the docstring of the function,
+            strip it of whitespace, and take everything up
+            to the first completely blank line
+            """
+            # Empty/no doc --> empty description
+            if not doc:
+                return ""
+            # Get lines (strip spacing)
+            lines = [line.strip() for line in doc.splitlines()]
+            # Trim empty lines at start
+            while lines and not lines[0]:
+                lines.pop(0)
+            # Take everything up to the first completely blank line
+            description = ""
+            for line in lines:
+                if not line:
+                    break
+                description += line + " "
+            return description.strip()
+
         # Switched to setattr to make the type checker happy.
         setattr(wrapper, "__sk_function__", True)
-        setattr(wrapper, "__sk_function_name__", name or _cleanup(func.__name__))
-        setattr(wrapper, "__sk_function_description__", description or func.__doc__)
+        setattr(wrapper, "__sk_function_name__", name or _cleanup_name(func.__name__))
+        setattr(
+            wrapper,
+            "__sk_function_description__",
+            description or _cleanup_doc(func.__doc__),
+        )
         setattr(wrapper, "__sk_function_input_description__", input_description)
         setattr(wrapper, "__sk_function_input_default_value__", input_default_value)
         return wrapper
