@@ -40,6 +40,7 @@ public class ChatMemorySkill
     [SKFunction("Create a new chat session in memory.")]
     [SKFunctionName("CreateChat")]
     [SKFunctionInput(Description = "The title of the chat.")]
+    [SKFunctionContextParameter(Name = "userId", Description = "Unique and persistent identifier for a user.")]
     public async Task<SKContext> CreateChatAsync(string title, SKContext context)
     {
         var chatId = Guid.NewGuid().ToString();
@@ -63,6 +64,7 @@ public class ChatMemorySkill
             return context;
         }
 
+        // Create a new chat.
         var newChat = new Chat(chatId, title);
         await context.Memory.SaveInformationAsync(
             collection: ChatCollectionName,
@@ -71,7 +73,32 @@ public class ChatMemorySkill
             cancel: context.CancellationToken
         );
 
+        // Attach the chat to the user.
+        // Clone the context to avoid modifying the original context variables.
+        var addUserContext = Utils.CopyContextWithVariablesClone(context);
+        addUserContext.Variables.Set("chatId", chatId);
+        addUserContext.Variables.Set("userId", context["userId"]);
+        await this.AddUserToChatAsync(addUserContext);
+        if (addUserContext.ErrorOccurred)
+        {
+            context.Log.LogError("Failed to add user {0} to the new chat {1}.", context["userId"], chatId);
+            context.Fail(addUserContext.LastErrorDescription, addUserContext.LastException);
+            return context;
+        }
+
+        // Create the initial bot message.
+        var initialBotMessage = await this.CreateAndSaveInitialBotMessage(chatId, context["userId"], context);
+        if (initialBotMessage == null)
+        {
+            context.Log.LogError("Failed to create and save the initial bot message for chat {0}.", chatId);
+            context.Fail($"Failed to create and save the initial bot message for chat {chatId}.");
+            return context;
+        }
+
+        // Update the context variables for outputs.
         context.Variables.Update(chatId);
+        context.Variables.Set("initialBotMessage", initialBotMessage);
+
         return context;
     }
 
@@ -487,5 +514,38 @@ public class ChatMemorySkill
         }
 
         return chatUser;
+    }
+
+    /// <summary>
+    /// Create and save the initial bot message.
+    /// </summary>
+    /// <param name="chatId">Chat ID of the chat session.</param>
+    /// <param name="userId">User ID to get the user name.</param>
+    /// <param name="context">Context that contains the memory.</param>
+    /// <returns></returns>
+    private async Task<string?> CreateAndSaveInitialBotMessage(string chatId, string userId, SKContext context)
+    {
+        // Create the initial message.
+        var chatUser = await this.GetChatUserAsync(userId, context);
+        if (chatUser == null)
+        {
+            context.Log.LogError("Error retrieving user {0} to construct the initial message.", context["userId"]);
+            return null;
+        }
+        var initialBotMessage = string.Format(SystemPromptDefaults.InitialBotMessage, chatUser.FullName);
+
+        // Save the initial message.
+        // Clone the context to avoid modifying the original context variables.
+        var saveNewMessageContext = Utils.CopyContextWithVariablesClone(context);
+        saveNewMessageContext.Variables.Set("chatId", chatId);
+        saveNewMessageContext.Variables.Set("userId", ChatBotID(chatId));
+        await this.SaveNewMessageAsync(initialBotMessage, saveNewMessageContext);
+        if (saveNewMessageContext.ErrorOccurred)
+        {
+            context.Log.LogError("Failed to save the initial message for chat {0}.", chatId);
+            return null;
+        }
+
+        return initialBotMessage;
     }
 }
