@@ -52,13 +52,12 @@ class AzureChatCompletion(OpenAIChatCompletion):
         :param auth_provider: The name of the auth provider to use. (Optional)
             If the value provided is not None, the endpoint, api_key, and
             use_ad_auth values will be ignored and will be retrieved from the
-            auth provider instead.
-
-            Auth providers should be registered in the __sk_auth_providers
-            global dictionary; e.g.,
-                "my_provider": () => (endpoint, api_key, use_ad_auth)
+            auth provider instead. If the value provided is None, but none of
+            endpoint, api_key, or use_ad_auth are provided, we will attempt
+            to load the first available auth provider and use it.
         """
-        if auth_provider is not None:
+        no_values = endpoint is None and api_key is None
+        if auth_provider is not None or no_values:
             # Try to get endpoint/api_key/use_ad_auth via dynamic provider
             try:
                 endpoint, api_key, use_ad_auth = try_get_auth_from_named_provider(
