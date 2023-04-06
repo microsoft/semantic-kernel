@@ -9,7 +9,6 @@ from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientB
 from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
 from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.kernel_exception import KernelException
@@ -30,6 +29,7 @@ from semantic_kernel.skill_definition.skill_collection_base import SkillCollecti
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
+from semantic_kernel.utils.validation import validate_function_name, validate_skill_name
 
 
 class Kernel(KernelBase, KernelExtensions):
@@ -86,8 +86,8 @@ class Kernel(KernelBase, KernelExtensions):
             skill_name = SkillCollection.GLOBAL_SKILL
         assert skill_name is not None  # for type checker
 
-        Verify.valid_skill_name(skill_name)
-        Verify.valid_function_name(function_name)
+        validate_skill_name(skill_name)
+        validate_function_name(function_name)
 
         function = self._create_semantic_function(
             skill_name, function_name, function_config

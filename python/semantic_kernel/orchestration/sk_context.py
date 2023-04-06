@@ -3,7 +3,6 @@
 from logging import Logger
 from typing import Any, Literal, Optional, Tuple, Union
 
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
@@ -177,7 +176,8 @@ class SKContext:
         Returns:
             SKFunctionBase -- The function.
         """
-        Verify.not_null(self._skill_collection, "The skill collection hasn't been set")
+        if self._skill_collection is None:
+            raise ValueError("The skill collection hasn't been set")
         assert self._skill_collection is not None  # for type checker
 
         if self._skill_collection.has_native_function(skill_name, function_name):

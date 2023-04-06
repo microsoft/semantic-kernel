@@ -6,7 +6,6 @@ from typing import Any, Optional
 from semantic_kernel.ai.ai_exception import AIException
 from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
 from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.utils.null_logger import NullLogger
 
 
@@ -65,8 +64,10 @@ class OpenAITextCompletion(TextCompletionClientBase):
         Returns:
             str -- The completed text.
         """
-        Verify.not_empty(prompt, "The prompt is empty")
-        Verify.not_null(request_settings, "The request settings cannot be empty")
+        if not prompt:
+            raise ValueError("The prompt cannot be `None` or empty")
+        if request_settings is None:
+            raise ValueError("The request settings cannot be `None`")
 
         if request_settings.max_tokens < 1:
             raise AIException(
