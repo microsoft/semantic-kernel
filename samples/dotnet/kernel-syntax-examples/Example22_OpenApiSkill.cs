@@ -29,7 +29,7 @@ public static class Example22_OpenApiSkill
         //kernel.ImportOpenApiSkillFromFile
         //kernel.ImportOpenApiSkillFromUrlAsync
         //kernel.RegisterOpenApiSkill
-        var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
+        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -53,7 +53,7 @@ public static class Example22_OpenApiSkill
         //kernel.ImportOpenApiSkillFromFile
         //kernel.ImportOpenApiSkillFromUrlAsync
         //kernel.RegisterOpenApiSkill
-        var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
+        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();

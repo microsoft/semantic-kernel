@@ -129,7 +129,7 @@ public class SqliteMemoryStoreTests
         // Arrange
         SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         var collections = await db.GetCollectionsAsync().ToListAsync();
-        int numCollections = collections.Count();
+        int numCollections = collections.Count;
         Assert.True(numCollections > 0);
 
         // Act

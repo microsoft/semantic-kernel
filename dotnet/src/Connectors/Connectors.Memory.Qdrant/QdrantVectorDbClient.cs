@@ -412,8 +412,8 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         else
         {
-            return false;
             this._log.LogError("Collection fetch failed: {0}, {1}", response.StatusCode, responseContent);
+            return false;
         }
     }
 

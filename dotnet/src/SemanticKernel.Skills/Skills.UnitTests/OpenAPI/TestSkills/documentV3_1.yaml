@@ -1,0 +1,85 @@
+openapi: 3.1.0
+info:
+  title: 'Azure Key Vault [Sample]'
+  description: 'THIS DOCUMENT IS A COPY OF ''documentV3_0.json'' RESOURCE WITH BUMPED VERSION - 3.1.0. IT SHOULD BE REGENERATED USING openApiDocument.Serialize(OpenApiSpecVersion.OpenApi3_1, OpenApiFormat.Json) METHOD OF Microsoft.OpenAPI.NET LIBRARY WHEN IT SUPPORTS 3.1 SPECIFICATION.'
+  version: '1.0'
+servers:
+  - url: https://my-key-vault.vault.azure.net
+paths:
+  '/secrets/{secret-name}':
+    put:
+      summary: Create or update secret value
+      description: Sets a secret in a specified key vault.
+      operationId: SetSecret
+      parameters:
+        - name: secret-name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            default: '7.0'
+          x-ms-visibility: internal
+        - name: Accept
+          in: header
+          description: 'Indicates which content types, expressed as MIME types, the client is able to understand.'
+          schema:
+            type: string
+            default: application/json
+          x-ms-visibility: internal
+        - name: X-API-Version
+          in: header
+          description: Requested API version.
+          required: true
+          schema:
+            type: integer
+            default: 10
+          x-ms-visibility: internal
+          x-ms-summary: X-API-Version
+        - name: X-Operation-Csv-Ids
+          in: header
+          description: The comma separated list of operation ids.
+          schema:
+            type: array
+            items:
+              type: string
+          x-ms-summary: Ids
+          x-ms-visibility: advanced
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - value
+              type: object
+              properties:
+                attributes:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Determines whether the object is enabled.
+                  description: attributes
+                value:
+                  type: string
+                  description: The value of the secret.
+        required: true
+        x-bodyName: body
+      responses:
+        '200':
+          description: default
+components:
+  securitySchemes:
+    oauth2_auth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://login.windows.net/common/oauth2/authorize
+          tokenUrl: https://login.windows.net/common/oauth2/authorize
+          scopes: { }
+security:
+  - oauth2_auth: [ ]

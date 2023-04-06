@@ -14,7 +14,7 @@ using Xunit;
 
 namespace SemanticKernel.Skills.UnitTests.OpenAPI;
 
-public sealed class OpenApiDocumentParserV20Tests : IDisposable
+public sealed class OpenApiDocumentParserV31Tests : IDisposable
 {
     /// <summary>
     /// System under test - an instance of OpenApiDocumentParser class.
@@ -27,11 +27,11 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     private readonly Stream _openApiDocument;
 
     /// <summary>
-    /// Creates an instance of a <see cref="OpenApiDocumentParserV20Tests"/> class.
+    /// Creates an instance of a <see cref="OpenApiDocumentParserV31Tests"/> class.
     /// </summary>
-    public OpenApiDocumentParserV20Tests()
+    public OpenApiDocumentParserV31Tests()
     {
-        this._openApiDocument = ResourceSkillsProvider.LoadFromResource("documentV2_0.json");
+        this._openApiDocument = ResourceSkillsProvider.LoadFromResource("documentV3_1.yaml");
 
         this._sut = new OpenApiDocumentParser();
     }
