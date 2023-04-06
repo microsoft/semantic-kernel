@@ -52,7 +52,7 @@ public class CosmosDBMemoryStore : IMemoryStore
     public static async Task<CosmosDBMemoryStore> CreateAndConnectAsync(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancel = default)
     {
         var newStore = new CosmosDBMemoryStore(client: client, databaseName: databaseName, log: log);
-        
+
         var response = await client.CreateDatabaseIfNotExistsAsync(newStore._databaseName, cancellationToken: cancel);
 
         if (response.StatusCode == HttpStatusCode.Created)
@@ -172,7 +172,7 @@ public class CosmosDBMemoryStore : IMemoryStore
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
         record.Key = this.ToCosmosFriendlyId(record.Metadata.Id);
-        
+
         var entity = new CosmosDBMemoryRecord
         {
             CollectionId = this.ToCosmosFriendlyId(collectionName),
@@ -215,7 +215,7 @@ public class CosmosDBMemoryStore : IMemoryStore
             key,
             PartitionKey.None,
             cancellationToken: cancel);
-        
+
         if (response.StatusCode == HttpStatusCode.OK)
         {
             this._log.LogInformation("Record deleted from {0}", collectionName);
@@ -283,7 +283,7 @@ public class CosmosDBMemoryStore : IMemoryStore
             minRelevanceScore: minRelevanceScore,
             cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
     }
-    
+
     private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
