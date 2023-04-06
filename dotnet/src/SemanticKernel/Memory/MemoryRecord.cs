@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// IMPORTANT: this is a storage schema. Changing the fields will invalidate existing metadata stored in persistent vector DBs.
 /// </summary>
-internal class MemoryRecord : IEmbeddingWithMetadata<float>
+public class MemoryRecord : IEmbeddingWithMetadata<float>
 {
     /// <summary>
     /// Source content embeddings.

@@ -11,6 +11,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="OpenAPI\TestSkills\openapi.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="OpenAPI\TestSkills\documentV2_0.json" />
+    <EmbeddedResource Include="OpenAPI\TestSkills\documentV3_0.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />
@@ -25,6 +34,7 @@
     <ProjectReference Include="..\Skills.Document\Skills.Document.csproj" />
     <ProjectReference Include="..\Skills.Memory.Sqlite\Skills.Memory.Sqlite.csproj" />
     <ProjectReference Include="..\Skills.MsGraph\Skills.MsGraph.csproj" />
+    <ProjectReference Include="..\Skills.OpenAPI\Skills.OpenAPI.csproj" />
     <ProjectReference Include="..\Skills.Web\Skills.Web.csproj" />
   </ItemGroup>
 

@@ -346,13 +346,5 @@ public abstract class OpenAIClientAbstract : IDisposable
         }
     }
 
-    /// <summary>
-    /// C# finalizer
-    /// </summary>
-    ~OpenAIClientAbstract()
-    {
-        this.Dispose(false);
-    }
-
     #endregion
 }

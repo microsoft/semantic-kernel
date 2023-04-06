@@ -2,8 +2,8 @@
 
 using System;
 using System.Threading.Tasks;
+using KernelSyntaxExamples;
 
-#pragma warning disable CS1591
 public static class Program
 {
     // ReSharper disable once InconsistentNaming
@@ -65,6 +65,14 @@ public static class Program
 
         await Example19_Qdrant.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example20_HuggingFace.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example21_ChatGptPlugins.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example22_OpenApiSkill.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
-#pragma warning restore CS1591
