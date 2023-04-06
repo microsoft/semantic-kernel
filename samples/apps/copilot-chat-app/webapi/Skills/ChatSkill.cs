@@ -104,7 +104,7 @@ public class ChatSkill
 
         string memoryText = "";
         var results = context.Memory.SearchAsync(
-            ChatMemorySkill.MessageCollectionName(context["chatId"]), messages[0].ToString(), limit: 1000);
+            ChatMemorySkill.MessageCollectionName(context["chatId"]), messages.First().ToString(), limit: 1000);
         await foreach (var memory in results)
         {
             var estimatedTokenCount = this.EstimateTokenCount(memory.Metadata.Text);
