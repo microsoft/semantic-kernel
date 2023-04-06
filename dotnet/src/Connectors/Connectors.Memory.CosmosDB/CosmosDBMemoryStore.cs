@@ -77,7 +77,7 @@ public class CosmosDBMemoryStore : IMemoryStore
     {
         var properties = new ContainerProperties(collectionName, "/" + collectionName);
         var response = await this._database.CreateContainerIfNotExistsAsync(properties, cancellationToken: cancel);
-        
+
         if (response.StatusCode == HttpStatusCode.Created)
         {
             this._log.LogInformation("Created collection {0}", collectionName);
@@ -104,7 +104,7 @@ public class CosmosDBMemoryStore : IMemoryStore
     {
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
         var response = await container.DeleteContainerAsync(cancellationToken: cancel);
-        
+
         if (response.StatusCode == HttpStatusCode.OK)
         {
             this._log.LogInformation("Collection {0} deleted", collectionName);
@@ -173,7 +173,7 @@ public class CosmosDBMemoryStore : IMemoryStore
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
         record.Key = this.ToCosmosFriendlyId(record.Metadata.Id);
-        
+
         var entity = new CosmosDBMemoryRecord
         {
             CollectionId = collectionName,
@@ -210,7 +210,7 @@ public class CosmosDBMemoryStore : IMemoryStore
             key,
             new Microsoft.Azure.Cosmos.PartitionKey(this.ToCosmosFriendlyId(key)),
             cancellationToken: cancel);
-        
+
         if (response.StatusCode == HttpStatusCode.OK)
         {
             this._log.LogInformation("Record deleted from {0}", collectionName);
@@ -288,7 +288,7 @@ public class CosmosDBMemoryStore : IMemoryStore
         this._database = client.GetDatabase(this._databaseName);
         this._log = log ?? NullLogger<CosmosDBMemoryStore>.Instance;
     }
-    
+
     private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
@@ -304,7 +304,7 @@ public class CosmosDBMemoryStore : IMemoryStore
             var embeddingHost = JsonConvert.DeserializeAnonymousType(
                 item.EmbeddingString,
                 new { Embedding = new { vector = new List<float>() } });
-            
+
             yield return MemoryRecord.FromJson(
                 item.MetadataString,
                 new Embedding<float>(embeddingHost.Embedding.vector),
