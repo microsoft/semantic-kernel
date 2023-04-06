@@ -91,7 +91,6 @@ public interface IQdrantVectorDbClient
     /// </summary>
     /// <param name="collectionName">The name assigned to a collection of vectors.</param>
     /// <param name="cancel">Cancellation Token.</param>
-    /// <exception cref="VectorDbException"></exception>
     public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default);
 
     /// <summary>

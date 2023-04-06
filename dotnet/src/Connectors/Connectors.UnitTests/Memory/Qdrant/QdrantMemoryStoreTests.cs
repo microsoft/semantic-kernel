@@ -155,7 +155,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Assert
-        await Assert.ThrowsAsync<VectorDbException>(() => vectorStore.UpsertAsync("test_collection", memoryRecord));
+        await Assert.ThrowsAsync<QdrantMemoryException>(() => vectorStore.UpsertAsync("test_collection", memoryRecord));
     }
 
     [Fact]

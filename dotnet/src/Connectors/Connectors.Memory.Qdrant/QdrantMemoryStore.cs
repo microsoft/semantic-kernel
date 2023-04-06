@@ -80,7 +80,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new VectorDbException(VectorDbException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord, $"Failed to convert MemoryRecord to QdrantVectorRecord");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord, $"Failed to convert MemoryRecord to QdrantVectorRecord");
         }
 
         try
@@ -90,11 +90,12 @@ public class QdrantMemoryStore : IMemoryStore
                 new[] { vectorData },
                 cancel: cancel);
         }
-        catch (HttpRequestException e)
+        catch (HttpRequestException ex)
         {
-            throw new VectorDbException(
-                VectorDbException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {e.Message}");
+            throw new QdrantMemoryException(
+                QdrantMemoryException.ErrorCodes.FailedToUpsertVectors,
+                $"Failed to upsert due to HttpRequestException: {ex.Message}",
+                ex);
         }
 
         return vectorData.PointId;
@@ -113,9 +114,12 @@ public class QdrantMemoryStore : IMemoryStore
                 vectorData,
                 cancel: cancel);
         }
-        catch (HttpRequestException e)
+        catch (HttpRequestException ex)
         {
-            throw new VectorDbException(VectorDbException.ErrorCodes.FailedToUpsertVectors, $"Failed to upsert due to HttpRequestException: {e.Message}");
+            throw new QdrantMemoryException(
+                QdrantMemoryException.ErrorCodes.FailedToUpsertVectors,
+                $"Failed to upsert due to HttpRequestException: {ex.Message}",
+                ex);
         }
 
         foreach (var v in vectorData)
@@ -144,11 +148,17 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new VectorDbException($"Failed to get vector data from Qdrant: {ex.Message}");
+            throw new QdrantMemoryException(
+                QdrantMemoryException.ErrorCodes.FailedToGetVectorData,
+                $"Failed to get vector data from Qdrant: {ex.Message}",
+                ex);
         }
         catch (MemoryException ex)
         {
-            throw new VectorDbException($"Failed deserialize Qdrant response to Memory Record: {ex.Message}");
+            throw new QdrantMemoryException(
+                QdrantMemoryException.ErrorCodes.FailedToConvertQdrantVectorRecordToMemoryRecord,
+                $"Failed deserialize Qdrant response to Memory Record: {ex.Message}",
+                ex);
         }
     }
 
@@ -172,7 +182,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="pointId"></param>
     /// <param name="cancel"></param>
     /// <returns></returns>
-    /// <exception cref="VectorDbException"></exception>
+    /// <exception cref="QdrantMemoryException"></exception>
     public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, CancellationToken cancel = default)
     {
         try
@@ -195,11 +205,17 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new VectorDbException($"Failed to get vector data from Qdrant: {ex.Message}");
+            throw new QdrantMemoryException(
+                QdrantMemoryException.ErrorCodes.FailedToGetVectorData,
+                $"Failed to get vector data from Qdrant: {ex.Message}",
+                ex);
         }
         catch (MemoryException ex)
         {
-            throw new VectorDbException($"Failed deserialize Qdrant response to Memory Record: {ex.Message}");
+            throw new QdrantMemoryException(
+                QdrantMemoryException.ErrorCodes.FailedToConvertQdrantVectorRecordToMemoryRecord,
+                $"Failed deserialize Qdrant response to Memory Record: {ex.Message}",
+                ex);
         }
     }
 
@@ -234,7 +250,10 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new VectorDbException($"Failed to remove vector data from Qdrant {ex.Message}");
+            throw new QdrantMemoryException(
+                QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
+                $"Failed to remove vector data from Qdrant {ex.Message}",
+                ex);
         }
     }
 
@@ -251,7 +270,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="pointId"></param>
     /// <param name="cancel"></param>
     /// <returns></returns>
-    /// <exception cref="VectorDbException"></exception>
+    /// <exception cref="QdrantMemoryException"></exception>
     public async Task RemoveWithPointIdAsync(string collectionName, string pointId, CancellationToken cancel = default)
     {
         try
@@ -260,7 +279,10 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new VectorDbException($"Failed to remove vector data from Qdrant {ex.Message}");
+            throw new QdrantMemoryException(
+                QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
+                $"Failed to remove vector data from Qdrant {ex.Message}",
+                ex);
         }
     }
 
@@ -271,7 +293,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="pointIds"></param>
     /// <param name="cancel"></param>
     /// <returns></returns>
-    /// <exception cref="VectorDbException"></exception>
+    /// <exception cref="QdrantMemoryException"></exception>
     public async Task RemoveWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancel = default)
     {
         try
@@ -280,7 +302,10 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new VectorDbException($"Error in batch removing data from Qdrant {ex.Message}");
+            throw new QdrantMemoryException(
+                QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
+                $"Error in batch removing data from Qdrant {ex.Message}",
+                ex);
         }
     }
 
@@ -369,7 +394,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new VectorDbException(VectorDbException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord, $"Failed to convert MemoryRecord to QdrantVectorRecord");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord, $"Failed to convert MemoryRecord to QdrantVectorRecord");
         }
 
         return vectorData;

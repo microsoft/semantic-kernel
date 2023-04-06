@@ -69,7 +69,7 @@ public class QdrantVectorRecord
     /// <param name="json"></param>
     /// <param name="tags"></param>
     /// <returns></returns>
-    /// <exception cref="VectorDbException"></exception>
+    /// <exception cref="QdrantMemoryException"></exception>
     [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Following 'IsSupported' pattern of System.Numerics.")]
     public static QdrantVectorRecord FromJson(string pointId, IEnumerable<float> embedding, string json, List<string>? tags = null)
     {
@@ -80,7 +80,7 @@ public class QdrantVectorRecord
         }
         else
         {
-            throw new VectorDbException(VectorDbException.ErrorCodes.UnableToDeserializeRecordPayload, "Failed to deserialize payload");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.UnableToDeserializeRecordPayload, "Failed to deserialize payload");
         }
     }
 }

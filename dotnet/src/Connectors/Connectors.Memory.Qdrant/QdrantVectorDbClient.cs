@@ -402,18 +402,19 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         using var request = GetCollectionsRequest.Create(collectionName).Build();
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
 
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return false;
-        }
-
         if (response.IsSuccessStatusCode)
         {
             return true;
         }
-
-        this._log.LogError("Collection fetch failed: {0}, {1}", response.StatusCode, responseContent);
-        throw new VectorDbException($"Unexpected response: {response.StatusCode}");
+        else if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return false;
+        }
+        else
+        {
+            return false;
+            this._log.LogError("Collection fetch failed: {0}, {1}", response.StatusCode, responseContent);
+        }
     }
 
     /// <inheritdoc/>
