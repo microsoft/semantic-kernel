@@ -234,14 +234,15 @@ public class ChatMemorySkill
     }
 
     /// <summary>
-    /// Get IDs of all chat sessions associated with a user.
+    /// Get all chat sessions associated with a user.
     /// </summary>
     /// <param name="userId">The user ID</param>
-    /// <param name="context">Contains the 'userId' and 'chatId'.</param>
-    [SKFunction("Get IDs all chat sessions associated with a user.")]
-    [SKFunctionName("GetAllChatIds")]
+    /// <param name="context">Contains the memory.</param>
+    /// <returns>The list of chat sessions as a Json string.</returns>
+    [SKFunction("Get all chat sessions associated with a user.")]
+    [SKFunctionName("GetAllChats")]
     [SKFunctionInput(Description = "The user id")]
-    public async Task<SKContext> GetAllChatIdsAsync(string userId, SKContext context)
+    public async Task<SKContext> GetAllChatsAsync(string userId, SKContext context)
     {
         var chatUser = await this.GetChatUserAsync(userId, context);
         if (chatUser == null)
@@ -250,7 +251,19 @@ public class ChatMemorySkill
             return context;
         }
 
-        context.Variables.Update(string.Join(",", chatUser.ChatIds));
+        List<Chat> chats = new List<Chat>();
+        foreach (var chatId in chatUser.ChatIds)
+        {
+            var chat = await this.GetChatAsync(chatId, context);
+            if (chat == null)
+            {
+                context.Fail($"Error retrieving chat {chatId} info. Please see log for more details.");
+                return context;
+            }
+            chats.Add(chat);
+        }
+
+        context.Variables.Update(JsonSerializer.Serialize(chats));
         return context;
     }
 
