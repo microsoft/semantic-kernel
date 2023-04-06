@@ -31,6 +31,8 @@ Before following these instructions, please ensure your development environment 
     1. Navigate to `\samples\apps\copilot-chat-app\SKWebApi`
     2.	Update `appsettings.json` with these settings:
 
+          *	If you wish to run the back-end API server without an SSL certificate, you may change `"UseHttp": false,` to `True` to overide the default use of https.
+
           *	Under the `“CompletionConfig”` block, make the following configuration changes to match your instance:
 
             * `“AIService”: “AzureOpenAI”`, or whichever option is appropriate for your instance.
@@ -57,7 +59,7 @@ Before following these instructions, please ensure your development environment 
 5.	Now that the back-end API server is setup, and confirmed operating, let’s proceed with setting up the front-end WebApp.
     1. Navigate to `\apps\copilot-chat-app\webapp`
     2.	Copy `.env.example` into a new file with the name “`.env`” and make the following configuration changes to match your instance:
-    3. Use the Application (client) ID from the Azure Portal steps above and paste the GUID into the .env file next to `REACT_APP_GRAPH_CLIENT_ID= `
+    3. Use the Application (client) ID from the Azure Portal steps above and paste the GUID into the .env file next to `REACT_APP_CHAT_CLIENT_ID= `
     4.	Execute the command `yarn install`
     5.	Execute the command `yarn start`
 
@@ -76,3 +78,5 @@ If you are stopped at an error message similar to the one above, your browser ma
 2.	You should see a confirmation message: `Semantic Kernel service is up and running`
 3.	If your browser asks you to acknowledge the risks of visiting an insecure website, you must acknowledge the message before the front end will be allowed to connect to the back-end server.  Please acknowledge, and navigate until you see the message Semantic Kernel service is up and running
 4.	Return to your original browser window, or navigate to `https://localhost:3000`, and refresh the page.  You should now successfully see the Copilot Chat application and can interact with the prompt.
+
+* If you continue to experience trouble using ssl based linking, you may wish to run the back-end API server without an SSL certificate, you may change `"UseHttp": false,` to `"UseHttp": true,` to overide the default use of https.
