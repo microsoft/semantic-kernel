@@ -13,13 +13,13 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 /// </summary>
 public class TokenAuthenticationProvider
 {
-    private readonly Func<string> _accessToken;
+    private readonly Func<Task<string>> _accessToken;
 
     /// <summary>
     /// Create an instance of the TokenAuthenticationProvider class.
     /// </summary>
     /// <param name="accessToken">Delegate to retrieve the access token.</param>
-    public TokenAuthenticationProvider(Func<string> accessToken)
+    public TokenAuthenticationProvider(Func<Task<string>> accessToken)
     {
         this._accessToken = accessToken;
     }
@@ -30,9 +30,8 @@ public class TokenAuthenticationProvider
     /// </summary>
     /// <param name="request">The HTTP request message.</param>
     /// <returns></returns>
-    public Task AuthenticateRequestAsync(HttpRequestMessage request)
+    public async Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._accessToken());
-        return Task.CompletedTask;
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await this._accessToken());
     }
 }
