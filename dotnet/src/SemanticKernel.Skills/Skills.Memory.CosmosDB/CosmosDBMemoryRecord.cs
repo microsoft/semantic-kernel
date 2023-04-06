@@ -52,7 +52,7 @@ public class CosmosDBMemoryRecord : IEmbeddingWithMetadata<float>
     public string MetadataString { get; set; } = string.Empty;
 
     /// <summary>
-    /// Metadata seriazed as a JSON string.
+    /// Metadata serialized as a JSON string.
     /// </summary>
     public string GetSerializedMetadata()
     {
