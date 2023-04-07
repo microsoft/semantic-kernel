@@ -29,7 +29,7 @@
 
 ### Working with Secrets
 
-[KernelHttpServer's Readme](../dotnet/KernelHttpServer/README.md#Working-with-Secrets) has a note on safely working with keys and other secrets.
+[KernelHttpServer's Readme](../../dotnet/KernelHttpServer/README.md#Working-with-Secrets) has a note on safely working with keys and other secrets.
 
 ## About the Authenticated API’s Sample
 
