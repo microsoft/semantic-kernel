@@ -88,7 +88,8 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records,
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var r in records)
         {
@@ -112,7 +113,8 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, [EnumeratorCancellation] CancellationToken cancel = default)
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys,
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
         {
@@ -176,7 +178,8 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, CancellationToken cancel = default)
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0,
+        CancellationToken cancel = default)
     {
         return await this.GetNearestMatchesAsync(
             collectionName: collectionName,

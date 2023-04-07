@@ -92,7 +92,8 @@ public struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredVal
         return left.CompareTo(right) >= 0;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Min value convenience method")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types",
+        Justification = "Min value convenience method")]
     public static ScoredValue<T> Min()
     {
         return new ScoredValue<T>(default!, Score.Min);
