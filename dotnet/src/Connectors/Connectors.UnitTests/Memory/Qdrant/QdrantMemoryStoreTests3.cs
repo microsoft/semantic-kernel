@@ -114,7 +114,7 @@ public class QdrantMemoryStoreTests3
     }
 
     [Fact]
-    public async Task ItReturnsEmtpyListIfNearestMatchesNotFoundAsync()
+    public async Task ItReturnsEmptyListIfNearestMatchesNotFoundAsync()
     {
         // Arrange
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();

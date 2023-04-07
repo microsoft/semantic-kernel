@@ -17,7 +17,7 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.OpenAPI;
+namespace SemanticKernel.Skills.UnitTests.Rest;
 
 public sealed class RestApiOperationRunnerTests : IDisposable
 {

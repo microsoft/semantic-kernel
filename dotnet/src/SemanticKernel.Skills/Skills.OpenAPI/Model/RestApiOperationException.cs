@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
+namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
 /// <summary>
 /// Exception to be throw if a REST API operation has failed. E.g. mandatory property is missing or empty, value is out of range

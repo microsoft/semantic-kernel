@@ -48,7 +48,7 @@ internal static class RestApiOperationExtensions
             return Enumerable.Empty<RestApiOperationParameter>();
         }
 
-        IList<RestApiOperationParameter> ConverLeafProperties(RestApiOperationPayloadProperty property)
+        IList<RestApiOperationParameter> ConvertLeafProperties(RestApiOperationPayloadProperty property)
         {
             var parameters = new List<RestApiOperationParameter>();
 
@@ -60,7 +60,7 @@ internal static class RestApiOperationExtensions
 
             foreach (var childProperty in property.Properties)
             {
-                parameters.AddRange(ConverLeafProperties(childProperty));
+                parameters.AddRange(ConvertLeafProperties(childProperty));
             }
 
             return parameters;
@@ -70,7 +70,7 @@ internal static class RestApiOperationExtensions
 
         foreach (var property in payload.Properties)
         {
-            result.AddRange(ConverLeafProperties(property));
+            result.AddRange(ConvertLeafProperties(property));
         }
 
         return result;

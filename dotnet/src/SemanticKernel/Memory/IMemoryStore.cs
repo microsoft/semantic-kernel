@@ -42,7 +42,7 @@ public interface IMemoryStore
     Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default);
 
     /// <summary>
-    /// Upserts a memory record into the datastore.
+    /// Upserts a memory record into the datastore. Does not guarantee that the collection exists.
     ///     If the record already exists, it will be updated.
     ///     If the record does not exist, it will be created.
     /// </summary>
@@ -53,7 +53,7 @@ public interface IMemoryStore
     Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default);
 
     /// <summary>
-    /// Upserts a group of memory records into the datastore.
+    /// Upserts a group of memory records into the datastore. Does not guarantee that the collection exists.
     ///     If the record already exists, it will be updated.
     ///     If the record does not exist, it will be created.
     /// </summary>
@@ -64,7 +64,7 @@ public interface IMemoryStore
     IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, CancellationToken cancel = default);
 
     /// <summary>
-    /// Gets a memory record from the datastore.
+    /// Gets a memory record from the datastore. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of vectors.</param>
     /// <param name="key">The unique id associated with the memory record to get.</param>
@@ -73,7 +73,7 @@ public interface IMemoryStore
     Task<MemoryRecord?> GetAsync(string collectionName, string key, CancellationToken cancel = default);
 
     /// <summary>
-    /// Gets a batch of memory records from the datastore.
+    /// Gets a batch of memory records from the datastore. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of vectors.</param>
     /// <param name="keys">The unique ids associated with the memory record to get.</param>
@@ -82,7 +82,7 @@ public interface IMemoryStore
     IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default);
 
     /// <summary>
-    /// Removes a memory record from the datastore.
+    /// Removes a memory record from the datastore. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of vectors.</param>
     /// <param name="key">The unique id associated with the memory record to remove.</param>
@@ -90,7 +90,7 @@ public interface IMemoryStore
     Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default);
 
     /// <summary>
-    /// Removes a batch of memory records from the datastore.
+    /// Removes a batch of memory records from the datastore. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of vectors.</param>
     /// <param name="keys">The unique ids associated with the memory record to remove.</param>
@@ -98,7 +98,7 @@ public interface IMemoryStore
     Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default);
 
     /// <summary>
-    /// Gets the nearest matches to the <see cref="Embedding"/> of type <see cref="float"/>.
+    /// Gets the nearest matches to the <see cref="Embedding"/> of type <see cref="float"/>. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of vectors.</param>
     /// <param name="embedding">The <see cref="Embedding"/> to compare the collection's vectors with.</param>
@@ -114,7 +114,7 @@ public interface IMemoryStore
         CancellationToken cancel = default);
 
     /// <summary>
-    /// Gets the nearest match to the <see cref="Embedding"/> of type <see cref="float"/>.
+    /// Gets the nearest match to the <see cref="Embedding"/> of type <see cref="float"/>. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of vectors.</param>
     /// <param name="embedding">The vector to compare the collection's vectors with.</param>

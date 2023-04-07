@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -312,7 +313,7 @@ public class FunctionFlowRunnerTests
         string NormalizeSpacesBeforeFunctions(string input)
         {
             return Regex.Replace(input, @"\s+(?=<function|<[/]*if|<[/]*else|</plan)", string.Empty, RegexOptions.IgnoreCase)
-                .Replace("\n", string.Empty, System.StringComparison.OrdinalIgnoreCase);
+                .Replace("\n", string.Empty, StringComparison.OrdinalIgnoreCase);
         }
     }
 

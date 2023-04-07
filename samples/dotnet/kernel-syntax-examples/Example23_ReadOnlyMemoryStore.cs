@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
 
+// ReSharper disable once InconsistentNaming
 /// <summary>
 /// This sample provides a custom implementation of <see cref="IMemoryStore"/> that is read only.
 ///     In this sample, the data is stored in a JSON string and deserialized into an
