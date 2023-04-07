@@ -15,7 +15,7 @@ using RepoUtils;
 // ReSharper disable CommentTypo
 public static class Example17_ChatGPT
 {
-    public static async Task  RunAsync()
+    public static async Task RunAsync()
     {
         await OpenAIChatAsync();
         await AzureChatAsync();
