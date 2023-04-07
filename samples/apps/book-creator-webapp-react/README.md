@@ -18,6 +18,8 @@
    and/or `yarn start` from the command line.
 4. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
 
+> Working with Secrets: [KernelHttpServer's Readme](../../dotnet/KernelHttpServer/README.md#Working-with-Secrets) has a note on safely working with keys and other secrets.
+
 ## About the Book Creator Sample
 
 The Book creator sample allows you to enter in a topic then the

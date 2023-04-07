@@ -6,6 +6,7 @@ internal static class SemanticFunctionConstants
 {
     internal const string FunctionFlowFunctionDefinition =
         @"[EXAMPLE FUNCTIONS]
+
   AuthorAbility.Summarize:
     description: summarizes the input text
     inputs:
@@ -24,6 +25,7 @@ internal static class SemanticFunctionConstants
     inputs:
     - input: the text to email
     - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
+
 [END EXAMPLE FUNCTIONS]
 
 <goal>Summarize an input, translate to french, and e-mail to John Doe</goal>
@@ -35,6 +37,7 @@ internal static class SemanticFunctionConstants
 </plan><!-- END -->
 
 [EXAMPLE FUNCTIONS]
+
   Everything.Summarize:
     description: summarize input text
     inputs:
@@ -102,7 +105,9 @@ To create a plan, follow these steps:
 12. Use only the [AVAILABLE FUNCTIONS].
 
 [AVAILABLE FUNCTIONS]
+
 {{$available_functions}}
+
 [END AVAILABLE FUNCTIONS]
 
 <goal>{{$input}}</goal>

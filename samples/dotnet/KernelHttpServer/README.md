@@ -28,6 +28,10 @@ Two endpoints will be exposed by the service API:
 -   **InvokeFunction**: [POST] `http://localhost:7071/api/skills/{skillName}/invoke/{functionName}`
 -   **Ping**: [GET] `http://localhost:7071/api/ping`
 
+### Working with Secrets
+
+We need keys to work with various aspects of the project including accessing openAI models. This opens up the possibility of exposing keys in commits. There are a [couple of options](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows) to safeguard developers from exposing keys. Outside of using the dotnet's users-secrets and environment variables, we've also added *.development.config to the .gitignore if developers want to use config files for secret storage.
+
 ## Next steps
 
 Now that your service API is running locally,

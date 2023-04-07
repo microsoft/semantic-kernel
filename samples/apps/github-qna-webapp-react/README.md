@@ -16,6 +16,8 @@
    and/or `yarn start` from the command line.
 4. A browser will open or you can navigate to `http://localhost:3000` to use the sample.
 
+> Working with Secrets: [KernelHttpServer's Readme](../../dotnet/KernelHttpServer/README.md#Working-with-Secrets) has a note on safely working with keys and other secrets.
+
 ## About the GitHub Repo Q&A Bot Sample
 
 The GitHub Repo Q&A Bot sample allows you to pull in data from a public GitHub

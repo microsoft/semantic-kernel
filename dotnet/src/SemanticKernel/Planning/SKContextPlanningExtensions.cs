@@ -9,8 +9,10 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using static Microsoft.SemanticKernel.CoreSkills.PlannerSkill;
 
+#pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace // Extension methods
 namespace Microsoft.SemanticKernel.Orchestration;
+#pragma warning restore IDE0130
 
 internal static class SKContextPlanningExtensions
 {
@@ -43,7 +45,7 @@ internal static class SKContextPlanningExtensions
     /// <param name="config">The planner skill config.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded skills and functions.</returns>
-    internal static async Task<List<FunctionView>> GetAvailableFunctionsAsync(
+    internal static async Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync(
         this SKContext context,
         PlannerSkillConfig config,
         string? semanticQuery = null)
@@ -91,7 +93,9 @@ internal static class SKContextPlanningExtensions
             result.AddRange(missingFunctions);
         }
 
-        return result;
+        return result
+            .OrderBy(x => x.SkillName)
+            .ThenBy(x => x.Name);
     }
 
     internal static async Task<IEnumerable<FunctionView>> GetRelevantFunctionsAsync(SKContext context, IEnumerable<FunctionView> availableFunctions,
