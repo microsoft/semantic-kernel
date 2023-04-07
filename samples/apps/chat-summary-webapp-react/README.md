@@ -20,7 +20,7 @@ Watch the [Chat Summary Quick Start Video](https://aka.ms/SK-Samples-SimChat-Vid
 
 ### Working with Secrets
 
-We need keys to work with various aspects of the project including accessing openAI models. This opens up the possibility of exposing keys in commits. There are a [couple of options](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows) to safe guard developers from exposing keys. Outside of using the Secret Manager and environment variables, we've also added *.development.config to the .gitignore if developers want to use config files for secret storage.
+[KernelHttpServer's Readme](../dotnet/KernelHttpServer/README.md#Working-with-Secrets) has a note on safely working with keys and other secrets.
 
 ## About the Simple Chat Summary Sample
 
