@@ -24,7 +24,7 @@ def test_can_be_imported():
 async def test_can_read_async():
     skill = FileIOSkill()
 
-    # Note: On Windows, we must use delete=False, otherwise the skill cannot open the file
+    # Note: On Windows, we must use delete=False, or the skill cannot open the file
     fp = None
     try:
         with tempfile.NamedTemporaryFile(mode="w", delete=False) as fp:

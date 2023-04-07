@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import List, Tuple
 import os
-import pathlib
+from typing import List, Tuple
 
 from pytest import mark, raises
 
