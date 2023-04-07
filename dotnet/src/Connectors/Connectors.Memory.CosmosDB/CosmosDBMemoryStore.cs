@@ -194,7 +194,10 @@ public class CosmosDBMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(
+        string collectionName,
+        IEnumerable<MemoryRecord> records,
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var r in records)
         {

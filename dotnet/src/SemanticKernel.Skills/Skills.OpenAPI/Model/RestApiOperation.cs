@@ -36,7 +36,7 @@ internal class RestApiOperation
 
     /// <summary>
     /// The operation method - GET, POST, PUT, DELETE.
-    /// </summary>o
+    /// </summary>
     public HttpMethod Method { get; }
 
     /// <summary>
