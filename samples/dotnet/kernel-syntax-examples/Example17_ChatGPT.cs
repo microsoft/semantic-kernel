@@ -20,6 +20,7 @@ public static class Example17_ChatGPT
         await OpenAIChatAsync();
         await AzureChatAsync();
     }
+
     public static async Task OpenAIChatAsync()
     {
         Console.WriteLine("======== SK with ChatGPT ========");
@@ -82,6 +83,7 @@ public static class Example17_ChatGPT
         ------------------------
         */
     }
+
     public static async Task AzureChatAsync()
     {
         Console.WriteLine("======== SK with ChatGPT ========");

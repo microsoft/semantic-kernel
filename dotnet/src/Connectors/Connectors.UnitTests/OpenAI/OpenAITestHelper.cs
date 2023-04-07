@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -26,11 +21,12 @@ internal static class OpenAITestHelper
     {
         return File.ReadAllText($"./OpenAI/TestData/{fileName}");
     }
+
     /// <summary>
     /// Returns mocked instance of <see cref="DelegatingHandler"/>.
     /// </summary>
     /// <param name="httpResponseMessage">Message to return for mocked <see cref="DelegatingHandler"/>.</param>
-    internal static DelegatingHandler GetAzureDelegatingHandlerMock(HttpResponseMessage httpResponseMessage)
+    private static DelegatingHandler GetAzureDelegatingHandlerMock(HttpResponseMessage httpResponseMessage)
     {
         var delegatingHandler = new Mock<DelegatingHandler>();
 
@@ -44,20 +40,18 @@ internal static class OpenAITestHelper
 
         // Azure Completion will cache the model list by requesting the Deployment API.
         delegatingHandler
-          .Protected()
-          .Setup<Task<HttpResponseMessage>>(
-              "SendAsync",
-              ItExpr.Is<HttpRequestMessage>(request => request.RequestUri != null && request.RequestUri.LocalPath == "/openai/deployments"),
-              ItExpr.IsAny<CancellationToken>())
-          .ReturnsAsync(() => new HttpResponseMessage()
-          {
-              Content = new StringContent(GetTestResponse("deployment_test_response.json"))
-          });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(request => request.RequestUri != null && request.RequestUri.LocalPath == "/openai/deployments"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(() => new HttpResponseMessage
+            {
+                Content = new StringContent(GetTestResponse("deployment_test_response.json"))
+            });
 
         return delegatingHandler.Object;
     }
-
-
 
     /// <summary>
     /// Returns mocked instance of <see cref="MockDelegatingHandlerFactory"/>.
