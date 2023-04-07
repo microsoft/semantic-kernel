@@ -43,12 +43,12 @@ public class CosmosDBMemoryStore : IMemoryStore
     /// <param name="log">Optional logger.</param>
     /// <param name="cancel">Optional cancellation token.</param>
     /// <exception cref="CosmosException"></exception>
-    public async Task<CosmosDBMemoryStore> CreateAsync(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancel = default)
+    public static async Task<CosmosDBMemoryStore> CreateAsync(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancel = default)
     {
         var newStore = new CosmosDBMemoryStore();
 
         newStore._databaseName = databaseName;
-        this._log = log ?? NullLogger<CosmosDBMemoryStore>.Instance;
+        newStore._log = log ?? NullLogger<CosmosDBMemoryStore>.Instance;
         var response = await client.CreateDatabaseIfNotExistsAsync(newStore._databaseName, cancellationToken: cancel);
 
         if (response.StatusCode == HttpStatusCode.Created)
