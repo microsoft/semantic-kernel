@@ -7,6 +7,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -138,7 +139,8 @@ public class CosmosDBMemoryStore : IMemoryStore
                 }
                 else
                 {
-                    record = await System.Text.Json.JsonSerializer.DeserializeAsync<CosmosDBMemoryRecord>(responseMessage.Content!, cancellationToken: cancel);
+                    record = await System.Text.Json.JsonSerializer.DeserializeAsync<CosmosDBMemoryRecord>(responseMessage.Content, cancellationToken: cancel)
+                        ?? throw new CosmosException($"Unable to deserialize content as CosmosDBMemoryRecord: {responseMessage.Content}.", responseMessage.StatusCode, 0, collectionName, 0);
                 }
 
                 var embeddingHost = JsonConvert.DeserializeAnonymousType(
