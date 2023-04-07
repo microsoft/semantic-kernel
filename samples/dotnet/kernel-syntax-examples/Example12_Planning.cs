@@ -14,7 +14,6 @@ using Skills;
 using TextSkill = Skills.TextSkill;
 
 // ReSharper disable once InconsistentNaming
-
 internal static class Example12_Planning
 {
     public static async Task RunAsync()

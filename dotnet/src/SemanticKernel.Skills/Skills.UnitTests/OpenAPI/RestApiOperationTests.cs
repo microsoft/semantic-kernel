@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 using Xunit;
 
 namespace SemanticKernel.Skills.UnitTests.OpenAPI;
@@ -76,10 +76,10 @@ public class RestApiOperationTests
         var sut = new RestApiOperation("fake_id", "fake_url", "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
 
         //Act
-        void act() => sut.RenderHeaders(new Dictionary<string, string>());
+        void Act() => sut.RenderHeaders(new Dictionary<string, string>());
 
         //assert
-        Assert.Throws<RestApiOperationException>(act);
+        Assert.Throws<RestApiOperationException>(Act);
     }
 
     [Fact]
@@ -99,10 +99,10 @@ public class RestApiOperationTests
         var sut = new RestApiOperation("fake_id", "fake_url", "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
 
         //Act
-        void act() => sut.RenderHeaders(new Dictionary<string, string>());
+        void Act() => sut.RenderHeaders(new Dictionary<string, string>());
 
         //assert
-        Assert.Throws<RestApiOperationException>(act);
+        Assert.Throws<RestApiOperationException>(Act);
     }
 
     [Fact]
@@ -215,6 +215,6 @@ public class RestApiOperationTests
         //Assert
         Assert.NotNull(url);
 
-        Assert.EndsWith(encodedEquivalent, url.OriginalString, System.StringComparison.InvariantCulture);
+        Assert.EndsWith(encodedEquivalent, url.OriginalString, StringComparison.InvariantCulture);
     }
 }
