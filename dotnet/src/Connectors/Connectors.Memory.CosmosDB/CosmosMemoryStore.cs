@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -14,7 +13,6 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
-using Newtonsoft.Json;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Cosmos;
 
@@ -30,37 +28,44 @@ public class CosmosMemoryStore : IMemoryStore
     private string _databaseName;
     private ILogger _log;
 
-    /// <summary>
-    /// Constructor for a memory store backed by a Cosmos instance.
-    /// </summary>
-    /// <param name="client"></param>
-    /// <param name="databaseName"></param>
-    /// <param name="log"></param>
-    /// <param name="cancel"></param>
-    /// <returns></returns>
-    /// <exception cref="CosmosException"></exception>
-    public async Task<CosmosMemoryStore> CreateAsync(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancel = default)
+#pragma warning disable CS8618 // Non-nullable field is uninitialized: Class instance is created and populated via factory method.
+    private CosmosMemoryStore()
     {
-        this._databaseName = databaseName;
-        this._log = log ?? NullLogger<CosmosMemoryStore>.Instance;
-        var response = await client.CreateDatabaseIfNotExistsAsync(this._databaseName, cancellationToken: cancel);
+    }
+#pragma warning restore CS8618 // Non-nullable field is uninitialized
+
+    /// <summary>
+    /// Factory method to initialize a new instance of the <see cref="CosmosMemoryStore"/> class.
+    /// </summary>
+    /// <param name="client">Client with endpoint and authentication to the Azure CosmosDB Account.</param>
+    /// <param name="databaseName">The name of the database to back the memory store.</param>
+    /// <param name="log">Optional logger.</param>
+    /// <param name="cancel">Optional cancellation token.</param>
+    /// <exception cref="CosmosException"></exception>
+    public static async Task<CosmosMemoryStore> CreateAsync(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancel = default)
+    {
+        var newStore = new CosmosMemoryStore();
+
+        newStore._databaseName = databaseName;
+        newStore._log = log ?? NullLogger<CosmosMemoryStore>.Instance;
+        var response = await client.CreateDatabaseIfNotExistsAsync(newStore._databaseName, cancellationToken: cancel);
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
-            this._log.LogInformation("Created database {0}", this._databaseName);
+            newStore._log.LogInformation("Created database {0}", newStore._databaseName);
         }
         else if (response.StatusCode == HttpStatusCode.OK)
         {
-            this._log.LogInformation("Database {0}", this._databaseName);
+            newStore._log.LogInformation("Database {0}", newStore._databaseName);
         }
         else
         {
-            throw new CosmosException("Database does not exist and was not created", response.StatusCode, 0, this._databaseName, 0);
+            throw new CosmosException("Database does not exist and was not created", response.StatusCode, 0, newStore._databaseName, 0);
         }
 
-        this._database = response.Database;
+        newStore._database = response.Database;
 
-        return this;
+        return newStore;
     }
 
     /// <inheritdoc />
@@ -75,8 +80,7 @@ public class CosmosMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        var properties = new ContainerProperties(collectionName, "/" + collectionName);
-        var response = await this._database.CreateContainerIfNotExistsAsync(properties, cancellationToken: cancel);
+        var response = await this._database.CreateContainerIfNotExistsAsync(collectionName, "/" + collectionName, cancellationToken: cancel);
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
@@ -95,64 +99,61 @@ public class CosmosMemoryStore : IMemoryStore
     /// <inheritdoc />
     public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
     {
-        var container = this._database.Client.GetContainer(this._databaseName, collectionName);
-        return Task.FromResult(container != null);
+        // Azure Cosmos DB does not support checking if container exists without attempting to create it.
+        // Note that CreateCollectionIfNotExistsAsync() is idempotent. This does not break the interface but it is not ideal.
+        return Task.FromResult(false);
     }
 
     /// <inheritdoc />
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
-        var response = await container.DeleteContainerAsync(cancellationToken: cancel);
-
-        if (response.StatusCode == HttpStatusCode.OK)
+        try
         {
-            this._log.LogInformation("Collection {0} deleted", collectionName);
+            await container.DeleteContainerAsync(cancellationToken: cancel);
         }
-        else
+        catch (CosmosException ex)
         {
-            throw new CosmosException("Unable to delete collection", response.StatusCode, 0, collectionName, 0);
+            this._log.LogError(ex, "Failed to delete collection {0}: {2} - {3}", collectionName, ex.StatusCode, ex.Message);
         }
     }
 
     /// <inheritdoc />
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, CancellationToken cancel = default)
     {
+        var id = this.ToCosmosFriendlyId(key);
+        var partitionKey = PartitionKey.None;
+
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
+        MemoryRecord? memoryRecord = null;
 
-        using (var responseMessage = await container.ReadItemStreamAsync(this.ToCosmosFriendlyId(key), new Microsoft.Azure.Cosmos.PartitionKey(collectionName), cancellationToken: cancel))
+        var response = await container.ReadItemAsync<CosmosMemoryRecord>(id, partitionKey, cancellationToken: cancel);
+
+        if (response == null)
         {
-            if (!responseMessage.IsSuccessStatusCode)
+            this._log?.LogWarning("Received no get response collection {1}", collectionName);
+        }
+        else if (response.StatusCode != HttpStatusCode.OK)
+        {
+            this._log?.LogWarning("Failed to get record from collection {1} with status code {2}", collectionName, response.StatusCode);
+        }
+        else
+        {
+            var result = response.Resource;
+
+            var vector = System.Text.Json.JsonSerializer.Deserialize<float[]>(result.EmbeddingString);
+
+            if (vector != null)
             {
-                this._log?.LogWarning("Failed to get item {0} from collection {1} with status code {2}", key, collectionName, responseMessage.StatusCode);
-                return null;
-            }
-
-            using (responseMessage.Content)
-            {
-                CosmosMemoryRecord record;
-
-                if (typeof(Stream).IsAssignableFrom(typeof(CosmosMemoryRecord)))
-                {
-                    record = ((CosmosMemoryRecord)(object)responseMessage.Content);
-                }
-                else
-                {
-                    record = await System.Text.Json.JsonSerializer.DeserializeAsync<CosmosMemoryRecord>(responseMessage.Content, cancellationToken: cancel)
-                        ?? throw new CosmosException($"Unable to deserialize content as CosmosMemoryRecord: {responseMessage.Content}.", responseMessage.StatusCode, 0, collectionName, 0);
-                }
-
-                var embeddingHost = JsonConvert.DeserializeAnonymousType(
-                    record!.EmbeddingString,
-                    new { Embedding = new { vector = new List<float>() } });
-
-                return MemoryRecord.FromJson(
-                    record.MetadataString,
-                    new Embedding<float>(embeddingHost.Embedding.vector),
-                    record.Id,
-                    record.Timestamp);
+                memoryRecord = MemoryRecord.FromJson(
+                    result.MetadataString,
+                    new Embedding<float>(vector),
+                    result.Id,
+                    result.Timestamp);
             }
         }
+
+        return memoryRecord;
     }
 
     /// <inheritdoc/>
@@ -177,28 +178,31 @@ public class CosmosMemoryStore : IMemoryStore
 
         var entity = new CosmosMemoryRecord
         {
-            CollectionId = collectionName,
+            CollectionId = this.ToCosmosFriendlyId(collectionName),
             Id = record.Key,
             Timestamp = record.Timestamp,
-            EmbeddingString = string.Join(", ", record.Embedding.AsReadOnlySpan().ToArray()),
+            EmbeddingString = System.Text.Json.JsonSerializer.Serialize(record.Embedding.Vector),
             MetadataString = record.GetSerializedMetadata()
         };
 
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
 
-        await container.UpsertItemAsync(entity, cancellationToken: cancel, requestOptions: new ItemRequestOptions()
+        var response = await container.UpsertItemAsync(entity, cancellationToken: cancel);
+
+        if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
         {
-            EnableContentResponseOnWrite = false,
-        });
+            this._log.LogInformation("Upserted item to collection {0}", collectionName);
+        }
+        else
+        {
+            throw new CosmosException("Unable to upsert item collection", response.StatusCode, 0, collectionName, 0);
+        }
 
         return record.Key;
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> UpsertBatchAsync(
-        string collectionName,
-        IEnumerable<MemoryRecord> records,
-        [EnumeratorCancellation] CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var r in records)
         {
@@ -212,7 +216,7 @@ public class CosmosMemoryStore : IMemoryStore
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
         var response = await container.DeleteItemAsync<CosmosMemoryRecord>(
             key,
-            new Microsoft.Azure.Cosmos.PartitionKey(this.ToCosmosFriendlyId(key)),
+            PartitionKey.None,
             cancellationToken: cancel);
 
         if (response.StatusCode == HttpStatusCode.OK)
@@ -283,21 +287,10 @@ public class CosmosMemoryStore : IMemoryStore
             cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
     }
 
-    /// <summary>
-    /// Block constructor for a memory store backed by an Azure Cosmos DB instance. Not used.
-    /// </summary>
-    private CosmosMemoryStore(CosmosClient client, string databaseName, ILogger? log = null)
-    {
-        this._databaseName = databaseName;
-        this._database = client.GetDatabase(this._databaseName);
-        this._log = log ?? NullLogger<CosmosMemoryStore>.Instance;
-    }
-
     private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
-        var query = new QueryDefinition($"SELECT * FROM c WHERE c.collectionId = @collectionName")
-            .WithParameter("@collectionName", collectionName);
+        var query = new QueryDefinition("SELECT * FROM c");
 
         var iterator = container.GetItemQueryIterator<CosmosMemoryRecord>(query);
 
@@ -305,15 +298,16 @@ public class CosmosMemoryStore : IMemoryStore
 
         foreach (var item in items)
         {
-            var embeddingHost = JsonConvert.DeserializeAnonymousType(
-                item.EmbeddingString,
-                new { Embedding = new { vector = new List<float>() } });
+            var vector = System.Text.Json.JsonSerializer.Deserialize<float[]>(item.EmbeddingString);
 
-            yield return MemoryRecord.FromJson(
-                item.MetadataString,
-                new Embedding<float>(embeddingHost.Embedding.vector),
-                item.Id,
-                item.Timestamp);
+            if (vector != null)
+            {
+                yield return MemoryRecord.FromJson(
+                    item.MetadataString,
+                    new Embedding<float>(vector),
+                    item.Id,
+                    item.Timestamp);
+            }
         }
     }
 
