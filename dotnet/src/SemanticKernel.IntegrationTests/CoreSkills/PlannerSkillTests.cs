@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
+using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
