@@ -25,9 +25,6 @@ namespace Microsoft.SemanticKernel.Planning;
 /// </summary>
 public class ConditionalFlowHelper
 {
-    private readonly IKernel _kernel;
-
-    internal const string ReasonIdentifier = "Reason:";
     internal const string NoReasonMessage = "No reason was provided";
 
     private readonly ISKFunction _ifStructureCheckFunction;
@@ -40,7 +37,6 @@ public class ConditionalFlowHelper
     /// <param name="completionBackend"> A optional completion backend to run the internal semantic functions </param>
     internal ConditionalFlowHelper(IKernel kernel, ITextCompletion? completionBackend = null)
     {
-        this._kernel = kernel;
         this._ifStructureCheckFunction = kernel.CreateSemanticFunction(
             ConditionalFlowConstants.IfStructureCheckPrompt,
             skillName: "PlannerSkill_Excluded",
@@ -172,7 +168,7 @@ public class ConditionalFlowHelper
     }
 
     /// <summary>
-    /// Get the variables used in the If statement and ensure the structure is valid
+    /// Get the variables used in the If statement and ensure the structure is valid using LLM
     /// </summary>
     /// <param name="ifContent">If structure content</param>
     /// <param name="context">Current context</param>

@@ -4,8 +4,10 @@ using System.Globalization;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using System.Threading.Tasks;
+using System;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
+
 /// <summary>
 /// MathSkill provides a set of functions to make Math calculations.
 /// </summary>
@@ -26,15 +28,11 @@ public class MathSkill
     [SKFunctionName("Add")]
     [SKFunctionInput(Description = "The value to add")]
     [SKFunctionContextParameter(Name = "Amount", Description = "Amount to add")]
-    public async Task<string> AddAsync(string initialValue, SKContext context)
+    public async Task<string> AddAsync(string initialValueText, SKContext context)
     {
-#pragma warning disable CA1806
-        int.TryParse(initialValue, out var targetValue);
-#pragma warning restore CA1806
+        (int initialValue, int amount) = Validate(initialValueText, context);
 
-        var amount = int.Parse(context["Amount"], CultureInfo.InvariantCulture);
-
-        var result = targetValue + amount;
+        var result = initialValue + amount;
 
         return await Task.FromResult(result.ToString(CultureInfo.InvariantCulture));
     }
@@ -49,16 +47,27 @@ public class MathSkill
     [SKFunctionName("Subtract")]
     [SKFunctionInput(Description = "The value to subtract")]
     [SKFunctionContextParameter(Name = "Amount", Description = "Amount to subtract")]
-    public async Task<string> SubtractAsync(string initialValue, SKContext context)
+    public async Task<string> SubtractAsync(string initialValueText, SKContext context)
     {
-#pragma warning disable CA1806
-        int.TryParse(initialValue, out var targetValue);
-#pragma warning restore CA1806
+        (int initialValue, int amount) = Validate(initialValueText, context);
 
-        var amount = int.Parse(context["Amount"], CultureInfo.InvariantCulture);
-
-        var result = targetValue - amount;
+        var result = initialValue - amount;
 
         return await Task.FromResult(result.ToString(CultureInfo.InvariantCulture));
+    }
+
+    private static (int initialValue, int amount) Validate(string initialValueText, SKContext context)
+    {
+        if (!int.TryParse(initialValueText, NumberStyles.Any, CultureInfo.InvariantCulture, out var initialValue))
+        {
+            throw new ArgumentException("Initial value provided is not in numeric format", nameof(initialValueText));
+        }
+
+        if (!int.TryParse(context["Amount"], NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+        {
+            throw new ArgumentException("Context amount provided is not in numeric format", nameof(context));
+        }
+
+        return (initialValue, amount);  
     }
 }

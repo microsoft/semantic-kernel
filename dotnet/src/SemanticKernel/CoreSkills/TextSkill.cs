@@ -122,6 +122,7 @@ public class TextSkill
     /// Result: "HELLO WORLD"
     /// </example>
     /// <param name="text"> The string to get length. </param>
+    /// <param name="context">Context where the input2 value will be retrieved</param>
     /// <returns>Concatenation result from both inputs.</returns>
     [SKFunction("Concat two strings into one.")]
     [SKFunctionInput(Description = "First input to concatenate with")]
