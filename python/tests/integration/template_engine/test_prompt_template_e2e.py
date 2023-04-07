@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from typing import List, Tuple
+import os
+import pathlib
 
 from pytest import mark, raises
 
@@ -11,9 +13,9 @@ from semantic_kernel.template_engine.prompt_template_engine import PromptTemplat
 
 def _get_template_language_tests() -> List[Tuple[str, str]]:
     path = __file__
-    path = path[: path.rfind("/")]
+    path = os.path.dirname(path)
 
-    with open(f"{path}/tests.txt", "r") as file:
+    with open(os.path.join(path, "tests.txt"), "r") as file:
         content = file.readlines()
 
     key = ""
