@@ -34,7 +34,7 @@ and these components are functional:
    [Follow the steps to register an app here.](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
 
     1. Select Single-page application (SPA) as platform type, and the redirect
-       URI will be `http://localhost:3000`
+       URI will be `http://localhost:3000`.
     2. Select `Accounts in any organizational directory and personal Microsoft Accounts`
        as supported account types for this sample.
     3. Make a note of this Application (client) ID from the Azure Portal, we will
@@ -56,7 +56,7 @@ and these components are functional:
               your instance.
             * `“DeploymentOrModelID”: “text-davinci-003”,` or whichever option is
               appropriate for your instance.  
-            * `“Endpoint”:` “Your Azure Endpoint address, i.e. http://contoso.openai.azure.com”.
+            * `“Endpoint”:` “Your Azure Endpoint address, i.e. `http://contoso.openai.azure.com`”.
               If you are using OpenAI, leave this blank.
             * You will insert your Azure endpoint key during build of the backend
               API Server
@@ -94,7 +94,7 @@ and these components are functional:
     2. Copy `.env.example` into a new file with the name “`.env`” and make the
        following configuration changes to match your instance:
     3. Use the Application (client) ID from the Azure Portal steps above and
-       paste the GUID into the .env file next to `REACT_APP_CHAT_CLIENT_ID= `
+       paste the GUID into the `.env` file next to `REACT_APP_CHAT_CLIENT_ID= `
     4. Execute the command `yarn install`
     5. Execute the command `yarn start`
 
@@ -118,7 +118,7 @@ permission to connect.
 To resolve this, try the following:
 
 1. Confirm the backend service is running by opening a web browser, and navigating
-   to `https://localhost:40443/probe`
+   to `https://localhost:40443/probe`.
 2. You should see a confirmation message: `Semantic Kernel service is up and running`
 3. If your browser asks you to acknowledge the risks of visiting an insecure
    website, you must acknowledge the message before the front end will be
