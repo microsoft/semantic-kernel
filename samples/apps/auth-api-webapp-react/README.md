@@ -27,6 +27,8 @@
    and/or `yarn start` from the command line.
 7. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
 
+> Working with Secrets: [KernelHttpServer's Readme](../../dotnet/KernelHttpServer/README.md#Working-with-Secrets) has a note on safely working with keys and other secrets.
+
 ## About the Authenticated API’s Sample
 
 The Authenticated API’s sample allows you to use authentication to connect to the
