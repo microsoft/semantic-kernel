@@ -14,7 +14,7 @@ using Xunit;
 
 namespace SemanticKernel.Skills.UnitTests.OpenAPI;
 
-public sealed class OpenApiDocumentParserV30Tests : IDisposable
+public sealed class OpenApiDocumentParserV31Tests : IDisposable
 {
     /// <summary>
     /// System under test - an instance of OpenApiDocumentParser class.
@@ -27,11 +27,11 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     private readonly Stream _openApiDocument;
 
     /// <summary>
-    /// Creates an instance of a <see cref="OpenApiDocumentParserV30Tests"/> class.
+    /// Creates an instance of a <see cref="OpenApiDocumentParserV31Tests"/> class.
     /// </summary>
-    public OpenApiDocumentParserV30Tests()
+    public OpenApiDocumentParserV31Tests()
     {
-        this._openApiDocument = ResourceSkillsProvider.LoadFromResource("documentV3_0.json");
+        this._openApiDocument = ResourceSkillsProvider.LoadFromResource("documentV3_1.yaml");
 
         this._sut = new OpenApiDocumentParser();
     }
@@ -186,8 +186,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.True(operation.Headers.ContainsKey("X-Operation-Csv-Ids"));
     }
 
-    private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId,
-        RestApiOperationParameterLocation location, string name)
+    private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId, RestApiOperationParameterLocation location, string name)
     {
         Assert.True(operations.Any());
 

@@ -8,10 +8,15 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 
@@ -21,20 +26,87 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 internal class OpenApiDocumentParser : IOpenApiDocumentParser
 {
     /// <inheritdoc/>
-    public IList<RestApiOperation> Parse(Stream stream)
+    public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, CancellationToken cancellationToken = default)
     {
-        var openApiDocument = new OpenApiStreamReader().Read(stream, out var diagnostic);
+        var jsonObject = await this.DowngradeDocumentVersionToSuportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        if (diagnostic.Errors.Any())
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(jsonObject.ToJson()));
+
+        var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+
+        if (result.OpenApiDiagnostic.Errors.Any())
         {
-            throw new OpenApiDocumentParsingException(
-                $"Parsing of '{openApiDocument.Info?.Title}' OpenAPI document failed. Details: {string.Join(';', diagnostic.Errors)}");
+            throw new OpenApiDocumentParsingException($"Parsing of '{result.OpenApiDocument.Info?.Title}' OpenAPI document failed. Details: {string.Join(';', result.OpenApiDiagnostic.Errors)}");
         }
 
-        return ExtractRestApiOperations(openApiDocument);
+        return ExtractRestApiOperations(result.OpenApiDocument);
     }
 
     #region private
+
+    /// <summary>
+    /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
+    /// This class relies on Microsoft.OpenAPI.NET library to work with OpenApi documents.
+    /// The library, at the moment, does not support 3.1 spec, and the latest supported version is 3.0.1.
+    /// There's an open issue tracking the support progress - https://github.com/microsoft/OpenAPI.NET/issues/795
+    /// This method should be removed/revised as soon the support is added.
+    /// </summary>
+    /// <param name="stream">The original OpenAPI document stream.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>OpenAPI document with downgraded document version.</returns>
+    private async Task<JsonObject> DowngradeDocumentVersionToSuportedOneAsync(Stream stream, CancellationToken cancellationToken)
+    {
+        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken);
+        if (jsonObject == null)
+        {
+            //The document is malformed.
+            throw new OpenApiDocumentParsingException($"Parsing of OpenAPI document failed.");
+        }
+
+        if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropetyName, out var propertyNode))
+        {
+            //The document is either malformed or has 2.x version that specifies document version in the 'swagger' property rather than in the 'openapi' one.
+            return jsonObject;
+        }
+
+        if (propertyNode is not JsonValue value)
+        {
+            //The 'openapi' property has unexpected type.
+            return jsonObject;
+        }
+
+        if (!Version.TryParse(value.ToString(), out var version))
+        {
+            //The 'openapi' property is malformed.
+            return jsonObject;
+        }
+
+        if (version > s_latestSupportedVersion)
+        {
+            jsonObject[OpenApiVersionPropetyName] = s_latestSupportedVersion.ToString();
+        }
+
+        return jsonObject;
+    }
+
+    /// <summary>
+    /// Converts YAML content to JSON content.
+    /// The method uses SharpYaml library that comes as a not-direct dependency of Microsoft.AopenAPI.NET library.
+    /// Should be replaced later when there's more convenient way to convert YAML content to JSON one.
+    /// </summary>
+    /// <param name="stream">The JAML/JSON content stream.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON content stream.</returns>
+    private static async Task<JsonObject?> ConvertContentToJsonAsync(Stream stream, CancellationToken cancellationToken = default)
+    {
+        var serializer = new SharpYaml.Serialization.Serializer();
+
+        var obj = serializer.Deserialize(stream);
+
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(obj)));
+
+        return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Parses an OpenApi document and extracts REST API operations.
@@ -182,10 +254,9 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
             return new List<RestApiOperationPayloadProperty>();
         }
 
-        if (level > s_payloadPropertiesHierarchyMaxDepth)
+        if (level > PayloadPropertiesHierarchyMaxDepth)
         {
-            throw new OpenApiDocumentParsingException(
-                $"Max level {s_payloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
+            throw new OpenApiDocumentParsingException($"Max level {PayloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
         }
 
         var result = new List<RestApiOperationPayloadProperty>();
@@ -283,9 +354,24 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     };
 
     /// <summary>
+    /// An instance of the OpenApiStreamReader class.
+    /// </summary>
+    private OpenApiStreamReader _openApiReader = new OpenApiStreamReader();
+
+    /// <summary>
+    /// Latest supported version of OpenAPI document.
+    /// </summary>
+    private static Version s_latestSupportedVersion = new Version(3, 0, 1);
+
+    /// <summary>
     /// Max depth to traverse down OpenApi schema to discover payload properties.
     /// </summary>
-    private static int s_payloadPropertiesHierarchyMaxDepth = 10;
+    private const int PayloadPropertiesHierarchyMaxDepth = 10;
+
+    /// <summary>
+    /// Name of property that contains OpenAPI document version.
+    /// </summary>
+    private const string OpenApiVersionPropetyName = "openapi";
 
     #endregion
 }

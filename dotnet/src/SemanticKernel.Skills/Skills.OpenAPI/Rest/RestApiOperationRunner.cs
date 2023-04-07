@@ -49,7 +49,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     }
 
     /// <inheritdoc/>
-    public async Task<JsonNode?> RunAsync(RestApiOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
+    public Task<JsonNode?> RunAsync(RestApiOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
         var url = operation.BuildOperationUrl(arguments);
 
@@ -57,7 +57,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
 
         var payload = BuildOperationPayload(operation.Payload, arguments);
 
-        return await this.SendAsync(url, operation.Method, headers, payload, cancellationToken);
+        return this.SendAsync(url, operation.Method, headers, payload, cancellationToken);
     }
 
     #region private
@@ -91,9 +91,9 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
             }
         }
 
-        using var responseMessage = await this._httpClient.SendAsync(requestMessage, cancellationToken);
+        using var responseMessage = await this._httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        var content = await responseMessage.Content.ReadAsStringAsync();
+        var content = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         responseMessage.EnsureSuccessStatusCode();
 

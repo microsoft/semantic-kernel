@@ -11,11 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="OpenAPI\TestSkills\documentV3_1.yaml" />
     <None Remove="OpenAPI\TestSkills\openapi.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="OpenAPI\TestSkills\documentV2_0.json" />
+    <EmbeddedResource Include="OpenAPI\TestSkills\documentV3_1.yaml" />
     <EmbeddedResource Include="OpenAPI\TestSkills\documentV3_0.json" />
   </ItemGroup>
 
