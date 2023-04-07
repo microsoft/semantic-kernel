@@ -35,11 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="..\..\..\skills\**">
-      <Link>skills\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </AdditionalFiles>
-
     <None Include="$(IntDir).generated\AIPlugins.AzureFunctions.Generator\AIPlugins.AzureFunctions.Generator.SemanticSkillGenerator\**">
       <Link>.generated\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>

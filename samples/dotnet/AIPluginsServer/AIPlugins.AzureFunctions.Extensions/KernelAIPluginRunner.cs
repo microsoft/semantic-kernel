@@ -14,11 +14,11 @@ public class KernelAIPluginRunner : IAIPluginRunner
     private const string DefaultSemanticSkillsFolder = "skills";
 
     private readonly ILogger<KernelAIPluginRunner> _logger;
-    private IKernelFactory _kernelFactory;
+    private readonly IKernel _kernel;
 
-    public KernelAIPluginRunner(IKernelFactory kernelFactory, ILoggerFactory loggerFactory)
+    public KernelAIPluginRunner(IKernel kernel, ILoggerFactory loggerFactory)
     {
-        this._kernelFactory = kernelFactory;
+        this._kernel = kernel;
         this._logger = loggerFactory.CreateLogger<KernelAIPluginRunner>();
     }
 
@@ -29,9 +29,7 @@ public class KernelAIPluginRunner : IAIPluginRunner
         // Assuming operation ID is of the format "skill/function"
         string[] parts = operationId.Split('/');
 
-        IKernel kernel = this._kernelFactory.CreateKernel();
-
-        var function = kernel.Skills.GetSemanticFunction(parts[0], parts[1]);
+        var function = this._kernel.Skills.GetSemanticFunction(parts[0], parts[1]);
         if (function == null)
         {
             HttpResponseData errorResponse = req.CreateResponse(HttpStatusCode.NotFound);
@@ -39,7 +37,7 @@ public class KernelAIPluginRunner : IAIPluginRunner
             return errorResponse;
         }
 
-        var result = await kernel.RunAsync(contextVariables, function);
+        var result = await this._kernel.RunAsync(contextVariables, function);
         if (result.ErrorOccurred)
         {
             HttpResponseData errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
