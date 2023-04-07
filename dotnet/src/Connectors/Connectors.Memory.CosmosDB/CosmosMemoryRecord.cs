@@ -7,10 +7,10 @@ using Newtonsoft.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Cosmos;
 
 /// <summary>
-/// A CosmosDB memory record.
+/// A Cosmos memory record.
 /// </summary>
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class CosmosDBMemoryRecord
+public class CosmosMemoryRecord
 {
     /// <summary>
     /// Unique identifier of the memory record.
