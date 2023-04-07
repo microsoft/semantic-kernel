@@ -21,7 +21,7 @@ export const Login: React.FC = () => {
     const handleError = (error: any) => {
         console.error(error);
         setErrorMessage(
-            `Login failed. Check that you have a valid REACT_APP_CHAT_CLIENT_ID set in your .env file. See ${
+            `Login failed. Check that you have a valid REACT_APP_AAD_CLIENT_ID set in your .env file. See ${
                 (error as Error).name
             } in console for more details.`,
         );
