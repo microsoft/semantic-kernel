@@ -7,7 +7,6 @@ from typing import Any, Optional
 from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
 )
-from semantic_kernel.utils.auth_providers import try_get_auth_from_named_provider
 
 
 class AzureTextEmbedding(OpenAITextEmbedding):
@@ -23,15 +22,12 @@ class AzureTextEmbedding(OpenAITextEmbedding):
         api_version: str = "2022-12-01",
         logger: Optional[Logger] = None,
         use_ad_auth=False,
-        auth_provider: Optional[str] = None,
     ) -> None:
         """
         Initialize an AzureTextEmbedding backend.
 
-        You must provide either:
+        You must provide:
         - A deployment_name, endpoint, and api_key (plus, optionally: use_ad_auth)
-        OR:
-        - A deployment_name and auth_provider
 
         :param deployment_name: The name of the Azure deployment. This value
             will correspond to the custom name you chose for your deployment
@@ -49,25 +45,7 @@ class AzureTextEmbedding(OpenAITextEmbedding):
         :param logger: The logger instance to use. (Optional)
         :param use_ad_auth: Whether to use Azure Active Directory authentication.
             (Optional) The default value is False.
-        :param auth_provider: The name of the auth provider to use. (Optional)
-            If the value provided is not None, the endpoint, api_key, and
-            use_ad_auth values will be ignored and will be retrieved from the
-            auth provider instead. If the value provided is None, but none of
-            endpoint, api_key, or use_ad_auth are provided, we will attempt
-            to load the first available auth provider and use it.
         """
-        no_values = endpoint is None and api_key is None
-        if auth_provider is not None or no_values:
-            # Try to get endpoint/api_key/use_ad_auth via dynamic provider
-            try:
-                endpoint, api_key, use_ad_auth = try_get_auth_from_named_provider(
-                    auth_provider
-                )
-            except Exception as e:
-                raise ValueError(
-                    f"Failed to get auth from provider {auth_provider}: {e}"
-                )
-
         if not deployment_name:
             raise ValueError("The deployment name cannot be `None` or empty")
         if not api_key:
