@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -24,38 +25,48 @@ namespace Connectors.Memory.CosmosDB;
 /// </remarks>
 public class CosmosDBMemoryStore : IMemoryStore
 {
-    private readonly Database _database;
-    private readonly string _databaseName;
-    private readonly ILogger _log;
+    private Database _database;
+    private string _databaseName;
+    private ILogger _log;
+
+    [SuppressMessage("Performance", "CS8618:Non-nullable field is uninitialized. Consider declaring as nullable.",
+        Justification = "Class instance is created and populated via factor method.")]
+    private CosmosDBMemoryStore()
+    {
+    }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CosmosDBMemoryStore"/> class.
+    /// Factory method to initialize a new instance of the <see cref="CosmosDBMemoryStore"/> class.
     /// </summary>
     /// <param name="client">Client with endpoint and authentication to the Azure CosmosDB Account.</param>
     /// <param name="databaseName">The name of the database to back the memory store.</param>
     /// <param name="log">Optional logger.</param>
     /// <param name="cancel">Optional cancellation token.</param>
     /// <exception cref="CosmosException"></exception>
-    public CosmosDBMemoryStore(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancel = default)
+    public async Task<CosmosDBMemoryStore> CreateAsync(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancel = default)
     {
-        this._databaseName = databaseName;
+        var newStore = new CosmosDBMemoryStore();
+
+        newStore._databaseName = databaseName;
         this._log = log ?? NullLogger<CosmosDBMemoryStore>.Instance;
-        var response = await client.CreateDatabaseIfNotExistsAsync(this._databaseName, cancellationToken: cancel);
+        var response = await client.CreateDatabaseIfNotExistsAsync(newStore._databaseName, cancellationToken: cancel);
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
-            this._log.LogInformation("Created database {0}", this._databaseName);
+            newStore._log.LogInformation("Created database {0}", newStore._databaseName);
         }
         else if (response.StatusCode == HttpStatusCode.OK)
         {
-            this._log.LogInformation("Database {0}", this._databaseName);
+            newStore._log.LogInformation("Database {0}", newStore._databaseName);
         }
         else
         {
             throw new CosmosException("Database does not exist and was not created", response.StatusCode, 0, newStore._databaseName, 0);
         }
 
-        this._database = response.Database;
+        newStore._database = response.Database;
+
+        return newStore;
     }
 
     /// <inheritdoc />
