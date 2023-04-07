@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace SemanticKernel.IntegrationTests;
+namespace SemanticKernel.IntegrationTests.Fakes;
 
 internal class EmailSkill
 {
