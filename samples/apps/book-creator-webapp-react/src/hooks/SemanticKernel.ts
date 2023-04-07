@@ -3,7 +3,16 @@
 import { IAsk } from '../model/Ask';
 import { IAskResult } from '../model/AskResult';
 import {
-    IKeyConfig, SK_HTTP_HEADER_COMPLETION_BACKEND, SK_HTTP_HEADER_COMPLETION_ENDPOINT, SK_HTTP_HEADER_COMPLETION_KEY, SK_HTTP_HEADER_COMPLETION_MODEL, SK_HTTP_HEADER_EMBEDDING_BACKEND, SK_HTTP_HEADER_EMBEDDING_ENDPOINT, SK_HTTP_HEADER_EMBEDDING_KEY, SK_HTTP_HEADER_EMBEDDING_MODEL, SK_HTTP_HEADER_MSGRAPH
+    IKeyConfig,
+    SK_HTTP_HEADER_COMPLETION_BACKEND,
+    SK_HTTP_HEADER_COMPLETION_ENDPOINT,
+    SK_HTTP_HEADER_COMPLETION_KEY,
+    SK_HTTP_HEADER_COMPLETION_MODEL,
+    SK_HTTP_HEADER_EMBEDDING_BACKEND,
+    SK_HTTP_HEADER_EMBEDDING_ENDPOINT,
+    SK_HTTP_HEADER_EMBEDDING_KEY,
+    SK_HTTP_HEADER_EMBEDDING_MODEL,
+    SK_HTTP_HEADER_MSGRAPH,
 } from '../model/KeyConfig';
 
 interface ServiceRequest {
@@ -15,7 +24,7 @@ interface ServiceRequest {
 
 export class SemanticKernel {
     // eslint-disable-next-line @typescript-eslint/space-before-function-paren
-    constructor(private readonly serviceUrl: string) { }
+    constructor(private readonly serviceUrl: string) {}
 
     public invokeAsync = async (
         keyConfig: IKeyConfig,
@@ -73,17 +82,18 @@ export class SemanticKernel {
             });
 
             if (!response.ok) {
-                throw response.statusText + " => " + await response.text();
+                throw Object.assign(new Error(response.statusText + ' => ' + (await response.text())));
             }
 
             return (await response.json()) as T;
         } catch (e) {
-            var additional_error_msg = ''
+            var additional_error_msg = '';
             if (e instanceof TypeError) {
                 // fetch() will reject with a TypeError when a network error is encountered.
-                additional_error_msg = '\n\nPlease check you have the function running and that it is accessible by the app'
+                additional_error_msg =
+                    '\n\nPlease check you have the function running and that it is accessible by the app';
             }
-            throw e + additional_error_msg;
+            throw Object.assign(new Error(e + additional_error_msg));
         }
     };
 }

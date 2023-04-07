@@ -14,7 +14,6 @@ using Skills;
 using TextSkill = Skills.TextSkill;
 
 // ReSharper disable once InconsistentNaming
-
 internal static class Example12_Planning
 {
     public static async Task RunAsync()
@@ -23,6 +22,46 @@ internal static class Example12_Planning
         await EmailSamplesAsync();
         await BookSamplesAsync();
         await MemorySampleAsync();
+        await ConditionalSampleAsync();
+    }
+
+    private static async Task ConditionalSampleAsync()
+    {
+        Console.WriteLine("======== Planning - Conditional flow example ========");
+        var kernel = InitializeKernelAndPlanner(out var planner);
+
+        // Load additional skills to enable planner to do non-trivial asks.
+        string folder = RepoFiles.SampleSkillsPath();
+        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+        kernel.ImportSkill(new TimeSkill());
+
+        var originalPlan = await kernel.RunAsync(
+            @"If is still morning please give me a joke about coffee otherwise tell me one about afternoon, but if its night give me a poem about the moon",
+            planner["CreatePlan"]);
+
+        /*
+        <goal>If is still morning please give me a joke about coffee otherwise tell me one about afternoon, but if its night give me a poem about the moon</goal>
+        <plan>
+          <function._GLOBAL_FUNCTIONS_.HourNumber setContextVariable="CURRENT_HOUR"/>
+          <if condition="$CURRENT_HOUR lessthan 12">
+            <function.FunSkill.Joke input="coffee"/>
+          </if>
+          <else>
+            <if condition="$CURRENT_HOUR lessthan 18">
+              <function.FunSkill.Joke input="afternoon"/>
+            </if>
+            <else>
+              <function.FunSkill.ShortPoem input="the moon"/>
+            </else>
+          </else>
+        </plan>
+        */
+
+        Console.WriteLine("Original plan:");
+        Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
+
+        await ExecutePlanAsync(kernel, planner, originalPlan, 20);
     }
 
     private static async Task PoetrySamplesAsync()
@@ -53,7 +92,7 @@ internal static class Example12_Planning
     private static async Task EmailSamplesAsync()
     {
         Console.WriteLine("======== Planning - Create and Execute Email Plan ========");
-        var kernel = InitializeKernelAndPlanner(out var planner);
+        var kernel = InitializeKernelAndPlanner(out var planner, 512);
         kernel.ImportSkill(new EmailSkill(), "email");
 
         // Load additional skills to enable planner to do non-trivial asks.
@@ -176,7 +215,7 @@ internal static class Example12_Planning
         Console.WriteLine(executionResults.Variables.ToPlan().PlanString);
     }
 
-    private static IKernel InitializeKernelAndPlanner(out IDictionary<string, ISKFunction> planner)
+    private static IKernel InitializeKernelAndPlanner(out IDictionary<string, ISKFunction> planner, int maxTokens = 1024)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         kernel.Config.AddAzureOpenAITextCompletionService(
@@ -186,8 +225,7 @@ internal static class Example12_Planning
             Env.Var("AZURE_OPENAI_KEY"));
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
-        planner = kernel.ImportSkill(new PlannerSkill(kernel), "planning");
-
+        planner = kernel.ImportSkill(new PlannerSkill(kernel, maxTokens), "planning");
         return kernel;
     }
 

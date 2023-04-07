@@ -28,15 +28,15 @@ public static class ContextVariablesExtensions
     /// <param name="vars">The variables to update</param>
     /// <param name="plan">The Plan to update the <see cref="ContextVariables"/> with</param>
     /// <returns>The updated <see cref="ContextVariables"/></returns>
-    public static ContextVariables UpdateWithPlanEntry(this ContextVariables vars, Plan plan)
+    public static ContextVariables UpdateWithPlanEntry(this ContextVariables vars, SkillPlan plan)
     {
         vars.Update(plan.ToJson());
-        vars.Set(Plan.IdKey, plan.Id);
-        vars.Set(Plan.GoalKey, plan.Goal);
-        vars.Set(Plan.PlanKey, plan.PlanString);
-        vars.Set(Plan.IsCompleteKey, plan.IsComplete.ToString());
-        vars.Set(Plan.IsSuccessfulKey, plan.IsSuccessful.ToString());
-        vars.Set(Plan.ResultKey, plan.Result);
+        vars.Set(SkillPlan.IdKey, plan.Id);
+        vars.Set(SkillPlan.GoalKey, plan.Goal);
+        vars.Set(SkillPlan.PlanKey, plan.PlanString);
+        vars.Set(SkillPlan.IsCompleteKey, plan.IsComplete.ToString());
+        vars.Set(SkillPlan.IsSuccessfulKey, plan.IsSuccessful.ToString());
+        vars.Set(SkillPlan.ResultKey, plan.Result);
 
         return vars;
     }
@@ -47,12 +47,12 @@ public static class ContextVariablesExtensions
     /// <param name="vars">The <see cref="ContextVariables"/> to update</param>
     public static ContextVariables ClearPlan(this ContextVariables vars)
     {
-        vars.Set(Plan.IdKey, null);
-        vars.Set(Plan.GoalKey, null);
-        vars.Set(Plan.PlanKey, null);
-        vars.Set(Plan.IsCompleteKey, null);
-        vars.Set(Plan.IsSuccessfulKey, null);
-        vars.Set(Plan.ResultKey, null);
+        vars.Set(SkillPlan.IdKey, null);
+        vars.Set(SkillPlan.GoalKey, null);
+        vars.Set(SkillPlan.PlanKey, null);
+        vars.Set(SkillPlan.IsCompleteKey, null);
+        vars.Set(SkillPlan.IsSuccessfulKey, null);
+        vars.Set(SkillPlan.ResultKey, null);
         return vars;
     }
 
@@ -61,17 +61,17 @@ public static class ContextVariablesExtensions
     /// </summary>
     /// <param name="vars">The <see cref="ContextVariables"/> to read</param>
     /// <returns>An instance of Plan</returns>
-    public static Plan ToPlan(this ContextVariables vars)
+    public static SkillPlan ToPlan(this ContextVariables vars)
     {
-        if (vars.Get(Plan.PlanKey, out string plan))
+        if (vars.Get(SkillPlan.PlanKey, out string plan))
         {
-            vars.Get(Plan.IdKey, out string id);
-            vars.Get(Plan.GoalKey, out string goal);
-            vars.Get(Plan.IsCompleteKey, out string isComplete);
-            vars.Get(Plan.IsSuccessfulKey, out string isSuccessful);
-            vars.Get(Plan.ResultKey, out string result);
+            vars.Get(SkillPlan.IdKey, out string id);
+            vars.Get(SkillPlan.GoalKey, out string goal);
+            vars.Get(SkillPlan.IsCompleteKey, out string isComplete);
+            vars.Get(SkillPlan.IsSuccessfulKey, out string isSuccessful);
+            vars.Get(SkillPlan.ResultKey, out string result);
 
-            return new Plan()
+            return new SkillPlan()
             {
                 Id = id,
                 Goal = goal,
@@ -84,7 +84,7 @@ public static class ContextVariablesExtensions
 
         try
         {
-            return Plan.FromJson(vars.ToString());
+            return SkillPlan.FromJson(vars.ToString());
         }
         catch (ArgumentNullException)
         {
@@ -93,8 +93,8 @@ public static class ContextVariablesExtensions
         {
         }
 
-        // If Plan.FromJson fails, return a Plan with the current <see cref="ContextVariables"/> as the plan.
+        // If SkillPlan.FromJson fails, return a Plan with the current <see cref="ContextVariables"/> as the plan.
         // Validation of that `plan` will be done separately.
-        return new Plan() { PlanString = vars.ToString() };
+        return new SkillPlan() { PlanString = vars.ToString() };
     }
 }

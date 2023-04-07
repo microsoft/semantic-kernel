@@ -114,7 +114,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                log?.LogWarning(ex, "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}", skillName, functionName, ex.Message);
+                log?.LogWarning(ex,
+                    "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}",
+                    skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
 
@@ -250,7 +252,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         public string Description { get; set; }
     }
 
-    private enum DelegateTypes
+    internal enum DelegateTypes
     {
         Unknown = 0,
         Void = 1,
@@ -273,7 +275,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         OutTask = 18
     }
 
-    private SKFunction(
+    internal SKFunction(
         DelegateTypes delegateType,
         Delegate delegateFunction,
         IList<ParameterView> parameters,
@@ -484,7 +486,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private void EnsureContextHasSkills(SKContext context)
     {
         // If the function is invoked manually, the user might have left out the skill collection
-        if (context.Skills == null) { context.Skills = this._skillCollection; }
+        context.Skills ??= this._skillCollection;
     }
 
     private static MethodDetails GetMethodDetails(MethodInfo methodSignature, object? methodContainerInstance, ILogger? log = null)

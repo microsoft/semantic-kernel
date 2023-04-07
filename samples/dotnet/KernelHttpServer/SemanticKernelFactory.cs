@@ -18,7 +18,7 @@ internal static class SemanticKernelFactory
         HttpRequestData req,
         ILogger logger,
         IEnumerable<string>? skillsToLoad = null,
-        IMemoryStore<float>? memoryStore = null)
+        IMemoryStore? memoryStore = null)
     {
         var apiConfig = req.ToApiKeyConfig();
 
@@ -41,17 +41,19 @@ internal static class SemanticKernelFactory
         return _CompleteKernelSetup(req, builder, logger, skillsToLoad);
     }
 
-    private static KernelBuilder _ConfigureKernelBuilder(ApiKeyConfig config, KernelBuilder builder, IMemoryStore<float>? memoryStore)
+    private static KernelBuilder _ConfigureKernelBuilder(ApiKeyConfig config, KernelBuilder builder, IMemoryStore? memoryStore)
     {
         return builder.Configure(c =>
         {
             switch (config.CompletionConfig.AIService)
             {
                 case AIService.OpenAI:
-                    c.AddOpenAITextCompletionService(config.CompletionConfig.ServiceId, config.CompletionConfig.DeploymentOrModelId, config.CompletionConfig.Key);
+                    c.AddOpenAITextCompletionService(config.CompletionConfig.ServiceId, config.CompletionConfig.DeploymentOrModelId,
+                        config.CompletionConfig.Key);
                     break;
                 case AIService.AzureOpenAI:
-                    c.AddAzureOpenAITextCompletionService(config.CompletionConfig.ServiceId, config.CompletionConfig.DeploymentOrModelId, config.CompletionConfig.Endpoint,
+                    c.AddAzureOpenAITextCompletionService(config.CompletionConfig.ServiceId, config.CompletionConfig.DeploymentOrModelId,
+                        config.CompletionConfig.Endpoint,
                         config.CompletionConfig.Key);
                     break;
             }
@@ -61,7 +63,8 @@ internal static class SemanticKernelFactory
                 switch (config.EmbeddingConfig.AIService)
                 {
                     case AIService.OpenAI:
-                        c.AddOpenAIEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId, config.EmbeddingConfig.Key);
+                        c.AddOpenAIEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
+                            config.EmbeddingConfig.Key);
                         break;
                     case AIService.AzureOpenAI:
                         c.AddAzureOpenAIEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,

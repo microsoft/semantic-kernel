@@ -410,10 +410,11 @@ FodyWeavers.xsd
 *.key
 
 .env
+certs/
 launchSettings.json
-appsettings.development.json
-testsettings.development.json
 config.development.yaml
+*.development.config
+*.development.json
 .DS_Store
 .idea/
 node_modules/

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -25,12 +26,22 @@ internal class FunctionFlowRunner
     /// <summary>
     /// The tag name used in the plan xml for the solution.
     /// </summary>
-    internal const string SolutionTag = "plan";
+    internal const string PlanTag = "plan";
 
     /// <summary>
     /// The tag name used in the plan xml for a step that calls a skill function.
     /// </summary>
     internal const string FunctionTag = "function.";
+
+    /// <summary>
+    /// The tag name used in the plan xml for a conditional check
+    /// </summary>
+    internal const string ConditionIfTag = "if";
+
+    /// <summary>
+    /// The tag name used in the plan xml for a conditional check
+    /// </summary>
+    internal const string ConditionElseTag = "else";
 
     /// <summary>
     /// The attribute tag used in the plan xml for setting the context variable name to set the output of a function to.
@@ -44,9 +55,12 @@ internal class FunctionFlowRunner
 
     private readonly IKernel _kernel;
 
-    public FunctionFlowRunner(IKernel kernel)
+    private readonly ConditionalFlowHelper _conditionalFlowHelper;
+
+    public FunctionFlowRunner(IKernel kernel, ITextCompletion? completionBackend = null)
     {
         this._kernel = kernel;
+        this._conditionalFlowHelper = new ConditionalFlowHelper(kernel, completionBackend);
     }
 
     /// <summary>
@@ -57,10 +71,10 @@ internal class FunctionFlowRunner
     /// <returns>The resulting plan xml after executing a step in the plan.</returns>
     /// <context>
     /// Brief overview of how it works:
-    /// 1. The plan xml is parsed into an XmlDocument.
+    /// 1. The Solution xml is parsed into an XmlDocument.
     /// 2. The Goal node is extracted from the plan xml.
-    /// 3. The Solution node is extracted from the plan xml.
-    /// 4. The first function node in the Solution node is processed.
+    /// 3. The Plan node is extracted from the plan xml.
+    /// 4. The first function node in the plan node is processed.
     /// 5. The resulting plan xml is returned.
     /// </context>
     /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
@@ -68,10 +82,10 @@ internal class FunctionFlowRunner
     {
         try
         {
-            XmlDocument xmlDoc = new();
+            XmlDocument solutionXml = new();
             try
             {
-                xmlDoc.LoadXml("<xml>" + planPayload + "</xml>");
+                solutionXml.LoadXml("<xml>" + planPayload + "</xml>");
             }
             catch (XmlException e)
             {
@@ -79,14 +93,14 @@ internal class FunctionFlowRunner
             }
 
             // Get the Goal
-            var (goalTxt, goalXmlString) = GatherGoal(xmlDoc);
+            var (goalTxt, goalXmlString) = GatherGoal(solutionXml);
 
             // Get the Solution
-            XmlNodeList solution = xmlDoc.GetElementsByTagName(SolutionTag);
+            XmlNodeList planNodes = solutionXml.GetElementsByTagName(PlanTag);
 
             // Prepare content for the new plan xml
-            var solutionContent = new StringBuilder();
-            _ = solutionContent.AppendLine($"<{SolutionTag}>");
+            var planContent = new StringBuilder();
+            _ = planContent.AppendLine($"<{PlanTag}>");
 
             // Use goal as default function {{INPUT}} -- check and see if it's a plan in Input, if so, use goalTxt, otherwise, use the input.
             if (!context.Variables.Get("PLAN__INPUT", out var planInput))
@@ -94,7 +108,7 @@ internal class FunctionFlowRunner
                 // planInput should then be the context.Variables.ToString() only if it's not a plan json
                 try
                 {
-                    var plan = Plan.FromJson(context.Variables.ToString());
+                    var plan = SkillPlan.FromJson(context.Variables.ToString());
                     planInput = string.IsNullOrEmpty(plan.Goal) ? context.Variables.ToString() : goalTxt;
                 }
                 catch (Exception e) when (!e.IsCriticalException())
@@ -111,15 +125,15 @@ internal class FunctionFlowRunner
             context.Log.LogDebug("Processing solution");
 
             // Process the solution nodes
-            string stepResults = await this.ProcessNodeListAsync(solution, functionInput, context);
+            string stepResults = await this.ProcessNodeListAsync(planNodes, functionInput, context);
             // Add the solution and variable updates to the new plan xml
-            _ = solutionContent.Append(stepResults)
-                .AppendLine($"</{SolutionTag}>");
+            _ = planContent.Append(stepResults)
+                .AppendLine($"</{PlanTag}>");
             // Update the plan xml
-            var updatedPlan = goalXmlString + solutionContent.Replace("\r\n", "\n");
+            var updatedPlan = goalXmlString + planContent.Replace("\r\n", "\n");
             updatedPlan = updatedPlan.Trim();
 
-            context.Variables.Set(Plan.PlanKey, updatedPlan);
+            context.Variables.Set(SkillPlan.PlanKey, updatedPlan);
             context.Variables.Set("PLAN__INPUT", context.Variables.ToString());
 
             return context;
@@ -139,7 +153,7 @@ internal class FunctionFlowRunner
         foreach (XmlNode o in nodeList)
         {
             var parentNodeName = o.Name;
-
+            var ignoreElse = false;
             context.Log.LogTrace("{0}: found node", parentNodeName);
             foreach (XmlNode o2 in o.ChildNodes)
             {
@@ -154,12 +168,67 @@ internal class FunctionFlowRunner
                     continue;
                 }
 
+                if (o2.Name.StartsWith(ConditionElseTag, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    //If else is the first node throws
+                    if (o2.PreviousSibling == null)
+                    {
+                        throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "ELSE tag cannot be the first node in the plan.");
+                    }
+
+                    if (ignoreElse)
+                    {
+                        ignoreElse = false;
+
+                        context.Log.LogTrace("{0}: Skipping processed If's else tag from appending to the plan", parentNodeName);
+
+                        //Continue here will avoid adding this else to the next iteration of the plan
+                        continue;
+                    }
+                }
+
+                if (processFunctions && o2.Name.StartsWith(ConditionIfTag, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    context.Log.LogTrace("{0}: found IF tag node", parentNodeName);
+                    // Includes IF + ELSE statement
+                    var ifFullContent = o2.OuterXml;
+
+                    //Go for the next node to see if it's an else
+                    if (this.CheckIfNextNodeIsElseAndGetItsContents(o2, out var elseContents))
+                    {
+                        ifFullContent += elseContents;
+
+                        // Ignore the next immediate sibling else tag from this IF to the plan since we already processed it
+                        ignoreElse = true;
+                    }
+
+                    var functionVariables = context.Variables.Clone();
+                    functionVariables.Set("INPUT", ifFullContent);
+
+                    var branchIfOrElse = await this._conditionalFlowHelper.IfAsync(ifFullContent,
+                        new SKContext(functionVariables, this._kernel.Memory, this._kernel.Skills, this._kernel.Log,
+                            context.CancellationToken));
+
+                    _ = stepAndTextResults.Append(INDENT).AppendLine(branchIfOrElse);
+
+                    processFunctions = false;
+
+                    // We need to continue so we don't ignore any next siblings (If or Function) 
+                    continue;
+                }
+
                 if (o2.Name.StartsWith(FunctionTag, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var skillFunctionName = o2.Name.Split(FunctionTag)?[1] ?? string.Empty;
                     context.Log.LogTrace("{0}: found skill node {1}", parentNodeName, skillFunctionName);
                     GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
-                    if (processFunctions && !string.IsNullOrEmpty(functionName) && context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
+                    if (!context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
+                    {
+                        throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
+                            $"Plan is using an unavailable skill: {skillName}.{functionName}");
+                    }
+
+                    if (processFunctions && !string.IsNullOrEmpty(functionName))
                     {
                         Verify.NotNull(functionName, nameof(functionName));
                         Verify.NotNull(skillFunction, nameof(skillFunction));
@@ -173,7 +242,15 @@ internal class FunctionFlowRunner
                             foreach (XmlAttribute attr in o2.Attributes)
                             {
                                 context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
-                                if (attr.InnerText.StartsWith("$", StringComparison.InvariantCultureIgnoreCase))
+                                bool innerTextStartWithSign = attr.InnerText.StartsWith("$", StringComparison.InvariantCultureIgnoreCase);
+
+                                if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    variableTargetName = innerTextStartWithSign
+                                        ? attr.InnerText[1..]
+                                        : attr.InnerText;
+                                }
+                                else if (innerTextStartWithSign)
                                 {
                                     // Split the attribute value on the comma or ; character
                                     var attrValues = attr.InnerText.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
@@ -195,10 +272,6 @@ internal class FunctionFlowRunner
                                         }
                                     }
                                 }
-                                else if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    variableTargetName = attr.InnerText;
-                                }
                                 else if (attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
                                 {
                                     appendToResultName = attr.InnerText;
@@ -212,8 +285,8 @@ internal class FunctionFlowRunner
 
                         // capture current keys before running function
                         var keysToIgnore = functionVariables.Select(x => x.Key).ToList();
-
                         var result = await this._kernel.RunAsync(functionVariables, skillFunction);
+                        // TODO respect ErrorOccurred
 
                         // copy all values for VariableNames in functionVariables not in keysToIgnore to context.Variables
                         foreach (var (key, _) in functionVariables)
@@ -232,8 +305,8 @@ internal class FunctionFlowRunner
 
                         if (!string.IsNullOrEmpty(appendToResultName))
                         {
-                            _ = context.Variables.Get(Plan.ResultKey, out var resultsSoFar);
-                            context.Variables.Set(Plan.ResultKey,
+                            _ = context.Variables.Get(SkillPlan.ResultKey, out var resultsSoFar);
+                            context.Variables.Set(SkillPlan.ResultKey,
                                 string.Join(Environment.NewLine + Environment.NewLine, resultsSoFar, appendToResultName, result.ToString()).Trim());
                         }
 
@@ -253,6 +326,23 @@ internal class FunctionFlowRunner
         }
 
         return stepAndTextResults.Replace("\r\n", "\n").ToString();
+    }
+
+    private bool CheckIfNextNodeIsElseAndGetItsContents(XmlNode ifNode, out string? elseContents)
+    {
+        elseContents = null;
+        if (ifNode.NextSibling is null)
+        {
+            return false;
+        }
+
+        if (!ifNode.NextSibling.Name.Equals("else", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        elseContents = ifNode.NextSibling.OuterXml;
+        return true;
     }
 
     private static (string goalTxt, string goalXmlString) GatherGoal(XmlDocument xmlDoc)

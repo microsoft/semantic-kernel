@@ -65,7 +65,8 @@ public class SKContextExtensionsTests
 
         // Arrange Mock Memory and Result
         var skills = new Mock<ISkillCollection>();
-        var memoryQueryResult = new MemoryQueryResult(new MemoryRecordMetadata(false, "sourceName", functionView.ToFullyQualifiedName(), "description", "text"), 0.8);
+        var memoryQueryResult = new MemoryQueryResult(new MemoryRecordMetadata(false, "sourceName", functionView.ToFullyQualifiedName(), "description", "text"),
+            0.8);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
@@ -85,7 +86,7 @@ public class SKContextExtensionsTests
         var semanticQuery = "test";
 
         // Act
-        var result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
+        var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true)).ToList();
 
         //Assert
         Assert.NotNull(result);
@@ -96,7 +97,7 @@ public class SKContextExtensionsTests
         config.IncludedFunctions.UnionWith(new List<string> { "nativeFunctionName" });
 
         // Act
-        result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
+        result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -124,7 +125,10 @@ public class SKContextExtensionsTests
 
         // Arrange Mock Memory and Result
         var skills = new Mock<ISkillCollection>();
-        var memoryQueryResult = new MemoryQueryResult(new MemoryRecordMetadata(isReference: false, id: functionView.ToFullyQualifiedName(), text: "text", description: "description", externalSourceName: "sourceName"), relevance: 0.8);
+        var memoryQueryResult =
+            new MemoryQueryResult(
+                new MemoryRecordMetadata(isReference: false, id: functionView.ToFullyQualifiedName(), text: "text", description: "description",
+                    externalSourceName: "sourceName"), relevance: 0.8);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
@@ -144,7 +148,7 @@ public class SKContextExtensionsTests
         var semanticQuery = "test";
 
         // Act
-        var result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
+        var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true)).ToList();
 
         //Assert
         Assert.NotNull(result);
@@ -155,7 +159,7 @@ public class SKContextExtensionsTests
         config.IncludedFunctions.UnionWith(new List<string> { "nativeFunctionName" });
 
         // Act
-        result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
+        result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true)).ToList();
 
         // Assert
         Assert.NotNull(result);
