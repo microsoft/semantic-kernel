@@ -22,12 +22,15 @@ internal static class ConfigExtensions
             builder.AddEnvironmentVariables();
             builder.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true, reloadOnChange: true);
             // For settings from Key Vault, see https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-8.0
-            string? keyVaultName = ctx.Configuration["KeyVaultName"];
-            if (!string.IsNullOrEmpty(keyVaultName))
+            string? keyVaultUri = ctx.Configuration["KeyVaultUri"];
+            if (!string.IsNullOrWhiteSpace(keyVaultUri))
             {
                 builder.AddAzureKeyVault(
-                    new Uri($"https://{keyVaultName}.vault.azure.net/"),
+                    new Uri(keyVaultUri),
                     new DefaultAzureCredential());
+
+                /* See https://learn.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet
+                   for more information on how to use DefaultAzureCredential */
             }
         });
 
