@@ -14,12 +14,11 @@ import { Conversations } from '../redux/features/conversations/ConversationsStat
 import { ChatMessage } from './models/ChatMessage';
 import { ChatUser } from './models/ChatUser';
 import { IAsk } from './semantic-kernel/model/Ask';
-import { IAskResult } from './semantic-kernel/model/AskResult';
+import { IAskResult, Variables } from './semantic-kernel/model/AskResult';
 import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
 
 export const useChat = () => {
-    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { audience } = conversations[selectedId];    const dispatch = useAppDispatch();
+    const dispatch = useAppDispatch();
     const account = useAccount();
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const { botProfilePictureIndex } = useAppSelector((state: RootState) => state.conversations);
@@ -41,9 +40,20 @@ export const useChat = () => {
         lastTypingTimestamp: 0,
     };
 
-    const getAudienceMemberForId = (id: string, botId: string) => {
-        if (id === botId) return Constants.bot.profile;
+    // TODO: Verify consistent 'sender' field -- is it name or ID?
+    const getAudienceMemberForId = (id: string, botId: string, audience: ChatUser[]) => {
+        if (id === `${botId}-bot` || id === 'Bot') return Constants.bot.profile;
         return audience.find((member) => member.id === id);
+    };
+
+    const getVariableValue = (variables: Variables, key: string): string | undefined => {
+        for (const idx in variables) {
+            if (variables[idx].key === key) {
+                return variables[idx].value;
+            }
+        }
+        // End of array, did not find expected variable.
+        throw new Error(`Could not find valid ${key} variable in context.`);
     };
 
     const registerLoggedInUser = async () => {
@@ -76,13 +86,13 @@ export const useChat = () => {
 
             await sk.invokeAsync(ask, 'ChatMemorySkill', 'CreateChat').then(async (result: IAskResult) => {
                 const newChatId = result.value;
-                const initialBotMessage = result.variables['initialBotMessage'];
+                const initialBotMessage = getVariableValue(result.variables, 'initialBotMessage');
 
                 // TODO: hook up chat object once Tao makes change to return Chat object
                 const newChat: ChatState = {
                     id: newChatId,
                     title: chatTitle,
-                    messages: [JSON.parse(initialBotMessage)],
+                    messages: [JSON.parse(initialBotMessage!)],
                     audience: [loggedInUser],
                     botTypingTimestamp: 0,
                     botProfilePicture: botProfilePictures.at(botProfilePictureIndex) ?? '/assets/bot-icon-1.png',
@@ -111,7 +121,7 @@ export const useChat = () => {
             var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat');
             const messageResult = {
                 timestamp: new Date().getTime(),
-                sender: result.variables['userId'],
+                sender: getVariableValue(result.variables, 'userId')!,
                 content: result.value,
             };
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));
