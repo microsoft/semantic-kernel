@@ -581,7 +581,7 @@ public class SqliteMemoryStoreTests
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
         await db.CreateCollectionAsync(collection);
 
-        List<string> keys = new List<string>();
+        List<string> keys = new();
 
         // Act
         await foreach (var key in db.UpsertBatchAsync(collection, records))

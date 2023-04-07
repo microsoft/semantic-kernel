@@ -55,6 +55,7 @@ public static class KernelChatGptPluginExtensions
             {
                 response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
             }
+
             response.EnsureSuccessStatusCode();
 
             string gptPluginJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -136,6 +137,7 @@ public static class KernelChatGptPluginExtensions
         {
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {chatGptPluginPath} is found.");
         }
+
         kernel.Log.LogTrace("Registering Rest functions from {0} ChatGPT Plugin.", chatGptPluginPath);
 
         var skill = new Dictionary<string, ISKFunction>();
@@ -167,6 +169,7 @@ public static class KernelChatGptPluginExtensions
         {
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {filePath} is found.");
         }
+
         kernel.Log.LogTrace("Registering Rest functions from {0} ChatGPT Plugin.", filePath);
 
         var skill = new Dictionary<string, ISKFunction>();

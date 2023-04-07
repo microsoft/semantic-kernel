@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using RepoUtils;
 
+// ReSharper disable once InconsistentNaming
 public static class Example21_ChatGptPlugins
 {
     public static async Task RunAsync()

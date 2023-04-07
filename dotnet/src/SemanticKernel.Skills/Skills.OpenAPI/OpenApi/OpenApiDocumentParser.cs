@@ -246,7 +246,8 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="requiredProperties">List of required properties.</param>
     /// <param name="level">Current level in OpenApi schema.</param>
     /// <returns>The REST API operation payload properties.</returns>
-    private static IList<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties, int level = 0)
+    private static IList<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties,
+        int level = 0)
     {
         if (schema == null)
         {

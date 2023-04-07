@@ -21,7 +21,8 @@ internal static class RestApiOperationExtensions
         var parameters = new List<RestApiOperationParameter>(operation.Parameters);
 
         //Register "server-url" as a parameter so that it's possible to override it if needed.
-        parameters.Add(new RestApiOperationParameter(RestApiOperation.ServerUrlArgumentName, "string", false, RestApiOperationParameterLocation.Path, RestApiOperationParameterStyle.Simple, defaultValue: operation.ServerUrl));
+        parameters.Add(new RestApiOperationParameter(RestApiOperation.ServerUrlArgumentName, "string", false, RestApiOperationParameterLocation.Path,
+            RestApiOperationParameterStyle.Simple, defaultValue: operation.ServerUrl));
 
         //Add Payload properties.
         parameters.AddRange(CreateParametersFromPayloadProperties(operation.Payload));
@@ -47,18 +48,19 @@ internal static class RestApiOperationExtensions
             return Enumerable.Empty<RestApiOperationParameter>();
         }
 
-        IList<RestApiOperationParameter> ConverLeafProperties(RestApiOperationPayloadProperty property)
+        IList<RestApiOperationParameter> ConvertLeafProperties(RestApiOperationPayloadProperty property)
         {
             var parameters = new List<RestApiOperationParameter>();
 
             if (!property.Properties.Any()) //It's a leaf property
             {
-                parameters.Add(new RestApiOperationParameter(property.Name, property.Type, property.IsRequired, RestApiOperationParameterLocation.Body, RestApiOperationParameterStyle.Simple, description: property.Description));
+                parameters.Add(new RestApiOperationParameter(property.Name, property.Type, property.IsRequired, RestApiOperationParameterLocation.Body,
+                    RestApiOperationParameterStyle.Simple, description: property.Description));
             }
 
             foreach (var childProperty in property.Properties)
             {
-                parameters.AddRange(ConverLeafProperties(childProperty));
+                parameters.AddRange(ConvertLeafProperties(childProperty));
             }
 
             return parameters;
@@ -68,7 +70,7 @@ internal static class RestApiOperationExtensions
 
         foreach (var property in payload.Properties)
         {
-            result.AddRange(ConverLeafProperties(property));
+            result.AddRange(ConvertLeafProperties(property));
         }
 
         return result;

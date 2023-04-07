@@ -224,7 +224,8 @@ internal class FunctionFlowRunner
                     GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
                     if (!context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
                     {
-                        throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Plan is using an unavailable skill: {skillName}.{functionName}");
+                        throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
+                            $"Plan is using an unavailable skill: {skillName}.{functionName}");
                     }
 
                     if (processFunctions && !string.IsNullOrEmpty(functionName))

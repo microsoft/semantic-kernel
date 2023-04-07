@@ -71,7 +71,8 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     /// <param name="payload">HTTP request payload.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    private async Task<JsonNode?> SendAsync(Uri url, HttpMethod method, IDictionary<string, string>? headers = null, HttpContent? payload = null, CancellationToken cancellationToken = default)
+    private async Task<JsonNode?> SendAsync(Uri url, HttpMethod method, IDictionary<string, string>? headers = null, HttpContent? payload = null,
+        CancellationToken cancellationToken = default)
     {
         using var requestMessage = new HttpRequestMessage(method, url);
 
@@ -160,15 +161,18 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
 
         var payload = BuildPayload(payloadMetadata.Properties);
 
-        return new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeNames.Application.Json); ;
+        return new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeNames.Application.Json);
+        ;
     }
 
     /// <summary>
     /// List of payload builders/factories.
     /// </summary>
-    private static IDictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>> s_payloadFactoryByMediaType = new Dictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>>()
-    {
-        { MediaTypeNames.Application.Json, BuildAppJsonPayload }
-    };
+    private static IDictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>> s_payloadFactoryByMediaType =
+        new Dictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>>()
+        {
+            { MediaTypeNames.Application.Json, BuildAppJsonPayload }
+        };
+
     #endregion
 }

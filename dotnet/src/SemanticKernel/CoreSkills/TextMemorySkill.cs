@@ -144,7 +144,8 @@ public class TextMemorySkill
     [SKFunction("Save information to semantic memory")]
     [SKFunctionName("Save")]
     [SKFunctionInput(Description = "The information to save")]
-    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the information to save", DefaultValue = DefaultCollection)]
+    [SKFunctionContextParameter(Name = CollectionParam, Description = "Memories collection associated with the information to save",
+        DefaultValue = DefaultCollection)]
     [SKFunctionContextParameter(Name = KeyParam, Description = "The key associated with the information to save")]
     public async Task SaveAsync(string text, SKContext context)
     {
