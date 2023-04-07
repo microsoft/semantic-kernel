@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using Microsoft.SemanticKernel.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Connectors.Memory.CosmosDB;
+namespace Microsoft.SemanticKernel.Connectors.Memory.Cosmos;
 
 /// <summary>
 /// A CosmosDB memory record.

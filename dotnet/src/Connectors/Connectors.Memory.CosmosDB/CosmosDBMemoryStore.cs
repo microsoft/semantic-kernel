@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -15,7 +14,7 @@ using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
 
-namespace Connectors.Memory.CosmosDB;
+namespace Microsoft.SemanticKernel.Connectors.Memory.Cosmos;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Azure Cosmos DB.
