@@ -15,6 +15,8 @@
 2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps
    to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. You will also need to
+   [register your application](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)
+   in the Azure Portal. Follow the steps to register your app
    [here](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app).
     - Select **`Single-page application (SPA)`** as platform type, and the Redirect URI will be **`http://localhost:3000`**
     - Select **`Personal Microsoft accounts only`** as supported account types for this sample
