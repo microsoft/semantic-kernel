@@ -29,11 +29,11 @@ public class CosmosDBMemoryStore : IMemoryStore
     private string _databaseName;
     private ILogger _log;
 
-    [SuppressMessage("Performance", "CS8618:Non-nullable field is uninitialized. Consider declaring as nullable.",
-        Justification = "Class instance is created and populated via factor method.")]
+#pragma warning disable CS8618 // Non-nullable field is uninitialized: Class instance is created and populated via factory method.
     private CosmosDBMemoryStore()
     {
     }
+#pragma warning restore CS8618 // Non-nullable field is uninitialized
 
     /// <summary>
     /// Factory method to initialize a new instance of the <see cref="CosmosDBMemoryStore"/> class.
