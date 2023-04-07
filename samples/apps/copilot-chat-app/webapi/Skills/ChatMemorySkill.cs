@@ -166,17 +166,18 @@ public class ChatMemorySkill
     /// <summary>
     /// Edit a chat session in memory.
     /// </summary>
+    /// <param name="chatId">Chat ID that is persistent and unique.</param>
     /// <param name="context">Contains 'chatId' and 'title'.</param>
     [SKFunction("Edit a chat session in memory.")]
     [SKFunctionName("EditChat")]
-    [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for a chat session.")]
+    [SKFunctionInput(Description = "Chat ID that is persistent and unique.")]
     [SKFunctionContextParameter(Name = "title", Description = "The title of the chat.")]
-    public async Task EditChatAsync(SKContext context)
+    public async Task EditChatAsync(string chatId, SKContext context)
     {
-        var chat = await this.GetChatAsync(context["chatId"], context);
+        var chat = await this.GetChatAsync(chatId, context);
         if (chat == null)
         {
-            context.Fail($"Error retrieving chat {context["chatId"]} info. Please see log for more details.");
+            context.Fail($"Error retrieving chat {chatId} info. Please see log for more details.");
             return;
         }
         chat.Title = context["title"];
@@ -192,18 +193,19 @@ public class ChatMemorySkill
     /// <summary>
     /// Edit a user in memory.
     /// </summary>
+    /// <param name="userId">User ID that is persistent and unique.</param>
     /// <param name="context">Contains 'userId', 'name', and 'email'.</param>
     [SKFunction("Edit a user in memory.")]
     [SKFunctionName("EditUser")]
-    [SKFunctionContextParameter(Name = "userId", Description = "Unique and persistent identifier for the user.")]
+    [SKFunctionInput(Description = "User ID that is persistent and unique.")]
     [SKFunctionContextParameter(Name = "name", Description = "Name of the user.")]
     [SKFunctionContextParameter(Name = "email", Description = "Email of the user.", DefaultValue = "N/A")]
-    public async Task EditUserAsync(SKContext context)
+    public async Task EditUserAsync(string userId, SKContext context)
     {
-        var chatUser = await this.GetChatUserAsync(context["userId"], context);
+        var chatUser = await this.GetChatUserAsync(userId, context);
         if (chatUser == null)
         {
-            context.Fail($"Error retrieving user {context["userId"]} info. Please see log for more details.");
+            context.Fail($"Error retrieving user {userId} info. Please see log for more details.");
             return;
         }
         chatUser.FullName = context["name"];
