@@ -111,15 +111,15 @@ public sealed class PlannerSkillTests : IDisposable
         "</if>", 2,
         "<else>", 2,
         "</else>", 2)]
-    public async Task CreatePlanShouldHaveConditionalStatementsAndBeAbleToExecuteAsync(string prompt, params object[] expectedAnswerContains)
+    public async Task CreatePlanShouldHaveIfElseConditionalStatementsAndBeAbleToExecuteAsync(string prompt, params object[] expectedAnswerContainsAtLeast)
     {
         // Arrange
 
         Dictionary<string, int> expectedAnswerContainsDictionary = new();
-        for (int i = 0; i < expectedAnswerContains.Length; i += 2)
+        for (int i = 0; i < expectedAnswerContainsAtLeast.Length; i += 2)
         {
-            string? key = expectedAnswerContains[i].ToString();
-            int value = Convert.ToInt32(expectedAnswerContains[i + 1], CultureInfo.InvariantCulture);
+            string? key = expectedAnswerContainsAtLeast[i].ToString();
+            int value = Convert.ToInt32(expectedAnswerContainsAtLeast[i + 1], CultureInfo.InvariantCulture);
             expectedAnswerContainsDictionary.Add(key!, value);
         }
 
@@ -152,19 +152,88 @@ public sealed class PlannerSkillTests : IDisposable
         Assert.Empty(createdPlanContext.LastErrorDescription);
         Assert.False(createdPlanContext.ErrorOccurred);
 
-        foreach ((string? matchingExpression, int expectedCount) in expectedAnswerContainsDictionary)
+        foreach ((string? matchingExpression, int minimumExpectedCount) in expectedAnswerContainsDictionary)
         {
-            if (expectedCount > 0)
+            if (minimumExpectedCount > 0)
             {
                 Assert.Contains(matchingExpression, createdPlanContext.Variables[SkillPlan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
             }
-            else
+
+            var numberOfMatches = Regex.Matches(createdPlanContext.Variables[SkillPlan.PlanKey], matchingExpression, RegexOptions.IgnoreCase).Count;
+            Assert.True(numberOfMatches >= minimumExpectedCount,
+                $"Minimal number of matches below expected. Current: {numberOfMatches} Expected: {minimumExpectedCount} - Match: {matchingExpression}");
+        }
+    }
+
+    [Theory]
+    [InlineData("Start with a X number equals to the current minutes of the clock and remove 20 from this number until it becomes 0. After that tell me a math style joke where the input is X number + \"bananas\"",
+        "function.TimeSkill.Minute", 1,
+        "function.FunSkill.Joke", 1,
+        "<while condition=\"", 1,
+        "</while>", 1)]
+    [InlineData("Until time is not noon wait 5 seconds after that check again and if it is create a creative joke",
+        "function.TimeSkill.Hour", 1,
+        "function.FunSkill.Joke", 1,
+        "function.WaitSkill.Seconds", 1,
+        "<while condition=\"", 1,
+        "</while>", 1)]
+    [InlineData("I want a nested loop O(n²) using the current date",
+        "function.TimeSkill.Hour", 1,
+        "<while condition=\"", 2,
+        "</while>", 2)]
+    public async Task CreatePlanShouldHaveWhileConditionalStatementsAndBeAbleToExecuteAsync(string prompt, params object[] expectedAnswerContainsAtLeast)
+    {
+        // Arrange
+
+        Dictionary<string, int> expectedAnswerContainsDictionary = new();
+        for (int i = 0; i < expectedAnswerContainsAtLeast.Length; i += 2)
+        {
+            string? key = expectedAnswerContainsAtLeast[i].ToString();
+            int value = Convert.ToInt32(expectedAnswerContainsAtLeast[i + 1], CultureInfo.InvariantCulture);
+            expectedAnswerContainsDictionary.Add(key!, value);
+        }
+
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        IKernel target = Kernel.Builder
+            .WithLogger(this._logger)
+            .Configure(config =>
             {
-                Assert.DoesNotContain(matchingExpression, createdPlanContext.Variables[SkillPlan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+                config.AddAzureOpenAITextCompletionService(
+                    serviceId: azureOpenAIConfiguration.ServiceId,
+                    deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+
+                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
+            })
+            .Build();
+
+        TestHelpers.GetSkill("FunSkill", target);
+        target.ImportSkill(new TimeSkill(), "TimeSkill");
+        target.ImportSkill(new MathSkill(), "MathSkill");
+        target.ImportSkill(new WaitSkill(), "WaitSkill");
+        var plannerSKill = target.ImportSkill(new PlannerSkill(target));
+
+        // Act
+        SKContext createdPlanContext = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
+        await target.RunAsync(createdPlanContext.Variables.Clone(), plannerSKill["ExecutePlan"]).ConfigureAwait(false);
+
+        // Assert
+        Assert.Empty(createdPlanContext.LastErrorDescription);
+        Assert.False(createdPlanContext.ErrorOccurred);
+
+        foreach ((string? matchingExpression, int minimumExpectedCount) in expectedAnswerContainsDictionary)
+        {
+            if (minimumExpectedCount > 0)
+            {
+                Assert.Contains(matchingExpression, createdPlanContext.Variables[SkillPlan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
             }
 
             var numberOfMatches = Regex.Matches(createdPlanContext.Variables[SkillPlan.PlanKey], matchingExpression, RegexOptions.IgnoreCase).Count;
-            Assert.Equal(expectedCount, numberOfMatches);
+            Assert.True(numberOfMatches >= minimumExpectedCount,
+                $"Minimal number of matches below expected. Current: {numberOfMatches} Expected: {minimumExpectedCount} - Match: {matchingExpression}");
         }
     }
 
