@@ -7,7 +7,6 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,7 +16,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
 using Newtonsoft.Json;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.CosmosDB;
+namespace Microsoft.SemanticKernel.Connectors.Memory.Cosmos;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Azure Cosmos DB.
@@ -25,14 +24,14 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.CosmosDB;
 /// <remarks>The Embedding data is saved to the Azure Cosmos DB database container specified in the constructor.
 /// The embedding data persists between subsequent instances and has similarity search capability, handled by the client as Azure Cosmos DB is not a vector-native DB.
 /// </remarks>
-public class CosmosDBMemoryStore : IMemoryStore
+public class CosmosMemoryStore : IMemoryStore
 {
     private Database _database;
     private string _databaseName;
     private ILogger _log;
 
     /// <summary>
-    /// Constructor for a memory store backed by a CosmosDB instance.
+    /// Constructor for a memory store backed by a Cosmos instance.
     /// </summary>
     /// <param name="client"></param>
     /// <param name="databaseName"></param>
@@ -40,10 +39,10 @@ public class CosmosDBMemoryStore : IMemoryStore
     /// <param name="cancel"></param>
     /// <returns></returns>
     /// <exception cref="CosmosException"></exception>
-    public async Task<CosmosDBMemoryStore> CreateAsync(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancel = default)
+    public async Task<CosmosMemoryStore> CreateAsync(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancel = default)
     {
         this._databaseName = databaseName;
-        this._log = log ?? NullLogger<CosmosDBMemoryStore>.Instance;
+        this._log = log ?? NullLogger<CosmosMemoryStore>.Instance;
         var response = await client.CreateDatabaseIfNotExistsAsync(this._databaseName, cancellationToken: cancel);
 
         if (response.StatusCode == HttpStatusCode.Created)
@@ -131,16 +130,16 @@ public class CosmosDBMemoryStore : IMemoryStore
 
             using (responseMessage.Content)
             {
-                CosmosDBMemoryRecord record;
+                CosmosMemoryRecord record;
 
-                if (typeof(Stream).IsAssignableFrom(typeof(CosmosDBMemoryRecord)))
+                if (typeof(Stream).IsAssignableFrom(typeof(CosmosMemoryRecord)))
                 {
-                    record = ((CosmosDBMemoryRecord)(object)responseMessage.Content);
+                    record = ((CosmosMemoryRecord)(object)responseMessage.Content);
                 }
                 else
                 {
-                    record = await System.Text.Json.JsonSerializer.DeserializeAsync<CosmosDBMemoryRecord>(responseMessage.Content, cancellationToken: cancel)
-                        ?? throw new CosmosException($"Unable to deserialize content as CosmosDBMemoryRecord: {responseMessage.Content}.", responseMessage.StatusCode, 0, collectionName, 0);
+                    record = await System.Text.Json.JsonSerializer.DeserializeAsync<CosmosMemoryRecord>(responseMessage.Content, cancellationToken: cancel)
+                        ?? throw new CosmosException($"Unable to deserialize content as CosmosMemoryRecord: {responseMessage.Content}.", responseMessage.StatusCode, 0, collectionName, 0);
                 }
 
                 var embeddingHost = JsonConvert.DeserializeAnonymousType(
@@ -176,7 +175,7 @@ public class CosmosDBMemoryStore : IMemoryStore
     {
         record.Key = this.ToCosmosFriendlyId(record.Metadata.Id);
 
-        var entity = new CosmosDBMemoryRecord
+        var entity = new CosmosMemoryRecord
         {
             CollectionId = collectionName,
             Id = record.Key,
@@ -211,7 +210,7 @@ public class CosmosDBMemoryStore : IMemoryStore
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
     {
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
-        var response = await container.DeleteItemAsync<CosmosDBMemoryRecord>(
+        var response = await container.DeleteItemAsync<CosmosMemoryRecord>(
             key,
             new Microsoft.Azure.Cosmos.PartitionKey(this.ToCosmosFriendlyId(key)),
             cancellationToken: cancel);
@@ -287,11 +286,11 @@ public class CosmosDBMemoryStore : IMemoryStore
     /// <summary>
     /// Block constructor for a memory store backed by an Azure Cosmos DB instance. Not used.
     /// </summary>
-    private CosmosDBMemoryStore(CosmosClient client, string databaseName, ILogger? log = null)
+    private CosmosMemoryStore(CosmosClient client, string databaseName, ILogger? log = null)
     {
         this._databaseName = databaseName;
         this._database = client.GetDatabase(this._databaseName);
-        this._log = log ?? NullLogger<CosmosDBMemoryStore>.Instance;
+        this._log = log ?? NullLogger<CosmosMemoryStore>.Instance;
     }
 
     private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
@@ -300,7 +299,7 @@ public class CosmosDBMemoryStore : IMemoryStore
         var query = new QueryDefinition($"SELECT * FROM c WHERE c.collectionId = @collectionName")
             .WithParameter("@collectionName", collectionName);
 
-        var iterator = container.GetItemQueryIterator<CosmosDBMemoryRecord>(query);
+        var iterator = container.GetItemQueryIterator<CosmosMemoryRecord>(query);
 
         var items = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);
 
