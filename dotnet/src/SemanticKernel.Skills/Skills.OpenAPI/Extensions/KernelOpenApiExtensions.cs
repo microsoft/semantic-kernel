@@ -128,6 +128,7 @@ public static class KernelOpenApiExtensions
 
         kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document.", openApiDocumentPath);
 
+        // TODO: never used, why?
         var skill = new Dictionary<string, ISKFunction>();
 
         using var stream = File.OpenRead(openApiDocumentPath);
@@ -153,6 +154,7 @@ public static class KernelOpenApiExtensions
 
         kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document.", filePath);
 
+        // TODO: never used, why?
         var skill = new Dictionary<string, ISKFunction>();
 
         using var stream = File.OpenRead(filePath);
@@ -174,7 +176,7 @@ public static class KernelOpenApiExtensions
         Verify.NotNull(kernel, nameof(kernel));
         Verify.ValidSkillName(skillName);
 
-        //Parse
+        // Parse
         var parser = new OpenApiDocumentParser();
 
         var operations = parser.Parse(documentStream);
@@ -221,18 +223,18 @@ public static class KernelOpenApiExtensions
             {
                 var runner = new RestApiOperationRunner(new HttpClient(), authCallback);
 
-                //Extract function arguments from context
+                // Extract function arguments from context
                 var arguments = new Dictionary<string, string>();
                 foreach (var parameter in restOperationParameters)
                 {
-                    //A try to resolve argument by alternative parameter name
+                    // A try to resolve argument by alternative parameter name
                     if (!string.IsNullOrEmpty(parameter.AlternativeName) && context.Variables.Get(parameter.AlternativeName, out var value))
                     {
                         arguments.Add(parameter.Name, value);
                         continue;
                     }
 
-                    //A try to resolve argument by original parameter name
+                    // A try to resolve argument by original parameter name
                     if (context.Variables.Get(parameter.Name, out value))
                     {
                         arguments.Add(parameter.Name, value);
@@ -262,13 +264,17 @@ public static class KernelOpenApiExtensions
             return context;
         }
 
-        //TODO: to be fixed later
+        // TODO: to be fixed later
 #pragma warning disable CA2000 // Dispose objects before losing scope.
         var function = new SKFunction(
             delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
             delegateFunction: ExecuteAsync,
             parameters: restOperationParameters.Select(p => new ParameterView()
-            { Name = p.AlternativeName ?? p.Name, Description = p.Name, DefaultValue = p.DefaultValue ?? string.Empty })
+            {
+                Name = p.AlternativeName ?? p.Name,
+                Description = p.Name,
+                DefaultValue = p.DefaultValue ?? string.Empty
+            })
                 .ToList(), //functionConfig.PromptTemplate.GetParameters(),
             description: operation.Description,
             skillName: skillName,
