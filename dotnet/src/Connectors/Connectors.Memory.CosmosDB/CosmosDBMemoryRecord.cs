@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Connectors.Memory.CosmosDB;
+namespace Microsoft.SemanticKernel.Connectors.Memory.CosmosDB;
 
 /// <summary>
 /// A CosmosDB memory record.

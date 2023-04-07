@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
 using Newtonsoft.Json;
 
-namespace Connectors.Memory.CosmosDB;
+namespace Microsoft.SemanticKernel.Connectors.Memory.CosmosDB;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Azure Cosmos DB.
@@ -31,7 +31,7 @@ public class CosmosDBMemoryStore : IMemoryStore
     private ILogger _log;
 
     /// <summary>
-    /// Create an instance of <see cref="CosmosDBMemoryStore"/>
+    /// Constructor for a memory store backed by a CosmosDB instance.
     /// </summary>
     /// <param name="client"></param>
     /// <param name="databaseName"></param>
