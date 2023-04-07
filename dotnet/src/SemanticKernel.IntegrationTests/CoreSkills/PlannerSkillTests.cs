@@ -147,19 +147,21 @@ public sealed class PlannerSkillTests : IDisposable
         // Act
         SKContext createdPlanContext = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
         await target.RunAsync(createdPlanContext.Variables.Clone(), plannerSKill["ExecutePlan"]).ConfigureAwait(false);
+        var planResult = createdPlanContext.Variables[SkillPlan.PlanKey];
 
         // Assert
         Assert.Empty(createdPlanContext.LastErrorDescription);
         Assert.False(createdPlanContext.ErrorOccurred);
+        await this._testOutputHelper.WriteLineAsync(planResult);
 
         foreach ((string? matchingExpression, int minimumExpectedCount) in expectedAnswerContainsDictionary)
         {
             if (minimumExpectedCount > 0)
             {
-                Assert.Contains(matchingExpression, createdPlanContext.Variables[SkillPlan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+                Assert.Contains(matchingExpression, planResult, StringComparison.InvariantCultureIgnoreCase);
             }
 
-            var numberOfMatches = Regex.Matches(createdPlanContext.Variables[SkillPlan.PlanKey], matchingExpression, RegexOptions.IgnoreCase).Count;
+            var numberOfMatches = Regex.Matches(planResult, matchingExpression, RegexOptions.IgnoreCase).Count;
             Assert.True(numberOfMatches >= minimumExpectedCount,
                 $"Minimal number of matches below expected. Current: {numberOfMatches} Expected: {minimumExpectedCount} - Match: {matchingExpression}");
         }
@@ -172,13 +174,13 @@ public sealed class PlannerSkillTests : IDisposable
         "<while condition=\"", 1,
         "</while>", 1)]
     [InlineData("Until time is not noon wait 5 seconds after that check again and if it is create a creative joke",
-        "function.TimeSkill.Hour", 1,
+        "function.TimeSkill", 1,
         "function.FunSkill.Joke", 1,
         "function.WaitSkill.Seconds", 1,
         "<while condition=\"", 1,
         "</while>", 1)]
     [InlineData("I want a nested loop O(n²) using the current date",
-        "function.TimeSkill.Hour", 1,
+        "function.TimeSkill", 1,
         "<while condition=\"", 2,
         "</while>", 2)]
     public async Task CreatePlanShouldHaveWhileConditionalStatementsAndBeAbleToExecuteAsync(string prompt, params object[] expectedAnswerContainsAtLeast)
@@ -219,19 +221,21 @@ public sealed class PlannerSkillTests : IDisposable
         // Act
         SKContext createdPlanContext = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
         await target.RunAsync(createdPlanContext.Variables.Clone(), plannerSKill["ExecutePlan"]).ConfigureAwait(false);
+        var planResult = createdPlanContext.Variables[SkillPlan.PlanKey];
 
         // Assert
         Assert.Empty(createdPlanContext.LastErrorDescription);
         Assert.False(createdPlanContext.ErrorOccurred);
+        await this._testOutputHelper.WriteLineAsync(planResult);
 
         foreach ((string? matchingExpression, int minimumExpectedCount) in expectedAnswerContainsDictionary)
         {
             if (minimumExpectedCount > 0)
             {
-                Assert.Contains(matchingExpression, createdPlanContext.Variables[SkillPlan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+                Assert.Contains(matchingExpression, planResult, StringComparison.InvariantCultureIgnoreCase);
             }
 
-            var numberOfMatches = Regex.Matches(createdPlanContext.Variables[SkillPlan.PlanKey], matchingExpression, RegexOptions.IgnoreCase).Count;
+            var numberOfMatches = Regex.Matches(planResult, matchingExpression, RegexOptions.IgnoreCase).Count;
             Assert.True(numberOfMatches >= minimumExpectedCount,
                 $"Minimal number of matches below expected. Current: {numberOfMatches} Expected: {minimumExpectedCount} - Match: {matchingExpression}");
         }

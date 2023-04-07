@@ -198,7 +198,7 @@ internal class FunctionFlowRunner
                     var whileContent = o2.OuterXml;
 
                     var functionVariables = context.Variables.Clone();
-                    functionVariables.Set("INPUT", whileContent);
+                    functionVariables.Update(whileContent);
 
                     var branchWhile = await this._conditionalFlowHelper.WhileAsync(whileContent,
                         new SKContext(functionVariables, this._kernel.Memory, this._kernel.Skills, this._kernel.Log,
@@ -228,7 +228,7 @@ internal class FunctionFlowRunner
                     }
 
                     var functionVariables = context.Variables.Clone();
-                    functionVariables.Set("INPUT", ifFullContent);
+                    functionVariables.Update(ifFullContent);
 
                     var branchIfOrElse = await this._conditionalFlowHelper.IfAsync(ifFullContent,
                         new SKContext(functionVariables, this._kernel.Memory, this._kernel.Skills, this._kernel.Log,
