@@ -6,13 +6,13 @@ using Microsoft.SemanticKernel.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Cosmos;
+namespace Connectors.Memory.CosmosDB;
 
 /// <summary>
-/// A Cosmos memory record.
+/// A CosmosDB memory record.
 /// </summary>
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class CosmosMemoryRecord
+public class CosmosDBMemoryRecord
 {
     /// <summary>
     /// Unique identifier of the memory record.
@@ -30,32 +30,13 @@ public class CosmosMemoryRecord
     public DateTimeOffset? Timestamp { get; set; }
 
     /// <summary>
-    /// The embedding data.
-    /// </summary>
-    [JsonIgnore]
-    public IEnumerable<float> Embedding { get; set; } = Array.Empty<float>();
-
-    /// <summary>
     /// The embedding data as a string.
     /// </summary>
     public string EmbeddingString { get; set; } = string.Empty;
 
     /// <summary>
-    /// Metadata associated with a Semantic Kernel memory.
-    /// </summary>
-    [JsonIgnore]
-    public MemoryRecordMetadata? Metadata { get; set; }
-
-    /// <summary>
     /// Metadata as a string.
     /// </summary>
     public string MetadataString { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Metadata serialized as a JSON string.
-    /// </summary>
-    public string GetSerializedMetadata()
-    {
-        return JsonConvert.SerializeObject(this.Metadata);
-    }
 }
+
