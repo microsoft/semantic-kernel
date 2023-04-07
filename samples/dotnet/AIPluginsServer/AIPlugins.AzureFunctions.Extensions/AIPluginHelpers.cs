@@ -31,7 +31,6 @@ public static class AIPluginHelpers
         };
 
         var response = req.CreateResponse(HttpStatusCode.OK);
-        response.Headers.Add("Content-Type", "application/json; charset=utf-8");
         await response.WriteAsJsonAsync(aiPluginModel);
         return response;
     }

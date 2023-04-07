@@ -10,6 +10,7 @@
     <RootNamespace>AIPlugins.AzureFunctions</RootNamespace>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(IntDir).generated</CompilerGeneratedFilesOutputPath>
+    <StartDevelopmentStorage>false</StartDevelopmentStorage>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.13.0" />
