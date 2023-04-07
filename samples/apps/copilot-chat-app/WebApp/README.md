@@ -17,7 +17,7 @@ The Copilot Chat sameple showcases how to build an enriched intelligent app, wit
 
 1. Azure Open AI Service Key and working End point. (https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart?tabs=command-line&pivots=programming-language-studio)
 2. A registered App in Azure Portal (https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
-   - Select Single-page application (SPA) as platform type, and the Redirect URI will be http://localhost:3000
+   - Select Single-page application (SPA) as platform type, and the Redirect URI will be `http://localhost:3000`
    - Select **`Accounts in any organizational directory (Any Azure AD directory - Multitenant) and personal Microsoft accounts (e.g. Skype, Xbox)`** as the supported account type for this sample.
    - Note the **`Application (client) ID`** from your app registration.
 3. Yarn - used for installing the app's dependencies (https://yarnpkg.com/getting-started/install)
