@@ -60,7 +60,8 @@ public class JsonPathSkillTests
 
     [Theory]
     [InlineData("$..Products[?(@.Price >= 50)].Name", "[\"Anvil\",\"Elbow Grease\"]")] // multiple values
-    [InlineData("$.Manufacturers", "[[{\"Name\":\"Acme Co\",\"Products\":[{\"Name\":\"Anvil\",\"Price\":50}]},{\"Name\":\"Contoso\",\"Products\":[{\"Name\":\"Elbow Grease\",\"Price\":99.95},{\"Name\":\"Headlight Fluid\",\"Price\":4}]}]]")] // complex value
+    [InlineData("$.Manufacturers",
+        "[[{\"Name\":\"Acme Co\",\"Products\":[{\"Name\":\"Anvil\",\"Price\":50}]},{\"Name\":\"Contoso\",\"Products\":[{\"Name\":\"Elbow Grease\",\"Price\":99.95},{\"Name\":\"Headlight Fluid\",\"Price\":4}]}]]")] // complex value
     public void GetJsonPropertyValueSucceeds(string jsonPath, string expected)
     {
         var target = new JsonPathSkill();

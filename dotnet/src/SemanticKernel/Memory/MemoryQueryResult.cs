@@ -38,6 +38,13 @@ public class MemoryQueryResult
         this.Relevance = relevance;
     }
 
+    /// <summary>
+    /// Create a new instance of MemoryQueryResult from a json string representing MemoryRecord metadata.
+    /// </summary>
+    /// <param name="json">The json string to deserialize.</param>
+    /// <param name="relevance">The similarity score associated with the result.</param>
+    /// <returns>A new instance of MemoryQueryResult.</returns>
+    /// <exception cref="MemoryException"></exception>
     public static MemoryQueryResult FromJson(
         string json,
         double relevance)
