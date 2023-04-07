@@ -91,7 +91,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
             )
 
         model_args = {}
-        if self.open_ai_instance.api_type == "azure":
+        if self.open_ai_instance.api_type in ["azure", "azure_ad"]:
             model_args["engine"] = self._model_id
         else:
             model_args["model"] = self._model_id
