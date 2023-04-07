@@ -86,7 +86,7 @@ public class SKContextExtensionsTests
         var semanticQuery = "test";
 
         // Act
-        var result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
+        var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true)).ToList();
 
         //Assert
         Assert.NotNull(result);
@@ -97,7 +97,7 @@ public class SKContextExtensionsTests
         config.IncludedFunctions.UnionWith(new List<string> { "nativeFunctionName" });
 
         // Act
-        result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
+        result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -148,7 +148,7 @@ public class SKContextExtensionsTests
         var semanticQuery = "test";
 
         // Act
-        var result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
+        var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true)).ToList();
 
         //Assert
         Assert.NotNull(result);
@@ -159,7 +159,7 @@ public class SKContextExtensionsTests
         config.IncludedFunctions.UnionWith(new List<string> { "nativeFunctionName" });
 
         // Act
-        result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true);
+        result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true)).ToList();
 
         // Assert
         Assert.NotNull(result);
