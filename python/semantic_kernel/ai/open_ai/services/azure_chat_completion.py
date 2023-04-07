@@ -21,13 +21,13 @@ class AzureChatCompletion(OpenAIChatCompletion):
         api_key: Optional[str] = None,
         api_version: str = "2023-03-15-preview",
         logger: Optional[Logger] = None,
-        use_ad_auth=False,
+        ad_auth=False,
     ) -> None:
         """
         Initialize an AzureChatCompletion backend.
 
         You must provide:
-        - A deployment_name, endpoint, and api_key (plus, optionally: use_ad_auth)
+        - A deployment_name, endpoint, and api_key (plus, optionally: ad_auth)
 
         :param deployment_name: The name of the Azure deployment. This value
             will correspond to the custom name you chose for your deployment
@@ -43,7 +43,7 @@ class AzureChatCompletion(OpenAIChatCompletion):
         :param api_version: The API version to use. (Optional)
             The default value is "2022-12-01".
         :param logger: The logger instance to use. (Optional)
-        :param use_ad_auth: Whether to use Azure Active Directory authentication.
+        :param ad_auth: Whether to use Azure Active Directory authentication.
             (Optional) The default value is False.
         """
         if not deployment_name:
@@ -57,7 +57,7 @@ class AzureChatCompletion(OpenAIChatCompletion):
 
         self._endpoint = endpoint
         self._api_version = api_version
-        self._api_type = "azure_ad" if use_ad_auth else "azure"
+        self._api_type = "azure_ad" if ad_auth else "azure"
 
         super().__init__(deployment_name, api_key, org_id=None, log=logger)
 

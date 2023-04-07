@@ -88,7 +88,7 @@ def test_azure_text_completion_init_with_empty_endpoint() -> None:
 
 def test_azure_text_completion_init_with_invalid_endpoint() -> None:
     deployment_name = "test_deployment"
-    # endpoint = "https://test-endpoint.com"
+    endpoint = "http://test-endpoint.com"
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
     logger = Logger("test_logger")
@@ -96,7 +96,7 @@ def test_azure_text_completion_init_with_invalid_endpoint() -> None:
     with raises(ValueError, match="The Azure endpoint must start with https://"):
         AzureTextCompletion(
             deployment_name=deployment_name,
-            endpoint="http://test-endpoint.com",
+            endpoint=endpoint,
             api_key=api_key,
             api_version=api_version,
             logger=logger,
