@@ -58,21 +58,21 @@ public static class KernelOpenApiExtensions
                 //using HttpClient client = new HttpClient(retryHandler, false);
                 using HttpClient client = new HttpClient();
 
-                response = await client.GetAsync(url, cancellationToken);
+                response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                response = await httpClient.GetAsync(url, cancellationToken);
+                response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
             }
             response.EnsureSuccessStatusCode();
 
-            Stream stream = await response.Content.ReadAsStreamAsync();
+            Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             if (stream == null)
             {
                 throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
             }
 
-            return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, cancellationToken);
+            return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -91,7 +91,7 @@ public static class KernelOpenApiExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromResourceAsync(this IKernel kernel, string skillName, AuthenticateRequestAsyncCallback? authCallback = null, CancellationToken cancellationToken = default)
+    public static Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromResourceAsync(this IKernel kernel, string skillName, AuthenticateRequestAsyncCallback? authCallback = null, CancellationToken cancellationToken = default)
     {
         Verify.ValidSkillName(skillName);
 
@@ -105,7 +105,7 @@ public static class KernelOpenApiExtensions
             throw new MissingManifestResourceException($"Unable to load OpenApi skill from assembly resource '{resourceName}'.");
         }
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, cancellationToken);
+        return kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, cancellationToken);
     }
 
     /// <summary>
@@ -142,7 +142,7 @@ public static class KernelOpenApiExtensions
 
         using var stream = File.OpenRead(openApiDocumentPath);
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillDirectoryName, authCallback, cancellationToken);
+        return await kernel.RegisterOpenApiSkillAsync(stream, skillDirectoryName, authCallback, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -166,7 +166,7 @@ public static class KernelOpenApiExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, cancellationToken);
+        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -186,7 +186,7 @@ public static class KernelOpenApiExtensions
         //Parse
         var parser = new OpenApiDocumentParser();
 
-        var operations = await parser.ParseAsync(documentStream, cancellationToken);
+        var operations = await parser.ParseAsync(documentStream, cancellationToken).ConfigureAwait(false);
 
         var skill = new Dictionary<string, ISKFunction>();
 
@@ -253,7 +253,7 @@ public static class KernelOpenApiExtensions
                     }
                 }
 
-                var result = await runner.RunAsync(operation, arguments, context.CancellationToken);
+                var result = await runner.RunAsync(operation, arguments, context.CancellationToken).ConfigureAwait(false);
                 if (result != null)
                 {
                     context.Variables.Update(result.ToString());

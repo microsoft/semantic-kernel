@@ -49,18 +49,18 @@ public static class KernelChatGptPluginExtensions
                 //using HttpClient client = new HttpClient(retryHandler, false);
                 using HttpClient client = new HttpClient();
 
-                response = await client.GetAsync(url, cancellationToken);
+                response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                response = await httpClient.GetAsync(url, cancellationToken);
+                response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
             }
             response.EnsureSuccessStatusCode();
 
-            string gptPluginJson = await response.Content.ReadAsStringAsync();
+            string gptPluginJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
-            return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, cancellationToken);
+            return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -99,11 +99,11 @@ public static class KernelChatGptPluginExtensions
         }
 
         using StreamReader reader = new StreamReader(stream);
-        string gptPluginJson = await reader.ReadToEndAsync();
+        string gptPluginJson = await reader.ReadToEndAsync().ConfigureAwait(false);
 
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
-        return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, cancellationToken);
+        return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -116,7 +116,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromDirectoryAsync(
+    public async static Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromDirectoryAsync(
         this IKernel kernel,
         string parentDirectory,
         string skillDirectoryName,
@@ -155,7 +155,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromFileAsync(
+    public async static Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromFileAsync(
         this IKernel kernel,
         string skillName,
         string filePath,

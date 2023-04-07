@@ -28,11 +28,11 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <inheritdoc/>
     public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, CancellationToken cancellationToken = default)
     {
-        var jsonObject = await this.DowngradeDocumentVersionToSuportedOneAsync(stream, cancellationToken);
+        var jsonObject = await this.DowngradeDocumentVersionToSuportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
         using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(jsonObject.ToJson()));
 
-        var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken);
+        var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
         if (result.OpenApiDiagnostic.Errors.Any())
         {
@@ -105,7 +105,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
         using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(obj)));
 
-        return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken);
+        return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
