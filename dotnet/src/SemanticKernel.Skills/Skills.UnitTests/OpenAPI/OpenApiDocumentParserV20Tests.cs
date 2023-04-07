@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
@@ -36,10 +37,10 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     }
 
     [Fact]
-    public void ItCanParsePutOperationBodySuccessfully()
+    public async Task ItCanParsePutOperationBodySuccessfullyAsync()
     {
         //Act
-        var operations = this._sut.Parse(this._openApiDocument);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert
         Assert.NotNull(operations);
@@ -79,10 +80,10 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     }
 
     [Fact]
-    public void ItCanParsePutOperationMetadataSuccessfully()
+    public async Task ItCanParsePutOperationMetadataSuccessfullyAsync()
     {
         //Act
-        var operations = this._sut.Parse(this._openApiDocument);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert
         Assert.NotNull(operations);
@@ -128,10 +129,10 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     }
 
     [Fact]
-    public void ItCanExtractSimpleTypeHeaderParameterMetadataSuccessfully()
+    public async Task ItCanExtractSimpleTypeHeaderParameterMetadataSuccessfullyAsync()
     {
         //Act
-        var operations = this._sut.Parse(this._openApiDocument);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert string header parameter metadata
         var accept = GetParameterMetadata(operations, "SetSecret", RestApiOperationParameterLocation.Header, "Accept");
@@ -151,10 +152,10 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     }
 
     [Fact]
-    public void ItCanExtractCsvStyleHeaderParameterMetadataSuccessfully()
+    public async Task ItCanExtractCsvStyleHeaderParameterMetadataSuccessfullyAsync()
     {
         //Act
-        var operations = this._sut.Parse(this._openApiDocument);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert header parameters metadata
         var acceptParameter = GetParameterMetadata(operations, "SetSecret", RestApiOperationParameterLocation.Header, "X-Operation-Csv-Ids");
@@ -168,10 +169,10 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     }
 
     [Fact]
-    public void ItCanExtractHeadersSuccessfully()
+    public async Task ItCanExtractHeadersSuccessfullyAsync()
     {
         //Act
-        var operations = this._sut.Parse(this._openApiDocument);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert
         Assert.True(operations.Any());
