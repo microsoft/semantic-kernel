@@ -79,10 +79,6 @@ working with Memory, and see how the kernel works.
      [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode)
      to run the notebooks.
 
-### Working with Secrets
-
-We need keys to work with various aspects of the project including accessing openAI models. This opens up the possibility of exposing keys in commits. There are a [couple of options](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows) to safe guard developers from exposing keys. Outside of using the Secret Manager and environment variables, we've also added *.development.config to the .gitignore if developers want to use config files for secret storage.
-
 ## Get Started with Semantic Kernel ⚡
 
 Here is a quick example of how to use Semantic Kernel from a C# console app.

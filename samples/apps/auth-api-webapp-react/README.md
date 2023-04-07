@@ -15,8 +15,6 @@
 2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps
    to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. You will also need to
-   [register your application](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)
-   in the Azure Portal. Follow the steps to register your app
    [here](https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app).
     - Select **`Single-page application (SPA)`** as platform type, and the Redirect URI will be **`http://localhost:3000`**
     - Select **`Personal Microsoft accounts only`** as supported account types for this sample
@@ -27,9 +25,7 @@
    and/or `yarn start` from the command line.
 7. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
 
-### Working with Secrets
-
-[KernelHttpServer's Readme](../../dotnet/KernelHttpServer/README.md#Working-with-Secrets) has a note on safely working with keys and other secrets.
+> Working with Secrets: [KernelHttpServer's Readme](../../dotnet/KernelHttpServer/README.md#Working-with-Secrets) has a note on safely working with keys and other secrets.
 
 ## About the Authenticated API’s Sample
 
