@@ -52,7 +52,7 @@ class AzureTextCompletion(OpenAITextCompletion):
             raise ValueError("The Azure API key cannot be `None` or empty`")
         if not endpoint:
             raise ValueError("The Azure endpoint cannot be `None` or empty")
-        if not endpoint.startswith("https://") and not use_ad_auth:
+        if not endpoint.startswith("https://"):
             raise ValueError("The Azure endpoint must start with https://")
 
         self._endpoint = endpoint
