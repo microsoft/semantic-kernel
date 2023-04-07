@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using System.Threading.Tasks;
-using System;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
 
@@ -21,7 +21,7 @@ public class MathSkill
     /// <summary>
     /// Returns the Addition result of initial and amount values provided.
     /// </summary>
-    /// <param name="initialValue">Initial value to add the specified amount</param>
+    /// <param name="initialValueText">Initial value as string to add the specified amount</param>
     /// <param name="context">Contains the context to get the numbers from</param>
     /// <returns>The resulting sum as a string.</returns>
     [SKFunction("Adds value to a value")]
@@ -40,7 +40,7 @@ public class MathSkill
     /// <summary>
     /// Returns the Sum of two SKContext numbers provided.
     /// </summary>
-    /// <param name="initialValue">Initial value to subtract the specified amount</param>
+    /// <param name="initialValueText">Initial value as string to subtract the specified amount</param>
     /// <param name="context">Contains the context to get the numbers from</param>
     /// <returns>The resulting substraction as a string.</returns>
     [SKFunction("Subtracts value to a value")]
@@ -68,6 +68,6 @@ public class MathSkill
             throw new ArgumentException("Context amount provided is not in numeric format", nameof(context));
         }
 
-        return (initialValue, amount);  
+        return (initialValue, amount);
     }
 }
