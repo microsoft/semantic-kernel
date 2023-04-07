@@ -37,6 +37,10 @@ The Copilot Chat sameple showcases how to build an enriched intelligent app, wit
 3. **Run** the following command `yarn install` (if you have never run the app before) and/or `yarn start` from the command line.
 4. A browser will automatically open, otherwise you can navigate to `http://localhost:3000/` to use the ChatBot.
 
+### Working with Secrets
+
+We need keys to work with various aspects of the project including accessing openAI models. This opens up the possibility of exposing keys in commits. There are a [couple of options](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows) to safeguard developers from exposing keys. Outside of using the dotnet's users-secrets and environment variables, we've also added *.development.json and *.development.config to the .gitignore if developers want to use appsettings.development.json files or other development.config files for secret storage.
+
 ## Authentication in this sample
 
 This sample uses the Microsoft Authentication Library (MSAL) for React to sign in users. Learn more about it here: https://learn.microsoft.com/en-us/azure/active-directory/develop/tutorial-v2-react.
