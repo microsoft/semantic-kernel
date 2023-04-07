@@ -6,6 +6,4 @@ export interface AppState {
         message: string;
         type: AlertType;
     };
-    unclaimed?: boolean;
-    documentId?: string;
 }
