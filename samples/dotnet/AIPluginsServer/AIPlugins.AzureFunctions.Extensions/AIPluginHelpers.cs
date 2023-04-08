@@ -13,7 +13,7 @@ public static class AIPluginHelpers
     {
         string skillUri = req.Url.GetLeftPart(UriPartial.Path);
         skillUri = skillUri.Remove(skillUri.IndexOf($"{skillName}/.well-known", StringComparison.InvariantCultureIgnoreCase));
-        Uri openApiSpecUri = new(baseUri: new(skillUri), $"swagger.json?tag=CodingSkill");
+        Uri openApiSpecUri = new(baseUri: new(skillUri), $"openapi/v3.json?tag=CodingSkill");
 
         AIPluginModel aiPluginModel = new()
         {

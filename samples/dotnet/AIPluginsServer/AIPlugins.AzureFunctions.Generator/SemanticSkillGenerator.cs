@@ -65,7 +65,7 @@ public class SemanticSkillGenerator : ISourceGenerator
                 functionsCode.AppendLine(GenerateFunctionSource(skillName, promptFile, configFile) ?? string.Empty);
             }
         }
-
+        
         string aiPluginEndpointCode = GenerateAIPluginEndpointCode(skillName);
 
         return $@"/* ### GENERATED CODE - Do not modify. Edits will be lost on build. ### */
@@ -101,6 +101,7 @@ public class {skillName}
     {
         string skillDescription = $"API for {skillName}";
         return $@"[Function(""{skillName}/.well-known/ai-plugin.json"")]
+    [OpenApiIgnore]
     public Task<HttpResponseData> GetAIPluginSpecAsync([HttpTrigger(AuthorizationLevel.Anonymous, ""get"")] HttpRequestData req)
     {{
         this._logger.LogInformation(""HTTP trigger processed a request for function GetAIPluginSpecAsync."");
