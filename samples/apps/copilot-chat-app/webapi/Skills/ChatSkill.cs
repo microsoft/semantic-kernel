@@ -215,11 +215,7 @@ public class ChatSkill
         // Save this new message to memory such that subsequent chat responses can use it
         try
         {
-            await chatMemorySkill.SaveNewMessageAsync(message, context);
-            if (context.ErrorOccurred)
-            {
-                return context;
-            }
+            await chatMemorySkill.SaveNewMessageAsync(message, context["userId"], context["chatId"], context);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -245,7 +241,7 @@ public class ChatSkill
             skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
-        context = await completionFunction.InvokeAsync(
+        chatContext = await completionFunction.InvokeAsync(
             context: chatContext,
             settings: this.CreateChatResponseCompletionSettings()
         );
@@ -253,16 +249,18 @@ public class ChatSkill
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            chatContext.Variables.Set("userId", ChatMemorySkill.ChatBotID(context["chatId"]));
-            await chatMemorySkill.SaveNewMessageAsync(context.Result, chatContext);
+            var chatBotId = ChatMemorySkill.ChatBotID(context["chatId"]);
+            await chatMemorySkill.SaveNewMessageAsync(chatContext.Result, chatBotId, context["chatId"], chatContext);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            context.Log.LogError($"Unable to save new message: {ex.Message}");
+            context.Log.LogError($"Unable to save new response: {ex.Message}");
             context.Fail($"Unable to save new response: {ex.Message}", ex);
             return context;
         }
 
+        context.Variables.Update(chatContext.Result);
+        context.Variables.Set("userId", "Bot");
         return context;
     }
 

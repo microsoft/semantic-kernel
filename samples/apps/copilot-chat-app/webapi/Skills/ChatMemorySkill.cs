@@ -220,50 +220,6 @@ public class ChatMemorySkill
     }
 
     /// <summary>
-    /// Save a new message to the chat history.
-    /// </summary>
-    /// <param name="message">The message</param>
-    /// <param name="context">Contains the 'userId' and 'chatId'.</param>
-    [SKFunction("Save a new message to the chat history")]
-    [SKFunctionName("SaveNewMessage")]
-    [SKFunctionInput(Description = "The new message")]
-    [SKFunctionContextParameter(Name = "userId", Description = "Unique and persistent identifier for a user.")]
-    [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for a chat session.")]
-    public async Task SaveNewMessageAsync(string message, SKContext context)
-    {
-        var chatUser = await this.GetChatUserAsync(context["userId"], context);
-        if (chatUser == null)
-        {
-            context.Fail($"Error retrieving user {context["userId"]} info. Please see log for more details.");
-            return;
-        }
-
-        var chat = await this.GetChatAsync(context["chatId"], context);
-        if (chat == null)
-        {
-            context.Fail($"Error retrieving chat {context["chatId"]} info. Please see log for more details.");
-            return;
-        }
-
-        var chatMessage = new ChatMessage(chatUser.FullName, message);
-        await context.Memory.SaveInformationAsync(
-            collection: MessageCollectionName(context["chatId"]),
-            text: chatMessage.ToString(),
-            id: chatMessage.Id,
-            cancel: context.CancellationToken
-        );
-
-        // Associate the message with the chat session.
-        chat.AddMessage(chatMessage.Id);
-        await context.Memory.SaveInformationAsync(
-            collection: ChatCollectionName,
-            text: chat.ToString(),
-            id: chat.Id,
-            cancel: context.CancellationToken
-        );
-    }
-
-    /// <summary>
     /// Get all chat sessions associated with a user.
     /// </summary>
     /// <param name="userId">The user ID</param>
@@ -551,6 +507,49 @@ public class ChatMemorySkill
         return chatUser;
     }
 
+    #region Internal
+    /// <summary>
+    /// Save a new message to the chat history.
+    /// </summary>
+    /// <param name="message">The message</param>
+    /// <param name="userId"></param>
+    /// <param name="chatId"></param>
+    /// <param name="context">Contains the 'userId' and 'chatId'.</param>
+    internal async Task SaveNewMessageAsync(string message, string userId, string chatId, SKContext context)
+    {
+        var chatUser = await this.GetChatUserAsync(userId, context);
+        if (chatUser == null)
+        {
+            throw new KeyNotFoundException($"User {userId} doesn't exist.");
+        }
+
+        var chat = await this.GetChatAsync(chatId, context);
+        if (chat == null)
+        {
+            throw new KeyNotFoundException($"Chat {chatId} doesn't exist.");
+        }
+
+        var chatMessage = new ChatMessage(chatUser.FullName, message);
+        await context.Memory.SaveInformationAsync(
+            collection: MessageCollectionName(chatId),
+            text: chatMessage.ToString(),
+            id: chatMessage.Id,
+            cancel: context.CancellationToken
+        );
+
+        // Associate the message with the chat session.
+        chat.AddMessage(chatMessage.Id);
+        await context.Memory.SaveInformationAsync(
+            collection: ChatCollectionName,
+            text: chat.ToString(),
+            id: chat.Id,
+            cancel: context.CancellationToken
+        );
+    }
+    #endregion
+
+
+    #region Private
     /// <summary>
     /// Create and save the initial bot message.
     /// </summary>
@@ -574,8 +573,12 @@ public class ChatMemorySkill
         var saveNewMessageContext = Utils.CopyContextWithVariablesClone(context);
         saveNewMessageContext.Variables.Set("chatId", chatId);
         saveNewMessageContext.Variables.Set("userId", ChatBotID(chatId));
-        await this.SaveNewMessageAsync(initialBotMessage, saveNewMessageContext);
-        if (saveNewMessageContext.ErrorOccurred)
+
+        try
+        {
+            await this.SaveNewMessageAsync(initialBotMessage, ChatBotID(chatId), chatId, saveNewMessageContext);
+        }
+        catch (Exception ex) when (!ex.IsCriticalException())
         {
             context.Log.LogError("Failed to save the initial message for chat {0}.", chatId);
             return null;
@@ -590,4 +593,5 @@ public class ChatMemorySkill
 
         return saveNewMessageContext.Result;
     }
+    #endregion
 }
