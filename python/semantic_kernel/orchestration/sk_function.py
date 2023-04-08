@@ -2,7 +2,9 @@
 
 from enum import Enum
 from logging import Logger
+import threading
 from typing import Any, Callable, List, Optional, cast
+import asyncio
 
 from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
@@ -30,6 +32,24 @@ from semantic_kernel.utils.null_logger import NullLogger
 
 
 class SKFunction(SKFunctionBase):
+    """
+    Semantic Kernel function.
+    """
+
+    class RunThread(threading.Thread):
+        """
+        Async code wrapper to allow running async code inside external
+        event loops such as Jupyter notebooks.
+        """
+
+        def __init__(self, code):
+            self.code = code
+            self.result = None
+            super().__init__()
+
+        def run(self):
+            self.result = asyncio.run(self.code)
+
     _parameters: List[ParameterView]
     _delegate_type: DelegateTypes
     _function: Callable[..., Any]
@@ -240,6 +260,62 @@ class SKFunction(SKFunctionBase):
             parameters=self._parameters,
         )
 
+    def __call__(
+        self,
+        input: Optional[str] = None,
+        context: Optional[SKContext] = None,
+        settings: Optional[CompleteRequestSettings] = None,
+        log: Optional[Logger] = None,
+    ) -> SKContext:
+        return self.invoke(input=input, context=context, settings=settings, log=log)
+
+    def invoke(
+        self,
+        input: Optional[str] = None,
+        context: Optional[SKContext] = None,
+        settings: Optional[CompleteRequestSettings] = None,
+        log: Optional[Logger] = None,
+    ) -> SKContext:
+        if context is None:
+            if self._skill_collection is None:
+                raise ValueError("Skill collection cannot be `None`")
+            assert self._skill_collection is not None
+
+            context = SKContext(
+                ContextVariables(""),
+                NullMemory.instance,  # type: ignore
+                self._skill_collection,
+                log if log is not None else self._log,
+                # TODO: ctoken?
+            )
+
+        if input is not None:
+            context.variables.update(input)
+
+        # Check if there is an event loop
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        # Handle "asyncio.run() cannot be called from a running event loop"
+        if loop and loop.is_running():
+            if self.is_semantic:
+                thread = self.RunThread(self._invoke_semantic_async(context, settings))
+                thread.start()
+                thread.join()
+                return thread.result
+            else:
+                thread = self.RunThread(self._invoke_native_async(context))
+                thread.start()
+                thread.join()
+                return thread.result
+        else:
+            if self.is_semantic:
+                return asyncio.run(self._invoke_semantic_async(context, settings))
+            else:
+                return asyncio.run(self._invoke_native_async(context))
+
     async def invoke_async(
         self,
         input: Optional[str] = None,
@@ -268,18 +344,36 @@ class SKFunction(SKFunctionBase):
         else:
             return await self._invoke_native_async(context)
 
-    async def invoke_with_custom_input_async(
+    def invoke_with_vars(
         self,
         input: ContextVariables,
-        memory: SemanticTextMemoryBase,
-        skills: ReadOnlySkillCollectionBase,
+        memory: Optional[SemanticTextMemoryBase] = None,
         log: Optional[Logger] = None,
     ) -> SKContext:
         tmp_context = SKContext(
-            input,
-            memory,
-            skills,
-            log if log is not None else self._log,
+            variables=input,
+            skill_collection=self._skill_collection,
+            memory=memory if memory is not None else NullMemory.instance,
+            logger=log if log is not None else self._log,
+        )
+
+        try:
+            return self.invoke(input=None, context=tmp_context, log=log)
+        except Exception as e:
+            tmp_context.fail(str(e), e)
+            return tmp_context
+
+    async def invoke_with_vars_async(
+        self,
+        input: ContextVariables,
+        memory: Optional[SemanticTextMemoryBase] = None,
+        log: Optional[Logger] = None,
+    ) -> SKContext:
+        tmp_context = SKContext(
+            variables=input,
+            skill_collection=self._skill_collection,
+            memory=memory if memory is not None else NullMemory.instance,
+            logger=log if log is not None else self._log,
         )
 
         try:
