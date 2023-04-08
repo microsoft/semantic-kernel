@@ -27,6 +27,5 @@
         "defaultValue": "<!--===ENDPART===-->"
       }
     ]
-  },
-  "default_backends": ["text-davinci-003"]
+  }
 }
