@@ -95,6 +95,30 @@ class SKFunctionBase(ABC):
         pass
 
     @abstractmethod
+    def invoke(
+        self,
+        input: Optional[str] = None,
+        context: Optional[SKContext] = None,
+        settings: Optional[CompleteRequestSettings] = None,
+        log: Optional[Logger] = None
+        # TODO: ctoken
+    ) -> SKContext:
+        """
+        Invokes the function with an explicit string input
+
+        Keyword Arguments:
+            input {str} -- The explicit string input (default: {None})
+            context {SKContext} -- The context to use
+            settings {CompleteRequestSettings} -- LLM completion settings
+            log {Logger} -- Application logger
+
+        Returns:
+            SKContext -- The updated context, potentially a new one if
+            context switching is implemented.
+        """
+        pass
+
+    @abstractmethod
     async def invoke_async(
         self,
         input: Optional[str] = None,
@@ -119,11 +143,10 @@ class SKFunctionBase(ABC):
         pass
 
     @abstractmethod
-    async def invoke_with_custom_input_async(
+    def invoke_with_vars(
         self,
         input: ContextVariables,
-        memory: SemanticTextMemoryBase,
-        skills: "ReadOnlySkillCollectionBase",
+        memory: Optional[SemanticTextMemoryBase] = None,
         log: Optional[Logger] = None,
     ) -> SKContext:
         """
@@ -132,7 +155,27 @@ class SKFunctionBase(ABC):
         Arguments:
             input {ContextVariables} -- The custom input
             memory {SemanticTextMemoryBase} -- The memory to use
-            skills {ReadOnlySkillCollectionBase} -- The skill collection to use
+            log {Logger} -- Application logger
+
+        Returns:
+            SKContext -- The updated context, potentially a new one if
+            context switching is implemented.
+        """
+        pass
+
+    @abstractmethod
+    async def invoke_with_vars_async(
+        self,
+        input: ContextVariables,
+        memory: Optional[SemanticTextMemoryBase] = None,
+        log: Optional[Logger] = None,
+    ) -> SKContext:
+        """
+        Invokes the function with a custom input
+
+        Arguments:
+            input {ContextVariables} -- The custom input
+            memory {SemanticTextMemoryBase} -- The memory to use
             log {Logger} -- Application logger
 
         Returns:
