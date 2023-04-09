@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,5 +50,38 @@ public class OutlookMailConnector : IEmailConnector
         };
 
         await this._graphServiceClient.Me.SendMail(message).Request().PostAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IUserMessagesCollectionPage> GetMessagesAsync(int? topClause, int? skipClause, string? filterClause, string? orderByClause, string? selectClause)
+    {
+        var query = this._graphServiceClient.Me.Messages.Request();
+
+        if (topClause.HasValue)
+        {
+            query.Top(topClause.Value);
+        }
+
+        if (skipClause.HasValue)
+        {
+            query.Skip(skipClause.Value);
+        }
+
+        if (!string.IsNullOrEmpty(filterClause))
+        {
+            query.Filter(filterClause);
+        }
+
+        if (!string.IsNullOrEmpty(orderByClause))
+        {
+            query.OrderBy(orderByClause);
+        }
+
+        if (!string.IsNullOrEmpty(selectClause))
+        {
+            query.Select(selectClause);
+        }
+
+        return await query.GetAsync();
     }
 }
