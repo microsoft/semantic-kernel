@@ -37,7 +37,7 @@ public class ChatMemorySkill
     /// <param name="title">The title of the chat.</param>
     /// <param name="context">Contains the memory</param>
     /// <returns>An unique chat ID.</returns>
-    /// <returns>The initial chat message in a serialized Json string.</returns>
+    /// <returns>The initial chat message in a formatted string.</returns>
     [SKFunction("Create a new chat session in memory.")]
     [SKFunctionName("CreateChat")]
     [SKFunctionInput(Description = "The title of the chat.")]
@@ -78,7 +78,6 @@ public class ChatMemorySkill
         // Clone the context to avoid modifying the original context variables.
         var addUserContext = Utils.CopyContextWithVariablesClone(context);
         addUserContext.Variables.Set("chatId", chatId);
-        addUserContext.Variables.Set("userId", context["userId"]);
         await this.AddUserToChatAsync(addUserContext);
         if (addUserContext.ErrorOccurred)
         {
@@ -90,7 +89,7 @@ public class ChatMemorySkill
         // Create the initial bot message.
         try
         {
-            var initialBotMessage = await this.CreateAndSaveInitialBotMessage(chatId, context["userId"], context);
+            var initialBotMessage = await this.CreateAndSaveInitialBotMessageAsync(chatId, context["userId"], context);
             // Update the context variables for outputs.
             context.Variables.Update(chatId);
             context.Variables.Set("initialBotMessage", initialBotMessage);
@@ -143,16 +142,19 @@ public class ChatMemorySkill
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for a chat session.")]
     public async Task AddUserToChatAsync(SKContext context)
     {
-        if (await this.DoesChatExistAsync(context["chatId"], context) == "false")
+        var userId = context["userId"];
+        var chatId = context["chatId"];
+
+        if (await this.DoesChatExistAsync(chatId, context) == "false")
         {
-            context.Fail($"User {context["userId"]} doesn't exists.");
+            context.Fail($"User {userId} doesn't exists.");
             return;
         }
 
         try
         {
-            var chatUser = await this.GetChatUserAsync(context["userId"], context);
-            chatUser.AddChat(context["chatId"]);
+            var chatUser = await this.GetChatUserAsync(userId, context);
+            chatUser.AddChat(chatId);
 
             await context.Memory.SaveInformationAsync(
                 collection: UserCollectionName,
@@ -163,7 +165,7 @@ public class ChatMemorySkill
         }
         catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentException)
         {
-            context.Fail($"Error retrieving user {context["userId"]} info. Please see log for more details.", ex);
+            context.Fail($"Error retrieving user {userId} info. Please see log for more details.", ex);
             return;
         }
     }
@@ -179,23 +181,25 @@ public class ChatMemorySkill
     [SKFunctionContextParameter(Name = "title", Description = "The title of the chat.")]
     public async Task EditChatAsync(string chatId, SKContext context)
     {
+        Chat chat;
         try
         {
-            var chat = await this.GetChatAsync(chatId, context);
+            chat = await this.GetChatAsync(chatId, context);
             chat.Title = context["title"];
 
-            await context.Memory.SaveInformationAsync(
-                collection: ChatCollectionName,
-                text: chat.ToString(),
-                id: chat.Id,
-                cancel: context.CancellationToken
-            );
         }
         catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentException)
         {
             context.Fail($"Error retrieving chat {chatId} info. Please see log for more details.", ex);
             return;
         }
+
+        await context.Memory.SaveInformationAsync(
+            collection: ChatCollectionName,
+            text: chat.ToString(),
+            id: chat.Id,
+            cancel: context.CancellationToken
+        );
     }
 
     /// <summary>
@@ -209,27 +213,29 @@ public class ChatMemorySkill
     [SKFunctionInput(Description = "The user id")]
     public async Task<SKContext> GetAllChatsAsync(string userId, SKContext context)
     {
+        ChatUser chatUser;
         try
         {
-            var chatUser = await this.GetChatUserAsync(userId, context);
-
-            List<Chat> chats = new List<Chat>();
-            foreach (var chatId in chatUser.ChatIds)
-            {
-                var chat = await this.GetChatAsync(chatId, context);
-                if (chat == null)
-                {
-                    context.Fail($"Error retrieving chat {chatId} info. Please see log for more details.");
-                    return context;
-                }
-                chats.Add(chat);
-            }
-            context.Variables.Update(JsonSerializer.Serialize(chats));
+            chatUser = await this.GetChatUserAsync(userId, context);
         }
         catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentException)
         {
             context.Fail($"Error retrieving user {userId} info. Please see log for more details.", ex);
+            return context;
         }
+
+        List<Chat> chats = new List<Chat>();
+        foreach (var chatId in chatUser.ChatIds)
+        {
+            var chat = await this.GetChatAsync(chatId, context);
+            if (chat == null)
+            {
+                context.Fail($"Error retrieving chat {chatId} info. Please see log for more details.");
+                return context;
+            }
+            chats.Add(chat);
+        }
+        context.Variables.Update(JsonSerializer.Serialize(chats));
 
         return context;
     }
@@ -339,6 +345,7 @@ public class ChatMemorySkill
     #region Internal
     /// <summary>
     /// Save a new message to the chat history.
+    /// This method will only modify the memory and the log of the context.
     /// </summary>
     /// <param name="message">The message</param>
     /// <param name="userId">The user ID</param>
@@ -369,6 +376,7 @@ public class ChatMemorySkill
 
     /// <summary>
     /// Get the latest chat message by chat ID.
+    /// This method will only modify the memory and the log of the context.
     /// </summary>
     /// <param name="chatId">The chat ID</param>
     /// <param name="context">Context containing the memory.</param>
@@ -400,6 +408,7 @@ public class ChatMemorySkill
 
     /// <summary>
     /// Get a chat user by ID.
+    /// This method will only modify the memory and the log of the context.
     /// </summary>
     /// <param name="userId">The user id</param>
     /// <param name="context">The context containing the memory</param>
@@ -425,6 +434,7 @@ public class ChatMemorySkill
     #region Private
     /// <summary>
     /// Get a chat message by ID.
+    /// This method will only modify the memory and the log of the context.
     /// </summary>
     /// <param name="messageId">The message ID</param>
     /// <param name="chatId">The chat ID</param>
@@ -443,6 +453,7 @@ public class ChatMemorySkill
 
     /// <summary>
     /// Get IDs of all message in a chat session.
+    /// This method will only modify the memory and the log of the context.
     /// </summary>
     /// <param name="chatId">The chat ID</param>
     /// <param name="context"></param>
@@ -462,6 +473,7 @@ public class ChatMemorySkill
 
     /// <summary>
     /// Get a chat session by ID.
+    /// This method will only modify the memory and the log of the context.
     /// </summary>
     /// <param name="chatId">The chat id</param>
     /// <param name="context">The context containing the memory</param>
@@ -490,10 +502,10 @@ public class ChatMemorySkill
     /// <param name="userId">User ID to get the user name.</param>
     /// <param name="context">Context that contains the memory.</param>
     /// <returns></returns>
-    private async Task<string> CreateAndSaveInitialBotMessage(string chatId, string userId, SKContext context)
+    private async Task<string> CreateAndSaveInitialBotMessageAsync(string chatId, string userId, SKContext context)
     {
         var chatUser = await this.GetChatUserAsync(userId, context);
-        var initialBotMessage = string.Format(SystemPromptDefaults.InitialBotMessage, chatUser.FullName);
+        var initialBotMessage = string.Format(CultureInfo.CurrentCulture, SystemPromptDefaults.InitialBotMessage, chatUser.FullName);
         await this.SaveNewMessageAsync(initialBotMessage, ChatBotID(chatId), chatId, context);
 
         return initialBotMessage;

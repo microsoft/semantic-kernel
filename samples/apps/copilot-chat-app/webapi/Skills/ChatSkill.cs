@@ -198,19 +198,25 @@ public class ChatSkill
             );
         var contextTokenLimit = remainingToken;
         var chatMemorySkill = new ChatMemorySkill();
+        var userId = context["userId"];
+        var chatId = context["chatId"];
 
-        var chatUser = await chatMemorySkill.GetChatUserAsync(context["userId"], context);
-        if (chatUser == null)
+        ChatUser chatUser;
+        try
         {
-            context.Log.LogError("Failed to get chat user");
-            context.Fail("Failed to get chat user");
+            chatUser = await chatMemorySkill.GetChatUserAsync(userId, context);
+        }
+        catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentException)
+        {
+            context.Log.LogError($"Unable to get chat user: {ex.Message}");
+            context.Fail($"Unable to get chat user: {ex.Message}", ex);
             return context;
         }
 
         // Save this new message to memory such that subsequent chat responses can use it
         try
         {
-            await chatMemorySkill.SaveNewMessageAsync(message, context["userId"], context["chatId"], context);
+            await chatMemorySkill.SaveNewMessageAsync(message, userId, chatId, context);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -244,8 +250,8 @@ public class ChatSkill
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            var chatBotId = ChatMemorySkill.ChatBotID(context["chatId"]);
-            await chatMemorySkill.SaveNewMessageAsync(chatContext.Result, chatBotId, context["chatId"], chatContext);
+            var chatBotId = ChatMemorySkill.ChatBotID(chatId);
+            await chatMemorySkill.SaveNewMessageAsync(chatContext.Result, chatBotId, chatId, chatContext);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
