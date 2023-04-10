@@ -121,7 +121,8 @@ export const useChat = () => {
             var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat');
             const messageResult = {
                 timestamp: new Date().getTime(),
-                sender: getVariableValue(result.variables, 'userId')!,
+                senderName: 'Bot',
+                senderId: 'Bot',
                 content: result.value,
             };
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));

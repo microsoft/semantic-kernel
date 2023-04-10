@@ -15,7 +15,8 @@ export interface ChatState {
 export const initialBotMessage = (name: string) => {
     return {
         timestamp: new Date().getTime(),
-        sender: 'bot',
+        senderName: 'Bot',
+        senderId: 'Bot',
         content: `Hi ${name}, nice to meet you! How can I help you today? Type in a message.`,
     };
 };

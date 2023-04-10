@@ -99,14 +99,14 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
 
     // TODO: Ask Tao to use UserId (immutable through course of profile)
     // standardize to one
-    const isMe = message.sender === account?.name || message.sender === account?.homeAccountId;
-    const member = chat.getAudienceMemberForId(message.sender, selectedId, conversations[selectedId].audience);
+    const isMe = message.senderName === account?.name || message.senderName === account?.homeAccountId;
+    const member = chat.getAudienceMemberForId(message.senderName, selectedId, conversations[selectedId].audience);
     const avatar = isMe
         ? member?.photo
             ? { image: { src: member.photo } }
             : undefined
         : { image: { src: conversations[selectedId].botProfilePicture } };
-    const fullName = member?.fullName ?? message.sender;
+    const fullName = member?.fullName ?? message.senderName;
 
     return (
         <>
