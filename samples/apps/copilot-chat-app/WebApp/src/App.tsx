@@ -33,13 +33,13 @@ const useClasses = makeStyles({
         justifyContent: 'space-between',
     },
     persona: {
-        marginRight: '20px'
-    }
+        marginRight: '20px',
+    },
 });
 
 enum AppState {
     ProbeForBackend,
-    Chat
+    Chat,
 }
 
 const App: FC = () => {
@@ -50,9 +50,10 @@ const App: FC = () => {
     const account = msalInstance.getActiveAccount();
 
     useEffect(() => {
-        // TODO: Load Conversations from BE
+        // TODO: Load conversations from BE
         const keys = Object.keys(conversations);
         dispatch(setSelectedConversation(keys[0]));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -61,15 +62,15 @@ const App: FC = () => {
                 <Login />
             </UnauthenticatedTemplate>
             <AuthenticatedTemplate>
-                {appState === AppState.ProbeForBackend &&
+                {appState === AppState.ProbeForBackend && (
                     <BackendProbe
                         uri={process.env.REACT_APP_BACKEND_URI as string}
                         onBackendFound={() => setAppState(AppState.Chat)}
                     />
-                }
-                {appState === AppState.Chat &&
+                )}
+                {appState === AppState.Chat && (
                     <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
-                        <div className={classes.header} >
+                        <div className={classes.header}>
                             <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                             <Avatar
                                 className={classes.persona}
@@ -81,7 +82,7 @@ const App: FC = () => {
                         </div>
                         <ChatView />
                     </div>
-                }
+                )}
             </AuthenticatedTemplate>
         </div>
     );

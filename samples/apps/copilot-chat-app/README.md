@@ -94,7 +94,7 @@ and these components are functional:
     2. Copy `.env.example` into a new file with the name “`.env`” and make the
        following configuration changes to match your instance:
     3. Use the Application (client) ID from the Azure Portal steps above and
-       paste the GUID into the `.env` file next to `REACT_APP_CHAT_CLIENT_ID= `
+       paste the GUID into the `.env` file next to `REACT_APP_AAD_CLIENT_ID= `
     4. Execute the command `yarn install`
     5. Execute the command `yarn start`
 
