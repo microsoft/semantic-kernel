@@ -1,4 +1,4 @@
-# Semantic Kernel Service
+# Semantic Kernel Service - CopilotChat
 
 ## Introduction
 This ASP.Net web API application exposes the functionalities of the Semantic Kernel online through a REST interface.
