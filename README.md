@@ -109,36 +109,28 @@ kernel.Config.AddAzureOpenAITextCompletionService(
     "...your Azure OpenAI Key..."        // Azure OpenAI *Key*
 );
 
-string summarizePrompt = @"
-{{$input}}
+string summarizePrompt = @"{{$input}}
 
-Give me the a TLDR in 5 words.";
+Give me a TLDR with the fewest words.";
 
-string haikuPrompt = @"
-{{$input}}
+string jokePrompt = @"{{$input}}
 
-Write a futuristic haiku about it.";
+Write a G rated joke about it, only two lines, with rhyme.";
 
 var summarize = kernel.CreateSemanticFunction(summarizePrompt);
-var haikuWriter = kernel.CreateSemanticFunction(haikuPrompt);
+var joker = kernel.CreateSemanticFunction(jokePrompt);
 
 string inputText = @"
-1) A robot may not injure a human being or, through inaction,
-allow a human being to come to harm.
+1st Law of Thermodynamics - Energy cannot be created or destroyed.
+2nd Law of Thermodynamics - For a spontaneous process, the entropy of the universe increases.
+3rd Law of Thermodynamics - A perfect crystal at zero Kelvin has zero entropy.";
 
-2) A robot must obey orders given it by human beings except where
-such orders would conflict with the First Law.
-
-3) A robot must protect its own existence as long as such protection
-does not conflict with the First or Second Law.";
-
-var output = await kernel.RunAsync(inputText, summarize, haikuWriter);
+var output = await kernel.RunAsync(inputText, summarize, joker);
 
 Console.WriteLine(output);
 
-// Output => Robots protect us all
-//           No harm to humans they bring
-//           Peaceful coexistence
+// Output => Entropy is a funny thing,
+//           It's always increasing, no matter what we bring!
 ```
 
 ## Contributing and Community
