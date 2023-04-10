@@ -16,7 +16,7 @@ itsdangerous==2.0.1
 Jinja2==3.0.3
 joblib==1.2.0
 MarkupSafe==2.0.1
-numpy==1.19.5
+numpy==1.22.0
 packaging==21.3
 Pillow==9.3.0
 pycparser==2.21
