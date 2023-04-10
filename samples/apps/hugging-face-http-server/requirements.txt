@@ -14,7 +14,7 @@ importlib-metadata==4.8.3
 importlib-resources==5.4.0
 itsdangerous==2.0.1
 Jinja2==3.0.3
-joblib==1.1.1
+joblib==1.2.0
 MarkupSafe==2.0.1
 numpy==1.19.5
 packaging==21.3
