@@ -49,10 +49,10 @@ class ConversationSummarySkill:
 
     @sk_function(
         description="Given a long conversation transcript, identify action items.",
-        name="getConvesationActionItemsAsync",
+        name="getConversationActionItemsAsync",
         input_description="A long conversation transcript.",
     )
-    async def get_convesation_action_items_async(
+    async def get_conversation_action_items_async(
         self, input: str, context: SKContext
     ) -> SKContext:
         """
@@ -71,10 +71,10 @@ class ConversationSummarySkill:
 
     @sk_function(
         description="Given a long conversation topic, identify topics worth remembering.",
-        name="getConvesationTopicsAsync",
+        name="getConversationTopicsAsync",
         input_description="A long conversation transcript.",
     )
-    async def get_convesation_topics_async(
+    async def get_conversation_topics_async(
         self, input: str, context: SKContext
     ) -> SKContext:
         """
