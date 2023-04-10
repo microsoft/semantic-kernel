@@ -98,9 +98,11 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
     }
 
     const isMe = message.sender === account?.homeAccountId;
-    const member = chat.getAudienceMemberForId(message.sender);
-    const avatar = isMe ?
-        member?.photo ? { image: { src: member.photo } } : undefined
+    const member = chat.getAudienceMemberForId(message.sender, selectedId, conversations[selectedId].audience);
+    const avatar = isMe
+        ? member?.photo
+            ? { image: { src: member.photo } }
+            : undefined
         : { image: { src: conversations[selectedId].botProfilePicture } };
     const fullName = member?.fullName ?? message.sender;
 
@@ -108,9 +110,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
         <>
             <div className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}>
                 {!isMe && <Persona className={classes.persona} avatar={avatar} />}
-                <div
-                    className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}
-                >
+                <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
                     <div className={classes.header}>
                         {!isMe && <Label weight="semibold">{fullName}</Label>}
                         <Label className={mergeClasses(classes.time, classes.alignEnd)} size="small">

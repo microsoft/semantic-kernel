@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Skills;
 
-namespace SemanticKernel.Service;
+namespace CopilotChatApi.Service;
 
 internal static class FunctionLoadingExtensions
 {

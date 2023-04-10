@@ -21,7 +21,8 @@ const useClasses = makeStyles({
 export const ChatStatus: React.FC = () => {
     const classes = useClasses();
     const account = useAccount();
-    const { audience, botTypingTimestamp } = useAppSelector((state: RootState) => state.chat);
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { audience, botTypingTimestamp } = conversations[selectedId];
     const [typing, setTyping] = React.useState<SKBotAudienceMember[]>([]);
 
     // if audience is changed, check back in 5 seconds to see if they are still typing
@@ -37,7 +38,7 @@ export const ChatStatus: React.FC = () => {
                 });
             }
             const typingAudience = audience.filter(
-                (chatUser) =>
+                (chatUser: ChatUser) =>
                     chatUser.id !== account?.homeAccountId &&
                     chatUser.lastTypingTimestamp > Date.now() - timeoutDuration,
             );

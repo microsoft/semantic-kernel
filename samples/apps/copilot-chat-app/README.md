@@ -42,7 +42,7 @@ and these components are functional:
 3. The sample uses two applications, a front-end web UI, and a back-end API server.
     First, let’s set up and verify the back-end API server is running.
 
-    1. Navigate to `\samples\apps\copilot-chat-app\SKWebApi`
+    1. Navigate to `\samples\apps\copilot-chat-app\webapi`
     2. Update `appsettings.json` with these settings:
 
           * If you wish to run the back-end API server without an SSL certificate,
@@ -71,7 +71,7 @@ and these components are functional:
               API Server
             
 4. Build the back-end API server by following these instructions:
-    1. In the terminal navigate to  `\samples\apps\copilot-chat-app\SKWebApi`
+    1. In the terminal navigate to  `\samples\apps\copilot-chat-app\webapi`
     2. Run the command: `dotnet user-secrets set "CompletionConfig:Key"  "YOUR OPENAI KEY or AZURE OPENAI KEY"`
     3. Run the command: `dotnet user-secrets set "EmbeddingConfig:Key" "YOUR OPENAI KEY or AZURE OPENAI KEY"`
     4. Execute the command `dotnet build`
@@ -94,7 +94,7 @@ and these components are functional:
     2. Copy `.env.example` into a new file with the name “`.env`” and make the
        following configuration changes to match your instance:
     3. Use the Application (client) ID from the Azure Portal steps above and
-       paste the GUID into the `.env` file next to `REACT_APP_CHAT_CLIENT_ID= `
+       paste the GUID into the `.env` file next to `REACT_APP_AAD_CLIENT_ID= `
     4. Execute the command `yarn install`
     5. Execute the command `yarn start`
 

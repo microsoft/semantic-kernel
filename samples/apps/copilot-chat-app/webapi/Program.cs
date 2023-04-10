@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
 
-namespace SemanticKernel.Service;
+namespace CopilotChatApi.Service;
 
 public static class Program
 {
@@ -22,7 +22,7 @@ public static class Program
         string serverPortString = builder.Configuration.GetSection("ServicePort").Get<string>();
         if (!int.TryParse(serverPortString, out int serverPort))
         {
-            serverPort = SKWebApiConstants.DefaultServerPort;
+            serverPort = CopilotChatApiConstants.DefaultServerPort;
         }
 
         // Set the protocol to use
