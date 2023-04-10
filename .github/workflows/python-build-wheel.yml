@@ -15,7 +15,7 @@ jobs:
     
     defaults:
       run:
-        working-directory: ./python
+        working-directory: python
 
     steps:
     - run: echo "/root/.local/bin" >> $GITHUB_PATH
