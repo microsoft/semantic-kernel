@@ -37,7 +37,7 @@ public class ChatMemorySkill
     /// <param name="title">The title of the chat.</param>
     /// <param name="context">Contains the memory</param>
     /// <returns>An unique chat ID.</returns>
-    /// <returns>The initial chat message in a formatted string.</returns>
+    /// <returns>The initial chat message in a serialized json string.</returns>
     [SKFunction("Create a new chat session in memory.")]
     [SKFunctionName("CreateChat")]
     [SKFunctionInput(Description = "The title of the chat.")]
@@ -355,7 +355,14 @@ public class ChatMemorySkill
     {
         var chatUser = await this.GetChatUserAsync(userId, context);
         var chat = await this.GetChatAsync(chatId, context);
-        var chatMessage = new ChatMessage(chatUser.FullName, message);
+
+        var messageId = Guid.NewGuid().ToString();
+        while (await this.DoesMessageExistAsync(messageId, chatId, context))
+        {
+            context.Log.LogDebug("Message {0} already exists. Regenerating a new message ID.", messageId);
+            messageId = Guid.NewGuid().ToString();
+        }
+        var chatMessage = new ChatMessage(messageId, chatUser.Id, chatUser.FullName, message);
 
         await context.Memory.SaveInformationAsync(
             collection: MessageCollectionName(chatId),
@@ -433,6 +440,18 @@ public class ChatMemorySkill
 
     #region Private
     /// <summary>
+    /// Check if a user exists.
+    /// </summary>
+    /// <param name="messageId">The message ID</param>
+    /// <param name="chatId">The chat ID</param>
+    /// <param name="context">The context containing the memory</param>
+    /// <returns>true if exists otherwise false</returns>
+    private async Task<bool> DoesMessageExistAsync(string messageId, string chatId, SKContext context)
+    {
+        return await context.Memory.GetAsync(MessageCollectionName(chatId), messageId) != null;
+    }
+
+    /// <summary>
     /// Get a chat message by ID.
     /// This method will only modify the memory and the log of the context.
     /// </summary>
@@ -448,7 +467,13 @@ public class ChatMemorySkill
             throw new KeyNotFoundException($"Message {messageId} doesn't exist.");
         }
 
-        return ChatMessage.FromMemoryRecordMetadata(messageMemory.Metadata);
+        var chatMessage = ChatMessage.FromString(messageMemory.Metadata.Text);
+        if (chatMessage == null)
+        {
+            throw new ArgumentException($"Chat message {messageId} is corrupted: {messageMemory.Metadata.Text}.");
+        }
+
+        return chatMessage;
     }
 
     /// <summary>
@@ -501,14 +526,15 @@ public class ChatMemorySkill
     /// <param name="chatId">Chat ID of the chat session.</param>
     /// <param name="userId">User ID to get the user name.</param>
     /// <param name="context">Context that contains the memory.</param>
-    /// <returns></returns>
+    /// <returns>The initial message in a serialize json string.</returns>
     private async Task<string> CreateAndSaveInitialBotMessageAsync(string chatId, string userId, SKContext context)
     {
         var chatUser = await this.GetChatUserAsync(userId, context);
         var initialBotMessage = string.Format(CultureInfo.CurrentCulture, SystemPromptDefaults.InitialBotMessage, chatUser.FullName);
         await this.SaveNewMessageAsync(initialBotMessage, ChatBotID(chatId), chatId, context);
 
-        return initialBotMessage;
+        var latestMessage = await GetLatestChatMessageAsync(chatId, context);
+        return latestMessage.ToString();
     }
     #endregion
 }

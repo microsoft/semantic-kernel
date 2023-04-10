@@ -3,7 +3,6 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Memory;
 
 namespace SKWebApi.Skills;
 
@@ -146,63 +145,63 @@ public class ChatMessage : IComparable<ChatMessage>
     public string Timestamp { get; set; }
 
     /// <summary>
-    /// sender of the message.
+    /// Id of the sender of the message.
     /// </summary>
-    [JsonPropertyName("sender")]
+    [JsonPropertyName("senderId")]
     [JsonPropertyOrder(2)]
-    public string Sender { get; set; }
+    public string SenderId { get; set; }
+
+    /// <summary>
+    /// name of the sender of the message.
+    /// </summary>
+    [JsonPropertyName("senderName")]
+    [JsonPropertyOrder(3)]
+    public string SenderName { get; set; }
 
     /// <summary>
     /// content of the message.
     /// </summary>
     [JsonPropertyName("content")]
-    [JsonPropertyOrder(3)]
+    [JsonPropertyOrder(4)]
     public string Content { get; set; }
 
     /// <summary>
     /// Id of the message.
     /// </summary>
-    public string Id { get; private set; }
+    [JsonPropertyName("id")]
+    [JsonPropertyOrder(5)]
+    public string Id { get; set; }
 
     /// <summary>
     /// Create a new chat message. Timestamp is automatically generated.
     /// </summary>
-    /// <param name="sender"></param>
+    /// <param name="id"></param>
+    /// <param name="senderId"></param>
+    /// <param name="senderName"></param>
     /// <param name="content"></param>
-    public ChatMessage(string sender, string content)
+    public ChatMessage(string id, string senderId, string senderName, string content)
     {
         this.Timestamp = DateTimeOffset.Now.ToString("G", CultureInfo.CurrentCulture);
-        this.Sender = sender;
+        this.SenderId = senderId;
+        this.SenderName = senderName;
         this.Content = content;
-        this.Id = $"[{this.Timestamp}] {this.Sender}";
+        this.Id = id;
     }
 
     /// <summary>
-    /// Create a new chat message with a specified timestamp.
-    /// This is used when deserializing a message from memory.
-    /// </summary>
-    private ChatMessage(string timestamp, string sender, string content)
-    {
-        this.Timestamp = timestamp;
-        this.Sender = sender;
-        this.Content = content;
-        this.Id = $"[{this.Timestamp}] {this.Sender}";
-    }
-
-    /// <summary>
-    /// Override the default ToString() method to serialize the object to a formatted string.
+    /// Serialize the object to a formatted string.
     /// </summary>
     /// <returns>A formatted string</returns>
-    public override string ToString()
+    public string ToFormattedString()
     {
-        return $"{this.Id}: {this.Content}";
+        return $"[{this.Timestamp}] {this.SenderName}: {this.Content}";
     }
 
     /// <summary>
     /// Serialize the object to a JSON string.
     /// </summary>
     /// <returns>A serialized json string</returns>
-    public string ToJsonString()
+    public override string ToString()
     {
         return JsonSerializer.Serialize(this);
     }
@@ -212,36 +211,9 @@ public class ChatMessage : IComparable<ChatMessage>
     /// </summary>
     /// <param name="json">A json string</param>
     /// <returns>A ChatMessage object</returns>
-    public static ChatMessage? FromJsonString(string json)
+    public static ChatMessage? FromString(string json)
     {
         return JsonSerializer.Deserialize<ChatMessage>(json);
-    }
-
-    /// <summary>
-    /// Deserialize a MemoryRecordMetadata to a ChatMessage object.
-    /// </summary>
-    /// <param name="memoryMetadata"></param>
-    /// <returns>A ChatMessage object</returns>
-    /// <exception cref="ArgumentException"></exception>
-    public static ChatMessage FromMemoryRecordMetadata(MemoryRecordMetadata memoryMetadata)
-    {
-        var id = memoryMetadata.Id;
-        var text = memoryMetadata.Text;
-
-        if (id.IndexOf(']') == -1)
-        {
-            throw new ArgumentException("Invalid chat message id: {0}.", id);
-        }
-        // Extract the timestamp.
-        var timestamp = id.Substring(1, id.IndexOf(']') - 1);
-
-        // Extract the sender. Add 2 to skip the "] " after the timestamp.
-        var sender = id.Substring(id.IndexOf(']') + 2);
-
-        // Extract the content from the text. Add 2 to skip the ": " after the id.
-        var content = text.Substring(id.Length + 2);
-
-        return new ChatMessage(timestamp, sender, content);
     }
 
     /// <summary>
