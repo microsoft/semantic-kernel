@@ -18,7 +18,8 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class for extensions methods for <see cref="IKernel"/> interface.
@@ -92,7 +93,11 @@ public static class KernelOpenApiExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromResourceAsync(this IKernel kernel, string skillName, AuthenticateRequestAsyncCallback? authCallback = null, CancellationToken cancellationToken = default)
+    public static Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromResourceAsync(
+        this IKernel kernel,
+        string skillName,
+        AuthenticateRequestAsyncCallback? authCallback = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.ValidSkillName(skillName);
 
@@ -157,14 +162,19 @@ public static class KernelOpenApiExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromFileAsync(this IKernel kernel, string skillName, string filePath, AuthenticateRequestAsyncCallback? authCallback = null, CancellationToken cancellationToken = default)
+    public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromFileAsync(
+        this IKernel kernel,
+        string skillName,
+        string filePath,
+        AuthenticateRequestAsyncCallback? authCallback = null,
+        CancellationToken cancellationToken = default)
     {
         if (!File.Exists(filePath))
         {
             throw new FileNotFoundException($"No OpenApi document for the specified path - {filePath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document.", filePath);
+        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document", filePath);
 
         // TODO: never used, why?
         var skill = new Dictionary<string, ISKFunction>();
@@ -183,7 +193,12 @@ public static class KernelOpenApiExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiSkillAsync(this IKernel kernel, Stream documentStream, string skillName, AuthenticateRequestAsyncCallback? authCallback = null, CancellationToken cancellationToken = default)
+    public static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiSkillAsync(
+        this IKernel kernel,
+        Stream documentStream,
+        string skillName,
+        AuthenticateRequestAsyncCallback? authCallback = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel, nameof(kernel));
         Verify.ValidSkillName(skillName);
@@ -199,15 +214,15 @@ public static class KernelOpenApiExtensions
         {
             try
             {
-                kernel.Log.LogTrace("Registering Rest function {0}.{1}.", skillName, operation.Id);
+                kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
                 var function = kernel.RegisterRestApiFunction(skillName, operation, authCallback, cancellationToken);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other Rest functions
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
-                    ex.Message);
+                kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                    skillName, operation.Id, ex.Message);
             }
         }
 
@@ -225,7 +240,12 @@ public static class KernelOpenApiExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
-    private static ISKFunction RegisterRestApiFunction(this IKernel kernel, string skillName, RestApiOperation operation, AuthenticateRequestAsyncCallback? authCallback = null, CancellationToken cancellationToken = default)
+    private static ISKFunction RegisterRestApiFunction(
+        this IKernel kernel,
+        string skillName,
+        RestApiOperation operation,
+        AuthenticateRequestAsyncCallback? authCallback = null,
+        CancellationToken cancellationToken = default)
     {
         var restOperationParameters = operation.GetParameters();
 
@@ -260,7 +280,7 @@ public static class KernelOpenApiExtensions
                     }
                 }
 
-                var result = await runner.RunAsync(operation, arguments, context.CancellationToken).ConfigureAwait(false);
+                var result = await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
                 if (result != null)
                 {
                     context.Variables.Update(result.ToString());
@@ -276,18 +296,21 @@ public static class KernelOpenApiExtensions
             return context;
         }
 
-        // TODO: to be fixed later
-#pragma warning disable CA2000 // Dispose objects before losing scope.
-        var function = new SKFunction(
-            delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
-            delegateFunction: ExecuteAsync,
-            parameters: restOperationParameters.Select(p => new ParameterView()
+        var parameters = restOperationParameters
+            .Select(p => new ParameterView
             {
                 Name = p.AlternativeName ?? p.Name,
                 Description = p.Name,
                 DefaultValue = p.DefaultValue ?? string.Empty
             })
-                .ToList(), //functionConfig.PromptTemplate.GetParameters(),
+            .ToList();
+
+        // TODO: to be fixed later
+#pragma warning disable CA2000 // Dispose objects before losing scope.
+        var function = new SKFunction(
+            delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
+            delegateFunction: ExecuteAsync,
+            parameters: parameters,
             description: operation.Description,
             skillName: skillName,
             functionName: operation.Id,
