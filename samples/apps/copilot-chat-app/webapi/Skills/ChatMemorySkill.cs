@@ -25,11 +25,6 @@ public class ChatMemorySkill
     /// </summary>
     /// <param name="chatId">Chat ID that is persistent and unique for the chat session.</param>
     public static string MessageCollectionName(string chatId) => $"{chatId}-messages";
-    /// <summary>
-    /// Returns the name of the collection that stores chat bot information.
-    /// </summary>
-    /// <param name="chatId">Chat ID that is persistent and unique for the chat session.</param>
-    public static string ChatBotID(string chatId) => $"{chatId}-bot";
 
     /// <summary>
     /// Create a new chat session in memory.
@@ -49,20 +44,6 @@ public class ChatMemorySkill
         {
             context.Log.LogDebug("Chat {0} already exists. Regenerating a new chat ID.", chatId);
             chatId = Guid.NewGuid().ToString();
-        }
-
-        // Create a new chat bot for this chat.
-        // Clone the context to avoid modifying the original context variables.
-        var newBotContext = Utils.CopyContextWithVariablesClone(context);
-        newBotContext.Variables.Set("name", "Bot");
-        newBotContext.Variables.Set("email", "N/A");
-
-        await this.CreateUserAsync(ChatBotID(chatId), newBotContext);
-        if (newBotContext.ErrorOccurred)
-        {
-            context.Log.LogError("Failed to create a new chat bot for chat {0}.", chatId);
-            context.Fail(newBotContext.LastErrorDescription, newBotContext.LastException);
-            return context;
         }
 
         // Create a new chat.
@@ -382,6 +363,42 @@ public class ChatMemorySkill
     }
 
     /// <summary>
+    /// Save a new response to the chat history.
+    /// This method will only modify the memory and the log of the context.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="chatId">The chat ID</param>
+    /// <param name="context">Contains the memory</param>
+    internal async Task SaveNewResponseAsync(string response, string chatId, SKContext context)
+    {
+        var chat = await this.GetChatAsync(chatId, context);
+
+        var responseId = Guid.NewGuid().ToString();
+        while (await this.DoesMessageExistAsync(responseId, chatId, context))
+        {
+            context.Log.LogDebug("Response {0} already exists. Regenerating a new response ID.", responseId);
+            responseId = Guid.NewGuid().ToString();
+        }
+        var chatResponse = new ChatMessage(responseId, "bot", "Bot", response);
+
+        await context.Memory.SaveInformationAsync(
+            collection: MessageCollectionName(chatId),
+            text: chatResponse.ToString(),
+            id: chatResponse.Id,
+            cancel: context.CancellationToken
+        );
+
+        // Associate the response with the chat session.
+        chat.AddMessage(chatResponse.Id);
+        await context.Memory.SaveInformationAsync(
+            collection: ChatCollectionName,
+            text: chat.ToString(),
+            id: chat.Id,
+            cancel: context.CancellationToken
+        );
+    }
+
+    /// <summary>
     /// Get the latest chat message by chat ID.
     /// This method will only modify the memory and the log of the context.
     /// </summary>
@@ -531,7 +548,7 @@ public class ChatMemorySkill
     {
         var chatUser = await this.GetChatUserAsync(userId, context);
         var initialBotMessage = string.Format(CultureInfo.CurrentCulture, SystemPromptDefaults.InitialBotMessage, chatUser.FullName);
-        await this.SaveNewMessageAsync(initialBotMessage, ChatBotID(chatId), chatId, context);
+        await this.SaveNewResponseAsync(initialBotMessage, chatId, context);
 
         var latestMessage = await GetLatestChatMessageAsync(chatId, context);
         return latestMessage.ToString();

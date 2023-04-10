@@ -155,7 +155,7 @@ public class ChatSkill
         string historyText = "";
         foreach (var chatMessage in chatMessages)
         {
-            var formattedMessage = chatMessage.ToString();
+            var formattedMessage = chatMessage.ToFormattedString();
             var estimatedTokenCount = this.EstimateTokenCount(formattedMessage);
             if (remainingToken - estimatedTokenCount > 0)
             {
@@ -250,8 +250,7 @@ public class ChatSkill
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            var chatBotId = ChatMemorySkill.ChatBotID(chatId);
-            await chatMemorySkill.SaveNewMessageAsync(chatContext.Result, chatBotId, chatId, chatContext);
+            await chatMemorySkill.SaveNewResponseAsync(chatContext.Result, chatId, chatContext);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
