@@ -69,7 +69,7 @@ running samples in the repo and developing apps using Python SK.
 
     poetry shell
 
-To run the same checks that are run during the Azure Pipelines build, you can run:
+To run style checks, you can run:
 
     poetry run pre-commit run -c .conf/.pre-commit-config.yaml -a
 
