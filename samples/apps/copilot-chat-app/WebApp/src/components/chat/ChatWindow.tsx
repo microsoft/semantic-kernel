@@ -12,6 +12,8 @@ import {
 } from '@fluentui/react-components';
 import { EditRegular, Save24Regular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
+import { IAsk } from '../../libs/semantic-kernel/model/Ask';
+import { useSemanticKernel } from '../../libs/semantic-kernel/useSemanticKernel';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
@@ -74,20 +76,36 @@ const useClasses = makeStyles({
 
 export const ChatWindow: React.FC = () => {
     const classes = useClasses();
+    const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const dispatch = useAppDispatch();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
     const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
-    const onEdit = () => {
+    const onEdit = async () => {
         if (isEditing) {
-            if (chatName !== title) dispatch(editConversationTitle({ id: selectedId, newTitle: title ?? '' }));
+            if (chatName !== title) {
+                try {
+                    var ask: IAsk = {
+                        input: conversations[selectedId].id!,
+                        variables: [
+                            { key: 'title', value: title! },
+                        ],
+                    };
+
+                    await sk.invokeAsync(ask, 'ChatMemorySkill', 'EditChat');
+                    dispatch(editConversationTitle({ id: selectedId, newTitle: title ?? '' }));
+                } catch (e: any) {
+                    alert('[EditChat] Unable to retrieve chat. Details:\n' + e);
+                }
+            }
         }
         setIsEditing(!isEditing);
     };
 
     const onTitleChange = (_ev: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
+        console.log(data.value);
         setTitle(data.value);
     };
 
@@ -107,19 +125,20 @@ export const ChatWindow: React.FC = () => {
                             avatar={{ image: { src: conversations[selectedId].botProfilePicture } }}
                             presence={{ status: 'available' }}
                         />
-                        {title &&
-                            (isEditing ? (
+                        {isEditing ? (
                                 <Input value={title} onChange={onTitleChange} id={title} />
                             ) : (
                                 <Label size="large" weight="semibold">
                                     {chatName}
                                 </Label>
-                            ))}
+                            )
+                        }
                         {
                             <Button
                                 icon={isEditing ? <Save24Regular /> : <EditRegular />}
                                 appearance="transparent"
                                 onClick={onEdit}
+                                disabled={!title}
                             />
                         }
                     </div>
