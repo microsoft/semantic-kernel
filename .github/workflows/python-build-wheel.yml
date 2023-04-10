@@ -1,24 +1,23 @@
-name: Build Python Package
+name: python-build-wheel
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ "python_preview" ]
 
 permissions:
   contents: read
 
 jobs:
-  deploy:
+  build-wheel:
 
     runs-on: ubuntu-latest
 
     steps:
     - run: echo "/root/.local/bin" >> $GITHUB_PATH
-    
     - uses: actions/checkout@v3
-    
     - name: Install poetry
       run: pipx install poetry
-      
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -29,10 +28,10 @@ jobs:
     - name: Install SemanticKernel
       run: cd python && poetry install --no-ansi
       
-    - name: Build package
+    - name: Build wheel
       run: poetry build  
 
-    - name: Upload wheel file to GitHub artifacts
+    - name: Upload wheel file to artifacts
       uses: actions/upload-artifact@v3
       with:
         name: dist
