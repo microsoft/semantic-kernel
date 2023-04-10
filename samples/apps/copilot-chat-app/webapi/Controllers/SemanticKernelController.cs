@@ -21,7 +21,7 @@ public class SemanticKernelController : ControllerBase
         this._configuration = configuration;
         this._logger = logger;
     }
-    
+
     /// <summary>
     /// Invoke a Semantic Kernel function on the server.
     /// </summary>
