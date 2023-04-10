@@ -28,7 +28,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <inheritdoc/>
     public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, CancellationToken cancellationToken = default)
     {
-        var jsonObject = await this.DowngradeDocumentVersionToSuportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
+        var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
         using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(jsonObject.ToJson()));
 
@@ -54,7 +54,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="stream">The original OpenAPI document stream.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>OpenAPI document with downgraded document version.</returns>
-    private async Task<JsonObject> DowngradeDocumentVersionToSuportedOneAsync(Stream stream, CancellationToken cancellationToken)
+    private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
     {
         var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken);
         if (jsonObject == null)
@@ -63,7 +63,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
             throw new OpenApiDocumentParsingException($"Parsing of OpenAPI document failed.");
         }
 
-        if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropetyName, out var propertyNode))
+        if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropertyName, out var propertyNode))
         {
             //The document is either malformed or has 2.x version that specifies document version in the 'swagger' property rather than in the 'openapi' one.
             return jsonObject;
@@ -83,7 +83,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
         if (version > s_latestSupportedVersion)
         {
-            jsonObject[OpenApiVersionPropetyName] = s_latestSupportedVersion.ToString();
+            jsonObject[OpenApiVersionPropertyName] = s_latestSupportedVersion.ToString();
         }
 
         return jsonObject;
@@ -91,10 +91,10 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
     /// <summary>
     /// Converts YAML content to JSON content.
-    /// The method uses SharpYaml library that comes as a not-direct dependency of Microsoft.AopenAPI.NET library.
+    /// The method uses SharpYaml library that comes as a not-direct dependency of Microsoft.OpenAPI.NET library.
     /// Should be replaced later when there's more convenient way to convert YAML content to JSON one.
     /// </summary>
-    /// <param name="stream">The JAML/JSON content stream.</param>
+    /// <param name="stream">The YAML/JSON content stream.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>JSON content stream.</returns>
     private static async Task<JsonObject?> ConvertContentToJsonAsync(Stream stream, CancellationToken cancellationToken = default)
@@ -371,7 +371,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// Name of property that contains OpenAPI document version.
     /// </summary>
-    private const string OpenApiVersionPropetyName = "openapi";
+    private const string OpenApiVersionPropertyName = "openapi";
 
     #endregion
 }
