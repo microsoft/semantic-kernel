@@ -3,14 +3,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.
 /// </summary>
-internal static class RestApiOperationExtensions
+internal static class RestApiOperationOpenAPIExtensions
 {
     /// <summary>
     /// Returns list of REST API operation parameters.
