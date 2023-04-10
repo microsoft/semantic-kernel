@@ -84,20 +84,15 @@ public class ChatSkill
             Math.Floor(contextTokenLimit * SystemPromptDefaults.MemoriesResponseContextWeight)
         );
 
-        // Clone the context to avoid modifying the original context variables.
-        var latestMessageContext = Utils.CopyContextWithVariablesClone(context);
-
         var chatMemorySkill = new ChatMemorySkill();
-        latestMessageContext = await chatMemorySkill.GetLatestChatMessageAsync(context["chatId"], latestMessageContext);
-        if (latestMessageContext.ErrorOccurred)
+        var latestMessage = "";
+        try
         {
-            context.Log.LogError("Failed to get latest chat message");
-            return string.Empty;
+            latestMessage = (await chatMemorySkill.GetLatestChatMessageAsync(context["chatId"], context)).ToString();
         }
-        var latestMessage = JsonSerializer.Deserialize<ChatMessage>(latestMessageContext.Result);
-        if (latestMessage == null)
+        catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentException)
         {
-            context.Log.LogError("Failed to deserialize the latest chat message");
+            context.Log.LogError(ex, "Failed to get latest chat message");
             return string.Empty;
         }
 
