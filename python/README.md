@@ -1,3 +1,5 @@
+TEST CHANGE
+
 # Setup
 
 ## OpenAI / Azure OpenAI API keys
@@ -32,10 +34,9 @@ poetry install
 poetry shell
 ```
 
-
 # Get Started with Semantic Kernel ⚡
 
-## Example: Running a simple prompt.
+## Example: Running a simple prompt
 
 ```python
 import semantic_kernel as sk
@@ -64,7 +65,7 @@ Give me the TLDR in exactly 5 words.""")
 print(prompt()) # => Robots must not harm humans.
 ```
 
-## Example: Turn prompts into **reusable functions** with input parameters.
+## Example: Turn prompts into **reusable functions** with input parameters
 
 ```python
 # Create a reusable function with one input parameter
