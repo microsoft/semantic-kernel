@@ -20,7 +20,7 @@ internal class VarBlock : Block, ITextRendering
             return;
         }
 
-        this.Name = this.Content[1..];
+        this.Name = this.Content.Substring(1);
     }
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging

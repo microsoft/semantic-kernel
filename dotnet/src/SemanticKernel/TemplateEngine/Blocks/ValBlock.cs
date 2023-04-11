@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -31,8 +33,8 @@ internal class ValBlock : Block, ITextRendering
         }
 
         this._first = this.Content[0];
-        this._last = this.Content[^1];
-        this._value = this.Content[1..^1];
+        this._last = this.Content[this.Content.Length - 1];
+        this._value = this.Content.Substring(1, this.Content.Length - 1);
     }
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
@@ -68,7 +70,7 @@ internal class ValBlock : Block, ITextRendering
 
     public static bool HasValPrefix(string? text)
     {
-        return !string.IsNullOrEmpty(text)
+        return !text.IsNullOrEmpty()
                && text.Length > 0
                && (text[0] is Symbols.DblQuote or Symbols.SglQuote);
     }
