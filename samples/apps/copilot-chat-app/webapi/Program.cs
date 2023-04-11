@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
 
-namespace CopilotChatApi.Service;
+namespace SemanticKernel.Service;
 
 public static class Program
 {
