@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
 
-namespace CopilotChatApi.Service.Controllers;
+namespace SemanticKernel.Service.Controllers;
 
 [ApiController]
 public class SemanticKernelController : ControllerBase

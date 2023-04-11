@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
@@ -6,27 +6,15 @@
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.SemanticKernel</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <PackageId>Microsoft.SemanticKernel</PackageId>
-    <Title>Semantic Kernel</Title>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <DocumentationFile>bin\Release\netstandard2.1\SemanticKernel.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>portable</DebugType>
-    <DocumentationFile>bin\Debug\netstandard2.1\SemanticKernel.xml</DocumentationFile>
+    <PackageId>Microsoft.SemanticKernel.Abstractions</PackageId>
+    <Title>Semantic Kernel - Abstractions</Title>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,7 +25,10 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Connectors.OpenAI</_Parameter1>
+      <_Parameter1>Microsoft.SemanticKernel</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Microsoft.SemanticKernel.Connectors.AI.OpenAI</_Parameter1>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Microsoft.SemanticKernel.Skills.OpenAPI</_Parameter1>
@@ -53,7 +44,4 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
-  </ItemGroup>
 </Project>
