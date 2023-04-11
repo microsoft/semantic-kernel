@@ -13,26 +13,15 @@ interface SpeechServiceRequest {
 }
 
 export class SKSpeechService {
+    constructor(private readonly serviceUrl: string) {}
+
     getSpeechRecognizerAsync = async () => {
-        if (0) {
-            var subscriptionKey = ''; //'YourSubscriptionKey';
-            var serviceRegion = 'westus2'; // e.g., "westus"
-
-            const speechConfig = speechSdk.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
-            speechConfig.speechRecognitionLanguage = 'en-US';
-            const audioConfig = speechSdk.AudioConfig.fromDefaultMicrophoneInput();
-            return new speechSdk.SpeechRecognizer(speechConfig, audioConfig);
-        } else {
-            // call AzureSpeechTokenController (in SpeechController.cs) from the backend
-            // get a token from that
-
-            const response = await this.invokeTokenAsync();
-            const { token, region } = response;
-            const speechConfig = speechSdk.SpeechConfig.fromAuthorizationToken(token, region);
-            speechConfig.speechRecognitionLanguage = 'en-US';
-            const audioConfig = speechSdk.AudioConfig.fromDefaultMicrophoneInput();
-            return new speechSdk.SpeechRecognizer(speechConfig, audioConfig);
-        }
+        const response = await this.invokeTokenAsync();
+        const { token, region } = response;
+        const speechConfig = speechSdk.SpeechConfig.fromAuthorizationToken(token, region);
+        speechConfig.speechRecognitionLanguage = 'en-US';
+        const audioConfig = speechSdk.AudioConfig.fromDefaultMicrophoneInput();
+        return new speechSdk.SpeechRecognizer(speechConfig, audioConfig);
     };
 
     private invokeTokenAsync = async (): Promise<TokenResponse> => {
