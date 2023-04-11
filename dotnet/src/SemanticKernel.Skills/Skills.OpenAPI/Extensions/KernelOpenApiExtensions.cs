@@ -300,7 +300,7 @@ public static class KernelOpenApiExtensions
             .Select(p => new ParameterView
             {
                 Name = p.AlternativeName ?? p.Name,
-                Description = p.Name,
+                Description = p.Description ?? p.Name,
                 DefaultValue = p.DefaultValue ?? string.Empty
             })
             .ToList();
