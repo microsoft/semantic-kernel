@@ -1,10 +1,10 @@
 ﻿using System.Globalization;
-using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SKWebApi.Skills;
+using SKWebApi.Storage;
 
 namespace SemanticKernel.Service.Skills;
 
@@ -19,10 +19,14 @@ public class ChatSkill
     /// of the <see cref="ChatAsync"/> function will generate a new prompt dynamically.
     /// </summary>
     private readonly IKernel _kernel;
+    private readonly ChatMessageRepository _chatMessageRepository;
+    private readonly ChatRepository _chatRepository;
 
-    public ChatSkill(IKernel kernel)
+    public ChatSkill(IKernel kernel, ChatMessageRepository chatMessageRepository, ChatRepository chatRepository)
     {
         this._kernel = kernel;
+        this._chatMessageRepository = chatMessageRepository;
+        this._chatRepository = chatRepository;
     }
 
     /// <summary>
@@ -76,25 +80,16 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "contextTokenLimit", Description = "Maximum number of context tokens")]
     public async Task<string> ExtractUserMemoriesAsync(SKContext context)
     {
+        var chatId = context["chatId"];
         var tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
         var contextTokenLimit = int.Parse(context["contextTokenLimit"], new NumberFormatInfo());
-
         var remainingToken = Math.Min(
             tokenLimit,
             Math.Floor(contextTokenLimit * SystemPromptDefaults.MemoriesResponseContextWeight)
         );
 
-        var chatMemorySkill = new ChatMemorySkill();
-        var latestMessage = "";
-        try
-        {
-            latestMessage = (await chatMemorySkill.GetLatestChatMessageAsync(context["chatId"], context)).ToString();
-        }
-        catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentException)
-        {
-            context.Log.LogError(ex, "Failed to get latest chat message");
-            return string.Empty;
-        }
+        // Find the most recent message.
+        var latestMessage = await this._chatMessageRepository.FindLastByChatId(chatId);
 
         string memoryText = "";
         var results = context.Memory.SearchAsync(
@@ -127,33 +122,18 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "contextTokenLimit", Description = "Maximum number of context tokens")]
     public async Task<string> ExtractChatHistoryAsync(SKContext context)
     {
+        var chatId = context["chatId"];
         var tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
         // TODO: Use contextTokenLimit to determine how much of the chat history to return
         // TODO: relevant history
 
-        // Clone the context to avoid modifying the original context variables.
-        var chatMessagesContext = Utils.CopyContextWithVariablesClone(context);
-        chatMessagesContext.Variables.Set("startIdx", "0");
-        chatMessagesContext.Variables.Set("count", "-1");
+        var messages = await this._chatMessageRepository.FindByChatId(chatId);
+        var sortedMessages = messages.OrderByDescending(m => m.Timestamp);
 
-        var chatMemorySkill = new ChatMemorySkill();
-        chatMessagesContext = await chatMemorySkill.GetChatMessagesAsync(context["chatId"], chatMessagesContext);
-        if (chatMessagesContext.ErrorOccurred)
-        {
-            context.Log.LogError("Failed to get chat messages");
-            return string.Empty;
-        }
-
-        var chatMessages = JsonSerializer.Deserialize<List<ChatMessage>>(chatMessagesContext.Result);
-        if (chatMessages == null)
-        {
-            context.Log.LogError("Failed to deserialize chat messages");
-            return string.Empty;
-        }
         var remainingToken = tokenLimit;
         string historyText = "";
-        foreach (var chatMessage in chatMessages)
+        foreach (var chatMessage in sortedMessages)
         {
             var formattedMessage = chatMessage.ToFormattedString();
             var estimatedTokenCount = this.EstimateTokenCount(formattedMessage);
@@ -182,6 +162,7 @@ public class ChatSkill
     [SKFunctionName("Chat")]
     [SKFunctionInput(Description = "The new message")]
     [SKFunctionContextParameter(Name = "userId", Description = "Unique and persistent identifier for the user")]
+    [SKFunctionContextParameter(Name = "userName", Description = "Name of the user")]
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
@@ -197,26 +178,16 @@ public class ChatSkill
                 })
             );
         var contextTokenLimit = remainingToken;
-        var chatMemorySkill = new ChatMemorySkill();
         var userId = context["userId"];
+        var userName = context["userName"];
         var chatId = context["chatId"];
 
-        ChatUser chatUser;
-        try
-        {
-            chatUser = await chatMemorySkill.GetChatUserAsync(userId, context);
-        }
-        catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentException)
-        {
-            context.Log.LogError($"Unable to get chat user: {ex.Message}");
-            context.Fail($"Unable to get chat user: {ex.Message}", ex);
-            return context;
-        }
+        // TODO: check if user has access to the chat
 
         // Save this new message to memory such that subsequent chat responses can use it
         try
         {
-            await chatMemorySkill.SaveNewMessageAsync(message, userId, chatId, context);
+            await this.SaveNewMessageAsync(message, userId, userName, chatId);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -230,7 +201,7 @@ public class ChatSkill
         chatContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
         chatContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
         chatContext.Variables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
-        chatContext.Variables.Set("audience", chatUser.FullName);
+        chatContext.Variables.Set("audience", userName);
 
         // Extract user intent and update remaining token count
         var userIntent = await this.ExtractUserIntentAsync(chatContext);
@@ -238,19 +209,19 @@ public class ChatSkill
         remainingToken -= this.EstimateTokenCount(userIntent);
 
         var completionFunction = this._kernel.CreateSemanticFunction(
-            SystemPromptDefaults.SystemChatPrompt,
-            skillName: nameof(ChatSkill),
-            description: "Complete the prompt.");
+           SystemPromptDefaults.SystemChatPrompt,
+           skillName: nameof(ChatSkill),
+           description: "Complete the prompt.");
 
         chatContext = await completionFunction.InvokeAsync(
-            context: chatContext,
-            settings: this.CreateChatResponseCompletionSettings()
+           context: chatContext,
+           settings: this.CreateChatResponseCompletionSettings()
         );
 
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            await chatMemorySkill.SaveNewResponseAsync(chatContext.Result, chatId, chatContext);
+            await this.SaveNewResponseAsync(chatContext.Result, chatId);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -262,6 +233,37 @@ public class ChatSkill
         context.Variables.Update(chatContext.Result);
         context.Variables.Set("userId", "Bot");
         return context;
+    }
+
+
+    #region Private
+    /// <summary>
+    /// Save a new message to the chat history.
+    /// This method will only modify the memory and the log of the context.
+    /// </summary>
+    /// <param name="message">The message</param>
+    /// <param name="userId">The user ID</param>
+    /// <param name="userName"></param>
+    /// <param name="chatId">The chat ID</param>
+    private async Task SaveNewMessageAsync(string message, string userId, string userName, string chatId)
+    {
+        // Make sure the chat exists.
+        await this._chatRepository.FindById(chatId);
+
+        var messageId = Guid.NewGuid().ToString();
+        var chatMessage = new ChatMessage(messageId, userId, userName, chatId, message);
+        await this._chatMessageRepository.Create(chatMessage);
+    }
+
+    /// <summary>
+    /// Save a new response to the chat history.
+    /// This method will only modify the memory and the log of the context.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="chatId">The chat ID</param>
+    private async Task SaveNewResponseAsync(string response, string chatId)
+    {
+        await this.SaveNewMessageAsync(response, "bot", "bot", chatId);
     }
 
     /// <summary>
@@ -307,4 +309,5 @@ public class ChatSkill
     {
         return (int)Math.Floor(text.Length / SystemPromptDefaults.TokenEstimateFactor);
     }
+    # endregion
 }
