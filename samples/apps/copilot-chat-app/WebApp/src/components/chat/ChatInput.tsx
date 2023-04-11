@@ -9,7 +9,7 @@ import { Constants } from '../../Constants';
 import { AlertType } from '../../libs/models/AlertType';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { setAlert } from '../../redux/features/app/appSlice';
-import { SKSpeech } from './../../libs/semantic-kernel/SKSpeech';
+import { useSKSpeechService } from './../../libs/semantic-kernel/useSKSpeech';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -63,18 +63,15 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const [previousValue, setPreviousValue] = React.useState('');
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
-
-    const getSpeechRecognizerAsync = async () => {
-        return await SKSpeech.getSpeechRecognizerAsync();
-    };
+    const speechService = useSKSpeechService();
 
     React.useEffect(() => {
         if (recognizer) return;
         void (async () => {
-            const newRecognizer = await getSpeechRecognizerAsync();
+            const newRecognizer = await speechService.getSpeechRecognizerAsync();;
             setRecognizer(newRecognizer);
         })();
-    }, [recognizer]);
+    }, [recognizer, speechService]);
 
     const handleSpeech = () => {
         setIsListening(true);

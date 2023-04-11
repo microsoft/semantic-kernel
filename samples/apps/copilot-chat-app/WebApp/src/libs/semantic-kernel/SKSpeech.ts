@@ -1,55 +1,73 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
-// import speechkeys from './../../../webapp.development.json';
 
-//fetchRequestAsync is a function in sk-vnext\apps\InfiniteChat\apps\chatbot-v3\src\libs\semantic-kernel\service\SKService.ts, that i need to map here somehow
-// const getAzureSpeechTokenAsync = async () => {
-//     const response = await fetchRequestAsync({
-//         method: 'GET',
-//         apiEndpoint: '/get-azure-speech-token',
-//     });
+interface TokenResponse {
+    token: string;
+    region: string;
+}
 
-//     return (await response.json()) as { token: string; region: string };
-// };
+interface SpeechServiceRequest {
+    commandPath: string;
+    method?: string;
+}
 
-// async function getKeysFromJSON() {
-//     return fetch('/website/MyJsonFile.json')
-//         .then((response) => response.json())
-//         .then((responseJson) => {
-//             return responseJson;
-//         });
-// }
+export class SKSpeechService {
+    getSpeechRecognizerAsync = async () => {
+        if (0) {
+            var subscriptionKey = ''; //'YourSubscriptionKey';
+            var serviceRegion = 'westus2'; // e.g., "westus"
 
-const getSpeechRecognizerAsync = async () => {
-    //
-    // const response = await getAzureSpeechTokenAsync();
-    // const { token, region } = response;
-    // const speechConfig = speechSdk.SpeechConfig.fromAuthorizationToken(token, region);
+            const speechConfig = speechSdk.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+            speechConfig.speechRecognitionLanguage = 'en-US';
+            const audioConfig = speechSdk.AudioConfig.fromDefaultMicrophoneInput();
+            return new speechSdk.SpeechRecognizer(speechConfig, audioConfig);
+        } else {
+            // call AzureSpeechTokenController (in SpeechController.cs) from the backend
+            // get a token from that
 
-    // resource id: subscriptions/5b742c40-bc2b-4a4f-902f-ee9f644d8844/resourceGroups/lightspeed-team/providers/Microsoft.CognitiveServices/accounts/lightspeed-speech-recognition
-    // const config = JSON.parse(fs.readFileSync('./../../../webapp.development.json', 'utf-8')); // Read and Parse the JSON content
-    // var subscriptionKey = config[0].AzureSpeechSubscriptionKey; //'YourSubscriptionKey';
-    // var serviceRegion = config[0].AzureSpeechRegion; // e.g., "westus"
+            const response = await this.invokeAsync();
+            const { token, region } = response;
+            const speechConfig = speechSdk.SpeechConfig.fromAuthorizationToken(token, region);
+            speechConfig.speechRecognitionLanguage = 'en-US';
+            const audioConfig = speechSdk.AudioConfig.fromDefaultMicrophoneInput();
+            return new speechSdk.SpeechRecognizer(speechConfig, audioConfig);
+        }
+    };
 
-    //TODO: figure out a way to not need the key directly
+    private invokeAsync = async (): Promise<TokenResponse> => {
+        const result = await this.getAzureSpeechTokenAsync<TokenResponse>({
+            commandPath: `token/speech`,
+            method: 'GET',
+        });
+        return result;
+    };
 
-    // Fetch the JSON file
+    private readonly getAzureSpeechTokenAsync = async <TokenResponse>(
+        request: SpeechServiceRequest,
+    ): Promise<TokenResponse> => {
+        const { commandPath, method } = request;
 
-    // var subscriptionKey, serviceRegion;
-    // // const config = await getKeysFromJSON();
-    // subscriptionKey = config[0].AzureSpeechSubscriptionKey; //'YourSubscriptionKey';
-    // serviceRegion = config[0].AzureSpeechRegion; // e.g., "westus"
+        try {
+            const requestUrl = new URL(commandPath);
+            const response = await fetch(requestUrl, {
+                method: method ?? 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            });
 
-    //var subscriptionKey = ''; //'YourSubscriptionKey';
-    var serviceRegion = 'westus2'; // e.g., "westus"
+            if (!response.ok) {
+                throw Object.assign(new Error(response.statusText + ' => ' + (await response.text())));
+            }
 
-    const speechConfig = speechSdk.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
-    speechConfig.speechRecognitionLanguage = 'en-US';
-    const audioConfig = speechSdk.AudioConfig.fromDefaultMicrophoneInput();
-    return new speechSdk.SpeechRecognizer(speechConfig, audioConfig);
-};
-
-export const SKSpeech = {
-    getSpeechRecognizerAsync,
-};
+            return (await response.json()) as TokenResponse;
+        } catch (e) {
+            var additional_error_msg = '';
+            if (e instanceof TypeError) {
+                // fetch() will reject with a TypeError when a network error is encountered.
+                additional_error_msg =
+                    '\n\nPlease check that your backend is running and that it is accessible by the app';
+            }
+            throw Object.assign(new Error(e + additional_error_msg));
+        }
+    };
+}
