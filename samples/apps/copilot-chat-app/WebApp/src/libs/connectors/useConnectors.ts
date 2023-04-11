@@ -1,7 +1,7 @@
 import { useMsal } from '@azure/msal-react';
 import { msalInstance } from '../..';
 import { useAppDispatch } from '../../redux/app/hooks';
-import { setAlert } from '../../redux/features/app/appSlice';
+import { addAlert } from '../../redux/features/app/appSlice';
 import { TokenHelper } from '../auth/TokenHelper';
 import { AlertType } from '../models/AlertType';
 import { IAsk } from '../semantic-kernel/model/Ask';
@@ -13,21 +13,30 @@ export const useConnectors = () => {
     const dispatch = useAppDispatch();
 
     const makeGraphRequest = async (api: string, scopes: Array<string>, method: string, apiHeaders?: {}) => {
-        return await TokenHelper.getAccessToken(inProgress, msalInstance, scopes).then(async (token) => {
-            const request = new URL('/v1.0' + api, 'https://graph.microsoft.com');
-            return fetch(request, {
-                method: method,
-                headers: {
-                    ...apiHeaders,
-                    Authorization: `Bearer ${token}`,
-                },
-            }).then(async (response) => {
-                if (!response || !response.ok) {
-                    throw new Error(`Recieved error while request ${api}: ${response}`);
-                }
-                return await response.clone().json();
+        return await TokenHelper.getAccessToken(inProgress, msalInstance, scopes)
+            .then(async (token) => {
+                const request = new URL('/v1.0' + api, 'https://graph.microsoft.com');
+                return fetch(request, {
+                    method: method,
+                    headers: {
+                        ...apiHeaders,
+                        Authorization: `Bearer ${token}`,
+                    },
+                }).then(async (response) => {
+                    if (!response || !response.ok) {
+                        throw new Error(`Recieved error while request ${api}: ${response}`);
+                    }
+                    return await response.clone().json();
+                });
+            })
+            .catch((e: any) => {
+                dispatch(
+                    addAlert({
+                        type: AlertType.Error,
+                        message: e.message ?? (e as string),
+                    }),
+                );
             });
-        });
     };
 
     /**
@@ -47,7 +56,7 @@ export const useConnectors = () => {
             })
             .catch((e: any) => {
                 dispatch(
-                    setAlert({
+                    addAlert({
                         type: AlertType.Error,
                         message: e.message ?? (e as string),
                     }),

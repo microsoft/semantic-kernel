@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount } from '@azure/msal-react';
+import { msalInstance } from '../..';
 import { IAsk } from './model/Ask';
 import { IAskResult } from './model/AskResult';
 
@@ -35,7 +35,7 @@ export class SemanticKernel {
         request: ServiceRequest,
         connectorAccessToken?: string,
     ): Promise<T> => {
-        const account = useAccount();
+        const account = msalInstance.getActiveAccount();
         const { commandPath, method, body } = request;
         const headers = new Headers({
             Authorization: `Bearer ${account?.idToken}`,
