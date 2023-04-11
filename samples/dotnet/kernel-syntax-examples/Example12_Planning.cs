@@ -205,13 +205,13 @@ internal static class Example12_Planning
             .Configure(
                 config =>
                 {
-                    config.AddAzureOpenAITextCompletionService(
+                    config.AddAzureTextCompletionService(
                         Env.Var("AZURE_OPENAI_SERVICE_ID"),
                         Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_ENDPOINT"),
                         Env.Var("AZURE_OPENAI_KEY"));
 
-                    config.AddAzureOpenAIEmbeddingGenerationService(
+                    config.AddAzureTextEmbeddingGenerationService(
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_SERVICE_ID"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
@@ -253,7 +253,7 @@ internal static class Example12_Planning
     private static IKernel InitializeKernelAndPlanner(out IDictionary<string, ISKFunction> planner, int maxTokens = 1024)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddAzureOpenAITextCompletionService(
+        kernel.Config.AddAzureTextCompletionService(
             Env.Var("AZURE_OPENAI_SERVICE_ID"),
             Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
             Env.Var("AZURE_OPENAI_ENDPOINT"),

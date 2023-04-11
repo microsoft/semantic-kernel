@@ -1,9 +1,10 @@
-﻿using System.Globalization;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SKWebApi.Skills;
-using SKWebApi.Storage;
+using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Skills;
 
@@ -150,6 +151,7 @@ public class ChatHistorySkill
     }
 
     #region Internal
+
     /// <summary>
     /// Get the latest chat message by chat ID.
     /// </summary>
@@ -159,9 +161,11 @@ public class ChatHistorySkill
     {
         return await this._chatMessageRepository.FindLastByChatIdAsync(chatId);
     }
+
     #endregion
 
     #region Private
+
     /// <summary>
     /// Save a new response to the chat history.
     /// </summary>
@@ -190,5 +194,6 @@ public class ChatHistorySkill
         var latestMessage = await this.GetLatestChatMessageAsync(chatId);
         return latestMessage;
     }
+
     #endregion
 }
