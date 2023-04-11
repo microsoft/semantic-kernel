@@ -1,10 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-GET_CONVERSATION_ACTION_ITEMS_DEFINITION = '''You are an action item extractor.
-You will be given chat history and need to make note of action items mentioned in the chat.
-Extract action items from the content if there are any.
-If there are no action, return nothing.
-If a single field is missing, use an empty string.
+GET_CONVERSATION_ACTION_ITEMS_DEFINITION = '''You are an action item extractor. You will be given chat history and need to make note of action items mentioned in the chat.
+Extract action items from the content if there are any. If there are no action, return nothing. If a single field is missing, use an empty string.
 Return the action items in json.
 
 Possible statuses for action items are: Open, Closed, In Progress.
@@ -45,8 +42,7 @@ CONTENT STOPS HERE.
 
 OUTPUT:'''
 
-GET_CONVERSATION_TOPICS_DEFINITION = """
-Analyze the following extract taken from a conversation transcript and extract key topics.
+GET_CONVERSATION_TOPICS_DEFINITION = """Analyze the following extract taken from a conversation transcript and extract key topics.
 - Topics only worth remembering.
 - Be brief. Short phrases.
 - Can use broken English.
@@ -55,9 +51,7 @@ Analyze the following extract taken from a conversation transcript and extract k
 - NO LONG SENTENCES. SHORT PHRASES.
 - Return in JSON
 [Input]
-My name is Macbeth. I used to be King of Scotland, but I died.
-My wife's name is Lady Macbeth and we were married for 15 years. We had no children.
-Our beloved dog Toby McDuff was a famous hunter of rats in the forest.
+My name is Macbeth. I used to be King of Scotland, but I died. My wife's name is Lady Macbeth and we were married for 15 years. We had no children. Our beloved dog Toby McDuff was a famous hunter of rats in the forest.
 My tragic story was immortalized by Shakespeare in a play.
 [Output]
 {
@@ -82,8 +76,7 @@ SUMMARIZE_CONVERSATION_DEFINITION = """BEGIN CONTENT TO SUMMARIZE:
 
 END CONTENT TO SUMMARIZE.
 
-Summarize the conversation in 'CONTENT TO SUMMARIZE',
-identifying main points of discussion and any conclusions that were reached.
+Summarize the conversation in 'CONTENT TO SUMMARIZE', identifying main points of discussion and any conclusions that were reached.
 Do not incorporate other general knowledge.
 Summary is in plain text, in complete sentences, with no markup or tags.
 
