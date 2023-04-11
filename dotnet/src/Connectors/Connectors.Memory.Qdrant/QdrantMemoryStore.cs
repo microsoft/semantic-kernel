@@ -180,9 +180,10 @@ public class QdrantMemoryStore : IMemoryStore
     /// <summary>
     /// Get a MemoryRecord from the Qdrant Vector database by pointId.
     /// </summary>
-    /// <param name="collectionName"></param>
-    /// <param name="pointId"></param>
-    /// <param name="cancel"></param>
+    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
+    /// <param name="pointId">The unique indexed ID associated with the Qdrant vector record to get.</param>
+    /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
+    /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
     public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding, CancellationToken cancel = default)
@@ -224,9 +225,10 @@ public class QdrantMemoryStore : IMemoryStore
     /// <summary>
     /// Get a MemoryRecord from the Qdrant Vector database by a group of pointIds.
     /// </summary>
-    /// <param name="collectionName"></param>
-    /// <param name="pointIds"></param>
-    /// <param name="cancel"></param>
+    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
+    /// <param name="pointIds">The unique indexed IDs associated with Qdrant vector records to get.</param>
+    /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
+    /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, bool withEmbeddings,
         [EnumeratorCancellation] CancellationToken cancel = default)
@@ -268,9 +270,9 @@ public class QdrantMemoryStore : IMemoryStore
     /// <summary>
     /// Remove a MemoryRecord from the Qdrant Vector database by pointId.
     /// </summary>
-    /// <param name="collectionName"></param>
-    /// <param name="pointId"></param>
-    /// <param name="cancel"></param>
+    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
+    /// <param name="pointId">The unique indexed ID associated with the Qdrant vector record to remove.</param>
+    /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
     public async Task RemoveWithPointIdAsync(string collectionName, string pointId, CancellationToken cancel = default)
@@ -291,9 +293,9 @@ public class QdrantMemoryStore : IMemoryStore
     /// <summary>
     /// Remove a MemoryRecord from the Qdrant Vector database by a group of pointIds.
     /// </summary>
-    /// <param name="collectionName"></param>
-    /// <param name="pointIds"></param>
-    /// <param name="cancel"></param>
+    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
+    /// <param name="pointIds">The unique indexed IDs associated with the Qdrant vector records to remove.</param>
+    /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
     public async Task RemoveWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancel = default)

@@ -34,6 +34,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
+                It.IsAny<bool>(),
                 null,
                 It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<(QdrantVectorRecord, double)>());
@@ -52,6 +53,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
+                It.IsAny<bool>(),
                 null,
                 It.IsAny<CancellationToken>()),
             Times.Once());
@@ -84,6 +86,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
+                It.IsAny<bool>(),
                 null,
                 It.IsAny<CancellationToken>()))
             .Returns(new[] { (qdrantVectorRecord, 0.5) }.ToAsyncEnumerable());
@@ -102,6 +105,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
+                It.IsAny<bool>(),
                 null,
                 It.IsAny<CancellationToken>()),
             Times.Once());
@@ -124,6 +128,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
+                It.IsAny<bool>(),
                 null,
                 It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<(QdrantVectorRecord, double)>());

@@ -80,9 +80,9 @@ internal class SearchVectorsRequest : IValidatable
         return this;
     }
 
-    public SearchVectorsRequest IncludeVectorData()
+    public SearchVectorsRequest IncludeVectorData(bool withVector)
     {
-        this.WithVector = true;
+        this.WithVector = withVector;
         return this;
     }
 
