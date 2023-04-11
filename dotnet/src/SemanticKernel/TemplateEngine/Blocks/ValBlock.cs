@@ -34,7 +34,7 @@ internal class ValBlock : Block, ITextRendering
 
         this._first = this.Content[0];
         this._last = this.Content[this.Content.Length - 1];
-        this._value = this.Content.Substring(1, this.Content.Length - 1);
+        this._value = this.Content.Substring(1, this.Content.Length - 2);
     }
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
