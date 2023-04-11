@@ -1,16 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
-import { Avatar, Subtitle1, makeStyles } from '@fluentui/react-components';
+import { AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated } from '@azure/msal-react';
+import { Avatar, makeStyles, Spinner, Subtitle1 } from '@fluentui/react-components';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
 import { msalInstance } from '.';
 import { Login } from './components/Login';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
-import { useAppDispatch, useAppSelector } from './redux/app/hooks';
-import { RootState } from './redux/app/store';
-import { setSelectedConversation } from './redux/features/conversations/conversationsSlice';
+import { useChat } from './libs/useChat';
 
 const useClasses = makeStyles({
     container: {
@@ -39,22 +37,29 @@ const useClasses = makeStyles({
 
 enum AppState {
     ProbeForBackend,
+    LoadingChats,
     Chat,
 }
 
 const App: FC = () => {
     const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const classes = useClasses();
-    const { conversations } = useAppSelector((state: RootState) => state.conversations);
-    const dispatch = useAppDispatch();
     const account = msalInstance.getActiveAccount();
 
+    const isAuthenticated = useIsAuthenticated();
+    const chat = useChat();
+
     useEffect(() => {
-        // TODO: Load conversations from BE
-        const keys = Object.keys(conversations);
-        dispatch(setSelectedConversation(keys[0]));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        if (isAuthenticated) {
+            // Register user in DB
+            chat.registerLoggedInUser().then(() => {
+                // Load all chats from memory
+                chat.loadChats().then(() => {
+                    setAppState(AppState.Chat);
+                });
+            });
+        }
+    }, [isAuthenticated]);
 
     return (
         <div>
@@ -65,9 +70,10 @@ const App: FC = () => {
                 {appState === AppState.ProbeForBackend && (
                     <BackendProbe
                         uri={process.env.REACT_APP_BACKEND_URI as string}
-                        onBackendFound={() => setAppState(AppState.Chat)}
+                        onBackendFound={() => setAppState(AppState.LoadingChats)}
                     />
                 )}
+                {appState === AppState.LoadingChats && <Spinner labelPosition="below" label="Loading Chats" />}
                 {appState === AppState.Chat && (
                     <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
                         <div className={classes.header}>

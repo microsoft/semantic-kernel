@@ -97,8 +97,9 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
             time;
     }
 
-    const isMe = message.sender === account?.homeAccountId;
-    const member = chat.getAudienceMemberForId(message.sender, selectedId, conversations[selectedId].audience);
+    // TODO: Ask Tao to use UserId (immutable through course of profile)
+    const isMe = message.sender === account?.name;
+    const member = chat.getAudienceMemberForId(message.sender, selectedId);
     const avatar = isMe
         ? member?.photo
             ? { image: { src: member.photo } }

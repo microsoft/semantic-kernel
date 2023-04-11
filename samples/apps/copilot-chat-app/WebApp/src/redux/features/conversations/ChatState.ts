@@ -4,7 +4,8 @@ import { ChatMessage } from '../../../libs/models/ChatMessage';
 import { ChatUser } from '../../../libs/models/ChatUser';
 
 export interface ChatState {
-    id: string | undefined;
+    id?: string;
+    title: string;
     audience: ChatUser[];
     messages: ChatMessage[];
     botTypingTimestamp: number;
@@ -15,14 +16,15 @@ export const initialBotMessage = (name: string) => {
     return {
         timestamp: new Date().getTime(),
         sender: 'bot',
-        content: `Hi ${name}, nice to meet you! How can I help you today? Type in a message.`
-    }
+        content: `Hi ${name}, nice to meet you! How can I help you today? Type in a message.`,
+    };
 };
 
 export const initialChatName = `SK Chatbot @ ${new Date().toLocaleString()}`;
 
+// TODO: initialize empty state
 export const initialState: ChatState = {
-    id: initialChatName,
+    title: initialChatName,
     audience: [],
     messages: [initialBotMessage('there')],
     botTypingTimestamp: 0,

@@ -1,12 +1,13 @@
 import { Button, Label, makeStyles, shorthands, Text } from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 
-import { BotAdd20Regular } from '@fluentui/react-icons';
+import { BotAdd20Regular, Filter20Regular } from '@fluentui/react-icons';
 import { FC } from 'react';
 import { useChat } from '../../../libs/useChat';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { ChatListItem } from './ChatListItem';
+
 const useClasses = makeStyles({
     root: {
         width: '25%',
@@ -43,6 +44,7 @@ export const ChatList: FC = () => {
         chat.createChat();
     };
 
+    // TODO: hookup buttons onClick
     return (
         <>
             <div className={classes.root}>
@@ -51,10 +53,7 @@ export const ChatList: FC = () => {
                         Conversations
                     </Text>
                     <div>
-                        {/* TODO: Allow users to filter conversations by name
-                        <Button
-                        icon={<Filter20Regular />}
-                        appearance="transparent" /> */}
+                        <Button icon={<Filter20Regular />} appearance="transparent" />
                         <Button icon={<BotAdd20Regular />} appearance="transparent" onClick={onAddChat} />
                     </div>
                 </div>
@@ -76,7 +75,7 @@ export const ChatList: FC = () => {
                             >
                                 <ChatListItem
                                     id={id}
-                                    header={id}
+                                    header={convo.title}
                                     timestamp={new Date(messages[lastMessage].timestamp).toLocaleTimeString([], {
                                         hour: '2-digit',
                                         minute: '2-digit',

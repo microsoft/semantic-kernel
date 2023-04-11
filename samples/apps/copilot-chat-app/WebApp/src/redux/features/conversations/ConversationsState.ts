@@ -10,6 +10,7 @@ export type Conversations = {
 export interface ConversationsState {
     conversations: Conversations;
     selectedId: string;
+    botProfilePictureIndex: number;
 }
 
 export const initialState: ConversationsState = {
@@ -17,14 +18,15 @@ export const initialState: ConversationsState = {
         [initialChatName]: initialChatState,
     },
     selectedId: initialChatName,
+    botProfilePictureIndex: 0,
 };
 
-export type UpdateConversationPayload = {
+export interface IEditConversationTitle {
     id: string;
-    messages: ChatMessage[];
-};
+    newTitle: string;
+}
 
-export interface ConversationTitleChange {
-    id: string;
-    newId: string;
+export interface IUpdateConversation {
+    message: ChatMessage;
+    chatId?: string;
 }

@@ -14,7 +14,7 @@ const useClasses = makeStyles({
     },
     avatar: {
         flexShrink: '0',
-        minWidth: '3.2rem'
+        minWidth: '3.2rem',
     },
     body: {
         display: 'flex',
@@ -38,13 +38,13 @@ const useClasses = makeStyles({
         maxWidth: '6rem',
         marginTop: '0',
         marginBottom: 'auto',
-        marginLeft: '0.8rem'
+        marginLeft: '0.8rem',
     },
     title: {
         ...shorthands.overflow('hidden'),
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
-        minWidth: '4rem'
+        minWidth: '4rem',
     },
     preview: {
         ...shorthands.overflow('hidden'),
@@ -52,8 +52,8 @@ const useClasses = makeStyles({
         lineHeight: '16px',
         display: '-webkit-box',
         WebkitLineClamp: 2,
-        WebkitBoxOrient: 'vertical'
-    }
+        WebkitBoxOrient: 'vertical',
+    },
 });
 
 interface IChatListItemProps {
@@ -74,23 +74,29 @@ export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, pr
     };
 
     return (
-        <div className={classes.root} onClick={onClick }>
-            <Avatar image={{ src: botProfilePicture }}/>
+        <div className={classes.root} onClick={onClick}>
+            <Avatar image={{ src: botProfilePicture }} />
             <div className={classes.body}>
                 <div className={classes.header}>
-                    <Text className={classes.title } style={{color: 'var(--colorNeutralForeground1)'}}> {header} </Text>
+                    <Text className={classes.title} style={{ color: 'var(--colorNeutralForeground1)' }}>
+                        {header}
+                    </Text>
                     {timestamp && (
-                        <Text className={classes.timestamp} size={300} >
+                        <Text className={classes.timestamp} size={300}>
                             {timestamp}
                         </Text>
                     )}
                 </div>
                 {preview && (
                     <div className={classes.preview}>
-                        {<Text id={`message-preview-${id}`} size={200}>{preview}</Text>}
+                        {
+                            <Text id={`message-preview-${id}`} size={200}>
+                                {preview}
+                            </Text>
+                        }
                     </div>
                 )}
             </div>
         </div>
     );
-}
+};
