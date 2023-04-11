@@ -8,9 +8,9 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Rest.Model;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
-namespace Microsoft.SemanticKernel.Connectors.Rest;
+namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 
 /// <summary>
 /// Runs REST API operation represented by RestApiOperation model class.
