@@ -53,7 +53,7 @@ public class SqliteMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
     {
-        await using(var connection = new SqliteConnection(this._dbConnectionString))
+        await using (var connection = new SqliteConnection(this._dbConnectionString))
         {
             await connection.OpenAsync(cancel);
             return await this._dbConnector.DoesCollectionExistsAsync(connection, collectionName, cancel);

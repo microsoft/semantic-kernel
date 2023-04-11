@@ -17,7 +17,7 @@ internal struct DatabaseEntry
     public string MetadataString { get; set; }
 
     public string EmbeddingString { get; set; }
-    
+
     public string? Timestamp { get; set; }
 }
 
@@ -116,7 +116,7 @@ internal class Database
             }
         }
     }
-    
+
     public async IAsyncEnumerable<DatabaseEntry> ReadAllAsync(SqliteConnection conn,
         string collectionName,
         [EnumeratorCancellation] CancellationToken cancel = default)
