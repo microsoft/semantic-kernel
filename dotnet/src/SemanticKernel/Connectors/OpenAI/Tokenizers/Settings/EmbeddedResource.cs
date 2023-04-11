@@ -40,7 +40,7 @@ internal static class EmbeddedResource
     {
         // Assume the class namespace matches the directory structure
         var currentClassDir = s_namespace
-            .Replace(PrefixToIgnore, "", StringComparison.OrdinalIgnoreCase)
+            .Replace(PrefixToIgnore, string.Empty)
             .Trim('.')
             .Replace('.', Path.DirectorySeparatorChar);
 
@@ -49,7 +49,7 @@ internal static class EmbeddedResource
         var assembly1Dir = Path.GetDirectoryName(Path.GetFullPath(assembly1.Location));
 
         // Concatenate assembly location with class namespace with file name
-        var filePath1 = Path.Join(assembly1Dir, currentClassDir, fileName);
+        var filePath1 = Path.Combine(assembly1Dir, currentClassDir, fileName);
         if (File.Exists(filePath1))
         {
             return File.ReadAllText(filePath1);
@@ -72,7 +72,7 @@ internal static class EmbeddedResource
         }
 
         // Concatenate assembly location with class namespace with file name
-        var filePath2 = Path.Join(assembly2Dir, currentClassDir, fileName);
+        var filePath2 = Path.Combine(assembly2Dir, currentClassDir, fileName);
         if (File.Exists(filePath2))
         {
             return File.ReadAllText(filePath2);
