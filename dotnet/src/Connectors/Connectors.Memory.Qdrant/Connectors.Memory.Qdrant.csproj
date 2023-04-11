@@ -2,7 +2,7 @@
     <PropertyGroup>
         <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
     </PropertyGroup>
-<!--    <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />-->
+    <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
     <PropertyGroup>
         <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Qdrant</AssemblyName>
