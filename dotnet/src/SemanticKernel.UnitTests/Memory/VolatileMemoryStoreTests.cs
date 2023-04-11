@@ -107,6 +107,34 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
+    public async Task GetRecordReturnsEmptyEmbeddingUnlessSpecifiedAsync()
+    {
+        // Arrange
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test",
+            text: "text",
+            description: "description",
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            key: null,
+            timestamp: null);
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+
+        // Act
+        await this._db.CreateCollectionAsync(collection);
+        var key = await this._db.UpsertAsync(collection, testRecord);
+        var actualDefault = await this._db.GetAsync(collection, key);
+        var actualWithEmbedding = await this._db.GetAsync(collection, key, true);
+
+        // Assert
+        Assert.NotNull(actualDefault);
+        Assert.NotNull(actualWithEmbedding);
+        Assert.Empty(actualDefault.Embedding.Vector);
+        Assert.NotEqual(testRecord, actualDefault);
+        Assert.Equal(testRecord, actualWithEmbedding);
+    }
+
+    [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
         // Arrange
@@ -123,7 +151,7 @@ public class VolatileMemoryStoreTests
         // Act
         await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
-        var actual = await this._db.GetAsync(collection, key);
+        var actual = await this._db.GetAsync(collection, key, true);
 
         // Assert
         Assert.NotNull(actual);
@@ -147,7 +175,7 @@ public class VolatileMemoryStoreTests
         // Act
         await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
-        var actual = await this._db.GetAsync(collection, key);
+        var actual = await this._db.GetAsync(collection, key, true);
 
         // Assert
         Assert.NotNull(actual);
@@ -176,7 +204,7 @@ public class VolatileMemoryStoreTests
         await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
         var key2 = await this._db.UpsertAsync(collection, testRecord2);
-        var actual = await this._db.GetAsync(collection, key);
+        var actual = await this._db.GetAsync(collection, key, true);
 
         // Assert
         Assert.NotNull(actual);
