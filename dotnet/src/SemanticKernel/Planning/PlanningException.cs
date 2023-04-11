@@ -29,6 +29,11 @@ public class PlanningException : Exception<PlanningException.ErrorCodes>
         /// Invalid configuration.
         /// </summary>
         InvalidConfiguration = 1,
+
+        /// <summary>
+        /// Invalid response
+        /// </summary>
+        InvalidResponse = 2
     }
 
     /// <summary>

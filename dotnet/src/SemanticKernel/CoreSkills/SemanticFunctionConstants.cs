@@ -100,9 +100,10 @@ To create a plan, follow these steps:
 7. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
 8. Only use ""if"" and ""else"" tags
 9. ""if"" and ""else"" tags must be closed
-10. Comparison operators must be literals.
-11. Append an ""END"" XML comment at the end of the plan.
-12. Use only the [AVAILABLE FUNCTIONS].
+10. Don't use <elseif> use <if> instead
+11. Comparison operators must be literals.
+12. Append an ""END"" XML comment at the end of the plan.
+13. Use only the [AVAILABLE FUNCTIONS].
 
 [AVAILABLE FUNCTIONS]
 
@@ -444,4 +445,21 @@ My tragic story was immortalized by Shakespeare in a play.
 [Input]
 {{$INPUT}}
 [Output]";
+
+    internal const string FunctionFlowConfirmAvailableDefinition =
+        @"[AVAILABLE FUNCTIONS]
+{{$available_functions}}
+[END AVAILABLE FUNCTIONS]
+
+Give me a JSON response with two properties: 
+{ 
+    ""valid"": bool, 
+    ""reason"": string (Only when result is false what is the goal part it cannot suffice)
+}
+
+Consider the available functions and that we can use conditions and loops to check the combination of its outputs. Are those enough to achieve the following goal?
+
+""{{$input}}""
+
+";
 }

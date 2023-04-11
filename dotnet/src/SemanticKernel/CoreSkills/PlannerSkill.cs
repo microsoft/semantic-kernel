@@ -2,8 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
@@ -108,6 +111,11 @@ public class PlannerSkill
     private readonly ISKFunction _functionFlowFunction;
 
     /// <summary>
+    /// the function to check if a plan can be fulfilled with a given set of available skills
+    /// </summary>
+    private readonly ISKFunction _functionFlowConfirmAvailable;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="PlannerSkill"/> class.
     /// </summary>
     /// <param name="kernel"> The kernel to use </param>
@@ -125,11 +133,21 @@ public class PlannerSkill
         this._functionFlowFunction = kernel.CreateSemanticFunction(
             promptTemplate: SemanticFunctionConstants.FunctionFlowFunctionDefinition,
             skillName: RestrictedSkillName,
+            functionName: nameof(this.CreatePlanAsync),
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
             maxTokens: maxTokens,
             temperature: 0.0,
             stopSequences: new[] { "<!--" });
+
+        this._functionFlowConfirmAvailable = kernel.CreateSemanticFunction(
+            promptTemplate: SemanticFunctionConstants.FunctionFlowConfirmAvailableDefinition,
+            skillName: RestrictedSkillName,
+            functionName: nameof(this.VerifyCanCreatePlanForGoalAsync),
+            description: "Given a plan with a goal, check if the plan can be fulfilled with the available skills",
+            maxTokens: maxTokens,
+            temperature: 0.0
+        );
 
         // Currently not exposed -- experimental.
         _ = kernel.CreateSemanticFunction(
@@ -241,17 +259,94 @@ public class PlannerSkill
         context.Variables.Set("available_functions", relevantFunctionsManual);
         // TODO - consider adding the relevancy score for functions added to manual
 
-        var plan = await this._functionFlowFunction.InvokeAsync(context);
-
-        string fullPlan = $"<{FunctionFlowRunner.GoalTag}>\n{goal}\n</{FunctionFlowRunner.GoalTag}>\n{plan.ToString().Trim()}";
-        _ = context.Variables.UpdateWithPlanEntry(new SkillPlan
+        if (await this.VerifyCanCreatePlanForGoalAsync(goal, context))
         {
-            Id = Guid.NewGuid().ToString("N"),
-            Goal = goal,
-            PlanString = fullPlan,
-        });
+            context.Variables.Update(goal);
+            var plan = await this._functionFlowFunction.InvokeAsync(context);
+
+            string fullPlan =
+                $"<{FunctionFlowRunner.GoalTag}>\n{goal}\n</{FunctionFlowRunner.GoalTag}>\n{plan.ToString().Trim()}";
+            _ = context.Variables.UpdateWithPlanEntry(new SkillPlan
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                Goal = goal,
+                PlanString = fullPlan,
+            });
+
+            this.VerifyCreatedPlanFunctionsExists(fullPlan, context);
+        }
+        else
+        {
+            context.Variables.Update(context.LastErrorDescription);
+        }
 
         return context;
+    }
+
+    /// <summary>
+    /// Proactively query LLM with a list of available skills to understand if they are able to accomplish a goal.
+    /// </summary>
+    /// <param name="goal"> The goal to accomplish. </param>
+    /// <param name="context"> The context to use </param>
+    /// <returns> True if the goal is achievable with the current set of available skills</returns>
+    private async Task<bool> VerifyCanCreatePlanForGoalAsync(string goal, SKContext context)
+    {
+        var llmResponse =
+            (await this._functionFlowConfirmAvailable.InvokeAsync(goal, context).ConfigureAwait(false)).ToString();
+        var llmJsonResponse = this.GetLlmResponseAsJsonWithProperties(llmResponse, "valid");
+
+        var valid = llmJsonResponse["valid"]!.GetValue<bool>();
+
+        if (!valid)
+        {
+            var reason = llmJsonResponse?["reason"]?.GetValue<string>();
+
+            var exception = new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
+                !string.IsNullOrWhiteSpace(reason)
+                    ? reason
+                    : "No reason was provided");
+
+            context.Fail(exception.Message, exception);
+        }
+
+        return valid;
+    }
+
+    /// <summary>
+    /// For each function in the plan, ensure that the function is registered in the context.
+    /// </summary>
+    /// <param name="fullPlan">Full plan spec</param>
+    /// <param name="context">Current plan context</param>
+    /// <exception cref="PlanningException">Throws if plan was using an unavailable function</exception>
+    private void VerifyCreatedPlanFunctionsExists(string fullPlan, SKContext context)
+    {
+        List<string> unavailableSkillFunctions = new();
+
+        XmlDocument planDoc = new();
+        planDoc.LoadXml(string.Concat("<xml>", fullPlan, "</xml>"));
+
+        var planNodes = planDoc.SelectNodes("//*[starts-with(name(), 'function')]");
+        if (planNodes == null)
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Plan generated is invalid.");
+        }
+
+        foreach (XmlNode functioNode in planNodes)
+        {
+            FunctionFlowRunner.GetSkillFunctionFromNodeName(functioNode.Name, out var skillName, out var functionName);
+
+            if (!context.IsFunctionRegistered(skillName, functionName, out _))
+            {
+                unavailableSkillFunctions.Add($"{skillName}.{functionName}");
+            }
+        }
+
+        if (unavailableSkillFunctions.Any())
+        {
+            var exception = new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
+                $"Plan is using unavailable skill functions: {string.Join(", ", unavailableSkillFunctions)}");
+            context.Fail(exception.Message, exception);
+        }
     }
 
     /// <summary>
@@ -341,5 +436,38 @@ public class PlannerSkill
         }
 
         return context;
+    }
+
+    /// <summary>
+    /// Gets a JsonNode traversable structure from the LLM text response
+    /// </summary>
+    /// <param name="llmResponse">String to parse into a JsonNode format</param>
+    /// <param name="requiredProperties">If provided ensures if the json object has the properties</param>
+    /// <returns>JsonNode with the parseable json form the llmResponse string</returns>
+    /// <exception cref="ConditionException">Throws if cannot find a Json result or any of the required properties</exception>
+    private JsonNode GetLlmResponseAsJsonWithProperties(string llmResponse, params string[] requiredProperties)
+    {
+        var startIndex = llmResponse?.IndexOf('{', StringComparison.InvariantCultureIgnoreCase) ?? -1;
+        JsonNode? response = null;
+
+        if (startIndex > -1)
+        {
+            var jsonResponse = llmResponse![startIndex..];
+            response = JsonSerializer.Deserialize<JsonNode>(jsonResponse);
+
+            foreach (string requiredProperty in requiredProperties)
+            {
+                _ = response?[requiredProperty]
+                    ?? throw new PlanningException(PlanningException.ErrorCodes.InvalidResponse,
+                        $"Response doesn't have the required property: {requiredProperty}");
+            }
+        }
+
+        if (response is null)
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidResponse);
+        }
+
+        return response;
     }
 }

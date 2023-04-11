@@ -1,12 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.CoreSkills;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
@@ -81,6 +85,100 @@ Solve the equation x^2 = 2.
     //     Assert.Equal(GoalText, plan.Goal);
     //     Assert.StartsWith("<goal>\nSolve the equation x^2 = 2.\n</goal>", plan.PlanString, StringComparison.OrdinalIgnoreCase);
     // }
+
+    [Fact]
+    public async Task CreatePlanWhenAchievableAndFunctionsExistsShouldBeValidAsync()
+    {
+        var kernelMock = this.CreateKernelMock(out _, out var skillCollectionMock, out _);
+        var returnVerifyContext = this.CreateSKContext(kernelMock.Object);
+        returnVerifyContext.Variables.Update("{\"valid\": true}");
+        var mockFunctionVerify = SetupMockFunction("Goal", returnVerifyContext);
+
+        var returnCreatePlanContext = this.CreateSKContext(kernelMock.Object);
+        returnCreatePlanContext.Variables.Update("<plan></plan>");
+        var mockFunctionCreatePlan = SetupMockFunction("Goal", returnCreatePlanContext);
+
+        kernelMock.Setup(k => k.RegisterSemanticFunction(It.IsAny<string>(), It.IsIn<string>("CreatePlanAsync"), It.IsAny<SemanticFunctionConfig>()))
+            .Returns(mockFunctionCreatePlan.Object);
+
+        kernelMock.Setup(k => k.RegisterSemanticFunction(It.IsAny<string>(), It.IsIn<string>("VerifyCanCreatePlanForGoalAsync"), It.IsAny<SemanticFunctionConfig>()))
+            .Returns(mockFunctionVerify.Object);
+
+        skillCollectionMock.Setup(sc => sc.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(new FunctionsView());
+
+        var target = new PlannerSkill(kernelMock.Object);
+
+        // Act
+        var context = this.CreateSKContext(kernelMock.Object);
+        var result = await target.CreatePlanAsync("Goal", context);
+
+        // Assert
+        var plan = context.Variables.ToPlan();
+        Assert.NotNull(plan);
+        Assert.NotNull(plan.Id);
+    }
+
+    [Theory]
+    [InlineData("\"Not possible to complete the plan\"", "InvalidPlan: Not possible to complete the plan")]
+    [InlineData("\"No reason\"", "InvalidPlan: No reason")]
+    [InlineData("\"\"", "InvalidPlan: No reason was provided")]
+    [InlineData("null", "InvalidPlan: No reason was provided")]
+    [InlineData("\" \"", "InvalidPlan: No reason was provided")]
+    public async Task CreatePlanWhenNotAchievableShouldBeInvalidAsync(string llmReason, string expectedReason)
+    {
+        var kernelMock = this.CreateKernelMock(out _, out var skillCollectionMock, out _);
+        var returnVerifyContext = this.CreateSKContext(kernelMock.Object);
+        returnVerifyContext.Variables.Update($"{{\"valid\": false, \"reason\": {llmReason} }}");
+        var mockFunctionVerify = SetupMockFunction("Goal", returnVerifyContext);
+
+        kernelMock.Setup(k =>
+                k.RegisterSemanticFunction(It.IsAny<string>(), It.IsIn<string>("VerifyCanCreatePlanForGoalAsync"), It.IsAny<SemanticFunctionConfig>()))
+            .Returns(mockFunctionVerify.Object);
+
+        skillCollectionMock.Setup(sc => sc.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(new FunctionsView());
+
+        var target = new PlannerSkill(kernelMock.Object);
+
+        // Act
+        var result = await target.CreatePlanAsync("Goal", this.CreateSKContext(kernelMock.Object));
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.ErrorOccurred);
+        Assert.Equal(expectedReason, result.LastErrorDescription);
+    }
+
+    [Fact]
+    public async Task CreatePlanWhenAchievableAndFunctionsDontExistsShouldBeInvalidAsync()
+    {
+        var kernelMock = this.CreateKernelMock(out _, out var skillCollectionMock, out _);
+        var returnVerifyContext = this.CreateSKContext(kernelMock.Object);
+        returnVerifyContext.Variables.Update("{\"valid\": true}");
+        var mockFunctionVerify = SetupMockFunction("Goal", returnVerifyContext);
+
+        var returnCreatePlanContext = this.CreateSKContext(kernelMock.Object);
+        returnCreatePlanContext.Variables.Update("<plan><function.SkillNotExists.FunctionNotExists/></plan>");
+        var mockFunctionCreatePlan = SetupMockFunction("Goal", returnCreatePlanContext);
+
+        kernelMock.Setup(k => k.RegisterSemanticFunction(It.IsAny<string>(), It.IsIn<string>("CreatePlanAsync"), It.IsAny<SemanticFunctionConfig>()))
+            .Returns(mockFunctionCreatePlan.Object);
+
+        kernelMock.Setup(k =>
+                k.RegisterSemanticFunction(It.IsAny<string>(), It.IsIn<string>("VerifyCanCreatePlanForGoalAsync"), It.IsAny<SemanticFunctionConfig>()))
+            .Returns(mockFunctionVerify.Object);
+
+        skillCollectionMock.Setup(sc => sc.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(new FunctionsView());
+
+        var target = new PlannerSkill(kernelMock.Object);
+
+        // Act
+        var context = this.CreateSKContext(kernelMock.Object);
+        var result = await target.CreatePlanAsync("Goal", context);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.ErrorOccurred);
+    }
 
     [Fact]
     public async Task ItCanExecutePlanTextAsync()
@@ -482,6 +580,50 @@ This is some text
         Assert.True(plan.IsSuccessful);
         Assert.True(plan.IsComplete);
         Assert.Equal("Echo Result: Echo Result: Hello World", plan.Result, true);
+    }
+
+    private SKContext CreateSKContext(
+        IKernel kernel,
+        ContextVariables? variables = null,
+        CancellationToken cancellationToken = default)
+    {
+        return new SKContext(variables ?? new ContextVariables(), kernel.Memory, kernel.Skills, kernel.Log, cancellationToken);
+    }
+
+    private Mock<IKernel> CreateKernelMock(
+        out Mock<ISemanticTextMemory> semanticMemoryMock,
+        out Mock<IReadOnlySkillCollection> mockSkillCollection,
+        out Mock<ILogger> mockLogger)
+    {
+        semanticMemoryMock = new Mock<ISemanticTextMemory>();
+        mockSkillCollection = new Mock<IReadOnlySkillCollection>();
+        mockLogger = new Mock<ILogger>();
+
+        var kernelMock = new Mock<IKernel>();
+        kernelMock.SetupGet(k => k.Skills).Returns(mockSkillCollection.Object);
+        kernelMock.SetupGet(k => k.Log).Returns(mockLogger.Object);
+        kernelMock.SetupGet(k => k.Memory).Returns(semanticMemoryMock.Object);
+
+        return kernelMock;
+    }
+
+    private static Mock<ISKFunction> SetupMockFunction(string promptStartsWith, SKContext expectedReturnContext)
+    {
+        var mockFunction = new Mock<ISKFunction>();
+
+        mockFunction.Setup(f => f.InvokeAsync(It.Is<string>(i => i.StartsWith(promptStartsWith)),
+                It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(),
+                It.IsAny<ILogger?>(),
+                It.IsAny<CancellationToken?>()))
+            .ReturnsAsync(expectedReturnContext);
+
+        mockFunction.Setup(f => f.InvokeAsync(It.Is<SKContext>(i => i.Variables.Input.StartsWith(promptStartsWith)),
+                It.IsAny<CompleteRequestSettings?>(),
+                It.IsAny<ILogger?>(),
+                It.IsAny<CancellationToken?>()))
+            .ReturnsAsync(expectedReturnContext);
+
+        return mockFunction;
     }
 
     public class MockSkill

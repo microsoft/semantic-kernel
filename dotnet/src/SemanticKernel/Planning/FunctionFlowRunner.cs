@@ -367,4 +367,10 @@ internal class FunctionFlowRunner
         skillName = skillFunctionNameParts?.Length > 0 ? skillFunctionNameParts[0] : string.Empty;
         functionName = skillFunctionNameParts?.Length > 1 ? skillFunctionNameParts[1] : skillFunctionName;
     }
+
+    public static void GetSkillFunctionFromNodeName(string nodeName, out string skillName, out string functionName)
+    {
+        var skillFunctionName = nodeName.Split(FunctionTag)?[1] ?? string.Empty;
+        GetSkillFunctionNames(skillFunctionName, out skillName, out functionName);
+    }
 }

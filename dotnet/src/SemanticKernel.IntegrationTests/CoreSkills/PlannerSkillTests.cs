@@ -35,6 +35,41 @@ public sealed class PlannerSkillTests : IDisposable
             .Build();
     }
 
+    [Fact]
+    public async Task CreatePlanWithMissingSkillsShouldFailAsync()
+    {
+        // Arrange
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        IKernel target = Kernel.Builder
+            .WithLogger(this._logger)
+            .Configure(config =>
+            {
+                config.AddAzureOpenAITextCompletionService(
+                    serviceId: azureOpenAIConfiguration.ServiceId,
+                    deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey);
+
+                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
+            })
+            .Build();
+
+        // Ask for a goal that don't have a skill for it
+        _ = target.ImportSkill(new TextSkill());
+        var plannerSKill = target.ImportSkill(new PlannerSkill(target));
+        ContextVariables variables = new("Send an email to Roger");
+
+        // Act
+        SKContext actual = await target.RunAsync(variables, plannerSKill["CreatePlan"]).ConfigureAwait(true);
+
+        // Assert
+        Assert.True(actual.ErrorOccurred);
+        Assert.IsType<PlanningException>(actual.LastException);
+        Assert.Equal(PlanningException.ErrorCodes.InvalidPlan, ((PlanningException)actual.LastException).ErrorCode);
+    }
+
     [Theory]
     [InlineData("Write a poem or joke and send it in an e-mail to Kai.", "function._GLOBAL_FUNCTIONS_.SendEmail")]
     public async Task CreatePlanWithEmbeddingsTestAsync(string prompt, string expectedAnswerContains)
@@ -90,21 +125,21 @@ public sealed class PlannerSkillTests : IDisposable
     }
 
     [Theory]
-    [InlineData("If is morning tell me a joke about coffee",
+    [InlineData("Using current hour, if is morning tell me a joke about coffee",
         "function._GLOBAL_FUNCTIONS_.Hour", 1,
         "function.FunSkill.Joke", 1,
         "<if condition=\"", 1,
         "</if>", 1,
         "<else>", 0,
         "</else>", 0)]
-    [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun ",
+    [InlineData("Using current hour, if is morning tell me a joke about coffee otherwise tell me a joke about the sun ",
         "function._GLOBAL_FUNCTIONS_.Hour", 1,
         "function.FunSkill.Joke", 2,
         "<if condition=\"", 1,
         "</if>", 1,
         "<else>", 1,
         "</else>", 1)]
-    [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun but if its night I want a joke about the moon",
+    [InlineData("Using current hour, if is morning tell me a joke about coffee otherwise tell me a joke about the sun but if its night I want a joke about the moon",
         "function._GLOBAL_FUNCTIONS_.Hour", 1,
         "function.FunSkill.Joke", 3,
         "<if condition=\"", 2,
