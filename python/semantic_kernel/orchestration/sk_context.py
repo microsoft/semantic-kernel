@@ -235,3 +235,6 @@ class SKContext:
             return True, the_func
 
         return False, None
+
+    def set_skill_collection(self, skills: ReadOnlySkillCollectionBase) -> None:
+        self._skill_collection = skills

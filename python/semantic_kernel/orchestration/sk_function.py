@@ -442,7 +442,7 @@ class SKFunction(SKFunctionBase):
         if context.skills is not None:
             return
 
-        context._skill_collection = self._skill_collection
+        context.set_skill_collection(self._skill_collection)
 
     def _trace_function_type_Call(self, type: Enum, log: Logger) -> None:
         log.debug(f"Executing function type {type}: {type.name}")
