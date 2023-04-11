@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Connectors.Rest.Model;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;

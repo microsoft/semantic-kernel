@@ -3,6 +3,6 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Connectors.Rest;
+namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 
 public delegate Task AuthenticateRequestAsyncCallback(HttpRequestMessage request);
