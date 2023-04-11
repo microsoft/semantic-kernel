@@ -24,14 +24,14 @@ The Copilot Chat sameple showcases how to build an enriched intelligent app, wit
 
 ## Running the sample
 
-1. Ensure the SKWebApi is running at `https://localhost:40443/`. See [SKWebApi README](../SKWebApi/README.md) for instructions.
+1. Ensure the web api is running at `https://localhost:40443/`. See [webapi README](../webapi/README.md) for instructions.
 2. Create an `.env` file to this folder root with the following variables and fill in with your information, where
-   `REACT_APP_CHAT_CLIENT_ID=` is the GUID copied from the **Application (client) ID** from your app registration in the Azure Portal and
+   `REACT_APP_AAD_CLIENT_ID=` is the GUID copied from the **Application (client) ID** from your app registration in the Azure Portal and
    `REACT_APP_BACKEND_URI=` is the URI where your backend is running.
 
    ```
    REACT_APP_BACKEND_URI=https://localhost:40443/
-   REACT_APP_CHAT_CLIENT_ID=
+   REACT_APP_AAD_CLIENT_ID=
    ```
 
 3. **Run** the following command `yarn install` (if you have never run the app before) and/or `yarn start` from the command line.

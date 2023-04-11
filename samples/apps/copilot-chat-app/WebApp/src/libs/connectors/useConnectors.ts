@@ -24,7 +24,7 @@ export const useConnectors = () => {
                     },
                 }).then(async (response) => {
                     if (!response || !response.ok) {
-                        throw new Error(`Recieved error while request ${api}: ${response}`);
+                        throw new Error(`Received error while request ${api}: ${response}`);
                     }
                     return await response.clone().json();
                 });

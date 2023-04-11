@@ -3,9 +3,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.

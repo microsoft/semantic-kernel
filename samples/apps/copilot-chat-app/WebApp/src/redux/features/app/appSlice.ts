@@ -24,12 +24,9 @@ export const appSlice = createSlice({
         removeAlert: (state: AppState, action: PayloadAction<string>) => {
             if (state.alerts) delete state.alerts[action.payload];
         },
-        setUnclaimed: (state: AppState, action: PayloadAction<boolean>) => {
-            state.unclaimed = action.payload;
-        },
     },
 });
 
-export const { addAlert, removeAlert, setAlerts, setUnclaimed } = appSlice.actions;
+export const { addAlert, removeAlert, setAlerts } = appSlice.actions;
 
 export default appSlice.reducer;

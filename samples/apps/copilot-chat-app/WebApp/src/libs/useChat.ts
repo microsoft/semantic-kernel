@@ -3,7 +3,7 @@ import { Constants } from '../Constants';
 import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
 import { RootState } from '../redux/app/store';
 import { addAlert } from '../redux/features/app/appSlice';
-import { ChatState, initialBotMessage } from '../redux/features/chat/ChatState';
+import { ChatState, initialBotMessage } from '../redux/features/conversations/ChatState';
 import {
     addConversation,
     setSelectedConversation,
@@ -14,7 +14,6 @@ import { ChatUser } from './models/ChatUser';
 import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
 
 export const useChat = () => {
-    const { audience } = useAppSelector((state: RootState) => state.chat);
     const dispatch = useAppDispatch();
     const account = useAccount();
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
@@ -28,8 +27,8 @@ export const useChat = () => {
         '/assets/bot-icon-5.png',
     ];
 
-    const getAudienceMemberForId = (id: string) => {
-        if (id === 'bot') return Constants.bot.profile;
+    const getAudienceMemberForId = (id: string, chatId: string, audience: ChatUser[]) => {
+        if (id === `${chatId}-bot` || id.toLocaleLowerCase() === 'bot') return Constants.bot.profile;
         return audience.find((member) => member.id === id);
     };
 

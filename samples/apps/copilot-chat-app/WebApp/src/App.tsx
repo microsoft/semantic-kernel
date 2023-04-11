@@ -54,9 +54,10 @@ const App: FC = () => {
     const account = msalInstance.getActiveAccount();
 
     useEffect(() => {
-        // TODO: Load Conversations from BE
+        // TODO: Load conversations from BE
         const keys = Object.keys(conversations);
         dispatch(setSelectedConversation(keys[0]));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onDismissAlert = (key: string) => {
