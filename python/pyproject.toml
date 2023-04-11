@@ -1,10 +1,11 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.2.0.dev"
+version = "0.2.1.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "README.md"
 packages = [{include = "semantic_kernel"}]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
