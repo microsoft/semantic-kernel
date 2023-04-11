@@ -26,7 +26,7 @@ export class SKSpeechService {
             // call AzureSpeechTokenController (in SpeechController.cs) from the backend
             // get a token from that
 
-            const response = await this.invokeAsync();
+            const response = await this.invokeTokenAsync();
             const { token, region } = response;
             const speechConfig = speechSdk.SpeechConfig.fromAuthorizationToken(token, region);
             speechConfig.speechRecognitionLanguage = 'en-US';
@@ -35,9 +35,9 @@ export class SKSpeechService {
         }
     };
 
-    private invokeAsync = async (): Promise<TokenResponse> => {
+    private invokeTokenAsync = async (): Promise<TokenResponse> => {
         const result = await this.getAzureSpeechTokenAsync<TokenResponse>({
-            commandPath: `token/speech`,
+            commandPath: `speechToken`,
             method: 'GET',
         });
         return result;
@@ -49,7 +49,7 @@ export class SKSpeechService {
         const { commandPath, method } = request;
 
         try {
-            const requestUrl = new URL(commandPath);
+            const requestUrl = new URL(commandPath, this.serviceUrl);
             const response = await fetch(requestUrl, {
                 method: method ?? 'GET',
                 headers: { 'Content-Type': 'application/json' },

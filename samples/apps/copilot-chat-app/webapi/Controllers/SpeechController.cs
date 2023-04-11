@@ -23,7 +23,7 @@ public class TokenController : ControllerBase
         this._configuration = configuration;
     }
 
-    [Route("speech")]
+    [Route("speechToken")]
     [HttpGet]
     public ActionResult<TokenResponse> Get()
     {
@@ -38,16 +38,6 @@ public class TokenController : ControllerBase
 
             return new TokenResponse { token = token, region = azureSpeechConfig.Region };
         }
-        //else
-        //{
-        //    var speechConfig = SpeechConfig.FromSubscription(azureSpeechConfig.Key, azureSpeechConfig.Region);
-        //    speechConfig.SpeechRecognitionLanguage = "en-US";
-
-        //    using var audioConfig = AudioConfig.FromDefaultMicrophoneInput();
-        //    var speechRecognizer = new SpeechRecognizer(speechConfig, audioConfig);
-
-        //    return speechRecognizer;
-        //}
     }
 
     private async Task<string> FetchTokenAsync(string fetchUri, string subscriptionKey)

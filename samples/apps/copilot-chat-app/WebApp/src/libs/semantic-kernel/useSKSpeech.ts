@@ -3,7 +3,7 @@
 import React from 'react';
 import { SKSpeechService } from './SKSpeech';
 
-export const useSKSpeechService = () => {
-    const [skSpeechService] = React.useState(new SKSpeechService());
+export const useSKSpeechService = (uri: string) => {
+    const [skSpeechService] = React.useState(new SKSpeechService(uri));
     return skSpeechService;
 };
