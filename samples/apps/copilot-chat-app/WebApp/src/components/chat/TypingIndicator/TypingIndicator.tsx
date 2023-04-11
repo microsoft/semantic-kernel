@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { Image, makeStyles } from '@fluentui/react-components';
-import * as React from 'react';
+import React from 'react';
+import typingBalls from '../../../assets/typing-balls-light.svg';
+//const typingBalls = require('../../../assets/typing-balls-light.svg');
 
 const useStyles = makeStyles({
     root: {
@@ -24,11 +26,10 @@ const useStyles = makeStyles({
 
 export const TypingIndicator: React.FC<{}> = () => {
     const classes = useStyles();
-    const imageUrl = `https://staticsint.teams.cdn.office.net/evergreen-assets/messaging/typing-balls-light.svg`; // hardcoded for now
 
     return (
         <div className={classes.root}>
-            <Image role="presentation" className={classes.image} src={imageUrl} />
+            <Image role="presentation" className={classes.image} src={typingBalls} />
         </div>
     );
 };

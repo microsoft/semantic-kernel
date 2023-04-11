@@ -1,8 +1,8 @@
 import { Persona, makeStyles } from '@fluentui/react-components';
 import { Animation } from '@fluentui/react-northstar';
 import * as React from 'react';
-import { useAppSelector } from '../../redux/app/hooks';
-import { RootState } from '../../redux/app/store';
+import { useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
 import { TypingIndicator } from './TypingIndicator';
 
 const useClasses = makeStyles({
