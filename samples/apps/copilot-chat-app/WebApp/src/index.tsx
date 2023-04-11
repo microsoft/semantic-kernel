@@ -29,7 +29,7 @@ msalInstance
         }
     })
     .catch((error: any) => {
-        console.log('Login with redirect failed: ', error);
+        log('Login with redirect failed: ', error);
     });
 
 msalInstance.addEventCallback((event: any) => {

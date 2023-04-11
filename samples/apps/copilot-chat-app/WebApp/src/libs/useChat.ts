@@ -9,6 +9,7 @@ import {
     setSelectedConversation,
     updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
+// import { useConnectors } from './connectors/useConnectors';
 import { AlertType } from './models/AlertType';
 import { ChatUser } from './models/ChatUser';
 import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
@@ -18,6 +19,7 @@ export const useChat = () => {
     const account = useAccount();
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
+    // const connectors = useConnectors();
 
     const botProfilePictures: string[] = [
         '/assets/bot-icon-1.png',
@@ -61,6 +63,7 @@ export const useChat = () => {
         const ask = { input: value, variables: [{ key: 'audience', value: account?.name ?? 'Unknown User' }] };
         try {
             var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat');
+            // var result = await connectors.invokeSkillWithGraphToken(ask, 'ChatSkill', 'Chat');
             const messageResult = {
                 timestamp: new Date().getTime(),
                 sender: 'bot',

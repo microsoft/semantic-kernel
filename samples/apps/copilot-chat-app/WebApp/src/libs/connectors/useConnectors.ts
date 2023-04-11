@@ -1,5 +1,6 @@
 import { useMsal } from '@azure/msal-react';
 import { msalInstance } from '../..';
+import { Constants } from '../../Constants';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { TokenHelper } from '../auth/TokenHelper';
@@ -42,7 +43,8 @@ export const useConnectors = () => {
     /**
      * Helper function to invoke SK skills
      * using custom token header containing
-     * access token for downstream connector
+     * access token for downstream connector.
+     * scopes should be limited to only permissions needed for the skill
      */
     const invokeSkillWithConnectorToken = async (
         ask: IAsk,
@@ -50,22 +52,31 @@ export const useConnectors = () => {
         functionName: string,
         scopes: Array<string>,
     ) => {
-        return await TokenHelper.getAccessToken(inProgress, msalInstance, scopes)
-            .then(async (token: string) => {
-                return await sk.invokeAsync(ask, skillName, functionName, token);
-            })
-            .catch((e: any) => {
-                dispatch(
-                    addAlert({
-                        type: AlertType.Error,
-                        message: e.message ?? (e as string),
-                    }),
-                );
-            });
+        return await TokenHelper.getAccessToken(inProgress, msalInstance, scopes).then(async (token: string) => {
+            return await sk.invokeAsync(ask, skillName, functionName, token);
+        });
+    };
+
+    /**
+     * Helper function to invoke SK skills
+     * using MS Graph API token
+     */
+    const invokeSkillWithGraphToken = async (ask: IAsk, skillName: string, functionName: string) => {
+        return await invokeSkillWithConnectorToken(ask, skillName, functionName, Constants.msGraphScopes);
+    };
+
+    /**
+     * Helper function to invoke SK skills
+     * using ADO token
+     */
+    const invokeSkillWithAdoToken = async (ask: IAsk, skillName: string, functionName: string) => {
+        return await invokeSkillWithConnectorToken(ask, skillName, functionName, Constants.adoScopes);
     };
 
     return {
         makeGraphRequest,
         invokeSkillWithConnectorToken,
+        invokeSkillWithGraphToken,
+        invokeSkillWithAdoToken,
     };
 };
