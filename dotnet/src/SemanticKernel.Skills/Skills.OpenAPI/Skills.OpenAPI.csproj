@@ -45,5 +45,10 @@
   <ItemGroup>
     <EmbeddedResource Include="Skills\AzureKeyVaultSkill\openapi.json" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Authentication\" />
+    <Folder Include="Rest\" />
+  </ItemGroup>
   
 </Project>

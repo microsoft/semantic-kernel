@@ -8,10 +8,9 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using Microsoft.SemanticKernel.Connectors.Rest.Model;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
+namespace Microsoft.SemanticKernel.Connectors.Rest;
 
 /// <summary>
 /// Runs REST API operation represented by RestApiOperation model class.
@@ -59,6 +58,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
 
         return this.SendAsync(url, operation.Method, headers, payload, cancellationToken);
     }
+
 
     #region private
 
