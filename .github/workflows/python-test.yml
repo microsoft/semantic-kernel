@@ -4,12 +4,10 @@
 name: Python tests
 
 on: push
-  
 
 jobs:
   build:
-  
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
