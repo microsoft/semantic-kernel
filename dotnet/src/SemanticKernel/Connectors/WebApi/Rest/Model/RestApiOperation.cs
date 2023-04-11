@@ -234,7 +234,7 @@ internal class RestApiOperation
             }
         }
 
-        var queryString = string.Join('&', queryStringSegments);
+        var queryString = string.Join("&", queryStringSegments);
 
         return string.IsNullOrEmpty(queryString) ? path : $"{path}?{queryString}";
     }
