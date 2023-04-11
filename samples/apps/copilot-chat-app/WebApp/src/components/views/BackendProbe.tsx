@@ -29,7 +29,7 @@ const BackendProbe: FC<IData> = ({ uri, onBackendFound }) => {
             <Title3>Looking for your backend</Title3>
             <Spinner />
             <Body1>
-                This sample expects to find a Semantic Kernel service from <strong>samples/apps/copilot-chat-app/SKWebApi</strong>{' '}
+                This sample expects to find a Semantic Kernel service from <strong>samples/apps/copilot-chat-app/webapi</strong>{' '}
                 running at <strong>{uri}</strong>
             </Body1>
             <Body1>
