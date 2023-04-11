@@ -131,6 +131,13 @@ class SKContext:
         """
         return self._skill_collection
 
+    @skills.setter
+    def skills(self, value: ReadOnlySkillCollectionBase) -> None:
+        """
+        Set the value of skills collection
+        """
+        self._skill_collection = value
+    
     @property
     def log(self) -> Logger:
         """
@@ -236,5 +243,3 @@ class SKContext:
 
         return False, None
 
-    def set_skill_collection(self, skills: ReadOnlySkillCollectionBase) -> None:
-        self._skill_collection = skills
