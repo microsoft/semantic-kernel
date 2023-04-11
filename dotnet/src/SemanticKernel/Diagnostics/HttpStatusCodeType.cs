@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Diagnostics;
 
 /// <summary>
 /// Contains the values of status codes defined for HTTP in the response to an HTTP request.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "<Pending>")]
 internal enum HttpStatusCodeType
 {
     /// <summary>

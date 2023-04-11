@@ -4,7 +4,9 @@
 
 // This was copied from https://github.com/dotnet/runtime/blob/39b9607807f29e48cae4652cd74735182b31182e/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/NullableAttributes.cs
 // and updated to have the scope of the attributes be internal.
+
 #pragma warning disable IDE0130 // Namespace does not match folder structure
+// ReSharper disable once CheckNamespace
 namespace System.Diagnostics.CodeAnalysis;
 #pragma warning restore IDE0130
 
@@ -12,19 +14,27 @@ namespace System.Diagnostics.CodeAnalysis;
 
 /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]
-internal sealed class AllowNullAttribute : Attribute { }
+internal sealed class AllowNullAttribute : Attribute
+{
+}
 
 /// <summary>Specifies that null is disallowed as an input even if the corresponding type allows it.</summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]
-internal sealed class DisallowNullAttribute : Attribute { }
+internal sealed class DisallowNullAttribute : Attribute
+{
+}
 
 /// <summary>Specifies that an output may be null even if the corresponding type disallows it.</summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, Inherited = false)]
-internal sealed class MaybeNullAttribute : Attribute { }
+internal sealed class MaybeNullAttribute : Attribute
+{
+}
 
 /// <summary>Specifies that an output will not be null even if the corresponding type allows it.</summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, Inherited = false)]
-internal sealed class NotNullAttribute : Attribute { }
+internal sealed class NotNullAttribute : Attribute
+{
+}
 
 /// <summary>Specifies that when a method returns <see cref="ReturnValue"/>, the parameter may be null even if the corresponding type disallows it.</summary>
 [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
@@ -70,7 +80,9 @@ internal sealed class NotNullIfNotNullAttribute : Attribute
 
 /// <summary>Applied to a method that will never return under any circumstance.</summary>
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-internal sealed class DoesNotReturnAttribute : Attribute { }
+internal sealed class DoesNotReturnAttribute : Attribute
+{
+}
 
 /// <summary>Specifies that the method will not return if the associated Boolean parameter is passed the specified value.</summary>
 [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]

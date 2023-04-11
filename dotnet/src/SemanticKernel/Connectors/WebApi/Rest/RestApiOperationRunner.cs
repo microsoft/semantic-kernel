@@ -60,7 +60,6 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
         return this.SendAsync(url, operation.Method, headers, payload, cancellationToken);
     }
 
-
     #region private
 
     /// <summary>

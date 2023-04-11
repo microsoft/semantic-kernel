@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.SemanticKernel.Text;
 
