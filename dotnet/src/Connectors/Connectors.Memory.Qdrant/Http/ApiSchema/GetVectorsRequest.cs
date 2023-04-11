@@ -66,9 +66,9 @@ internal class GetVectorsRequest
         return this;
     }
 
-    public GetVectorsRequest WithVectors(bool withVectors)
+    public GetVectorsRequest WithVectors(bool withEmbeddings)
     {
-        this.WithVector = withVectors;
+        this.WithVector = withEmbeddings;
         return this;
     }
 

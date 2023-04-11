@@ -79,7 +79,7 @@ internal static class SKContextPlanningExtensions
             await RememberFunctionsAsync(context, availableFunctions);
 
             // Search for functions that match the semantic query.
-            var memories = context.Memory.SearchAsync(PlannerMemoryCollectionName, semanticQuery!, config.MaxRelevantFunctions, config.RelevancyThreshold.Value,
+            var memories = context.Memory.SearchAsync(PlannerMemoryCollectionName, semanticQuery!, config.MaxRelevantFunctions, config.RelevancyThreshold.Value, false,
                 context.CancellationToken);
 
             // Add functions that were found in the search results.
@@ -135,13 +135,13 @@ internal static class SKContextPlanningExtensions
             var key = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
-            var memoryEntry = await context.Memory.GetAsync(PlannerMemoryCollectionName, key, context.CancellationToken);
+            var memoryEntry = await context.Memory.GetAsync(PlannerMemoryCollectionName, key, false, context.CancellationToken);
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
                 await context.Memory.SaveInformationAsync(PlannerMemoryCollectionName, key, functionName, function.ToManualString(),
-                    context.CancellationToken);
+                    string.Empty, context.CancellationToken);
             }
         }
 

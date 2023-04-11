@@ -32,6 +32,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string text,
         string id,
         string? description = null,
+        string? valueString = null,
         CancellationToken cancel = default)
     {
         var embeddings = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
@@ -52,6 +53,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string externalId,
         string externalSourceName,
         string? description = null,
+        string? valueString = null,
         CancellationToken cancel = default)
     {
         var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
@@ -69,9 +71,10 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
     public async Task<MemoryQueryResult?> GetAsync(
         string collection,
         string key,
+        bool withEmbedding = false,
         CancellationToken cancel = default)
     {
-        MemoryRecord? record = await this._storage.GetAsync(collection, key, cancel);
+        MemoryRecord? record = await this._storage.GetAsync(collection, key, withEmbedding, cancel);
 
         if (record == null) { return null; }
 
@@ -93,6 +96,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string query,
         int limit = 1,
         double minRelevanceScore = 0.7,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query);
@@ -102,6 +106,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
             embedding: queryEmbedding,
             limit: limit,
             minRelevanceScore: minRelevanceScore,
+            withEmbeddings: withEmbeddings,
             cancel: cancel);
 
         await foreach ((MemoryRecord, double) result in results.WithCancellation(cancel))
