@@ -5,7 +5,7 @@ import { useMsal } from '@azure/msal-react';
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import React, { useEffect } from 'react';
-import { AuthHelper } from '../libs/AuthHelper';
+import { AuthHelper } from '../../libs/auth/AuthHelper';
 
 const useClasses = makeStyles({
     root: {
@@ -21,7 +21,7 @@ export const Login: React.FC = () => {
     const handleError = (error: any) => {
         console.error(error);
         setErrorMessage((error as Error).message);
-    }
+    };
 
     const handleSignIn = async (): Promise<void> => {
         try {
@@ -40,9 +40,5 @@ export const Login: React.FC = () => {
         handleSignIn();
     }, []);
 
-    return (
-        <div className={classes.root}>
-            {errorMessage && <Alert intent="error">{errorMessage}</Alert>}
-        </div>
-    );
+    return <div className={classes.root}>{errorMessage && <Alert intent="error">{errorMessage}</Alert>}</div>;
 };

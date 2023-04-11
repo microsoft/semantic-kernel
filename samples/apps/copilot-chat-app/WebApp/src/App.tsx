@@ -5,9 +5,9 @@ import { Avatar, Subtitle1, makeStyles } from '@fluentui/react-components';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
 import { msalInstance } from '.';
-import { Login } from './components/Login';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
+import { Login } from './components/views/Login';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { setSelectedConversation } from './redux/features/conversations/conversationsSlice';
@@ -33,13 +33,13 @@ const useClasses = makeStyles({
         justifyContent: 'space-between',
     },
     persona: {
-        marginRight: '20px'
-    }
+        marginRight: '20px',
+    },
 });
 
 enum AppState {
     ProbeForBackend,
-    Chat
+    Chat,
 }
 
 const App: FC = () => {
@@ -61,15 +61,15 @@ const App: FC = () => {
                 <Login />
             </UnauthenticatedTemplate>
             <AuthenticatedTemplate>
-                {appState === AppState.ProbeForBackend &&
+                {appState === AppState.ProbeForBackend && (
                     <BackendProbe
                         uri={process.env.REACT_APP_BACKEND_URI as string}
                         onBackendFound={() => setAppState(AppState.Chat)}
                     />
-                }
-                {appState === AppState.Chat &&
+                )}
+                {appState === AppState.Chat && (
                     <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
-                        <div className={classes.header} >
+                        <div className={classes.header}>
                             <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                             <Avatar
                                 className={classes.persona}
@@ -81,7 +81,7 @@ const App: FC = () => {
                         </div>
                         <ChatView />
                     </div>
-                }
+                )}
             </AuthenticatedTemplate>
         </div>
     );

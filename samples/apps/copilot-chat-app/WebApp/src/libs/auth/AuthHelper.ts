@@ -2,12 +2,13 @@
 
 import {
     Configuration,
-    EndSessionRequest, IPublicClientApplication,
+    EndSessionRequest,
+    IPublicClientApplication,
     LogLevel,
-    RedirectRequest
+    RedirectRequest,
 } from '@azure/msal-browser';
 import debug from 'debug';
-import { Constants } from '../Constants';
+import { Constants } from '../../Constants';
 
 const log = debug(Constants.debug.root).extend('authHelper');
 
@@ -41,11 +42,14 @@ const msalConfig: Configuration = {
                 }
             },
         },
+        windowHashTimeout: 9000, // Applies just to popup calls - In milliseconds
+        iframeHashTimeout: 9000, // Applies just to silent calls - In milliseconds
+        loadFrameTimeout: 9000, // Applies to both silent and popup calls - In milliseconds
     },
 };
 
 const loginRequest: RedirectRequest = {
-    scopes: Constants.msal.msGraphScopes,
+    scopes: Constants.msal.initialMsGraphScopes,
     // extraScopesToConsent: Constants.msal.skScopes,
 };
 
@@ -55,7 +59,7 @@ const logoutRequest: EndSessionRequest = {
 
 const ssoSilentRequest = async (msalInstance: IPublicClientApplication) => {
     await msalInstance.ssoSilent(loginRequest);
-}
+};
 
 const loginAsync = async (instance: IPublicClientApplication) => {
     if (Constants.msal.method === 'redirect') {

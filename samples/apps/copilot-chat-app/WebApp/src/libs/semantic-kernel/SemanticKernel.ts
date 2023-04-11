@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+import { useAccount } from '@azure/msal-react';
 import { IAsk } from './model/Ask';
 import { IAskResult } from './model/AskResult';
 
@@ -13,24 +14,41 @@ export class SemanticKernel {
     // eslint-disable-next-line @typescript-eslint/space-before-function-paren
     constructor(private readonly serviceUrl: string) {}
 
-    public invokeAsync = async (ask: IAsk, skillName: string, functionName: string): Promise<IAskResult> => {
-        const result = await this.getResponseAsync<IAskResult>({
-            commandPath: `skills/${skillName}/functions/${functionName}/invoke`,
-            method: 'POST',
-            body: ask,
-        });
+    public invokeAsync = async (
+        ask: IAsk,
+        skillName: string,
+        functionName: string,
+        connectorAccessToken?: string,
+    ): Promise<IAskResult> => {
+        const result = await this.getResponseAsync<IAskResult>(
+            {
+                commandPath: `skills/${skillName}/functions/${functionName}/invoke`,
+                method: 'POST',
+                body: ask,
+            },
+            connectorAccessToken,
+        );
         return result;
     };
 
-    private readonly getResponseAsync = async <T>(request: ServiceRequest): Promise<T> => {
+    private readonly getResponseAsync = async <T>(
+        request: ServiceRequest,
+        connectorAccessToken?: string,
+    ): Promise<T> => {
+        const account = useAccount();
         const { commandPath, method, body } = request;
+        const headers = new Headers({
+            Authorization: `Bearer ${account?.idToken}`,
+            'Content-Type': 'application/json',
+        });
+        if (connectorAccessToken) headers.append(`sk-copilot-connector-access-token`, connectorAccessToken);
 
         try {
             const requestUrl = new URL(commandPath, this.serviceUrl);
             const response = await fetch(requestUrl, {
                 method: method ?? 'GET',
                 body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
             });
 
             if (!response.ok) {
