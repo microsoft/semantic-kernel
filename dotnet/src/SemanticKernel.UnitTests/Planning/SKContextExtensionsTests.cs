@@ -29,7 +29,7 @@ public class SKContextExtensionsTests
         var memory = new Mock<ISemanticTextMemory>();
         var memoryQueryResult = new MemoryQueryResult(new MemoryRecordMetadata(false, "sourceName", "id", "description", "text"), 0.8);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
-        memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
+        memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
@@ -42,7 +42,7 @@ public class SKContextExtensionsTests
 
         // Assert
         Assert.NotNull(result);
-        memory.Verify(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()),
+        memory.Verify(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -69,7 +69,7 @@ public class SKContextExtensionsTests
             0.8);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         var memory = new Mock<ISemanticTextMemory>();
-        memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
+        memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
         skills.Setup(x => x.HasFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
@@ -131,7 +131,7 @@ public class SKContextExtensionsTests
                     externalSourceName: "sourceName"), relevance: 0.8);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         var memory = new Mock<ISemanticTextMemory>();
-        memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
+        memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
         skills.Setup(x => x.HasFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
@@ -334,7 +334,7 @@ public class SKContextExtensionsTests
         var memory = new Mock<ISemanticTextMemory>();
         var memoryQueryResult = new MemoryQueryResult(new MemoryRecordMetadata(false, "sourceName", "id", "description", "text"), 0.8);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
-        memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
+        memory.Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
@@ -347,7 +347,7 @@ public class SKContextExtensionsTests
 
         // Assert
         Assert.NotNull(result);
-        memory.Verify(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<CancellationToken>()),
+        memory.Verify(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 }

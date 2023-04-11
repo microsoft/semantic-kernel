@@ -13,7 +13,11 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 internal struct DatabaseEntry
 {
     public string Key { get; set; }
-    public string ValueString { get; set; }
+
+    public string MetadataString { get; set; }
+
+    public string EmbeddingString { get; set; }
+    
     public string? Timestamp { get; set; }
 }
 
@@ -46,23 +50,24 @@ internal static class Database
     }
 
     public static async Task UpdateAsync(this SqliteConnection conn,
-        string collection, string key, string? value, string? timestamp, CancellationToken cancel = default)
+        string collection, string key, string? metadata, string? embedding, string? timestamp, CancellationToken cancel = default)
     {
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              UPDATE {TableName}
-             SET value=@value, timestamp=@timestamp
+             SET metadata=@metadata, embedding=@embedding, timestamp=@timestamp
              WHERE collection=@collection
                 AND key=@key ";
         cmd.Parameters.AddWithValue("@collection", collection);
         cmd.Parameters.AddWithValue("@key", key);
-        cmd.Parameters.AddWithValue("@value", value ?? string.Empty);
+        cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
+        cmd.Parameters.AddWithValue("@embedding", embedding ?? string.Empty);
         cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
         await cmd.ExecuteNonQueryAsync(cancel);
     }
 
     public static async Task InsertOrIgnoreAsync(this SqliteConnection conn,
-        string collection, string key, string? value, string? timestamp, CancellationToken cancel = default)
+        string collection, string key, string? metadata, string? embedding, string? timestamp, CancellationToken cancel = default)
     {
         SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
@@ -70,7 +75,8 @@ internal static class Database
              VALUES(@collection, @key, @value, @timestamp); ";
         cmd.Parameters.AddWithValue("@collection", collection);
         cmd.Parameters.AddWithValue("@key", key);
-        cmd.Parameters.AddWithValue("@value", value ?? string.Empty);
+        cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
+        cmd.Parameters.AddWithValue("@embedding", embedding ?? string.Empty);
         cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
         await cmd.ExecuteNonQueryAsync(cancel);
     }
@@ -112,9 +118,10 @@ internal static class Database
         while (await dataReader.ReadAsync(cancel))
         {
             string key = dataReader.GetFieldValue<string>("key");
-            string value = dataReader.GetFieldValue<string>("value");
+            string metadata = dataReader.GetFieldValue<string>("metadata");
+            string embedding = dataReader.GetFieldValue<string>("embedding");
             string timestamp = dataReader.GetFieldValue<string>("timestamp");
-            yield return new DatabaseEntry() { Key = key, ValueString = value, Timestamp = timestamp };
+            yield return new DatabaseEntry() { Key = key, MetadataString = metadata, EmbeddingString = embedding, Timestamp = timestamp };
         }
     }
 
@@ -134,12 +141,14 @@ internal static class Database
         var dataReader = await cmd.ExecuteReaderAsync(cancel);
         if (await dataReader.ReadAsync(cancel))
         {
-            string value = dataReader.GetString(dataReader.GetOrdinal("value"));
+            string metadata = dataReader.GetString(dataReader.GetOrdinal("metadata"));
+            string embedding = dataReader.GetString(dataReader.GetOrdinal("embedding"));
             string timestamp = dataReader.GetString(dataReader.GetOrdinal("timestamp"));
             return new DatabaseEntry()
             {
                 Key = key,
-                ValueString = value,
+                MetadataString = metadata,
+                EmbeddingString = embedding,
                 Timestamp = timestamp
             };
         }
@@ -187,7 +196,8 @@ internal static class Database
             CREATE TABLE IF NOT EXISTS {TableName}(
                 collection TEXT,
                 key TEXT,
-                value TEXT,
+                metadata TEXT,
+                embedding TEXT,
                 timestamp TEXT,
                 PRIMARY KEY(collection, key))";
         return cmd.ExecuteNonQueryAsync(cancel);

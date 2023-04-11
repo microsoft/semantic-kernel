@@ -130,7 +130,7 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding, CancellationToken cancel = default)
     {
         try
         {
