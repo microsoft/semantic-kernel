@@ -3,6 +3,6 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
+namespace Microsoft.SemanticKernel.Connectors.Rest;
 
 public delegate Task AuthenticateRequestAsyncCallback(HttpRequestMessage request);
