@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Mime;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -17,6 +16,8 @@ namespace Microsoft.SemanticKernel.Connectors.Rest;
 /// </summary>
 internal class RestApiOperationRunner : IRestApiOperationRunner
 {
+    private const string MediaTypeApplicationJson = "application/json";
+
     /// <summary>
     /// An instance of the HttpClient class.
     /// </summary>
@@ -161,7 +162,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
 
         var payload = BuildPayload(payloadMetadata.Properties);
 
-        return new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeNames.Application.Json);
+        return new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeApplicationJson);
         ;
     }
 
@@ -171,7 +172,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     private static IDictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>> s_payloadFactoryByMediaType =
         new Dictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>>()
         {
-            { MediaTypeNames.Application.Json, BuildAppJsonPayload }
+            { MediaTypeApplicationJson, BuildAppJsonPayload }
         };
 
     #endregion
