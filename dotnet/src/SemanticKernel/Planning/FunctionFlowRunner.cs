@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -219,8 +220,8 @@ internal class FunctionFlowRunner
 
                 if (o2.Name.StartsWith(FunctionTag, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var splits = FunctionTag.Split(new string[] { FunctionTag }, StringSplitOptions.RemoveEmptyEntries);
-                    string skillFunctionName = (splits.Length >= 2) ? splits[1] : string.Empty;
+                    var splits = o2.Name.SplitEx(FunctionTag);
+                    string skillFunctionName = (splits.Length > 1) ? splits[1] : string.Empty;
                     context.Log.LogTrace("{0}: found skill node {1}", parentNodeName, skillFunctionName);
                     GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
                     if (!context.IsFunctionRegistered(skillName, functionName, out var skillFunction))

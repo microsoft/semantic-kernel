@@ -19,9 +19,14 @@ internal static class StringExtensions
         return src.Replace("\r\n", "\n");
     }
 
-    internal static string[] SplitEx(this string src, char separator, StringSplitOptions options)
+    internal static string[] SplitEx(this string src, char separator, StringSplitOptions options = StringSplitOptions.None)
     {
-        return src.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
+        return src.Split(new[] { separator }, options);
+    }
+
+    internal static string[] SplitEx(this string src, string separator, StringSplitOptions options = StringSplitOptions.None)
+    {
+        return src.Split(new[] { separator }, options);
     }
 
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? data)
