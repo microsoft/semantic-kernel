@@ -269,11 +269,12 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
 
         await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collectionName, cancel))
         {
-            var record = JsonSerializer.Deserialize<MemoryRecord>(dbEntry.ValueString);
-            if (record != null)
-            {
-                yield return record;
-            }
+            float[]? vector = JsonSerializer.Deserialize<float[]>(dbEntry.EmbeddingString);
+            
+            var record = MemoryRecord.FromJson(dbEntry.MetadataString,
+                vector != null ? new Embedding<float>(vector) : Embedding<float>.Empty);
+            
+            yield return record;
         }
     }
 

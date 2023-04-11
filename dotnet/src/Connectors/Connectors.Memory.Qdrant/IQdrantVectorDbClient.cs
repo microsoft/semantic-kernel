@@ -63,6 +63,7 @@ public interface IQdrantVectorDbClient
     /// <param name="target">The vector to compare the collection's vectors with.</param>
     /// <param name="threshold">The minimum relevance threshold for returned results.</param>
     /// <param name="top">The maximum number of similarity results to return.</param>
+    /// <param name="withVectors">Whether to include the vector data in the returned results.</param>
     /// <param name="requiredTags">Qdrant tags used to filter the results.</param>
     /// <param name="cancel">Cancellation token.</param>
     public IAsyncEnumerable<(QdrantVectorRecord, double)> FindNearestInCollectionAsync(
@@ -70,6 +71,7 @@ public interface IQdrantVectorDbClient
         IEnumerable<float> target,
         double threshold,
         int top = 1,
+        bool withVectors = false,
         IEnumerable<string>? requiredTags = null,
         CancellationToken cancel = default);
 

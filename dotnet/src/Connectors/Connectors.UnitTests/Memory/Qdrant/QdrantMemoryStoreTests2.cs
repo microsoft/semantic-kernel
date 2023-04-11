@@ -43,16 +43,16 @@ public class QdrantMemoryStoreTests2
 
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
-            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((QdrantVectorRecord?)null);
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var getResult = await vectorStore.GetAsync("test_collection", this._id);
-
+        var getResult = await vectorStore.GetAsync("test_collection", this._id, false);
+        
         // Assert
-        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id, It.IsAny<CancellationToken>()),
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
         Assert.Null(getResult);
     }
@@ -76,16 +76,16 @@ public class QdrantMemoryStoreTests2
 
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
-            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(qdrantVectorRecord);
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var getResult = await vectorStore.GetAsync("test_collection", this._id);
+        var getResult = await vectorStore.GetAsync("test_collection", this._id, true);
 
         // Assert
-        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id, It.IsAny<CancellationToken>()),
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
         Assert.NotNull(getResult);
         Assert.Equal(memoryRecord.Metadata.Id, getResult.Metadata.Id);
@@ -135,29 +135,29 @@ public class QdrantMemoryStoreTests2
 
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
-            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id, It.IsAny<CancellationToken>()))
+            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(qdrantVectorRecord);
         mockQdrantClient
-            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id2, It.IsAny<CancellationToken>()))
+            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id2, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(qdrantVectorRecord2);
         mockQdrantClient
-            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id3, It.IsAny<CancellationToken>()))
+            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id3, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(qdrantVectorRecord3);
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var getBatchResult = await vectorStore.GetBatchAsync("test_collection", new List<string> { this._id, this._id2, this._id3 }).ToListAsync();
+        var getBatchResult = await vectorStore.GetBatchAsync("test_collection", new List<string> { this._id, this._id2, this._id3 }, false).ToListAsync();
 
         // Assert
         mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(
-            x => x.GetVectorByPayloadIdAsync("test_collection", It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            x => x.GetVectorByPayloadIdAsync("test_collection", It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Exactly(3));
-        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id, It.IsAny<CancellationToken>()),
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
-        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id2, It.IsAny<CancellationToken>()),
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id2, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
-        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id3, It.IsAny<CancellationToken>()),
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id3, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
 
         Assert.NotNull(getBatchResult);
@@ -200,29 +200,29 @@ public class QdrantMemoryStoreTests2
 
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
-            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id, It.IsAny<CancellationToken>()))
+            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(qdrantVectorRecord);
         mockQdrantClient
-            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id2, It.IsAny<CancellationToken>()))
+            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id2, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(qdrantVectorRecord2);
         mockQdrantClient
-            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id3, It.IsAny<CancellationToken>()))
+            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id3, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((QdrantVectorRecord?)null);
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var getBatchResult = await vectorStore.GetBatchAsync("test_collection", new List<string> { this._id, this._id2, this._id3 }).ToListAsync();
+        var getBatchResult = await vectorStore.GetBatchAsync("test_collection", new List<string> { this._id, this._id2, this._id3 }, false).ToListAsync();
 
         // Assert
         mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(
-            x => x.GetVectorByPayloadIdAsync("test_collection", It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            x => x.GetVectorByPayloadIdAsync("test_collection", It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Exactly(3));
-        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id, It.IsAny<CancellationToken>()),
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
-        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id2, It.IsAny<CancellationToken>()),
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id2, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
-        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id3, It.IsAny<CancellationToken>()),
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id3, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
         Assert.NotNull(getBatchResult);
         Assert.NotEmpty(getBatchResult);
@@ -239,29 +239,29 @@ public class QdrantMemoryStoreTests2
         // Arrange
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
-            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id, It.IsAny<CancellationToken>()))
+            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((QdrantVectorRecord?)null);
         mockQdrantClient
-            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id2, It.IsAny<CancellationToken>()))
+            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id2, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((QdrantVectorRecord?)null);
         mockQdrantClient
-            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id3, It.IsAny<CancellationToken>()))
+            .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id3, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((QdrantVectorRecord?)null);
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var getBatchResult = await vectorStore.GetBatchAsync("test_collection", new List<string> { this._id, this._id2, this._id3 }).ToListAsync();
+        var getBatchResult = await vectorStore.GetBatchAsync("test_collection", new List<string> { this._id, this._id2, this._id3 }, false).ToListAsync();
 
         // Assert
         mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(
-            x => x.GetVectorByPayloadIdAsync("test_collection", It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            x => x.GetVectorByPayloadIdAsync("test_collection", It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Exactly(3));
-        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id, It.IsAny<CancellationToken>()),
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
-        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id2, It.IsAny<CancellationToken>()),
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id2, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
-        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id3, It.IsAny<CancellationToken>()),
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id3, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
         Assert.NotNull(getBatchResult);
         Assert.Empty(getBatchResult);
@@ -276,17 +276,17 @@ public class QdrantMemoryStoreTests2
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<IAsyncEnumerable<QdrantVectorRecord>>(x =>
-                x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+                x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<QdrantVectorRecord>());
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var getResult = await vectorStore.GetWithPointIdAsync("test_collection", key);
+        var getResult = await vectorStore.GetWithPointIdAsync("test_collection", key, false);
 
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<QdrantVectorRecord>>(
-            x => x.GetVectorsByIdAsync("test_collection", new[] { key }, It.IsAny<CancellationToken>()),
+            x => x.GetVectorsByIdAsync("test_collection", new[] { key }, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
         Assert.Null(getResult);
     }
@@ -311,17 +311,17 @@ public class QdrantMemoryStoreTests2
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<IAsyncEnumerable<QdrantVectorRecord>>(x =>
-                x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+                x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { qdrantVectorRecord }.ToAsyncEnumerable());
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var getResult = await vectorStore.GetWithPointIdAsync("test_collection", memoryRecord.Key);
+        var getResult = await vectorStore.GetWithPointIdAsync("test_collection", memoryRecord.Key, true);
 
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<QdrantVectorRecord>>(
-            x => x.GetVectorsByIdAsync("test_collection", new[] { memoryRecord.Key }, It.IsAny<CancellationToken>()),
+            x => x.GetVectorsByIdAsync("test_collection", new[] { memoryRecord.Key }, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
 
         Assert.NotNull(getResult);
@@ -373,17 +373,17 @@ public class QdrantMemoryStoreTests2
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<IAsyncEnumerable<QdrantVectorRecord>>(x =>
-                x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+                x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { qdrantVectorRecord, qdrantVectorRecord2, qdrantVectorRecord3 }.ToAsyncEnumerable());
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var getBatchResult = await vectorStore.GetWithPointIdBatchAsync("test_collection", new List<string> { key, key2, key3 }).ToListAsync();
+        var getBatchResult = await vectorStore.GetWithPointIdBatchAsync("test_collection", new List<string> { key, key2, key3 }, false).ToListAsync();
 
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<QdrantVectorRecord>>(x =>
-            x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()), Times.Once());
+            x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once());
 
         Assert.NotNull(getBatchResult);
         Assert.NotEmpty(getBatchResult);
@@ -407,17 +407,17 @@ public class QdrantMemoryStoreTests2
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<IAsyncEnumerable<QdrantVectorRecord>>(x =>
-                x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+                x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<QdrantVectorRecord>());
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var getBatchResult = await vectorStore.GetWithPointIdBatchAsync("test_collection", new List<string> { key, key2, key3 }).ToListAsync();
+        var getBatchResult = await vectorStore.GetWithPointIdBatchAsync("test_collection", new List<string> { key, key2, key3 }, false).ToListAsync();
 
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<QdrantVectorRecord>>(x =>
-            x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()), Times.Once());
+            x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once());
 
         Assert.Empty(getBatchResult);
     }

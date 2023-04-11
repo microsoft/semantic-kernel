@@ -66,7 +66,7 @@ public interface IMemoryStore
     /// <summary>
     /// Gets a memory record from the data store. Does not guarantee that the collection exists.
     /// </summary>
-    /// <param name="collectionName">The name associated with a collection of embedding.</param>
+    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="key">The unique id associated with the memory record to get.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancel">Cancellation token.</param>
