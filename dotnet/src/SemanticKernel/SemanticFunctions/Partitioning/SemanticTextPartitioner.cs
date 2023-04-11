@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 
@@ -99,13 +100,13 @@ public static class SemanticTextPartitioner
         // distribute text more evenly in the last paragraphs when the last paragraph is too short.
         if (paragraphs.Count > 1)
         {
-            var lastParagraph = paragraphs[^1];
-            var secondLastParagraph = paragraphs[^2];
+            var lastParagraph = paragraphs[paragraphs.Count - 1];
+            var secondLastParagraph = paragraphs[paragraphs.Count - 2];
 
             if (TokenCount(lastParagraph) < maxTokensPerParagraph / 4)
             {
-                var lastParagraphTokens = lastParagraph.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                var secondLastParagraphTokens = secondLastParagraph.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var lastParagraphTokens = lastParagraph.SplitEx(' ', StringSplitOptions.RemoveEmptyEntries);
+                var secondLastParagraphTokens = secondLastParagraph.SplitEx(' ', StringSplitOptions.RemoveEmptyEntries);
 
                 var lastParagraphTokensCount = lastParagraphTokens.Length;
                 var secondLastParagraphTokensCount = secondLastParagraphTokens.Length;
@@ -125,7 +126,7 @@ public static class SemanticTextPartitioner
                             .Append(' ');
                     }
 
-                    paragraphs[^2] = newSecondLastParagraph.ToString().Trim();
+                    paragraphs[paragraphs.Count - 2] = newSecondLastParagraph.ToString().Trim();
                     paragraphs.RemoveAt(paragraphs.Count - 1);
                 }
             }
@@ -136,7 +137,7 @@ public static class SemanticTextPartitioner
 
     private static List<string> InternalSplitPlaintextLines(string text, int maxTokensPerLine, bool trim)
     {
-        text = text.Replace("\r\n", "\n", StringComparison.OrdinalIgnoreCase);
+        text = text.NormalizeLineEndings();
 
         var splitOptions = new List<List<char>?>
         {
@@ -176,7 +177,7 @@ public static class SemanticTextPartitioner
 
     private static List<string> InternalSplitMarkdownLines(string text, int maxTokensPerLine, bool trim)
     {
-        text = text.Replace("\r\n", "\n", StringComparison.OrdinalIgnoreCase);
+        text = text.NormalizeLineEndings();
 
         var splitOptions = new List<List<char>?>
         {
@@ -264,8 +265,8 @@ public static class SemanticTextPartitioner
 
         if (cutPoint > 0)
         {
-            var firstHalf = input[..cutPoint];
-            var secondHalf = input[cutPoint..];
+            var firstHalf = input.Substring(0, cutPoint);
+            var secondHalf = input.Substring(cutPoint);
             if (trim)
             {
                 firstHalf = firstHalf.Trim();
