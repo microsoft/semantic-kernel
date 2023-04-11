@@ -16,9 +16,10 @@ public interface IQdrantVectorDbClient
     /// </summary>
     /// <param name="collectionName">The name assigned to the collection of vectors.</param>
     /// <param name="pointIds">The unique IDs used to index Qdrant vector entries.</param>
+    /// <param name="withVectors">Whether to include the vector data in the returned results.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>An asynchronous list of Qdrant vectors records associated with the given IDs</returns>
-    public IAsyncEnumerable<QdrantVectorRecord> GetVectorsByIdAsync(string collectionName, IEnumerable<string> pointIds,
+    public IAsyncEnumerable<QdrantVectorRecord> GetVectorsByIdAsync(string collectionName, IEnumerable<string> pointIds, bool withVectors = false,
         CancellationToken cancel = default);
 
     /// <summary>
@@ -26,9 +27,10 @@ public interface IQdrantVectorDbClient
     /// </summary>
     /// <param name="collectionName">The name assigned to a collection of vectors.</param>
     /// <param name="metadataId">The unique ID stored in a Qdrant vector entry's metadata.</param>
+    /// <param name="withVector">Whether to include the vector data in the returned result.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>The Qdrant vector record associated with the given ID if found, null if not.</returns>
-    public Task<QdrantVectorRecord?> GetVectorByPayloadIdAsync(string collectionName, string metadataId, CancellationToken cancel = default);
+    public Task<QdrantVectorRecord?> GetVectorByPayloadIdAsync(string collectionName, string metadataId, bool withVector = false, CancellationToken cancel = default);
 
     /// <summary>
     /// Delete vectors by their unique Qdrant IDs.

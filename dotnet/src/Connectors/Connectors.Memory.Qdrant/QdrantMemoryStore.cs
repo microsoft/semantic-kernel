@@ -164,12 +164,12 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys,
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
         {
-            MemoryRecord? record = await this.GetAsync(collectionName, key, cancel);
+            MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancel);
             if (record != null)
             {
                 yield return record;
@@ -185,7 +185,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="cancel"></param>
     /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
-    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding, CancellationToken cancel = default)
     {
         try
         {
@@ -228,7 +228,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="pointIds"></param>
     /// <param name="cancel"></param>
     /// <returns></returns>
-    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds,
+    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, bool withEmbeddings,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var vectorDataList = this._qdrantClient
@@ -317,6 +317,7 @@ public class QdrantMemoryStore : IMemoryStore
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var results = this._qdrantClient.FindNearestInCollectionAsync(
@@ -341,6 +342,7 @@ public class QdrantMemoryStore : IMemoryStore
         string collectionName,
         Embedding<float> embedding,
         double minRelevanceScore = 0,
+        bool withEmbedding = false,
         CancellationToken cancel = default)
     {
         var results = this.GetNearestMatchesAsync(
@@ -348,6 +350,7 @@ public class QdrantMemoryStore : IMemoryStore
             embedding: embedding,
             minRelevanceScore: minRelevanceScore,
             limit: 1,
+            withEmbeddings: withEmbedding,
             cancel: cancel);
 
         var record = await results.FirstOrDefaultAsync(cancellationToken: cancel);
