@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Rest.Model;
+namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
 /// <summary>
 /// The REST API operation parameter location.

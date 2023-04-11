@@ -11,8 +11,8 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Rest;
-using Microsoft.SemanticKernel.Connectors.Rest.Model;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 using Moq;
 using Xunit;
 
