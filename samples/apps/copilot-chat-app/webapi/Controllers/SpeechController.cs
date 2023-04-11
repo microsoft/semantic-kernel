@@ -46,8 +46,6 @@ public class TokenController : ControllerBase
         {
             client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
             UriBuilder uriBuilder = new UriBuilder(fetchUri);
-            //var result = await client.PostAsync(uriBuilder.Uri.AbsoluteUri, null);
-            //Console.WriteLine("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
 
             var result = await client.PostAsync(uriBuilder.Uri, null);
             Console.WriteLine("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
