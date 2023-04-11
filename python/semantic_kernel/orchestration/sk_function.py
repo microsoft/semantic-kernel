@@ -408,8 +408,6 @@ class SKFunction(SKFunctionBase):
     async def _invoke_native_async(self, context):
         self._verify_is_native()
 
-        self._ensure_context_has_skills(context)
-
         delegate = DelegateHandlers.get_handler(self._delegate_type)
         # for python3.9 compatibility (staticmethod is not callable)
         if not hasattr(delegate, "__call__"):
