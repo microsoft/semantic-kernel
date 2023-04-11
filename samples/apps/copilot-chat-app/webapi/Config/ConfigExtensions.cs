@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Reflection;
+using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.OpenAI.TextEmbedding;
@@ -20,7 +21,17 @@ internal static class ConfigExtensions
             builder.AddJsonFile($"appsettings.{environment}.json", true, true);
             builder.AddEnvironmentVariables();
             builder.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true, reloadOnChange: true);
-            // For settings from Key Vault, see https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-7.0
+            // For settings from Key Vault, see https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-8.0
+            string? keyVaultUri = ctx.Configuration["KeyVaultUri"];
+            if (!string.IsNullOrWhiteSpace(keyVaultUri))
+            {
+                builder.AddAzureKeyVault(
+                    new Uri(keyVaultUri),
+                    new DefaultAzureCredential());
+
+                /* See https://learn.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet
+                   for more information on how to use DefaultAzureCredential */
+            }
         });
 
         return host;

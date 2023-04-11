@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
 
-namespace SemanticKernel.Service.Controllers;
+namespace CopilotChatApi.Service.Controllers;
 
 [ApiController]
 public class SemanticKernelController : ControllerBase
@@ -45,7 +45,7 @@ public class SemanticKernelController : ControllerBase
     {
         this._logger.LogDebug("Received call to invoke {SkillName}/{FunctionName}", skillName, functionName);
 
-        string semanticSkillsDirectory = this._configuration.GetSection(SKWebApiConstants.SemanticSkillsDirectoryConfigKey).Get<string>();
+        string semanticSkillsDirectory = this._configuration.GetSection(CopilotChatApiConstants.SemanticSkillsDirectoryConfigKey).Get<string>();
         if (!string.IsNullOrWhiteSpace(semanticSkillsDirectory))
         {
             kernel.RegisterSemanticSkills(semanticSkillsDirectory, this._logger);
