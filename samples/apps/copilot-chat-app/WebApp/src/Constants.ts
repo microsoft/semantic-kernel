@@ -33,7 +33,7 @@ export const Constants = {
             defaultDefinition: 'int',
         },
     },
-    // NOT a comprehensize list.
+    // NOT a comprehensive list.
     // Uncomment the ones you need and pass into
     // invokeSkillWithConnectorToken (./connectors/useConnectors.ts)
     msGraphScopes: [

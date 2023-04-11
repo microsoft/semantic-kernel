@@ -78,7 +78,12 @@ const logoutAsync = async (instance: IPublicClientApplication) => {
     }
 };
 
+const getUserIdToken = async (instance: IPublicClientApplication) => {
+    return await instance.acquireTokenSilent(loginRequest);
+};
+
 export const AuthHelper = {
+    getUserIdToken,
     msalConfig,
     loginRequest,
     logoutRequest,

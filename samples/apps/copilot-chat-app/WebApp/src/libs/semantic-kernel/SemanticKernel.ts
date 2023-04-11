@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { msalInstance } from '../..';
+import { AuthHelper } from '../auth/AuthHelper';
 import { IAsk } from './model/Ask';
 import { IAskResult } from './model/AskResult';
 
@@ -35,35 +36,40 @@ export class SemanticKernel {
         request: ServiceRequest,
         connectorAccessToken?: string,
     ): Promise<T> => {
-        const account = msalInstance.getActiveAccount();
         const { commandPath, method, body } = request;
-        const headers = new Headers({
-            Authorization: `Bearer ${account?.idToken}`,
-            'Content-Type': 'application/json',
-        });
-        if (connectorAccessToken) headers.append(`sk-copilot-connector-access-token`, connectorAccessToken);
+        return AuthHelper.getUserIdToken(msalInstance)
+            .then(async (token) => {
+                const headers = new Headers({
+                    Authorization: `Bearer ${token.idToken}`,
+                    'Content-Type': 'application/json',
+                });
+                if (connectorAccessToken) headers.append(`sk-copilot-connector-access-token`, connectorAccessToken);
 
-        try {
-            const requestUrl = new URL(commandPath, this.serviceUrl);
-            const response = await fetch(requestUrl, {
-                method: method ?? 'GET',
-                body: JSON.stringify(body),
-                headers: headers,
+                try {
+                    const requestUrl = new URL(commandPath, this.serviceUrl);
+                    const response = await fetch(requestUrl, {
+                        method: method ?? 'GET',
+                        body: JSON.stringify(body),
+                        headers: headers,
+                    });
+
+                    if (!response.ok) {
+                        throw Object.assign(new Error(response.statusText + ' => ' + (await response.text())));
+                    }
+
+                    return (await response.json()) as T;
+                } catch (e) {
+                    var additional_error_msg = '';
+                    if (e instanceof TypeError) {
+                        // fetch() will reject with a TypeError when a network error is encountered.
+                        additional_error_msg =
+                            '\n\nPlease check that your backend is running and that it is accessible by the app';
+                    }
+                    throw Object.assign(new Error(e + additional_error_msg));
+                }
+            })
+            .catch((e) => {
+                throw new Error('Failed to fetch.' + e);
             });
-
-            if (!response.ok) {
-                throw Object.assign(new Error(response.statusText + ' => ' + (await response.text())));
-            }
-
-            return (await response.json()) as T;
-        } catch (e) {
-            var additional_error_msg = '';
-            if (e instanceof TypeError) {
-                // fetch() will reject with a TypeError when a network error is encountered.
-                additional_error_msg =
-                    '\n\nPlease check that your backend is running and that it is accessible by the app';
-            }
-            throw Object.assign(new Error(e + additional_error_msg));
-        }
     };
 }
