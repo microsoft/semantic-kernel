@@ -1,4 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# This workflow will install Python dependencies and run tests with a variety of Python versions and OSes
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: Python tests
