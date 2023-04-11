@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
+import threading
 from enum import Enum
 from logging import Logger
-import threading
 from typing import Any, Callable, List, Optional, cast
-import asyncio
 
 from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
@@ -385,8 +385,6 @@ class SKFunction(SKFunctionBase):
     async def _invoke_semantic_async(self, context, settings):
         self._verify_is_semantic()
 
-        self._ensure_context_has_skills(context)
-
         if settings is None:
             if self._ai_backend is not None:
                 settings = self._ai_request_settings
@@ -435,12 +433,6 @@ class SKFunction(SKFunctionBase):
             KernelException.ErrorCodes.InvalidFunctionType,
             "Invalid operation, the method requires a native function",
         )
-
-    def _ensure_context_has_skills(self, context) -> None:
-        if context.skills is not None:
-            return
-
-        context.skills = self._skill_collection
 
     def _trace_function_type_Call(self, type: Enum, log: Logger) -> None:
         log.debug(f"Executing function type {type}: {type.name}")
