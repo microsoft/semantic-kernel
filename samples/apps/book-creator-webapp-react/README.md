@@ -14,9 +14,10 @@
    for this sample.
 2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps
    to start it [here](../../dotnet/KernelHttpServer/README.md).
-3. **Run** the following command `yarn install` (if you have never run the sample before)
+3. Copy **[.env.example](.env.example)** into a new file with name "**.env**".
+4. You will also need to **Run** the following command `yarn install` (if you have never run the sample before)
    and/or `yarn start` from the command line.
-4. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
+5. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
 
 > Working with Secrets: [KernelHttpServer's Readme](../../dotnet/KernelHttpServer/README.md#Working-with-Secrets) has a note on safely working with keys and other secrets.
 

@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;

@@ -20,8 +20,12 @@ export const Login: React.FC = () => {
 
     const handleError = (error: any) => {
         console.error(error);
-        setErrorMessage((error as Error).message);
-    }
+        setErrorMessage(
+            `Login failed. Check that you have a valid REACT_APP_AAD_CLIENT_ID set in your .env file. See ${
+                (error as Error).name
+            } in console for more details.`,
+        );
+    };
 
     const handleSignIn = async (): Promise<void> => {
         try {
@@ -38,11 +42,8 @@ export const Login: React.FC = () => {
 
     useEffect(() => {
         handleSignIn();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    return (
-        <div className={classes.root}>
-            {errorMessage && <Alert intent="error">{errorMessage}</Alert>}
-        </div>
-    );
+    return <div className={classes.root}>{errorMessage && <Alert intent="error">{errorMessage}</Alert>}</div>;
 };
