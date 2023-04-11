@@ -3,14 +3,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.
 /// </summary>
-internal static class RestApiOperationExtensions
+internal static class RestApiOperationOpenAPIExtensions
 {
     /// <summary>
     /// Returns list of REST API operation parameters.
@@ -48,7 +48,7 @@ internal static class RestApiOperationExtensions
             return Enumerable.Empty<RestApiOperationParameter>();
         }
 
-        IList<RestApiOperationParameter> ConverLeafProperties(RestApiOperationPayloadProperty property)
+        IList<RestApiOperationParameter> ConvertLeafProperties(RestApiOperationPayloadProperty property)
         {
             var parameters = new List<RestApiOperationParameter>();
 
@@ -60,7 +60,7 @@ internal static class RestApiOperationExtensions
 
             foreach (var childProperty in property.Properties)
             {
-                parameters.AddRange(ConverLeafProperties(childProperty));
+                parameters.AddRange(ConvertLeafProperties(childProperty));
             }
 
             return parameters;
@@ -70,7 +70,7 @@ internal static class RestApiOperationExtensions
 
         foreach (var property in payload.Properties)
         {
-            result.AddRange(ConverLeafProperties(property));
+            result.AddRange(ConvertLeafProperties(property));
         }
 
         return result;

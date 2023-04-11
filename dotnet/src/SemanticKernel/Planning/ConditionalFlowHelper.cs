@@ -227,7 +227,7 @@ public class ConditionalFlowHelper
     /// Extracts the condition root group content closest the If structure
     /// </summary>
     /// <param name="ifNode">If node to extract condition from</param>
-    /// <returns>Conditiongroup contents</returns>
+    /// <returns>Condition group contents</returns>
     private string ExtractConditionalContent(XmlNode ifNode)
     {
         var conditionContent = ifNode.Attributes?["condition"]

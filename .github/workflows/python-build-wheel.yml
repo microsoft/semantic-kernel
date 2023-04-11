@@ -1,0 +1,45 @@
+name: python-build-wheel
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "python_preview" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-wheel:
+
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: python
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - run: echo "/root/.local/bin" >> $GITHUB_PATH
+    
+    - name: Install poetry
+      run: pipx install poetry
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: "poetry"
+        cache-dependency-path: "python/pyproject.toml"
+        
+    - name: Install SemanticKernel
+      run: poetry install --no-ansi
+      
+    - name: Build wheel
+      run: poetry build  
+
+    - name: Upload wheel file to artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: python/dist/*
