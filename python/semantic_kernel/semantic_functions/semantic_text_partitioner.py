@@ -155,7 +155,7 @@ def _split_str_lines(
     was_split = False
     for split_option in seprators:
         if not lines:
-            lines, was_split = _split_string(text, max_tokens, split_option, trim)
+            lines, was_split = _split_str(text, max_tokens, split_option, trim)
         else:
             lines, was_split = _split_list(lines, max_tokens, split_option, trim)
         if not was_split:
@@ -164,7 +164,7 @@ def _split_str_lines(
     return lines
 
 
-def _split_string(
+def _split_str(
     text: str, max_tokens: int, separators: List[str], trim: bool
 ) -> List[str]:
     """
@@ -176,8 +176,10 @@ def _split_string(
     input_was_split = False
     text = text.strip() if trim else text
 
+    text_as_is = [text]
+
     if _token_count(text) <= max_tokens:
-        return [text], input_was_split
+        return text_as_is, input_was_split
 
     input_was_split = True
 
@@ -197,14 +199,14 @@ def _split_string(
                 cutpoint = index + 1
 
     else:
-        return [text], input_was_split
+        return text_as_is, input_was_split
 
     if 0 < cutpoint < len(text):
         lines = []
-        first_split, has_split1 = _split_string(
+        first_split, has_split1 = _split_str(
             text[:cutpoint], max_tokens, separators, trim
         )
-        second_split, has_split2 = _split_string(
+        second_split, has_split2 = _split_str(
             text[cutpoint:], max_tokens, separators, trim
         )
 
@@ -213,8 +215,8 @@ def _split_string(
 
         input_was_split = has_split1 or has_split2
     else:
-        return [text], input_was_split
-
+        return text_as_is, input_was_split
+    
     return lines, input_was_split
 
 
@@ -230,7 +232,7 @@ def _split_list(
     lines = []
     input_was_split = False
     for line in text:
-        split_str, was_split = _split_string(line, max_tokens, separators, trim)
+        split_str, was_split = _split_str(line, max_tokens, separators, trim)
         lines.extend(split_str)
         input_was_split = input_was_split or was_split
 
