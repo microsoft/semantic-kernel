@@ -5,8 +5,7 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 internal static class SemanticFunctionConstants
 {
     internal const string FunctionFlowFunctionDefinition =
-        @"[EXAMPLE FUNCTIONS]
-
+        @"[PLAN 1]
   AuthorAbility.Summarize:
     description: summarizes the input text
     inputs:
@@ -26,8 +25,6 @@ internal static class SemanticFunctionConstants
     - input: the text to email
     - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
 
-[END EXAMPLE FUNCTIONS]
-
 <goal>Summarize an input, translate to french, and e-mail to John Doe</goal>
 <plan>
     <function.AuthorAbility.Summarize/>
@@ -36,8 +33,7 @@ internal static class SemanticFunctionConstants
     <function._GLOBAL_FUNCTIONS_.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
 </plan><!-- END -->
 
-[EXAMPLE FUNCTIONS]
-
+[PLAN 2]
   Everything.Summarize:
     description: summarize input text
     inputs:
@@ -69,11 +65,9 @@ internal static class SemanticFunctionConstants
     description: Get the current clock hour
     inputs:
 
-[END EXAMPLE FUNCTIONS]
-
 <goal>If its afternoon please Summarize the input, if the input length > 10 and contains ""book"" then Create an outline for a children's book with 3 chapters about a group of kids in a club and summarize it otherwise translate to japanese and email it to Martin.</goal>
 <plan>
-  <function._GLOBAL_FUNCTIONS_.HourNumber setContextVariable=""HOUR_NUMBER""/>
+  <function._GLOBAL_FUNCTIONS_.Hour setContextVariable=""HOUR_NUMBER""/>
   <if condition=""$HOUR_NUMBER greaterthan 12 OR $HOUR_NUMBER equals 12"">
     <function.Everything.Summarize setContextVariable=""SUMMARIZED_INPUT""/>
     <function._GLOBAL_FUNCTIONS_.Length setContextVariable=""SUMMARIZED_INPUT_LENGTH""/>
@@ -89,6 +83,10 @@ internal static class SemanticFunctionConstants
   </if>
 </plan><!-- END -->
 
+[PLAN 3]
+{{$available_functions}}
+
+Plan Rules:
 Create an XML plan step by step, to satisfy the goal given.
 To create a plan, follow these steps:
 1. From a <goal> create a <plan> as a series of <functions>.
@@ -96,19 +94,16 @@ To create a plan, follow these steps:
 3. A function has an 'input' and an 'output'.
 4. The 'output' from each function is automatically passed as 'input' to the subsequent <function>.
 5. 'input' does not need to be specified if it consumes the 'output' of the previous function.
-6. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""$<UNIQUE_VARIABLE_KEY>""/>
+6. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""<UNIQUE_VARIABLE_KEY>""/>
 7. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
-8. Only use ""if"" and ""else"" tags
-9. ""if"" and ""else"" tags must be closed
-10. Comparison operators must be literals.
-11. Append an ""END"" XML comment at the end of the plan.
-12. Use only the [AVAILABLE FUNCTIONS].
-
-[AVAILABLE FUNCTIONS]
-
-{{$available_functions}}
-
-[END AVAILABLE FUNCTIONS]
+8. Only use ""if"", ""else"" or ""while"" tags when needed
+9. ""if"", ""else"" and ""while"" tags must be closed
+10. Do not use <elseif>. For such a condition, use an additional <if>...</if> block instead of <elseif>.
+11. Comparison operators must be literals.
+12. Append an ""END"" XML comment at the end of the plan.
+13. Dont use arrays or objects for variables
+14. Only use variables that where assigned before with setContextVariables
+15. Use only the AVAILABLE FUNCTIONS in the deck
 
 <goal>{{$input}}</goal>
 ";

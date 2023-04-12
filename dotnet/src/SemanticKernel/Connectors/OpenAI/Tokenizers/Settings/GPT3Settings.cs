@@ -24,7 +24,7 @@ internal static class GPT3Settings
 
     private static Dictionary<Tuple<string, string>, int> BuildBpeRanks()
     {
-        string[] lines = EmbeddedResource.ReadBytePairEncodingTable().Split("\n");
+        string[] lines = EmbeddedResource.ReadBytePairEncodingTable().Split('\n');
         List<Tuple<string, string>> bpeMerges = new ArraySegment<string>(lines, 1, lines.Length - 1)
             .Where(x => x.Trim().Length > 0)
             .Select(x =>

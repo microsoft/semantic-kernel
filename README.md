@@ -56,6 +56,7 @@ and try these examples:
 | [Book creator](samples/apps/book-creator-webapp-react/README.md)        | Use planner to deconstruct a complex goal and envision using the planner in your app.                                             |
 | [Authentication and APIs](samples/apps/auth-api-webapp-react/README.md) | Use a basic connector pattern to authenticate and connect to an API and imagine integrating external data into your app's LLM AI. |
 | [Github repository Q&A](samples/apps/github-qna-webapp-react/README.md) | Use embeddings and memory to store recent data and allow you to query against it.                                                 |
+| [Copilot Chat Sample App](samples/apps/copilot-chat-app/README.md)      | Build your own chat experience based on Semantic Kernel.                                                                          |
 
 For a more hands-on overview, you can also run the
 [Getting Started notebook](samples/notebooks/dotnet/Getting-Started-Notebook.ipynb),
