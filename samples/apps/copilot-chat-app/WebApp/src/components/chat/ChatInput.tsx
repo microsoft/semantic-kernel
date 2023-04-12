@@ -8,7 +8,7 @@ import { Constants } from '../../Constants';
 import { AlertType } from '../../libs/models/AlertType';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { setAlert } from '../../redux/features/app/appSlice';
-import { TypingIndicatorRenderer } from './TypingIndicator/TypingIndicatorRenderer';
+import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
