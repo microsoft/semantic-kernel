@@ -1,11 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from diffusers import DiffusionPipeline
 import base64
-from . import InferenceGenerator
 from io import BytesIO
+
+from diffusers import DiffusionPipeline
+
+from . import InferenceGenerator
+
 # The model used to get the tokenizer can be a little arbitrary
 # since the tokenizers are common within the same model type
+
 
 class ImageGenerator(InferenceGenerator.InferenceGenerator):
     def __init__(self, model_name):
