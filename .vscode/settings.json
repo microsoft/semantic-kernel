@@ -1,12 +1,22 @@
 {
-  "python.analysis.extraPaths": ["./src"],
+  "python.analysis.extraPaths": [
+    "./src"
+  ],
   "explorer.compactFolders": false,
   "prettier.enable": true,
   "editor.formatOnType": true,
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
   "python.formatting.provider": "black",
-  "python.formatting.autopep8Args": ["--max-line-length=160"],
+  "python.formatting.autopep8Args": [
+    "--max-line-length=160"
+  ],
   "notebook.output.textLineLimit": 500,
-  "cSpell.words": ["aeiou", "nopep", "OPENAI", "skfunction"]
+  "cSpell.words": [
+    "aeiou",
+    "mlflow",
+    "nopep",
+    "OPENAI",
+    "skfunction"
+  ]
 }
