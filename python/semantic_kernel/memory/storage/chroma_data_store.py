@@ -33,6 +33,7 @@ class ChromaDataStore(DataStoreBase):
         try:
             import chromadb
             import chromadb.config
+            import chromadb.utils.embedding_functions as ef
         except ImportError:
             raise ValueError(
                 "Could not import chromadb python package. "
@@ -49,6 +50,7 @@ class ChromaDataStore(DataStoreBase):
                 )
         self._client = chromadb.Client(self._client_settings)
         self._persist_directory = persist_directory
+        self._default_embdding_function = ef.SentenceTransformerEmbeddingFunction()
         self._default_query_includes = ["embeddings", "metadatas", "documents"]
 
     async def get_collection_async(self, collection: str) -> Optional["Collection"]:
@@ -56,7 +58,10 @@ class ChromaDataStore(DataStoreBase):
             # TODO: ChromeDB reject camel case collection names.
             #   need to decide ChromaDataStore will do auto conversion inside or user takes responseibilities
             collection_snake_case = camel_to_snake(collection)
-            return self._client.get_collection(name=collection_snake_case)
+            return self._client.get_collection(
+                name=collection_snake_case,
+                embedding_function=self._default_embdding_function,
+            )
         except ValueError:
             return None
 
@@ -98,7 +103,8 @@ class ChromaDataStore(DataStoreBase):
     async def put_async(self, collection: str, value: DataEntry) -> DataEntry:
         record: MemoryRecord = value.value
         collection: Collection = self._client.get_or_create_collection(
-            name=camel_to_snake(collection)
+            name=camel_to_snake(collection),
+            embedding_function=self._default_embdding_function,
         )
         collection.add(
             metadatas={
