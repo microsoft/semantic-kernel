@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
+import threading
 from enum import Enum
 from logging import Logger
-import threading
 from typing import Any, Callable, List, Optional, cast
-import asyncio
 
 from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
