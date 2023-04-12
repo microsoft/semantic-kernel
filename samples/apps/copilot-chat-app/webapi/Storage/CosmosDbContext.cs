@@ -2,7 +2,7 @@
 
 namespace SKWebApi.Storage;
 
-public class CosmosDbContext<T> : IStorageContext<T> where T : IStorageEntity
+public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : IStorageEntity
 {
     private readonly CosmosClient _client;
     private readonly Container _container;
@@ -49,7 +49,7 @@ public class CosmosDbContext<T> : IStorageContext<T> where T : IStorageEntity
         return results;
     }
 
-    public async Task<T?> Read(string entityId)
+    public async Task<T> Read(string entityId)
     {
         if (string.IsNullOrWhiteSpace(entityId))
         {
@@ -63,7 +63,7 @@ public class CosmosDbContext<T> : IStorageContext<T> where T : IStorageEntity
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            return default;
+            throw new ArgumentOutOfRangeException($"Entity with id {entityId} not found.");
         }
     }
 
@@ -75,6 +75,20 @@ public class CosmosDbContext<T> : IStorageContext<T> where T : IStorageEntity
         }
 
         await this._container.UpsertItemAsync(entity);
+    }
+
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._client.Dispose();
+        }
     }
 }
 

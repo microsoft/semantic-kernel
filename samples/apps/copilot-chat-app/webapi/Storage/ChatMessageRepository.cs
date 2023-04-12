@@ -16,7 +16,7 @@ public class ChatMessageRepository : Repository<ChatMessage>
     public Task<ChatMessage> FindLastByChatId(string chatId)
     {
         var messages = this.FindByChatId(chatId).Result;
-        if (messages.Count() == 0)
+        if (messages.Any())
         {
             throw new KeyNotFoundException($"No messages found for chat {chatId}.");
         }

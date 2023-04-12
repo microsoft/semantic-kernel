@@ -191,7 +191,7 @@ public class ChatSkill
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            context.Log.LogError($"Unable to save new message: {ex.Message}");
+            context.Log.LogError("Unable to save new message: {0}", ex.Message);
             context.Fail($"Unable to save new message: {ex.Message}", ex);
             return context;
         }
@@ -225,7 +225,7 @@ public class ChatSkill
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            context.Log.LogError($"Unable to save new response: {ex.Message}");
+            context.Log.LogError("Unable to save new response: {0}", ex.Message);
             context.Fail($"Unable to save new response: {ex.Message}", ex);
             return context;
         }
