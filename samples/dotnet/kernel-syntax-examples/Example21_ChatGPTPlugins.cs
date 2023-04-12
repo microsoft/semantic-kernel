@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -16,7 +17,12 @@ public static class Example21_ChatGptPlugins
 
     private static async Task RunChatGptPluginAsync()
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        using var httpClient = new HttpClient();
+
+        var kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .Configure((kc) => kc.SetRestApiOperationRunner(httpClient))
+            .Build();
 
         //Import a ChatGPT plugin using one of the following Kernel extension methods
         //kernel.ImportChatGptPluginSkillFromResourceAsync
@@ -38,7 +44,12 @@ public static class Example21_ChatGptPlugins
 
         //--------------- Example of using Klarna ChatGPT plugin ------------------------
 
-        //var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        //using var httpClient = new HttpClient();
+
+        //var kernel = new KernelBuilder()
+        //    .WithLogger(ConsoleLogger.Log)
+        //    .Configure((kc) => kc.SetRestApiOperationRunner(httpClient))
+        //    .Build();
 
         //var skill = await kernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
 

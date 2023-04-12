@@ -3,10 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
 
@@ -85,6 +89,11 @@ public sealed class KernelConfig
     /// </summary>
     /// <returns>IEnumerable of all embedding service Ids in the kernel configuration.</returns>
     public IEnumerable<string> AllTextEmbeddingGenerationServiceIds => this.TextEmbeddingGenerationServices.Keys;
+
+    /// <summary>
+    /// The REST API operation runner.
+    /// </summary>
+    internal IRestApiOperationRunner? RestApiOperationRunner { get; private set; }
 
     /// <summary>
     /// Add to the list a service for text completion, e.g. Azure OpenAI Text Completion.
@@ -269,6 +278,35 @@ public sealed class KernelConfig
         }
 
         this.DefaultTextEmbeddingGenerationServiceId = serviceId;
+        return this;
+    }
+
+    /// <summary>
+    /// Set REST API operation runner.
+    /// </summary>
+    /// <remarks>
+    /// This method should be used when the same handlers(logging, resiliency, etc), used by HttpClient, are applicable to all hosts REST API operations are run against.
+    /// </remarks>
+    /// <param name="httpClient">An instance of the HttpClient class.</param>
+    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
+    /// <returns>The updated kernel configuration.</returns>
+    public KernelConfig SetRestApiOperationRunner(HttpClient httpClient, AuthenticateRequestAsyncCallback? authCallback = null)
+    {
+        this.RestApiOperationRunner = new RestApiOperationRunner(httpClient, authCallback);
+        return this;
+    }
+
+    /// <summary>
+    /// Set REST API operation runner.
+    /// </summary>
+    /// This method should be used when the other method that accepts HttpClient is not acceptable of not flexible enough.
+    /// E.g. Each host REST API operation is run against a separate host that requires it's own unique set of HttpClient handlers.
+    /// <param name="httpMiddleware">HTTP middleware to send HTTP requests.</param>
+    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
+    /// <returns>The updated kernel configuration.</returns>
+    public KernelConfig SetRestApiOperationRunner(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> httpMiddleware, AuthenticateRequestAsyncCallback? authCallback = null)
+    {
+        this.RestApiOperationRunner = new RestApiOperationRunner(httpMiddleware, authCallback);
         return this;
     }
 

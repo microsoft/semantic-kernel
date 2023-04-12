@@ -21,7 +21,12 @@ public static class Example22_OpenApiSkill
 
     public static async Task GetSecretFromAzureKeyVaultAsync()
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        using var httpClient = new HttpClient();
+
+        var kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .Configure((kc) => kc.SetRestApiOperationRunner(httpClient, AuthenticateWithBearerToken))
+            .Build();
 
         //Import a OpenApi skill using one of the following Kernel extension methods
         //kernel.ImportOpenApiSkillFromResource
@@ -29,7 +34,7 @@ public static class Example22_OpenApiSkill
         //kernel.ImportOpenApiSkillFromFile
         //kernel.ImportOpenApiSkillFromUrlAsync
         //kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
+        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault);
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -45,7 +50,12 @@ public static class Example22_OpenApiSkill
 
     public static async Task AddSecretToAzureKeyVaultAsync()
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        using var httpClient = new HttpClient();
+
+        var kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .Configure((kc) => kc.SetRestApiOperationRunner(httpClient.SendAsync, AuthenticateWithBearerToken))
+            .Build();
 
         //Import a OpenApi skill using one of the following Kernel extension methods
         //kernel.ImportOpenApiSkillFromResource
@@ -53,7 +63,7 @@ public static class Example22_OpenApiSkill
         //kernel.ImportOpenApiSkillFromFile
         //kernel.ImportOpenApiSkillFromUrlAsync
         //kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
+        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault);
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();

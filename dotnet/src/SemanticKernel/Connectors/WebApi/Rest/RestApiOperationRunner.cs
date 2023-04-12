@@ -9,6 +9,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 
@@ -18,9 +19,9 @@ namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 internal class RestApiOperationRunner : IRestApiOperationRunner
 {
     /// <summary>
-    /// An instance of the HttpClient class.
+    /// HTTP middleware to send HTTP requests.
     /// </summary>
-    private readonly HttpClient _httpClient;
+    private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _httpMiddleware;
 
     /// <summary>
     /// Delegate for authorizing the HTTP request.
@@ -32,9 +33,20 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    public RestApiOperationRunner(HttpClient httpClient, AuthenticateRequestAsyncCallback? authCallback = null)
+    public RestApiOperationRunner(HttpClient httpClient, AuthenticateRequestAsyncCallback? authCallback = null) : this(httpClient.SendAsync, authCallback)
     {
-        this._httpClient = httpClient;
+    }
+
+    /// <summary>
+    /// Creates an instance of a <see cref="RestApiOperationRunner"/> class.
+    /// </summary>
+    /// <param name="httpMiddleware">HTTP middleware to send HTTP requests.</param>
+    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
+    public RestApiOperationRunner(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> httpMiddleware, AuthenticateRequestAsyncCallback? authCallback = null)
+    {
+        Verify.NotNull(httpMiddleware, $"The {nameof(httpMiddleware)} parameter is not set to an instance of an object.");
+
+        this._httpMiddleware = httpMiddleware;
 
         // If no auth callback provided, use empty function
         if (authCallback == null)
@@ -91,7 +103,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
             }
         }
 
-        using var responseMessage = await this._httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        using var responseMessage = await this._httpMiddleware.Invoke(requestMessage, cancellationToken).ConfigureAwait(false);
 
         var content = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
 
