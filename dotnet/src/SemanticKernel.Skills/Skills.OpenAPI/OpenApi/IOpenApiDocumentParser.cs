@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 

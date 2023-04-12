@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -244,7 +245,8 @@ internal class FunctionFlowRunner
 
                 if (o2.Name.StartsWith(FunctionTag, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var skillFunctionName = o2.Name.Split(FunctionTag)?[1] ?? string.Empty;
+                    var splits = o2.Name.SplitEx(FunctionTag);
+                    string skillFunctionName = (splits.Length > 1) ? splits[1] : string.Empty;
                     context.Log.LogTrace("{0}: found skill node {1}", parentNodeName, skillFunctionName);
                     GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
                     if (!context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
@@ -272,7 +274,7 @@ internal class FunctionFlowRunner
                                 if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
                                 {
                                     variableTargetName = innerTextStartWithSign
-                                        ? attr.InnerText[1..]
+                                        ? attr.InnerText.Substring(1)
                                         : attr.InnerText;
                                 }
                                 else if (innerTextStartWithSign)
@@ -285,7 +287,7 @@ internal class FunctionFlowRunner
                                         var attrValueList = new List<string>();
                                         foreach (var attrValue in attrValues)
                                         {
-                                            if (context.Variables.Get(attrValue[1..], out var variableReplacement))
+                                            if (context.Variables.Get(attrValue.Substring(1), out var variableReplacement))
                                             {
                                                 attrValueList.Add(variableReplacement);
                                             }
@@ -314,11 +316,12 @@ internal class FunctionFlowRunner
                         // TODO respect ErrorOccurred
 
                         // copy all values for VariableNames in functionVariables not in keysToIgnore to context.Variables
-                        foreach (var (key, _) in functionVariables)
+                        foreach (var variable in functionVariables)
                         {
-                            if (!keysToIgnore.Contains(key, StringComparer.InvariantCultureIgnoreCase) && functionVariables.Get(key, out var value))
+                            if (!keysToIgnore.Contains(variable.Key, StringComparer.InvariantCultureIgnoreCase)
+                                && functionVariables.Get(variable.Key, out var value))
                             {
-                                context.Variables.Set(key, value);
+                                context.Variables.Set(variable.Key, value);
                             }
                         }
 
@@ -388,7 +391,7 @@ internal class FunctionFlowRunner
 
     private static void GetSkillFunctionNames(string skillFunctionName, out string skillName, out string functionName)
     {
-        var skillFunctionNameParts = skillFunctionName.Split(".");
+        var skillFunctionNameParts = skillFunctionName.Split('.');
         skillName = skillFunctionNameParts?.Length > 0 ? skillFunctionNameParts[0] : string.Empty;
         functionName = skillFunctionNameParts?.Length > 1 ? skillFunctionNameParts[1] : skillFunctionName;
     }

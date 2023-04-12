@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
 
@@ -183,8 +184,8 @@ public class PlannerSkill
         {
             // May need additional formatting here.
             var resultString = result.Result
-                .Replace("\\n", "\n", StringComparison.InvariantCultureIgnoreCase)
-                .Replace("\n", "\\n", StringComparison.InvariantCultureIgnoreCase);
+                .Replace("\\n", "\n")
+                .Replace("\n", "\\n");
 
             var resultObject = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(resultString);
 
@@ -273,10 +274,10 @@ public class PlannerSkill
             _ = executeResultContext.Variables.Get(SkillPlan.PlanKey, out var planProgress);
             _ = executeResultContext.Variables.Get(SkillPlan.ResultKey, out var results);
 
-            var isComplete = planProgress.Contains($"<{FunctionFlowRunner.PlanTag}>", StringComparison.InvariantCultureIgnoreCase) &&
-                             !planProgress.Contains($"<{FunctionFlowRunner.FunctionTag}", StringComparison.InvariantCultureIgnoreCase);
+            var isComplete = planProgress.ContainsEx($"<{FunctionFlowRunner.PlanTag}>", StringComparison.InvariantCultureIgnoreCase) &&
+                             !planProgress.ContainsEx($"<{FunctionFlowRunner.FunctionTag}", StringComparison.InvariantCultureIgnoreCase);
             var isSuccessful = !executeResultContext.ErrorOccurred &&
-                               planProgress.Contains($"<{FunctionFlowRunner.PlanTag}>", StringComparison.InvariantCultureIgnoreCase);
+                               planProgress.ContainsEx($"<{FunctionFlowRunner.PlanTag}>", StringComparison.InvariantCultureIgnoreCase);
 
             if (string.IsNullOrEmpty(results) && isComplete && isSuccessful)
             {
