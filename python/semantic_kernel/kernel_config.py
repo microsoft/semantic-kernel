@@ -75,7 +75,7 @@ class KernelConfig:
         backend: Union[
             TextCompletionClientBase, Callable[["KernelBase"], TextCompletionClientBase]
         ],
-        overwrite: bool = False,
+        overwrite: bool = True,
     ) -> "KernelConfig":
         if not service_id:
             raise ValueError("service_id must be a non-empty string")
@@ -98,7 +98,7 @@ class KernelConfig:
         backend: Union[
             ChatCompletionClientBase, Callable[["KernelBase"], ChatCompletionClientBase]
         ],
-        overwrite: bool = False,
+        overwrite: bool = True,
     ) -> "KernelConfig":
         if not service_id:
             raise ValueError("service_id must be a non-empty string")
