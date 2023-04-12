@@ -159,7 +159,7 @@ public class ChatMemorySkill
     /// <returns>The latest message as a ChatMessage object.</returns>
     internal async Task<ChatMessage> GetLatestChatMessageAsync(string chatId)
     {
-        return await this._chatMessageRepository.FindLastByChatId(chatId);
+        return await this._chatMessageRepository.FindLastByChatIdAsync(chatId);
     }
     #endregion
 
@@ -202,7 +202,7 @@ public class ChatMemorySkill
         var initialBotMessage = string.Format(CultureInfo.CurrentCulture, SystemPromptDefaults.InitialBotMessage, userName);
         await this.SaveNewResponseAsync(initialBotMessage, chatId);
 
-        var latestMessage = await GetLatestChatMessageAsync(chatId);
+        var latestMessage = await this.GetLatestChatMessageAsync(chatId);
         return latestMessage;
     }
     #endregion

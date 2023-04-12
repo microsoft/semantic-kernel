@@ -13,13 +13,13 @@ public class ChatMessageRepository : Repository<ChatMessage>
         return Task.FromResult(base._StorageContext.QueryableEntities.Where(e => e.ChatId == chatId).AsEnumerable());
     }
 
-    public Task<ChatMessage> FindLastByChatId(string chatId)
+    public async Task<ChatMessage> FindLastByChatIdAsync(string chatId)
     {
-        var messages = this.FindByChatId(chatId).Result;
+        var messages = await this.FindByChatId(chatId);
         if (!messages.Any())
         {
             throw new KeyNotFoundException($"No messages found for chat {chatId}.");
         }
-        return Task.FromResult(messages.OrderByDescending(e => e.Timestamp).First());
+        return messages.OrderByDescending(e => e.Timestamp).First();
     }
 }

@@ -89,7 +89,7 @@ public class ChatSkill
         );
 
         // Find the most recent message.
-        var latestMessage = await this._chatMessageRepository.FindLastByChatId(chatId);
+        var latestMessage = await this._chatMessageRepository.FindLastByChatIdAsync(chatId);
 
         string memoryText = "";
         var results = context.Memory.SearchAsync(

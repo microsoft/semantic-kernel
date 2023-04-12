@@ -6,7 +6,7 @@ public class Repository<T> : IRepository<T> where T : IStorageEntity
 
     public Repository(IStorageContext<T> storageContext)
     {
-        _StorageContext = storageContext;
+        this._StorageContext = storageContext;
     }
 
     public Task Create(T entity)
@@ -16,26 +16,26 @@ public class Repository<T> : IRepository<T> where T : IStorageEntity
             throw new ArgumentOutOfRangeException("Invalid id.");
         }
 
-        return _StorageContext.Create(entity);
+        return this._StorageContext.Create(entity);
     }
 
     public Task Delete(T entity)
     {
-        return _StorageContext.Delete(entity);
+        return this._StorageContext.Delete(entity);
     }
 
     public Task<T> FindById(string id)
     {
-        return _StorageContext.Read(id);
+        return this._StorageContext.Read(id);
     }
 
     public Task<IEnumerable<T>> FindAll()
     {
-        return _StorageContext.FindAll();
+        return this._StorageContext.FindAll();
     }
 
     public Task Update(T entity)
     {
-        return _StorageContext.Update(entity);
+        return this._StorageContext.Update(entity);
     }
 }
