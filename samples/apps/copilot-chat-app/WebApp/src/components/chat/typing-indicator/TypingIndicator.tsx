@@ -3,7 +3,6 @@
 import { Image, makeStyles } from '@fluentui/react-components';
 import React from 'react';
 import typingBalls from '../../../assets/typing-balls-light.svg';
-//const typingBalls = require('../../../assets/typing-balls-light.svg');
 
 const useStyles = makeStyles({
     root: {

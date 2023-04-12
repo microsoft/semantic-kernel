@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 import { Persona, makeStyles } from '@fluentui/react-components';
 import { Animation } from '@fluentui/react-northstar';
 import * as React from 'react';

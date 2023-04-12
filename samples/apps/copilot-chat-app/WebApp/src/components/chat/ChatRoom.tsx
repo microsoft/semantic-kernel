@@ -89,11 +89,9 @@ export const ChatRoom: React.FC = () => {
         dispatch(updateConversation({ message: chatInput }));
         try {
             await chat.getResponse(value, selectedId);
-        } catch (error) {
+        } finally {
             setIsBotTyping(false);
-            throw error;
         }
-        setIsBotTyping(false);
         setShouldAutoScroll(true);
     };
 
