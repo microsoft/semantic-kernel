@@ -20,7 +20,7 @@ class ChromaMemoryStore(ChromaDataStore, MemoryStoreBase):
         collection: str,
         embedding: ndarray,
         limit: int = 1,
-        # min_relevance_score: float = 0.7,
+        min_relevance_score: float = 0.7,
     ) -> List[Tuple[MemoryRecord, float]]:
         collection = await self.get_collection_async(collection)
         if collection is None:
