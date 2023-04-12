@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SemanticKernel.IntegrationTests.Fakes;
 
-internal class EmailSkill
+internal class EmailSkillFake
 {
     [SKFunction("Given an e-mail and message body, send an email")]
     [SKFunctionInput(Description = "The body of the email message to send.")]

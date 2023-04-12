@@ -176,13 +176,7 @@ public class Plan : ISKFunction
                 var functionContext = context;
                 // Loop through State and add anything missing to functionContext
 
-                foreach (var item in this.State)
-                {
-                    if (!functionContext.Variables.ContainsKey(item.Key))
-                    {
-                        functionContext.Variables.Set(item.Key, item.Value);
-                    }
-                }
+                AddVariablesToContext(this.State, functionContext);
 
                 await this.InvokeNextStepAsync(functionContext);
 
@@ -246,7 +240,7 @@ public class Plan : ISKFunction
         return this;
     }
 
-    public void SetFunction(ISKFunction function)
+    protected void SetFunction(ISKFunction function)
     {
         this.Function = function;
         this.Name = function.Name;
@@ -256,7 +250,18 @@ public class Plan : ISKFunction
         this.RequestSettings = function.RequestSettings;
     }
 
-    private ISKFunction? Function { get; set; } = null;
+    protected ISKFunction? Function { get; set; } = null;
 
     private List<ISKFunction> _steps = new();
+
+    private static void AddVariablesToContext(ContextVariables vars, SKContext context)
+    {
+        foreach (var item in vars)
+        {
+            if (!context.Variables.ContainsKey(item.Key))
+            {
+                context.Variables.Set(item.Key, item.Value);
+            }
+        }
+    }
 }

@@ -53,7 +53,7 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var emailSkill = target.ImportSkill(new EmailSkill());
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
         var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
 
         var plan = new Plan(emailSkill["SendEmailAsync"]);
@@ -74,7 +74,7 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var emailSkill = target.ImportSkill(new EmailSkill());
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
         var writerSkill = TestHelpers.GetSkill("WriterSkill", target);
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
@@ -102,7 +102,7 @@ public sealed class PlanTests : IDisposable
         var plan = new Plan(goal);
         var subPlan = new Plan("Write a poem or joke");
 
-        var emailSkill = target.ImportSkill(new EmailSkill());
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         // Arrange
         var returnContext = target.CreateNewContext();
@@ -161,7 +161,7 @@ public sealed class PlanTests : IDisposable
         // Import all sample skills available for demonstration purposes.
         TestHelpers.ImportSampleSkills(kernel);
 
-        var emailSkill = kernel.ImportSkill(new EmailSkill());
+        var emailSkill = kernel.ImportSkill(new EmailSkillFake());
         return kernel;
     }
 
