@@ -62,7 +62,7 @@ public static class ImportSemanticSkillFromDirectoryExtension
         const string PROMPT_FILE = "skprompt.txt";
 
         Verify.ValidSkillName(skillDirectoryName);
-        var skillDir = Path.Join(parentDirectory, skillDirectoryName);
+        var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
         Verify.DirectoryExists(skillDir);
 
         var skill = new Dictionary<string, ISKFunction>();
@@ -73,12 +73,12 @@ public static class ImportSemanticSkillFromDirectoryExtension
             var functionName = Path.GetFileName(dir);
 
             // Continue only if prompt template exists
-            var promptPath = Path.Join(dir, PROMPT_FILE);
+            var promptPath = Path.Combine(dir, PROMPT_FILE);
             if (!File.Exists(promptPath)) { continue; }
 
             // Load prompt configuration. Note: the configuration is optional.
             var config = new PromptTemplateConfig();
-            var configPath = Path.Join(dir, CONFIG_FILE);
+            var configPath = Path.Combine(dir, CONFIG_FILE);
             if (File.Exists(configPath))
             {
                 config = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
