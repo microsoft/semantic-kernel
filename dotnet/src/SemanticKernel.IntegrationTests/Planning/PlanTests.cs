@@ -79,7 +79,7 @@ public sealed class PlanTests : IDisposable
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
         var plan = new Plan(goal);
-        plan.AddStep(writerSkill["Translate"], emailSkill["SendEmailAsync"]);
+        plan.AddSteps(writerSkill["Translate"], emailSkill["SendEmailAsync"]);
 
         // Act
         var cv = new ContextVariables();
@@ -107,8 +107,8 @@ public sealed class PlanTests : IDisposable
         // Arrange
         var returnContext = target.CreateNewContext();
 
-        subPlan.AddStep(emailSkill["WritePoemAsync"], emailSkill["WritePoemAsync"], emailSkill["WritePoemAsync"]);
-        plan.AddStep(subPlan, emailSkill["SendEmailAsync"]);
+        subPlan.AddSteps(emailSkill["WritePoemAsync"], emailSkill["WritePoemAsync"], emailSkill["WritePoemAsync"]);
+        plan.AddSteps(subPlan, emailSkill["SendEmailAsync"]);
         plan.State.Set("email_address", "something@email.com");
 
         // Act

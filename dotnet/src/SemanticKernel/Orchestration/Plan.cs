@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// Standard Semantic Kernel callable plan.
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
-public sealed class Plan : ISKFunction
+public class Plan : ISKFunction
 {
     /// <summary>
     /// State of the plan
@@ -28,7 +28,7 @@ public sealed class Plan : ISKFunction
     /// Steps of the plan
     /// </summary>
     [JsonPropertyName("steps")]
-    internal List<Plan> Steps { get; } = new();
+    internal IReadOnlyList<ISKFunction> Steps => this._steps.AsReadOnly();
 
     /// <summary>
     /// Named parameters for the function
@@ -36,9 +36,9 @@ public sealed class Plan : ISKFunction
     [JsonPropertyName("named_parameters")]
     public ContextVariables NamedParameters { get; set; } = new();
 
-    public bool HasNextStep => this.NextStep < this.Steps.Count;
+    public bool HasNextStep => this.NextStepIndex < this.Steps.Count;
 
-    public int NextStep { get; private set; } = 0;
+    protected int NextStepIndex { get; set; } = 0;
 
     #region ISKFunction implementation
 
@@ -80,19 +80,10 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="goal">The goal of the plan used as description.</param>
     /// <param name="steps">The steps to add.</param>
+    [JsonConstructor]
     public Plan(string goal, params ISKFunction[] steps) : this(goal)
     {
-        this.AddStep(steps);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Plan"/> class with a goal description and steps.
-    /// </summary>
-    /// <param name="goal">The goal of the plan used as description.</param>
-    /// <param name="steps">The steps to add.</param>
-    public Plan(string goal, params Plan[] steps) : this(goal)
-    {
-        this.AddStep(steps);
+        this.AddSteps(steps);
     }
 
     /// <summary>
@@ -105,29 +96,17 @@ public sealed class Plan : ISKFunction
     }
 
     /// <summary>
-    /// Adds one or more existing plans to the end of the current plan as steps.
-    /// </summary>
-    /// <param name="steps">The plans to add as steps to the current plan.</param>
-    /// <remarks>
-    /// When you add a plan as a step to the current plan, the steps of the added plan are executed after the steps of the current plan have completed.
-    /// </remarks>
-    public void AddStep(params Plan[] steps)
-    {
-        this.Steps.AddRange(steps);
-    }
-
-    /// <summary>
     /// Adds one or more new steps to the end of the current plan.
     /// </summary>
     /// <param name="steps">The steps to add to the current plan.</param>
     /// <remarks>
     /// When you add a new step to the current plan, it is executed after the previous step in the plan has completed. Each step can be a function call or another plan.
     /// </remarks>
-    public void AddStep(params ISKFunction[] steps)
+    public void AddSteps(params ISKFunction[] steps)
     {
         foreach (var step in steps)
         {
-            this.Steps.Add(new Plan(step));
+            this._steps.Add(new Plan(step));
         }
     }
 
@@ -250,7 +229,7 @@ public sealed class Plan : ISKFunction
     {
         if (this.HasNextStep)
         {
-            var step = this.Steps[this.NextStep];
+            var step = this.Steps[this.NextStepIndex];
 
             context = await step.InvokeAsync(context);
 
@@ -260,7 +239,7 @@ public sealed class Plan : ISKFunction
                     $"Error occurred while running plan step: {context.LastErrorDescription}", context.LastException);
             }
 
-            this.NextStep++;
+            this.NextStepIndex++;
             this.State.Update(context.Result.Trim());
         }
 
@@ -278,4 +257,6 @@ public sealed class Plan : ISKFunction
     }
 
     private ISKFunction? Function { get; set; } = null;
+
+    private List<ISKFunction> _steps = new();
 }

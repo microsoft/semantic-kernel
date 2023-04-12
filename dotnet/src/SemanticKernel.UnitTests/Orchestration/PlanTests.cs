@@ -73,7 +73,7 @@ public sealed class PlanTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
-        plan.AddStep(new Plan(mockFunction.Object));
+        plan.AddSteps(new Plan(mockFunction.Object));
 
         // Act
         var result = await plan.InvokeAsync(planInput);
@@ -112,7 +112,7 @@ public sealed class PlanTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
-        plan.AddStep(mockFunction.Object);
+        plan.AddSteps(mockFunction.Object);
 
         // Act
         var result = await plan.InvokeAsync(planInput);
@@ -151,7 +151,7 @@ public sealed class PlanTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
-        plan.AddStep(mockFunction.Object, mockFunction.Object);
+        plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
         // Act
         var result = await plan.InvokeAsync(planInput);
@@ -190,7 +190,7 @@ public sealed class PlanTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
-        plan.AddStep(new Plan(mockFunction.Object), mockFunction.Object);
+        plan.AddSteps(new Plan(mockFunction.Object), mockFunction.Object);
 
         // Act
         var result = await plan.InvokeAsync(planInput);
@@ -229,7 +229,7 @@ public sealed class PlanTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
-        plan.AddStep(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
+        plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
 
         // Act
         var result = await plan.InvokeAsync(planInput);
@@ -268,7 +268,7 @@ public sealed class PlanTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
-        plan.AddStep(mockFunction.Object, mockFunction.Object);
+        plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
         // Act
         var result = await kernel.Object.StepAsync(planInput, plan);
@@ -317,7 +317,7 @@ public sealed class PlanTests
             })
             .Returns(() => Task.FromResult(returnContext));
 
-        plan.AddStep(mockFunction.Object, mockFunction.Object);
+        plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
         // Act
         var cv = new ContextVariables(planInput);
@@ -366,7 +366,7 @@ public sealed class PlanTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null))
             .Returns(() => Task.FromResult(returnContext));
 
-        plan.AddStep(mockFunction.Object, mockFunction.Object);
+        plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
         // Act
         var cv = new ContextVariables(planInput);
@@ -402,7 +402,7 @@ public sealed class PlanTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null))
             .Returns(() => Task.FromResult(returnContext));
 
-        plan.AddStep(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
+        plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
 
         // Act
         var cv = new ContextVariables(planInput);
@@ -453,8 +453,8 @@ public sealed class PlanTests
                 returnContext.Variables.Update(c.Variables.Input + " - this just happened."))
             .Returns(() => Task.FromResult(returnContext));
 
-        subPlan.AddStep(childFunction1.Object, childFunction2.Object, childFunction3.Object);
-        plan.AddStep(subPlan, nodeFunction1.Object);
+        subPlan.AddSteps(childFunction1.Object, childFunction2.Object, childFunction3.Object);
+        plan.AddSteps(subPlan, nodeFunction1.Object);
 
         // Act
         while (plan.HasNextStep)
