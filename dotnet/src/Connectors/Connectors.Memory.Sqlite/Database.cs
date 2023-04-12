@@ -26,13 +26,20 @@ internal class Database
     private const string TableName = "SKMemoryTable";
 
     public Database() { }
-
-    public async Task CreateConnectionAsync(string connectionString, CancellationToken cancel = default)
+    
+    public Task CreateTableAsync(SqliteConnection conn, CancellationToken cancel = default)
     {
-        await using (var connection = new SqliteConnection(connectionString))
+        using (SqliteCommand cmd = conn.CreateCommand())
         {
-            await connection.OpenAsync(cancel);
-            await this.CreateTableAsync(connection, cancel);
+            cmd.CommandText = $@"
+            CREATE TABLE IF NOT EXISTS {TableName}(
+                collection TEXT,
+                key TEXT,
+                metadata TEXT,
+                embedding TEXT,
+                timestamp TEXT,
+                PRIMARY KEY(collection, key))";
+            return cmd.ExecuteNonQueryAsync(cancel);
         }
     }
 
@@ -212,22 +219,6 @@ internal class Database
              WHERE collection=@collection
                 AND key IS NULL";
             cmd.Parameters.AddWithValue("@collection", collectionName);
-            return cmd.ExecuteNonQueryAsync(cancel);
-        }
-    }
-
-    private Task CreateTableAsync(SqliteConnection conn, CancellationToken cancel = default)
-    {
-        using (SqliteCommand cmd = conn.CreateCommand())
-        {
-            cmd.CommandText = $@"
-            CREATE TABLE IF NOT EXISTS {TableName}(
-                collection TEXT,
-                key TEXT,
-                metadata TEXT,
-                embedding TEXT,
-                timestamp TEXT,
-                PRIMARY KEY(collection, key))";
             return cmd.ExecuteNonQueryAsync(cancel);
         }
     }

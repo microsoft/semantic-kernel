@@ -20,7 +20,7 @@ namespace SemanticKernel.Connectors.UnitTests.Memory.Sqlite;
 public class SqliteMemoryStoreTests : IDisposable
 {
     private const string DatabaseFile = "SqliteMemoryStoreTests.db";
-    
+
     public SqliteMemoryStoreTests()
     {
         if (File.Exists(DatabaseFile))
@@ -70,7 +70,7 @@ public class SqliteMemoryStoreTests : IDisposable
     [Fact]
     public async Task InitializeDbConnectionSucceedsAsync()
     {
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         // Assert
         Assert.NotNull(db);
     }
@@ -79,7 +79,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task ItCanCreateAndGetCollectionAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -96,7 +96,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task ItCanCheckIfCollectionExistsAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         string collection = "my_collection";
         this._collectionNum++;
 
@@ -112,7 +112,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task CreatingDuplicateCollectionDoesNothingAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -130,7 +130,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task CollectionsCanBeDeletedAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         await db.CreateCollectionAsync(collection);
@@ -152,7 +152,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task ItCanInsertIntoNonExistentCollectionAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -180,7 +180,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -208,7 +208,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -239,7 +239,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -270,7 +270,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task UpsertReplacesExistingRecordWithSameIdAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         string commonId = "test";
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: commonId,
@@ -305,7 +305,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task ExistingRecordCanBeRemovedAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -328,7 +328,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task RemovingNonExistingRecordDoesNothingAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -345,7 +345,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task ItCanListAllDatabaseCollectionsAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         string[] testCollections = { "random_collection1", "random_collection2", "random_collection3" };
         this._collectionNum += 3;
         await db.CreateCollectionAsync(testCollections[0]);
@@ -378,7 +378,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         int topN = 4;
         string collection = "test_collection" + this._collectionNum;
@@ -441,7 +441,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -502,7 +502,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -561,7 +561,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         int topN = 4;
         string collection = "test_collection" + this._collectionNum;
@@ -597,7 +597,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task ItCanBatchUpsertRecordsAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         int numRecords = 10;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -618,7 +618,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task ItCanBatchGetRecordsAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         int numRecords = 10;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -639,7 +639,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task ItCanBatchRemoveRecordsAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         int numRecords = 10;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -667,7 +667,7 @@ public class SqliteMemoryStoreTests : IDisposable
     public async Task DeletingNonExistentCollectionDoesNothingAsync()
     {
         // Arrange
-        SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
+        using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
