@@ -373,7 +373,7 @@ internal class FunctionFlowRunner
 
     public static void GetSkillFunctionFromNodeName(string nodeName, out string skillName, out string functionName)
     {
-        var skillFunctionName = nodeName.Split(FunctionTag)?[1] ?? string.Empty;
+        var skillFunctionName = nodeName.SplitEx(FunctionTag)?[1] ?? string.Empty;
         GetSkillFunctionNames(skillFunctionName, out skillName, out functionName);
     }
 }
