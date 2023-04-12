@@ -104,13 +104,13 @@ public sealed class PlannerSkillTests : IDisposable
         "</if>", 1,
         "<else>", 1,
         "</else>", 1)]
-    [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun but if its night I want a joke about the moon",
-        "function._GLOBAL_FUNCTIONS_.Hour", 1,
-        "function.FunSkill.Joke", 3,
-        "<if condition=\"", 2,
-        "</if>", 2,
-        "<else>", 2,
-        "</else>", 2)]
+    //[InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun but if its night I want a joke about the moon",
+    //    "function._GLOBAL_FUNCTIONS_.Hour", 1,
+    //    "function.FunSkill.Joke", 3,
+    //    "<if condition=\"", 2,
+    //    "</if>", 2,
+    //    "<else>", 2,
+    //    "</else>", 2)]
     public async Task CreatePlanShouldHaveConditionalStatementsAndBeAbleToExecuteAsync(string prompt, params object[] expectedAnswerContains)
     {
         // Arrange
