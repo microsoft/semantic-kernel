@@ -32,15 +32,73 @@ public class QdrantMemoryStoreTests2
     private readonly Embedding<float> _embedding3 = new Embedding<float>(new float[] { 3, 3, 3 });
 
     [Fact]
-    public async Task GetAsyncSearchesByMetadataIdReturnsNullIfNotFoundAsync()
+    public async Task GetAsyncCallsDoNotRequestVectorsUnlessSpecifiedAsync()
     {
         // Arrange
+        var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+
+        var guidString = Guid.NewGuid().ToString();
+        var guidString2 = Guid.NewGuid().ToString();
+
         var memoryRecord = MemoryRecord.LocalRecord(
             id: this._id,
             text: this._text,
             description: this._description,
             embedding: this._embedding);
 
+        // this information will not be verified
+        var qdrantVectorRecord = QdrantVectorRecord.FromJson(
+            guidString,
+            memoryRecord.Embedding.Vector,
+            memoryRecord.GetSerializedMetadata());
+
+        mockQdrantClient
+            .Setup<IAsyncEnumerable<QdrantVectorRecord>>(x =>
+                x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .Returns(new[] { qdrantVectorRecord }.ToAsyncEnumerable());
+
+        // Act
+        _ = await vectorStore.GetAsync("test_collection", this._id);
+        _ = await vectorStore.GetAsync("test_collection", this._id, true);
+        _ = await vectorStore.GetBatchAsync("test_collection", new List<string> { this._id2 }).ToListAsync();
+        _ = await vectorStore.GetBatchAsync("test_collection", new List<string> { this._id2 }, true).ToListAsync();
+        _ = await vectorStore.GetWithPointIdAsync("test_collection", guidString);
+        _ = await vectorStore.GetWithPointIdAsync("test_collection", guidString, true);
+        _ = await vectorStore.GetWithPointIdBatchAsync("test_collection", new[] { guidString2 }).ToListAsync();
+        _ = await vectorStore.GetWithPointIdBatchAsync("test_collection", new[] { guidString2 }, true).ToListAsync();
+
+        // Assert
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(
+            x => x.GetVectorByPayloadIdAsync("test_collection", this._id, false, It.IsAny<CancellationToken>()),
+            Times.Once());
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(
+            x => x.GetVectorByPayloadIdAsync("test_collection", this._id, true, It.IsAny<CancellationToken>()),
+            Times.Once());
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(
+            x => x.GetVectorByPayloadIdAsync("test_collection", this._id2, false, It.IsAny<CancellationToken>()),
+            Times.Once());
+        mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(
+            x => x.GetVectorByPayloadIdAsync("test_collection", this._id2, true, It.IsAny<CancellationToken>()),
+            Times.Once());
+        mockQdrantClient.Verify<IAsyncEnumerable<QdrantVectorRecord>>(
+            x => x.GetVectorsByIdAsync("test_collection", new[] { guidString }, false, It.IsAny<CancellationToken>()),
+            Times.Once());
+        mockQdrantClient.Verify<IAsyncEnumerable<QdrantVectorRecord>>(
+            x => x.GetVectorsByIdAsync("test_collection", new[] { guidString }, true, It.IsAny<CancellationToken>()),
+            Times.Once());
+        mockQdrantClient.Verify<IAsyncEnumerable<QdrantVectorRecord>>(
+            x => x.GetVectorsByIdAsync("test_collection", new[] { guidString2 }, false, It.IsAny<CancellationToken>()),
+            Times.Once());
+        mockQdrantClient.Verify<IAsyncEnumerable<QdrantVectorRecord>>(
+            x => x.GetVectorsByIdAsync("test_collection", new[] { guidString2 }, true, It.IsAny<CancellationToken>()),
+            Times.Once());
+    }
+
+    [Fact]
+    public async Task GetAsyncSearchesByMetadataIdReturnsNullIfNotFoundAsync()
+    {
+        // Arrange
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))

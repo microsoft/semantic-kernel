@@ -130,11 +130,11 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
     {
         try
         {
-            var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, cancel: cancel);
+            var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, withEmbedding, cancel: cancel);
             if (vectorData != null)
             {
                 return MemoryRecord.FromJson(
@@ -164,7 +164,7 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings,
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
@@ -186,12 +186,12 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
-    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false, CancellationToken cancel = default)
     {
         try
         {
             var vectorDataList = this._qdrantClient
-                .GetVectorsByIdAsync(collectionName, new[] { pointId }, cancel: cancel);
+                .GetVectorsByIdAsync(collectionName, new[] { pointId }, withEmbedding, cancel: cancel);
 
             var vectorData = await vectorDataList.FirstOrDefaultAsync(cancel);
 
@@ -230,11 +230,11 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
-    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, bool withEmbeddings,
+    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var vectorDataList = this._qdrantClient
-            .GetVectorsByIdAsync(collectionName, pointIds, cancel: cancel);
+            .GetVectorsByIdAsync(collectionName, pointIds, withEmbeddings, cancel: cancel);
 
         await foreach (var vectorData in vectorDataList)
         {
@@ -327,6 +327,7 @@ public class QdrantMemoryStore : IMemoryStore
             target: embedding.Vector,
             threshold: minRelevanceScore,
             top: limit,
+            withVectors: withEmbeddings,
             cancel: cancel);
 
         await foreach ((QdrantVectorRecord, double) result in results)

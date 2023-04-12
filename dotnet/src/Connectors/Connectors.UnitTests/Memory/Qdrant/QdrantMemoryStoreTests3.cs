@@ -24,6 +24,85 @@ public class QdrantMemoryStoreTests3
     private readonly Embedding<float> _embedding = new Embedding<float>(new float[] { 1, 1, 1 });
 
     [Fact]
+    public async Task GetNearestMatchesAsyncCallsDoNotReturnVectorsUnlessSpecifiedAsync()
+    {
+        // Arrange
+        var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
+        mockQdrantClient
+            .Setup<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
+                It.IsAny<string>(),
+                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<double>(),
+                It.IsAny<int>(),
+                It.IsAny<bool>(),
+                null,
+                It.IsAny<CancellationToken>()))
+            .Returns(AsyncEnumerable.Empty<(QdrantVectorRecord, double)>());
+
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        
+        // Act
+        _ = await vectorStore.GetNearestMatchAsync(
+            collectionName: "test_collection",
+            embedding: this._embedding,
+            minRelevanceScore: 0.0);
+        _ = await vectorStore.GetNearestMatchAsync(
+            collectionName: "test_collection",
+            embedding: this._embedding,
+            withEmbedding: true,
+            minRelevanceScore: 0.0);
+        _ = await vectorStore.GetNearestMatchesAsync(
+            collectionName: "test_collection",
+            embedding: this._embedding,
+            limit: 3,
+            minRelevanceScore: 0.0).ToListAsync();
+        _ = await vectorStore.GetNearestMatchesAsync(
+            collectionName: "test_collection",
+            embedding: this._embedding,
+            limit: 3,
+            withEmbeddings: true,
+            minRelevanceScore: 0.0).ToListAsync();
+
+        // Assert
+        mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
+                It.IsAny<string>(),
+                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<double>(),
+                1,
+                false,
+                null,
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+        mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
+                It.IsAny<string>(),
+                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<double>(),
+                1,
+                true,
+                null,
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+        mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
+                It.IsAny<string>(),
+                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<double>(),
+                3,
+                false,
+                null,
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+        mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
+                It.IsAny<string>(),
+                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<double>(),
+                3,
+                true,
+                null,
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+    }
+
+    [Fact]
     public async Task ItReturnsEmptyTupleIfNearestMatchNotFoundAsync()
     {
         // Arrange
