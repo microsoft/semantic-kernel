@@ -62,8 +62,8 @@ public class ChatMemorySkill
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            context.Log.LogError("Failed to create the initial bot message for chat {0}.", chatId);
-            context.Fail("Failed to create the initial bot message for chat.", ex);
+            context.Log.LogError("Failed to create the initial bot message for chat {0}: {1}.", chatId, ex.Message);
+            context.Fail($"Failed to create the initial bot message for chat: {ex.Message}.", ex);
             return context;
         }
 

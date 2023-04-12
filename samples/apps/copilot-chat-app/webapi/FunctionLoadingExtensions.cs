@@ -34,8 +34,8 @@ internal static class FunctionLoadingExtensions
 
     internal static void RegisterNativeSkills(
         this IKernel kernel,
-        InMemoryContext<Chat> chatMemoryContext,
-        InMemoryContext<ChatMessage> chatMessageMemoryContext,
+        ChatRepository chatRepository,
+        ChatMessageRepository chatMessageRepository,
         ILogger logger)
     {
         // Hardcode your native function registrations here
@@ -45,14 +45,14 @@ internal static class FunctionLoadingExtensions
 
         var chatSkill = new ChatSkill(
             kernel,
-            new ChatMessageRepository(chatMessageMemoryContext),
-            new ChatRepository(chatMemoryContext)
+            chatMessageRepository,
+            chatRepository
         );
         kernel.ImportSkill(chatSkill, nameof(ChatSkill));
 
         var chatMemorySkill = new ChatMemorySkill(
-            new ChatMessageRepository(chatMessageMemoryContext),
-            new ChatRepository(chatMemoryContext)
+            chatMessageRepository,
+            chatRepository
         );
         kernel.ImportSkill(chatMemorySkill, nameof(ChatMemorySkill));
     }

@@ -140,11 +140,16 @@ public static class Program
         });
 
         // Add persistent storage
-        services.AddSingleton<InMemoryContext<Chat>>();
-        services.AddSingleton<InMemoryContext<ChatMessage>>();
+        // InMemory version
+        var chatInMemoryContext = new InMemoryContext<Chat>();
+        var chatMessageInMemoryContext = new InMemoryContext<ChatMessage>();
+        services.AddSingleton<ChatRepository>(new ChatRepository(chatInMemoryContext));
+        services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
         // CosmosDB version
-        // services.AddSingleton<CosmosDbContext<Chat>>("<connectionString>", "<db>", "<container>");
-        // services.AddSingleton<CosmosDbContext<ChatMessage>>("<connectionString>", "<db>", "<container>");
+        // var chatCosmosDbContext = new CosmosDbContext<Chat>("<connectionString>", "<db>", "<container>");
+        // var chatMessageCosmosDbContext = new CosmosDbContext<ChatMessage>("<connectionString>", "<db>", "<container>");
+        // services.AddSingleton<ChatRepository>(new ChatRepository(chatCosmosDbContext));
+        // services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatCosmosDbContext));
 
         // Each REST call gets a fresh new SK instance
         services.AddScoped<Kernel>();
