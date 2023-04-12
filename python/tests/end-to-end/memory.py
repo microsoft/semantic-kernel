@@ -5,9 +5,10 @@ from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.ai.open_ai as sk_oai
+from semantic_kernel.memory.storage.data_store_base import DataStoreBase
 
 
-def build_kernel() -> sk.Kernel:
+def build_kernel(memory_storage: DataStoreBase) -> sk.Kernel:
     # Setup kernel with OpenAI completion and embedding backends
     api_key, org_id = sk.openai_settings_from_dot_env()
 
@@ -25,7 +26,7 @@ def build_kernel() -> sk.Kernel:
                 sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id),
             )
         )
-        .with_memory_storage(sk.memory.VolatileMemoryStore())
+        .with_memory_storage(memory_storage)
         .build()
     )
 
@@ -131,8 +132,8 @@ async def chat(
     return True
 
 
-async def main() -> None:
-    kernel = build_kernel()
+async def main(memory_storage: DataStoreBase) -> None:
+    kernel = build_kernel(memory_storage)
 
     print("Populating memory...")
     await populate_memory(kernel)
@@ -150,4 +151,8 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    volatile_memory_storage = sk.memory.VolatileMemoryStore()
+    asyncio.run(main(volatile_memory_storage))
+
+    chroma_memory_storage = sk.memory.ChromaMemoryStore()
+    asyncio.run(main(chroma_memory_storage))
