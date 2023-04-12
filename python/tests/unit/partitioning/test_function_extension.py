@@ -2,9 +2,7 @@ import pytest
 
 import semantic_kernel as sk
 import semantic_kernel.ai.open_ai as sk_oai
-from semantic_kernel.semantic_functions.function_extension import (
-    aggregate_partionned_results_async,
-)
+from semantic_kernel.semantic_functions import aggregate_partionned_results_async
 
 
 @pytest.mark.asyncio
