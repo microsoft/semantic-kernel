@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 /// <remarks>The data is saved to a database file, specified in the constructor.
 /// The data persists between subsequent instances. Only one instance may access the file at a time.
 /// The caller is responsible for deleting the file.</remarks>
-public class SqliteMemoryStore : IMemoryStore, IDisposable
+public class SqliteMemoryStore : IMemoryStore
 {
     /// <summary>
     /// Connect a Sqlite database
@@ -35,93 +35,153 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     public static async Task<SqliteMemoryStore> ConnectAsync(string filename,
         CancellationToken cancel = default)
     {
-        SqliteConnection dbConnection = await Database.CreateConnectionAsync(filename, cancel);
-        return new SqliteMemoryStore(dbConnection);
+        var memoryStore = new SqliteMemoryStore(filename);
+        await memoryStore._dbConnector.CreateConnectionAsync(memoryStore._dbConnectionString, cancel);
+        return memoryStore;
     }
 
     /// <inheritdoc/>
-    public Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
+    public async Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        return this._dbConnection.CreateCollectionAsync(collectionName, cancel);
+        await using (var connection = new SqliteConnection(this._dbConnectionString))
+        {
+            await connection.OpenAsync(cancel);
+            await this._dbConnector.CreateCollectionAsync(connection, collectionName, cancel);
+        }
     }
 
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
     {
-        return await this._dbConnection.DoesCollectionExistsAsync(collectionName, cancel);
+        await using(var connection = new SqliteConnection(this._dbConnectionString))
+        {
+            await connection.OpenAsync(cancel);
+            return await this._dbConnector.DoesCollectionExistsAsync(connection, collectionName, cancel);
+        }
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancel = default)
     {
-        return this._dbConnection.GetCollectionsAsync(cancel);
+        await using (var connection = new SqliteConnection(this._dbConnectionString))
+        {
+            await connection.OpenAsync(cancel);
+            await foreach (var collection in this._dbConnector.GetCollectionsAsync(connection, cancel))
+            {
+                yield return collection;
+            }
+        }
     }
 
     /// <inheritdoc/>
-    public Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
+    public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        return this._dbConnection.DeleteCollectionAsync(collectionName, cancel);
+        await using (var connection = new SqliteConnection(this._dbConnectionString))
+        {
+            await connection.OpenAsync(cancel);
+            await this._dbConnector.DeleteCollectionAsync(connection, collectionName, cancel);
+        }
     }
 
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
-        record.Key = record.Metadata.Id;
+        await using (var connection = new SqliteConnection(this._dbConnectionString))
+        {
+            await connection.OpenAsync(cancel);
+            record.Key = record.Metadata.Id;
 
-        // Update
-        await this._dbConnection.UpdateAsync(
-            collection: collectionName,
-            key: record.Key,
-            metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding),
-            timestamp: ToTimestampString(record.Timestamp),
-            cancel: cancel);
+            // Update
+            await this._dbConnector.UpdateAsync(
+                conn: connection,
+                collection: collectionName,
+                key: record.Key,
+                metadata: record.GetSerializedMetadata(),
+                embedding: JsonSerializer.Serialize(record.Embedding),
+                timestamp: ToTimestampString(record.Timestamp),
+                cancel: cancel);
 
-        // Insert if entry does not exists
-        await this._dbConnection.InsertOrIgnoreAsync(
-            collection: collectionName,
-            key: record.Key,
-            metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding),
-            timestamp: ToTimestampString(record.Timestamp),
-            cancel: cancel);
+            // Insert if entry does not exists
+            await this._dbConnector.InsertOrIgnoreAsync(
+                conn: connection,
+                collection: collectionName,
+                key: record.Key,
+                metadata: record.GetSerializedMetadata(),
+                embedding: JsonSerializer.Serialize(record.Embedding),
+                timestamp: ToTimestampString(record.Timestamp),
+                cancel: cancel);
 
-        return record.Key;
+            return record.Key;
+        }
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        foreach (var r in records)
+        await using (var connection = new SqliteConnection(this._dbConnectionString))
         {
-            yield return await this.UpsertAsync(collectionName, r, cancel);
+            await connection.OpenAsync(cancel);
+            foreach (var record in records)
+            {
+                record.Key = record.Metadata.Id;
+
+                // Update
+                await this._dbConnector.UpdateAsync(
+                    conn: connection,
+                    collection: collectionName,
+                    key: record.Key,
+                    metadata: record.GetSerializedMetadata(),
+                    embedding: JsonSerializer.Serialize(record.Embedding),
+                    timestamp: ToTimestampString(record.Timestamp),
+                    cancel: cancel);
+
+                // Insert if entry does not exists
+                await this._dbConnector.InsertOrIgnoreAsync(
+                    conn: connection,
+                    collection: collectionName,
+                    key: record.Key,
+                    metadata: record.GetSerializedMetadata(),
+                    embedding: JsonSerializer.Serialize(record.Embedding),
+                    timestamp: ToTimestampString(record.Timestamp),
+                    cancel: cancel);
+
+                yield return record.Key;
+            }
         }
     }
 
     /// <inheritdoc/>
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
     {
-        DatabaseEntry? entry = await this._dbConnection.ReadAsync(collectionName, key, cancel);
-
-        if (entry.HasValue)
+        await using (var connection = new SqliteConnection(this._dbConnectionString))
         {
-            if (withEmbedding)
+            await connection.OpenAsync(cancel);
+            DatabaseEntry? entry = await this._dbConnector.ReadAsync(connection, collectionName, key, cancel);
+
+            if (entry.HasValue)
             {
-                return MemoryRecord.FromJson(
-                    json: entry.Value.MetadataString,
-                    JsonSerializer.Deserialize<Embedding<float>>(entry.Value.EmbeddingString));
+                if (withEmbedding)
+                {
+                    return MemoryRecord.FromJson(
+                        json: entry.Value.MetadataString,
+                        JsonSerializer.Deserialize<Embedding<float>>(entry.Value.EmbeddingString),
+                        entry.Value.Key,
+                        ParseTimestamp(entry.Value.Timestamp));
+                }
+                else
+                {
+                    return MemoryRecord.FromJson(
+                        json: entry.Value.MetadataString,
+                        Embedding<float>.Empty,
+                        entry.Value.Key,
+                        ParseTimestamp(entry.Value.Timestamp));
+                }
             }
             else
             {
-                return MemoryRecord.FromJson(
-                    json: entry.Value.MetadataString,
-                    Embedding<float>.Empty);
+                return null;
             }
-        }
-        else
-        {
-            return null;
         }
     }
 
@@ -129,27 +189,58 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        foreach (var key in keys)
+        await using (var connection = new SqliteConnection(this._dbConnectionString))
         {
-            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel);
-
-            if (record != null)
+            await connection.OpenAsync(cancel);
+            foreach (var key in keys)
             {
-                yield return record;
+                DatabaseEntry? entry = await this._dbConnector.ReadAsync(connection, collectionName, key, cancel);
+
+                if (entry.HasValue)
+                {
+                    if (withEmbeddings)
+                    {
+                        yield return MemoryRecord.FromJson(
+                            json: entry.Value.MetadataString,
+                            JsonSerializer.Deserialize<Embedding<float>>(entry.Value.EmbeddingString),
+                            entry.Value.Key,
+                            ParseTimestamp(entry.Value.Timestamp));
+                    }
+                    else
+                    {
+                        yield return MemoryRecord.FromJson(
+                            json: entry.Value.MetadataString,
+                            Embedding<float>.Empty,
+                            entry.Value.Key,
+                            ParseTimestamp(entry.Value.Timestamp));
+                    }
+                }
+                else
+                {
+                    yield break;
+                }
             }
         }
     }
 
     /// <inheritdoc/>
-    public Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
+    public async Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
     {
-        return this._dbConnection.DeleteAsync(collectionName, key, cancel);
+        await using (var connection = new SqliteConnection(this._dbConnectionString))
+        {
+            await connection.OpenAsync(cancel);
+            await this._dbConnector.DeleteAsync(connection, collectionName, key, cancel);
+        }
     }
 
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
-        await Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancel)));
+        await using (var connection = new SqliteConnection(this._dbConnectionString))
+        {
+            await connection.OpenAsync(cancel);
+            await Task.WhenAll(keys.Select(k => this._dbConnector.DeleteAsync(connection, collectionName, k, cancel)));
+        }
     }
 
     /// <inheritdoc/>
@@ -205,45 +296,19 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
     }
 
-    /// <summary>
-    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-    /// </summary>
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-
-    #region protected ================================================================================
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this._disposedValue)
-        {
-            if (disposing)
-            {
-                this._dbConnection.Dispose();
-            }
-
-            this._disposedValue = true;
-        }
-    }
-
-    #endregion
-
     #region private ================================================================================
 
-    private readonly SqliteConnection _dbConnection;
-    private bool _disposedValue;
+    private readonly string _dbConnectionString;
+    private readonly Database _dbConnector;
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="dbConnection">DB connection</param>
-    private SqliteMemoryStore(SqliteConnection dbConnection)
+    /// <param name="filename">Sqlite db filename.</param>
+    private SqliteMemoryStore(string filename)
     {
-        this._dbConnection = dbConnection;
+        this._dbConnectionString = $@"Data Source={filename};Pooling=false;";
+        this._dbConnector = new Database();
     }
 
     private static string? ToTimestampString(DateTimeOffset? timestamp)
@@ -264,17 +329,20 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
 
     private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        // delete empty entry in the database if it exists (see CreateCollection)
-        await this._dbConnection.DeleteEmptyAsync(collectionName, cancel);
-
-        await foreach (DatabaseEntry dbEntry in this._dbConnection.ReadAllAsync(collectionName, cancel))
+        await using (var connection = new SqliteConnection(this._dbConnectionString))
         {
-            float[]? vector = JsonSerializer.Deserialize<float[]>(dbEntry.EmbeddingString);
-            
-            var record = MemoryRecord.FromJson(dbEntry.MetadataString,
-                vector != null ? new Embedding<float>(vector) : Embedding<float>.Empty);
-            
-            yield return record;
+            await connection.OpenAsync(cancel);
+            // delete empty entry in the database if it exists (see CreateCollection)
+            await this._dbConnector.DeleteEmptyAsync(connection, collectionName, cancel);
+
+            await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(connection, collectionName, cancel))
+            {
+                Embedding<float>? vector = JsonSerializer.Deserialize<Embedding<float>>(dbEntry.EmbeddingString);
+
+                var record = MemoryRecord.FromJson(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
+
+                yield return record;
+            }
         }
     }
 
