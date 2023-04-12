@@ -1,12 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from typing import List
+
 import core_skills.constants as constants
 from orchestration.sk_context import SKContext
+from skill_definition.sk_function_decorator import sk_function
+
 import semantic_kernel as sk
 from python.semantic_kernel.kernel_base import KernelBase
 from python.semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from skill_definition.sk_function_decorator import sk_function
 
 
 class ConversationSummarySkill:
