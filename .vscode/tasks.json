@@ -123,6 +123,8 @@
         "test",
         "--collect",
         "XPlat Code Coverage;Format=lcov",
+        "--filter",
+        "${input:filter}",
         "SemanticKernel.UnitTests.csproj"
       ],
       "problemMatcher": "$msCompile",
@@ -143,6 +145,8 @@
         "test",
         "--collect",
         "XPlat Code Coverage;Format=lcov",
+        "--filter",
+        "${input:filter}",
         "SemanticKernel.IntegrationTests.csproj"
       ],
       "problemMatcher": "$msCompile",
@@ -231,6 +235,14 @@
         "panel": "shared",
         "group": "Run-Samples"
       }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "filter",
+      "type": "promptString",
+      "default": "",
+      "description": "Enter a filter for the tests"
     }
   ]
 }
