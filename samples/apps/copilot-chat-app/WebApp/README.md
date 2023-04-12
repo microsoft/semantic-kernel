@@ -39,7 +39,7 @@ The Copilot Chat sameple showcases how to build an enriched intelligent app, wit
 
 ### Working with Secrets
 
-We need keys to work with various aspects of the project including accessing openAI models. This opens up the possibility of exposing keys in commits. There are a [couple of options](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows) to safeguard developers from exposing keys. Outside of using the dotnet's users-secrets and environment variables, we've also added *.development.json and *.development.config to the .gitignore if developers want to use appsettings.development.json files or other development.config files for secret storage.
+We need keys to work with various aspects of the project including accessing OpenAI models. This opens up the possibility of exposing keys in commits. There are a [couple of options](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows) to safeguard developers from exposing keys. Outside of using the dotnet's users-secrets and environment variables, we've also added *.development.json and *.development.config to the .gitignore if developers want to use appsettings.development.json files or other development.config files for secret storage.
 
 ## AuthN/AuthZ Story
 ### Authentication in this sample
@@ -65,11 +65,11 @@ To invoke skills with the required tokens, do the following (see comments tagged
 
    `var result = await connectors.invokeSkillWithConnectorToken(ask, {ConnectorSkill}, {ConnectorFunction}, scopes);`
 
-      - To use Graph token specifically, comment out the scopes you need under `msGraphScopes` in [Constants.ts file](./src/Constants.ts), then call the `invokeSkillWithGraphToken` function. Be default, the ones already uncommented map to Graph APIs used in existing connectors.
+      - To use Graph token specifically, uncomment the scopes you need under `msGraphScopes` in [Constants.ts file](./src/Constants.ts), then call the `invokeSkillWithGraphToken` function. Be default, the ones already uncommented map to Graph APIs used in existing connectors.
       
          i.e., `var result = await connectors.invokeSkillWithGraphToken(ask, {ConnectorSkill}, {ConnectorFunction});`
 
-      - To use ADO token specifically, comment out the scopes you need under `adoScopes` in [Constants.ts file](./src/Constants.ts), then call the `invokeSkillWithAdoToken` function.
+      - To use ADO token specifically, uncomment the scopes you need under `adoScopes` in [Constants.ts file](./src/Constants.ts), then call the `invokeSkillWithAdoToken` function.
       
          i.e., `var result = await connectors.invokeSkillWithAdoToken(ask, {ConnectorSkill}, {ConnectorFunction});`
 4. Process result as normal.
