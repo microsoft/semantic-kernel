@@ -22,12 +22,13 @@ internal static class Example12_Planning
         await EmailSamplesAsync();
         await BookSamplesAsync();
         await MemorySampleAsync();
-        await ConditionalSampleAsync();
+        await IfConditionalSampleAsync();
+        await WhileConditionalSampleAsync();
     }
 
-    private static async Task ConditionalSampleAsync()
+    private static async Task IfConditionalSampleAsync()
     {
-        Console.WriteLine("======== Planning - Conditional flow example ========");
+        Console.WriteLine("======== Planning - If/Else Conditional flow example ========");
         var kernel = InitializeKernelAndPlanner(out var planner);
 
         // Load additional skills to enable planner to do non-trivial asks.
@@ -55,6 +56,40 @@ internal static class Example12_Planning
               <function.FunSkill.ShortPoem input="the moon"/>
             </else>
           </else>
+        </plan>
+        */
+
+        Console.WriteLine("Original plan:");
+        Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
+
+        await ExecutePlanAsync(kernel, planner, originalPlan, 20);
+    }
+
+    private static async Task WhileConditionalSampleAsync()
+    {
+        Console.WriteLine("======== Planning - While Loop Conditional flow example ========");
+        var kernel = InitializeKernelAndPlanner(out var planner);
+
+        // Load additional skills to enable planner to do non-trivial asks.
+        string folder = RepoFiles.SampleSkillsPath();
+        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
+        kernel.ImportSkill(new MathSkill());
+        kernel.ImportSkill(new TimeSkill());
+
+        var originalPlan = await kernel.RunAsync(
+            @"Start with a X number equals to the current minutes of the clock and remove 20 from this number until it becomes 0. After that tell me a math style joke where the input is X number + ""bananas""",
+            planner["CreatePlan"]);
+
+        /*
+        <goal>
+        Start with a X number equals to the current minutes of the clock and remove 20 from this number until it becomes 0. After that tell me a math style joke where the input is X number + "bananas"
+        </goal>
+        <plan>
+          <function._GLOBAL_FUNCTIONS_.Minute setContextVariable="X_NUMBER"/>
+          <while condition="$X_NUMBER greaterthan 0">
+            <function._GLOBAL_FUNCTIONS_.Subtract input="$X_NUMBER" Amount="20" setContextVariable="X_NUMBER"/>
+          </while>
+          <function.FunSkill.Joke input="$X_NUMBER bananas" style="Math" appendToResult="RESULT__JOKE"/>
         </plan>
         */
 
