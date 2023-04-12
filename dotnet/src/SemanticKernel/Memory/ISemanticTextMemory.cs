@@ -20,7 +20,8 @@ public interface ISemanticTextMemory
     /// <param name="description">Optional description.</param>
     /// <param name="valueString">Optional value string for saving custom metadata.</param>
     /// <param name="cancel">Cancellation token.</param>
-    public Task SaveInformationAsync(
+    /// <returns>Unique identifier of the saved memory record.</returns>
+    public Task<string> SaveInformationAsync(
         string collection,
         string text,
         string id,
@@ -38,7 +39,8 @@ public interface ISemanticTextMemory
     /// <param name="description">Optional description.</param>
     /// <param name="valueString">Optional value string for saving custom metadata.</param>
     /// <param name="cancel">Cancellation token</param>
-    public Task SaveReferenceAsync(
+    /// <returns>Unique identifier of the saved memory record.</returns>
+    public Task<string> SaveReferenceAsync(
         string collection,
         string text,
         string externalId,
