@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
+namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 
 /// <summary>
 /// Interface for REST API operation runner classes.
