@@ -32,5 +32,5 @@
         "types": [],
         "composite": true
     },
-    "include": ["src"]
+    "include": ["src", "src/assets/custom.d.ts"]
 }
