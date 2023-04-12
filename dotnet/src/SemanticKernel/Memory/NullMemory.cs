@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -18,7 +19,7 @@ public sealed class NullMemory : ISemanticTextMemory
     public static NullMemory Instance { get; } = new();
 
     /// <inheritdoc/>
-    public Task SaveInformationAsync(
+    public Task<string> SaveInformationAsync(
         string collection,
         string text,
         string id,
@@ -26,11 +27,11 @@ public sealed class NullMemory : ISemanticTextMemory
         string? valueString = null,
         CancellationToken cancel = default)
     {
-        return Task.CompletedTask;
+        return Task.FromResult(string.Empty);
     }
 
     /// <inheritdoc/>
-    public Task SaveReferenceAsync(
+    public Task<string> SaveReferenceAsync(
         string collection,
         string text,
         string externalId,
@@ -39,7 +40,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string? valueString = null,
         CancellationToken cancel = default)
     {
-        return Task.CompletedTask;
+        return Task.FromResult(string.Empty);
     }
 
     /// <inheritdoc/>
