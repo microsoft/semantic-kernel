@@ -20,6 +20,7 @@ namespace SemanticKernel.Connectors.UnitTests.Memory.Sqlite;
 public class SqliteMemoryStoreTests : IDisposable
 {
     private const string DatabaseFile = "SqliteMemoryStoreTests.db";
+    private bool _disposedValue = false;
 
     public SqliteMemoryStoreTests()
     {
@@ -33,7 +34,22 @@ public class SqliteMemoryStoreTests : IDisposable
 
     public void Dispose()
     {
-        File.Delete(DatabaseFile);
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this._disposedValue)
+        {
+            if (disposing)
+            {
+                File.Delete(DatabaseFile);
+            }
+
+            this._disposedValue = true;
+        }
     }
 
     private int _collectionNum = 0;
@@ -361,7 +377,7 @@ public class SqliteMemoryStoreTests : IDisposable
         {
             Assert.True(await db.DoesCollectionExistAsync(collection));
         }
-        
+
         Assert.NotNull(collections);
         Assert.NotEmpty(collections);
         Assert.Equal(testCollections.Length, collections.Count);

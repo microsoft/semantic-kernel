@@ -40,7 +40,7 @@ public class QdrantMemoryStoreTests3
             .Returns(AsyncEnumerable.Empty<(QdrantVectorRecord, double)>());
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
-        
+
         // Act
         _ = await vectorStore.GetNearestMatchAsync(
             collectionName: "test_collection",

@@ -26,7 +26,7 @@ internal class Database
     private const string TableName = "SKMemoryTable";
 
     public Database() { }
-    
+
     public Task CreateTableAsync(SqliteConnection conn, CancellationToken cancel = default)
     {
         using (SqliteCommand cmd = conn.CreateCommand())

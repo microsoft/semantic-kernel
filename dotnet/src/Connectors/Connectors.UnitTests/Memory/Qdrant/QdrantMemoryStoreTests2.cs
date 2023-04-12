@@ -108,7 +108,7 @@ public class QdrantMemoryStoreTests2
 
         // Act
         var getResult = await vectorStore.GetAsync("test_collection", this._id, false);
-        
+
         // Assert
         mockQdrantClient.Verify<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync("test_collection", this._id, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once());
