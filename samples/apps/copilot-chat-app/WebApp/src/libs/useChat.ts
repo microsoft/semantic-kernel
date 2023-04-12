@@ -56,32 +56,15 @@ export const useChat = () => {
         throw new Error(`Could not find valid ${key} variable in context.`);
     };
 
-    const registerLoggedInUser = async () => {
-        try {
-            var ask: IAsk = {
-                input: account!.homeAccountId!,
-                variables: [
-                    { key: 'name', value: account!.name! },
-                    { key: 'email', value: account!.username },
-                ],
-            };
-
-            await sk.invokeAsync(ask, 'ChatMemorySkill', 'CreateUser');
-        } catch (e: any) {
-            const userFoundRegEx = new RegExp(/Error.+User\s[\d\w.\-]+\salready\sexists\./g);
-            const userFound = userFoundRegEx.test(e.message);
-            if (!userFound) {
-                alert('[RegisterUser] Unable to register logged in user. Details:\n' + e);
-            }
-        }
-    };
-
     const createChat = async () => {
         const chatTitle = `SK Chatbot @ ${new Date().toLocaleString()}`;
         try {
             var ask: IAsk = {
                 input: chatTitle,
-                variables: [{ key: 'userId', value: account!.homeAccountId! }],
+                variables: [
+                    { key: 'userId', value: account!.homeAccountId! },
+                    { key: 'userName', value: account!.name! },
+                ],
             };
 
             await sk.invokeAsync(ask, 'ChatMemorySkill', 'CreateChat').then(async (result: IAskResult) => {
@@ -114,6 +97,7 @@ export const useChat = () => {
             input: value,
             variables: [
                 { key: 'userId', value: account!.homeAccountId! },
+                { key: 'userName', value: account!.name! },
                 { key: 'chatId', value: chatId },
             ],
         };
@@ -121,8 +105,8 @@ export const useChat = () => {
             var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat');
             const messageResult = {
                 timestamp: new Date().getTime(),
-                senderName: 'Bot',
-                senderId: 'Bot',
+                userName: 'Bot',
+                userId: 'Bot',
                 content: result.value,
             };
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));
@@ -167,7 +151,7 @@ export const useChat = () => {
 
                         conversations[chat.id] = {
                             id: chat.id,
-                            title: chat.Title,
+                            title: chat.title,
                             audience: [loggedInUser],
                             messages: orderedMessages,
                             botTypingTimestamp: 0,
@@ -189,7 +173,6 @@ export const useChat = () => {
     };
 
     return {
-        registerLoggedInUser,
         getAudienceMemberForId,
         createChat,
         getResponse,

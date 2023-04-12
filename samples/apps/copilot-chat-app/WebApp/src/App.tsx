@@ -51,12 +51,9 @@ const App: FC = () => {
 
     useEffect(() => {
         if (isAuthenticated) {
-            // Register user in DB
-            chat.registerLoggedInUser().then(() => {
-                // Load all chats from memory
-                chat.loadChats().then(() => {
-                    setAppState(AppState.Chat);
-                });
+            // Load all chats from memory
+            chat.loadChats().then(() => {
+                setAppState(AppState.Chat);
             });
         }
     }, [isAuthenticated]);

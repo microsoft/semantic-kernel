@@ -78,8 +78,8 @@ export const ChatRoom: React.FC = () => {
         log('submitting user chat message');
         const chatInput = {
             timestamp: new Date().getTime(),
-            senderId: account?.homeAccountId,
-            senderName: account?.name as string,
+            userId: account?.homeAccountId,
+            userName: account?.name as string,
             content: value,
         };
         dispatch(updateConversation({ message: chatInput }));

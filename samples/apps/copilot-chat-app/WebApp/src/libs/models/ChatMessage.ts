@@ -2,8 +2,8 @@
 
 export interface ChatMessage {
     timestamp: number;
-    senderName: 'bot' | string;
-    senderId: string;
+    userName: 'bot' | string;
+    userId: string;
     content: string;
     id?: string;
     debug?: string;
