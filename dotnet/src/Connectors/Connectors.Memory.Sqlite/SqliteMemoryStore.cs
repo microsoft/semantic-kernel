@@ -176,15 +176,34 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this._dbConnection.Close();
-        SqliteConnection.ClearAllPools();
-        this._dbConnection.Dispose();
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
+    #region protected ================================================================================
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this._disposedValue)
+        {
+            if (disposing)
+            {
+                this._dbConnection.Close();
+                SqliteConnection.ClearAllPools();
+                this._dbConnection.Dispose();
+            }
+
+            this._disposedValue = true;
+        }
+    }
+
+    #endregion
+
     #region private ================================================================================
-    
+
     private readonly Database _dbConnector;
     private readonly SqliteConnection _dbConnection;
+    private bool _disposedValue;
 
     /// <summary>
     /// Constructor
@@ -194,6 +213,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     {
         this._dbConnector = new Database();
         this._dbConnection = new SqliteConnection($@"Data Source={filename};");
+        this._disposedValue = false;
     }
 
     private static string? ToTimestampString(DateTimeOffset? timestamp)
