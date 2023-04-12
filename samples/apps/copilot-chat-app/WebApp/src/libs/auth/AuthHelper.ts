@@ -49,8 +49,9 @@ const msalConfig: Configuration = {
 };
 
 const loginRequest: RedirectRequest = {
-    scopes: Constants.msal.initialMsGraphScopes,
-    // extraScopesToConsent: Constants.msal.skScopes,
+    scopes: Constants.msal.skScopes,
+    // Uncomment the following if you want users to consent to all necessary scopes upfront
+    // extraScopesToConsent: Constants.msGraphScopes, // or Constants.adoScopes
 };
 
 const logoutRequest: EndSessionRequest = {
@@ -78,12 +79,16 @@ const logoutAsync = async (instance: IPublicClientApplication) => {
     }
 };
 
-const getUserIdToken = async (instance: IPublicClientApplication) => {
-    return await instance.acquireTokenSilent(loginRequest);
+// SKaS = Semantic Kernel as a Service
+// Gets token with scopes to authorize SKaS specifically
+const getSKaSAccessToken = async (instance: IPublicClientApplication) => {
+    return instance.acquireTokenSilent(loginRequest).then((token) => {
+        return token.accessToken;
+    });
 };
 
 export const AuthHelper = {
-    getUserIdToken,
+    getSKaSAccessToken,
     msalConfig,
     loginRequest,
     logoutRequest,

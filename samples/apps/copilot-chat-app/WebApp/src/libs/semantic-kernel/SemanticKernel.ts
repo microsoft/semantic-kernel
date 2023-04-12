@@ -37,12 +37,13 @@ export class SemanticKernel {
         connectorAccessToken?: string,
     ): Promise<T> => {
         const { commandPath, method, body } = request;
-        return AuthHelper.getUserIdToken(msalInstance)
+        return AuthHelper.getSKaSAccessToken(msalInstance)
             .then(async (token) => {
                 const headers = new Headers({
-                    Authorization: `Bearer ${token.idToken}`,
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 });
+
                 if (connectorAccessToken) headers.append(`sk-copilot-connector-access-token`, connectorAccessToken);
 
                 try {

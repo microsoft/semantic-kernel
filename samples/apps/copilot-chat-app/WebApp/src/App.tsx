@@ -64,6 +64,7 @@ const App: FC = () => {
         dispatch(removeAlert(key));
     };
 
+    // TODO: handle error case of missing account information
     return (
         <div>
             <UnauthenticatedTemplate>

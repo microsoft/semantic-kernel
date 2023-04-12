@@ -13,7 +13,7 @@ export const Constants = {
             cacheLocation: 'localStorage',
             storeAuthStateInCookie: false,
         },
-        initialMsGraphScopes: ['openid', 'offline_access', 'profile', 'User.Read'],
+        skScopes: ['openid', 'offline_access', 'profile', 'User.Read'],
     },
     bot: {
         profile: {
@@ -44,7 +44,6 @@ export const Constants = {
         // 'Chat.Read',
         // 'Contacts.Read',
         // 'Contacts.Read.Shared',
-        // 'email',
         // 'Files.Read',
         // 'Files.Read.All',
         // 'Files.Read.Selected',
