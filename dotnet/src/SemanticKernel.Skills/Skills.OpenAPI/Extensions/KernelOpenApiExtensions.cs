@@ -9,13 +9,13 @@ using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Rest;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 
 // ReSharper disable once CheckNamespace
@@ -300,7 +300,7 @@ public static class KernelOpenApiExtensions
             .Select(p => new ParameterView
             {
                 Name = p.AlternativeName ?? p.Name,
-                Description = p.Name,
+                Description = p.Description ?? p.Name,
                 DefaultValue = p.DefaultValue ?? string.Empty
             })
             .ToList();

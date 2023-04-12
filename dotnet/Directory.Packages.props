@@ -5,10 +5,13 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.3" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.3" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
+    <PackageVersion Include="System.Net.Primitives" Version="4.3.1" />
     <PackageVersion Include="System.Text.Json" Version="7.0.2" />
     
     <!-- Microsoft.Extensions.Logging -->
@@ -34,7 +37,7 @@
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     
     <!-- Skills -->
-    <PackageVersion Include="DocumentFormat.OpenXml" Version="2.19.0" />
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.4" />
     <PackageVersion Include="Microsoft.Graph" Version="4.51.0" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.32.3" />

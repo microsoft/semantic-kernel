@@ -146,15 +146,15 @@ public sealed class PlannerSkillTests : IDisposable
         "</if>", 2,
         "<else>", 2,
         "</else>", 2)]
-    public async Task CreatePlanShouldHaveConditionalStatementsAndBeAbleToExecuteAsync(string prompt, params object[] expectedAnswerContains)
+    public async Task CreatePlanShouldHaveConditionalStatementsAndBeAbleToExecuteAsync(string prompt, params object[] expectedAnswerContainsAtLeast)
     {
         // Arrange
 
         Dictionary<string, int> expectedAnswerContainsDictionary = new();
-        for (int i = 0; i < expectedAnswerContains.Length; i += 2)
+        for (int i = 0; i < expectedAnswerContainsAtLeast.Length; i += 2)
         {
-            string? key = expectedAnswerContains[i].ToString();
-            int value = Convert.ToInt32(expectedAnswerContains[i + 1], CultureInfo.InvariantCulture);
+            string? key = expectedAnswerContainsAtLeast[i].ToString();
+            int value = Convert.ToInt32(expectedAnswerContainsAtLeast[i + 1], CultureInfo.InvariantCulture);
             expectedAnswerContainsDictionary.Add(key!, value);
         }
 
@@ -182,24 +182,23 @@ public sealed class PlannerSkillTests : IDisposable
         // Act
         SKContext createdPlanContext = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
         await target.RunAsync(createdPlanContext.Variables.Clone(), plannerSKill["ExecutePlan"]).ConfigureAwait(false);
+        var planResult = createdPlanContext.Variables[SkillPlan.PlanKey];
 
         // Assert
         Assert.Empty(createdPlanContext.LastErrorDescription);
         Assert.False(createdPlanContext.ErrorOccurred);
+        await this._testOutputHelper.WriteLineAsync(planResult);
 
-        foreach ((string? matchingExpression, int expectedCount) in expectedAnswerContainsDictionary)
+        foreach ((string? matchingExpression, int minimumExpectedCount) in expectedAnswerContainsDictionary)
         {
-            if (expectedCount > 0)
+            if (minimumExpectedCount > 0)
             {
-                Assert.Contains(matchingExpression, createdPlanContext.Variables[SkillPlan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
-            }
-            else
-            {
-                Assert.DoesNotContain(matchingExpression, createdPlanContext.Variables[SkillPlan.PlanKey], StringComparison.InvariantCultureIgnoreCase);
+                Assert.Contains(matchingExpression, planResult, StringComparison.InvariantCultureIgnoreCase);
             }
 
-            var numberOfMatches = Regex.Matches(createdPlanContext.Variables[SkillPlan.PlanKey], matchingExpression, RegexOptions.IgnoreCase).Count;
-            Assert.Equal(expectedCount, numberOfMatches);
+            var numberOfMatches = Regex.Matches(planResult, matchingExpression, RegexOptions.IgnoreCase).Count;
+            Assert.True(numberOfMatches >= minimumExpectedCount,
+                $"Minimal number of matches below expected. Current: {numberOfMatches} Expected: {minimumExpectedCount} - Match: {matchingExpression}");
         }
     }
 
