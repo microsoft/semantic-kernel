@@ -1,6 +1,6 @@
 # System setup
 
-To get started, you'll need VSCode and a local installation of Python 3.x.
+To get started, you'll need VSCode and a local installation of at least Python 3.8.
 
 You can run:
 
@@ -84,4 +84,7 @@ it will prompt you to install them).
 
 # Tests
 
-You should be able to run the example under the [tests](tests) folder.
+You should be able to run the examples under the [tests/end-to-end](tests/end-to-end/) folder.
+Run pytests with the following:
+
+    poetry run pytest
