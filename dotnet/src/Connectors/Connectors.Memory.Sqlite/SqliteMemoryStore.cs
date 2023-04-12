@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -89,29 +90,7 @@ public class SqliteMemoryStore : IMemoryStore
         await using (var connection = new SqliteConnection(this._dbConnectionString))
         {
             await connection.OpenAsync(cancel);
-            record.Key = record.Metadata.Id;
-
-            // Update
-            await this._dbConnector.UpdateAsync(
-                conn: connection,
-                collection: collectionName,
-                key: record.Key,
-                metadata: record.GetSerializedMetadata(),
-                embedding: JsonSerializer.Serialize(record.Embedding),
-                timestamp: ToTimestampString(record.Timestamp),
-                cancel: cancel);
-
-            // Insert if entry does not exists
-            await this._dbConnector.InsertOrIgnoreAsync(
-                conn: connection,
-                collection: collectionName,
-                key: record.Key,
-                metadata: record.GetSerializedMetadata(),
-                embedding: JsonSerializer.Serialize(record.Embedding),
-                timestamp: ToTimestampString(record.Timestamp),
-                cancel: cancel);
-
-            return record.Key;
+            return await this.InternalUpsertAsync(connection, collectionName, record, cancel);
         }
     }
 
@@ -124,29 +103,7 @@ public class SqliteMemoryStore : IMemoryStore
             await connection.OpenAsync(cancel);
             foreach (var record in records)
             {
-                record.Key = record.Metadata.Id;
-
-                // Update
-                await this._dbConnector.UpdateAsync(
-                    conn: connection,
-                    collection: collectionName,
-                    key: record.Key,
-                    metadata: record.GetSerializedMetadata(),
-                    embedding: JsonSerializer.Serialize(record.Embedding),
-                    timestamp: ToTimestampString(record.Timestamp),
-                    cancel: cancel);
-
-                // Insert if entry does not exists
-                await this._dbConnector.InsertOrIgnoreAsync(
-                    conn: connection,
-                    collection: collectionName,
-                    key: record.Key,
-                    metadata: record.GetSerializedMetadata(),
-                    embedding: JsonSerializer.Serialize(record.Embedding),
-                    timestamp: ToTimestampString(record.Timestamp),
-                    cancel: cancel);
-
-                yield return record.Key;
+                yield return await this.InternalUpsertAsync(connection, collectionName, record, cancel);
             }
         }
     }
@@ -157,31 +114,7 @@ public class SqliteMemoryStore : IMemoryStore
         await using (var connection = new SqliteConnection(this._dbConnectionString))
         {
             await connection.OpenAsync(cancel);
-            DatabaseEntry? entry = await this._dbConnector.ReadAsync(connection, collectionName, key, cancel);
-
-            if (entry.HasValue)
-            {
-                if (withEmbedding)
-                {
-                    return MemoryRecord.FromJson(
-                        json: entry.Value.MetadataString,
-                        JsonSerializer.Deserialize<Embedding<float>>(entry.Value.EmbeddingString),
-                        entry.Value.Key,
-                        ParseTimestamp(entry.Value.Timestamp));
-                }
-                else
-                {
-                    return MemoryRecord.FromJson(
-                        json: entry.Value.MetadataString,
-                        Embedding<float>.Empty,
-                        entry.Value.Key,
-                        ParseTimestamp(entry.Value.Timestamp));
-                }
-            }
-            else
-            {
-                return null;
-            }
+            return await this.InternalGetAsync(connection, collectionName, key, withEmbedding, cancel);
         }
     }
 
@@ -194,26 +127,10 @@ public class SqliteMemoryStore : IMemoryStore
             await connection.OpenAsync(cancel);
             foreach (var key in keys)
             {
-                DatabaseEntry? entry = await this._dbConnector.ReadAsync(connection, collectionName, key, cancel);
-
-                if (entry.HasValue)
+                var result = await this.InternalGetAsync(connection, collectionName, key, withEmbeddings, cancel);
+                if (result != null)
                 {
-                    if (withEmbeddings)
-                    {
-                        yield return MemoryRecord.FromJson(
-                            json: entry.Value.MetadataString,
-                            JsonSerializer.Deserialize<Embedding<float>>(entry.Value.EmbeddingString),
-                            entry.Value.Key,
-                            ParseTimestamp(entry.Value.Timestamp));
-                    }
-                    else
-                    {
-                        yield return MemoryRecord.FromJson(
-                            json: entry.Value.MetadataString,
-                            Embedding<float>.Empty,
-                            entry.Value.Key,
-                            ParseTimestamp(entry.Value.Timestamp));
-                    }
+                    yield return result;
                 }
                 else
                 {
@@ -343,6 +260,62 @@ public class SqliteMemoryStore : IMemoryStore
 
                 yield return record;
             }
+        }
+    }
+
+    private async Task<string> InternalUpsertAsync(SqliteConnection connection, string collectionName, MemoryRecord record, CancellationToken cancel)
+    {
+        record.Key = record.Metadata.Id;
+
+        // Update
+        await this._dbConnector.UpdateAsync(
+            conn: connection,
+            collection: collectionName,
+            key: record.Key,
+            metadata: record.GetSerializedMetadata(),
+            embedding: JsonSerializer.Serialize(record.Embedding),
+            timestamp: ToTimestampString(record.Timestamp),
+            cancel: cancel);
+
+        // Insert if entry does not exists
+        await this._dbConnector.InsertOrIgnoreAsync(
+            conn: connection,
+            collection: collectionName,
+            key: record.Key,
+            metadata: record.GetSerializedMetadata(),
+            embedding: JsonSerializer.Serialize(record.Embedding),
+            timestamp: ToTimestampString(record.Timestamp),
+            cancel: cancel);
+
+        return record.Key;
+    }
+
+    private async Task<MemoryRecord?> InternalGetAsync(SqliteConnection connection, string collectionName, string key, bool withEmbedding, CancellationToken cancel)
+    {
+        DatabaseEntry? entry = await this._dbConnector.ReadAsync(connection, collectionName, key, cancel);
+
+        if (entry.HasValue)
+        {
+            if (withEmbedding)
+            {
+                return MemoryRecord.FromJson(
+                    json: entry.Value.MetadataString,
+                    JsonSerializer.Deserialize<Embedding<float>>(entry.Value.EmbeddingString),
+                    entry.Value.Key,
+                    ParseTimestamp(entry.Value.Timestamp));
+            }
+            else
+            {
+                return MemoryRecord.FromJson(
+                    json: entry.Value.MetadataString,
+                    Embedding<float>.Empty,
+                    entry.Value.Key,
+                    ParseTimestamp(entry.Value.Timestamp));
+            }
+        }
+        else
+        {
+            return null;
         }
     }
 
