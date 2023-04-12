@@ -69,7 +69,7 @@ public sealed class PlannerSkillTests : IDisposable
         // Import all sample skills available for demonstration purposes.
         TestHelpers.ImportSampleSkills(target);
 
-        var emailSkill = target.ImportSkill(new EmailSkill());
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         var plannerSKill = target.ImportSkill(new PlannerSkill(target));
 

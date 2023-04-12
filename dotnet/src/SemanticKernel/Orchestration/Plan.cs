@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// Standard Semantic Kernel callable plan.
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
-public sealed class Plan : ISKFunction
+public class Plan : ISKFunction
 {
     /// <summary>
     /// State of the plan
@@ -36,9 +36,7 @@ public sealed class Plan : ISKFunction
     [JsonPropertyName("named_parameters")]
     public ContextVariables NamedParameters { get; set; } = new();
 
-    public bool HasNextStep => this.NextStep < this.Steps.Count;
-
-    public int NextStep { get; private set; } = 0;
+    public bool HasNextStep => this.NextStepIndex.HasValue && this.NextStepIndex < this.Steps.Count;
 
     #region ISKFunction implementation
 
@@ -82,17 +80,7 @@ public sealed class Plan : ISKFunction
     /// <param name="steps">The steps to add.</param>
     public Plan(string goal, params ISKFunction[] steps) : this(goal)
     {
-        this.AddStep(steps);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Plan"/> class with a goal description and steps.
-    /// </summary>
-    /// <param name="goal">The goal of the plan used as description.</param>
-    /// <param name="steps">The steps to add.</param>
-    public Plan(string goal, params Plan[] steps) : this(goal)
-    {
-        this.AddStep(steps);
+        this.AddSteps(steps);
     }
 
     /// <summary>
@@ -105,25 +93,13 @@ public sealed class Plan : ISKFunction
     }
 
     /// <summary>
-    /// Adds one or more existing plans to the end of the current plan as steps.
-    /// </summary>
-    /// <param name="steps">The plans to add as steps to the current plan.</param>
-    /// <remarks>
-    /// When you add a plan as a step to the current plan, the steps of the added plan are executed after the steps of the current plan have completed.
-    /// </remarks>
-    public void AddStep(params Plan[] steps)
-    {
-        this.Steps.AddRange(steps);
-    }
-
-    /// <summary>
     /// Adds one or more new steps to the end of the current plan.
     /// </summary>
     /// <param name="steps">The steps to add to the current plan.</param>
     /// <remarks>
     /// When you add a new step to the current plan, it is executed after the previous step in the plan has completed. Each step can be a function call or another plan.
     /// </remarks>
-    public void AddStep(params ISKFunction[] steps)
+    public void AddSteps(params ISKFunction[] steps)
     {
         foreach (var step in steps)
         {
@@ -197,13 +173,7 @@ public sealed class Plan : ISKFunction
                 var functionContext = context;
                 // Loop through State and add anything missing to functionContext
 
-                foreach (var item in this.State)
-                {
-                    if (!functionContext.Variables.ContainsKey(item.Key))
-                    {
-                        functionContext.Variables.Set(item.Key, item.Value);
-                    }
-                }
+                AddVariablesToContext(this.State, context);
 
                 await this.InvokeNextStepAsync(functionContext);
 
@@ -250,7 +220,7 @@ public sealed class Plan : ISKFunction
     {
         if (this.HasNextStep)
         {
-            var step = this.Steps[this.NextStep];
+            var step = this.Steps[this.NextStepIndex!.Value];
 
             context = await step.InvokeAsync(context);
 
@@ -260,14 +230,14 @@ public sealed class Plan : ISKFunction
                     $"Error occurred while running plan step: {context.LastErrorDescription}", context.LastException);
             }
 
-            this.NextStep++;
+            this.NextStepIndex++;
             this.State.Update(context.Result.Trim());
         }
 
         return this;
     }
 
-    public void SetFunction(ISKFunction function)
+    protected void SetFunction(ISKFunction function)
     {
         this.Function = function;
         this.Name = function.Name;
@@ -277,5 +247,18 @@ public sealed class Plan : ISKFunction
         this.RequestSettings = function.RequestSettings;
     }
 
-    private ISKFunction? Function { get; set; } = null;
+    protected int? NextStepIndex { get; private set; } = null;
+
+    protected ISKFunction? Function { get; set; } = null;
+
+    private static void AddVariablesToContext(ContextVariables vars, SKContext context)
+    {
+        foreach (var item in vars)
+        {
+            if (!context.Variables.ContainsKey(item.Key))
+            {
+                context.Variables.Set(item.Key, item.Value);
+            }
+        }
+    }
 }
