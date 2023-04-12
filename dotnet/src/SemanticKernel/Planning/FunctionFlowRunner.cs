@@ -45,6 +45,11 @@ internal class FunctionFlowRunner
     internal const string ConditionElseTag = "else";
 
     /// <summary>
+    /// The tag name used in the plan xml for a conditional check
+    /// </summary>
+    internal const string ConditionWhileTag = "while";
+
+    /// <summary>
     /// The attribute tag used in the plan xml for setting the context variable name to set the output of a function to.
     /// </summary>
     internal const string SetContextVariableTag = "setContextVariable";
@@ -188,6 +193,26 @@ internal class FunctionFlowRunner
                     }
                 }
 
+                if (processFunctions && o2.Name.StartsWith(ConditionWhileTag, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    context.Log.LogTrace("{0}: found WHILE tag node", parentNodeName);
+                    var whileContent = o2.OuterXml;
+
+                    var functionVariables = context.Variables.Clone();
+                    functionVariables.Update(whileContent);
+
+                    var branchWhile = await this._conditionalFlowHelper.WhileAsync(whileContent,
+                        new SKContext(functionVariables, this._kernel.Memory, this._kernel.Skills, this._kernel.Log,
+                            context.CancellationToken));
+
+                    _ = stepAndTextResults.Append(INDENT).AppendLine(branchWhile);
+
+                    processFunctions = false;
+
+                    // We need to continue so we don't ignore any next siblings to while tag
+                    continue;
+                }
+
                 if (processFunctions && o2.Name.StartsWith(ConditionIfTag, StringComparison.InvariantCultureIgnoreCase))
                 {
                     context.Log.LogTrace("{0}: found IF tag node", parentNodeName);
@@ -204,7 +229,7 @@ internal class FunctionFlowRunner
                     }
 
                     var functionVariables = context.Variables.Clone();
-                    functionVariables.Set("INPUT", ifFullContent);
+                    functionVariables.Update(ifFullContent);
 
                     var branchIfOrElse = await this._conditionalFlowHelper.IfAsync(ifFullContent,
                         new SKContext(functionVariables, this._kernel.Memory, this._kernel.Skills, this._kernel.Log,
@@ -214,7 +239,7 @@ internal class FunctionFlowRunner
 
                     processFunctions = false;
 
-                    // We need to continue so we don't ignore any next siblings (If or Function) 
+                    // We need to continue so we don't ignore any next siblings
                     continue;
                 }
 

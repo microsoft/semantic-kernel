@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -126,6 +125,59 @@ public class FunctionFlowRunnerTests
     /// <param name="expectedPlanOutput">Expected plan output</param>
     /// <param name="conditionResult">Condition result</param>
     /// <returns>Unit test result</returns>
+    private async Task ItExecuteXmlPlanAsyncAndReturnsAsExpectedAsync(string inputPlanSpec, string expectedPlanOutput, bool? conditionResult = null)
+    {
+        // Arrange
+        var kernelMock = this.CreateKernelMock(out _, out var skillMock, out _);
+        var kernel = kernelMock.Object;
+        var mockFunction = new Mock<ISKFunction>();
+
+        var ifStructureResultContext = this.CreateSKContext(kernel);
+        ifStructureResultContext.Variables.Update("{\"valid\": true}");
+
+        var evaluateConditionResultContext = this.CreateSKContext(kernel);
+        evaluateConditionResultContext.Variables.Update($"{{\"valid\": true, \"condition\": {((conditionResult ?? false) ? "true" : "false")}}}");
+
+        mockFunction.Setup(f => f.InvokeAsync(It.Is<string>(i => i.StartsWith("<if")),
+                It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(),
+                It.IsAny<ILogger?>(),
+                It.IsAny<CancellationToken?>()))
+            .ReturnsAsync(ifStructureResultContext);
+
+        mockFunction.Setup(f => f.InvokeAsync(It.Is<string>(i => i.StartsWith("$a equals b")),
+                It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(),
+                It.IsAny<ILogger?>(),
+                It.IsAny<CancellationToken?>()))
+            .ReturnsAsync(evaluateConditionResultContext);
+
+        skillMock.Setup(s => s.HasSemanticFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+        skillMock.Setup(s => s.GetSemanticFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
+        kernelMock.Setup(k => k.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<ISKFunction>())).ReturnsAsync(this.CreateSKContext(kernel));
+        kernelMock.Setup(k => k.RegisterSemanticFunction(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SemanticFunctionConfig>()))
+            .Returns(mockFunction.Object);
+
+        var target = new FunctionFlowRunner(kernel);
+
+        SKContext? result = null;
+        // Act
+        result = await target.ExecuteXmlPlanAsync(this.CreateSKContext(kernel), inputPlanSpec);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(result.ErrorOccurred);
+        Assert.True(result.Variables.ContainsKey(SkillPlan.PlanKey));
+        Assert.Equal(
+            NormalizeSpacesBeforeFunctions(expectedPlanOutput),
+            NormalizeSpacesBeforeFunctions(result.Variables[SkillPlan.PlanKey]));
+
+        // Removes line breaks and spaces before <function, <if, </if, <else, </else, <while, </while, </plan
+        string NormalizeSpacesBeforeFunctions(string input)
+        {
+            return Regex.Replace(input, @"\s+(?=<function|<[/]*if|<[/]*else|<[/]*while|</plan)", string.Empty, RegexOptions.IgnoreCase)
+                .Replace("\n", string.Empty, System.StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
     [Theory]
     [InlineData(
         "<goal>Some goal</goal><plan></plan>",
@@ -136,6 +188,12 @@ public class FunctionFlowRunnerTests
     [InlineData(
         "<goal>Some goal</goal><plan><function.SkillA.FunctionB /><function.SkillA.FunctionC /></plan>",
         "<goal>Some goal</goal><plan>  <function.SkillA.FunctionC /></plan>")]
+    public async Task ItExecuteXmlStepPlanAsyncAndReturnsAsExpectedAsync(string inputPlanSpec, string expectedPlanOutput, bool? conditionResult = null)
+    {
+        await this.ItExecuteXmlPlanAsyncAndReturnsAsExpectedAsync(inputPlanSpec, expectedPlanOutput, conditionResult);
+    }
+
+    [Theory]
     [InlineData(
         @"<goal>Some goal</goal>
 <plan>
@@ -264,57 +322,145 @@ public class FunctionFlowRunnerTests
 <plan>
   <function.SkillB.FunctionH />
 </plan>", false)]
-    public async Task ItExecuteXmlPlanAsyncAndReturnsAsExpectedAsync(string inputPlanSpec, string expectedPlanOutput, bool? conditionResult = null)
+    public async Task ItExecuteXmlIfPlanAsyncAndReturnsAsExpectedAsync(string inputPlanSpec, string expectedPlanOutput, bool? conditionResult = null)
     {
-        // Arrange
-        var kernelMock = this.CreateKernelMock(out _, out var skillMock, out _);
-        var kernel = kernelMock.Object;
-        var mockFunction = new Mock<ISKFunction>();
+        await this.ItExecuteXmlPlanAsyncAndReturnsAsExpectedAsync(inputPlanSpec, expectedPlanOutput, conditionResult);
+    }
 
-        var ifStructureResultContext = this.CreateSKContext(kernel);
-        ifStructureResultContext.Variables.Update("{\"valid\": true}");
-
-        var evaluateConditionResultContext = this.CreateSKContext(kernel);
-        evaluateConditionResultContext.Variables.Update($"{{\"valid\": true, \"condition\": {((conditionResult ?? false) ? "true" : "false")}}}");
-
-        mockFunction.Setup(f => f.InvokeAsync(It.Is<string>(i => i.StartsWith("<if")),
-                It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(),
-                It.IsAny<ILogger?>(),
-                It.IsAny<CancellationToken?>()))
-            .ReturnsAsync(ifStructureResultContext);
-
-        mockFunction.Setup(f => f.InvokeAsync(It.Is<string>(i => i.StartsWith("$a equals b")),
-                It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(),
-                It.IsAny<ILogger?>(),
-                It.IsAny<CancellationToken?>()))
-            .ReturnsAsync(evaluateConditionResultContext);
-
-        skillMock.Setup(s => s.HasSemanticFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
-        skillMock.Setup(s => s.GetSemanticFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
-        kernelMock.Setup(k => k.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<ISKFunction>())).ReturnsAsync(this.CreateSKContext(kernel));
-        kernelMock.Setup(k => k.RegisterSemanticFunction(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SemanticFunctionConfig>()))
-            .Returns(mockFunction.Object);
-
-        var target = new FunctionFlowRunner(kernel);
-
-        SKContext? result = null;
-        // Act
-        result = await target.ExecuteXmlPlanAsync(this.CreateSKContext(kernel), inputPlanSpec);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.False(result.ErrorOccurred);
-        Assert.True(result.Variables.ContainsKey(SkillPlan.PlanKey));
-        Assert.Equal(
-            NormalizeSpacesBeforeFunctions(expectedPlanOutput),
-            NormalizeSpacesBeforeFunctions(result.Variables[SkillPlan.PlanKey]));
-
-        // Removes line breaks and spaces before <function, <if, </if, <else, </else, </plan
-        string NormalizeSpacesBeforeFunctions(string input)
-        {
-            return Regex.Replace(input, @"\s+(?=<function|<[/]*if|<[/]*else|</plan)", string.Empty, RegexOptions.IgnoreCase)
-                .Replace("\n", string.Empty, StringComparison.OrdinalIgnoreCase);
-        }
+    [Theory]
+    [InlineData(
+        @"<goal>Some goal</goal>
+<plan>
+  <function.SkillA.FunctionB />
+  <function.SkillA.FunctionC />
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+  </while>
+</plan>",
+        @"<goal>Some goal</goal>
+<plan>
+  <function.SkillA.FunctionC />
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+  </while>
+</plan>")]
+    [InlineData(
+        @"<goal>Some goal</goal>
+<plan>
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+  </while>
+</plan>",
+        @"<goal>Some goal</goal>
+<plan>
+  <function.SkillA.FunctionD />
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+  </while>
+</plan>", true)]
+    [InlineData(
+        @"<goal>Some goal</goal>
+<plan>
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+  </while>
+</plan>",
+        @"<goal>Some goal</goal>
+<plan>
+</plan>", false)]
+    [InlineData(
+        @"<goal>Some goal</goal>
+<plan>
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+  </while>
+  <function.SkillX.FunctionW />
+</plan>",
+        @"<goal>Some goal</goal>
+<plan>
+  <function.SkillX.FunctionW />
+</plan>", false)]
+    [InlineData(
+        @"<goal>Some goal</goal>
+<plan>
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+  </while>
+  <function.SkillB.FunctionH />
+  <if condition=""$b equals c"">
+    <function.SkillD.FunctionG />
+  </if>
+</plan>",
+        @"<goal>Some goal</goal>
+<plan>
+  <function.SkillA.FunctionD />
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+  </while>
+  <function.SkillB.FunctionH />
+  <if condition=""$b equals c"">
+    <function.SkillD.FunctionG />
+  </if>
+</plan>", true)]
+    [InlineData(
+        @"<goal>Some goal</goal>
+<plan>
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+  </while>
+  <function.SkillB.FunctionH />
+  <if condition=""$b equals c"">
+    <function.SkillD.FunctionG />
+  </if>
+</plan>",
+        @"<goal>Some goal</goal>
+<plan>
+  <function.SkillB.FunctionH />
+  <if condition=""$b equals c"">
+    <function.SkillD.FunctionG />
+  </if>
+</plan>", false)]
+    [InlineData(
+        @"<goal>Some goal</goal>
+<plan>
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+    <if condition=""$b equals c"">
+      <function.SkillD.FunctionG />
+    </if>
+  </while>
+</plan>",
+        @"<goal>Some goal</goal>
+<plan>
+  <function.SkillA.FunctionD />
+  <if condition=""$b equals c"">
+    <function.SkillD.FunctionG />
+  </if>
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+    <if condition=""$b equals c"">
+      <function.SkillD.FunctionG />
+    </if>
+  </while>
+</plan>", true)]
+    [InlineData(
+        @"<goal>Some goal</goal>
+<plan>
+  <while condition=""$a equals b"">
+    <function.SkillA.FunctionD />
+    <if condition=""$b equals c"">
+      <function.SkillD.FunctionG />
+    </if>
+  </while>
+  <function.SkillB.FunctionH />
+</plan>",
+        @"<goal>Some goal</goal>
+<plan>
+  <function.SkillB.FunctionH />
+</plan>", false)]
+    public async Task ItExecuteXmlWhilePlanAsyncAndReturnsAsExpectedAsync(string inputPlanSpec, string expectedPlanOutput, bool? conditionResult = null)
+    {
+        await this.ItExecuteXmlPlanAsyncAndReturnsAsExpectedAsync(inputPlanSpec, expectedPlanOutput, conditionResult);
     }
 
     private SKContext CreateSKContext(
