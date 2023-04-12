@@ -216,7 +216,7 @@ def _split_str(
         input_was_split = has_split1 or has_split2
     else:
         return text_as_is, input_was_split
-    
+
     return lines, input_was_split
 
 
