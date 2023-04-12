@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -175,7 +174,7 @@ public class ConditionalFlowHelper
         foreach (Match foundVariable in foundVariables)
         {
             // Return the variables without the $
-            yield return foundVariable.Value[1..];
+            yield return foundVariable.Value.Substring(1);
         }
     }
 
@@ -273,12 +272,12 @@ public class ConditionalFlowHelper
     /// <exception cref="ConditionException">Throws if cannot find a Json result or any of the required properties</exception>
     private JsonNode GetLlmResponseAsJsonWithProperties(string llmResponse, params string[] requiredProperties)
     {
-        var startIndex = llmResponse?.IndexOf('{', StringComparison.InvariantCultureIgnoreCase) ?? -1;
+        var startIndex = llmResponse?.IndexOf('{') ?? -1;
         JsonNode? response = null;
 
         if (startIndex > -1)
         {
-            var jsonResponse = llmResponse![startIndex..];
+            var jsonResponse = llmResponse!.Substring(startIndex);
             response = JsonSerializer.Deserialize<JsonNode>(jsonResponse);
 
             foreach (string requiredProperty in requiredProperties)

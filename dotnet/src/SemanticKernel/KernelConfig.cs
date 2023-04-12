@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
@@ -322,12 +323,12 @@ public sealed class KernelConfig
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
     public string GetTextCompletionServiceIdOrDefault(string? serviceId = null)
     {
-        if (string.IsNullOrEmpty(serviceId) || !this.TextCompletionServices.ContainsKey(serviceId))
+        if (serviceId.IsNullOrEmpty() || !this.TextCompletionServices.ContainsKey(serviceId!))
         {
             serviceId = this.DefaultTextCompletionServiceId;
         }
 
-        if (string.IsNullOrEmpty(serviceId))
+        if (serviceId.IsNullOrEmpty()) // Explicit null check for netstandard2.0
         {
             throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text completion service not available");
         }
@@ -343,12 +344,12 @@ public sealed class KernelConfig
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
     public string GetChatCompletionServiceIdOrDefault(string? serviceId = null)
     {
-        if (string.IsNullOrEmpty(serviceId) || !this.ChatCompletionServices.ContainsKey(serviceId))
+        if (serviceId.IsNullOrEmpty() || !this.ChatCompletionServices.ContainsKey(serviceId!))
         {
             serviceId = this.DefaultChatCompletionServiceId;
         }
 
-        if (string.IsNullOrEmpty(serviceId))
+        if (serviceId.IsNullOrEmpty()) // Explicit null check for netstandard2.0
         {
             throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Chat completion service not available");
         }
@@ -364,12 +365,12 @@ public sealed class KernelConfig
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
     public string GetTextEmbeddingGenerationServiceIdOrDefault(string? serviceId = null)
     {
-        if (string.IsNullOrEmpty(serviceId) || !this.TextEmbeddingGenerationServices.ContainsKey(serviceId))
+        if (serviceId.IsNullOrEmpty() || !this.TextEmbeddingGenerationServices.ContainsKey(serviceId!))
         {
             serviceId = this.DefaultTextEmbeddingGenerationServiceId;
         }
 
-        if (string.IsNullOrEmpty(serviceId))
+        if (serviceId.IsNullOrEmpty())
         {
             throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text embedding generation service not available");
         }
@@ -385,12 +386,12 @@ public sealed class KernelConfig
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
     public string GetImageGenerationServiceIdOrDefault(string? serviceId = null)
     {
-        if (string.IsNullOrEmpty(serviceId) || !this.ImageGenerationServices.ContainsKey(serviceId))
+        if (serviceId.IsNullOrEmpty() || !this.ImageGenerationServices.ContainsKey(serviceId!))
         {
             serviceId = this.DefaultImageGenerationServiceId;
         }
 
-        if (string.IsNullOrEmpty(serviceId))
+        if (serviceId.IsNullOrEmpty())
         {
             throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Image generation service not available");
         }

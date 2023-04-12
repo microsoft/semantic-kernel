@@ -103,7 +103,7 @@ internal class RestApiOperation
 
         path = this.AddQueryString(path, arguments);
 
-        //Override defined server url - https://api.example.com/v1 by the one from arguments. 
+        //Override defined server url - https://api.example.com/v1 by the one from arguments.
         if (!arguments.TryGetValue(ServerUrlArgumentName, out var serverUrl))
         {
             serverUrl = this.ServerUrl;
@@ -161,7 +161,7 @@ internal class RestApiOperation
             }
 
             //Using default value.
-            headers.Add(headerName, headerMetadata.DefaultValue);
+            headers.Add(headerName, headerMetadata.DefaultValue!);
         }
 
         return headers;
@@ -187,7 +187,7 @@ internal class RestApiOperation
                 return value;
             }
 
-            //A try to find default value for the parameter            
+            //A try to find default value for the parameter
             var parameterMetadata = this.Parameters.First(p => p.Location == RestApiOperationParameterLocation.Path && p.Name == parameterName);
             if (parameterMetadata?.DefaultValue == null)
             {
@@ -234,7 +234,7 @@ internal class RestApiOperation
             }
         }
 
-        var queryString = string.Join('&', queryStringSegments);
+        var queryString = string.Join("&", queryStringSegments);
 
         return string.IsNullOrEmpty(queryString) ? path : $"{path}?{queryString}";
     }
