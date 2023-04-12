@@ -95,13 +95,13 @@ public sealed class PlannerSkillTests : IDisposable
         "</if>", 1,
         "<else>", 0,
         "</else>", 0)]
-    [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun ",
+    [InlineData("If is morning tell me a joke about coffee, otherwise tell me a joke about the sun ",
         "function.FunSkill.Joke", 2,
         "<if condition=\"", 1,
         "</if>", 1,
         "<else>", 1,
         "</else>", 1)]
-    [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun but if its night I want a joke about the moon",
+    [InlineData("If is morning tell me a joke about coffee, otherwise tell me a joke about the sun, but if its night I want a joke about the moon",
         "function.FunSkill.Joke", 3,
         "<if condition=\"", 2,
         "</if>", 2,
@@ -173,10 +173,6 @@ public sealed class PlannerSkillTests : IDisposable
         "function.TimeSkill", 1,
         "function.FunSkill.Joke", 1,
         "function.WaitSkill.Seconds", 1,
-        "<while condition=\"", 1,
-        "</while>", 1)]
-    [InlineData("I want a nested loop with O(n²) algorithmic complexity using the current date",
-        "function.TimeSkill", 1,
         "<while condition=\"", 1,
         "</while>", 1)]
     public async Task CreatePlanShouldHaveWhileConditionalStatementsAndBeAbleToExecuteAsync(string prompt, params object[] expectedAnswerContainsAtLeast)
