@@ -8,6 +8,13 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main", "feature*" ]
+  pull_request:
+    branches: [ "main", "feature*" ]
+    paths:
+      - "**.cs"
+      - "**.csproj"
+      - "**.editorconfig"
+      - "dotnet/**"
 
 permissions:
   contents: read

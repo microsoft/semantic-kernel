@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime;
+using System.Reflection;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Xunit;
 
@@ -70,8 +70,8 @@ public class FunctionsViewTests
             .AddFunction(new FunctionView("f1", "s1", "", new List<ParameterView>(), false));
 
         // Assert
-        Assert.Throws<AmbiguousImplementationException>(() => target.IsSemantic("s1", "f1"));
-        Assert.Throws<AmbiguousImplementationException>(() => target.IsNative("s1", "f1"));
+        Assert.Throws<AmbiguousMatchException>(() => target.IsSemantic("s1", "f1"));
+        Assert.Throws<AmbiguousMatchException>(() => target.IsNative("s1", "f1"));
     }
 
     [Fact]
