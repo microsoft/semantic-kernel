@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI.ChatCompletion;
 
@@ -20,7 +21,7 @@ public class OpenAIChatHistory : ChatHistory
     /// <param name="assistantInstructions">Optional instructions for the assistant</param>
     public OpenAIChatHistory(string? assistantInstructions = null)
     {
-        if (!string.IsNullOrWhiteSpace(assistantInstructions))
+        if (!assistantInstructions.IsNullOrWhitespace())
         {
             this.AddSystemMessage(assistantInstructions);
         }
