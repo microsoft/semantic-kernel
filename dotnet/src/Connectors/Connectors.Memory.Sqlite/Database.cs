@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Data.Sqlite;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 
@@ -23,7 +22,7 @@ internal static class Database
 
     public static async Task<SqliteConnection> CreateConnectionAsync(string filename, CancellationToken cancel = default)
     {
-        var connection = new SqliteConnection(@"Data Source={filename};");
+        var connection = new SqliteConnection($"Data Source={filename};");
         await connection.OpenAsync(cancel);
         await CreateTableAsync(connection, cancel);
         return connection;
