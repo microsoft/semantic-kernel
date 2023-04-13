@@ -152,12 +152,12 @@ public class PlannerSkill
     }
 
     /// <summary>
-    /// Given an output of a function, parse the output into a number of buckets.
+    /// When the output of a function is too big, parse the output into a number of buckets.
     /// </summary>
     /// <param name="input"> The input from a function that needs to be parsed into buckets. </param>
     /// <param name="context"> The context to use </param>
     /// <returns> The context with the bucketed results </returns>
-    [SKFunction("Given an output of a function, parse the output into a number of buckets.")]
+    [SKFunction("When the output of a function is too big, parse the output into a number of buckets.")]
     [SKFunctionName("BucketOutputs")]
     [SKFunctionInput(Description = "The output from a function that needs to be parse into buckets.")]
     [SKFunctionContextParameter(Name = Parameters.BucketCount, Description = "The number of buckets.", DefaultValue = "")]

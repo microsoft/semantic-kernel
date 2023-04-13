@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
@@ -110,5 +111,24 @@ public class TextSkill
     public string Length(string text)
     {
         return (text?.Length ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Concatenate two strings into one
+    /// </summary>
+    /// <example>
+    /// text = "HELLO "
+    /// SKContext["input2"] = "WORLD"
+    /// Result: "HELLO WORLD"
+    /// </example>
+    /// <param name="text"> The string to get length. </param>
+    /// <param name="context">Context where the input2 value will be retrieved</param>
+    /// <returns>Concatenation result from both inputs.</returns>
+    [SKFunction("Concat two strings into one.")]
+    [SKFunctionInput(Description = "First input to concatenate with")]
+    [SKFunctionContextParameter(Name = "input2", Description = "Second input to concatenate with")]
+    public string Concat(string text, SKContext context)
+    {
+        return string.Concat(text, context["input2"]);
     }
 }
