@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 
