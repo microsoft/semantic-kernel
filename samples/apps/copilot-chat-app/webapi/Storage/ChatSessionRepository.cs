@@ -4,9 +4,9 @@ using SKWebApi.Storage;
 
 namespace SKWebApi.Skills;
 
-public class ChatRepository : Repository<ChatSession>
+public class ChatSessionRepository : Repository<ChatSession>
 {
-    public ChatRepository(IStorageContext<ChatSession> storageContext)
+    public ChatSessionRepository(IStorageContext<ChatSession> storageContext)
         : base(storageContext)
     { }
 

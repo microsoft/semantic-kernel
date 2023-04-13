@@ -22,13 +22,13 @@ public class ChatSkill
     /// </summary>
     private readonly IKernel _kernel;
     private readonly ChatMessageRepository _chatMessageRepository;
-    private readonly ChatRepository _chatRepository;
+    private readonly ChatSessionRepository _chatSessionRepository;
 
-    public ChatSkill(IKernel kernel, ChatMessageRepository chatMessageRepository, ChatRepository chatRepository)
+    public ChatSkill(IKernel kernel, ChatMessageRepository chatMessageRepository, ChatSessionRepository chatSessionRepository)
     {
         this._kernel = kernel;
         this._chatMessageRepository = chatMessageRepository;
-        this._chatRepository = chatRepository;
+        this._chatSessionRepository = chatSessionRepository;
     }
 
     /// <summary>
@@ -249,7 +249,7 @@ public class ChatSkill
     private async Task SaveNewMessageAsync(string message, string userId, string userName, string chatId)
     {
         // Make sure the chat exists.
-        await this._chatRepository.FindById(chatId);
+        await this._chatSessionRepository.FindById(chatId);
 
         var chatMessage = new ChatMessage(userId, userName, chatId, message);
         await this._chatMessageRepository.Create(chatMessage);
@@ -263,7 +263,7 @@ public class ChatSkill
     private async Task SaveNewResponseAsync(string response, string chatId)
     {
         // Make sure the chat exists.
-        await this._chatRepository.FindById(chatId);
+        await this._chatSessionRepository.FindById(chatId);
 
         var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response);
         await this._chatMessageRepository.Create(chatMessage);

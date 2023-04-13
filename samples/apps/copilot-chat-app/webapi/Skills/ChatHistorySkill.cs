@@ -20,14 +20,14 @@ public class ChatHistorySkill
     public static string MessageCollectionName(string chatId) => $"{chatId}-messages";
 
     private readonly ChatMessageRepository _chatMessageRepository;
-    private readonly ChatRepository _chatRepository;
+    private readonly ChatSessionRepository _chatSessionRepository;
 
     public ChatHistorySkill(
         ChatMessageRepository chatMessageRepository,
-        ChatRepository chatRepository)
+        ChatSessionRepository chatSessionRepository)
     {
         this._chatMessageRepository = chatMessageRepository;
-        this._chatRepository = chatRepository;
+        this._chatSessionRepository = chatSessionRepository;
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public class ChatHistorySkill
 
         // Create a new chat.
         var newChat = new ChatSession(userId, title);
-        await this._chatRepository.Create(newChat);
+        await this._chatSessionRepository.Create(newChat);
 
         // Create the initial bot message.
         try
@@ -80,10 +80,10 @@ public class ChatHistorySkill
     [SKFunctionContextParameter(Name = "title", Description = "The title of the chat.")]
     public async Task EditChatAsync(string chatId, SKContext context)
     {
-        ChatSession chat = await this._chatRepository.FindById(chatId);
+        ChatSession chat = await this._chatSessionRepository.FindById(chatId);
         chat.Title = context["title"];
 
-        await this._chatRepository.Update(chat);
+        await this._chatSessionRepository.Update(chat);
     }
 
     /// <summary>
@@ -97,7 +97,7 @@ public class ChatHistorySkill
     [SKFunctionInput(Description = "The user id")]
     public async Task<SKContext> GetAllChatsAsync(string userId, SKContext context)
     {
-        var chats = await this._chatRepository.FindByUserId(userId);
+        var chats = await this._chatSessionRepository.FindByUserId(userId);
         context.Variables.Update(JsonSerializer.Serialize(chats));
 
         return context;
@@ -171,7 +171,7 @@ public class ChatHistorySkill
     private async Task SaveNewResponseAsync(string response, string chatId)
     {
         // Make sure the chat exists.
-        await this._chatRepository.FindById(chatId);
+        await this._chatSessionRepository.FindById(chatId);
 
         var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response);
         await this._chatMessageRepository.Create(chatMessage);

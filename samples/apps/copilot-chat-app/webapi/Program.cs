@@ -141,16 +141,16 @@ public static class Program
 
         // Add persistent storage
         // InMemory version
-        var chatInMemoryContext = new InMemoryContext<ChatSession>();
+        var chatSessionInMemoryContext = new InMemoryContext<ChatSession>();
         var chatMessageInMemoryContext = new InMemoryContext<ChatMessage>();
-        services.AddSingleton<ChatRepository>(new ChatRepository(chatInMemoryContext));
+        services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));
         services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
         // Comment out the above and uncomment the following to use CosmosDB as the storage context.
         // Make sure there is only one repository for each type of entity.
-        // var chatCosmosDbContext = new CosmosDbContext<Chat>("<connectionString>", "<db>", "<container>");
+        // var chatSessionCosmosDbContext = new CosmosDbContext<Chat>("<connectionString>", "<db>", "<container>");
         // var chatMessageCosmosDbContext = new CosmosDbContext<ChatMessage>("<connectionString>", "<db>", "<container>");
-        // services.AddSingleton<ChatRepository>(new ChatRepository(chatCosmosDbContext));
-        // services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatCosmosDbContext));
+        // services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionCosmosDbContext));
+        // services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageCosmosDbContext));
 
         // Each REST call gets a fresh new SK instance
         services.AddScoped<Kernel>();

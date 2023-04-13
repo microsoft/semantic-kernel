@@ -48,7 +48,7 @@ public class SemanticKernelController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AskResult>> InvokeFunctionAsync(
         [FromServices] Kernel kernel,
-        [FromServices] ChatRepository chatRepository,
+        [FromServices] ChatSessionRepository chatRepository,
         [FromServices] ChatMessageRepository chatMessageRepository,
         [FromBody] Ask ask,
         string skillName, string functionName)
