@@ -13,8 +13,5 @@
       "exit /b 1",
       "exit /b 0"
     ]
-  },
-  "default_backends": [
-    "text-davinci-003"
-  ]
+  }
 }

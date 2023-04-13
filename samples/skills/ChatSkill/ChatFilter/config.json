@@ -11,8 +11,5 @@
     "stop_sequences": [
       "</scenario>"
     ]
-  },
-  "default_backends": [
-    "text-davinci-003"
-  ]
+  }
 }

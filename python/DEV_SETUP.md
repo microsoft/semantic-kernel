@@ -1,6 +1,6 @@
 # System setup
 
-To get started, you'll need VSCode and a local installation of Python 3.x.
+To get started, you'll need VSCode and a local installation of at least Python 3.8.
 
 You can run:
 
@@ -69,7 +69,7 @@ running samples in the repo and developing apps using Python SK.
 
     poetry shell
 
-To run the same checks that are run during the Azure Pipelines build, you can run:
+To run style checks, you can run:
 
     poetry run pre-commit run -c .conf/.pre-commit-config.yaml -a
 
@@ -84,4 +84,7 @@ it will prompt you to install them).
 
 # Tests
 
-You should be able to run the example under the [tests](tests) folder.
+You should be able to run the examples under the [tests/end-to-end](tests/end-to-end/) folder.
+Run pytests with the following:
+
+    poetry run pytest
