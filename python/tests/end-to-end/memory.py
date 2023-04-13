@@ -156,3 +156,11 @@ if __name__ == "__main__":
 
     chroma_memory_storage = sk.memory.ChromaMemoryStore()
     asyncio.run(main(chroma_memory_storage))
+
+    def test_compute_similarity_scores_func(query_embedding, documents_embeddings):
+        return [[(i + 7) / 10 for i in range(len(documents_embeddings))]]
+
+    chroma_memory_storage = sk.memory.ChromaMemoryStore(
+        compute_similarity_scores_func=test_compute_similarity_scores_func
+    )
+    asyncio.run(main(chroma_memory_storage))
