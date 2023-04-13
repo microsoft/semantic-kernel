@@ -76,13 +76,13 @@ public static class Example23_ReadOnlyMemoryStore
             throw new System.NotImplementedException();
         }
 
-        public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = default, CancellationToken cancel = default)
+        public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return Task.FromResult(this._memoryRecords?.FirstOrDefault(x => x.Key == key));
         }
 
-        public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = default, CancellationToken cancel = default)
+        public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, CancellationToken cancel = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return this._memoryRecords?.Where(x => keys.Contains(x.Key)).ToAsyncEnumerable() ?? AsyncEnumerable.Empty<MemoryRecord>();
@@ -94,7 +94,7 @@ public static class Example23_ReadOnlyMemoryStore
         }
 
         public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0,
-            bool withEmbedding = default, CancellationToken cancel = default)
+            bool withEmbedding = false, CancellationToken cancel = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return await this.GetNearestMatchesAsync(
@@ -107,7 +107,7 @@ public static class Example23_ReadOnlyMemoryStore
         }
 
         public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit,
-            double minRelevanceScore = 0, bool withEmbeddings = default, CancellationToken cancel = default)
+            double minRelevanceScore = 0, bool withEmbeddings = false, CancellationToken cancel = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             if (this._memoryRecords == null || !this._memoryRecords.Any())
