@@ -36,7 +36,7 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
-            throw new ArgumentOutOfRangeException("Invalid id.");
+            throw new ArgumentOutOfRangeException(nameof(entity.Id), "Entity Id cannot be null or empty.");
         }
 
         await this._container.CreateItemAsync(entity);
@@ -47,7 +47,7 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
-            throw new ArgumentOutOfRangeException("Invalid id.");
+            throw new ArgumentOutOfRangeException(nameof(entity.Id), "Entity Id cannot be null or empty.");
         }
 
         await this._container.DeleteItemAsync<T>(entity.Id, new PartitionKey(entity.Id));
@@ -58,7 +58,7 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
     {
         if (string.IsNullOrWhiteSpace(entityId))
         {
-            throw new ArgumentOutOfRangeException("Invalid id.");
+            throw new ArgumentOutOfRangeException(nameof(entityId), "Entity Id cannot be null or empty.");
         }
 
         try
@@ -68,7 +68,7 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            throw new ArgumentOutOfRangeException($"Entity with id {entityId} not found.");
+            throw new ArgumentOutOfRangeException(nameof(entityId), "Entity Id cannot be null or empty.");
         }
     }
 
@@ -77,7 +77,7 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
-            throw new ArgumentOutOfRangeException("Invalid id.");
+            throw new ArgumentOutOfRangeException(nameof(entity.Id), "Entity Id cannot be null or empty.");
         }
 
         await this._container.UpsertItemAsync(entity);

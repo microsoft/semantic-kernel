@@ -28,7 +28,7 @@ public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
-            throw new ArgumentOutOfRangeException("Invalid id.");
+            throw new ArgumentOutOfRangeException(nameof(entity.Id), "Entity Id cannot be null or empty.");
         }
 
         this._entities.TryAdd(entity.Id, entity);
@@ -41,7 +41,7 @@ public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
-            throw new ArgumentOutOfRangeException("Invalid id.");
+            throw new ArgumentOutOfRangeException(nameof(entity.Id), "Entity Id cannot be null or empty.");
         }
 
         this._entities.TryRemove(entity.Id, out _);
@@ -54,7 +54,7 @@ public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
     {
         if (string.IsNullOrWhiteSpace(entityId))
         {
-            throw new ArgumentOutOfRangeException("Invalid id.");
+            throw new ArgumentOutOfRangeException(nameof(entityId), "Entity Id cannot be null or empty.");
         }
 
         if (this._entities.TryGetValue(entityId, out T? entity))
@@ -72,7 +72,7 @@ public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
-            throw new ArgumentOutOfRangeException("Invalid id.");
+            throw new ArgumentOutOfRangeException(nameof(entity.Id), "Entity Id cannot be null or empty.");
         }
 
         this._entities.TryUpdate(entity.Id, entity, this._entities[entity.Id]);
