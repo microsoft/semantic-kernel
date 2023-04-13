@@ -130,7 +130,7 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = default, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
     {
         try
         {
@@ -164,7 +164,7 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = default,
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
@@ -186,7 +186,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
-    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = default, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false, CancellationToken cancel = default)
     {
         try
         {
@@ -230,7 +230,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
-    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, bool withEmbeddings = default,
+    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var vectorDataList = this._qdrantClient
@@ -319,7 +319,7 @@ public class QdrantMemoryStore : IMemoryStore
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
-        bool withEmbeddings = default,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var results = this._qdrantClient.FindNearestInCollectionAsync(
@@ -345,7 +345,7 @@ public class QdrantMemoryStore : IMemoryStore
         string collectionName,
         Embedding<float> embedding,
         double minRelevanceScore = 0,
-        bool withEmbedding = default,
+        bool withEmbedding = false,
         CancellationToken cancel = default)
     {
         var results = this.GetNearestMatchesAsync(
