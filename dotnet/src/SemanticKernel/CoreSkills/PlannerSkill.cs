@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
 
@@ -151,12 +152,12 @@ public class PlannerSkill
     }
 
     /// <summary>
-    /// Given an output of a function, parse the output into a number of buckets.
+    /// When the output of a function is too big, parse the output into a number of buckets.
     /// </summary>
     /// <param name="input"> The input from a function that needs to be parsed into buckets. </param>
     /// <param name="context"> The context to use </param>
     /// <returns> The context with the bucketed results </returns>
-    [SKFunction("Given an output of a function, parse the output into a number of buckets.")]
+    [SKFunction("When the output of a function is too big, parse the output into a number of buckets.")]
     [SKFunctionName("BucketOutputs")]
     [SKFunctionInput(Description = "The output from a function that needs to be parse into buckets.")]
     [SKFunctionContextParameter(Name = Parameters.BucketCount, Description = "The number of buckets.", DefaultValue = "")]
@@ -183,8 +184,8 @@ public class PlannerSkill
         {
             // May need additional formatting here.
             var resultString = result.Result
-                .Replace("\\n", "\n", StringComparison.InvariantCultureIgnoreCase)
-                .Replace("\n", "\\n", StringComparison.InvariantCultureIgnoreCase);
+                .Replace("\\n", "\n")
+                .Replace("\n", "\\n");
 
             var resultObject = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(resultString);
 
@@ -273,10 +274,10 @@ public class PlannerSkill
             _ = executeResultContext.Variables.Get(SkillPlan.PlanKey, out var planProgress);
             _ = executeResultContext.Variables.Get(SkillPlan.ResultKey, out var results);
 
-            var isComplete = planProgress.Contains($"<{FunctionFlowRunner.PlanTag}>", StringComparison.InvariantCultureIgnoreCase) &&
-                             !planProgress.Contains($"<{FunctionFlowRunner.FunctionTag}", StringComparison.InvariantCultureIgnoreCase);
+            var isComplete = planProgress.ContainsEx($"<{FunctionFlowRunner.PlanTag}>", StringComparison.InvariantCultureIgnoreCase) &&
+                             !planProgress.ContainsEx($"<{FunctionFlowRunner.FunctionTag}", StringComparison.InvariantCultureIgnoreCase);
             var isSuccessful = !executeResultContext.ErrorOccurred &&
-                               planProgress.Contains($"<{FunctionFlowRunner.PlanTag}>", StringComparison.InvariantCultureIgnoreCase);
+                               planProgress.ContainsEx($"<{FunctionFlowRunner.PlanTag}>", StringComparison.InvariantCultureIgnoreCase);
 
             if (string.IsNullOrEmpty(results) && isComplete && isSuccessful)
             {

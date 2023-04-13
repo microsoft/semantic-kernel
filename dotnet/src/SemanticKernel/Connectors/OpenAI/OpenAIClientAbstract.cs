@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +16,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Text;
 
@@ -246,7 +245,7 @@ public abstract class OpenAIClientAbstract : IDisposable
 
         try
         {
-            using HttpContent content = new StringContent(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json);
+            using HttpContent content = new StringContent(requestBody, Encoding.UTF8, "application/json");
             HttpResponseMessage response = await this.HTTPClient.PostAsync(url, content, cancellationToken);
 
             if (response == null)
@@ -259,58 +258,58 @@ public abstract class OpenAIClientAbstract : IDisposable
             responseJson = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                switch (response.StatusCode)
+                switch ((HttpStatusCodeType)response.StatusCode)
                 {
-                    case HttpStatusCode.BadRequest:
-                    case HttpStatusCode.MethodNotAllowed:
-                    case HttpStatusCode.NotFound:
-                    case HttpStatusCode.NotAcceptable:
-                    case HttpStatusCode.Conflict:
-                    case HttpStatusCode.Gone:
-                    case HttpStatusCode.LengthRequired:
-                    case HttpStatusCode.PreconditionFailed:
-                    case HttpStatusCode.RequestEntityTooLarge:
-                    case HttpStatusCode.RequestUriTooLong:
-                    case HttpStatusCode.UnsupportedMediaType:
-                    case HttpStatusCode.RequestedRangeNotSatisfiable:
-                    case HttpStatusCode.ExpectationFailed:
-                    case HttpStatusCode.MisdirectedRequest:
-                    case HttpStatusCode.UnprocessableEntity:
-                    case HttpStatusCode.Locked:
-                    case HttpStatusCode.FailedDependency:
-                    case HttpStatusCode.UpgradeRequired:
-                    case HttpStatusCode.PreconditionRequired:
-                    case HttpStatusCode.RequestHeaderFieldsTooLarge:
-                    case HttpStatusCode.HttpVersionNotSupported:
+                    case HttpStatusCodeType.BadRequest:
+                    case HttpStatusCodeType.MethodNotAllowed:
+                    case HttpStatusCodeType.NotFound:
+                    case HttpStatusCodeType.NotAcceptable:
+                    case HttpStatusCodeType.Conflict:
+                    case HttpStatusCodeType.Gone:
+                    case HttpStatusCodeType.LengthRequired:
+                    case HttpStatusCodeType.PreconditionFailed:
+                    case HttpStatusCodeType.RequestEntityTooLarge:
+                    case HttpStatusCodeType.RequestUriTooLong:
+                    case HttpStatusCodeType.UnsupportedMediaType:
+                    case HttpStatusCodeType.RequestedRangeNotSatisfiable:
+                    case HttpStatusCodeType.ExpectationFailed:
+                    case HttpStatusCodeType.HttpVersionNotSupported:
+                    case HttpStatusCodeType.UpgradeRequired:
+                    case HttpStatusCodeType.MisdirectedRequest:
+                    case HttpStatusCodeType.UnprocessableEntity:
+                    case HttpStatusCodeType.Locked:
+                    case HttpStatusCodeType.FailedDependency:
+                    case HttpStatusCodeType.PreconditionRequired:
+                    case HttpStatusCodeType.RequestHeaderFieldsTooLarge:
                         throw new AIException(
                             AIException.ErrorCodes.InvalidRequest,
                             $"The request is not valid, HTTP status: {response.StatusCode:G}");
 
-                    case HttpStatusCode.Unauthorized:
-                    case HttpStatusCode.Forbidden:
-                    case HttpStatusCode.ProxyAuthenticationRequired:
-                    case HttpStatusCode.UnavailableForLegalReasons:
-                    case HttpStatusCode.NetworkAuthenticationRequired:
+                    case HttpStatusCodeType.Unauthorized:
+                    case HttpStatusCodeType.Forbidden:
+                    case HttpStatusCodeType.ProxyAuthenticationRequired:
+                    case HttpStatusCodeType.UnavailableForLegalReasons:
+                    case HttpStatusCodeType.NetworkAuthenticationRequired:
                         throw new AIException(
                             AIException.ErrorCodes.AccessDenied,
                             $"The request is not authorized, HTTP status: {response.StatusCode:G}");
 
-                    case HttpStatusCode.RequestTimeout:
+                    case HttpStatusCodeType.RequestTimeout:
                         throw new AIException(
                             AIException.ErrorCodes.RequestTimeout,
                             $"The request timed out, HTTP status: {response.StatusCode:G}");
 
-                    case HttpStatusCode.TooManyRequests:
+                    case HttpStatusCodeType.TooManyRequests:
                         throw new AIException(
                             AIException.ErrorCodes.Throttling,
                             $"Too many requests, HTTP status: {response.StatusCode:G}");
 
-                    case HttpStatusCode.InternalServerError:
-                    case HttpStatusCode.NotImplemented:
-                    case HttpStatusCode.BadGateway:
-                    case HttpStatusCode.ServiceUnavailable:
-                    case HttpStatusCode.GatewayTimeout:
-                    case HttpStatusCode.InsufficientStorage:
+                    case HttpStatusCodeType.InternalServerError:
+                    case HttpStatusCodeType.NotImplemented:
+                    case HttpStatusCodeType.BadGateway:
+                    case HttpStatusCodeType.ServiceUnavailable:
+                    case HttpStatusCodeType.GatewayTimeout:
+                    case HttpStatusCodeType.InsufficientStorage:
                         throw new AIException(
                             AIException.ErrorCodes.ServiceError,
                             $"The service failed to process the request, HTTP status: {response.StatusCode:G}");

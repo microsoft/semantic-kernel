@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
@@ -56,7 +57,7 @@ internal class TemplateTokenizer
         const int MIN_CODE_BLOCK_LENGTH = EMPTY_CODE_BLOCK_LENGTH + 1;
 
         // Render NULL to ""
-        if (string.IsNullOrEmpty(text))
+        if (text.IsNullOrEmpty())
         {
             return new List<Block> { new TextBlock(string.Empty, this._log) };
         }
