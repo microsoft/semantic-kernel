@@ -356,7 +356,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// An instance of the OpenApiStreamReader class.
     /// </summary>
-    private readonly OpenApiStreamReader _openApiReader = new ();
+    private readonly OpenApiStreamReader _openApiReader = new();
 
     /// <summary>
     /// Latest supported version of OpenAPI document.

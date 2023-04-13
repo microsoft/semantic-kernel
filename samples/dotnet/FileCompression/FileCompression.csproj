@@ -1,10 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
+  </PropertyGroup>
+  <Import Project="$(RepoRoot)/dotnet/Directory.Build.targets" />
+  <Import Project="$(RepoRoot)/dotnet/Directory.Build.props" />
+  
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
