@@ -2,18 +2,29 @@
 
 namespace SKWebApi.Storage;
 
+/// <summary>
+/// A storage context that stores entities in memory.
+/// </summary>
 public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
 {
+    /// <summary>
+    /// Using a concurrent dictionary to store entities in memory.
+    /// </summary>
     private readonly ConcurrentDictionary<string, T> _entities;
 
+    /// <summary>
+    /// Initializes a new instance of the InMemoryContext class.
+    /// </summary>
     public InMemoryContext()
     {
         this._entities = new ConcurrentDictionary<string, T>();
     }
 
+    /// <inheritdoc/>
     public IQueryable<T> QueryableEntities => this._entities.Values.AsQueryable();
 
-    public Task Create(T entity)
+    /// <inheritdoc/>
+    public Task CreateAsync(T entity)
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
@@ -25,7 +36,8 @@ public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
         return Task.CompletedTask;
     }
 
-    public Task Delete(T entity)
+    /// <inheritdoc/>
+    public Task DeleteAsync(T entity)
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
@@ -37,12 +49,8 @@ public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
         return Task.CompletedTask;
     }
 
-    public Task<IEnumerable<T>> FindAll()
-    {
-        return Task.FromResult(this._entities.Values.AsEnumerable());
-    }
-
-    public Task<T> Read(string entityId)
+    /// <inheritdoc/>
+    public Task<T> ReadAsync(string entityId)
     {
         if (string.IsNullOrWhiteSpace(entityId))
         {
@@ -59,7 +67,8 @@ public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
         }
     }
 
-    public Task Update(T entity)
+    /// <inheritdoc/>
+    public Task UpdateAsync(T entity)
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {

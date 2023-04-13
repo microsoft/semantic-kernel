@@ -1,14 +1,32 @@
 ﻿namespace SKWebApi.Storage;
 
+/// <summary>
+/// Defines the basic CRUD operations for a repository.
+/// </summary>
 public interface IRepository<T> where T : IStorageEntity
 {
-    Task Create(T entity);
+    /// <summary>
+    /// Creates a new entity in the repository.
+    /// </summary>
+    /// <param name="entity">An entity of type T.</param>
+    Task CreateAsync(T entity);
 
-    Task Delete(T entity);
+    /// <summary>
+    /// Deletes an entity from the repository.
+    /// </summary>
+    /// <param name="entity">The entity to delete.</param>
+    Task DeleteAsync(T entity);
 
-    Task Update(T entity);
+    /// <summary>
+    /// Updates an entity in the repository.
+    /// </summary>
+    /// <param name="entity">The entity to be updated.</param>
+    Task UpdateAsync(T entity);
 
-    Task<T> FindById(string id);
-
-    Task<IEnumerable<T>> FindAll();
+    /// <summary>
+    /// Finds an entity by its id.
+    /// </summary>
+    /// <param name="id">Id of the entity.</param>
+    /// <returns>An entity</returns>
+    Task<T> FindByIdAsync(string id);
 }

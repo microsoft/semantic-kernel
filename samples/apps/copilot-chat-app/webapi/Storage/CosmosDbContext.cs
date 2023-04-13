@@ -2,20 +2,37 @@
 
 namespace SKWebApi.Storage;
 
+/// <summary>
+/// A storage context that stores entities in a CosmosDB container.
+/// </summary>
 public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : IStorageEntity
 {
+    /// <summary>
+    /// The CosmosDB client.
+    /// </summary>
     private readonly CosmosClient _client;
+    /// <summary>
+    /// CosmosDB container.
+    /// </summary>
     private readonly Container _container;
 
+    /// <summary>
+    /// Initializes a new instance of the CosmosDbContext class.
+    /// </summary>
+    /// <param name="connectionString">The CosmosDB connection string.</param>
+    /// <param name="database">The CosmosDB database name.</param>
+    /// <param name="container">The CosmosDB container name.</param>
     public CosmosDbContext(string connectionString, string database, string container)
     {
         this._client = new CosmosClient(connectionString);
         this._container = this._client.GetContainer(database, container);
     }
 
+    /// <inheritdoc/>
     public IQueryable<T> QueryableEntities => this._container.GetItemLinqQueryable<T>().AsQueryable();
 
-    public async Task Create(T entity)
+    /// <inheritdoc/>
+    public async Task CreateAsync(T entity)
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
@@ -25,7 +42,8 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
         await this._container.CreateItemAsync(entity);
     }
 
-    public async Task Delete(T entity)
+    /// <inheritdoc/>
+    public async Task DeleteAsync(T entity)
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
@@ -35,21 +53,8 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
         await this._container.DeleteItemAsync<T>(entity.Id, new PartitionKey(entity.Id));
     }
 
-    public async Task<IEnumerable<T>> FindAll()
-    {
-        var query = this._container.GetItemQueryIterator<T>();
-        var results = new List<T>();
-
-        while (query.HasMoreResults)
-        {
-            var response = await query.ReadNextAsync();
-            results.AddRange(response);
-        }
-
-        return results;
-    }
-
-    public async Task<T> Read(string entityId)
+    /// <inheritdoc/>
+    public async Task<T> ReadAsync(string entityId)
     {
         if (string.IsNullOrWhiteSpace(entityId))
         {
@@ -67,7 +72,8 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
         }
     }
 
-    public async Task Update(T entity)
+    /// <inheritdoc/>
+    public async Task UpdateAsync(T entity)
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {

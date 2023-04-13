@@ -49,7 +49,7 @@ public class ChatHistorySkill
 
         // Create a new chat.
         var newChat = new ChatSession(userId, title);
-        await this._chatSessionRepository.Create(newChat);
+        await this._chatSessionRepository.CreateAsync(newChat);
 
         // Create the initial bot message.
         try
@@ -80,10 +80,10 @@ public class ChatHistorySkill
     [SKFunctionContextParameter(Name = "title", Description = "The title of the chat.")]
     public async Task EditChatAsync(string chatId, SKContext context)
     {
-        ChatSession chat = await this._chatSessionRepository.FindById(chatId);
+        ChatSession chat = await this._chatSessionRepository.FindByIdAsync(chatId);
         chat.Title = context["title"];
 
-        await this._chatSessionRepository.Update(chat);
+        await this._chatSessionRepository.UpdateAsync(chat);
     }
 
     /// <summary>
@@ -97,7 +97,7 @@ public class ChatHistorySkill
     [SKFunctionInput(Description = "The user id")]
     public async Task<SKContext> GetAllChatsAsync(string userId, SKContext context)
     {
-        var chats = await this._chatSessionRepository.FindByUserId(userId);
+        var chats = await this._chatSessionRepository.FindByUserIdAsync(userId);
         context.Variables.Update(JsonSerializer.Serialize(chats));
 
         return context;
@@ -134,7 +134,7 @@ public class ChatHistorySkill
             return context;
         }
 
-        var chatMessages = await this._chatMessageRepository.FindByChatId(chatId);
+        var chatMessages = await this._chatMessageRepository.FindByChatIdAsync(chatId);
         if (startIdx > chatMessages.Count())
         {
             context.Variables.Update(JsonSerializer.Serialize<List<ChatMessage>>(new List<ChatMessage>()));
@@ -171,10 +171,10 @@ public class ChatHistorySkill
     private async Task SaveNewResponseAsync(string response, string chatId)
     {
         // Make sure the chat exists.
-        await this._chatSessionRepository.FindById(chatId);
+        await this._chatSessionRepository.FindByIdAsync(chatId);
 
         var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response);
-        await this._chatMessageRepository.Create(chatMessage);
+        await this._chatMessageRepository.CreateAsync(chatMessage);
     }
 
     /// <summary>

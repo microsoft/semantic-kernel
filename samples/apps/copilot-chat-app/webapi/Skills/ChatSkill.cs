@@ -130,7 +130,7 @@ public class ChatSkill
         // TODO: Use contextTokenLimit to determine how much of the chat history to return
         // TODO: relevant history
 
-        var messages = await this._chatMessageRepository.FindByChatId(chatId);
+        var messages = await this._chatMessageRepository.FindByChatIdAsync(chatId);
         var sortedMessages = messages.OrderByDescending(m => m.Timestamp);
 
         var remainingToken = tokenLimit;
@@ -249,10 +249,10 @@ public class ChatSkill
     private async Task SaveNewMessageAsync(string message, string userId, string userName, string chatId)
     {
         // Make sure the chat exists.
-        await this._chatSessionRepository.FindById(chatId);
+        await this._chatSessionRepository.FindByIdAsync(chatId);
 
         var chatMessage = new ChatMessage(userId, userName, chatId, message);
-        await this._chatMessageRepository.Create(chatMessage);
+        await this._chatMessageRepository.CreateAsync(chatMessage);
     }
 
     /// <summary>
@@ -263,10 +263,10 @@ public class ChatSkill
     private async Task SaveNewResponseAsync(string response, string chatId)
     {
         // Make sure the chat exists.
-        await this._chatSessionRepository.FindById(chatId);
+        await this._chatSessionRepository.FindByIdAsync(chatId);
 
         var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response);
-        await this._chatMessageRepository.Create(chatMessage);
+        await this._chatMessageRepository.CreateAsync(chatMessage);
     }
 
     /// <summary>
