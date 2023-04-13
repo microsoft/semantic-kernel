@@ -121,11 +121,11 @@ public class OneDriveConnector : ICloudDriveConnector
         response.ToHttpResponseMessage().EnsureSuccessStatusCode();
 
         string? result = (await response.GetResponseObjectAsync()).Link?.WebUrl;
-        if (result == null || string.IsNullOrWhiteSpace(result))
+        if (string.IsNullOrWhiteSpace(result))
         {
             throw new MsGraphConnectorException("Shareable file link was null or whitespace.");
         }
 
-        return result;
+        return result!;
     }
 }
