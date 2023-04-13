@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
