@@ -7,7 +7,7 @@ import React from 'react';
 import { Constants } from '../../Constants';
 import { AlertType } from '../../libs/models/AlertType';
 import { useAppDispatch } from '../../redux/app/hooks';
-import { setAlert } from '../../redux/features/app/appSlice';
+import { addAlert } from '../../redux/features/app/appSlice';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
 const log = debug(Constants.debug.root).extend('chat-input');
@@ -63,7 +63,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
             const message = `Error submitting chat input: ${(error as Error).message}`;
             log(message);
             dispatch(
-                setAlert({
+                addAlert({
                     type: AlertType.Error,
                     message,
                 }),

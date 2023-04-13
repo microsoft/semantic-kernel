@@ -1,6 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Button, Input, InputOnChangeData, Label, makeStyles, Persona, shorthands, tokens } from '@fluentui/react-components';
+import {
+    Button,
+    Input,
+    InputOnChangeData,
+    Label,
+    makeStyles,
+    Persona,
+    shorthands,
+    tokens,
+} from '@fluentui/react-components';
 import { EditRegular, Save24Regular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
@@ -16,7 +25,7 @@ const useClasses = makeStyles({
         gridTemplateRows: 'auto 1fr',
         gridTemplateAreas: "'header' 'content'",
         width: '-webkit-fill-available',
-        backgroundColor: '#F5F5F5'
+        backgroundColor: '#F5F5F5',
     },
     header: {
         ...shorthands.gridArea('header'),
@@ -72,8 +81,7 @@ export const ChatWindow: React.FC = () => {
 
     const onEdit = () => {
         if (isEditing) {
-            if (selectedId !== title) 
-                dispatch(editConversationTitle({ id: selectedId ?? '', newId: title ?? ''}));
+            if (selectedId !== title) dispatch(editConversationTitle({ id: selectedId ?? '', newId: title ?? '' }));
         }
         setIsEditing(!isEditing);
     };
@@ -85,7 +93,7 @@ export const ChatWindow: React.FC = () => {
     useEffect(() => {
         setTitle(selectedId);
         setIsEditing(false);
-    }, [selectedId])
+    }, [selectedId]);
 
     return (
         <div className={classes.root}>
@@ -98,20 +106,29 @@ export const ChatWindow: React.FC = () => {
                             avatar={{ image: { src: conversations[selectedId].botProfilePicture } }}
                             presence={{ status: 'available' }}
                         />
-                        {title && (isEditing ?
+                        {isEditing ? (
                             <Input value={title} onChange={onTitleChange} id={title} />
-                            : (
+                        ) : (
                             <Label size="large" weight="semibold">
                                 {selectedId}
-                            </Label>)
+                            </Label>
                         )}
-                        {<Button icon={isEditing ? <Save24Regular /> : <EditRegular />} appearance="transparent" onClick={onEdit} />}
+                        {
+                            <Button
+                                icon={isEditing ? <Save24Regular /> : <EditRegular />}
+                                appearance="transparent"
+                                onClick={onEdit}
+                                disabled={!title}
+                            />
+                        }
                     </div>
                 </div>
             </div>
             <div className={classes.content}>
                 <div className={classes.contentOuter}>
-                    <div className={classes.contentInner}><ChatRoom /></div>
+                    <div className={classes.contentInner}>
+                        <ChatRoom />
+                    </div>
                 </div>
             </div>
         </div>

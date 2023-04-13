@@ -5,7 +5,7 @@ import { useMsal } from '@azure/msal-react';
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import React, { useEffect } from 'react';
-import { AuthHelper } from '../libs/AuthHelper';
+import { AuthHelper } from '../../libs/auth/AuthHelper';
 
 const useClasses = makeStyles({
     root: {
