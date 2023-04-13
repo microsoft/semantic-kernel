@@ -74,7 +74,7 @@ internal class GetVectorsRequest
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreateGetRequest(
+        return HttpRequest.CreatePostRequest(
             $"/collections/{this.Collection}/points",
             payload: this);
     }

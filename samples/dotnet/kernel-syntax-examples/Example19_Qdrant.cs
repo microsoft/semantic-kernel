@@ -51,16 +51,13 @@ public static class Example19_Qdrant
         MemoryQueryResult? lookup = await kernel.Memory.GetAsync(MemoryCollectionName, "cat1");
         Console.WriteLine(lookup != null ? lookup.Metadata.Text : "ERROR: memory not found");
 
-        // TODO: Verified that the record exists. Also verified that the request being sent to Qdrant is valid according to
-        //  https://qdrant.github.io/qdrant/redoc/index.html#tag/points/operation/get_points
-        //  but the response is always 404.
-        //Console.WriteLine("== Retrieving Memories Directly From the Store ==");
-        //var memory1 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key1);
-        //var memory2 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key2);
-        //var memory3 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key3);
-        //Console.WriteLine(memory1 != null ? memory1.Metadata.Text : "ERROR: memory not found");
-        //Console.WriteLine(memory2 != null ? memory2.Metadata.Text : "ERROR: memory not found");
-        //Console.WriteLine(memory3 != null ? memory3.Metadata.Text : "ERROR: memory not found");
+        Console.WriteLine("== Retrieving Memories Directly From the Store ==");
+        var memory1 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key1);
+        var memory2 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key2);
+        var memory3 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key3);
+        Console.WriteLine(memory1 != null ? memory1.Metadata.Text : "ERROR: memory not found");
+        Console.WriteLine(memory2 != null ? memory2.Metadata.Text : "ERROR: memory not found");
+        Console.WriteLine(memory3 != null ? memory3.Metadata.Text : "ERROR: memory not found");
 
         Console.WriteLine("== Similarity Searching Memories: My favorite color is orange ==");
         var searchResults = kernel.Memory.SearchAsync(MemoryCollectionName, "My favorite color is orange", limit: 3, minRelevanceScore: 0.8);
