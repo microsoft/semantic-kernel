@@ -32,11 +32,11 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string text,
         string id,
         string? description = null,
-        string? valueString = null,
+        string? additionalMetadata = null,
         CancellationToken cancel = default)
     {
-        var embeddings = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
-        MemoryRecord data = MemoryRecord.LocalRecord(id, text, description, embeddings);
+        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
+        MemoryRecord data = MemoryRecord.LocalRecord(id: id, text: text, description: description, additionalMetadata: additionalMetadata, embedding: embedding);
 
         if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
         {
@@ -53,11 +53,12 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string externalId,
         string externalSourceName,
         string? description = null,
-        string? valueString = null,
+        string? additionalMetadata = null,
         CancellationToken cancel = default)
     {
         var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
-        var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description, embedding);
+        var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description: description,
+            additionalMetadata: additionalMetadata, embedding: embedding);
 
         if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
         {
