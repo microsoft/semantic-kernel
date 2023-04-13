@@ -9,8 +9,9 @@ import {
     Persona,
     shorthands,
     tokens,
+    Tooltip,
 } from '@fluentui/react-components';
-import { EditRegular, Save24Regular } from '@fluentui/react-icons';
+import { ArrowDownloadRegular, EditRegular, Save24Regular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -113,14 +114,24 @@ export const ChatWindow: React.FC = () => {
                                 {selectedId}
                             </Label>
                         )}
-                        {
+                        <Tooltip content="Name the chat" relationship="label">
                             <Button
                                 icon={isEditing ? <Save24Regular /> : <EditRegular />}
                                 appearance="transparent"
                                 onClick={onEdit}
                                 disabled={!title}
                             />
-                        }
+                        </Tooltip>
+                        <Tooltip content="Export a bot" relationship="label">
+                            <Button
+                                icon={<ArrowDownloadRegular />}
+                                appearance="transparent"
+                                onClick={() => {
+                                    // TODO
+                                    console.log('on export a bot');
+                                }}
+                            />
+                        </Tooltip>
                     </div>
                 </div>
             </div>
