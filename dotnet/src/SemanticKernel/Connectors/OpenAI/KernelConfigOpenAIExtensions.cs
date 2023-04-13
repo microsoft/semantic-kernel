@@ -39,8 +39,8 @@ public static class KernelConfigOpenAIExtensions
                 $"A text completion service with id '{serviceId}' already exists");
         }
 
-        ITextCompletion Factory(IKernel kernel) => new AzureTextCompletion(
-            deploymentName, endpoint, apiKey, apiVersion, kernel.Log, kernel.Config.HttpHandlerFactory);
+        ITextCompletion Factory(KernelConfig config) => new AzureTextCompletion(
+            deploymentName, endpoint, apiKey, apiVersion, config.LoggerFactory, config.HttpClientFactory);
 
         config.AddTextCompletionService(serviceId, Factory, overwrite);
 
@@ -70,8 +70,10 @@ public static class KernelConfigOpenAIExtensions
                 $"A text completion service with the id '{serviceId}' already exists");
         }
 
-        ITextCompletion Factory(IKernel kernel) => new OpenAITextCompletion(
-            modelId, apiKey, orgId, kernel.Log, kernel.Config.HttpHandlerFactory);
+
+
+        ITextCompletion Factory(KernelConfig config) => new OpenAITextCompletion(
+            modelId, apiKey, orgId, config.LoggerFactory, config.HttpClientFactory);
 
         config.AddTextCompletionService(serviceId, Factory, overwrite);
 
@@ -102,8 +104,8 @@ public static class KernelConfigOpenAIExtensions
                 $"A text embedding service with the id '{serviceId}' already exists");
         }
 
-        IEmbeddingGeneration<string, float> Factory(IKernel kernel) => new AzureTextEmbeddingGeneration(
-            deploymentName, endpoint, apiKey, apiVersion, kernel.Log, kernel.Config.HttpHandlerFactory);
+        IEmbeddingGeneration<string, float> Factory(KernelConfig config) => new AzureTextEmbeddingGeneration(
+            deploymentName, endpoint, apiKey, apiVersion, config.LoggerFactory, config.HttpClientFactory);
 
         config.AddTextEmbeddingGenerationService(serviceId, Factory, overwrite);
 
@@ -133,8 +135,8 @@ public static class KernelConfigOpenAIExtensions
                 $"A text embedding service with the id '{serviceId}' already exists");
         }
 
-        IEmbeddingGeneration<string, float> Factory(IKernel kernel) => new OpenAITextEmbeddingGeneration(
-            modelId, apiKey, orgId, kernel.Log, kernel.Config.HttpHandlerFactory);
+        IEmbeddingGeneration<string, float> Factory(KernelConfig config) => new OpenAITextEmbeddingGeneration(
+            modelId, apiKey, orgId, config.LoggerFactory, config.HttpClientFactory);
 
         config.AddTextEmbeddingGenerationService(serviceId, Factory, overwrite);
 
@@ -164,8 +166,8 @@ public static class KernelConfigOpenAIExtensions
                 $"A chat completion service with the id '{serviceId}' already exists");
         }
 
-        IChatCompletion Factory(IKernel kernel) => new OpenAIChatCompletion(
-            modelId, apiKey, orgId, kernel.Log, kernel.Config.HttpHandlerFactory);
+        IChatCompletion Factory(KernelConfig config) => new OpenAIChatCompletion(
+            modelId, apiKey, orgId, config.LoggerFactory, config.HttpClientFactory);
 
         config.AddChatCompletionService(serviceId, Factory, overwrite);
 
@@ -193,8 +195,8 @@ public static class KernelConfigOpenAIExtensions
                 $"An image generation service with the id '{serviceId}' already exists");
         }
 
-        IImageGeneration Factory(IKernel kernel) => new OpenAIImageGeneration(
-            apiKey, orgId, kernel.Log, kernel.Config.HttpHandlerFactory);
+        IImageGeneration Factory(KernelConfig config) => new OpenAIImageGeneration(
+            apiKey, orgId, config.LoggerFactory, config.HttpClientFactory);
 
         config.AddImageGenerationService(serviceId, Factory, overwrite);
 

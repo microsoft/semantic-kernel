@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -28,11 +29,15 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientAbstract, IEmbed
     /// <param name="modelId">OpenAI embedding model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">Optional OpenAI organization ID, usually required only if your account belongs to multiple organizations</param>
-    /// <param name="log">Application logger</param>
-    /// <param name="handlerFactory">Retry handler factory for HTTP requests.</param>
-    public OpenAITextEmbeddingGeneration(string modelId, string apiKey, string? organization = null, ILogger? log = null,
-        IDelegatingHandlerFactory? handlerFactory = null)
-        : base(log, handlerFactory)
+    /// <param name="logFactory">Application logger</param>
+    /// <param name="httpClientFactory">Retry handler factory for HTTP requests.</param>
+    public OpenAITextEmbeddingGeneration(
+        string modelId,
+        string apiKey,
+        string? organization = null,
+        ILoggerFactory? logFactory = null,
+        IHttpClientFactory? httpClientFactory = null)
+        : base(logFactory, httpClientFactory)
     {
         Verify.NotEmpty(modelId, "The OpenAI model ID cannot be empty");
         this._modelId = modelId;

@@ -40,7 +40,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
 
         // Act - Assert no exception occurs
@@ -52,7 +52,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
 
         // Act - Assert no exception occurs e.g. due to reflection
@@ -66,7 +66,7 @@ Solve the equation x^2 = 2.
     // {
     //     // Arrange
     //     var kernel = KernelBuilder.Create();
-    //     var factory = new Mock<Func<IKernel, ITextCompletion>>();
+    //     var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
     //     kernel.Config.AddTextCompletion("test", factory.Object, true);
     //     var plannerSkill = new PlannerSkill(kernel);
     //     var planner = kernel.ImportSkill(plannerSkill, "planner");
@@ -87,7 +87,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
@@ -109,7 +109,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         SkillPlan createdPlan = new()
@@ -137,7 +137,7 @@ Solve the equation x^2 = 2.
     // {
     //     // Arrange
     //     var kernel = KernelBuilder.Create();
-    //     var factory = new Mock<Func<IKernel, ITextCompletion>>();
+    //     var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
     //     kernel.Config.AddTextCompletion("test", factory.Object, true);
     //     var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
     //
@@ -157,7 +157,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         SkillPlan createdPlan = new()
@@ -181,7 +181,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
@@ -204,7 +204,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
@@ -234,7 +234,7 @@ Solve the equation x^2 = 2.
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -268,7 +268,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -304,7 +304,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -344,7 +344,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -387,7 +387,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -426,7 +426,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");
@@ -460,7 +460,7 @@ This is some text
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("test", factory.Object, true);
         var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
         _ = kernel.ImportSkill(new MockSkill(this._testOutputHelper), "MockSkill");

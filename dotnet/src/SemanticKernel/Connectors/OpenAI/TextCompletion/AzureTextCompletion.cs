@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -23,16 +24,16 @@ public sealed class AzureTextCompletion : AzureOpenAIClientAbstract, ITextComple
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
-    /// <param name="log">Application logger</param>
-    /// <param name="handlerFactory">Retry handler factory for HTTP requests.</param>
+    /// <param name="logFactory">Application logger</param>
+    /// <param name="httpClientFactory">Http client factory.</param>
     public AzureTextCompletion(
         string modelId,
         string endpoint,
         string apiKey,
         string apiVersion,
-        ILogger? log = null,
-        IDelegatingHandlerFactory? handlerFactory = null)
-        : base(log, handlerFactory)
+        ILoggerFactory? logFactory = null,
+        IHttpClientFactory? httpClientFactory = null)
+        : base(logFactory, httpClientFactory)
     {
         Verify.NotEmpty(modelId, "The ID cannot be empty, you must provide a Model ID or a Deployment name.");
         this._modelId = modelId;

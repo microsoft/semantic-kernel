@@ -3,6 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
@@ -20,34 +25,33 @@ namespace Microsoft.SemanticKernel;
 public sealed class KernelConfig
 {
     /// <summary>
-    /// Factory for creating HTTP handlers.
+    /// Get the service collection.
     /// </summary>
-    public IDelegatingHandlerFactory HttpHandlerFactory { get; private set; } = new DefaultHttpRetryHandlerFactory(new HttpRetryConfig());
+    public IServiceProvider Services { get; internal set; } = (new ServiceCollection()).BuildServiceProvider();
 
-    /// <summary>
-    /// Default HTTP retry configuration for built-in HTTP handler factory.
-    /// </summary>
-    public HttpRetryConfig DefaultHttpRetryConfig { get; private set; } = new();
+    public ILoggerFactory LoggerFactory => this.Services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+
+    public IHttpClientFactory? HttpClientFactory => this.Services.GetService<IHttpClientFactory>();
 
     /// <summary>
     /// Text completion service factories
     /// </summary>
-    public Dictionary<string, Func<IKernel, ITextCompletion>> TextCompletionServices { get; } = new();
+    public Dictionary<string, Func<KernelConfig, ITextCompletion>> TextCompletionServices { get; } = new();
 
     /// <summary>
     /// Chat completion service factories
     /// </summary>
-    public Dictionary<string, Func<IKernel, IChatCompletion>> ChatCompletionServices { get; } = new();
+    public Dictionary<string, Func<KernelConfig, IChatCompletion>> ChatCompletionServices { get; } = new();
 
     /// <summary>
     /// Text embedding generation service factories
     /// </summary>
-    public Dictionary<string, Func<IKernel, IEmbeddingGeneration<string, float>>> TextEmbeddingGenerationServices { get; } = new();
+    public Dictionary<string, Func<KernelConfig, IEmbeddingGeneration<string, float>>> TextEmbeddingGenerationServices { get; } = new();
 
     /// <summary>
     /// Image generation service factories
     /// </summary>
-    public Dictionary<string, Func<IKernel, IImageGeneration>> ImageGenerationServices { get; } = new();
+    public Dictionary<string, Func<KernelConfig, IImageGeneration>> ImageGenerationServices { get; } = new();
 
     /// <summary>
     /// Default text completion service.
@@ -96,7 +100,7 @@ public sealed class KernelConfig
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
     public KernelConfig AddTextCompletionService(
-        string serviceId, Func<IKernel, ITextCompletion> serviceFactory, bool overwrite = false)
+        string serviceId, Func<KernelConfig, ITextCompletion> serviceFactory, bool overwrite = false)
     {
         Verify.NotEmpty(serviceId, "The service id provided is empty");
 
@@ -126,7 +130,7 @@ public sealed class KernelConfig
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
     public KernelConfig AddChatCompletionService(
-        string serviceId, Func<IKernel, IChatCompletion> serviceFactory, bool overwrite = false)
+        string serviceId, Func<KernelConfig, IChatCompletion> serviceFactory, bool overwrite = false)
     {
         Verify.NotEmpty(serviceId, "The service id provided is empty");
 
@@ -156,7 +160,7 @@ public sealed class KernelConfig
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
     public KernelConfig AddTextEmbeddingGenerationService(
-        string serviceId, Func<IKernel, IEmbeddingGeneration<string, float>> serviceFactory, bool overwrite = false)
+        string serviceId, Func<KernelConfig, IEmbeddingGeneration<string, float>> serviceFactory, bool overwrite = false)
     {
         Verify.NotEmpty(serviceId, "The service id provided is empty");
 
@@ -186,7 +190,7 @@ public sealed class KernelConfig
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
     public KernelConfig AddImageGenerationService(
-        string serviceId, Func<IKernel, IImageGeneration> serviceFactory, bool overwrite = false)
+        string serviceId, Func<KernelConfig, IImageGeneration> serviceFactory, bool overwrite = false)
     {
         Verify.NotEmpty(serviceId, "The service id provided is empty");
 
@@ -208,32 +212,6 @@ public sealed class KernelConfig
     }
 
     #region Set
-
-    /// <summary>
-    /// Set the http retry handler factory to use for the kernel.
-    /// </summary>
-    /// <param name="httpHandlerFactory">Http retry handler factory to use.</param>
-    /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig SetHttpRetryHandlerFactory(IDelegatingHandlerFactory? httpHandlerFactory = null)
-    {
-        if (httpHandlerFactory != null)
-        {
-            this.HttpHandlerFactory = httpHandlerFactory;
-        }
-
-        return this;
-    }
-
-    public KernelConfig SetDefaultHttpRetryConfig(HttpRetryConfig? httpRetryConfig)
-    {
-        if (httpRetryConfig != null)
-        {
-            this.DefaultHttpRetryConfig = httpRetryConfig;
-            this.SetHttpRetryHandlerFactory(new DefaultHttpRetryHandlerFactory(httpRetryConfig));
-        }
-
-        return this;
-    }
 
     /// <summary>
     /// Set the default completion service to use for the kernel.
@@ -359,6 +337,63 @@ public sealed class KernelConfig
         }
 
         return serviceId;
+    }
+
+
+    public T GetService<T>(string? name = "")
+    {
+        // TODO: use .NET ServiceCollection (will require a lot of changes)
+        // TODO: support Connectors, IHttpFactory and IDelegatingHandlerFactory
+
+        if (typeof(T) == typeof(ITextCompletion))
+        {
+            name = this.GetTextCompletionServiceIdOrDefault(name);
+            if (!this.TextCompletionServices.TryGetValue(name, out Func<KernelConfig, ITextCompletion> factory))
+            {
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No text completion service available");
+            }
+
+            var service = factory.Invoke(this);
+            return (T)service;
+        }
+
+        if (typeof(T) == typeof(IEmbeddingGeneration<string, float>))
+        {
+            name = this.GetTextEmbeddingGenerationServiceIdOrDefault(name);
+            if (!this.TextEmbeddingGenerationServices.TryGetValue(name, out Func<KernelConfig, IEmbeddingGeneration<string, float>> factory))
+            {
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No text embedding service available");
+            }
+
+            var service = factory.Invoke(this);
+            return (T)service;
+        }
+
+        if (typeof(T) == typeof(IChatCompletion))
+        {
+            name = this.GetChatCompletionServiceIdOrDefault(name);
+            if (!this.ChatCompletionServices.TryGetValue(name, out Func<KernelConfig, IChatCompletion> factory))
+            {
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No chat completion service available");
+            }
+
+            var service = factory.Invoke(this);
+            return (T)service;
+        }
+
+        if (typeof(T) == typeof(IImageGeneration))
+        {
+            name = this.GetImageGenerationServiceIdOrDefault(name);
+            if (!this.ImageGenerationServices.TryGetValue(name, out Func<KernelConfig, IImageGeneration> factory))
+            {
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No image generation service available");
+            }
+
+            var service = factory.Invoke(this);
+            return (T)service;
+        }
+
+        throw new NotSupportedException("The kernel service collection doesn't support the type " + typeof(T).FullName);
     }
 
     #endregion

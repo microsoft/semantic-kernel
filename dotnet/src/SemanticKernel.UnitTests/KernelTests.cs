@@ -22,7 +22,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("x", factory.Object, true);
 
         var nativeSkill = new MySkill();
@@ -50,7 +50,7 @@ public class KernelTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
+        var factory = new Mock<Func<KernelConfig, ITextCompletion>>();
         kernel.Config.AddTextCompletionService("x", factory.Object, true);
 
         var nativeSkill = new MySkill();
@@ -77,7 +77,7 @@ public class KernelTests
         var nativeSkill = new MySkill();
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
-        using CancellationTokenSource cts = new CancellationTokenSource();
+        using CancellationTokenSource cts = new();
         cts.Cancel();
 
         // Act
@@ -97,7 +97,7 @@ public class KernelTests
         var nativeSkill = new MySkill();
         kernel.ImportSkill(nativeSkill, "mySk");
 
-        using CancellationTokenSource cts = new CancellationTokenSource();
+        using CancellationTokenSource cts = new();
 
         // Act
         SKContext result = await kernel.RunAsync(cts.Token, kernel.Func("mySk", "GetAnyValue"));

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI.ImageGeneration;
@@ -23,13 +23,13 @@ public class OpenAIImageGeneration : OpenAIClientAbstract, IImageGeneration
     /// </summary>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="organization">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="log">Logger</param>
-    /// <param name="handlerFactory">Retry handler</param>
+    /// <param name="logFactory">Logger factory</param>
+    /// <param name="httpClientFactory">Http client builder</param>
     public OpenAIImageGeneration(
         string apiKey,
         string? organization = null,
-        ILogger? log = null,
-        IDelegatingHandlerFactory? handlerFactory = null
+        ILoggerFactory? logFactory = null,
+        IHttpClientFactory? httpClientFactory = null
     )
     {
         Verify.NotEmpty(apiKey, "The OpenAI API key cannot be empty");

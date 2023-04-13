@@ -40,13 +40,15 @@ var kernelX3 = builderX.Build();
 // Manually setup all the dependencies used internally by the kernel
 var logger = NullLogger.Instance;
 var memoryStorage = new VolatileMemoryStore();
-var textEmbeddingGenerator = new AzureTextEmbeddingGeneration("modelId", "https://...", "apiKey", "2022-12-01", logger);
+//var textEmbeddingGenerator = new AzureTextEmbeddingGeneration("modelId", "https://...", "apiKey", "2022-12-01", logger);
+var textEmbeddingGenerator = new AzureTextEmbeddingGeneration("modelId", "https://...", "apiKey", "2022-12-01");
 var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
 var skills = new SkillCollection();
 var templateEngine = new PromptTemplateEngine(logger);
 var config = new KernelConfig();
 var httpHandlerFactory = new DefaultHttpRetryHandlerFactory(new HttpRetryConfig());
-ITextCompletion Factory(IKernel kernel) => new AzureTextCompletion("deploymentName", "https://...", "apiKey", "2022-12-01", logger, httpHandlerFactory);
+//ITextCompletion Factory(KernelConfig config) => new AzureTextCompletion("deploymentName", "https://...", "apiKey", "2022-12-01", logger, httpHandlerFactory);
+ITextCompletion Factory(KernelConfig config) => new AzureTextCompletion("deploymentName", "https://...", "apiKey", "2022-12-01");
 config.AddTextCompletionService("foo", Factory);
 
 // Create kernel manually injecting all the dependencies
@@ -111,33 +113,33 @@ kernel7.Config
 // The default behavior can be configured or a custom retry handler can be injected that will apply to all
 // AI requests (when using the kernel).
 
-var kernel8 = Kernel.Builder
-    .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
-    {
-        MaxRetryCount = 3,
-        UseExponentialBackoff = true,
-        //  MinRetryDelay = TimeSpan.FromSeconds(2),
-        //  MaxRetryDelay = TimeSpan.FromSeconds(8),
-        //  MaxTotalRetryTime = TimeSpan.FromSeconds(30),
-        //  RetryableStatusCodes = new[] { HttpStatusCode.TooManyRequests, HttpStatusCode.RequestTimeout },
-        //  RetryableExceptions = new[] { typeof(HttpRequestException) }
-    }))
-    .Build();
+//var kernel8 = Kernel.Builder
+//    .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
+//    {
+//        MaxRetryCount = 3,
+//        UseExponentialBackoff = true,
+//        //  MinRetryDelay = TimeSpan.FromSeconds(2),
+//        //  MaxRetryDelay = TimeSpan.FromSeconds(8),
+//        //  MaxTotalRetryTime = TimeSpan.FromSeconds(30),
+//        //  RetryableStatusCodes = new[] { HttpStatusCode.TooManyRequests, HttpStatusCode.RequestTimeout },
+//        //  RetryableExceptions = new[] { typeof(HttpRequestException) }
+//    }))
+//    .Build();
 
-var kernel9 = Kernel.Builder
-    .Configure(c => c.SetHttpRetryHandlerFactory(new NullHttpRetryHandlerFactory()))
-    .Build();
+//var kernel9 = Kernel.Builder
+//    .Configure(c => c.SetHttpRetryHandlerFactory(new NullHttpRetryHandlerFactory()))
+//    .Build();
 
-var kernel10 = Kernel.Builder.WithRetryHandlerFactory(new RetryThreeTimesFactory()).Build();
+//var kernel10 = Kernel.Builder.WithRetryHandlerFactory(new RetryThreeTimesFactory()).Build();
 
 // Example of a basic custom retry handler
-public class RetryThreeTimesFactory : IDelegatingHandlerFactory
-{
-    public DelegatingHandler Create(ILogger log)
-    {
-        return new RetryThreeTimes(log);
-    }
-}
+//public class RetryThreeTimesFactory : IDelegatingHandlerFactory
+//{
+//    public DelegatingHandler Create(ILogger log)
+//    {
+//        return new RetryThreeTimes(log);
+//    }
+//}
 
 public class RetryThreeTimes : DelegatingHandler
 {

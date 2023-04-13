@@ -17,7 +17,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -31,27 +30,18 @@ public abstract class OpenAIClientAbstract : IDisposable
     /// <summary>
     /// Logger
     /// </summary>
-    protected ILogger Log { get; } = NullLogger.Instance;
+    protected ILogger<OpenAIClientAbstract> Log { get; } = NullLogger<OpenAIClientAbstract>.Instance;
 
     /// <summary>
     /// HTTP client
     /// </summary>
     protected HttpClient HTTPClient { get; }
 
-    private readonly HttpClientHandler _httpClientHandler;
-    private readonly IDelegatingHandlerFactory _handlerFactory;
-    private readonly DelegatingHandler _retryHandler;
-
-    internal OpenAIClientAbstract(ILogger? log = null, IDelegatingHandlerFactory? handlerFactory = null)
+    internal OpenAIClientAbstract(ILoggerFactory? loggerFactory = null, IHttpClientFactory? httpClientFactory = null)
     {
-        this.Log = log ?? this.Log;
-        this._handlerFactory = handlerFactory ?? new DefaultHttpRetryHandlerFactory();
+        this.Log = loggerFactory?.CreateLogger<OpenAIClientAbstract>() ?? this.Log;
 
-        this._httpClientHandler = new() { CheckCertificateRevocationList = true };
-        this._retryHandler = this._handlerFactory.Create(this.Log);
-        this._retryHandler.InnerHandler = this._httpClientHandler;
-
-        this.HTTPClient = new HttpClient(this._retryHandler);
+        this.HTTPClient = httpClientFactory?.CreateClient() ?? new HttpClient();
         this.HTTPClient.DefaultRequestHeaders.Add("User-Agent", HTTPUseragent);
     }
 
@@ -229,8 +219,6 @@ public abstract class OpenAIClientAbstract : IDisposable
         if (disposing)
         {
             this.HTTPClient.Dispose();
-            this._httpClientHandler.Dispose();
-            this._retryHandler.Dispose();
         }
     }
 
@@ -246,13 +234,8 @@ public abstract class OpenAIClientAbstract : IDisposable
         try
         {
             using HttpContent content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await this.HTTPClient.PostAsync(url, content, cancellationToken);
-
-            if (response == null)
-            {
-                throw new AIException(AIException.ErrorCodes.NoResponse, "Empty response");
-            }
-
+            HttpResponseMessage response = await this.HTTPClient.PostAsync(url, content, cancellationToken)
+                ?? throw new AIException(AIException.ErrorCodes.NoResponse, "Empty response");
             this.Log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
             responseJson = await response.Content.ReadAsStringAsync();

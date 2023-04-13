@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -24,11 +25,16 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientAbstract, IE
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiVersion">Azure OpenAI API version, see https://learn.microsoft.com/azure/cognitive-services/openai/reference</param>
-    /// <param name="log">Application logger</param>
-    /// <param name="handlerFactory">An optional HTTP retry handler factory</param>
-    public AzureTextEmbeddingGeneration(string modelId, string endpoint, string apiKey, string apiVersion, ILogger? log = null,
-        IDelegatingHandlerFactory? handlerFactory = null)
-        : base(log, handlerFactory)
+    /// <param name="logFactory">Application logger</param>
+    /// <param name="httpClientFactory">Http client factory</param>
+    public AzureTextEmbeddingGeneration(
+        string modelId,
+        string endpoint,
+        string apiKey,
+        string apiVersion,
+        ILoggerFactory? logFactory = null,
+        IHttpClientFactory? httpClientFactory = null)
+        : base(logFactory, httpClientFactory)
     {
         Verify.NotEmpty(modelId, "The ID cannot be empty, you must provide a Model ID or a Deployment name.");
         this._modelId = modelId;

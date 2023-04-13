@@ -14,74 +14,74 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example08_RetryHandler
 {
-    public static async Task RunAsync()
-    {
-        var kernel = InitializeKernel();
-        var retryHandlerFactory = new RetryThreeTimesWithBackoffFactory();
-        InfoLogger.Log.LogInformation("============================== RetryThreeTimesWithBackoff ==============================");
-        await RunRetryPolicyAsync(kernel, retryHandlerFactory);
+    //public static async Task RunAsync()
+    //{
+    //    var kernel = InitializeKernel();
+    //    var retryHandlerFactory = new RetryThreeTimesWithBackoffFactory();
+    //    InfoLogger.Log.LogInformation("============================== RetryThreeTimesWithBackoff ==============================");
+    //    //await RunRetryPolicyAsync(kernel, retryHandlerFactory);
 
-        InfoLogger.Log.LogInformation("========================= RetryThreeTimesWithRetryAfterBackoff =========================");
-        await RunRetryPolicyBuilderAsync(typeof(RetryThreeTimesWithRetryAfterBackoffFactory));
+    //    InfoLogger.Log.LogInformation("========================= RetryThreeTimesWithRetryAfterBackoff =========================");
+    //    //await RunRetryPolicyBuilderAsync(typeof(RetryThreeTimesWithRetryAfterBackoffFactory));
 
-        InfoLogger.Log.LogInformation("==================================== NoRetryPolicy =====================================");
-        await RunRetryPolicyBuilderAsync(typeof(NullHttpRetryHandlerFactory));
+    //    InfoLogger.Log.LogInformation("==================================== NoRetryPolicy =====================================");
+    //    //await RunRetryPolicyBuilderAsync(typeof(NullHttpRetryHandlerFactory));
 
-        InfoLogger.Log.LogInformation("=============================== DefaultHttpRetryHandler ================================");
-        await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
+    //    InfoLogger.Log.LogInformation("=============================== DefaultHttpRetryHandler ================================");
+    //    await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
 
-        InfoLogger.Log.LogInformation("======= DefaultHttpRetryConfig [MaxRetryCount = 3, UseExponentialBackoff = true] =======");
-        await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
-    }
+    //    InfoLogger.Log.LogInformation("======= DefaultHttpRetryConfig [MaxRetryCount = 3, UseExponentialBackoff = true] =======");
+    //    await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
+    //}
 
-    private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? config = null)
-    {
-        var kernelBuilder = Kernel.Builder.WithLogger(InfoLogger.Log);
-        if (config != null)
-        {
-            kernelBuilder = kernelBuilder.Configure(c => c.SetDefaultHttpRetryConfig(config));
-        }
+    //private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? config = null)
+    //{
+    //    var kernelBuilder = Kernel.Builder.WithLogger(InfoLogger.Log);
+    //    if (config != null)
+    //    {
+    //        kernelBuilder = kernelBuilder.Configure(c => c.SetDefaultHttpRetryConfig(config));
+    //    }
 
-        // Add 401 to the list of retryable status codes
-        // Typically 401 would not be something we retry but for demonstration
-        // purposes we are doing so as it's easy to trigger when using an invalid key.
-        kernelBuilder = kernelBuilder.Configure(c => c.DefaultHttpRetryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized));
+    //    // Add 401 to the list of retryable status codes
+    //    // Typically 401 would not be something we retry but for demonstration
+    //    // purposes we are doing so as it's easy to trigger when using an invalid key.
+    //    kernelBuilder = kernelBuilder.Configure(c => c.DefaultHttpRetryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized));
 
-        // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
-        kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", "BAD_KEY"));
+    //    // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
+    //    kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", "BAD_KEY"));
 
-        var kernel = kernelBuilder.Build();
+    //    var kernel = kernelBuilder.Build();
 
-        await ImportAndExecuteSkillAsync(kernel);
-    }
+    //    await ImportAndExecuteSkillAsync(kernel);
+    //}
 
-    private static IKernel InitializeKernel()
-    {
-        var kernel = Kernel.Builder.WithLogger(InfoLogger.Log).Build();
-        // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", "BAD_KEY");
+    //private static IKernel InitializeKernel()
+    //{
+    //    var kernel = Kernel.Builder.WithLogger(InfoLogger.Log).Build();
+    //    // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
+    //    kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", "BAD_KEY");
 
-        return kernel;
-    }
+    //    return kernel;
+    //}
 
-    private static async Task RunRetryPolicyAsync(IKernel kernel, IDelegatingHandlerFactory retryHandlerFactory)
-    {
-        kernel.Config.SetHttpRetryHandlerFactory(retryHandlerFactory);
-        await ImportAndExecuteSkillAsync(kernel);
-    }
+    //private static async Task RunRetryPolicyAsync(IKernel kernel, IDelegatingHandlerFactory retryHandlerFactory)
+    //{
+    //    kernel.Config.SetHttpRetryHandlerFactory(retryHandlerFactory);
+    //    await ImportAndExecuteSkillAsync(kernel);
+    //}
 
-    private static async Task RunRetryPolicyBuilderAsync(Type retryHandlerFactoryType)
-    {
-        var kernelBuilder = Kernel.Builder.WithLogger(InfoLogger.Log)
-            .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!);
+    //private static async Task RunRetryPolicyBuilderAsync(Type retryHandlerFactoryType)
+    //{
+    //    var kernelBuilder = Kernel.Builder.WithLogger(InfoLogger.Log)
+    //        .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!);
 
-        // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
-        kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", "BAD_KEY"));
+    //    // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
+    //    kernelBuilder = kernelBuilder.Configure(c => c.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", "BAD_KEY"));
 
-        var kernel = kernelBuilder.Build();
+    //    var kernel = kernelBuilder.Build();
 
-        await ImportAndExecuteSkillAsync(kernel);
-    }
+    //    await ImportAndExecuteSkillAsync(kernel);
+    //}
 
     private static async Task ImportAndExecuteSkillAsync(IKernel kernel)
     {

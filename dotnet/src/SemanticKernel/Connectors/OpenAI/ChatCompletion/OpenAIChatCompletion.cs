@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,9 +26,9 @@ public class OpenAIChatCompletion : OpenAIClientAbstract, IChatCompletion
         string modelId,
         string apiKey,
         string? organization = null,
-        ILogger? log = null,
-        IDelegatingHandlerFactory? handlerFactory = null
-    ) : base(log, handlerFactory)
+        ILoggerFactory? logFactory = null,
+        IHttpClientFactory? httpClientFactory = null
+    ) : base(logFactory, httpClientFactory)
     {
         Verify.NotEmpty(modelId, "The OpenAI model ID cannot be empty");
         this._modelId = modelId;

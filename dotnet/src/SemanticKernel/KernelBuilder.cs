@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -20,9 +22,12 @@ public sealed class KernelBuilder
 {
     private KernelConfig _config = new();
     private ISemanticTextMemory _memory = NullMemory.Instance;
-    private ILogger _log = NullLogger.Instance;
     private IMemoryStore? _memoryStorage = null;
-    private IDelegatingHandlerFactory? _httpHandlerFactory = null;
+
+    public KernelBuilder()
+    {
+        this.AddDefaultKernelServices();
+    }
 
     /// <summary>
     /// Create a new kernel instance
@@ -34,23 +39,35 @@ public sealed class KernelBuilder
         return builder.Build();
     }
 
+    public void AddDefaultKernelServices()
+    {
+        this.Services.AddLogging();
+        this.WithRetryMessageHandler(new HttpRetryConfig());
+        this.Services.AddHttpClient();
+    }
+
     /// <summary>
     /// Build a new kernel instance using the settings passed so far.
     /// </summary>
     /// <returns>Kernel instance</returns>
     public IKernel Build()
     {
-        if (this._httpHandlerFactory != null)
-        {
-            this._config.SetHttpRetryHandlerFactory(this._httpHandlerFactory);
-        }
+        this._config.Services = this.Services.BuildServiceProvider();
+
+        ILoggerFactory loggerFactory =
+            this._config.Services.GetService<ILoggerFactory>() ??
+            NullLoggerFactory.Instance;
+
+        ILogger<IKernel> kernelLogger =
+            this._config.Services.GetService<ILoggerFactory>()?.CreateLogger<IKernel>() ??
+            NullLogger<IKernel>.Instance;
 
         var instance = new Kernel(
-            new SkillCollection(this._log),
-            new PromptTemplateEngine(this._log),
+            new SkillCollection(loggerFactory.CreateLogger<SkillCollection>()),
+            new PromptTemplateEngine(loggerFactory.CreateLogger<PromptTemplateEngine>()),
             this._memory,
             this._config,
-            this._log
+            loggerFactory.CreateLogger<IKernel>()
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -65,12 +82,30 @@ public sealed class KernelBuilder
     /// <summary>
     /// Add a logger to the kernel to be built.
     /// </summary>
-    /// <param name="log">Logger to add.</param>
+    /// <param name="loggerProvider">Logger provider to add.</param>
     /// <returns>Updated kernel builder including the logger.</returns>
-    public KernelBuilder WithLogger(ILogger log)
+    public KernelBuilder WithLogger(ILoggerProvider loggerProvider)
     {
-        Verify.NotNull(log, "The logger instance provided is NULL");
-        this._log = log;
+        Verify.NotNull(loggerProvider, "The logger provider instance provided is NULL");
+        this.Services.AddLogging((config) => config.AddProvider(loggerProvider));
+        return this;
+    }
+
+    /// <summary>
+    /// Add a logger to the kernel to be built.
+    /// </summary>
+    /// <param name="loggerFactory">Logger provider to use.</param>
+    /// <returns>Updated kernel builder including the logger.</returns>
+    public KernelBuilder WithLogger(ILoggerFactory loggerFactory)
+    {
+        Verify.NotNull(loggerFactory, "The logger factpry instance provided is NULL");
+        this.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+        return this;
+    }
+
+    public KernelBuilder WithLogger(ILogger _)
+    {
+        // TODO: Replace all callers and remove this
         return this;
     }
 
@@ -114,14 +149,34 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
-    /// Add a retry handler factory to the kernel to be built.
+    /// Add an HTTP message handler builder to the kernel to be built.
     /// </summary>
-    /// <param name="httpHandlerFactory">Retry handler factory to add.</param>
-    /// <returns>Updated kernel builder including the retry handler factory.</returns>
-    public KernelBuilder WithRetryHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
+    /// <param name="messageHandlerBuilder">HTTP message handler builder to add.</param>
+    /// <returns>Updated kernel builder including the message handler factory.</returns>
+    public KernelBuilder WithMessageHandlerBuilder(HttpMessageHandlerBuilder messageHandlerBuilder)
     {
-        Verify.NotNull(httpHandlerFactory, "The retry handler factory instance provided is NULL");
-        this._httpHandlerFactory = httpHandlerFactory;
+        Verify.NotNull(messageHandlerBuilder, "The HTTP message handler builder instance provided is NULL");
+        this.Services.AddTransient<HttpMessageHandlerBuilder>((sp) => messageHandlerBuilder);
+        return this;
+    }
+
+    /// <summary>
+    /// Add a retry handler to the kernel to be built.
+    /// </summary>
+    /// <param name="retryConfig">Config for the retry message handler.</param>
+    /// <returns>Updated kernel builder including the retry handler factory.</returns>
+    public KernelBuilder WithRetryMessageHandler(HttpRetryConfig retryConfig)
+    {
+        Verify.NotNull(retryConfig, "The retry handler instance provided is NULL");
+        this.Services.AddTransient((sp) =>
+        {
+            ILoggerFactory logFactory =
+                sp.GetService<ILoggerFactory>() ??
+                NullLoggerFactory.Instance;
+
+            return new DefaultHttpRetryHandlerFactory(retryConfig, logFactory);
+        });
+        
         return this;
     }
 
@@ -136,6 +191,8 @@ public sealed class KernelBuilder
         this._config = config;
         return this;
     }
+
+    public IServiceCollection Services { get; } = new ServiceCollection();
 
     /// <summary>
     /// Update the configuration using the instructions provided.

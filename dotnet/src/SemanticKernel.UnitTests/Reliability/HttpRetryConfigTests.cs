@@ -23,55 +23,55 @@ public class HttpRetryConfigTests
         });
     }
 
-    [Fact]
-    public void SetDefaultHttpRetryConfig()
-    {
-        // Arrange
-        var config = new KernelConfig();
-        var httpRetryConfig = new HttpRetryConfig() { MaxRetryCount = 1 };
+    //[Fact]
+    //public void SetDefaultHttpRetryConfig()
+    //{
+    //    // Arrange
+    //    var config = new KernelConfig();
+    //    var httpRetryConfig = new HttpRetryConfig() { MaxRetryCount = 1 };
 
-        // Act
-        config.SetDefaultHttpRetryConfig(httpRetryConfig);
+    //    // Act
+    //    config.SetDefaultHttpRetryConfig(httpRetryConfig);
 
-        // Assert
-        Assert.Equal(httpRetryConfig, config.DefaultHttpRetryConfig);
-    }
+    //    // Assert
+    //    Assert.Equal(httpRetryConfig, config.DefaultHttpRetryConfig);
+    //}
 
-    [Fact]
-    public void SetDefaultHttpRetryConfigToDefaultIfNotSet()
-    {
-        // Arrange
-        var config = new KernelConfig();
+    //[Fact]
+    //public void SetDefaultHttpRetryConfigToDefaultIfNotSet()
+    //{
+    //    // Arrange
+    //    var config = new KernelConfig();
 
-        // Act
-        // Assert
-        var defaultConfig = new HttpRetryConfig();
-        Assert.Equal(defaultConfig.MaxRetryCount, config.DefaultHttpRetryConfig.MaxRetryCount);
-        Assert.Equal(defaultConfig.MaxRetryDelay, config.DefaultHttpRetryConfig.MaxRetryDelay);
-        Assert.Equal(defaultConfig.MinRetryDelay, config.DefaultHttpRetryConfig.MinRetryDelay);
-        Assert.Equal(defaultConfig.MaxTotalRetryTime, config.DefaultHttpRetryConfig.MaxTotalRetryTime);
-        Assert.Equal(defaultConfig.UseExponentialBackoff, config.DefaultHttpRetryConfig.UseExponentialBackoff);
-        Assert.Equal(defaultConfig.RetryableStatusCodes, config.DefaultHttpRetryConfig.RetryableStatusCodes);
-        Assert.Equal(defaultConfig.RetryableExceptionTypes, config.DefaultHttpRetryConfig.RetryableExceptionTypes);
-    }
+    //    // Act
+    //    // Assert
+    //    var defaultConfig = new HttpRetryConfig();
+    //    Assert.Equal(defaultConfig.MaxRetryCount, config.DefaultHttpRetryConfig.MaxRetryCount);
+    //    Assert.Equal(defaultConfig.MaxRetryDelay, config.DefaultHttpRetryConfig.MaxRetryDelay);
+    //    Assert.Equal(defaultConfig.MinRetryDelay, config.DefaultHttpRetryConfig.MinRetryDelay);
+    //    Assert.Equal(defaultConfig.MaxTotalRetryTime, config.DefaultHttpRetryConfig.MaxTotalRetryTime);
+    //    Assert.Equal(defaultConfig.UseExponentialBackoff, config.DefaultHttpRetryConfig.UseExponentialBackoff);
+    //    Assert.Equal(defaultConfig.RetryableStatusCodes, config.DefaultHttpRetryConfig.RetryableStatusCodes);
+    //    Assert.Equal(defaultConfig.RetryableExceptionTypes, config.DefaultHttpRetryConfig.RetryableExceptionTypes);
+    //}
 
-    [Fact]
-    public void SetDefaultHttpRetryConfigToDefaultIfNull()
-    {
-        // Arrange
-        var config = new KernelConfig();
+    //[Fact]
+    //public void SetDefaultHttpRetryConfigToDefaultIfNull()
+    //{
+    //    // Arrange
+    //    var config = new KernelConfig();
 
-        // Act
-        config.SetDefaultHttpRetryConfig(null);
+    //    // Act
+    //    config.SetDefaultHttpRetryConfig(null);
 
-        // Assert
-        var defaultConfig = new HttpRetryConfig();
-        Assert.Equal(defaultConfig.MaxRetryCount, config.DefaultHttpRetryConfig.MaxRetryCount);
-        Assert.Equal(defaultConfig.MaxRetryDelay, config.DefaultHttpRetryConfig.MaxRetryDelay);
-        Assert.Equal(defaultConfig.MinRetryDelay, config.DefaultHttpRetryConfig.MinRetryDelay);
-        Assert.Equal(defaultConfig.MaxTotalRetryTime, config.DefaultHttpRetryConfig.MaxTotalRetryTime);
-        Assert.Equal(defaultConfig.UseExponentialBackoff, config.DefaultHttpRetryConfig.UseExponentialBackoff);
-        Assert.Equal(defaultConfig.RetryableStatusCodes, config.DefaultHttpRetryConfig.RetryableStatusCodes);
-        Assert.Equal(defaultConfig.RetryableExceptionTypes, config.DefaultHttpRetryConfig.RetryableExceptionTypes);
-    }
+    //    // Assert
+    //    var defaultConfig = new HttpRetryConfig();
+    //    Assert.Equal(defaultConfig.MaxRetryCount, config.DefaultHttpRetryConfig.MaxRetryCount);
+    //    Assert.Equal(defaultConfig.MaxRetryDelay, config.DefaultHttpRetryConfig.MaxRetryDelay);
+    //    Assert.Equal(defaultConfig.MinRetryDelay, config.DefaultHttpRetryConfig.MinRetryDelay);
+    //    Assert.Equal(defaultConfig.MaxTotalRetryTime, config.DefaultHttpRetryConfig.MaxTotalRetryTime);
+    //    Assert.Equal(defaultConfig.UseExponentialBackoff, config.DefaultHttpRetryConfig.UseExponentialBackoff);
+    //    Assert.Equal(defaultConfig.RetryableStatusCodes, config.DefaultHttpRetryConfig.RetryableStatusCodes);
+    //    Assert.Equal(defaultConfig.RetryableExceptionTypes, config.DefaultHttpRetryConfig.RetryableExceptionTypes);
+    //}
 }

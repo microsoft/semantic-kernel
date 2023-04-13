@@ -23,57 +23,57 @@ public class KernelConfigTests
         this._kernel.SetupGet(x => x.Config).Returns(kernelConfig);
     }
 
-    [Fact]
-    public void HttpRetryHandlerFactoryIsSet()
-    {
-        // Arrange
-        var retry = new NullHttpRetryHandlerFactory();
-        var config = new KernelConfig();
+    //[Fact]
+    //public void HttpRetryHandlerFactoryIsSet()
+    //{
+    //    // Arrange
+    //    var retry = new NullHttpRetryHandlerFactory();
+    //    var config = new KernelConfig();
 
-        // Act
-        config.SetHttpRetryHandlerFactory(retry);
+    //    // Act
+    //    config.SetHttpRetryHandlerFactory(retry);
 
-        // Assert
-        Assert.Equal(retry, config.HttpHandlerFactory);
-    }
+    //    // Assert
+    //    Assert.Equal(retry, config.HttpHandlerFactory);
+    //}
 
-    [Fact]
-    public void HttpRetryHandlerFactoryIsSetWithCustomImplementation()
-    {
-        // Arrange
-        var retry = new Mock<IDelegatingHandlerFactory>();
-        var config = new KernelConfig();
+    //[Fact]
+    //public void HttpRetryHandlerFactoryIsSetWithCustomImplementation()
+    //{
+    //    // Arrange
+    //    var retry = new Mock<IDelegatingHandlerFactory>();
+    //    var config = new KernelConfig();
 
-        // Act
-        config.SetHttpRetryHandlerFactory(retry.Object);
+    //    // Act
+    //    config.SetHttpRetryHandlerFactory(retry.Object);
 
-        // Assert
-        Assert.Equal(retry.Object, config.HttpHandlerFactory);
-    }
+    //    // Assert
+    //    Assert.Equal(retry.Object, config.HttpHandlerFactory);
+    //}
 
-    [Fact]
-    public void HttpRetryHandlerFactoryIsSetToDefaultHttpRetryHandlerFactoryIfNull()
-    {
-        // Arrange
-        var config = new KernelConfig();
+    //[Fact]
+    //public void HttpRetryHandlerFactoryIsSetToDefaultHttpRetryHandlerFactoryIfNull()
+    //{
+    //    // Arrange
+    //    var config = new KernelConfig();
 
-        // Act
-        config.SetHttpRetryHandlerFactory(null);
+    //    // Act
+    //    config.SetHttpRetryHandlerFactory(null);
 
-        // Assert
-        Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
-    }
+    //    // Assert
+    //    Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
+    //}
 
-    [Fact]
-    public void HttpRetryHandlerFactoryIsSetToDefaultHttpRetryHandlerFactoryIfNotSet()
-    {
-        // Arrange
-        var config = new KernelConfig();
+    //[Fact]
+    //public void HttpRetryHandlerFactoryIsSetToDefaultHttpRetryHandlerFactoryIfNotSet()
+    //{
+    //    // Arrange
+    //    var config = new KernelConfig();
 
-        // Act
-        // Assert
-        Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
-    }
+    //    // Act
+    //    // Assert
+    //    Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
+    //}
 
     [Fact]
     public void ItFailsWhenSetNonExistentTextCompletionService()

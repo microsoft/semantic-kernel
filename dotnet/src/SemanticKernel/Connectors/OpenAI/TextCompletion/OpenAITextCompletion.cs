@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,15 +29,15 @@ public sealed class OpenAITextCompletion : OpenAIClientAbstract, ITextCompletion
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="organization">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="log">Logger</param>
-    /// <param name="handlerFactory">Retry handler</param>
+    /// <param name="logFactory">Logger factory</param>
+    /// <param name="httpClientFactory">Http client factory</param>
     public OpenAITextCompletion(
         string modelId,
         string apiKey,
         string? organization = null,
-        ILogger? log = null,
-        IDelegatingHandlerFactory? handlerFactory = null
-    ) : base(log, handlerFactory)
+        ILoggerFactory? logFactory = null,
+        IHttpClientFactory? httpClientFactory = null
+    ) : base(logFactory, httpClientFactory)
     {
         Verify.NotEmpty(modelId, "The OpenAI model ID cannot be empty");
         this._modelId = modelId;

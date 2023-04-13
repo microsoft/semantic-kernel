@@ -86,8 +86,8 @@ internal static class ConfigExtensions
     }
 
     public static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceConfig serviceConfig,
-        ILogger? logger = null,
-        IDelegatingHandlerFactory? handlerFactory = null)
+        ILogger? logger = null)
+        //IDelegatingHandlerFactory? handlerFactory = null)
     {
         if (!serviceConfig.IsValid())
         {
@@ -97,12 +97,15 @@ internal static class ConfigExtensions
         switch (serviceConfig.AIService.ToUpperInvariant())
         {
             case AIServiceConfig.AzureOpenAI:
+                //return new AzureTextEmbeddingGeneration(serviceConfig.DeploymentOrModelId, serviceConfig.Endpoint,
+                //    serviceConfig.Key, "2022-12-01", logger);
                 return new AzureTextEmbeddingGeneration(serviceConfig.DeploymentOrModelId, serviceConfig.Endpoint,
-                    serviceConfig.Key, "2022-12-01", logger, handlerFactory);
+                   serviceConfig.Key, "2022-12-01");
 
             case AIServiceConfig.OpenAI:
-                return new OpenAITextEmbeddingGeneration(serviceConfig.DeploymentOrModelId, serviceConfig.Key,
-                    log: logger, handlerFactory: handlerFactory);
+                //return new OpenAITextEmbeddingGeneration(serviceConfig.DeploymentOrModelId, serviceConfig.Key,
+                //    log: logger);
+                return new OpenAITextEmbeddingGeneration(serviceConfig.DeploymentOrModelId, serviceConfig.Key);
 
             default:
                 throw new ArgumentException("Invalid AIService value in embeddings backend settings");

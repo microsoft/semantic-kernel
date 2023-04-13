@@ -41,7 +41,8 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task OpenAITestAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
-        IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+        //IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+        IKernel target = Kernel.Builder.Build();
 
         this.ConfigureOpenAI(target);
 
@@ -59,7 +60,8 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAITestAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
-        IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+        //IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+        IKernel target = Kernel.Builder.Build();
 
         this.ConfigureAzureOpenAI(target);
 
@@ -82,7 +84,8 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         var retryConfig = new HttpRetryConfig();
         retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
-        IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Configure(c => c.SetDefaultHttpRetryConfig(retryConfig)).Build();
+        // IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Configure(c => c.SetDefaultHttpRetryConfig(retryConfig)).Build();
+        IKernel target = Kernel.Builder.WithRetryMessageHandler(retryConfig).Build();
 
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
@@ -117,7 +120,8 @@ public sealed class OpenAICompletionTests : IDisposable
 
         const string expectedAnswerContains = "<result>John</result>";
 
-        IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+        //IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+        IKernel target = Kernel.Builder.Build();
 
         this._serviceConfiguration[service](target);
 

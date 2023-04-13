@@ -48,9 +48,10 @@ public abstract class AzureOpenAIClientAbstract : OpenAIClientAbstract
     /// <summary>
     /// Construct an AzureOpenAIClientAbstract object
     /// </summary>
-    /// <param name="log">Logger</param>
-    /// <param name="handlerFactory">Retry handler factory</param>
-    protected AzureOpenAIClientAbstract(ILogger? log = null, IDelegatingHandlerFactory? handlerFactory = null) : base(log, handlerFactory)
+    /// <param name="logFactory">Logger factory</param>
+    /// <param name="httpClientFactory">HTTP client factory</param>
+    protected AzureOpenAIClientAbstract(ILoggerFactory? logFactory = null, IHttpClientFactory? httpClientFactory = null)
+        : base(logFactory, httpClientFactory)
     {
     }
 

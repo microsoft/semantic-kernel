@@ -93,7 +93,8 @@ public sealed class Program
         EmailSkill outlookSkill = new(new OutlookMailConnector(graphServiceClient), loggerFactory.CreateLogger<EmailSkill>());
 
         // Initialize the Semantic Kernel and and register connections with OpenAI/Azure OpenAI instances.
-        IKernel sk = Kernel.Builder.WithLogger(loggerFactory.CreateLogger<IKernel>()).Build();
+        //IKernel sk = Kernel.Builder.WithLogger(loggerFactory).Build();
+        IKernel sk = Kernel.Builder.Build();
 
         var onedrive = sk.ImportSkill(oneDriveSkill, "onedrive");
         var todo = sk.ImportSkill(todoSkill, "todo");
