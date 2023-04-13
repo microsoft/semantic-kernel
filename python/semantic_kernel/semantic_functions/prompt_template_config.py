@@ -59,11 +59,32 @@ class PromptTemplateConfig:
         config.input.parameters = []
         if data.get("input") is not None:
             for parameter in data["input"]["parameters"]:
+                if "name" in parameter:
+                    name = parameter["name"]
+                else:
+                    raise Exception(
+                        f"The input parameter doesn't have a name (function: {config.description})"
+                    )
+
+                if "description" in parameter:
+                    description = parameter["description"]
+                else:
+                    raise Exception(
+                        f"Input parameter '{name}' doesn't have a description (function: {config.description})"
+                    )
+
+                if "defaultValue" in parameter:
+                    defaultValue = parameter["defaultValue"]
+                else:
+                    raise Exception(
+                        f"Input parameter '{name}' doesn't have a default value (function: {config.description})"
+                    )
+
                 config.input.parameters.append(
                     PromptTemplateConfig.InputParameter(
-                        parameter["name"],
-                        parameter["description"],
-                        parameter["default_value"],
+                        name,
+                        description,
+                        defaultValue,
                     )
                 )
         return config
