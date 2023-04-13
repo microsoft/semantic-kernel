@@ -6,10 +6,11 @@ import { Provider as ReduxProvider } from 'react-redux';
 import App from './App';
 import { Constants } from './Constants';
 import './index.css';
-import { AuthHelper } from './libs/AuthHelper';
+import { AuthHelper } from './libs/auth/AuthHelper';
 import { store } from './redux/app/store';
 
 import debug from 'debug';
+import React from 'react';
 
 const log = debug('main');
 
@@ -19,10 +20,17 @@ if (!localStorage.getItem('debug')) {
 
 export const msalInstance = new PublicClientApplication(AuthHelper.msalConfig);
 
-const accounts = msalInstance.getAllAccounts();
-if (accounts.length > 0) {
-    msalInstance.setActiveAccount(accounts[0]);
-}
+msalInstance
+    .handleRedirectPromise()
+    .then(() => {
+        const accounts = msalInstance.getAllAccounts();
+        if (accounts.length > 0) {
+            msalInstance.setActiveAccount(accounts[0]);
+        }
+    })
+    .catch((error: any) => {
+        log('Login with redirect failed: ', error);
+    });
 
 msalInstance.addEventCallback((event: any) => {
     log('msal event:', event);
@@ -41,15 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const root = ReactDOM.createRoot(container);
         root.render(
-            // <React.StrictMode>
-            <ReduxProvider store={store}>
-                <MsalProvider instance={msalInstance}>
-                    <FluentProvider className="app-container" theme={webLightTheme}>
-                        <App />
-                    </FluentProvider>
-                </MsalProvider>
-            </ReduxProvider>,
-            // </React.StrictMode>,
+            <React.StrictMode>
+                <ReduxProvider store={store}>
+                    <MsalProvider instance={msalInstance}>
+                        <FluentProvider className="app-container" theme={webLightTheme}>
+                            <App />
+                        </FluentProvider>
+                    </MsalProvider>
+                </ReduxProvider>
+                ,
+            </React.StrictMode>,
         );
     }
 });

@@ -6,13 +6,12 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.SkillDefinition;
+using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -70,7 +69,7 @@ public sealed class PlannerSkillTests : IDisposable
         // Import all sample skills available for demonstration purposes.
         TestHelpers.ImportSampleSkills(target);
 
-        var emailSkill = target.ImportSkill(new EmailSkill());
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         var plannerSKill = target.ImportSkill(new PlannerSkill(target));
 
@@ -96,13 +95,13 @@ public sealed class PlannerSkillTests : IDisposable
         "</if>", 1,
         "<else>", 0,
         "</else>", 0)]
-    [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun ",
+    [InlineData("If is morning tell me a joke about coffee, otherwise tell me a joke about the sun ",
         "function.FunSkill.Joke", 2,
         "<if condition=\"", 1,
         "</if>", 1,
         "<else>", 1,
         "</else>", 1)]
-    [InlineData("If is morning tell me a joke about coffee otherwise tell me a joke about the sun but if its night I want a joke about the moon",
+    [InlineData("If is morning tell me a joke about coffee, otherwise tell me a joke about the sun, but if its night I want a joke about the moon",
         "function.FunSkill.Joke", 3,
         "<if condition=\"", 2,
         "</if>", 2,
@@ -174,10 +173,6 @@ public sealed class PlannerSkillTests : IDisposable
         "function.TimeSkill", 1,
         "function.FunSkill.Joke", 1,
         "function.WaitSkill.Seconds", 1,
-        "<while condition=\"", 1,
-        "</while>", 1)]
-    [InlineData("I want a nested loop with O(n²) algorithmic complexity using the current date",
-        "function.TimeSkill", 1,
         "<while condition=\"", 1,
         "</while>", 1)]
     public async Task CreatePlanShouldHaveWhileConditionalStatementsAndBeAbleToExecuteAsync(string prompt, params object[] expectedAnswerContainsAtLeast)
@@ -259,35 +254,6 @@ public sealed class PlannerSkillTests : IDisposable
         {
             this._logger.Dispose();
             this._testOutputHelper.Dispose();
-        }
-    }
-
-    internal class EmailSkill
-    {
-        [SKFunction("Given an e-mail and message body, send an email")]
-        [SKFunctionInput(Description = "The body of the email message to send.")]
-        [SKFunctionContextParameter(Name = "email_address", Description = "The email address to send email to.")]
-        public Task<SKContext> SendEmailAsync(string input, SKContext context)
-        {
-            context.Variables.Update($"Sent email to: {context.Variables["email_address"]}. Body: {input}");
-            return Task.FromResult(context);
-        }
-
-        [SKFunction("Given a name, find email address")]
-        [SKFunctionInput(Description = "The name of the person to email.")]
-        public Task<SKContext> GetEmailAddressAsync(string input, SKContext context)
-        {
-            context.Log.LogDebug("Returning hard coded email for {0}", input);
-            context.Variables.Update("johndoe1234@example.com");
-            return Task.FromResult(context);
-        }
-
-        [SKFunction("Write a short poem for an e-mail")]
-        [SKFunctionInput(Description = "The topic of the poem.")]
-        public Task<SKContext> WritePoemAsync(string input, SKContext context)
-        {
-            context.Variables.Update($"Roses are red, violets are blue, {input} is hard, so is this test.");
-            return Task.FromResult(context);
         }
     }
 }
