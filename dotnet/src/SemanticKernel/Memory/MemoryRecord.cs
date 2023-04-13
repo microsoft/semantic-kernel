@@ -42,18 +42,20 @@ public class MemoryRecord : DataEntryBase
     /// Prepare an instance about a memory which source is stored externally.
     /// The universal resource identifies points to the URL (or equivalent) to find the original source.
     /// </summary>
-    /// <param name="externalId">URL (or equivalent) to find the original source</param>
+    /// <param name="externalId">URL (or equivalent) to find the original source.</param>
     /// <param name="sourceName">Name of the external service, e.g. "MSTeams", "GitHub", "WebSite", "Outlook IMAP", etc.</param>
     /// <param name="description">Optional description of the record. Note: the description is not indexed.</param>
-    /// <param name="embedding">Source content embeddings</param>
-    /// <param name="key">Optional existing database key</param>
-    /// <param name="timestamp">optional timestamp</param>
+    /// <param name="embedding">Source content embedding.</param>
+    /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
+    /// <param name="key">Optional existing database key.</param>
+    /// <param name="timestamp">optional timestamp.</param>
     /// <returns>Memory record</returns>
     public static MemoryRecord ReferenceRecord(
         string externalId,
         string sourceName,
         string? description,
         Embedding<float> embedding,
+        string? additionalMetadata = null,
         string? key = null,
         DateTimeOffset? timestamp = null)
     {
@@ -64,7 +66,8 @@ public class MemoryRecord : DataEntryBase
                 externalSourceName: sourceName,
                 id: externalId,
                 description: description ?? string.Empty,
-                text: string.Empty
+                text: string.Empty,
+                additionalMetadata: additionalMetadata ?? string.Empty
             ),
             embedding,
             key,
@@ -76,17 +79,19 @@ public class MemoryRecord : DataEntryBase
     /// Prepare an instance for a memory stored in the internal storage provider.
     /// </summary>
     /// <param name="id">Resource identifier within the storage provider, e.g. record ID/GUID/incremental counter etc.</param>
-    /// <param name="text">Full text used to generate the embeddings</param>
+    /// <param name="text">Full text used to generate the embeddings.</param>
     /// <param name="description">Optional description of the record. Note: the description is not indexed.</param>
-    /// <param name="embedding">Source content embeddings</param>
-    /// <param name="key">Optional existing database key</param>
-    /// <param name="timestamp">optional timestamp</param>
+    /// <param name="embedding">Source content embedding.</param>
+    /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
+    /// <param name="key">Optional existing database key.</param>
+    /// <param name="timestamp">optional timestamp.</param>
     /// <returns>Memory record</returns>
     public static MemoryRecord LocalRecord(
         string id,
         string text,
         string? description,
         Embedding<float> embedding,
+        string? additionalMetadata = null,
         string? key = null,
         DateTimeOffset? timestamp = null)
     {
@@ -98,7 +103,8 @@ public class MemoryRecord : DataEntryBase
                 id: id,
                 text: text,
                 description: description ?? string.Empty,
-                externalSourceName: string.Empty
+                externalSourceName: string.Empty,
+                additionalMetadata: additionalMetadata ?? string.Empty
             ),
             embedding,
             key,
@@ -110,26 +116,43 @@ public class MemoryRecord : DataEntryBase
     /// Create a memory record from a serialized metadata string.
     /// </summary>
     /// <param name="json">Json string representing a memory record's metadata.</param>
-    /// <param name="embedding">The embedding associated with a memory record.</param>
-    /// <param name="key">Optional existing database key</param>
-    /// <param name="timestamp">optional timestamp</param>
+    /// <param name="embedding">Optional embedding associated with a memory record.</param>
+    /// <param name="key">Optional existing database key.</param>
+    /// <param name="timestamp">optional timestamp.</param>
     /// <returns></returns>
     /// <exception cref="MemoryException"></exception>
-    public static MemoryRecord FromJson(
+    public static MemoryRecord FromJsonMetadata(
         string json,
-        Embedding<float> embedding,
+        Embedding<float>? embedding,
         string? key = null,
         DateTimeOffset? timestamp = null)
     {
         var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
         if (metadata != null)
         {
-            return new MemoryRecord(metadata, embedding, key, timestamp);
+            return new MemoryRecord(metadata, embedding ?? Embedding<float>.Empty, key, timestamp);
         }
 
         throw new MemoryException(
             MemoryException.ErrorCodes.UnableToDeserializeMetadata,
             "Unable to create memory record from serialized metadata");
+    }
+
+    /// <summary>
+    /// Create a memory record from a memory record's metadata.
+    /// </summary>
+    /// <param name="metadata">Metadata associated with a memory.</param>
+    /// <param name="embedding">Optional embedding associated with a memory record.</param>
+    /// <param name="key">Optional existing database key.</param>
+    /// <param name="timestamp">optional timestamp.</param>
+    /// <returns></returns>
+    public static MemoryRecord FromMetadata(
+        MemoryRecordMetadata metadata,
+        Embedding<float>? embedding,
+        string? key = null,
+        DateTimeOffset? timestamp = null)
+    {
+        return new MemoryRecord(metadata, embedding ?? Embedding<float>.Empty, key, timestamp);
     }
 
     /// <summary>

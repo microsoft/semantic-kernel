@@ -76,13 +76,15 @@ public static class Example23_ReadOnlyMemoryStore
             throw new System.NotImplementedException();
         }
 
-        public Task<MemoryRecord?> GetAsync(string collectionName, string key, CancellationToken cancel = default)
+        public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
         {
+            // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return Task.FromResult(this._memoryRecords?.FirstOrDefault(x => x.Key == key));
         }
 
-        public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+        public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, CancellationToken cancel = default)
         {
+            // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return this._memoryRecords?.Where(x => keys.Contains(x.Key)).ToAsyncEnumerable() ?? AsyncEnumerable.Empty<MemoryRecord>();
         }
 
@@ -92,19 +94,22 @@ public static class Example23_ReadOnlyMemoryStore
         }
 
         public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0,
-            CancellationToken cancel = default)
+            bool withEmbedding = false, CancellationToken cancel = default)
         {
+            // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return await this.GetNearestMatchesAsync(
                 collectionName: collectionName,
                 embedding: embedding,
                 limit: 1,
                 minRelevanceScore: minRelevanceScore,
+                withEmbeddings: withEmbedding,
                 cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
         }
 
         public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit,
-            double minRelevanceScore = 0, CancellationToken cancel = default)
+            double minRelevanceScore = 0, bool withEmbeddings = false, CancellationToken cancel = default)
         {
+            // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             if (this._memoryRecords == null || !this._memoryRecords.Any())
             {
                 return AsyncEnumerable.Empty<(MemoryRecord, double)>();
@@ -166,7 +171,8 @@ public static class Example23_ReadOnlyMemoryStore
                 ""external_source_name"": ""externalSourceName"",
                 ""id"": ""Id1"",
                 ""description"": ""description"",
-                ""text"": ""text""
+                ""text"": ""text"",
+                ""additional_metadata"" : ""value:""
             },
             ""key"": ""key1"",
             ""timestamp"": null
@@ -180,7 +186,8 @@ public static class Example23_ReadOnlyMemoryStore
                 ""external_source_name"": ""externalSourceName"",
                 ""id"": ""Id2"",
                 ""description"": ""description"",
-                ""text"": ""text""
+                ""text"": ""text"",
+                ""additional_metadata"" : ""value:""
             },
             ""key"": ""key2"",
             ""timestamp"": null
@@ -194,7 +201,8 @@ public static class Example23_ReadOnlyMemoryStore
                 ""external_source_name"": ""externalSourceName"",
                 ""id"": ""Id3"",
                 ""description"": ""description"",
-                ""text"": ""text""
+                ""text"": ""text"",
+                ""additional_metadata"" : ""value:""
             },
             ""key"": ""key3"",
             ""timestamp"": null
@@ -208,7 +216,8 @@ public static class Example23_ReadOnlyMemoryStore
                 ""external_source_name"": ""externalSourceName"",
                 ""id"": ""Id4"",
                 ""description"": ""description"",
-                ""text"": ""text""
+                ""text"": ""text"",
+                ""additional_metadata"" : ""value:""
             },
             ""key"": ""key4"",
             ""timestamp"": null
@@ -222,7 +231,8 @@ public static class Example23_ReadOnlyMemoryStore
                 ""external_source_name"": ""externalSourceName"",
                 ""id"": ""Id5"",
                 ""description"": ""description"",
-                ""text"": ""text""
+                ""text"": ""text"",
+                ""additional_metadata"" : ""value:""
             },
             ""key"": ""key5"",
             ""timestamp"": null

@@ -57,7 +57,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<QdrantVectorRecord> GetVectorsByIdAsync(string collectionName, IEnumerable<string> pointIds,
+    public async IAsyncEnumerable<QdrantVectorRecord> GetVectorsByIdAsync(string collectionName, IEnumerable<string> pointIds, bool withVectors = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         this._log.LogDebug("Searching vectors by point ID");
@@ -65,7 +65,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         using HttpRequestMessage request = GetVectorsRequest.Create(collectionName)
             .WithPointIDs(pointIds)
             .WithPayloads(true)
-            .WithVectors(true)
+            .WithVectors(withVectors)
             .Build();
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
@@ -100,7 +100,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         {
             yield return new QdrantVectorRecord(
                 pointId: record.Id,
-                embedding: record.Vector!, // The request specifically asked for a vector to be in the response
+                embedding: record.Vector ?? Array.Empty<float>(),
                 record.Payload,
                 tags: null);
         }
@@ -108,14 +108,14 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     }
 
     /// <inheritdoc/>
-    public async Task<QdrantVectorRecord?> GetVectorByPayloadIdAsync(string collectionName, string metadataId, CancellationToken cancel = default)
+    public async Task<QdrantVectorRecord?> GetVectorByPayloadIdAsync(string collectionName, string metadataId, bool withVector = false, CancellationToken cancel = default)
     {
         using HttpRequestMessage request = SearchVectorsRequest.Create(collectionName)
             .SimilarTo(new float[this._vectorSize])
             .HavingExternalId(metadataId)
             .IncludePayLoad()
             .TakeFirst()
-            .IncludeVectorData()
+            .IncludeVectorData(withVector)
             .Build();
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
@@ -147,7 +147,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
 
         var record = new QdrantVectorRecord(
             pointId: point.Id,
-            embedding: point.Vector,
+            embedding: point.Vector ?? Array.Empty<float>(),
             payload: point.Payload,
             tags: null);
         this._log.LogDebug("Vector found}");
@@ -196,7 +196,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <inheritdoc/>
     public async Task DeleteVectorByPayloadIdAsync(string collectionName, string metadataId, CancellationToken cancel = default)
     {
-        QdrantVectorRecord? existingRecord = await this.GetVectorByPayloadIdAsync(collectionName, metadataId, cancel);
+        QdrantVectorRecord? existingRecord = await this.GetVectorByPayloadIdAsync(collectionName, metadataId, false, cancel);
 
         if (existingRecord == null)
         {
@@ -243,7 +243,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
 
         foreach (var record in vectorData)
         {
-            QdrantVectorRecord? existingRecord = await this.GetVectorsByIdAsync(collectionName, new[] { record.PointId }, cancel).FirstOrDefaultAsync(cancel);
+            QdrantVectorRecord? existingRecord = await this.GetVectorsByIdAsync(collectionName, new[] { record.PointId }, false, cancel).FirstOrDefaultAsync(cancel);
 
             if (existingRecord != null)
             {
@@ -281,6 +281,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         IEnumerable<float> target,
         double threshold,
         int top = 1,
+        bool withVectors = false,
         IEnumerable<string>? requiredTags = null,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
@@ -294,7 +295,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             .HavingTags(requiredTags)
             .WithScoreThreshold(threshold)
             .IncludePayLoad()
-            .IncludeVectorData()
+            .IncludeVectorData(withVectors)
             .Take(top)
             .Build();
 
@@ -321,7 +322,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         {
             var record = new QdrantVectorRecord(
                 pointId: v.Id,
-                embedding: v.Vector,
+                embedding: v.Vector ?? Array.Empty<float>(),
                 payload: v.Payload);
 
             result.Add((record, v.Score ?? 0.0));
