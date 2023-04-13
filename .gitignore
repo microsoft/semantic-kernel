@@ -456,3 +456,6 @@ env/
 venv/
 myvenv/
 ENV/
+
+# Python dist
+dist/

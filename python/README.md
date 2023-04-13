@@ -1,4 +1,11 @@
-# Setup
+# Get Started with Semantic Kernel ⚡
+
+Install the latest package:
+
+    python -m pip install --upgrade semantic-kernel
+
+
+# AI backends
 
 ## OpenAI / Azure OpenAI API keys
 
@@ -16,36 +23,21 @@ AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_DEPLOYMENT_NAME=""
 ```
 
-## Using Poetry
-
-First, navigate to the directory containing this README using your chosen shell.
-You will need to have Python 3.10 installed.
-
-Install the Poetry package manager and create a project virtual environment. (Note: we require at least Poetry 1.2.0 and Python 3.10.)
-
-```bash
-# Install poetry package
-pip3 install poetry
-# Use poetry to install project deps
-poetry install
-# Use poetry to activate project venv
-poetry shell
-```
-
-
-# Get Started with Semantic Kernel ⚡
-
-## Example: Running a simple prompt.
+# Running a prompt
 
 ```python
 import semantic_kernel as sk
-from semantic_kernel.ai.open_ai import OpenAITextCompletion
+from semantic_kernel.ai.open_ai import OpenAITextCompletion, AzureTextCompletion
 
 kernel = sk.create_kernel()
 
 # Prepare OpenAI backend using credentials stored in the `.env` file
 api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.config.add_text_backend("dv", OpenAITextCompletion("text-davinci-003", api_key, org_id))
+
+# Alternative using Azure:
+# deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+# kernel.config.add_text_backend("dv", AzureTextCompletion(deployment, endpoint, api_key))
 
 # Wrap your prompt in a function
 prompt = kernel.create_semantic_function("""
@@ -64,7 +56,7 @@ Give me the TLDR in exactly 5 words.""")
 print(prompt()) # => Robots must not harm humans.
 ```
 
-## Example: Turn prompts into **reusable functions** with input parameters.
+# Prompts are **semantic functions** with input parameters
 
 ```python
 # Create a reusable function with one input parameter
@@ -87,13 +79,34 @@ print(summarize("""
 Every point mass attracts every single other point mass by a force acting along the line intersecting both points.
 The force is proportional to the product of the two masses and inversely proportional to the square of the distance between them."""))
 
-# Output: 
-# Energy conserved, entropy increases, zero entropy at 0K.
-# Objects move in response to forces.
-# Gravitational force between two point masses is inversely proportional to the square of the distance between them.
+# Output:
+# > Energy conserved, entropy increases, zero entropy at 0K.
+# > Objects move in response to forces.
+# > Gravitational force between two point masses is inversely proportional to the square of the distance between them.
 ```
 
-## How does this compare to the C# version of Semantic Kernel?
+# Semantic Kernel Notebooks
 
-Refer to the [FEATURE_PARITY.md](FEATURE_PARITY.md) doc to see where
-things stand in matching the features and functionality of the main SK branch.
+The repository contains a few Python and C# notebooks that demonstrates how to
+get started with the Semantic Kernel.
+
+Python notebooks:
+
+* [Getting started with Semantic Kernel](samples/notebooks/python/00-getting-started.ipynb)
+* [Loading and configuring Semantic Kernel](samples/notebooks/python/01-basic-loading-the-kernel.ipynb)
+* [Running AI prompts from file](samples/notebooks/python/02-running-prompts-from-file.ipynb)
+* [Creating Semantic Functions at runtime (i.e. inline functions)](samples/notebooks/python/03-semantic-function-inline.ipynb)
+* [Using Context Variables to Build a Chat Experience](samples/notebooks/python/04-context-variables-chat.ipynb)
+* [Building Memory with Embeddings](samples/notebooks/python/06-memory-and-embeddings.ipynb)
+
+# Frequently asked questions
+
+* How does Python SK compare to the C# version of Semantic Kernel?
+
+  The two SDKs are compatible and at the core they follow the same design principles.
+  Some features are still available only in the C# version, and being ported
+  Refer to the [FEATURE PARITY](FEATURE_PARITY.md) doc to see where
+  things stand in matching the features and functionality of the main SK branch.
+  Over time there will be some features available only in the Python version, and
+  others only in the C# version, for example adapters to external services,
+  scientific libraries, etc.
