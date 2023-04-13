@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Connectors.Rest;
+namespace SemanticKernel.UnitTests.Connectors.WebApi.Rest;
 
 public sealed class RestApiOperationRunnerTests : IDisposable
 {

@@ -186,6 +186,16 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.True(operation.Headers.ContainsKey("X-Operation-Csv-Ids"));
     }
 
+    [Fact]
+    public async Task ItCanExtractAllPathsAsOperationsAsync()
+    {
+        //Act
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
+
+        //Assert
+        Assert.Equal(2, operations.Count);
+    }
+
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId, RestApiOperationParameterLocation location, string name)
     {
         Assert.True(operations.Any());
