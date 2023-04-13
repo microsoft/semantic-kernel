@@ -45,6 +45,10 @@ export const ChatRoom: React.FC = () => {
     const scrollViewTargetRef = React.useRef<HTMLDivElement>(null);
     const scrollTargetRef = React.useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = React.useState(true);
+
+    // hardcode to care only about the bot typing for now.
+    const [isBotTyping, setIsBotTyping] = React.useState(false);
+
     const chat = useChat();
 
     React.useEffect(() => {
@@ -81,8 +85,13 @@ export const ChatRoom: React.FC = () => {
             sender: account?.homeAccountId,
             content: value,
         };
+        setIsBotTyping(true);
         dispatch(updateConversation({ message: chatInput }));
-        await chat.getResponse(value, selectedId);
+        try {
+            await chat.getResponse(value, selectedId);
+        } finally {
+            setIsBotTyping(false);
+        }
         setShouldAutoScroll(true);
     };
 
@@ -95,7 +104,7 @@ export const ChatRoom: React.FC = () => {
                 </div>
             </div>
             <div className={classes.input}>
-                <ChatInput onSubmit={handleSubmit} />
+                <ChatInput isTyping={isBotTyping} onSubmit={handleSubmit} />
             </div>
         </div>
     );

@@ -39,8 +39,37 @@ The Copilot Chat sameple showcases how to build an enriched intelligent app, wit
 
 ### Working with Secrets
 
-We need keys to work with various aspects of the project including accessing openAI models. This opens up the possibility of exposing keys in commits. There are a [couple of options](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows) to safeguard developers from exposing keys. Outside of using the dotnet's users-secrets and environment variables, we've also added *.development.json and *.development.config to the .gitignore if developers want to use appsettings.development.json files or other development.config files for secret storage.
+We need keys to work with various aspects of the project including accessing OpenAI models. This opens up the possibility of exposing keys in commits. There are a [couple of options](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows) to safeguard developers from exposing keys. Outside of using the dotnet's users-secrets and environment variables, we've also added *.development.json and *.development.config to the .gitignore if developers want to use appsettings.development.json files or other development.config files for secret storage.
 
-## Authentication in this sample
+## AuthN/AuthZ Story
+### Authentication in this sample
 
 This sample uses the Microsoft Authentication Library (MSAL) for React to sign in users. Learn more about it here: https://learn.microsoft.com/en-us/azure/active-directory/develop/tutorial-v2-react.
+
+### Authorizing SKaS (SK as a Service)
+When the user logs in, they will be prompted to consent to scopes set as `skScopes` in the [Constants.ts file](./src/Constants.ts). These scopes contain some default OpenID Connect scopes and the `User.Read` scope.
+
+These scopes will authorize the user to access the SK Server (webapi application you are running on https://localhost:40443/). Each time the kernel is called to invoke a skill, the WebApp will acquire a token with these scopes to pass to the server.
+
+
+### Authorizing Connectors used in Semantic Kernel Skills
+Some skills utilize [connectors](https://learn.microsoft.com/en-us/semantic-kernel/concepts-sk/connectors) to allow you to connect to external APIs or services for added functionality. These skills require separate access tokens to authorize to these external resources. [useConnectors.ts](./src/libs/connectors/useConnectors.ts) handles this token acquisition.
+
+This sample follows the 'incremental consent' concept, so new permissions will require additional consent, in which the user will be prompted when a request for the token is made. If consent is granted and the user is authorized, an access token will be passed to the server under a new header: `sk-copilot-connector-access-token`. The `Authorization` header is reserved for the SKaS Access token.
+
+To invoke skills with the required tokens, do the following (see comments tagged `ConnectorTokenExample` in [useChat](./src/libs/useChat.ts) for example):
+
+1. Import the Connectors hook: `import { useConnectors } from '{path}/connectors/useConnectors';`
+2. In component: `const connectors = useConnectors();`
+3. Invoke Skill with scopes required for the downstream Connector as an array, i.e. `const scopes = ['User.Read']`
+
+   `var result = await connectors.invokeSkillWithConnectorToken(ask, {ConnectorSkill}, {ConnectorFunction}, scopes);`
+
+      - To use Graph token specifically, uncomment the scopes you need under `msGraphScopes` in [Constants.ts file](./src/Constants.ts), then call the `invokeSkillWithGraphToken` function. Be default, the ones already uncommented map to Graph APIs used in existing connectors.
+      
+         i.e., `var result = await connectors.invokeSkillWithGraphToken(ask, {ConnectorSkill}, {ConnectorFunction});`
+
+      - To use ADO token specifically, uncomment the scopes you need under `adoScopes` in [Constants.ts file](./src/Constants.ts), then call the `invokeSkillWithAdoToken` function.
+      
+         i.e., `var result = await connectors.invokeSkillWithAdoToken(ask, {ConnectorSkill}, {ConnectorFunction});`
+4. Process result as normal.
