@@ -73,10 +73,15 @@ export const useConnectors = () => {
         return await invokeSkillWithConnectorToken(ask, skillName, functionName, Constants.adoScopes);
     };
 
+    const getAADToken = async (scopes: Array<string>) => {
+        return await TokenHelper.getAccessToken(inProgress, msalInstance, scopes);
+    };
+
     return {
         makeGraphRequest,
         invokeSkillWithConnectorToken,
         invokeSkillWithGraphToken,
         invokeSkillWithAdoToken,
+        getAADToken,
     };
 };

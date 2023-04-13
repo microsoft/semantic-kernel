@@ -72,4 +72,5 @@ export const Constants = {
         // 'User.ReadBasic.All',
     ],
     adoScopes: ['vso.work'],
+    azureSpeechScopes: ['https://cognitiveservices.azure.com/.default/'],
 };

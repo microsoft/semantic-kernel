@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
+import { Constants } from '../../Constants';
+import { useConnectors } from './../connectors/useConnectors'; // ConnectorTokenExample
+const speechResourceID = process.env.AZURE_SPEECH_RESOURCE_ID as string;
+const speechResourceRegion = process.env.AZURE_SPEECH_RESOURCE_REGION as string;
+
+//const { DefaultAzureCredential } = require('@azure/identity');
 
 interface TokenResponse {
     token: string;
@@ -14,6 +20,42 @@ interface SpeechServiceRequest {
 
 export class SKSpeechService {
     constructor(private readonly serviceUrl: string) {}
+
+    getSpeechRecognizerFromAADTokenAsync = async () => {
+        //
+        // var userAssignedClientId = "<your managed identity client Id>" as string;
+        // var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = userAssignedClientId });
+
+        //const { DefaultAzureCredential } = require('@azure/identity');
+
+        // await TokenHelper.getAccessToken(inProgress, msalInstance, scopes).then(async (token: string) => {
+        //     await sk.invokeAsync(ask, skillName, functionName, token);
+        // });
+        // const { inProgress } = useMsal();
+        // var aadTokenFromMsalInstance = TokenHelper.getAccessToken(
+        //     inProgress,
+        //     msalInstance,
+        //     Constants.azureSpeechScopes,
+        // );
+
+        //const credential = new DefaultAzureCredential();
+        //const aadToken = await credential.getToken('https://cognitiveservices.azure.com/.default');
+        //const region = 'westus2';
+
+        const connectors = useConnectors();
+        var aadTokenFromMsalInstance = await connectors.getAADToken(Constants.azureSpeechScopes);
+
+        // Passing token to the Speech SDK
+        const speechConfig = speechSdk.SpeechConfig.fromAuthorizationToken(
+            'aad#' + speechResourceID + '#' + aadTokenFromMsalInstance,
+            speechResourceRegion,
+        );
+
+        //const speechConfig = speechSdk.SpeechConfig.fromAuthorizationToken(token, region);
+        speechConfig.speechRecognitionLanguage = 'en-US';
+        const audioConfig = speechSdk.AudioConfig.fromDefaultMicrophoneInput();
+        return new speechSdk.SpeechRecognizer(speechConfig, audioConfig);
+    };
 
     getSpeechRecognizerAsync = async () => {
         const response = await this.invokeTokenAsync();
