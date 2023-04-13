@@ -59,7 +59,7 @@ public interface ISemanticTextMemory
     /// <param name="withEmbedding">Whether to return the embedding of the memory found.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>Memory record, or null when nothing is found</returns>
-    public Task<MemoryQueryResult?> GetAsync(string collection, string key, bool withEmbedding = default, CancellationToken cancel = default);
+    public Task<MemoryQueryResult?> GetAsync(string collection, string key, bool withEmbedding = false, CancellationToken cancel = default);
 
     /// <summary>
     /// Remove a memory by key.
@@ -86,7 +86,7 @@ public interface ISemanticTextMemory
         string query,
         int limit = 1,
         double minRelevanceScore = 0.7,
-        bool withEmbeddings = default,
+        bool withEmbeddings = false,
         CancellationToken cancel = default);
 
     /// <summary>

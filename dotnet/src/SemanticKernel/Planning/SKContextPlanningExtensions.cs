@@ -135,13 +135,13 @@ internal static class SKContextPlanningExtensions
             var key = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
-            var memoryEntry = await context.Memory.GetAsync(PlannerMemoryCollectionName, key, false, context.CancellationToken);
+            var memoryEntry = await context.Memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false, cancel: context.CancellationToken);
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
-                await context.Memory.SaveInformationAsync(PlannerMemoryCollectionName, key, functionName, function.ToManualString(),
-                    string.Empty, context.CancellationToken);
+                await context.Memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: functionName, id: key, description: function.ToManualString(),
+                    additionalMetadata: string.Empty, cancel: context.CancellationToken);
             }
         }
 
