@@ -48,7 +48,7 @@ public class ChatMemorySkill
         var userName = context["userName"];
 
         // Create a new chat.
-        var newChat = new Chat(userId, title);
+        var newChat = new ChatSession(userId, title);
         await this._chatRepository.Create(newChat);
 
         // Create the initial bot message.
@@ -80,7 +80,7 @@ public class ChatMemorySkill
     [SKFunctionContextParameter(Name = "title", Description = "The title of the chat.")]
     public async Task EditChatAsync(string chatId, SKContext context)
     {
-        Chat chat = await this._chatRepository.FindById(chatId);
+        ChatSession chat = await this._chatRepository.FindById(chatId);
         chat.Title = context["title"];
 
         await this._chatRepository.Update(chat);

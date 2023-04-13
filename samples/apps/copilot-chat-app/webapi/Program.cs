@@ -145,7 +145,8 @@ public static class Program
         var chatMessageInMemoryContext = new InMemoryContext<ChatMessage>();
         services.AddSingleton<ChatRepository>(new ChatRepository(chatInMemoryContext));
         services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
-        // CosmosDB version
+        // Comment out the above and uncomment the following to use CosmosDB as the storage context.
+        // Make sure there is only one repository for each type of entity.
         // var chatCosmosDbContext = new CosmosDbContext<Chat>("<connectionString>", "<db>", "<container>");
         // var chatMessageCosmosDbContext = new CosmosDbContext<ChatMessage>("<connectionString>", "<db>", "<container>");
         // services.AddSingleton<ChatRepository>(new ChatRepository(chatCosmosDbContext));

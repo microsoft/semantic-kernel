@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Globalization;
 using System.Text.Json;
@@ -6,40 +6,6 @@ using System.Text.Json.Serialization;
 using SKWebApi.Storage;
 
 namespace SKWebApi.Skills;
-
-/// <summary>
-/// A chat session
-/// </summary>
-public class Chat : IStorageEntity
-{
-    /// <summary>
-    /// Chat ID that is persistent and unique.
-    /// </summary>
-    [JsonPropertyName("id")]
-    [JsonPropertyOrder(1)]
-    public string Id { get; set; }
-
-    /// <summary>
-    /// Chat ID that is persistent and unique.
-    /// </summary>
-    [JsonPropertyName("userId")]
-    [JsonPropertyOrder(2)]
-    public string UserId { get; set; }
-
-    /// <summary>
-    /// Title of the chat.
-    /// </summary>
-    [JsonPropertyName("title")]
-    [JsonPropertyOrder(3)]
-    public string Title { get; set; }
-
-    public Chat(string userId, string title)
-    {
-        this.Id = Guid.NewGuid().ToString();
-        this.UserId = userId;
-        this.Title = title;
-    }
-}
 
 /// <summary>
 /// Information about a single chat message.
@@ -50,49 +16,42 @@ public class ChatMessage : IStorageEntity
     /// Timestamp of the message.
     /// </summary>
     [JsonPropertyName("timestamp")]
-    [JsonPropertyOrder(1)]
     public DateTimeOffset Timestamp { get; set; }
 
     /// <summary>
     /// Id of the user who sent this message.
     /// </summary>
     [JsonPropertyName("userId")]
-    [JsonPropertyOrder(2)]
     public string UserId { get; set; }
 
     /// <summary>
     /// Name of the user who sent this message.
     /// </summary>
     [JsonPropertyName("userName")]
-    [JsonPropertyOrder(3)]
     public string UserName { get; set; }
 
     /// <summary>
     /// Id of the chat this message belongs to.
     /// </summary>
     [JsonPropertyName("chatId")]
-    [JsonPropertyOrder(4)]
     public string ChatId { get; set; }
 
     /// <summary>
     /// Content of the message.
     /// </summary>
     [JsonPropertyName("content")]
-    [JsonPropertyOrder(5)]
     public string Content { get; set; }
 
     /// <summary>
     /// Id of the message.
     /// </summary>
     [JsonPropertyName("id")]
-    [JsonPropertyOrder(6)]
     public string Id { get; set; }
 
     /// <summary>
     /// True if the message is from the user. Otherwise it's from the bot.
     /// </summary>
     [JsonPropertyName("fromUser")]
-    [JsonPropertyOrder(7)]
     public bool FromUser { get; set; }
 
     /// <summary>
