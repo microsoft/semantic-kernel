@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Globalization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;

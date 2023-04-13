@@ -66,15 +66,15 @@ internal class GetVectorsRequest
         return this;
     }
 
-    public GetVectorsRequest WithVectors(bool withVectors)
+    public GetVectorsRequest WithVectors(bool withEmbeddings)
     {
-        this.WithVector = withVectors;
+        this.WithVector = withEmbeddings;
         return this;
     }
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreateGetRequest(
+        return HttpRequest.CreatePostRequest(
             $"/collections/{this.Collection}/points",
             payload: this);
     }

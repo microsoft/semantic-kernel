@@ -119,7 +119,7 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc />
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
     {
         var id = this.ToCosmosFriendlyId(key);
         var partitionKey = PartitionKey.None;
@@ -141,11 +141,11 @@ public class CosmosMemoryStore : IMemoryStore
         {
             var result = response.Resource;
 
-            var vector = System.Text.Json.JsonSerializer.Deserialize<float[]>(result.EmbeddingString);
+            float[]? vector = withEmbedding ? System.Text.Json.JsonSerializer.Deserialize<float[]>(result.EmbeddingString) : System.Array.Empty<float>();
 
             if (vector != null)
             {
-                memoryRecord = MemoryRecord.FromJson(
+                memoryRecord = MemoryRecord.FromJsonMetadata(
                     result.MetadataString,
                     new Embedding<float>(vector),
                     result.Id,
@@ -157,12 +157,12 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys,
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
         {
-            var record = await this.GetAsync(collectionName, key, cancel);
+            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel);
 
             if (record != null)
             {
@@ -241,6 +241,7 @@ public class CosmosMemoryStore : IMemoryStore
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         {
@@ -252,15 +253,16 @@ public class CosmosMemoryStore : IMemoryStore
             var collectionMemories = new List<MemoryRecord>();
             TopNCollection<MemoryRecord> embeddings = new(limit);
 
-            await foreach (var entry in this.GetAllAsync(collectionName, cancel))
+            await foreach (var record in this.GetAllAsync(collectionName, cancel))
             {
-                if (entry != null)
+                if (record != null)
                 {
                     double similarity = embedding
                         .AsReadOnlySpan()
-                        .CosineSimilarity(entry.Embedding.AsReadOnlySpan());
+                        .CosineSimilarity(record.Embedding.AsReadOnlySpan());
                     if (similarity >= minRelevanceScore)
                     {
+                        var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, Embedding<float>.Empty, record.Key, record.Timestamp);
                         embeddings.Add(new(entry, similarity));
                     }
                 }
@@ -276,7 +278,7 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
         CancellationToken cancel = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -284,6 +286,7 @@ public class CosmosMemoryStore : IMemoryStore
             embedding: embedding,
             limit: 1,
             minRelevanceScore: minRelevanceScore,
+            withEmbeddings: withEmbedding,
             cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
     }
 
@@ -302,7 +305,7 @@ public class CosmosMemoryStore : IMemoryStore
 
             if (vector != null)
             {
-                yield return MemoryRecord.FromJson(
+                yield return MemoryRecord.FromJsonMetadata(
                     item.MetadataString,
                     new Embedding<float>(vector),
                     item.Id,
