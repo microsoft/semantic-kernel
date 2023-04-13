@@ -18,9 +18,9 @@ Copy those keys into a `.env` file (see the `.env.example` file):
 ```
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
-AZURE_OPENAI_API_KEY=""
-AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_DEPLOYMENT_NAME=""
+AZURE_OPENAI_ENDPOINT=""
+AZURE_OPENAI_API_KEY=""
 ```
 
 # Running a prompt
@@ -92,12 +92,12 @@ get started with the Semantic Kernel.
 
 Python notebooks:
 
-* [Getting started with Semantic Kernel](samples/notebooks/python/00-getting-started.ipynb)
-* [Loading and configuring Semantic Kernel](samples/notebooks/python/01-basic-loading-the-kernel.ipynb)
-* [Running AI prompts from file](samples/notebooks/python/02-running-prompts-from-file.ipynb)
-* [Creating Semantic Functions at runtime (i.e. inline functions)](samples/notebooks/python/03-semantic-function-inline.ipynb)
-* [Using Context Variables to Build a Chat Experience](samples/notebooks/python/04-context-variables-chat.ipynb)
-* [Building Memory with Embeddings](samples/notebooks/python/06-memory-and-embeddings.ipynb)
+* [Getting started with Semantic Kernel](../samples/notebooks/python/00-getting-started.ipynb)
+* [Loading and configuring Semantic Kernel](../samples/notebooks/python/01-basic-loading-the-kernel.ipynb)
+* [Running AI prompts from file](../samples/notebooks/python/02-running-prompts-from-file.ipynb)
+* [Creating Semantic Functions at runtime (i.e. inline functions)](../samples/notebooks/python/03-semantic-function-inline.ipynb)
+* [Using Context Variables to Build a Chat Experience](../samples/notebooks/python/04-context-variables-chat.ipynb)
+* [Building Memory with Embeddings](../samples/notebooks/python/06-memory-and-embeddings.ipynb)
 
 # Frequently asked questions
 

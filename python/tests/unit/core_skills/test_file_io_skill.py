@@ -23,12 +23,17 @@ def test_can_be_imported():
 @pytest.mark.asyncio
 async def test_can_read_async():
     skill = FileIOSkill()
-    with tempfile.NamedTemporaryFile(mode="w", delete=True) as fp:
-        fp.write("Hello, world!")
-        fp.flush()
+    fp = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as fp:
+            fp.write("Hello, world!")
+            fp.flush()
 
-        content = await skill.read_async(fp.name)
-        assert content == "Hello, world!"
+            content = await skill.read_async(fp.name)
+            assert content == "Hello, world!"
+    finally:
+        if fp is not None:
+            os.remove(fp.name)
 
 
 @pytest.mark.asyncio
@@ -46,34 +51,45 @@ async def test_cannot_read_async():
 @pytest.mark.asyncio
 async def test_can_write():
     skill = FileIOSkill()
-    with tempfile.NamedTemporaryFile(mode="r", delete=True) as fp:
-        context_variables = ContextVariables()
+    fp = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="r", delete=False) as fp:
+            context_variables = ContextVariables()
 
-        context_variables.set("path", fp.name)
-        context_variables.set("content", "Hello, world!")
+            context_variables.set("path", fp.name)
+            context_variables.set("content", "Hello, world!")
 
-        context = SKContext(context_variables, None, None, None)
+            context = SKContext(context_variables, None, None, None)
 
-        await skill.write_async(context)
+            await skill.write_async(context)
 
-        content = fp.read()
+            content = fp.read()
 
-        assert content == "Hello, world!"
+            assert content == "Hello, world!"
+    finally:
+        if fp is not None:
+            os.remove(fp.name)
 
 
 @pytest.mark.asyncio
 async def test_cannot_write():
-    with tempfile.TemporaryDirectory() as temp_dir:
-        skill = FileIOSkill()
-        os.chmod(temp_dir, 0o500)
+    skill = FileIOSkill()
+    fp = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="r", delete=False) as fp:
+            os.chmod(fp.name, 0o500)
 
-        temp_file = os.path.join(temp_dir, "test.txt")
-        context_variables = ContextVariables()
+            context_variables = ContextVariables()
 
-        context_variables.set("path", temp_file)
-        context_variables.set("content", "Hello, world!")
+            context_variables.set("path", fp.name)
+            context_variables.set("content", "Hello, world!")
 
-        context = SKContext(context_variables, None, None, None)
+            context = SKContext(context_variables, None, None, None)
 
-        with pytest.raises(PermissionError):
-            await skill.write_async(context)
+            with pytest.raises(PermissionError):
+                await skill.write_async(context)
+
+            os.chmod(fp.name, 0o777)
+    finally:
+        if fp is not None:
+            os.remove(fp.name)

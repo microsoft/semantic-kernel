@@ -54,6 +54,7 @@ Semantic Kernel is available to explore AI and build apps with C# and Python:
 <img src="https://user-images.githubusercontent.com/371009/230673733-7a447d30-b48e-46e1-bd84-2b321c90649e.png" style="margin-right:12px" height="30"/>
 <a href="python/README.md">Using Semantic Kernel in Python</a>.
 </div>
+<br/>
 
 The quickest way to get started with the basics is to get an API key
 (OpenAI or Azure OpenAI)
@@ -74,7 +75,7 @@ For Python:
 5. Run the python script.
 
 
-## Samples apps ⚡
+## Sample apps ⚡
 
 The repository includes some sample applications, with a React frontend and
 a backend web service using Semantic Kernel.
@@ -89,28 +90,28 @@ Follow the links for more information and instructions about running these apps.
 | [GitHub repository Q&A](samples/apps/github-qna-webapp-react/README.md) | Use embeddings and memory to store recent data and allow you to query against it.                                                 |
 | [Copilot Chat Sample App](samples/apps/copilot-chat-app/README.md)      | Build your own chat experience based on Semantic Kernel.                                                                          |
 
-**Please note:**
+**Requirements:**
 
 - You will need an
   [Open AI API Key](https://openai.com/api/) or
   [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
   to get started.
-- There are a few software requirements you may need to satisfy before running examples and notebooks:
-  1. [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local)
-     used for running the kernel as a local API, required by the web apps.
-  2. [Yarn](https://yarnpkg.com/getting-started/install) used for installing
-     web apps' dependencies.
-  3. Semantic Kernel supports .NET Standard 2.1 and it's recommended using .NET 6+. However, some of
-     the examples in the repository require [.NET 7](https://dotnet.microsoft.com/download) and the VS Code
-     [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode)
-     to run the notebooks.
+- [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local)
+  are required to run the kernel as a local web service, used by the sample web apps.
+- [.NET 6](https://dotnet.microsoft.com/download/dotnet/6.0). If you have .NET 7 installe, Azure Function
+  Tools will still require .NET 6, so we suggest installing both.
+- [Yarn](https://yarnpkg.com/getting-started/install) is used for installing web apps' dependencies.
 
-## Notebooks ⚡
 
-For a more hands-on overview, you can also check out the Jupyter C# and Python notebooks, starting
+## Jupyter Notebooks ⚡
+
+For a more hands-on overview, you can also check out the C# and Python Jupyter notebooks, starting
 from here:
-* [Getting Started with C# notebook](samples/notebooks/dotnet/Getting-Started-Notebook.ipynb)
-* [Getting Started with Python notebook](samples/notebooks/python/00-getting-started-notebook.ipynb)
+* [Getting Started with C# notebook](samples/notebooks/dotnet/00-getting-started.ipynb)
+* [Getting Started with Python notebook](samples/notebooks/python/00-getting-started.ipynb)
+
+**Requirements:** C# notebooks require [.NET 7](https://dotnet.microsoft.com/download)
+and the VS Code [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode).
 
 ## Contributing and Community
 

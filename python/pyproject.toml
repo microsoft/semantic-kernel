@@ -24,6 +24,9 @@ pytest-asyncio = "^0.21.0"
 [tool.isort]
 profile = "black"
 
+[tool.ruff]
+line-length = 120
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

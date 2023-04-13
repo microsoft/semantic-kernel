@@ -10,7 +10,8 @@ Make sure you have an
 
 Here is a quick example of how to use Semantic Kernel from a C# console app.
 First, let's create a new project, targeting .NET 6 or newer, and add the
-`Microsoft.SemanticKernel` nuget package:
+`Microsoft.SemanticKernel` nuget package to your project from the command prompt
+in Visual Studio:
 
     dotnet add package Microsoft.SemanticKernel --prerelease
 
@@ -101,5 +102,15 @@ Console.WriteLine(output);
 The repository contains also a few C# Jupyter notebooks that demonstrates
 how to get started with the Semantic Kernel.
 
-See [here](../samples/notebooks/dotnet/README.md) for the full list with setup
-instructions.
+See [here](../samples/notebooks/dotnet/README.md) for the full list, with
+requirements and setup instructions.
+
+1. [Getting started](00-getting-started.ipynb)
+2. [Loading and configuring Semantic Kernel](01-basic-loading-the-kernel.ipynb)
+3. [Running AI prompts from file](02-running-prompts-from-file.ipynb)
+4. [Creating Semantic Functions at runtime (i.e. inline functions)](03-semantic-function-inline.ipynb)
+5. [Using Context Variables to Build a Chat Experience](04-context-variables-chat.ipynb)
+6. [Creating and Executing Plans](05-using-the-planner.ipynb)
+7. [Building Memory with Embeddings](06-memory-and-embeddings.ipynb)
+8. [Creating images with DALL-E 2](07-DALL-E-2.ipynb)
+9. [Chatting with ChatGPT and Images](08-chatGPT-with-DALL-E-2.ipynb)

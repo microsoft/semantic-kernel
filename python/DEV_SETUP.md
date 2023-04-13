@@ -13,8 +13,9 @@ Copy those keys into a `.env` file (see the `.env.example` file):
 ```
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
-AZURE_OPENAI_API_KEY=""
+AZURE_OPENAI_DEPLOYMENT_NAME=""
 AZURE_OPENAI_ENDPOINT=""
+AZURE_OPENAI_API_KEY=""
 ```
 
 We suggest adding a copy of the `.env` file under these folders:
@@ -92,9 +93,15 @@ You should be able to run the example under the [tests](tests) folder.
     poetry install
     poetry run pytest tests
 
-# Pipeline checks
+# Tools and scripts
+
+## Pipeline checks
 
 To run the same checks that run during the GitHub Action build, you can use
 this command, from the [python](/python) folder:
 
     poetry run pre-commit run -c .conf/.pre-commit-config.yaml -a
+
+## Running ruff
+
+    poetry run ruff check .
