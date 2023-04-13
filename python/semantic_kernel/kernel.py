@@ -66,8 +66,6 @@ class Kernel(KernelBase, KernelExtensions):
             else PromptTemplateEngine(self._log)
         )
         self._memory = memory if memory else NullMemory()
-        if memory_store:
-            self.use_memory(memory_store)
 
     def kernel(self) -> KernelBase:
         return self
@@ -173,6 +171,9 @@ class Kernel(KernelBase, KernelExtensions):
 
     def register_memory(self, memory: SemanticTextMemoryBase) -> None:
         self._memory = memory
+
+    def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
+        self.use_memory(memory_store)
 
     def create_new_context(self) -> SKContext:
         return SKContext(
