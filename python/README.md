@@ -40,7 +40,7 @@ poetry shell
 import semantic_kernel as sk
 from semantic_kernel.ai.open_ai import OpenAITextCompletion
 
-kernel = sk.create_kernel()
+kernel = sk.Kernel()
 
 # Prepare OpenAI backend using credentials stored in the `.env` file
 api_key, org_id = sk.openai_settings_from_dot_env()

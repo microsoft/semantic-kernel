@@ -7,28 +7,19 @@ import semantic_kernel as sk
 import semantic_kernel.ai.open_ai as sk_oai
 
 
-def build_kernel() -> sk.Kernel:
+def setup_kernel() -> sk.Kernel:
     # Setup kernel with OpenAI completion and embedding backends
     api_key, org_id = sk.openai_settings_from_dot_env()
 
-    kernel = (
-        sk.kernel_builder()
-        .configure(
-            lambda c: c.add_text_backend(
-                "davinci-003",
-                sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id),
-            )
-        )
-        .configure(
-            lambda c: c.add_embedding_backend(
-                "ada-002",
-                sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id),
-            )
-        )
-        .with_memory_storage(sk.memory.VolatileMemoryStore())
-        .build()
+    kernel = sk.Kernel()
+    kernel.config.add_text_backend(
+        "dv", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
+    )
+    kernel.config.add_embedding_backend(
+        "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
     )
 
+    kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
     kernel.import_skill(sk.core_skills.TextMemorySkill())
 
     return kernel
@@ -132,7 +123,7 @@ async def chat(
 
 
 async def main() -> None:
-    kernel = build_kernel()
+    kernel = setup_kernel()
 
     print("Populating memory...")
     await populate_memory(kernel)

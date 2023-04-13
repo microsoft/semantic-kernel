@@ -6,7 +6,7 @@ import os
 import semantic_kernel as sk
 import semantic_kernel.ai.open_ai as sk_oai
 
-kernel = sk.create_kernel()
+kernel = sk.Kernel()
 
 useAzureOpenAI = False
 model = "text-davinci-002"
