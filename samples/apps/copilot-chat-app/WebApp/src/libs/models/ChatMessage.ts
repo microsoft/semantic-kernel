@@ -2,7 +2,10 @@
 
 export interface ChatMessage {
     timestamp: number;
-    sender: 'bot' | string;
+    userName: 'bot' | string;
+    userId: string;
     content: string;
+    id?: string;
+    fromUser: boolean;
     debug?: string;
 }

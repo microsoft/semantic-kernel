@@ -82,8 +82,10 @@ export const ChatRoom: React.FC = () => {
         log('submitting user chat message');
         const chatInput = {
             timestamp: new Date().getTime(),
-            sender: account?.homeAccountId,
+            userId: account?.homeAccountId,
+            userName: account?.name as string,
             content: value,
+            fromUser: true,
         };
         setIsBotTyping(true);
         dispatch(updateConversation({ message: chatInput }));

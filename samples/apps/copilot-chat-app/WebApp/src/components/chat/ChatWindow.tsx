@@ -12,8 +12,12 @@ import {
 } from '@fluentui/react-components';
 import { EditRegular, Save24Regular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
+import { AlertType } from '../../libs/models/AlertType';
+import { IAsk } from '../../libs/semantic-kernel/model/Ask';
+import { useSemanticKernel } from '../../libs/semantic-kernel/useSemanticKernel';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
+import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
 import { ChatRoom } from './ChatRoom';
 
@@ -74,14 +78,30 @@ const useClasses = makeStyles({
 
 export const ChatWindow: React.FC = () => {
     const classes = useClasses();
+    const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const dispatch = useAppDispatch();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
-    const onEdit = () => {
+    const onEdit = async () => {
         if (isEditing) {
-            if (selectedId !== title) dispatch(editConversationTitle({ id: selectedId ?? '', newId: title ?? '' }));
+            if (selectedId !== title) {
+                try {
+                    var ask: IAsk = {
+                        input: conversations[selectedId].id!,
+                        variables: [
+                            { key: 'title', value: title! },
+                        ],
+                    };
+
+                    await sk.invokeAsync(ask, 'ChatMemorySkill', 'EditChat');
+                    dispatch(editConversationTitle({ id: selectedId ?? '', newId: title ?? '' }));
+                } catch (e: any) {
+                    const errorMessage = `Unable to retrieve chat to change title. Details: ${e.message ?? e}`;
+                    dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+                }
+            }
         }
         setIsEditing(!isEditing);
     };

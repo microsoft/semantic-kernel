@@ -7,6 +7,7 @@ import { useChat } from '../../../libs/useChat';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { ChatListItem } from './ChatListItem';
+
 const useClasses = makeStyles({
     root: {
         width: '25%',
