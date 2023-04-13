@@ -75,7 +75,12 @@ const App: FC = () => {
     return (
         <div>
             <UnauthenticatedTemplate>
-                <Login />
+                <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
+                    <div className={classes.header}>
+                        <Subtitle1 as="h1">Copilot Chat</Subtitle1>                        
+                    </div>
+                    <Login />
+                </div>
             </UnauthenticatedTemplate>
             <AuthenticatedTemplate>
                 <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
