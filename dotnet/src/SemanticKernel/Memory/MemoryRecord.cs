@@ -46,7 +46,7 @@ public class MemoryRecord : DataEntryBase
     /// <param name="sourceName">Name of the external service, e.g. "MSTeams", "GitHub", "WebSite", "Outlook IMAP", etc.</param>
     /// <param name="description">Optional description of the record. Note: the description is not indexed.</param>
     /// <param name="embedding">Source content embedding.</param>
-    /// <param name="valueString">Optional value string for saving custom metadata.</param>
+    /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
     /// <param name="key">Optional existing database key.</param>
     /// <param name="timestamp">optional timestamp.</param>
     /// <returns>Memory record</returns>
@@ -55,7 +55,7 @@ public class MemoryRecord : DataEntryBase
         string sourceName,
         string? description,
         Embedding<float> embedding,
-        string? valueString = null,
+        string? additionalMetadata = null,
         string? key = null,
         DateTimeOffset? timestamp = null)
     {
@@ -67,7 +67,7 @@ public class MemoryRecord : DataEntryBase
                 id: externalId,
                 description: description ?? string.Empty,
                 text: string.Empty,
-                valueString: valueString ?? string.Empty
+                additionalMetadata: additionalMetadata ?? string.Empty
             ),
             embedding,
             key,
@@ -82,7 +82,7 @@ public class MemoryRecord : DataEntryBase
     /// <param name="text">Full text used to generate the embeddings.</param>
     /// <param name="description">Optional description of the record. Note: the description is not indexed.</param>
     /// <param name="embedding">Source content embedding.</param>
-    /// <param name="valueString">Optional value string for saving custom metadata.</param>
+    /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
     /// <param name="key">Optional existing database key.</param>
     /// <param name="timestamp">optional timestamp.</param>
     /// <returns>Memory record</returns>
@@ -91,7 +91,7 @@ public class MemoryRecord : DataEntryBase
         string text,
         string? description,
         Embedding<float> embedding,
-        string? valueString = null,
+        string? additionalMetadata = null,
         string? key = null,
         DateTimeOffset? timestamp = null)
     {
@@ -104,7 +104,7 @@ public class MemoryRecord : DataEntryBase
                 text: text,
                 description: description ?? string.Empty,
                 externalSourceName: string.Empty,
-                valueString: valueString ?? string.Empty
+                additionalMetadata: additionalMetadata ?? string.Empty
             ),
             embedding,
             key,
@@ -121,7 +121,7 @@ public class MemoryRecord : DataEntryBase
     /// <param name="timestamp">optional timestamp.</param>
     /// <returns></returns>
     /// <exception cref="MemoryException"></exception>
-    public static MemoryRecord FromJson(
+    public static MemoryRecord FromJsonMetadata(
         string json,
         Embedding<float>? embedding,
         string? key = null,

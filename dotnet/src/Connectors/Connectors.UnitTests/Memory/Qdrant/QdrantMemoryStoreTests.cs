@@ -204,7 +204,7 @@ public class QdrantMemoryStoreTests
 
         var key = Guid.NewGuid().ToString();
 
-        var qdrantVectorRecord = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             key,
             memoryRecord.Embedding.Vector,
             memoryRecord.GetSerializedMetadata());
@@ -252,7 +252,7 @@ public class QdrantMemoryStoreTests
             description: this._description,
             embedding: this._embedding);
 
-        var qdrantVectorRecord = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             Guid.NewGuid().ToString(),
             Array.Empty<float>(),
             memoryRecord.GetSerializedMetadata());
@@ -307,7 +307,7 @@ public class QdrantMemoryStoreTests
 
         memoryRecord.Key = Guid.NewGuid().ToString();
 
-        var qdrantVectorRecord = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             memoryRecord.Key,
             Array.Empty<float>(),
             memoryRecord.GetSerializedMetadata());

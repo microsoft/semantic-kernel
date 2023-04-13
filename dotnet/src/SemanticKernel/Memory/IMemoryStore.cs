@@ -71,7 +71,7 @@ public interface IMemoryStore
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>The memory record if found, otherwise null.</returns>
-    Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default);
+    Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = default, CancellationToken cancel = default);
 
     /// <summary>
     /// Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
@@ -81,7 +81,7 @@ public interface IMemoryStore
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>The memory records associated with the unique keys provided.</returns>
-    IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, CancellationToken cancel = default);
+    IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = default, CancellationToken cancel = default);
 
     /// <summary>
     /// Removes a memory record from the data store. Does not guarantee that the collection exists.
@@ -114,7 +114,7 @@ public interface IMemoryStore
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0.0,
-        bool withEmbeddings = false,
+        bool withEmbeddings = default,
         CancellationToken cancel = default);
 
     /// <summary>
@@ -130,6 +130,6 @@ public interface IMemoryStore
         string collectionName,
         Embedding<float> embedding,
         double minRelevanceScore = 0.0,
-        bool withEmbedding = false,
+        bool withEmbedding = default,
         CancellationToken cancel = default);
 }

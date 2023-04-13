@@ -130,14 +130,14 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = default, CancellationToken cancel = default)
     {
         try
         {
             var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, withEmbedding, cancel: cancel);
             if (vectorData != null)
             {
-                return MemoryRecord.FromJson(
+                return MemoryRecord.FromJsonMetadata(
                     json: vectorData.GetSerializedPayload(),
                     embedding: new Embedding<float>(vectorData.Embedding),
                     key: vectorData.PointId);
@@ -164,7 +164,7 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = default,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
@@ -186,7 +186,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
-    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = default, CancellationToken cancel = default)
     {
         try
         {
@@ -197,7 +197,7 @@ public class QdrantMemoryStore : IMemoryStore
 
             if (vectorData != null)
             {
-                return MemoryRecord.FromJson(
+                return MemoryRecord.FromJsonMetadata(
                     json: vectorData.GetSerializedPayload(),
                     embedding: new Embedding<float>(vectorData.Embedding));
             }
@@ -230,7 +230,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
-    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, bool withEmbeddings = false,
+    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, bool withEmbeddings = default,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var vectorDataList = this._qdrantClient
@@ -238,7 +238,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         await foreach (var vectorData in vectorDataList)
         {
-            yield return MemoryRecord.FromJson(
+            yield return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
                 embedding: new Embedding<float>(vectorData.Embedding),
                 key: vectorData.PointId);
@@ -319,7 +319,7 @@ public class QdrantMemoryStore : IMemoryStore
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
-        bool withEmbeddings = false,
+        bool withEmbeddings = default,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         var results = this._qdrantClient.FindNearestInCollectionAsync(
@@ -333,7 +333,7 @@ public class QdrantMemoryStore : IMemoryStore
         await foreach ((QdrantVectorRecord, double) result in results)
         {
             yield return (
-                MemoryRecord.FromJson(
+                MemoryRecord.FromJsonMetadata(
                     json: result.Item1.GetSerializedPayload(),
                     embedding: new Embedding<float>(result.Item1.Embedding)),
                 result.Item2);
@@ -345,7 +345,7 @@ public class QdrantMemoryStore : IMemoryStore
         string collectionName,
         Embedding<float> embedding,
         double minRelevanceScore = 0,
-        bool withEmbedding = false,
+        bool withEmbedding = default,
         CancellationToken cancel = default)
     {
         var results = this.GetNearestMatchesAsync(
@@ -395,7 +395,7 @@ public class QdrantMemoryStore : IMemoryStore
             }
         }
 
-        var vectorData = QdrantVectorRecord.FromJson(
+        var vectorData = QdrantVectorRecord.FromJsonMetadata(
             pointId: pointId,
             embedding: record.Embedding.Vector,
             json: record.GetSerializedMetadata());

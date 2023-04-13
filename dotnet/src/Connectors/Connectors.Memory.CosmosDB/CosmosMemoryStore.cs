@@ -119,7 +119,7 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc />
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = default, CancellationToken cancel = default)
     {
         var id = this.ToCosmosFriendlyId(key);
         var partitionKey = PartitionKey.None;
@@ -145,7 +145,7 @@ public class CosmosMemoryStore : IMemoryStore
 
             if (vector != null)
             {
-                memoryRecord = MemoryRecord.FromJson(
+                memoryRecord = MemoryRecord.FromJsonMetadata(
                     result.MetadataString,
                     new Embedding<float>(vector),
                     result.Id,
@@ -157,7 +157,7 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = default,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
@@ -241,7 +241,7 @@ public class CosmosMemoryStore : IMemoryStore
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
-        bool withEmbeddings = false,
+        bool withEmbeddings = default,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         {
@@ -278,7 +278,7 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = default,
         CancellationToken cancel = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -305,7 +305,7 @@ public class CosmosMemoryStore : IMemoryStore
 
             if (vector != null)
             {
-                yield return MemoryRecord.FromJson(
+                yield return MemoryRecord.FromJsonMetadata(
                     item.MetadataString,
                     new Embedding<float>(vector),
                     item.Id,

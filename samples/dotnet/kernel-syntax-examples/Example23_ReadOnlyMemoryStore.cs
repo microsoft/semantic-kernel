@@ -76,13 +76,15 @@ public static class Example23_ReadOnlyMemoryStore
             throw new System.NotImplementedException();
         }
 
-        public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = true, CancellationToken cancel = default)
+        public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = default, CancellationToken cancel = default)
         {
+            // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return Task.FromResult(this._memoryRecords?.FirstOrDefault(x => x.Key == key));
         }
 
-        public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = true, CancellationToken cancel = default)
+        public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = default, CancellationToken cancel = default)
         {
+            // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return this._memoryRecords?.Where(x => keys.Contains(x.Key)).ToAsyncEnumerable() ?? AsyncEnumerable.Empty<MemoryRecord>();
         }
 
@@ -92,8 +94,9 @@ public static class Example23_ReadOnlyMemoryStore
         }
 
         public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0,
-            bool withEmbedding = true, CancellationToken cancel = default)
+            bool withEmbedding = default, CancellationToken cancel = default)
         {
+            // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return await this.GetNearestMatchesAsync(
                 collectionName: collectionName,
                 embedding: embedding,
@@ -104,8 +107,9 @@ public static class Example23_ReadOnlyMemoryStore
         }
 
         public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit,
-            double minRelevanceScore = 0, bool withEmbeddings = true, CancellationToken cancel = default)
+            double minRelevanceScore = 0, bool withEmbeddings = default, CancellationToken cancel = default)
         {
+            // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             if (this._memoryRecords == null || !this._memoryRecords.Any())
             {
                 return AsyncEnumerable.Empty<(MemoryRecord, double)>();
@@ -168,7 +172,7 @@ public static class Example23_ReadOnlyMemoryStore
                 ""id"": ""Id1"",
                 ""description"": ""description"",
                 ""text"": ""text"",
-                ""value_string"" : ""value:""
+                ""additional_metadata"" : ""value:""
             },
             ""key"": ""key1"",
             ""timestamp"": null
@@ -183,7 +187,7 @@ public static class Example23_ReadOnlyMemoryStore
                 ""id"": ""Id2"",
                 ""description"": ""description"",
                 ""text"": ""text"",
-                ""value_string"" : ""value:""
+                ""additional_metadata"" : ""value:""
             },
             ""key"": ""key2"",
             ""timestamp"": null
@@ -198,7 +202,7 @@ public static class Example23_ReadOnlyMemoryStore
                 ""id"": ""Id3"",
                 ""description"": ""description"",
                 ""text"": ""text"",
-                ""value_string"" : ""value:""
+                ""additional_metadata"" : ""value:""
             },
             ""key"": ""key3"",
             ""timestamp"": null
@@ -213,7 +217,7 @@ public static class Example23_ReadOnlyMemoryStore
                 ""id"": ""Id4"",
                 ""description"": ""description"",
                 ""text"": ""text"",
-                ""value_string"" : ""value:""
+                ""additional_metadata"" : ""value:""
             },
             ""key"": ""key4"",
             ""timestamp"": null
@@ -228,7 +232,7 @@ public static class Example23_ReadOnlyMemoryStore
                 ""id"": ""Id5"",
                 ""description"": ""description"",
                 ""text"": ""text"",
-                ""value_string"" : ""value:""
+                ""additional_metadata"" : ""value:""
             },
             ""key"": ""key5"",
             ""timestamp"": null

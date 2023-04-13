@@ -15,7 +15,7 @@ public class MemoryRecordTests
     private readonly string _text = "text";
     private readonly string _description = "description";
     private readonly string _externalSourceName = "externalSourceName";
-    private readonly string _valueString = "value";
+    private readonly string _additionalMetadata = "value";
     private readonly Embedding<float> _embedding = new Embedding<float>(new float[] { 1, 2, 3 });
 
     [Fact]
@@ -28,7 +28,7 @@ public class MemoryRecordTests
             text: this._text,
             description: this._description,
             externalSourceName: this._externalSourceName,
-            valueString: this._valueString);
+            additionalMetadata: this._additionalMetadata);
 
         // Act
         var memoryRecord = new MemoryRecord(metadata, this._embedding, "key", DateTimeOffset.Now);
@@ -90,11 +90,11 @@ public class MemoryRecordTests
             ""text"": ""text"",
             ""description"": ""description"",
             ""external_source_name"": ""externalSourceName"",
-            ""value_string"": ""value""
+            ""additional_metadata"": ""value""
         }";
 
         // Act
-        var memoryRecord = MemoryRecord.FromJson(jsonString, this._embedding);
+        var memoryRecord = MemoryRecord.FromJsonMetadata(jsonString, this._embedding);
 
         // Assert
         Assert.Equal(this._isReference, memoryRecord.Metadata.IsReference);
@@ -102,7 +102,7 @@ public class MemoryRecordTests
         Assert.Equal(this._text, memoryRecord.Metadata.Text);
         Assert.Equal(this._description, memoryRecord.Metadata.Description);
         Assert.Equal(this._externalSourceName, memoryRecord.Metadata.ExternalSourceName);
-        Assert.Equal(this._valueString, memoryRecord.Metadata.ValueString);
+        Assert.Equal(this._additionalMetadata, memoryRecord.Metadata.AdditionalMetadata);
         Assert.Equal(this._embedding.Vector, memoryRecord.Embedding.Vector);
     }
 
@@ -117,7 +117,7 @@ public class MemoryRecordTests
                 ""text"": ""text"",
                 ""description"": ""description"",
                 ""external_source_name"": ""externalSourceName"",
-                ""value_string"": ""value""
+                ""additional_metadata"": ""value""
             },
             ""embedding"": {
                 ""vector"": [
@@ -160,7 +160,7 @@ public class MemoryRecordTests
                 ""id"": ""Id"",
                 ""description"": ""description"",
                 ""text"": ""text"",
-                ""value_string"": ""value""
+                ""additional_metadata"": ""value""
             },
             ""key"": ""key"",
             ""timestamp"": null
@@ -171,7 +171,7 @@ public class MemoryRecordTests
             text: this._text,
             description: this._description,
             externalSourceName: this._externalSourceName,
-            valueString: this._valueString);
+            additionalMetadata: this._additionalMetadata);
         var memoryRecord = new MemoryRecord(metadata, this._embedding, "key");
 
         // Act
@@ -193,7 +193,7 @@ public class MemoryRecordTests
                 ""id"": ""Id"",
                 ""description"": ""description"",
                 ""text"": ""text"",
-                ""value_string"": ""value""
+                ""additional_metadata"": ""value""
             }";
 
         var metadata = new MemoryRecordMetadata(
@@ -202,7 +202,7 @@ public class MemoryRecordTests
             text: this._text,
             description: this._description,
             externalSourceName: this._externalSourceName,
-            valueString: this._valueString);
+            additionalMetadata: this._additionalMetadata);
         var memoryRecord = new MemoryRecord(metadata, this._embedding, "key");
 
         // Act

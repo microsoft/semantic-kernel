@@ -46,7 +46,7 @@ public sealed class NullMemory : ISemanticTextMemory
     public Task<MemoryQueryResult?> GetAsync(
         string collection,
         string key,
-        bool withEmbedding = false,
+        bool withEmbedding = default,
         CancellationToken cancel = default)
     {
         return Task.FromResult(null as MemoryQueryResult);
@@ -67,7 +67,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string query,
         int limit = 1,
         double minRelevanceScore = 0.7,
-        bool withEmbeddings = false,
+        bool withEmbeddings = default,
         CancellationToken cancel = default)
     {
         return AsyncEnumerable.Empty<MemoryQueryResult>();

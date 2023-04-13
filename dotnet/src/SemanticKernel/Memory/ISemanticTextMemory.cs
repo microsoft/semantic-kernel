@@ -18,7 +18,7 @@ public interface ISemanticTextMemory
     /// <param name="id">Unique identifier.</param>
     /// <param name="text">Information to save.</param>
     /// <param name="description">Optional description.</param>
-    /// <param name="valueString">Optional value string for saving custom metadata.</param>
+    /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>Unique identifier of the saved memory record.</returns>
     public Task<string> SaveInformationAsync(
@@ -26,7 +26,7 @@ public interface ISemanticTextMemory
         string text,
         string id,
         string? description = null,
-        string? valueString = null,
+        string? additionalMetadata = null,
         CancellationToken cancel = default);
 
     /// <summary>
@@ -37,7 +37,7 @@ public interface ISemanticTextMemory
     /// <param name="externalId">Unique identifier, e.g. URL or GUID to the original source.</param>
     /// <param name="externalSourceName">Name of the external service, e.g. "MSTeams", "GitHub", "WebSite", "Outlook IMAP", etc.</param>
     /// <param name="description">Optional description.</param>
-    /// <param name="valueString">Optional value string for saving custom metadata.</param>
+    /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
     /// <param name="cancel">Cancellation token</param>
     /// <returns>Unique identifier of the saved memory record.</returns>
     public Task<string> SaveReferenceAsync(
@@ -46,7 +46,7 @@ public interface ISemanticTextMemory
         string externalId,
         string externalSourceName,
         string? description = null,
-        string? valueString = null,
+        string? additionalMetadata = null,
         CancellationToken cancel = default);
 
     /// <summary>
@@ -59,7 +59,7 @@ public interface ISemanticTextMemory
     /// <param name="withEmbedding">Whether to return the embedding of the memory found.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>Memory record, or null when nothing is found</returns>
-    public Task<MemoryQueryResult?> GetAsync(string collection, string key, bool withEmbedding = false, CancellationToken cancel = default);
+    public Task<MemoryQueryResult?> GetAsync(string collection, string key, bool withEmbedding = default, CancellationToken cancel = default);
 
     /// <summary>
     /// Remove a memory by key.
@@ -86,7 +86,7 @@ public interface ISemanticTextMemory
         string query,
         int limit = 1,
         double minRelevanceScore = 0.7,
-        bool withEmbeddings = false,
+        bool withEmbeddings = default,
         CancellationToken cancel = default);
 
     /// <summary>

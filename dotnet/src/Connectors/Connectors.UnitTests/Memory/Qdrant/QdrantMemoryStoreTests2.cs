@@ -48,7 +48,7 @@ public class QdrantMemoryStoreTests2
             embedding: this._embedding);
 
         // this information will not be verified
-        var qdrantVectorRecord = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             guidString,
             memoryRecord.Embedding.Vector,
             memoryRecord.GetSerializedMetadata());
@@ -127,7 +127,7 @@ public class QdrantMemoryStoreTests2
 
         memoryRecord.Key = Guid.NewGuid().ToString();
 
-        var qdrantVectorRecord = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             memoryRecord.Key,
             memoryRecord.Embedding.Vector,
             memoryRecord.GetSerializedMetadata());
@@ -178,15 +178,15 @@ public class QdrantMemoryStoreTests2
         var key2 = Guid.NewGuid().ToString();
         var key3 = Guid.NewGuid().ToString();
 
-        var qdrantVectorRecord = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             key,
             memoryRecord.Embedding.Vector,
             memoryRecord.GetSerializedMetadata());
-        var qdrantVectorRecord2 = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord2 = QdrantVectorRecord.FromJsonMetadata(
             key2,
             memoryRecord2.Embedding.Vector,
             memoryRecord2.GetSerializedMetadata());
-        var qdrantVectorRecord3 = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord3 = QdrantVectorRecord.FromJsonMetadata(
             key3,
             memoryRecord3.Embedding.Vector,
             memoryRecord3.GetSerializedMetadata());
@@ -247,11 +247,11 @@ public class QdrantMemoryStoreTests2
         var key = Guid.NewGuid().ToString();
         var key2 = Guid.NewGuid().ToString();
 
-        var qdrantVectorRecord = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             key,
             memoryRecord.Embedding.Vector,
             memoryRecord.GetSerializedMetadata());
-        var qdrantVectorRecord2 = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord2 = QdrantVectorRecord.FromJsonMetadata(
             key2,
             memoryRecord2.Embedding.Vector,
             memoryRecord2.GetSerializedMetadata());
@@ -361,7 +361,7 @@ public class QdrantMemoryStoreTests2
 
         memoryRecord.Key = Guid.NewGuid().ToString();
 
-        var qdrantVectorRecord = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             memoryRecord.Key,
             memoryRecord.Embedding.Vector,
             memoryRecord.GetSerializedMetadata());
@@ -415,15 +415,15 @@ public class QdrantMemoryStoreTests2
         var key2 = Guid.NewGuid().ToString();
         var key3 = Guid.NewGuid().ToString();
 
-        var qdrantVectorRecord = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             key,
             memoryRecord.Embedding.Vector,
             memoryRecord.GetSerializedMetadata());
-        var qdrantVectorRecord2 = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord2 = QdrantVectorRecord.FromJsonMetadata(
             key2,
             memoryRecord2.Embedding.Vector,
             memoryRecord2.GetSerializedMetadata());
-        var qdrantVectorRecord3 = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord3 = QdrantVectorRecord.FromJsonMetadata(
             key3,
             memoryRecord3.Embedding.Vector,
             memoryRecord3.GetSerializedMetadata());

@@ -51,8 +51,8 @@ public class MemoryRecordMetadata : ICloneable
     /// Field for saving custom metadata with a memory.
     /// </summary>
     [JsonInclude]
-    [JsonPropertyName("value_string")]
-    public string ValueString { get; }
+    [JsonPropertyName("additional_metadata")]
+    public string AdditionalMetadata { get; }
 
     /// <summary>
     /// Constructor.
@@ -62,7 +62,7 @@ public class MemoryRecordMetadata : ICloneable
     /// <param name="text">Local source data associated with a <see cref="MemoryRecord"/> embedding.</param>
     /// <param name="description"><see cref="MemoryRecord"/> description.</param>
     /// <param name="externalSourceName">Name of the external source if isReference is true.</param>
-    /// <param name="valueString">Field for saving custom metadata with a memory.</param>
+    /// <param name="additionalMetadata">Field for saving custom metadata with a memory.</param>
     [JsonConstructor]
     public MemoryRecordMetadata(
         bool isReference,
@@ -70,7 +70,7 @@ public class MemoryRecordMetadata : ICloneable
         string text,
         string description,
         string externalSourceName,
-        string valueString
+        string additionalMetadata
     )
     {
         this.IsReference = isReference;
@@ -78,7 +78,7 @@ public class MemoryRecordMetadata : ICloneable
         this.Id = id;
         this.Text = text;
         this.Description = description;
-        this.ValueString = valueString;
+        this.AdditionalMetadata = additionalMetadata;
     }
 
     /// <summary>

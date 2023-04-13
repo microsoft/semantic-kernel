@@ -85,13 +85,13 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = default, CancellationToken cancel = default)
     {
         return await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbedding, cancel);
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = default,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
@@ -126,7 +126,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
-        bool withEmbeddings = false,
+        bool withEmbeddings = default,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         if (limit <= 0)
@@ -161,7 +161,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = default,
         CancellationToken cancel = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -241,7 +241,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         {
             Embedding<float>? vector = JsonSerializer.Deserialize<Embedding<float>>(dbEntry.EmbeddingString);
 
-            var record = MemoryRecord.FromJson(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
+            var record = MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
 
             yield return record;
         }
@@ -282,7 +282,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         {
             if (withEmbedding)
             {
-                return MemoryRecord.FromJson(
+                return MemoryRecord.FromJsonMetadata(
                     json: entry.Value.MetadataString,
                     JsonSerializer.Deserialize<Embedding<float>>(entry.Value.EmbeddingString),
                     entry.Value.Key,
@@ -290,7 +290,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             }
             else
             {
-                return MemoryRecord.FromJson(
+                return MemoryRecord.FromJsonMetadata(
                     json: entry.Value.MetadataString,
                     Embedding<float>.Empty,
                     entry.Value.Key,

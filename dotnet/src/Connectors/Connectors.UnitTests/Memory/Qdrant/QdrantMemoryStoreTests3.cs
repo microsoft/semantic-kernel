@@ -153,7 +153,7 @@ public class QdrantMemoryStoreTests3
 
         memoryRecord.Key = Guid.NewGuid().ToString();
 
-        var qdrantVectorRecord = QdrantVectorRecord.FromJson(
+        var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             memoryRecord.Key,
             memoryRecord.Embedding.Vector,
             memoryRecord.GetSerializedMetadata());
