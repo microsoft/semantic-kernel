@@ -19,9 +19,9 @@ AZURE_OPENAI_DEPLOYMENT_NAME=""
 ## Using Poetry
 
 First, navigate to the directory containing this README using your chosen shell.
-You will need to have Python 3.10 installed.
+You will need to have at least Python 3.8 installed.
 
-Install the Poetry package manager and create a project virtual environment. (Note: we require at least Poetry 1.2.0 and Python 3.10.)
+Install the Poetry package manager and create a project virtual environment. (Note: we require at least Poetry 1.2.0 and Python 3.8.)
 
 ```bash
 # Install poetry package
@@ -32,10 +32,9 @@ poetry install
 poetry shell
 ```
 
-
 # Get Started with Semantic Kernel ⚡
 
-## Example: Running a simple prompt.
+## Example: Running a simple prompt
 
 ```python
 import semantic_kernel as sk
@@ -64,7 +63,7 @@ Give me the TLDR in exactly 5 words.""")
 print(prompt()) # => Robots must not harm humans.
 ```
 
-## Example: Turn prompts into **reusable functions** with input parameters.
+## Example: Turn prompts into **reusable functions** with input parameters
 
 ```python
 # Create a reusable function with one input parameter
