@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount } from '@azure/msal-react';
+import { useAccount, useMsal } from '@azure/msal-react';
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import debug from 'debug';
 import React from 'react';
@@ -41,7 +41,10 @@ export const ChatRoom: React.FC = () => {
     const { audience } = conversations[selectedId];
     const messages = conversations[selectedId].messages;
     const classes = useClasses();
-    const account = useAccount();
+
+    const { accounts } = useMsal();
+    const account = useAccount(accounts[0] || {});
+
     const dispatch = useAppDispatch();
     const scrollViewTargetRef = React.useRef<HTMLDivElement>(null);
     const scrollTargetRef = React.useRef<HTMLDivElement>(null);

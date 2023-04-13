@@ -1,4 +1,4 @@
-import { useAccount } from '@azure/msal-react';
+import { useAccount, useMsal } from '@azure/msal-react';
 import { Constants } from '../Constants';
 import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
 import { RootState } from '../redux/app/store';
@@ -12,6 +12,7 @@ import {
     setSelectedConversation,
     updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
+import { AuthHelper } from './auth/AuthHelper';
 import { AlertType } from './models/AlertType';
 import { AuthorRole, ChatMessage } from './models/ChatMessage';
 import { ChatUser } from './models/ChatUser';
@@ -22,9 +23,11 @@ import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
-    const account = useAccount();
+    const { instance, accounts } = useMsal();
+    const account = useAccount(accounts[0] || {});
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const { botProfilePictureIndex } = useAppSelector((state: RootState) => state.conversations);
+    
     // const connectors = useConnectors(); // ConnectorTokenExample
 
     const botProfilePictures: string[] = [
@@ -36,9 +39,9 @@ export const useChat = () => {
     ];
 
     const loggedInUser: ChatUser = {
-        id: account!.homeAccountId,
-        fullName: account!.name!,
-        emailAddress: account!.username,
+        id: account?.homeAccountId || '',
+        fullName: account?.name || '',
+        emailAddress: account?.username || '',
         photo: undefined, // TODO: Make call to Graph /me endpoint to load photo
         online: true,
         lastTypingTimestamp: 0,
@@ -70,7 +73,11 @@ export const useChat = () => {
                 ],
             };
 
-            await sk.invokeAsync(ask, 'ChatHistorySkill', 'CreateChat').then(async (result: IAskResult) => {
+            await sk.invokeAsync(
+                ask,
+                'ChatHistorySkill',
+                'CreateChat',
+                await AuthHelper.getSKaaSAccessToken(instance)).then(async (result: IAskResult) => {
                 const newChatId = result.value;
                 const initialBotMessage = getVariableValue(result.variables, 'initialBotMessage');
 
@@ -114,7 +121,7 @@ export const useChat = () => {
             ]
         };
         try {
-            var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat');
+            var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat', await AuthHelper.getSKaaSAccessToken(instance));
             // var result = await connectors.invokeSkillWithGraphToken(ask, {ConnectorSkill}, {ConnectorFunction}); // ConnectorTokenExample
 
             const messageResult = {
@@ -134,55 +141,62 @@ export const useChat = () => {
     const loadChats = async () => {
         try {
             const ask = { input: account!.homeAccountId! };
-            await sk.invokeAsync(ask, 'ChatHistorySkill', 'GetAllChats').then(async (result) => {
-                const chats = JSON.parse(result.value);
-                if (Object.keys(chats).length > 0) {
-                    const conversations: Conversations = {};
-                    for (const index in chats) {
-                        const chat = chats[index];
-                        const loadMessagesAsk = {
-                            input: chat.id,
-                            variables: [
-                                { key: 'startIdx', value: '0' },
-                                { key: 'count', value: '100' },
-                            ],
-                        };
-                        const messageResult = await sk.invokeAsync(
-                            loadMessagesAsk,
-                            'ChatHistorySkill',
-                            'GetAllChatMessages',
-                        );
+            var result = await sk.invokeAsync(
+                ask,
+                'ChatHistorySkill',
+                'GetAllChats',
+                await AuthHelper.getSKaaSAccessToken(instance)
+            );
 
-                        const messages = JSON.parse(messageResult.value);
+            const chats = JSON.parse(result.value);
+            if (Object.keys(chats).length > 0) {
+                const conversations: Conversations = {};
+                for (const index in chats) {
+                    const chat = chats[index];
+                    const loadMessagesAsk = {
+                        input: chat.id,
+                        variables: [
+                            { key: 'startIdx', value: '0' },
+                            { key: 'count', value: '100' },
+                        ],
+                    };
+                    const messageResult = await sk.invokeAsync(
+                        loadMessagesAsk,
+                        'ChatHistorySkill',
+                        'GetAllChatMessages',
+                        await AuthHelper.getSKaaSAccessToken(instance)
+                    );
 
-                        // Messages are returned with most recent message at index 0 and oldest messge at the last index,
-                        // so we need to reverse the order for render
-                        const orderedMessages: ChatMessage[] = [];
-                        Object.keys(messages)
-                            .reverse()
-                            .map((key) => {
-                                const chatMessage = messages[key];
-                                orderedMessages.push(chatMessage);
-                            });
+                    const messages = JSON.parse(messageResult.value);
 
-                        conversations[chat.id] = {
-                            id: chat.id,
-                            title: chat.title,
-                            audience: [loggedInUser],
-                            messages: orderedMessages,
-                            botTypingTimestamp: 0,
-                            botProfilePicture: botProfilePictures[botProfilePictureIndex],
-                        };
-                        dispatch(incrementBotProfilePictureIndex());
-                    }
+                    // Messages are returned with most recent message at index 0 and oldest messge at the last index,
+                    // so we need to reverse the order for render
+                    const orderedMessages: ChatMessage[] = [];
+                    Object.keys(messages)
+                        .reverse()
+                        .map((key) => {
+                            const chatMessage = messages[key];
+                            orderedMessages.push(chatMessage);
+                            return null;
+                        });
 
-                    dispatch(setConversations(conversations));
-                    dispatch(setSelectedConversation(chats[0].id));
-                } else {
-                    // No chats exist, create first chat window
-                    await createChat();
+                    conversations[chat.id] = {
+                        id: chat.id,
+                        title: chat.title,
+                        audience: [loggedInUser],
+                        messages: orderedMessages,
+                        botTypingTimestamp: 0,
+                        botProfilePicture: botProfilePictures[botProfilePictureIndex],
+                    };
+                    dispatch(incrementBotProfilePictureIndex());
                 }
-            });
+
+                dispatch(setConversations(conversations));
+                dispatch(setSelectedConversation(chats[0].id));
+            } else {
+                // No chats exist, create first chat window
+                await createChat();
+            }
         } catch (e: any) {
             const errorMessage = `Unable to load chats. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));

@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated } from '@azure/msal-react';
+import { AuthenticatedTemplate, UnauthenticatedTemplate, useAccount, useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { Avatar, Spinner, Subtitle1, makeStyles } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
-import { msalInstance } from '.';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
 import { Login } from './components/views/Login';
@@ -51,19 +50,22 @@ const App: FC = () => {
     const classes = useClasses();
     const { alerts } = useAppSelector((state: RootState) => state.app);
     const dispatch = useAppDispatch();
-    const account = msalInstance.getActiveAccount();
-
+        
+    const { instance, accounts, inProgress } = useMsal();
+    const account = useAccount(accounts[0] || {});    
     const isAuthenticated = useIsAuthenticated();
+
     const chat = useChat();
 
     useEffect(() => {
-        if (isAuthenticated) {
+        if (isAuthenticated && account && appState === AppState.LoadingChats) {            
             // Load all chats from memory
             chat.loadChats().then(() => {
                 setAppState(AppState.Chat);
             });
         }
-    }, [isAuthenticated]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [instance, inProgress, isAuthenticated, appState]);
 
     const onDismissAlert = (key: string) => {
         dispatch(removeAlert(key));
