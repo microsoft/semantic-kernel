@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 from numpy import ndarray
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -9,11 +9,20 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.storage.chroma_data_store import ChromaDataStore
 from semantic_kernel.utils.null_logger import NullLogger
 
+ComputeSimilarityFuncType = Callable[[ndarray, ndarray], ndarray]
+
 
 class ChromaMemoryStore(ChromaDataStore, MemoryStoreBase):
-    def __init__(self, logger: Optional[Logger] = None) -> None:
+    def __init__(
+        self,
+        logger: Optional[Logger] = None,
+        compute_similarity_fetch_limit: int = 10,
+        compute_similarity_scores_func: ComputeSimilarityFuncType = None,
+    ) -> None:
         super().__init__()
         self._logger = logger or NullLogger()
+        self._compute_similarity_fetch_limit = compute_similarity_fetch_limit
+        self._compute_similarity_scores_func = compute_similarity_scores_func
 
     async def get_nearest_matches_async(
         self,
@@ -26,13 +35,29 @@ class ChromaMemoryStore(ChromaDataStore, MemoryStoreBase):
         if collection is None:
             return []
 
-        query_results = collection.query(
-            query_embeddings=embedding.tolist(),
-            n_results=limit,
-            include=["embeddings", "metadatas", "documents", "distances"],
-        )
+        # use Chroma nearest neighbor search if no similarity function is provided
+        if self._compute_similarity_scores_func is None:
+            query_results = collection.query(
+                query_embeddings=embedding.tolist(),
+                n_results=limit,
+                include=["embeddings", "metadatas", "documents", "distances"],
+            )
+        else:
+            query_results = collection.get(
+                include=["embeddings", "metadatas", "documents"],
+            )
+            # dimension compatibility with Chroma's query results
+            query_results["ids"] = [query_results["ids"]]
+            query_results["documents"] = [query_results["documents"]]
+            query_results["metadatas"] = [query_results["metadatas"]]
 
-        output_list = [
+            # compute similarity scores using the custom function
+            query_results["distances"] = self._compute_similarity_scores_func(
+                embedding, query_results["embeddings"]
+            )
+
+        # Convert Chroma query results into a list of MemoryRecords
+        record_list = [
             (record, distance)
             for record, distance in zip(
                 self.query_results_to_memory_records(query_results),
@@ -40,10 +65,19 @@ class ChromaMemoryStore(ChromaDataStore, MemoryStoreBase):
             )
         ]
 
-        return output_list
+        if self._compute_similarity_scores_func is not None:
+            # Then, sort the results by the similarity score
+            sorted_results = sorted(
+                record_list,
+                key=lambda x: x[1],
+                reverse=True,
+            )
 
-    # TODO: Need to decide semantic-kernel will use chroma's similarity score or not
-    # def compute_similarity_scores(
-    #     self, embedding: ndarray, embedding_array: ndarray
-    # ) -> ndarray:
-    #     pass
+            filtered_results = [
+                x for x in sorted_results if x[1] >= min_relevance_score
+            ]
+            top_results = filtered_results[:limit]
+        else:
+            top_results = record_list[:limit]
+
+        return top_results
