@@ -94,7 +94,7 @@ public class OneDriveConnector : ICloudDriveConnector
             throw new IOException("File is too large to upload - function currently only supports files up to 4MB.");
         }
 
-        using FileStream fileContentStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        using FileStream fileContentStream = new(filePath, FileMode.Open, FileAccess.Read);
 
         GraphResponse<DriveItem> response = await this._graphServiceClient.Me
             .Drive.Root
@@ -121,7 +121,7 @@ public class OneDriveConnector : ICloudDriveConnector
         response.ToHttpResponseMessage().EnsureSuccessStatusCode();
 
         string? result = (await response.GetResponseObjectAsync()).Link?.WebUrl;
-        if (string.IsNullOrWhiteSpace(result))
+        if (result == null || string.IsNullOrWhiteSpace(result))
         {
             throw new MsGraphConnectorException("Shareable file link was null or whitespace.");
         }
