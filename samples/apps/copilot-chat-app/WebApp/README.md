@@ -47,15 +47,15 @@ We need keys to work with various aspects of the project including accessing Ope
 This sample uses the Microsoft Authentication Library (MSAL) for React to sign in users. Learn more about it here: https://learn.microsoft.com/en-us/azure/active-directory/develop/tutorial-v2-react.
 
 ### Authorizing SKaS (SK as a Service)
-When the user logs in, he or she will be prompted to consent to scopes set as `skScopes` in the [Constants.ts file](./src/Constants.ts). These scopes contain some default OpenID Connect scopes and the `User.Read` scope.
+When the user logs in, they will be prompted to consent to scopes set as `skScopes` in the [Constants.ts file](./src/Constants.ts). These scopes contain some default OpenID Connect scopes and the `User.Read` scope.
 
 These scopes will authorize the user to access the SK Server (webapi application you are running on https://localhost:40443/). Each time the kernel is called to invoke a skill, the WebApp will acquire a token with these scopes to pass to the server.
 
 
 ### Authorizing Connectors used in Semantic Kernel Skills
-Some skills utilize [connectors](https://learn.microsoft.com/en-us/semantic-kernel/concepts-sk/connectors) to allow you to connect to external APIs or services for added functionality. These skills require separate access tokens to authorize to these external resources downstream. [useConnectors.ts](./src/libs/connectors/useConnectors.ts) adds the functionality to acquire these tokens.
+Some skills utilize [connectors](https://learn.microsoft.com/en-us/semantic-kernel/concepts-sk/connectors) to allow you to connect to external APIs or services for added functionality. These skills require separate access tokens to authorize to these external resources. [useConnectors.ts](./src/libs/connectors/useConnectors.ts) handles this token acquisition.
 
-This sample follows the 'incremental consent' concept, so new permissions will require additional consent, in which the user will be prompted when a request for the token is made. If consent is granted and user is authorized, the access token will be passed to the server under a new header: `sk-copilot-connector-access-token`. The `Authorization` header is reserved for the SKaS Access token.
+This sample follows the 'incremental consent' concept, so new permissions will require additional consent, in which the user will be prompted when a request for the token is made. If consent is granted and the user is authorized, an access token will be passed to the server under a new header: `sk-copilot-connector-access-token`. The `Authorization` header is reserved for the SKaS Access token.
 
 To invoke skills with the required tokens, do the following (see comments tagged `ConnectorTokenExample` in [useChat](./src/libs/useChat.ts) for example):
 
