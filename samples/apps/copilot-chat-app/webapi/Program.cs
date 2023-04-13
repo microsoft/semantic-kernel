@@ -141,7 +141,7 @@ public static class Program
 
         // Add persistent storage
         // InMemory version
-        var chatInMemoryContext = new InMemoryContext<Chat>();
+        var chatInMemoryContext = new InMemoryContext<ChatSession>();
         var chatMessageInMemoryContext = new InMemoryContext<ChatMessage>();
         services.AddSingleton<ChatRepository>(new ChatRepository(chatInMemoryContext));
         services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));

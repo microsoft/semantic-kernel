@@ -50,10 +50,10 @@ internal static class FunctionLoadingExtensions
         );
         kernel.ImportSkill(chatSkill, nameof(ChatSkill));
 
-        var chatMemorySkill = new ChatMemorySkill(
+        var chatHistorySkill = new ChatHistorySkill(
             chatMessageRepository,
             chatRepository
         );
-        kernel.ImportSkill(chatMemorySkill, nameof(ChatMemorySkill));
+        kernel.ImportSkill(chatHistorySkill, nameof(ChatHistorySkill));
     }
 }

@@ -96,7 +96,7 @@ export const ChatWindow: React.FC = () => {
                         ],
                     };
 
-                    await sk.invokeAsync(ask, 'ChatMemorySkill', 'EditChat');
+                    await sk.invokeAsync(ask, 'ChatHistorySkill', 'EditChat');
                     dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));
                 } catch (e: any) {
                     const errorMessage = `Unable to retrieve chat to change title. Details: ${e.message ?? e}`;

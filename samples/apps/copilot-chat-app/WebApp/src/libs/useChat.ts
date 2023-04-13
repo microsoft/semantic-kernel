@@ -70,7 +70,7 @@ export const useChat = () => {
                 ],
             };
 
-            await sk.invokeAsync(ask, 'ChatMemorySkill', 'CreateChat').then(async (result: IAskResult) => {
+            await sk.invokeAsync(ask, 'ChatHistorySkill', 'CreateChat').then(async (result: IAskResult) => {
                 const newChatId = result.value;
                 const initialBotMessage = getVariableValue(result.variables, 'initialBotMessage');
 
@@ -134,7 +134,7 @@ export const useChat = () => {
     const loadChats = async () => {
         try {
             const ask = { input: account!.homeAccountId! };
-            await sk.invokeAsync(ask, 'ChatMemorySkill', 'GetAllChats').then(async (result) => {
+            await sk.invokeAsync(ask, 'ChatHistorySkill', 'GetAllChats').then(async (result) => {
                 const chats = JSON.parse(result.value);
                 if (Object.keys(chats).length > 0) {
                     const conversations: Conversations = {};
@@ -149,7 +149,7 @@ export const useChat = () => {
                         };
                         const messageResult = await sk.invokeAsync(
                             loadMessagesAsk,
-                            'ChatMemorySkill',
+                            'ChatHistorySkill',
                             'GetAllChatMessages',
                         );
 

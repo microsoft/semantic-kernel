@@ -8,10 +8,10 @@ using SKWebApi.Storage;
 namespace SemanticKernel.Service.Skills;
 
 /// <summary>
-/// ChatMemorySkill provides functions to store and retrieve chat information in memory,
+/// ChatHistorySkill provides functions to store and retrieve chat information in memory,
 /// as well as functions to extract memories from context.
 /// </summary>
-public class ChatMemorySkill
+public class ChatHistorySkill
 {
     /// <summary>
     /// Returns the name of the semantic text memory collection that stores chat message information.
@@ -22,7 +22,7 @@ public class ChatMemorySkill
     private readonly ChatMessageRepository _chatMessageRepository;
     private readonly ChatRepository _chatRepository;
 
-    public ChatMemorySkill(
+    public ChatHistorySkill(
         ChatMessageRepository chatMessageRepository,
         ChatRepository chatRepository)
     {
