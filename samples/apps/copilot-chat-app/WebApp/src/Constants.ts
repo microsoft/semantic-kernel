@@ -13,40 +13,7 @@ export const Constants = {
             cacheLocation: 'localStorage',
             storeAuthStateInCookie: false,
         },
-        // Enable the ones you need
-        msGraphScopes: [
-            // 'Calendars.ReadWrite',
-            // 'Calendars.Read.Shared',
-            // 'ChannelMessage.Read.All',
-            // 'Chat.Read',
-            // 'Contacts.Read',
-            // 'Contacts.Read.Shared',
-            // 'email',
-            // 'Files.Read',
-            // 'Files.Read.All',
-            // 'Files.Read.Selected',
-            // 'Group.Read.All',
-            // 'Mail.Read',
-            // 'Mail.Read.Shared',
-            // 'MailboxSettings.Read',
-            // 'Notes.Read',
-            // 'Notes.Read.All',
-            // 'offline_access',
-            // 'OnlineMeetingArtifact.Read.All',
-            // 'OnlineMeetings.Read',
-            'openid',
-            // 'People.Read',
-            // 'Presence.Read.All',
-            'offline_access',
-            'profile',
-            // 'Sites.Read.All',
-            // 'Tasks.Read',
-            // 'Tasks.Read.Shared',
-            // 'TeamSettings.Read.All',
-            'User.Read',
-            // 'User.Read.all',
-            // 'User.ReadBasic.All',
-        ],
+        skScopes: ['openid', 'offline_access', 'profile', 'User.Read'],
     },
     bot: {
         profile: {
@@ -66,4 +33,43 @@ export const Constants = {
             defaultDefinition: 'int',
         },
     },
+    // NOT a comprehensive list.
+    // Uncomment the ones you need and pass into
+    // invokeSkillWithConnectorToken (./connectors/useConnectors.ts)
+    msGraphScopes: [
+        'Calendars.Read', // Get Schedule Availability
+        // 'Calendars.ReadWrite',
+        // 'Calendars.Read.Shared',
+        // 'ChannelMessage.Read.All',
+        // 'Chat.Read',
+        // 'Contacts.Read',
+        // 'Contacts.Read.Shared',
+        // 'Files.Read',
+        // 'Files.Read.All',
+        // 'Files.Read.Selected',
+        'Files.ReadWrite', // Upload Files to OneDrive, Create a Share link
+        // 'Group.Read.All',
+        'Mail.Read',
+        // 'Mail.Read.Shared',
+        'Mail.Send', // Send Email
+        // 'MailboxSettings.Read',
+        // 'Notes.Read',
+        // 'Notes.Read.All',
+        // 'offline_access',
+        // 'OnlineMeetingArtifact.Read.All',
+        // 'OnlineMeetings.Read',
+        'OnlineMeetings.ReadWrite', // Create Meeting
+        // 'OnlineMeetings.ReadWrite.All',
+        'People.Read',
+        // 'Presence.Read.All',
+        'Sites.Read.All', // List Trending SharePoint Documents
+        // 'Tasks.Read',
+        // 'Tasks.Read.Shared',
+        'Tasks.ReadWrite', // Manage Task or To Do Task list
+        // 'TeamSettings.Read.All',
+        'User.Read',
+        'User.Read.All', // Get Manager (requires admin consent)
+        // 'User.ReadBasic.All',
+    ],
+    adoScopes: ['vso.work'],
 };
