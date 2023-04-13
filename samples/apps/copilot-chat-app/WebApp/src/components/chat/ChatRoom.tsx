@@ -5,6 +5,7 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import debug from 'debug';
 import React from 'react';
 import { Constants } from '../../Constants';
+import { AuthorRole } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -85,7 +86,7 @@ export const ChatRoom: React.FC = () => {
             userId: account?.homeAccountId,
             userName: account?.name as string,
             content: value,
-            fromUser: true,
+            authorRole: AuthorRole.User,
         };
         setIsBotTyping(true);
         dispatch(updateConversation({ message: chatInput }));

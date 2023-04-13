@@ -13,6 +13,15 @@ namespace SKWebApi.Skills;
 public class ChatMessage : IStorageEntity
 {
     /// <summary>
+    /// Role of the author of a chat message.
+    /// </summary>
+    public enum AuthorRoleEnum
+    {
+        User = 0,
+        Bot,
+    }
+
+    /// <summary>
     /// Timestamp of the message.
     /// </summary>
     [JsonPropertyName("timestamp")]
@@ -49,10 +58,10 @@ public class ChatMessage : IStorageEntity
     public string Id { get; set; }
 
     /// <summary>
-    /// True if the message is from the user. Otherwise it's from the bot.
+    /// Role of the author of the message.
     /// </summary>
-    [JsonPropertyName("fromUser")]
-    public bool FromUser { get; set; }
+    [JsonPropertyName("authorRole")]
+    public AuthorRoleEnum AuthorRole { get; set; }
 
     /// <summary>
     /// Create a new chat message. Timestamp is automatically generated.
@@ -61,8 +70,8 @@ public class ChatMessage : IStorageEntity
     /// <param name="userName">Name of the user who sent this message</param>
     /// <param name="chatId">The chat ID that this message belongs to</param>
     /// <param name="content">The message</param>
-    /// <param name="fromUser">True if the message is from the user. Otherwise it's from the bot.</param>
-    public ChatMessage(string userId, string userName, string chatId, string content, bool fromUser = true)
+    /// <param name="authorRole"></param>
+    public ChatMessage(string userId, string userName, string chatId, string content, AuthorRoleEnum authorRole = AuthorRoleEnum.User)
     {
         this.Timestamp = DateTimeOffset.Now;
         this.UserId = userId;
@@ -70,7 +79,7 @@ public class ChatMessage : IStorageEntity
         this.ChatId = chatId;
         this.Content = content;
         this.Id = Guid.NewGuid().ToString();
-        this.FromUser = fromUser;
+        this.AuthorRole = authorRole;
     }
 
     /// <summary>
@@ -80,7 +89,7 @@ public class ChatMessage : IStorageEntity
     /// <param name="content">The message</param>
     public static ChatMessage CreateBotResponseMessage(string chatId, string content)
     {
-        return new ChatMessage("bot", "bot", chatId, content, false);
+        return new ChatMessage("bot", "bot", chatId, content, AuthorRoleEnum.Bot);
     }
 
     /// <summary>

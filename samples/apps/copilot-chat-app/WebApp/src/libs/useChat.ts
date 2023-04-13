@@ -13,7 +13,7 @@ import {
     updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
 import { AlertType } from './models/AlertType';
-import { ChatMessage } from './models/ChatMessage';
+import { AuthorRole, ChatMessage } from './models/ChatMessage';
 import { ChatUser } from './models/ChatUser';
 import { IAsk } from './semantic-kernel/model/Ask';
 import { IAskResult, Variables } from './semantic-kernel/model/AskResult';
@@ -122,7 +122,7 @@ export const useChat = () => {
                 userName: 'bot',
                 userId: 'bot',
                 content: result.value,
-                fromUser: false,
+                authorRole: AuthorRole.Bot,
             };
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));
         } catch (e: any) {

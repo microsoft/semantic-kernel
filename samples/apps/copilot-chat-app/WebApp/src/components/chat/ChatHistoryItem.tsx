@@ -2,7 +2,7 @@
 
 import { Label, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { ChatMessage } from '../../libs/models/ChatMessage';
+import { AuthorRole, ChatMessage } from '../../libs/models/ChatMessage';
 import { SKBotAudienceMember } from '../../libs/semantic-kernel/bot-agent/models/SKBotAudienceMember';
 import { useChat } from '../../libs/useChat';
 import { useAppSelector } from '../../redux/app/hooks';
@@ -95,7 +95,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
             time;
     }
 
-    const isMe = message.fromUser;
+    const isMe = message.authorRole === AuthorRole.User;
     const member = chat.getAudienceMemberForId(message.userName, selectedId, conversations[selectedId].audience);
     const avatar = isMe
         ? member?.photo
