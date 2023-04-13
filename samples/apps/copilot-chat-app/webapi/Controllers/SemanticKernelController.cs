@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
 
@@ -74,6 +76,11 @@ public class SemanticKernelController : ControllerBase
         SKContext result = await kernel.RunAsync(contextVariables, function!);
         if (result.ErrorOccurred)
         {
+            if (result.LastException is AIException aiException && aiException.Detail is not null)
+            {
+                return this.BadRequest(string.Concat(aiException.Message, " - Detail: " + aiException.Detail));
+            }
+
             return this.BadRequest(result.LastErrorDescription);
         }
 
