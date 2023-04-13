@@ -1,13 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Callable, List, Optional, Tuple
+from typing import TYPE_CHECKING, Callable, List, Optional, Tuple
 
 from numpy import ndarray
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.storage.chroma_data_store import ChromaDataStore
 from semantic_kernel.utils.null_logger import NullLogger
+
+if TYPE_CHECKING:
+    import chromadb.config
 
 ComputeSimilarityFuncType = Callable[[ndarray, ndarray], ndarray]
 
@@ -18,8 +21,12 @@ class ChromaMemoryStore(ChromaDataStore, MemoryStoreBase):
         logger: Optional[Logger] = None,
         compute_similarity_fetch_limit: int = 10,
         compute_similarity_scores_func: ComputeSimilarityFuncType = None,
+        persist_directory: Optional[str] = None,
+        client_settings: Optional["chromadb.config.Settings"] = None,
     ) -> None:
-        super().__init__()
+        super().__init__(
+            persist_directory=persist_directory, client_settings=client_settings
+        )
         self._logger = logger or NullLogger()
         self._compute_similarity_fetch_limit = compute_similarity_fetch_limit
         self._compute_similarity_scores_func = compute_similarity_scores_func
