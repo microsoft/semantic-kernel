@@ -1,5 +1,4 @@
-﻿
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.AspNetCore.Mvc;
 using SemanticKernel.Service.Config;
