@@ -2,11 +2,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using SemanticKernel.Service.Config;
 
 namespace SemanticKernel.Service.Controllers;
 
+/// <summary>
+/// Token Response is a simple wrapper around the token and region
+/// </summary>
 public class TokenResponse
 {
     public string? token { get; set; }
@@ -17,27 +19,29 @@ public class TokenResponse
 public class TokenController : ControllerBase
 {
     private readonly IConfiguration _configuration;
+    private readonly ILogger<TokenController> _logger;
 
-    public TokenController(IConfiguration configuration)
+    public TokenController(IConfiguration configuration, ILogger<TokenController> logger)
     {
         this._configuration = configuration;
+        this._logger = logger;
     }
 
+    /// <summary>
+    /// Use the Azure Speech Config key to return a authorization token and region as a Token Response.
+    /// </summary>
     [Route("speechToken")]
     [HttpGet]
     public ActionResult<TokenResponse> Get()
     {
         AzureSpeechServiceConfig azureSpeechConfig = this._configuration.GetSection("AzureSpeechConfig").Get<AzureSpeechServiceConfig>();
 
-        if (true)
-        {
-            string FetchTokenUri = "https://" + azureSpeechConfig.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
-            string subscriptionKey = azureSpeechConfig.Key;
+        string FetchTokenUri = "https://" + azureSpeechConfig.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
+        string subscriptionKey = azureSpeechConfig.Key;
 
-            var token = this.FetchTokenAsync(FetchTokenUri, subscriptionKey).Result;
+        var token = this.FetchTokenAsync(FetchTokenUri, subscriptionKey).Result;
 
-            return new TokenResponse { token = token, region = azureSpeechConfig.Region };
-        }
+        return new TokenResponse { token = token, region = azureSpeechConfig.Region };
     }
 
     private async Task<string> FetchTokenAsync(string fetchUri, string subscriptionKey)
@@ -48,7 +52,7 @@ public class TokenController : ControllerBase
             UriBuilder uriBuilder = new UriBuilder(fetchUri);
 
             var result = await client.PostAsync(uriBuilder.Uri, null);
-            Console.WriteLine("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
+            this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
             return await result.Content.ReadAsStringAsync();
         }
     }
