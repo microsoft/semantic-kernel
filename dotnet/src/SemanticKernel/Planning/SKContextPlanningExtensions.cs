@@ -79,8 +79,8 @@ internal static class SKContextPlanningExtensions
             await RememberFunctionsAsync(context, availableFunctions);
 
             // Search for functions that match the semantic query.
-            var memories = context.Memory.SearchAsync(PlannerMemoryCollectionName, semanticQuery!, config.MaxRelevantFunctions, config.RelevancyThreshold.Value, false,
-                context.CancellationToken);
+            var memories = context.Memory.SearchAsync(collection: PlannerMemoryCollectionName, query: semanticQuery!, limit: config.MaxRelevantFunctions, minRelevanceScore: config.RelevancyThreshold.Value, withEmbeddings: false,
+                cancel: context.CancellationToken);
 
             // Add functions that were found in the search results.
             result.AddRange(await GetRelevantFunctionsAsync(context, availableFunctions, memories));
