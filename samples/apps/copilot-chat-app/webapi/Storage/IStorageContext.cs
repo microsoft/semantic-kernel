@@ -3,7 +3,7 @@
 public interface IStorageContext<T> where T : IStorageEntity
 {
     IQueryable<T> QueryableEntities { get; }
-    
+
     Task<IEnumerable<T>> FindAll();
 
     Task<T> Read(string entityId);
