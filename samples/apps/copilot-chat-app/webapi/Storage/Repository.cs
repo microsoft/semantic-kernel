@@ -8,7 +8,7 @@ public class Repository<T> : IRepository<T> where T : IStorageEntity
     /// <summary>
     /// The storage context.
     /// </summary>
-    protected IStorageContext<T> _StorageContext;
+    protected IStorageContext<T> _StorageContext { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the Repository class.
