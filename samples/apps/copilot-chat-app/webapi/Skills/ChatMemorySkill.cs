@@ -48,21 +48,20 @@ public class ChatMemorySkill
         var userName = context["userName"];
 
         // Create a new chat.
-        var chatId = Guid.NewGuid().ToString();
-        var newChat = new Chat(chatId, userId, title);
+        var newChat = new Chat(userId, title);
         await this._chatRepository.Create(newChat);
 
         // Create the initial bot message.
         try
         {
-            var initialBotMessage = await this.CreateAndSaveInitialBotMessageAsync(chatId, userName);
+            var initialBotMessage = await this.CreateAndSaveInitialBotMessageAsync(newChat.Id, userName);
             // Update the context variables for outputs.
-            context.Variables.Update(chatId);
+            context.Variables.Update(newChat.Id);
             context.Variables.Set("initialBotMessage", initialBotMessage.ToString());
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            context.Log.LogError("Failed to create the initial bot message for chat {0}: {1}.", chatId, ex.Message);
+            context.Log.LogError("Failed to create the initial bot message for chat {0}: {1}.", newChat.Id, ex.Message);
             context.Fail($"Failed to create the initial bot message for chat: {ex.Message}.", ex);
             return context;
         }
@@ -165,30 +164,17 @@ public class ChatMemorySkill
 
     #region Private
     /// <summary>
-    /// Save a new message to the chat history.
-    /// </summary>
-    /// <param name="message">The message</param>
-    /// <param name="userId">The user ID</param>
-    /// <param name="userName">The name of the user</param>
-    /// <param name="chatId">The chat ID</param>
-    private async Task SaveNewMessageAsync(string message, string userId, string userName, string chatId)
-    {
-        // Make sure the chat exists.
-        await this._chatRepository.FindById(chatId);
-
-        var messageId = Guid.NewGuid().ToString();
-        var chatMessage = new ChatMessage(messageId, userId, userName, chatId, message);
-        await this._chatMessageRepository.Create(chatMessage);
-    }
-
-    /// <summary>
     /// Save a new response to the chat history.
     /// </summary>
     /// <param name="response">The new response</param>
     /// <param name="chatId">The chat ID</param>
     private async Task SaveNewResponseAsync(string response, string chatId)
     {
-        await this.SaveNewMessageAsync(response, "bot", "bot", chatId);
+        // Make sure the chat exists.
+        await this._chatRepository.FindById(chatId);
+
+        var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response);
+        await this._chatMessageRepository.Create(chatMessage);
     }
 
     /// <summary>

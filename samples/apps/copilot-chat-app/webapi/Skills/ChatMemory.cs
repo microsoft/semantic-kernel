@@ -33,9 +33,9 @@ public class Chat : IStorageEntity
     [JsonPropertyOrder(3)]
     public string Title { get; set; }
 
-    public Chat(string id, string userId, string title)
+    public Chat(string userId, string title)
     {
-        this.Id = id;
+        this.Id = Guid.NewGuid().ToString();
         this.UserId = userId;
         this.Title = title;
     }
@@ -89,21 +89,39 @@ public class ChatMessage : IStorageEntity
     public string Id { get; set; }
 
     /// <summary>
+    /// True if the message is from the user. Otherwise it's from the bot.
+    /// </summary>
+    [JsonPropertyName("fromUser")]
+    [JsonPropertyOrder(7)]
+    public bool FromUser { get; set; }
+
+    /// <summary>
     /// Create a new chat message. Timestamp is automatically generated.
     /// </summary>
-    /// <param name="id"></param>
-    /// <param name="userId"></param>
-    /// <param name="userName"></param>
-    /// <param name="chatId"></param>
-    /// <param name="content"></param>
-    public ChatMessage(string id, string userId, string userName, string chatId, string content)
+    /// <param name="userId">Id of the user who sent this message</param>
+    /// <param name="userName">Name of the user who sent this message</param>
+    /// <param name="chatId">The chat ID that this message belongs to</param>
+    /// <param name="content">The message</param>
+    /// <param name="fromUser">True if the message is from the user. Otherwise it's from the bot.</param>
+    public ChatMessage(string userId, string userName, string chatId, string content, bool fromUser = true)
     {
         this.Timestamp = DateTimeOffset.Now;
         this.UserId = userId;
         this.UserName = userName;
         this.ChatId = chatId;
         this.Content = content;
-        this.Id = id;
+        this.Id = Guid.NewGuid().ToString();
+        this.FromUser = fromUser;
+    }
+
+    /// <summary>
+    /// Create a new chat message for the bot response.
+    /// </summary>
+    /// <param name="chatId">The chat ID that this message belongs to</param>
+    /// <param name="content">The message</param>
+    public static ChatMessage CreateBotResponseMessage(string chatId, string content)
+    {
+        return new ChatMessage("bot", "bot", chatId, content, false);
     }
 
     /// <summary>

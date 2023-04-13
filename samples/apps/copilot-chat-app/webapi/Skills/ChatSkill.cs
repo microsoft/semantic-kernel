@@ -241,7 +241,6 @@ public class ChatSkill
     #region Private
     /// <summary>
     /// Save a new message to the chat history.
-    /// This method will only modify the memory and the log of the context.
     /// </summary>
     /// <param name="message">The message</param>
     /// <param name="userId">The user ID</param>
@@ -252,20 +251,22 @@ public class ChatSkill
         // Make sure the chat exists.
         await this._chatRepository.FindById(chatId);
 
-        var messageId = Guid.NewGuid().ToString();
-        var chatMessage = new ChatMessage(messageId, userId, userName, chatId, message);
+        var chatMessage = new ChatMessage(userId, userName, chatId, message);
         await this._chatMessageRepository.Create(chatMessage);
     }
 
     /// <summary>
     /// Save a new response to the chat history.
-    /// This method will only modify the memory and the log of the context.
     /// </summary>
     /// <param name="response"></param>
     /// <param name="chatId">The chat ID</param>
     private async Task SaveNewResponseAsync(string response, string chatId)
     {
-        await this.SaveNewMessageAsync(response, "bot", "bot", chatId);
+        // Make sure the chat exists.
+        await this._chatRepository.FindById(chatId);
+
+        var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response);
+        await this._chatMessageRepository.Create(chatMessage);
     }
 
     /// <summary>
