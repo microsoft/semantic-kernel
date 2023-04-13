@@ -1,11 +1,13 @@
 import { useAccount } from '@azure/msal-react';
 import { Constants } from '../Constants';
-import { useAppDispatch } from '../redux/app/hooks';
+import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
+import { RootState } from '../redux/app/store';
 import { addAlert } from '../redux/features/app/appSlice';
 import { ChatState } from '../redux/features/conversations/ChatState';
 import { Conversations } from '../redux/features/conversations/ConversationsState';
 import {
     addConversation,
+    incrementBotProfilePictureIndex,
     setConversations,
     setSelectedConversation,
     updateConversation,
@@ -22,7 +24,7 @@ export const useChat = () => {
     const dispatch = useAppDispatch();
     const account = useAccount();
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
-    // const { conversations } = useAppSelector((state: RootState) => state.conversations);
+    const { botProfilePictureIndex } = useAppSelector((state: RootState) => state.conversations);
     // const connectors = useConnectors(); // ConnectorTokenExample
 
     const botProfilePictures: string[] = [
@@ -78,9 +80,10 @@ export const useChat = () => {
                     messages: [JSON.parse(initialBotMessage!)],
                     audience: [loggedInUser],
                     botTypingTimestamp: 0,
-                    botProfilePicture: '/assets/bot-icon-1.png',
+                    botProfilePicture: botProfilePictures.at(botProfilePictureIndex) ?? '/assets/bot-icon-1.png',
                 };
 
+                dispatch(incrementBotProfilePictureIndex());
                 dispatch(addConversation(newChat));
                 dispatch(setSelectedConversation(newChatId));
 
@@ -93,7 +96,23 @@ export const useChat = () => {
     };
 
     const getResponse = async (value: string, chatId: string) => {
-        const ask = { input: value, variables: [{ key: 'audience', value: account?.name ?? 'Unknown User' }] };
+        const ask = {
+            input: value,
+            variables: [
+                {
+                    key: 'userId',
+                    value: account?.homeAccountId!
+                },
+                {
+                    key: 'userName',
+                    value: account?.name!
+                },
+                {
+                    key: 'chatId',
+                    value: chatId
+                }
+            ]
+        };
         try {
             var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat');
             // var result = await connectors.invokeSkillWithGraphToken(ask, {ConnectorSkill}, {ConnectorFunction}); // ConnectorTokenExample
@@ -152,8 +171,9 @@ export const useChat = () => {
                             audience: [loggedInUser],
                             messages: orderedMessages,
                             botTypingTimestamp: 0,
-                            botProfilePicture: botProfilePictures[0], // TODO: Set profile picture
+                            botProfilePicture: botProfilePictures[botProfilePictureIndex],
                         };
+                        dispatch(incrementBotProfilePictureIndex());
                     }
 
                     dispatch(setConversations(conversations));

@@ -81,12 +81,13 @@ export const ChatWindow: React.FC = () => {
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const dispatch = useAppDispatch();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const chatName = conversations[selectedId].title;
     const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
     const onEdit = async () => {
         if (isEditing) {
-            if (selectedId !== title) {
+            if (chatName !== title) {
                 try {
                     var ask: IAsk = {
                         input: conversations[selectedId].id!,
@@ -96,7 +97,7 @@ export const ChatWindow: React.FC = () => {
                     };
 
                     await sk.invokeAsync(ask, 'ChatMemorySkill', 'EditChat');
-                    dispatch(editConversationTitle({ id: selectedId ?? '', newId: title ?? '' }));
+                    dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));
                 } catch (e: any) {
                     const errorMessage = `Unable to retrieve chat to change title. Details: ${e.message ?? e}`;
                     dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -111,7 +112,7 @@ export const ChatWindow: React.FC = () => {
     };
 
     useEffect(() => {
-        setTitle(selectedId);
+        setTitle(chatName);
         setIsEditing(false);
     }, [selectedId]);
 
@@ -130,7 +131,7 @@ export const ChatWindow: React.FC = () => {
                             <Input value={title} onChange={onTitleChange} id={title} />
                         ) : (
                             <Label size="large" weight="semibold">
-                                {selectedId}
+                                {chatName}
                             </Label>
                         )}
                         {
