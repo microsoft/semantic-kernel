@@ -67,6 +67,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Sqlite", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.CosmosDB", "src\Connectors\Connectors.Memory.CosmosDB\Connectors.Memory.CosmosDB.csproj", "{EA61C289-7928-4B78-A9C1-7AAD61F907CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skills.Grpc", "src\SemanticKernel.Skills\Skills.Grpc\Skills.Grpc.csproj", "{A09D0CFE-4C25-4B0D-8DA4-EA8D4728916C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -153,6 +155,10 @@ Global
 		{EA61C289-7928-4B78-A9C1-7AAD61F907CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA61C289-7928-4B78-A9C1-7AAD61F907CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA61C289-7928-4B78-A9C1-7AAD61F907CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A09D0CFE-4C25-4B0D-8DA4-EA8D4728916C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A09D0CFE-4C25-4B0D-8DA4-EA8D4728916C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A09D0CFE-4C25-4B0D-8DA4-EA8D4728916C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A09D0CFE-4C25-4B0D-8DA4-EA8D4728916C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -181,6 +187,7 @@ Global
 		{5DEBAA62-F117-496A-8778-FED3604B70E2} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{EC004F12-2F60-4EDD-B3CD-3A504900D929} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{EA61C289-7928-4B78-A9C1-7AAD61F907CD} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{A09D0CFE-4C25-4B0D-8DA4-EA8D4728916C} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
