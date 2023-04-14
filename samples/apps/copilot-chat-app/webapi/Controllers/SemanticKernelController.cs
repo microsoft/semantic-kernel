@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
 
@@ -78,5 +80,58 @@ public class SemanticKernelController : ControllerBase
         }
 
         return this.Ok(new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) });
+    }
+
+    [Route("bot/import")]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<string> Import([FromServices] Kernel kernel, [FromBody] string serializedBot)
+    {
+        this._logger.LogDebug("Received call to import a bot");
+
+
+        return $"import a bot. {serializedBot}";
+    }
+
+    [Route("bot/export")]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<string>> ExportAsync([FromServices] Kernel kernel)
+    {
+        this._logger.LogDebug("Received call to export a bot");
+        var memory = await GetAllMemoriesAsync(kernel.Memory).ToArrayAsync();
+
+        return JsonSerializer.Serialize(memory);
+    }
+
+    /// <summary>
+    /// Get all chat messages from memory.
+    /// </summary>
+    /// <param name="memory">The memory object.</param>
+    private static async IAsyncEnumerable<MemoryQueryResult?> GetAllMemoriesAsync(ISemanticTextMemory memory)
+    {
+        var allCollections = await memory.GetCollectionsAsync();
+        IList<MemoryQueryResult> allChatMessageMemories = new List<MemoryQueryResult>();
+
+        foreach (var collection in allCollections)
+        {
+            var results = await memory.SearchAsync(
+                collection,
+                "abc", // dummy query since we don't care about relevance. An empty string will cause exception.
+                limit: 1,
+                minRelevanceScore: 0.0, // no relevance required since the collection only has one entry
+                cancel: default
+            ).ToListAsync();
+            allChatMessageMemories.Add(results.First());
+        }
+
+        foreach (var item in allChatMessageMemories.OrderBy(item => item.Metadata.Id))
+        {
+            yield return item;
+        }
     }
 }
