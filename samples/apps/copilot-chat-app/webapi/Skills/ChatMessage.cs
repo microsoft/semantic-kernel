@@ -15,7 +15,7 @@ public class ChatMessage : IStorageEntity
     /// <summary>
     /// Role of the author of a chat message.
     /// </summary>
-    public enum AuthorRoleEnum
+    public enum AuthorRoles
     {
         User = 0,
         Bot,
@@ -61,7 +61,7 @@ public class ChatMessage : IStorageEntity
     /// Role of the author of the message.
     /// </summary>
     [JsonPropertyName("authorRole")]
-    public AuthorRoleEnum AuthorRole { get; set; }
+    public AuthorRoles AuthorRole { get; set; }
 
     /// <summary>
     /// Create a new chat message. Timestamp is automatically generated.
@@ -71,7 +71,7 @@ public class ChatMessage : IStorageEntity
     /// <param name="chatId">The chat ID that this message belongs to</param>
     /// <param name="content">The message</param>
     /// <param name="authorRole"></param>
-    public ChatMessage(string userId, string userName, string chatId, string content, AuthorRoleEnum authorRole = AuthorRoleEnum.User)
+    public ChatMessage(string userId, string userName, string chatId, string content, AuthorRoles authorRole = AuthorRoles.User)
     {
         this.Timestamp = DateTimeOffset.Now;
         this.UserId = userId;
@@ -89,7 +89,7 @@ public class ChatMessage : IStorageEntity
     /// <param name="content">The message</param>
     public static ChatMessage CreateBotResponseMessage(string chatId, string content)
     {
-        return new ChatMessage("bot", "bot", chatId, content, AuthorRoleEnum.Bot);
+        return new ChatMessage("bot", "bot", chatId, content, AuthorRoles.Bot);
     }
 
     /// <summary>

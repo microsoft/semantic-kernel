@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-export enum AuthorRole {
+export enum AuthorRoles {
     User = 0,
     Bot,
 }
@@ -11,7 +11,7 @@ export interface ChatMessage {
     userId: string;
     content: string;
     id?: string;
-    authorRole: AuthorRole;
+    authorRole: AuthorRoles;
     debug?: string;
 }
 

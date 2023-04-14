@@ -8,14 +8,14 @@ public class Repository<T> : IRepository<T> where T : IStorageEntity
     /// <summary>
     /// The storage context.
     /// </summary>
-    protected IStorageContext<T> _StorageContext { get; set; }
+    protected IStorageContext<T> _storageContext { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the Repository class.
     /// </summary>
     public Repository(IStorageContext<T> storageContext)
     {
-        this._StorageContext = storageContext;
+        this._storageContext = storageContext;
     }
 
     /// <inheritdoc/>
@@ -26,24 +26,24 @@ public class Repository<T> : IRepository<T> where T : IStorageEntity
             throw new ArgumentOutOfRangeException(nameof(entity.Id), "Entity Id cannot be null or empty.");
         }
 
-        return this._StorageContext.CreateAsync(entity);
+        return this._storageContext.CreateAsync(entity);
     }
 
     /// <inheritdoc/>
     public Task DeleteAsync(T entity)
     {
-        return this._StorageContext.DeleteAsync(entity);
+        return this._storageContext.DeleteAsync(entity);
     }
 
     /// <inheritdoc/>
     public Task<T> FindByIdAsync(string id)
     {
-        return this._StorageContext.ReadAsync(id);
+        return this._storageContext.ReadAsync(id);
     }
 
     /// <inheritdoc/>
     public Task UpdateAsync(T entity)
     {
-        return this._StorageContext.UpdateAsync(entity);
+        return this._storageContext.UpdateAsync(entity);
     }
 }
