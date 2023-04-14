@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using KernelHttpServer.Model;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -62,7 +63,7 @@ public class SemanticKernelEndpoint
 
         if (result.ErrorOccurred)
         {
-            return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, result.LastErrorDescription);
+            return await ResponseErrorWithMessageAsync(req, result);
         }
 
         var r = req.CreateResponse(HttpStatusCode.OK);
@@ -114,11 +115,21 @@ public class SemanticKernelEndpoint
 
         if (result.ErrorOccurred)
         {
-            return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, result.LastErrorDescription);
+            return await ResponseErrorWithMessageAsync(req, result);
         }
 
         var r = req.CreateResponse(HttpStatusCode.OK);
         await r.WriteAsJsonAsync(new AskResult { Value = result.Variables.ToPlan().Result });
         return r;
+    }
+
+    private static async Task<HttpResponseData> ResponseErrorWithMessageAsync(HttpRequestData req, SKContext result)
+    {
+        if (result.LastException is AIException aiException && aiException.Detail is not null)
+        {
+            return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, string.Concat(aiException.Message, " - Detail: " + aiException.Detail));
+        }
+
+        return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, result.LastErrorDescription);
     }
 }

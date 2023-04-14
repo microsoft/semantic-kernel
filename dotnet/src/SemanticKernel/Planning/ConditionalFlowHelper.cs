@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,9 +24,6 @@ namespace Microsoft.SemanticKernel.Planning;
 /// </summary>
 public class ConditionalFlowHelper
 {
-    private readonly IKernel _kernel;
-
-    internal const string ReasonIdentifier = "Reason:";
     internal const string NoReasonMessage = "No reason was provided";
 
     private readonly ISKFunction _ifStructureCheckFunction;
@@ -40,7 +36,6 @@ public class ConditionalFlowHelper
     /// <param name="completionBackend"> A optional completion backend to run the internal semantic functions </param>
     internal ConditionalFlowHelper(IKernel kernel, ITextCompletion? completionBackend = null)
     {
-        this._kernel = kernel;
         this._ifStructureCheckFunction = kernel.CreateSemanticFunction(
             ConditionalFlowConstants.IfStructureCheckPrompt,
             skillName: "PlannerSkill_Excluded",
@@ -92,6 +87,31 @@ public class ConditionalFlowHelper
             : elseNode?.InnerXml ?? string.Empty;
     }
 
+    /// <summary>
+    /// Get a planner while statement content and output or not its contents depending on the conditional evaluation.
+    /// </summary>
+    /// <param name="whileContent">While content.</param>
+    /// <param name="context"> The context to use </param>
+    /// <returns>None if evaluates to false or the children steps appended of a copy of the while structure</returns>
+    /// <remarks>
+    /// This skill is initially intended to be used only by the Plan Runner.
+    /// </remarks>
+    public async Task<string> WhileAsync(string whileContent, SKContext context)
+    {
+        XmlDocument xmlDoc = new();
+        xmlDoc.LoadXml("<xml>" + whileContent + "</xml>");
+
+        this.EnsureWhileStructure(xmlDoc, out var whileNode);
+
+        var usedVariables = this.GetUsedVariables(whileNode);
+
+        bool conditionEvaluation = await this.EvaluateConditionAsync(whileNode, usedVariables, context).ConfigureAwait(false);
+
+        return conditionEvaluation
+            ? whileNode.InnerXml + whileContent
+            : string.Empty;
+    }
+
     private void EnsureIfStructure(XmlDocument xmlDoc, out XmlNode ifNode, out XmlNode? elseNode)
     {
         ifNode =
@@ -122,8 +142,32 @@ public class ConditionalFlowHelper
         }
     }
 
+    private void EnsureWhileStructure(XmlDocument xmlDoc, out XmlNode whileNode)
+    {
+        whileNode =
+            xmlDoc.SelectSingleNode("//while")
+            ?? throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "While is not present");
+
+        XmlAttribute? conditionContents = whileNode.Attributes?["condition"];
+
+        if (conditionContents is null)
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "Condition attribute is not present");
+        }
+
+        if (string.IsNullOrWhiteSpace(conditionContents.Value))
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "Condition attribute value cannot be empty");
+        }
+
+        if (!whileNode.HasChildNodes)
+        {
+            throw new ConditionException(ConditionException.ErrorCodes.InvalidStatementStructure, "While has no children");
+        }
+    }
+
     /// <summary>
-    /// Get the variables used in the If statement and ensure the structure is valid
+    /// Get the variables used in the If statement and ensure the structure is valid using LLM
     /// </summary>
     /// <param name="ifContent">If structure content</param>
     /// <param name="context">Current context</param>
@@ -175,7 +219,7 @@ public class ConditionalFlowHelper
         foreach (Match foundVariable in foundVariables)
         {
             // Return the variables without the $
-            yield return foundVariable.Value[1..];
+            yield return foundVariable.Value.Substring(1);
         }
     }
 
@@ -273,12 +317,12 @@ public class ConditionalFlowHelper
     /// <exception cref="ConditionException">Throws if cannot find a Json result or any of the required properties</exception>
     private JsonNode GetLlmResponseAsJsonWithProperties(string llmResponse, params string[] requiredProperties)
     {
-        var startIndex = llmResponse?.IndexOf('{', StringComparison.InvariantCultureIgnoreCase) ?? -1;
+        var startIndex = llmResponse?.IndexOf('{') ?? -1;
         JsonNode? response = null;
 
         if (startIndex > -1)
         {
-            var jsonResponse = llmResponse![startIndex..];
+            var jsonResponse = llmResponse!.Substring(startIndex);
             response = JsonSerializer.Deserialize<JsonNode>(jsonResponse);
 
             foreach (string requiredProperty in requiredProperties)

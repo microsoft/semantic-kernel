@@ -76,5 +76,8 @@ public static class Program
 
         await Example23_ReadOnlyMemoryStore.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        Example24_Tokenizer.Run();
+        Console.WriteLine("== DONE ==");
     }
 }

@@ -38,7 +38,7 @@ public static class GPT3Tokenizer
         if (string.IsNullOrEmpty(text)) { return new List<int>(); }
 
         ConcurrentDictionary<int, char> byteEncoder = BytesToUnicode();
-        IReadOnlyCollection<Match> matches = s_encodingRegex.Matches(text);
+        IReadOnlyCollection<Match> matches = (IReadOnlyCollection<Match>)s_encodingRegex.Matches(text);
 
         var bpeTokens = new List<int>();
         foreach (var match in matches)

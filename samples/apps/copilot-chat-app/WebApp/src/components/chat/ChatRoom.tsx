@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount } from '@azure/msal-react';
+import { useAccount, useMsal } from '@azure/msal-react';
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import debug from 'debug';
 import React from 'react';
 import { Constants } from '../../Constants';
+import { AuthorRoles } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -35,18 +36,23 @@ const useClasses = makeStyles({
     },
 });
 
-
-
 export const ChatRoom: React.FC = () => {
-    const { audience } = useAppSelector((state: RootState) => state.chat);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { audience } = conversations[selectedId];
     const messages = conversations[selectedId].messages;
     const classes = useClasses();
-    const account = useAccount();
+
+    const { accounts } = useMsal();
+    const account = useAccount(accounts[0] || {});
+
     const dispatch = useAppDispatch();
     const scrollViewTargetRef = React.useRef<HTMLDivElement>(null);
     const scrollTargetRef = React.useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = React.useState(true);
+
+    // hardcode to care only about the bot typing for now.
+    const [isBotTyping, setIsBotTyping] = React.useState(false);
+
     const chat = useChat();
 
     React.useEffect(() => {
@@ -79,12 +85,19 @@ export const ChatRoom: React.FC = () => {
     const handleSubmit = async (value: string) => {
         log('submitting user chat message');
         const chatInput = {
-                timestamp: new Date().getTime(),
-                sender: account?.homeAccountId,
-                content: value,
+            timestamp: new Date().getTime(),
+            userId: account?.homeAccountId,
+            userName: account?.name as string,
+            content: value,
+            authorRole: AuthorRoles.User,
         };
+        setIsBotTyping(true);
         dispatch(updateConversation({ message: chatInput }));
-        await chat.getResponse(value, selectedId);
+        try {
+            await chat.getResponse(value, selectedId);
+        } finally {
+            setIsBotTyping(false);
+        }
         setShouldAutoScroll(true);
     };
 
@@ -97,7 +110,7 @@ export const ChatRoom: React.FC = () => {
                 </div>
             </div>
             <div className={classes.input}>
-                <ChatInput onSubmit={handleSubmit} />
+                <ChatInput isTyping={isBotTyping} onSubmit={handleSubmit} />
             </div>
         </div>
     );

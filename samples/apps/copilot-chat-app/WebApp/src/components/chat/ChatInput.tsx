@@ -7,33 +7,25 @@ import React from 'react';
 import { Constants } from '../../Constants';
 import { AlertType } from '../../libs/models/AlertType';
 import { useAppDispatch } from '../../redux/app/hooks';
-import { setAlert } from '../../redux/features/app/appSlice';
+import { addAlert } from '../../redux/features/app/appSlice';
+import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
 const useClasses = makeStyles({
     root: {
         display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        position: 'relative',
+        flexDirection: 'column',
+        ...shorthands.margin(0, '72px'),
+        alignContent: 'stretch',
     },
-    claim: {
-        position: 'absolute',
-        top: '-150px',
-        width: '100%',
-    },
-    claimContent: {
-        ...shorthands.margin(0, 'auto'),
-        backgroundColor: tokens.colorNeutralBackground4,
-        ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalM),
-        ...shorthands.borderRadius(tokens.borderRadiusMedium, tokens.borderRadiusMedium, 0, 0),
+    typingIndicator: {
+        height: '28px',
     },
     content: {
         ...shorthands.gap(tokens.spacingHorizontalM),
         display: 'flex',
         flexDirection: 'row',
-        maxWidth: '900px',
         width: '100%',
     },
     input: {
@@ -50,11 +42,13 @@ const useClasses = makeStyles({
 });
 
 interface ChatInputProps {
+    // Hardcode to single user typing. For multi-users, it should be a list of ChatUser who are typing.
+    isTyping?: boolean;
     onSubmit: (value: string) => void;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = (props) => {
-    const { onSubmit } = props;
+    const { isTyping, onSubmit } = props;
     const classes = useClasses();
     const dispatch = useAppDispatch();
     const [value, setValue] = React.useState('');
@@ -69,7 +63,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
             const message = `Error submitting chat input: ${(error as Error).message}`;
             log(message);
             dispatch(
-                setAlert({
+                addAlert({
                     type: AlertType.Error,
                     message,
                 }),
@@ -80,6 +74,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
 
     return (
         <div className={classes.root}>
+            <div className={classes.typingIndicator}>{isTyping ? <TypingIndicatorRenderer /> : null}</div>
             <div className={classes.content}>
                 <Textarea
                     id="chat-input"

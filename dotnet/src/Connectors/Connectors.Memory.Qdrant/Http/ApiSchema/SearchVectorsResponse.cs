@@ -23,7 +23,7 @@ internal class SearchVectorsResponse : QdrantResponse
         public Dictionary<string, object> Payload { get; set; }
 
         [JsonPropertyName("vector")]
-        public IEnumerable<float> Vector { get; }
+        public IEnumerable<float>? Vector { get; }
 
         [JsonConstructor]
         public ScoredPoint(string id, double? score, Dictionary<string, object> payload, IEnumerable<float> vector)
