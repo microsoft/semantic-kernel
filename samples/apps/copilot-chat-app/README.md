@@ -49,7 +49,7 @@ and these components are functional:
             you may change `"UseHttp": false,` to `True` to overide the default
             use of https.
 
-          * Under the `“CompletionConfig”` block, make the following configuration
+          * Under the `“Completion”` block, make the following configuration
             changes to match your instance:
 
             * `“AIService”: “AzureOpenAI”`, or whichever option is appropriate for
@@ -61,7 +61,7 @@ and these components are functional:
             * You will insert your Azure endpoint key during build of the backend
               API Server
 
-        * Under the `“EmbeddingConfig”` block, make sure the following configuration
+        * Under the `“Embedding”` block, make sure the following configuration
           changes to match your instance:
             * `“AIService”: “AzureOpenAI”,` or whichever option is appropriate
               for your instance.

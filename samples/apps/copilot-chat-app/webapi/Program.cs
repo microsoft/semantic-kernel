@@ -164,7 +164,7 @@ public static class Program
         IStorageContext<ChatSession> chatSessionInMemoryContext;
         IStorageContext<ChatMessage> chatMessageInMemoryContext;
 
-        switch (configuration["ChatStore"].ToUpperInvariant())
+        switch (configuration["ChatStore:Type"].ToUpperInvariant())
         {
             case "VOLATILE":
                 chatSessionInMemoryContext = new VolatileContext<ChatSession>();
