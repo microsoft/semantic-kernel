@@ -35,6 +35,6 @@ public interface IEmailConnector
     /// <param name="filterClause">Filter Clause</param>
     /// <param name="orderByClause">OrderBy Clause</param>
     /// <param name="selectClause">Select Clause</param>
-    /// <returns></returns>
+    /// <returns>The message collection page</returns>
     Task<IUserMessagesCollectionPage> GetMessagesAsync(int? topClause = 100, int? skipClause = null, string? filterClause = null, string? orderByClause = null, string? selectClause = null);
 }

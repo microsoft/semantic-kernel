@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -138,7 +139,7 @@ public sealed class Program
             throw new InvalidOperationException("Unable to determine current assembly directory.");
         }
 
-        string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../skills"));
+        string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../skills"));
 
         IDictionary<string, ISKFunction> summarizeSkills =
             sk.ImportSemanticSkillFromDirectory(skillParentDirectory, "SummarizeSkill");
@@ -178,6 +179,49 @@ public sealed class Program
         emailMemory.Set(EmailSkill.Parameters.Subject, $"Summary of {pathToFile}");
 
         await sk.RunAsync(emailMemory, outlook["SendEmailAsync"]);
+
+        Thread.Sleep(5000);
+
+        // Build email query
+        ContextVariables getEmailMessagesVariable = new();
+        getEmailMessagesVariable.Set(EmailSkill.Parameters.Select, "subject,from,receivedDateTime");
+        getEmailMessagesVariable.Set(EmailSkill.Parameters.OrderBy, "receivedDateTime DESC");
+        getEmailMessagesVariable.Set(EmailSkill.Parameters.Top, "10");
+
+        // Parse returned emails
+        SKContext emailsResult = await sk.RunAsync(getEmailMessagesVariable, outlook["GetEmailMessagesAsync"]);
+        string[] emailsSubjectOrBodyContent = emailsResult.Result.Split('\0');
+        foreach (var email in emailsSubjectOrBodyContent)
+        {
+            logger.LogInformation($"Email Subject or Body: {email}");
+        }
+
+        /*
+         * Sample Output
+         *
+            info: Program[0]
+                  Email Subject or Body: Undeliverable: Summary of Semantic-Kernel-Summary.txt
+            info: Program[0]
+                  Email Subject or Body: Summary of Semantic-Kernel-Summary.txt
+            info: Program[0]
+                  Email Subject or Body: Undeliverable: Summary of Semantic-Kernel-Summary.txt
+            info: Program[0]
+                  Email Subject or Body: Summary of Semantic-Kernel-Summary.txt
+            info: Program[0]
+                  Email Subject or Body: Undeliverable: Summary of Semantic-Kernel-Summary.txt
+            info: Program[0]
+                  Email Subject or Body: Summary of Semantic-Kernel-Summary.txt
+            info: Program[0]
+                  Email Subject or Body: Undeliverable: Summary of Semantic-Kernel-Summary.txt
+            info: Program[0]
+                  Email Subject or Body: Summary of Semantic-Kernel-Summary.txt
+            info: Program[0]
+                  Email Subject or Body: Summary of Semantic-Kernel-Summary.txt
+            info: Program[0]
+                  Email Subject or Body: Summary of Semantic-Kernel-Summary.txt
+            info: Program[0]
+         *
+         */
 
         // Add a reminder to follow-up next week.
         ContextVariables followUpTaskMemory = new($"Follow-up about {pathToFile}.");
