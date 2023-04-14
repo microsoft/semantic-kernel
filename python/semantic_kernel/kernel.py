@@ -13,6 +13,8 @@ from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.kernel_extensions import KernelExtensions
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -24,15 +26,13 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
-from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.skill_definition.skill_collection import SkillCollection
 from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
+from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
-from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
+from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.validation import validate_function_name, validate_skill_name
 
 
@@ -167,7 +167,7 @@ class Kernel(KernelBase, KernelExtensions):
 
     def register_memory(self, memory: SemanticTextMemoryBase) -> None:
         self._memory = memory
-        
+
     def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
         self.use_memory(memory_store)
 
