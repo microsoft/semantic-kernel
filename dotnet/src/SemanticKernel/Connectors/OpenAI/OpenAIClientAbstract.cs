@@ -6,6 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -234,6 +236,26 @@ public abstract class OpenAIClientAbstract : IDisposable
         }
     }
 
+    protected virtual string? GetErrorMessageFromResponse(string? jsonResponsePayload)
+    {
+        if (jsonResponsePayload is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            JsonNode? root = JsonSerializer.Deserialize<JsonNode>(jsonResponsePayload);
+
+            return root?["error"]?["message"]?.GetValue<string>();
+        }
+        catch (Exception ex) when (ex is NotSupportedException or JsonException)
+        {
+            this.Log.LogTrace("Unable to extract error from response body content. Exception: {0}:{1}", ex.GetType(), ex.Message);
+            return null;
+        }
+    }
+
     #region private ================================================================================
 
     // HTTP user agent sent to remote endpoints
@@ -256,6 +278,8 @@ public abstract class OpenAIClientAbstract : IDisposable
             this.Log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
             responseJson = await response.Content.ReadAsStringAsync();
+            string? errorDetail = this.GetErrorMessageFromResponse(responseJson);
+
             if (!response.IsSuccessStatusCode)
             {
                 switch ((HttpStatusCodeType)response.StatusCode)
@@ -283,7 +307,8 @@ public abstract class OpenAIClientAbstract : IDisposable
                     case HttpStatusCodeType.RequestHeaderFieldsTooLarge:
                         throw new AIException(
                             AIException.ErrorCodes.InvalidRequest,
-                            $"The request is not valid, HTTP status: {response.StatusCode:G}");
+                            $"The request is not valid, HTTP status: {response.StatusCode:G}",
+                            errorDetail);
 
                     case HttpStatusCodeType.Unauthorized:
                     case HttpStatusCodeType.Forbidden:
@@ -292,7 +317,8 @@ public abstract class OpenAIClientAbstract : IDisposable
                     case HttpStatusCodeType.NetworkAuthenticationRequired:
                         throw new AIException(
                             AIException.ErrorCodes.AccessDenied,
-                            $"The request is not authorized, HTTP status: {response.StatusCode:G}");
+                            $"The request is not authorized, HTTP status: {response.StatusCode:G}",
+                            errorDetail);
 
                     case HttpStatusCodeType.RequestTimeout:
                         throw new AIException(
@@ -302,7 +328,8 @@ public abstract class OpenAIClientAbstract : IDisposable
                     case HttpStatusCodeType.TooManyRequests:
                         throw new AIException(
                             AIException.ErrorCodes.Throttling,
-                            $"Too many requests, HTTP status: {response.StatusCode:G}");
+                            $"Too many requests, HTTP status: {response.StatusCode:G}",
+                            errorDetail);
 
                     case HttpStatusCodeType.InternalServerError:
                     case HttpStatusCodeType.NotImplemented:
@@ -312,12 +339,14 @@ public abstract class OpenAIClientAbstract : IDisposable
                     case HttpStatusCodeType.InsufficientStorage:
                         throw new AIException(
                             AIException.ErrorCodes.ServiceError,
-                            $"The service failed to process the request, HTTP status: {response.StatusCode:G}");
+                            $"The service failed to process the request, HTTP status: {response.StatusCode:G}",
+                            errorDetail);
 
                     default:
                         throw new AIException(
                             AIException.ErrorCodes.UnknownError,
-                            $"Unexpected HTTP response, status: {response.StatusCode:G}");
+                            $"Unexpected HTTP response, status: {response.StatusCode:G}",
+                            errorDetail);
                 }
             }
         }

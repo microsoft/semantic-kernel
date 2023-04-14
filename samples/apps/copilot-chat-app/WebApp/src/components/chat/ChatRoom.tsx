@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount } from '@azure/msal-react';
+import { useAccount, useMsal } from '@azure/msal-react';
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import debug from 'debug';
 import React from 'react';
 import { Constants } from '../../Constants';
+import { AuthorRoles } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -40,7 +41,10 @@ export const ChatRoom: React.FC = () => {
     const { audience } = conversations[selectedId];
     const messages = conversations[selectedId].messages;
     const classes = useClasses();
-    const account = useAccount();
+
+    const { accounts } = useMsal();
+    const account = useAccount(accounts[0] || {});
+
     const dispatch = useAppDispatch();
     const scrollViewTargetRef = React.useRef<HTMLDivElement>(null);
     const scrollTargetRef = React.useRef<HTMLDivElement>(null);
@@ -82,8 +86,10 @@ export const ChatRoom: React.FC = () => {
         log('submitting user chat message');
         const chatInput = {
             timestamp: new Date().getTime(),
-            sender: account?.homeAccountId,
+            userId: account?.homeAccountId,
+            userName: account?.name as string,
             content: value,
+            authorRole: AuthorRoles.User,
         };
         setIsBotTyping(true);
         dispatch(updateConversation({ message: chatInput }));

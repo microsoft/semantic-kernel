@@ -88,7 +88,7 @@ export const ChatList: FC = () => {
                             >
                                 <ChatListItem
                                     id={id}
-                                    header={id}
+                                    header={convo.title}
                                     timestamp={new Date(messages[lastMessage].timestamp).toLocaleTimeString([], {
                                         hour: '2-digit',
                                         minute: '2-digit',

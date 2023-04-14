@@ -31,12 +31,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-    <PackageReference Include="Microsoft.Bcl.HashCode" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="System.Linq.Async" />
-    <PackageReference Include="System.Net.Primitives" />
-    <PackageReference Include="System.Text.Json" />
+    <!--Setting version overrides to miniumum supported version, to maxiumize compatability.-->
+    <PackageReference Include="Microsoft.Bcl.HashCode" VersionOverride="[1.1.0, )" />
+    <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="[6.0.0, )" />
+    <PackageReference Include="System.Linq.Async" VersionOverride="[6.0.1, )" />
+    <PackageReference Include="System.Text.Json" VersionOverride="[6.0.0, )" />
   </ItemGroup>
 
   <ItemGroup>

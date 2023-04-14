@@ -107,6 +107,35 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
+    public async Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
+    {
+        // Arrange
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test",
+            text: "text",
+            description: "description",
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            key: null,
+            timestamp: null);
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+
+        // Act
+        await this._db.CreateCollectionAsync(collection);
+        var key = await this._db.UpsertAsync(collection, testRecord);
+        var actualDefault = await this._db.GetAsync(collection, key);
+        var actualWithEmbedding = await this._db.GetAsync(collection, key, true);
+
+        // Assert
+        Assert.NotNull(actualDefault);
+        Assert.NotNull(actualWithEmbedding);
+        Assert.Empty(actualDefault.Embedding.Vector);
+        Assert.NotEmpty(actualWithEmbedding.Embedding.Vector);
+        Assert.NotEqual(testRecord, actualDefault);
+        Assert.Equal(testRecord, actualWithEmbedding);
+    }
+
+    [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
         // Arrange
@@ -123,7 +152,7 @@ public class VolatileMemoryStoreTests
         // Act
         await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
-        var actual = await this._db.GetAsync(collection, key);
+        var actual = await this._db.GetAsync(collection, key, true);
 
         // Assert
         Assert.NotNull(actual);
@@ -147,7 +176,7 @@ public class VolatileMemoryStoreTests
         // Act
         await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
-        var actual = await this._db.GetAsync(collection, key);
+        var actual = await this._db.GetAsync(collection, key, true);
 
         // Assert
         Assert.NotNull(actual);
@@ -176,7 +205,7 @@ public class VolatileMemoryStoreTests
         await this._db.CreateCollectionAsync(collection);
         var key = await this._db.UpsertAsync(collection, testRecord);
         var key2 = await this._db.UpsertAsync(collection, testRecord2);
-        var actual = await this._db.GetAsync(collection, key);
+        var actual = await this._db.GetAsync(collection, key, true);
 
         // Assert
         Assert.NotNull(actual);
@@ -312,6 +341,66 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
+    public async Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
+    {
+        // Arrange
+        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
+        string collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        await this._db.CreateCollectionAsync(collection);
+        int i = 0;
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
+
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { -1, -1, -1 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
+
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
+
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { -1, -2, -3 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
+
+        i++;
+        testRecord = MemoryRecord.LocalRecord(
+            id: "test" + i,
+            text: "text" + i,
+            description: "description" + i,
+            embedding: new Embedding<float>(new float[] { 1, -1, -2 }));
+        _ = await this._db.UpsertAsync(collection, testRecord);
+
+        // Act
+        double threshold = 0.75;
+        var topNResultDefault = await this._db.GetNearestMatchAsync(collection, compareEmbedding, minRelevanceScore: threshold);
+        var topNResultWithEmbedding = await this._db.GetNearestMatchAsync(collection, compareEmbedding, minRelevanceScore: threshold, withEmbedding: true);
+
+        // Assert
+        Assert.NotNull(topNResultDefault);
+        Assert.NotNull(topNResultWithEmbedding);
+        Assert.Empty(topNResultDefault.Value.Item1.Embedding.Vector);
+        Assert.NotEmpty(topNResultWithEmbedding.Value.Item1.Embedding.Vector);
+    }
+
+    [Fact]
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
         // Arrange
@@ -395,7 +484,7 @@ public class VolatileMemoryStoreTests
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
-        Assert.Equal(topNKeys.Count(), topNResults.Length);
+        Assert.Equal(topN, topNKeys.Count());
 
         for (int i = 0; i < topNResults.Length; i++)
         {

@@ -8,7 +8,7 @@ import signInLogo from '../../src/ms-symbollockup_signin_light.svg';
 const YourInfo: FC = () => {
     const { instance } = useMsal();
     const loginRequest = {
-        scopes: (process.env.REACT_APP_GRAPH_SCOPES as string).split(','),
+        scopes: (process.env.REACT_APP_GRAPH_SCOPES as string)?.split(','),
     };
 
     return (

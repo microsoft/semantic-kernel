@@ -45,7 +45,7 @@ public class MemoryQueryResult
     /// <param name="relevance">The similarity score associated with the result.</param>
     /// <returns>A new instance of MemoryQueryResult.</returns>
     /// <exception cref="MemoryException"></exception>
-    public static MemoryQueryResult FromJson(
+    public static MemoryQueryResult FromJsonMetadata(
         string json,
         double relevance)
     {

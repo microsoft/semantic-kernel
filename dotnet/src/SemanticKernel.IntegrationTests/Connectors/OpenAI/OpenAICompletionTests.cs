@@ -2,10 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -96,10 +98,90 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
 
         // Act
-        await target.RunAsync(prompt, skill["Summarize"]);
+        var context = await target.RunAsync(prompt, skill["Summarize"]);
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task OpenAIHttpInvalidKeyShouldReturnErrorDetailAsync()
+    {
+        // Arrange
+        IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Build();
+
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+
+        // Use an invalid API key to force a 401 Unauthorized response
+        target.Config.AddOpenAITextCompletionService(
+            serviceId: openAIConfiguration.ServiceId,
+            modelId: openAIConfiguration.ModelId,
+            apiKey: "INVALID_KEY");
+
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
+
+        // Act
+        var context = await target.RunAsync("Any", skill["Summarize"]);
+
+        // Assert
+        Assert.True(context.ErrorOccurred);
+        Assert.IsType<AIException>(context.LastException);
+        Assert.Contains("Incorrect API key provided", ((AIException)context.LastException).Detail, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AzureOpenAIHttpInvalidKeyShouldReturnErrorDetailAsync()
+    {
+        // Arrange
+        IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Build();
+
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        target.Config.AddAzureOpenAITextCompletionService(
+            serviceId: azureOpenAIConfiguration.ServiceId,
+            deploymentName: azureOpenAIConfiguration.DeploymentName,
+            endpoint: azureOpenAIConfiguration.Endpoint,
+            apiKey: "INVALID_KEY");
+
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
+
+        // Act
+        var context = await target.RunAsync("Any", skill["Summarize"]);
+
+        // Assert
+        Assert.True(context.ErrorOccurred);
+        Assert.IsType<AIException>(context.LastException);
+        Assert.Contains("provide a valid key", ((AIException)context.LastException).Detail, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AzureOpenAIHttpExceededMaxTokensShouldReturnErrorDetailAsync()
+    {
+        // Arrange
+        IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Build();
+
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        target.Config.AddAzureOpenAITextCompletionService(
+            serviceId: azureOpenAIConfiguration.ServiceId,
+            deploymentName: azureOpenAIConfiguration.DeploymentName,
+            endpoint: azureOpenAIConfiguration.Endpoint,
+            apiKey: azureOpenAIConfiguration.ApiKey);
+
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
+
+        // Act
+        var context = await skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 10000)));
+
+        // Assert
+        Assert.True(context.ErrorOccurred);
+        Assert.IsType<AIException>(context.LastException);
+        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.InvariantCultureIgnoreCase);
     }
 
     [Theory(Skip = "This test is for manual verification.")]
