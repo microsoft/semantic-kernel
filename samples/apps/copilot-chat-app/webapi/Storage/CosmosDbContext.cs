@@ -28,12 +28,20 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
     /// <param name="container">The CosmosDB container name.</param>
     public CosmosDbContext(string connectionString, string database, string container)
     {
-        this._client = new CosmosClient(connectionString);
+        // Configure JsonSerializerOptions
+        var options = new CosmosClientOptions
+        {
+            SerializerOptions = new CosmosSerializationOptions
+            {
+                PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+            },
+        };
+        this._client = new CosmosClient(connectionString, options);
         this._container = this._client.GetContainer(database, container);
     }
 
     /// <inheritdoc/>
-    public IQueryable<T> QueryableEntities => this._container.GetItemLinqQueryable<T>().AsQueryable();
+    public IQueryable<T> QueryableEntities => this._container.GetItemLinqQueryable<T>();
 
     /// <inheritdoc/>
     public async Task CreateAsync(T entity)
