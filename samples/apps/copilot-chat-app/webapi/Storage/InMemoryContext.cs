@@ -1,6 +1,8 @@
-﻿using System.Collections.Concurrent;
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SKWebApi.Storage;
+using System.Collections.Concurrent;
+
+namespace SemanticKernel.Service.Storage;
 
 /// <summary>
 /// A storage context that stores entities in memory.

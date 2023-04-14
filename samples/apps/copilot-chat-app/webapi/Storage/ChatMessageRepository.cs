@@ -1,6 +1,8 @@
-﻿using SKWebApi.Skills;
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SKWebApi.Storage;
+using SemanticKernel.Service.Skills;
+
+namespace SemanticKernel.Service.Storage;
 
 /// <summary>
 /// A repository for chat messages.
@@ -13,14 +15,15 @@ public class ChatMessageRepository : Repository<ChatMessage>
     /// <param name="storageContext">The storage context.</param>
     public ChatMessageRepository(IStorageContext<ChatMessage> storageContext)
         : base(storageContext)
-    { }
+    {
+    }
 
     /// <summary>
     /// Finds chat messages by chat id.
     /// </summary>
     public Task<IEnumerable<ChatMessage>> FindByChatIdAsync(string chatId)
     {
-        return Task.FromResult(base.storageContext.QueryableEntities.Where(e => e.ChatId == chatId).AsEnumerable());
+        return Task.FromResult(base.StorageContext.QueryableEntities.Where(e => e.ChatId == chatId).AsEnumerable());
     }
 
     public async Task<ChatMessage> FindLastByChatIdAsync(string chatId)
@@ -30,6 +33,7 @@ public class ChatMessageRepository : Repository<ChatMessage>
         {
             throw new KeyNotFoundException($"No messages found for chat {chatId}.");
         }
+
         return messages.OrderByDescending(e => e.Timestamp).First();
     }
 }

@@ -5,8 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SKWebApi.Skills;
-using SKWebApi.Storage;
+using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Skills;
 
@@ -21,7 +20,9 @@ public class ChatSkill
     /// of the <see cref="ChatAsync"/> function will generate a new prompt dynamically.
     /// </summary>
     private readonly IKernel _kernel;
+
     private readonly ChatMessageRepository _chatMessageRepository;
+
     private readonly ChatSessionRepository _chatSessionRepository;
 
     public ChatSkill(IKernel kernel, ChatMessageRepository chatMessageRepository, ChatSessionRepository chatSessionRepository)
@@ -211,13 +212,13 @@ public class ChatSkill
         remainingToken -= this.EstimateTokenCount(userIntent);
 
         var completionFunction = this._kernel.CreateSemanticFunction(
-           SystemPromptDefaults.SystemChatPrompt,
-           skillName: nameof(ChatSkill),
-           description: "Complete the prompt.");
+            SystemPromptDefaults.SystemChatPrompt,
+            skillName: nameof(ChatSkill),
+            description: "Complete the prompt.");
 
         chatContext = await completionFunction.InvokeAsync(
-           context: chatContext,
-           settings: this.CreateChatResponseCompletionSettings()
+            context: chatContext,
+            settings: this.CreateChatResponseCompletionSettings()
         );
 
         // Save this response to memory such that subsequent chat responses can use it
@@ -237,8 +238,8 @@ public class ChatSkill
         return context;
     }
 
-
     #region Private
+
     /// <summary>
     /// Save a new message to the chat history.
     /// </summary>
@@ -312,5 +313,6 @@ public class ChatSkill
     {
         return (int)Math.Floor(text.Length / SystemPromptDefaults.TokenEstimateFactor);
     }
+
     # endregion
 }

@@ -1,4 +1,6 @@
-﻿namespace SKWebApi.Storage;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+namespace SemanticKernel.Service.Storage;
 
 /// <summary>
 /// Defines the basic CRUD operations for a repository.
@@ -8,14 +10,14 @@ public class Repository<T> : IRepository<T> where T : IStorageEntity
     /// <summary>
     /// The storage context.
     /// </summary>
-    protected IStorageContext<T> storageContext { get; set; }
+    protected IStorageContext<T> StorageContext { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the Repository class.
     /// </summary>
     public Repository(IStorageContext<T> storageContext)
     {
-        this.storageContext = storageContext;
+        this.StorageContext = storageContext;
     }
 
     /// <inheritdoc/>
@@ -26,24 +28,24 @@ public class Repository<T> : IRepository<T> where T : IStorageEntity
             throw new ArgumentOutOfRangeException(nameof(entity.Id), "Entity Id cannot be null or empty.");
         }
 
-        return this.storageContext.CreateAsync(entity);
+        return this.StorageContext.CreateAsync(entity);
     }
 
     /// <inheritdoc/>
     public Task DeleteAsync(T entity)
     {
-        return this.storageContext.DeleteAsync(entity);
+        return this.StorageContext.DeleteAsync(entity);
     }
 
     /// <inheritdoc/>
     public Task<T> FindByIdAsync(string id)
     {
-        return this.storageContext.ReadAsync(id);
+        return this.StorageContext.ReadAsync(id);
     }
 
     /// <inheritdoc/>
     public Task UpdateAsync(T entity)
     {
-        return this.storageContext.UpdateAsync(entity);
+        return this.StorageContext.UpdateAsync(entity);
     }
 }

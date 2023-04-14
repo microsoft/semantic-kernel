@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
-using SKWebApi.Storage;
+using SemanticKernel.Service.Storage;
 
-namespace SKWebApi.Skills;
+namespace SemanticKernel.Service.Skills;
 
 /// <summary>
 /// A chat session

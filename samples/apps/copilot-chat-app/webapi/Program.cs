@@ -7,10 +7,10 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
-using SKWebApi.Skills;
-using SKWebApi.Storage;
+using SemanticKernel.Service.Skills;
+using SemanticKernel.Service.Storage;
 
-namespace CopilotChatApi.Service;
+namespace SemanticKernel.Service;
 
 public static class Program
 {
@@ -160,6 +160,5 @@ public static class Program
 
         // Each REST call gets a fresh new SK instance
         services.AddScoped<Kernel>();
-
     }
 }
