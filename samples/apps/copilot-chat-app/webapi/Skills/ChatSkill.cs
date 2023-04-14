@@ -96,13 +96,16 @@ public class ChatSkill
 
         string memoryText = "";
         var results = context.Memory.SearchAsync(
-            ChatHistorySkill.MessageCollectionName(context["chatId"]), latestMessage.ToString(), limit: 1000);
+            SemanticMemoryExtractor.MemoryCollectionName(chatId, SystemPromptDefaults.LongTermMemoryName),
+            latestMessage.ToString(),
+            limit: 1000,
+            minRelevanceScore: 0.8);
         await foreach (var memory in results)
         {
             var estimatedTokenCount = this.EstimateTokenCount(memory.Metadata.Text);
             if (remainingToken - estimatedTokenCount > 0)
             {
-                memoryText += $"\n{memory.Metadata.Text}";
+                memoryText += $"\n[{memory.Metadata.Description}] {memory.Metadata.Text}";
                 remainingToken -= estimatedTokenCount;
             }
             else
@@ -111,7 +114,7 @@ public class ChatSkill
             }
         }
 
-        return $"Past memories:\n{memoryText.Trim()}";
+        return $"Past memories (format: [memory type] <label>: <details>):\n{memoryText.Trim()}";
     }
 
     /// <summary>
@@ -233,6 +236,18 @@ public class ChatSkill
             return context;
         }
 
+        // Extract semantic memory
+        try
+        {
+            await this.ExtractSemanticMemoryAsync(chatId, chatContext);
+        }
+        catch (Exception ex) when (!ex.IsCriticalException())
+        {
+            // Skip semantic memory extraction if it fails.
+            // We can rely on the model to response with perfect Json each time.
+            context.Log.LogInformation("Unable to extract semantic memory: {0}", ex.Message);
+        }
+
         context.Variables.Update(chatContext.Result);
         context.Variables.Set("userId", "Bot");
         return context;
@@ -268,6 +283,53 @@ public class ChatSkill
 
         var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response);
         await this._chatMessageRepository.CreateAsync(chatMessage);
+    }
+
+    /// <summary>
+    /// Save a new response to the chat history.
+    /// This method will only modify the memory and the log of the context.
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <param name="context"></param>
+    private async Task ExtractSemanticMemoryAsync(string chatId, SKContext context)
+    {
+        var longTermSemanticMemory = await SemanticMemoryExtractor.ExtractLongTermCognitiveMemoryAsync(this._kernel, context);
+        foreach (var item in longTermSemanticMemory.Items)
+        {
+            await this.CreateMemoryAsync(item, chatId, context, SystemPromptDefaults.LongTermMemoryName);
+        }
+    }
+
+    /// <summary>
+    /// Create a memory item in the memory collection.
+    /// </summary>
+    /// <param name="item">A SemanticChatMemoryItem instance</param>
+    /// <param name="chatId">The ID of the chat the memories belong to</param>
+    /// <param name="context">The context that contains the memory</param>
+    /// <param name="memoryName">Name of the memory</param>
+    /// <returns></returns>
+    private async Task CreateMemoryAsync(SemanticChatMemoryItem item, string chatId, SKContext context, string memoryName)
+    {
+        var memoryCollectionName = SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName);
+
+        var memories = context.Memory.SearchAsync(
+            collection: memoryCollectionName,
+            query: item.ToFormattedString(),
+            limit: 1,
+            minRelevanceScore: 0.8,
+            cancel: context.CancellationToken
+        ).ToEnumerable();
+
+        if (!memories.Any())
+        {
+            await context.Memory.SaveInformationAsync(
+                collection: memoryCollectionName,
+                text: item.ToFormattedString(),
+                id: Guid.NewGuid().ToString(),
+                description: memoryName,
+                cancel: context.CancellationToken
+            );
+        }
     }
 
     /// <summary>
