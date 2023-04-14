@@ -203,7 +203,7 @@ export const useChat = () => {
 
     const exportBot = async () => {
         try {
-            var result = await sk.exportBotAsync();
+            var result = await sk.exportBotAsync(await AuthHelper.getSKaaSAccessToken(instance));
             console.log(result);
         } catch (e: any) {
             const errorMessage = `Unable to export the bot. Details: ${e.message ?? e}`;

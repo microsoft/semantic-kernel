@@ -32,13 +32,14 @@ export class SemanticKernel {
         return result;
     };
 
-    public exportBotAsync = async (connectorAccessToken?: string): Promise<any> => {
+    public exportBotAsync = async (accessToken: string, connectorAccessToken?: string): Promise<any> => {
         const result = await this.getResponseAsync<IAskResult>(
             {
                 commandPath: `bot/export`,
                 method: 'Get',
                 //body: ask,
             },
+            accessToken,
             connectorAccessToken,
         );
         return result;
@@ -49,7 +50,7 @@ export class SemanticKernel {
         accessToken: string,
         connectorAccessToken?: string,
     ): Promise<T> => {
-        const { commandPath, method, body } = request;      
+        const { commandPath, method, body } = request;
         const headers = new Headers({
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
