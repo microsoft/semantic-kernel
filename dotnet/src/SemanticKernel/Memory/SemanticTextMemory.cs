@@ -27,51 +27,55 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task SaveInformationAsync(
+    public async Task<string> SaveInformationAsync(
         string collection,
         string text,
         string id,
         string? description = null,
+        string? additionalMetadata = null,
         CancellationToken cancel = default)
     {
-        var embeddings = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
-        MemoryRecord data = MemoryRecord.LocalRecord(id, text, description, embeddings);
+        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
+        MemoryRecord data = MemoryRecord.LocalRecord(id: id, text: text, description: description, additionalMetadata: additionalMetadata, embedding: embedding);
 
         if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
         {
             await this._storage.CreateCollectionAsync(collection, cancel);
         }
 
-        await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
+        return await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
     }
 
     /// <inheritdoc/>
-    public async Task SaveReferenceAsync(
+    public async Task<string> SaveReferenceAsync(
         string collection,
         string text,
         string externalId,
         string externalSourceName,
         string? description = null,
+        string? additionalMetadata = null,
         CancellationToken cancel = default)
     {
         var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
-        var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description, embedding);
+        var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description: description,
+            additionalMetadata: additionalMetadata, embedding: embedding);
 
         if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
         {
             await this._storage.CreateCollectionAsync(collection, cancel);
         }
 
-        await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
+        return await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
     }
 
     /// <inheritdoc/>
     public async Task<MemoryQueryResult?> GetAsync(
         string collection,
         string key,
+        bool withEmbedding = false,
         CancellationToken cancel = default)
     {
-        MemoryRecord? record = await this._storage.GetAsync(collection, key, cancel);
+        MemoryRecord? record = await this._storage.GetAsync(collection, key, withEmbedding, cancel);
 
         if (record == null) { return null; }
 
@@ -93,6 +97,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string query,
         int limit = 1,
         double minRelevanceScore = 0.7,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query);
@@ -102,6 +107,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
             embedding: queryEmbedding,
             limit: limit,
             minRelevanceScore: minRelevanceScore,
+            withEmbeddings: withEmbeddings,
             cancel: cancel);
 
         await foreach ((MemoryRecord, double) result in results.WithCancellation(cancel))

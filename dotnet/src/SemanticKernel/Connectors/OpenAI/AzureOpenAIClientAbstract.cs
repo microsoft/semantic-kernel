@@ -110,14 +110,15 @@ public abstract class AzureOpenAIClientAbstract : OpenAIClientAbstract
     {
         var url = $"{this.Endpoint}/openai/deployments?api-version={this.AzureOpenAIApiVersion}";
         HttpResponseMessage response = await this.HTTPClient.GetAsync(url);
+        string json = await response.Content.ReadAsStringAsync();
+
         if (!response.IsSuccessStatusCode)
         {
             throw new AIException(
                 AIException.ErrorCodes.ModelNotAvailable,
-                $"Unable to fetch the list of model deployments from Azure. Status code: {response.StatusCode}");
+                $"Unable to fetch the list of model deployments from Azure. Status code: {response.StatusCode}",
+                this.GetErrorMessageFromResponse(json));
         }
-
-        string json = await response.Content.ReadAsStringAsync();
 
         lock (s_deploymentToModel)
         {

@@ -77,6 +77,11 @@ public class AIException : Exception<AIException.ErrorCodes>
     public ErrorCodes ErrorCode { get; set; }
 
     /// <summary>
+    /// The exception's detail.
+    /// </summary>
+    public string? Detail { get; set; }
+
+    /// <summary>
     /// Construct an exception with an error code and message.
     /// </summary>
     /// <param name="errCode">Error code of the exception.</param>
@@ -95,6 +100,17 @@ public class AIException : Exception<AIException.ErrorCodes>
     public AIException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
     {
         this.ErrorCode = errCode;
+    }
+
+    /// <summary>
+    /// Construct an exception with an error code, message, and existing exception.
+    /// </summary>
+    /// <param name="errCode">Error code of the exception.</param>
+    /// <param name="message">Message of the exception.</param>
+    /// <param name="detail">More details about the exception</param>
+    public AIException(ErrorCodes errCode, string message, string? detail) : this(errCode, message)
+    {
+        this.Detail = detail;
     }
 
     #region private ================================================================================

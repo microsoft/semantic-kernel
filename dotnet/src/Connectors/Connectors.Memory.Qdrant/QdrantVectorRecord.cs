@@ -71,7 +71,7 @@ public class QdrantVectorRecord
     /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
     [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Following 'IsSupported' pattern of System.Numerics.")]
-    public static QdrantVectorRecord FromJson(string pointId, IEnumerable<float> embedding, string json, List<string>? tags = null)
+    public static QdrantVectorRecord FromJsonMetadata(string pointId, IEnumerable<float> embedding, string json, List<string>? tags = null)
     {
         var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
         if (payload != null)

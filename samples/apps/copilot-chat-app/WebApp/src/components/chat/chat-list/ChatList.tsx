@@ -7,6 +7,7 @@ import { useChat } from '../../../libs/useChat';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { ChatListItem } from './ChatListItem';
+
 const useClasses = makeStyles({
     root: {
         width: '25%',
@@ -76,7 +77,7 @@ export const ChatList: FC = () => {
                             >
                                 <ChatListItem
                                     id={id}
-                                    header={id}
+                                    header={convo.title}
                                     timestamp={new Date(messages[lastMessage].timestamp).toLocaleTimeString([], {
                                         hour: '2-digit',
                                         minute: '2-digit',

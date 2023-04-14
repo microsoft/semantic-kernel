@@ -1,19 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
-import { Avatar, Subtitle1, makeStyles } from '@fluentui/react-components';
+import { AuthenticatedTemplate, UnauthenticatedTemplate, useAccount, useIsAuthenticated, useMsal } from '@azure/msal-react';
+import { Avatar, Spinner, Subtitle1, makeStyles } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
-import { msalInstance } from '.';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
 import { Login } from './components/views/Login';
+import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { removeAlert } from './redux/features/app/appSlice';
-import { setSelectedConversation } from './redux/features/conversations/conversationsSlice';
 
 const useClasses = makeStyles({
     container: {
@@ -42,23 +41,31 @@ const useClasses = makeStyles({
 
 enum AppState {
     ProbeForBackend,
+    LoadingChats,
     Chat,
 }
 
 const App: FC = () => {
     const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const classes = useClasses();
-    const { conversations } = useAppSelector((state: RootState) => state.conversations);
     const { alerts } = useAppSelector((state: RootState) => state.app);
     const dispatch = useAppDispatch();
-    const account = msalInstance.getActiveAccount();
+        
+    const { instance, accounts, inProgress } = useMsal();
+    const account = useAccount(accounts[0] || {});    
+    const isAuthenticated = useIsAuthenticated();
+
+    const chat = useChat();
 
     useEffect(() => {
-        // TODO: Load conversations from BE
-        const keys = Object.keys(conversations);
-        dispatch(setSelectedConversation(keys[0]));
+        if (isAuthenticated && account && appState === AppState.LoadingChats) {            
+            // Load all chats from memory
+            chat.loadChats().then(() => {
+                setAppState(AppState.Chat);
+            });
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [instance, inProgress, isAuthenticated, appState]);
 
     const onDismissAlert = (key: string) => {
         dispatch(removeAlert(key));
@@ -68,7 +75,12 @@ const App: FC = () => {
     return (
         <div>
             <UnauthenticatedTemplate>
-                <Login />
+                <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
+                    <div className={classes.header}>
+                        <Subtitle1 as="h1">Copilot Chat</Subtitle1>                        
+                    </div>
+                    <Login />
+                </div>
             </UnauthenticatedTemplate>
             <AuthenticatedTemplate>
                 <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
@@ -106,9 +118,10 @@ const App: FC = () => {
                     {appState === AppState.ProbeForBackend && (
                         <BackendProbe
                             uri={process.env.REACT_APP_BACKEND_URI as string}
-                            onBackendFound={() => setAppState(AppState.Chat)}
+                            onBackendFound={() => setAppState(AppState.LoadingChats)}
                         />
                     )}
+                    {appState === AppState.LoadingChats && <Spinner labelPosition="below" label="Loading Chats" />}
                     {appState === AppState.Chat && <ChatView />}
                 </div>
             </AuthenticatedTemplate>

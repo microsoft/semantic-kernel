@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory.Collections;
 
@@ -87,12 +88,20 @@ public class VolatileMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public Task<MemoryRecord?> GetAsync(string collectionName, string key, CancellationToken cancel = default)
+    public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
     {
         if (this.TryGetCollection(collectionName, out var collectionDict)
             && collectionDict.TryGetValue(key, out var dataEntry))
         {
-            return Task.FromResult<MemoryRecord?>(dataEntry);
+            if (withEmbedding)
+            {
+                return Task.FromResult<MemoryRecord?>(dataEntry);
+            }
+            else
+            {
+                return Task.FromResult<MemoryRecord?>(
+                    MemoryRecord.FromMetadata(dataEntry.Metadata, embedding: null, key: dataEntry.Key, timestamp: dataEntry.Timestamp));
+            }
         }
 
         return Task.FromResult<MemoryRecord?>(null);
@@ -104,11 +113,12 @@ public class VolatileMemoryStore : IMemoryStore
 #pragma warning restore CS8425 // Async-iterator member has one or more parameters of type 'CancellationToken' but none of them is decorated with the 'EnumeratorCancellation' attribute, so the cancellation token parameter from the generated 'IAsyncEnumerable<>.GetAsyncEnumerator' will be unconsumed
         string collectionName,
         IEnumerable<string> keys,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
         {
-            var record = await this.GetAsync(collectionName, key, cancel);
+            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel);
 
             if (record != null)
             {
@@ -139,6 +149,7 @@ public class VolatileMemoryStore : IMemoryStore
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
+        bool withEmbeddings = false,
         CancellationToken cancel = default)
     {
         if (limit <= 0)
@@ -161,15 +172,17 @@ public class VolatileMemoryStore : IMemoryStore
 
         TopNCollection<MemoryRecord> embeddings = new(limit);
 
-        foreach (var item in embeddingCollection)
+        foreach (var record in embeddingCollection)
         {
-            if (item != null)
+            if (record != null)
             {
-                EmbeddingReadOnlySpan<float> itemSpan = new(item.Embedding.AsReadOnlySpan());
-                double similarity = embeddingSpan.CosineSimilarity(itemSpan);
+                double similarity = embedding
+                    .AsReadOnlySpan()
+                    .CosineSimilarity(record.Embedding.AsReadOnlySpan());
                 if (similarity >= minRelevanceScore)
                 {
-                    embeddings.Add(new(item, similarity));
+                    var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, Embedding<float>.Empty, record.Key, record.Timestamp);
+                    embeddings.Add(new(entry, similarity));
                 }
             }
         }
@@ -184,6 +197,7 @@ public class VolatileMemoryStore : IMemoryStore
         string collectionName,
         Embedding<float> embedding,
         double minRelevanceScore = 0,
+        bool withEmbedding = false,
         CancellationToken cancel = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -191,6 +205,7 @@ public class VolatileMemoryStore : IMemoryStore
             embedding: embedding,
             limit: 1,
             minRelevanceScore: minRelevanceScore,
+            withEmbeddings: withEmbedding,
             cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
     }
 

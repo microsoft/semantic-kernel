@@ -52,16 +52,16 @@ If you need an OpenAI key, go [here](https://platform.openai.com/account/api-key
 Before starting, make sure you configured `config/settings.json`,
 see the previous section.
 
-For a quick dive, look at the [getting started notebook](Getting-Started-Notebook.ipynb).
+For a quick dive, look at the [getting started notebook](00-getting-started.ipynb).
 
-1. [Loading and configuring Semantic Kernel](1-basic-loading-the-kernel.ipynb)
-2. [Running AI prompts from file](2-running-prompts-from-file.ipynb)
-3. [Creating Semantic Functions at runtime (i.e. inline functions)](3-semantic-function-inline.ipynb)
-4. [Using Context Variables to Build a Chat Experience](4-context-variables-chat.ipynb)
-5. [Creating and Executing Plans](5-using-the-planner.ipynb)
-6. [Building Memory with Embeddings](6-memory-and-embeddings.ipynb)
-7. [Creating images with DALL-E 2](7-DALL-E-2.ipynb)
-8. [Chatting with ChatGPT and Images](8-chatGPT-with-DALL-E-2.ipynb)
+1. [Loading and configuring Semantic Kernel](01-basic-loading-the-kernel.ipynb)
+2. [Running AI prompts from file](02-running-prompts-from-file.ipynb)
+3. [Creating Semantic Functions at runtime (i.e. inline functions)](03-semantic-function-inline.ipynb)
+4. [Using Context Variables to Build a Chat Experience](04-context-variables-chat.ipynb)
+5. [Creating and Executing Plans](05-using-the-planner.ipynb)
+6. [Building Memory with Embeddings](06-memory-and-embeddings.ipynb)
+7. [Creating images with DALL-E 2](07-DALL-E-2.ipynb)
+8. [Chatting with ChatGPT and Images](08-chatGPT-with-DALL-E-2.ipynb)
 
 # Run notebooks in the browser with JupyterLab
 

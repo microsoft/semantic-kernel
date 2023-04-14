@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+import { useMsal } from '@azure/msal-react';
 import {
     Button,
     Input,
@@ -12,8 +13,13 @@ import {
 } from '@fluentui/react-components';
 import { EditRegular, Save24Regular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
+import { AuthHelper } from '../../libs/auth/AuthHelper';
+import { AlertType } from '../../libs/models/AlertType';
+import { IAsk } from '../../libs/semantic-kernel/model/Ask';
+import { useSemanticKernel } from '../../libs/semantic-kernel/useSemanticKernel';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
+import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
 import { ChatRoom } from './ChatRoom';
 
@@ -74,14 +80,37 @@ const useClasses = makeStyles({
 
 export const ChatWindow: React.FC = () => {
     const classes = useClasses();
+    const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const dispatch = useAppDispatch();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const chatName = conversations[selectedId].title;
     const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
     const [isEditing, setIsEditing] = useState<boolean>(false);
-
-    const onEdit = () => {
+    const { instance } = useMsal();
+    
+    const onEdit = async () => {
         if (isEditing) {
-            if (selectedId !== title) dispatch(editConversationTitle({ id: selectedId ?? '', newId: title ?? '' }));
+            if (chatName !== title) {
+                try {
+                    var ask: IAsk = {
+                        input: conversations[selectedId].id!,
+                        variables: [
+                            { key: 'title', value: title! },
+                        ],
+                    };
+
+                    await sk.invokeAsync(
+                        ask,
+                        'ChatHistorySkill',
+                        'EditChat',
+                        await AuthHelper.getSKaaSAccessToken(instance)
+                    );
+                    dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));
+                } catch (e: any) {
+                    const errorMessage = `Unable to retrieve chat to change title. Details: ${e.message ?? e}`;
+                    dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+                }
+            }
         }
         setIsEditing(!isEditing);
     };
@@ -91,8 +120,9 @@ export const ChatWindow: React.FC = () => {
     };
 
     useEffect(() => {
-        setTitle(selectedId);
+        setTitle(chatName);
         setIsEditing(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedId]);
 
     return (
@@ -110,7 +140,7 @@ export const ChatWindow: React.FC = () => {
                             <Input value={title} onChange={onTitleChange} id={title} />
                         ) : (
                             <Label size="large" weight="semibold">
-                                {selectedId}
+                                {chatName}
                             </Label>
                         )}
                         {
@@ -118,7 +148,7 @@ export const ChatWindow: React.FC = () => {
                                 icon={isEditing ? <Save24Regular /> : <EditRegular />}
                                 appearance="transparent"
                                 onClick={onEdit}
-                                disabled={!title}
+                                disabled={title === undefined || !title}
                             />
                         }
                     </div>

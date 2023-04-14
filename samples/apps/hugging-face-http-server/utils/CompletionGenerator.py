@@ -1,10 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 from . import InferenceGenerator
-from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # The model used to get the tokenizer can be a little arbitrary
 # since the tokenizers are common within the same model type
+
 
 class CompletionGenerator(InferenceGenerator.InferenceGenerator):
     def __init__(self, model_name):
@@ -17,17 +19,20 @@ class CompletionGenerator(InferenceGenerator.InferenceGenerator):
         model.to(self.device)
 
         encodings = self.tokenizer.encode_plus(
-            text = prompt,
-            text_pair = context,
-            truncation = True,
-            return_tensors= 'pt')
+            text=prompt, text_pair=context, truncation=True, return_tensors="pt"
+        )
 
         generated_ids = model.generate(
             encodings.input_ids,
-            max_length = max_tokens,
+            max_length=max_tokens,
             # num_beams = 5,
             # temperature = 0.8,
             no_repeat_ngram_size=4,
-            early_stopping=True)
+            early_stopping=True,
+        )
 
-        return self.tokenizer.decode(generated_ids[0]), encodings.input_ids.numel(), len(generated_ids[0])
+        return (
+            self.tokenizer.decode(generated_ids[0]),
+            encodings.input_ids.numel(),
+            len(generated_ids[0]),
+        )

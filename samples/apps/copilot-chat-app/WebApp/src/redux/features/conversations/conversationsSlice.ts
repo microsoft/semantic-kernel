@@ -9,17 +9,17 @@ export const conversationsSlice = createSlice({
     name: 'hub',
     initialState,
     reducers: {
+        incrementBotProfilePictureIndex: (state: ConversationsState) => {
+            state.botProfilePictureIndex = ++state.botProfilePictureIndex % 5;
+        },
         setConversations: (state: ConversationsState, action: PayloadAction<Conversations>) => {
             state.conversations = action.payload;
         },
         editConversationTitle: (state: ConversationsState, action: PayloadAction<ConversationTitleChange>) => {
-            const newId = action.payload.newId;
-            state.conversations[action.payload.id].id = newId;
-            const updatedChat = { ...state.conversations[action.payload.id] };
-            delete state.conversations[action.payload.id];
-            // frontload conversation so it's at the top of chatlist
-            state.conversations = { [newId]: updatedChat, ...state.conversations };
-            state.selectedId = action.payload.newId;
+            const id = action.payload.id;
+            const newTitle = action.payload.newTitle;
+            state.conversations[id].title = newTitle;
+            frontLoadChat(state, id);
         },
         setSelectedConversation: (state: ConversationsState, action: PayloadAction<string>) => {
             state.selectedId = action.payload;
@@ -34,16 +34,25 @@ export const conversationsSlice = createSlice({
         ) => {
             const { message, chatId } = action.payload;
             const id = chatId ?? state.selectedId;
-            const conversation = state.conversations[id];
-            conversation.messages.push(message);
-            delete state.conversations[id];
-            // frontload conversation so it's at the top of chatlist
-            state.conversations = { [id]: conversation, ...state.conversations };
+            state.conversations[id].messages.push(message);
+            frontLoadChat(state, id);
         },
     },
 });
 
-export const { setConversations, editConversationTitle, setSelectedConversation, addConversation, updateConversation } =
-    conversationsSlice.actions;
+export const {
+    incrementBotProfilePictureIndex,
+    setConversations,
+    editConversationTitle,
+    setSelectedConversation,
+    addConversation,
+    updateConversation
+} = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;
+
+const frontLoadChat = (state: ConversationsState, id: string) => {
+    const conversation = state.conversations[id];
+    delete state.conversations[id];
+    state.conversations = { [id]: conversation, ...state.conversations };
+};

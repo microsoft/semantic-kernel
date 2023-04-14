@@ -18,32 +18,35 @@ public sealed class NullMemory : ISemanticTextMemory
     public static NullMemory Instance { get; } = new();
 
     /// <inheritdoc/>
-    public Task SaveInformationAsync(
+    public Task<string> SaveInformationAsync(
         string collection,
         string text,
         string id,
         string? description = null,
+        string? additionalMetadata = null,
         CancellationToken cancel = default)
     {
-        return Task.CompletedTask;
+        return Task.FromResult(string.Empty);
     }
 
     /// <inheritdoc/>
-    public Task SaveReferenceAsync(
+    public Task<string> SaveReferenceAsync(
         string collection,
         string text,
         string externalId,
         string externalSourceName,
         string? description = null,
+        string? additionalMetadata = null,
         CancellationToken cancel = default)
     {
-        return Task.CompletedTask;
+        return Task.FromResult(string.Empty);
     }
 
     /// <inheritdoc/>
     public Task<MemoryQueryResult?> GetAsync(
         string collection,
         string key,
+        bool withEmbedding = false,
         CancellationToken cancel = default)
     {
         return Task.FromResult(null as MemoryQueryResult);
@@ -64,6 +67,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string query,
         int limit = 1,
         double minRelevanceScore = 0.7,
+        bool withEmbeddings = false,
         CancellationToken cancel = default)
     {
         return AsyncEnumerable.Empty<MemoryQueryResult>();
