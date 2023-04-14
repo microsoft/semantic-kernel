@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
+using SemanticKernel.Service.Storage;
 
-namespace CopilotChatApi.Service.Controllers;
+namespace SemanticKernel.Service.Controllers;
 
 [ApiController]
 public class SemanticKernelController : ControllerBase
@@ -33,6 +33,8 @@ public class SemanticKernelController : ControllerBase
     /// and attempt to invoke the function with the given name.
     /// </remarks>
     /// <param name="kernel">Semantic kernel obtained through dependency injection</param>
+    /// <param name="chatRepository">Storage repository to store chat sessions</param>
+    /// <param name="chatMessageRepository">Storage repository to store chat messages</param>
     /// <param name="ask">Prompt along with its parameters</param>
     /// <param name="skillName">Skill in which function to invoke resides</param>
     /// <param name="functionName">Name of function to invoke</param>
@@ -42,7 +44,11 @@ public class SemanticKernelController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<AskResult>> InvokeFunctionAsync([FromServices] Kernel kernel, [FromBody] Ask ask,
+    public async Task<ActionResult<AskResult>> InvokeFunctionAsync(
+        [FromServices] Kernel kernel,
+        [FromServices] ChatSessionRepository chatRepository,
+        [FromServices] ChatMessageRepository chatMessageRepository,
+        [FromBody] Ask ask,
         string skillName, string functionName)
     {
         this._logger.LogDebug("Received call to invoke {SkillName}/{FunctionName}", skillName, functionName);
@@ -53,7 +59,7 @@ public class SemanticKernelController : ControllerBase
             kernel.RegisterSemanticSkills(semanticSkillsDirectory, this._logger);
         }
 
-        kernel.RegisterNativeSkills(this._logger);
+        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._logger);
 
         ISKFunction? function = null;
         try

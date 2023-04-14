@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount } from '@azure/msal-react';
+import { useAccount, useMsal } from '@azure/msal-react';
 import { Label, makeStyles } from '@fluentui/react-components';
 import React from 'react';
 import { Constants } from '../../Constants';
@@ -20,7 +20,8 @@ const useClasses = makeStyles({
 
 export const ChatStatus: React.FC = () => {
     const classes = useClasses();
-    const account = useAccount();
+    const { accounts } = useMsal();
+    const account = useAccount(accounts[0] || {});
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { audience, botTypingTimestamp } = conversations[selectedId];
     const [typing, setTyping] = React.useState<SKBotAudienceMember[]>([]);

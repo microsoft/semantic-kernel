@@ -79,5 +79,8 @@ public static class Program
 
         Example24_Tokenizer.Run();
         Console.WriteLine("== DONE ==");
+
+        await Example25_AADAuth.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
