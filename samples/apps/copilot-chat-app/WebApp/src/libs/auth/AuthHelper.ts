@@ -79,16 +79,16 @@ const logoutAsync = async (instance: IPublicClientApplication) => {
     }
 };
 
-// SKaS = Semantic Kernel as a Service
-// Gets token with scopes to authorize SKaS specifically
-const getSKaSAccessToken = async (instance: IPublicClientApplication) => {
+// SKaaS = Semantic Kernel as a Service
+// Gets token with scopes to authorize SKaaS specifically
+const getSKaaSAccessToken = async (instance: IPublicClientApplication) => {
     return instance.acquireTokenSilent(loginRequest).then((token) => {
         return token.accessToken;
     });
 };
 
 export const AuthHelper = {
-    getSKaSAccessToken,
+    getSKaaSAccessToken,
     msalConfig,
     loginRequest,
     logoutRequest,
