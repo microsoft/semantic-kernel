@@ -1,6 +1,9 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace CopilotChatApi.Service.Storage;
+using System.Net;
+using Microsoft.Azure.Cosmos;
+
+namespace SemanticKernel.Service.Storage;
 
 /// <summary>
 /// A storage context that stores entities in a CosmosDB container.
@@ -11,6 +14,7 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
     /// The CosmosDB client.
     /// </summary>
     private readonly CosmosClient _client;
+
     /// <summary>
     /// CosmosDB container.
     /// </summary>
@@ -24,12 +28,20 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
     /// <param name="container">The CosmosDB container name.</param>
     public CosmosDbContext(string connectionString, string database, string container)
     {
-        this._client = new CosmosClient(connectionString);
+        // Configure JsonSerializerOptions
+        var options = new CosmosClientOptions
+        {
+            SerializerOptions = new CosmosSerializationOptions
+            {
+                PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+            },
+        };
+        this._client = new CosmosClient(connectionString, options);
         this._container = this._client.GetContainer(database, container);
     }
 
     /// <inheritdoc/>
-    public IQueryable<T> QueryableEntities => this._container.GetItemLinqQueryable<T>().AsQueryable();
+    public IQueryable<T> QueryableEntities => this._container.GetItemLinqQueryable<T>();
 
     /// <inheritdoc/>
     public async Task CreateAsync(T entity)
@@ -66,7 +78,7 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
             var response = await this._container.ReadItemAsync<T>(entityId, new PartitionKey(entityId));
             return response.Resource;
         }
-        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
             throw new ArgumentOutOfRangeException(nameof(entityId), "Entity Id cannot be null or empty.");
         }
@@ -97,4 +109,3 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
         }
     }
 }
-

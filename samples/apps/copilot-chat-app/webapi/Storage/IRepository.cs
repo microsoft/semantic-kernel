@@ -1,4 +1,6 @@
-﻿namespace CopilotChatApi.Service.Storage;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+namespace SemanticKernel.Service.Storage;
 
 /// <summary>
 /// Defines the basic CRUD operations for a repository.

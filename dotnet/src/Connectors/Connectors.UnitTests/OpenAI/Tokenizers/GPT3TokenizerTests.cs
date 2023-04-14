@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using Microsoft.SemanticKernel.Connectors.OpenAI.Tokenizers;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Xunit;
 using Xunit.Abstractions;
 

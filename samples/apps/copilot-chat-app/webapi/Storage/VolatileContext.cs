@@ -1,7 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
-namespace CopilotChatApi.Service.Storage;
+namespace SemanticKernel.Service.Storage;
 
 /// <summary>
 /// A storage context that stores entities in memory.

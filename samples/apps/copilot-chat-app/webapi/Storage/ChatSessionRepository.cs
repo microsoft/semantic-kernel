@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using CopilotChatApi.Service.Storage;
+using Microsoft.Azure.Cosmos.Linq;
+using SemanticKernel.Service.Skills;
 
-namespace CopilotChatApi.Service.Skills;
+namespace SemanticKernel.Service.Storage;
 
 /// <summary>
 /// A repository for chat sessions.
@@ -15,15 +16,17 @@ public class ChatSessionRepository : Repository<ChatSession>
     /// <param name="storageContext">The storage context.</param>
     public ChatSessionRepository(IStorageContext<ChatSession> storageContext)
         : base(storageContext)
-    { }
+    {
+    }
 
     /// <summary>
     /// Finds chat sessions by user id.
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <returns>A list of chat sessions.</returns>
-    public Task<IEnumerable<ChatSession>> FindByUserIdAsync(string userId)
+    public async Task<IEnumerable<ChatSession>> FindByUserIdAsync(string userId)
     {
-        return Task.FromResult(base.storageContext.QueryableEntities.Where(e => e.UserId == userId).AsEnumerable());
+        var matches = base.StorageContext.QueryableEntities.Where(e => e.UserId == userId).ToFeedIterator();
+        return await matches.ReadNextAsync();
     }
 }

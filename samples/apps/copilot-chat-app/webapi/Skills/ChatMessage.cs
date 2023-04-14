@@ -3,9 +3,9 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using CopilotChatApi.Service.Storage;
+using SemanticKernel.Service.Storage;
 
-namespace CopilotChatApi.Service.Skills;
+namespace SemanticKernel.Service.Skills;
 
 /// <summary>
 /// Information about a single chat message.

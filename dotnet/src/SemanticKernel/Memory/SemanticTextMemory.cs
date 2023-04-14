@@ -35,8 +35,9 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string? additionalMetadata = null,
         CancellationToken cancel = default)
     {
-        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
-        MemoryRecord data = MemoryRecord.LocalRecord(id: id, text: text, description: description, additionalMetadata: additionalMetadata, embedding: embedding);
+        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken: cancel);
+        MemoryRecord data = MemoryRecord.LocalRecord(
+            id: id, text: text, description: description, additionalMetadata: additionalMetadata, embedding: embedding);
 
         if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
         {
@@ -56,7 +57,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string? additionalMetadata = null,
         CancellationToken cancel = default)
     {
-        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text);
+        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken: cancel);
         var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description: description,
             additionalMetadata: additionalMetadata, embedding: embedding);
 
@@ -100,7 +101,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query);
+        Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken: cancel);
 
         IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
             collectionName: collection,

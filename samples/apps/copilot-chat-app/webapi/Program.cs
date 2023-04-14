@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
@@ -9,10 +8,10 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
-using CopilotChatApi.Service.Skills;
-using CopilotChatApi.Service.Storage;
+using SemanticKernel.Service.Skills;
+using SemanticKernel.Service.Storage;
 
-namespace CopilotChatApi.Service;
+namespace SemanticKernel.Service;
 
 public static class Program
 {
@@ -99,7 +98,7 @@ public static class Program
     {
         // Each API call gets a fresh new SK instance
         services.AddScoped<Kernel>();
-        
+
         // Add a semantic memory store only if we have a valid embedding config
         AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
         if (embeddingConfig?.IsValid() == true)
@@ -109,7 +108,7 @@ public static class Program
                 case "VOLATILE":
                     services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
                     break;
-                    
+
                 case "QDRANT":
                     QdrantConfig qdrantConfig = configuration.GetSection("MemoriesStore:QdrantConfig").Get<QdrantConfig>();
                     services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
@@ -118,7 +117,7 @@ public static class Program
                             vectorSize: qdrantConfig.VectorSize,
                             logger: sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
                     break;
-                    
+
                 default:
                     throw new InvalidOperationException($"Invalid 'MemoriesStore' setting '{configuration["MemoriesStore"]}'. Value must be 'volatile' or 'qdrant'");
             }
@@ -164,7 +163,7 @@ public static class Program
         // Add persistent chat storage
         IStorageContext<ChatSession> chatSessionInMemoryContext;
         IStorageContext<ChatMessage> chatMessageInMemoryContext;
-        
+
         switch (configuration["ChatStore"].ToUpperInvariant())
         {
             case "VOLATILE":
@@ -182,7 +181,7 @@ public static class Program
 
             case "COSMOS":
                 CosmosConfig cosmosConfig = configuration.GetSection("ChatStore:Cosmos").Get<CosmosConfig>();
-#pragma warning disable CA2000 // Dispose objects before losing scope
+#pragma warning disable CA2000 // Dispose objects before losing scope - objects are singletons for the duration of the process and disposed when the process exits.
                 chatSessionInMemoryContext = new CosmosDbContext<ChatSession>(
                     cosmosConfig.ConnectionString, cosmosConfig.Database, "chat_sessions");
                 chatMessageInMemoryContext = new CosmosDbContext<ChatMessage>(
