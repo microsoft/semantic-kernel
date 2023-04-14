@@ -63,7 +63,6 @@ public class ChatHistorySkill
         {
             context.Log.LogError("Failed to create the initial bot message for chat {0}: {1}.", newChat.Id, ex.Message);
             context.Fail($"Failed to create the initial bot message for chat: {ex.Message}.", ex);
-            return context;
         }
 
         return context;

@@ -17,7 +17,7 @@ public class ChatSession : IStorageEntity
     public string Id { get; set; }
 
     /// <summary>
-    /// Chat ID that is persistent and unique.
+    /// User ID that is persistent and unique.
     /// </summary>
     [JsonPropertyName("userId")]
     public string UserId { get; set; }

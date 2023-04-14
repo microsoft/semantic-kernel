@@ -24,6 +24,6 @@ public class ChatSessionRepository : Repository<ChatSession>
     /// <returns>A list of chat sessions.</returns>
     public Task<IEnumerable<ChatSession>> FindByUserIdAsync(string userId)
     {
-        return Task.FromResult(base._storageContext.QueryableEntities.Where(e => e.UserId == userId).AsEnumerable());
+        return Task.FromResult(base.storageContext.QueryableEntities.Where(e => e.UserId == userId).AsEnumerable());
     }
 }
