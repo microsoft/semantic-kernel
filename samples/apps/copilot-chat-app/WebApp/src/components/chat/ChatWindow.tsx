@@ -13,6 +13,7 @@ import {
 } from '@fluentui/react-components';
 import { ArrowDownloadRegular, EditRegular, Save24Regular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
+import { useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
@@ -79,6 +80,7 @@ export const ChatWindow: React.FC = () => {
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
     const [isEditing, setIsEditing] = useState<boolean>(false);
+    const chat = useChat();
 
     const onEdit = () => {
         if (isEditing) {
@@ -129,6 +131,7 @@ export const ChatWindow: React.FC = () => {
                                 onClick={() => {
                                     // TODO
                                     console.log('on export a bot');
+                                    chat.exportBot();
                                 }}
                             />
                         </Tooltip>

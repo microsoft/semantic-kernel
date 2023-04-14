@@ -76,9 +76,20 @@ export const useChat = () => {
         }
     };
 
+    const exportBot = async () => {
+        try {
+            var result = await sk.exportBotAsync();
+            console.log(result);
+        } catch (e: any) {
+            const errorMessage = `Unable to export the bot. Details: ${e.message ?? e}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+    };
+
     return {
         getAudienceMemberForId,
         createChat,
         getResponse,
+        exportBot,
     };
 };

@@ -1,12 +1,14 @@
 import { Button, Label, makeStyles, shorthands, Text, Tooltip } from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 
-import { ArrowUploadRegular, BotAdd20Regular } from '@fluentui/react-icons';
+import { BotAdd20Regular } from '@fluentui/react-icons';
 import { FC } from 'react';
 import { useChat } from '../../../libs/useChat';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { BotUploader } from '../../BotUploader';
 import { ChatListItem } from './ChatListItem';
+
 const useClasses = makeStyles({
     root: {
         width: '25%',
@@ -43,9 +45,9 @@ export const ChatList: FC = () => {
         chat.createChat();
     };
 
-    const onImportChat = () => {
+    const onImportChat = (file: File) => {
         // TODO
-        console.log('on import chat');
+        console.log('on import chat', file);
     };
 
     return (
@@ -61,7 +63,7 @@ export const ChatList: FC = () => {
                         icon={<Filter20Regular />}
                         appearance="transparent" /> */}
                         <Tooltip content="Import a bot" relationship="label">
-                            <Button icon={<ArrowUploadRegular />} appearance="transparent" onClick={onImportChat} />
+                            <BotUploader onUpload={onImportChat} />
                         </Tooltip>
                         <Tooltip content="Create a new chat" relationship="label">
                             <Button icon={<BotAdd20Regular />} appearance="transparent" onClick={onAddChat} />

@@ -32,6 +32,18 @@ export class SemanticKernel {
         return result;
     };
 
+    public exportBotAsync = async (connectorAccessToken?: string): Promise<any> => {
+        const result = await this.getResponseAsync<IAskResult>(
+            {
+                commandPath: `bot/export`,
+                method: 'Get',
+                //body: ask,
+            },
+            connectorAccessToken,
+        );
+        return result;
+    };
+
     private readonly getResponseAsync = async <T>(
         request: ServiceRequest,
         connectorAccessToken?: string,
