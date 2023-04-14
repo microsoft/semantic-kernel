@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Azure.Cosmos.Linq;
 using SemanticKernel.Service.Skills;
 
 namespace SemanticKernel.Service.Storage;
@@ -24,9 +23,8 @@ public class ChatSessionRepository : Repository<ChatSession>
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <returns>A list of chat sessions.</returns>
-    public async Task<IEnumerable<ChatSession>> FindByUserIdAsync(string userId)
+    public Task<IEnumerable<ChatSession>> FindByUserIdAsync(string userId)
     {
-        var matches = base.StorageContext.QueryableEntities.Where(e => e.UserId == userId).ToFeedIterator();
-        return await matches.ReadNextAsync();
+        return Task.FromResult(base.StorageContext.QueryableEntities.Where(e => e.UserId == userId).AsEnumerable());
     }
 }
