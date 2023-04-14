@@ -8,7 +8,7 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel.Skills.Grpc</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Skills.Grpc</RootNamespace>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -16,6 +16,12 @@
     <PackageId>Microsoft.SemanticKernel.Skills.Grpc</PackageId>
     <Title>Semantic Kernel - gRPC Skill</Title>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Grpc.Tools" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
