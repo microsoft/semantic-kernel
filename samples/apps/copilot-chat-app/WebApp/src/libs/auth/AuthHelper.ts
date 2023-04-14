@@ -4,8 +4,7 @@ import {
     Configuration,
     EndSessionRequest,
     IPublicClientApplication,
-    LogLevel,
-    RedirectRequest,
+    LogLevel
 } from '@azure/msal-browser';
 import debug from 'debug';
 import { Constants } from '../../Constants';
@@ -48,25 +47,19 @@ const msalConfig: Configuration = {
     },
 };
 
-const loginRequest: RedirectRequest = {
-    scopes: Constants.msal.skScopes,
-    // Uncomment the following if you want users to consent to all necessary scopes upfront
-    // extraScopesToConsent: Constants.msGraphScopes, // or Constants.adoScopes
-};
-
 const logoutRequest: EndSessionRequest = {
     postLogoutRedirectUri: window.origin,
 };
 
 const ssoSilentRequest = async (msalInstance: IPublicClientApplication) => {
-    await msalInstance.ssoSilent(loginRequest);
+    await msalInstance.ssoSilent({ account: msalInstance.getAllAccounts()[0], scopes: Constants.msal.skScopes });
 };
 
 const loginAsync = async (instance: IPublicClientApplication) => {
     if (Constants.msal.method === 'redirect') {
-        await instance.loginRedirect(loginRequest);
+        await instance.loginRedirect({ account: instance.getAllAccounts()[0], scopes: Constants.msal.skScopes });
     } else {
-        await instance.loginPopup(loginRequest);
+        await instance.loginPopup({ account: instance.getAllAccounts()[0], scopes: Constants.msal.skScopes });
     }
 };
 
@@ -82,7 +75,7 @@ const logoutAsync = async (instance: IPublicClientApplication) => {
 // SKaaS = Semantic Kernel as a Service
 // Gets token with scopes to authorize SKaaS specifically
 const getSKaaSAccessToken = async (instance: IPublicClientApplication) => {
-    return instance.acquireTokenSilent(loginRequest).then((token) => {
+    return instance.acquireTokenSilent({ scopes: Constants.msal.skScopes, account: instance.getAllAccounts()[0] }).then((token) => {
         return token.accessToken;
     });
 };
@@ -90,7 +83,6 @@ const getSKaaSAccessToken = async (instance: IPublicClientApplication) => {
 export const AuthHelper = {
     getSKaaSAccessToken,
     msalConfig,
-    loginRequest,
     logoutRequest,
     ssoSilentRequest,
     loginAsync,

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -48,8 +48,6 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         // Assert
         Assert.Equal(AdaVectorLength, singleResult.Count);
         Assert.Equal(3, batchResult.Count);
-
-        embeddingGenerator.Dispose();
     }
 
     [Theory]
@@ -62,8 +60,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
 
         var embeddingGenerator = new AzureTextEmbeddingGeneration(azureOpenAIConfiguration.DeploymentName,
             azureOpenAIConfiguration.Endpoint,
-            azureOpenAIConfiguration.ApiKey,
-            "2022-12-01");
+            azureOpenAIConfiguration.ApiKey);
 
         // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
@@ -72,8 +69,6 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         // Assert
         Assert.Equal(AdaVectorLength, singleResult.Count);
         Assert.Equal(3, batchResult.Count);
-
-        embeddingGenerator.Dispose();
     }
 
     #region internals

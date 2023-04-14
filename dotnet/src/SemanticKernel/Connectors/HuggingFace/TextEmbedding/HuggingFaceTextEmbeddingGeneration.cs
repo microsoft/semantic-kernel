@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -64,9 +65,9 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     }
 
     /// <inheritdoc/>
-    public async Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(IList<string> data)
+    public async Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken = default)
     {
-        return await this.ExecuteEmbeddingRequestAsync(data);
+        return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -82,9 +83,10 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// Performs HTTP request to given endpoint for embedding generation.
     /// </summary>
     /// <param name="data">Data to embed.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of generated embeddings.</returns>
     /// <exception cref="AIException">Exception when backend didn't respond with generated embeddings.</exception>
-    private async Task<IList<Embedding<float>>> ExecuteEmbeddingRequestAsync(IList<string> data)
+    private async Task<IList<Embedding<float>>> ExecuteEmbeddingRequestAsync(IList<string> data, CancellationToken cancellationToken)
     {
         try
         {
@@ -100,7 +102,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
                 Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
             };
 
-            var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);

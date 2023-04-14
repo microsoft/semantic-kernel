@@ -133,7 +133,7 @@ public sealed class PlanTests : IDisposable
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                config.AddAzureOpenAITextCompletionService(
+                config.AddAzureTextCompletionService(
                     serviceId: azureOpenAIConfiguration.ServiceId,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
@@ -141,7 +141,7 @@ public sealed class PlanTests : IDisposable
 
                 if (useEmbeddings)
                 {
-                    config.AddAzureOpenAIEmbeddingGenerationService(
+                    config.AddAzureTextEmbeddingGenerationService(
                         serviceId: azureOpenAIEmbeddingsConfiguration.ServiceId,
                         deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                         endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
