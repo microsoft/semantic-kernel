@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
-import { Constants } from '../../Constants';
-import { useConnectors } from './../connectors/useConnectors'; // ConnectorTokenExample
+// import { Constants } from '../../Constants';
+// import { useConnectors } from './../connectors/useConnectors'; // ConnectorTokenExample
 const speechResourceID = process.env.AZURE_SPEECH_RESOURCE_ID as string;
 const speechResourceRegion = process.env.AZURE_SPEECH_RESOURCE_REGION as string;
 
@@ -21,12 +21,14 @@ interface SpeechServiceRequest {
 export class SKSpeechService {
     constructor(private readonly serviceUrl: string) {}
 
-    getSpeechRecognizerFromAADTokenAsync = async () => {
-        //
+    getSpeechRecognizerFromAADTokenAsync = async (aadtoken : string) => {
+        
         // var userAssignedClientId = "<your managed identity client Id>" as string;
         // var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = userAssignedClientId });
 
         //const { DefaultAzureCredential } = require('@azure/identity');
+        //const credential = new DefaultAzureCredential();
+        //const aadToken = await credential.getToken('https://cognitiveservices.azure.com/.default');
 
         // await TokenHelper.getAccessToken(inProgress, msalInstance, scopes).then(async (token: string) => {
         //     await sk.invokeAsync(ask, skillName, functionName, token);
@@ -38,16 +40,12 @@ export class SKSpeechService {
         //     Constants.azureSpeechScopes,
         // );
 
-        //const credential = new DefaultAzureCredential();
-        //const aadToken = await credential.getToken('https://cognitiveservices.azure.com/.default');
-        //const region = 'westus2';
-
-        const connectors = useConnectors();
-        var aadTokenFromMsalInstance = await connectors.getAADToken(Constants.azureSpeechScopes);
+        //const connectors = useConnectors();
+        //var aadTokenFromMsalInstance = await connectors.getAADToken(Constants.azureSpeechScopes);
 
         // Passing token to the Speech SDK
         const speechConfig = speechSdk.SpeechConfig.fromAuthorizationToken(
-            'aad#' + speechResourceID + '#' + aadTokenFromMsalInstance,
+            'aad#' + speechResourceID + '#' + aadtoken,
             speechResourceRegion,
         );
 

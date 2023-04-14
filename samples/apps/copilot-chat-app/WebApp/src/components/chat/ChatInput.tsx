@@ -11,6 +11,8 @@ import { useAppDispatch } from '../../redux/app/hooks';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 import { useSKSpeechService } from './../../libs/semantic-kernel/useSKSpeech';
+import { useMsal } from '@azure/msal-react';
+import { TokenHelper } from '../../libs/auth/TokenHelper';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -58,12 +60,15 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
     const speechService = useSKSpeechService(process.env.REACT_APP_BACKEND_URI as string);
+    const { instance, inProgress } = useMsal();
 
     React.useEffect(() => {
         if (recognizer) return;
         void (async () => {
             //const newRecognizer = await speechService.getSpeechRecognizerAsync();
-            const newRecognizer = await speechService.getSpeechRecognizerFromAADTokenAsync();
+
+            const aadtoken = await TokenHelper.getAccessToken(inProgress, instance, Constants.azureSpeechScopes);
+            const newRecognizer = await speechService.getSpeechRecognizerFromAADTokenAsync(aadtoken);
             setRecognizer(newRecognizer);
         })();
     }, [recognizer, speechService]);
