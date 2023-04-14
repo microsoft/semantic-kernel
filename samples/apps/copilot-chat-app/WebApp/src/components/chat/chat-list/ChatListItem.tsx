@@ -74,23 +74,29 @@ export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, pr
     };
 
     return (
-        <div className={classes.root} onClick={onClick }>
-            <Avatar image={{ src: botProfilePicture }}/>
+        <div className={classes.root} onClick={onClick}>
+            <Avatar image={{ src: botProfilePicture }} />
             <div className={classes.body}>
                 <div className={classes.header}>
-                    <Text className={classes.title } style={{color: 'var(--colorNeutralForeground1)'}}> {header} </Text>
+                    <Text className={classes.title} style={{ color: 'var(--colorNeutralForeground1)' }}>
+                        {header}
+                    </Text>
                     {timestamp && (
-                        <Text className={classes.timestamp} size={300} >
+                        <Text className={classes.timestamp} size={300}>
                             {timestamp}
                         </Text>
                     )}
                 </div>
                 {preview && (
                     <div className={classes.preview}>
-                        {<Text id={`message-preview-${id}`} size={200}>{preview}</Text>}
+                        {
+                            <Text id={`message-preview-${id}`} size={200}>
+                                {preview}
+                            </Text>
+                        }
                     </div>
                 )}
             </div>
         </div>
     );
-}
+};
