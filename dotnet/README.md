@@ -106,12 +106,12 @@ how to get started with the Semantic Kernel.
 See [here](../samples/notebooks/dotnet/README.md) for the full list, with
 requirements and setup instructions.
 
-1. [Getting started](00-getting-started.ipynb)
-2. [Loading and configuring Semantic Kernel](01-basic-loading-the-kernel.ipynb)
-3. [Running AI prompts from file](02-running-prompts-from-file.ipynb)
-4. [Creating Semantic Functions at runtime (i.e. inline functions)](03-semantic-function-inline.ipynb)
-5. [Using Context Variables to Build a Chat Experience](04-context-variables-chat.ipynb)
-6. [Creating and Executing Plans](05-using-the-planner.ipynb)
-7. [Building Memory with Embeddings](06-memory-and-embeddings.ipynb)
-8. [Creating images with DALL-E 2](07-DALL-E-2.ipynb)
-9. [Chatting with ChatGPT and Images](08-chatGPT-with-DALL-E-2.ipynb)
+1. [Getting started](../samples/notebooks//dotnet/00-getting-started.ipynb)
+2. [Loading and configuring Semantic Kernel](../samples/notebooks//dotnet/01-basic-loading-the-kernel.ipynb)
+3. [Running AI prompts from file](../samples/notebooks//dotnet/02-running-prompts-from-file.ipynb)
+4. [Creating Semantic Functions at runtime (i.e. inline functions)](../samples/notebooks//dotnet/03-semantic-function-inline.ipynb)
+5. [Using Context Variables to Build a Chat Experience](../samples/notebooks//dotnet/04-context-variables-chat.ipynb)
+6. [Creating and Executing Plans](../samples/notebooks//dotnet/05-using-the-planner.ipynb)
+7. [Building Memory with Embeddings](../samples/notebooks//dotnet/06-memory-and-embeddings.ipynb)
+8. [Creating images with DALL-E 2](../samples/notebooks//dotnet/07-DALL-E-2.ipynb)
+9. [Chatting with ChatGPT and Images](../samples/notebooks//dotnet/08-chatGPT-with-DALL-E-2.ipynb)
