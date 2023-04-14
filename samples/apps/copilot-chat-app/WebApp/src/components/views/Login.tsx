@@ -1,49 +1,32 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { InteractionRequiredAuthError } from '@azure/msal-browser';
 import { useMsal } from '@azure/msal-react';
-import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
-import { Alert } from '@fluentui/react-components/unstable';
-import React, { useEffect } from 'react';
-import { AuthHelper } from '../../libs/auth/AuthHelper';
-
-const useClasses = makeStyles({
-    root: {
-        ...shorthands.padding(tokens.spacingVerticalM),
-    },
-});
+import { Body1, Button, Image, Title3, } from '@fluentui/react-components';
+import React from 'react';
+import signInLogo from '../../ms-symbollockup_signin_light.svg';
 
 export const Login: React.FC = () => {
-    const classes = useClasses();
     const { instance } = useMsal();
-    const [errorMessage, setErrorMessage] = React.useState<string>();
 
-    const handleError = (error: any) => {
-        console.error(error);
-        setErrorMessage(
-            `Login failed. Check that you have a valid REACT_APP_AAD_CLIENT_ID set in your .env file. See ${
-                (error as Error).name
-            } in console for more details.`,
-        );
-    };
 
-    const handleSignIn = async (): Promise<void> => {
-        try {
-            await AuthHelper.ssoSilentRequest(instance);
-        } catch (error) {
-            if (error instanceof InteractionRequiredAuthError) {
-                await AuthHelper.loginAsync(instance).catch((error) => {
-                    handleError(error);
-                });
-            }
-            handleError(error);
-        }
-    };
 
-    useEffect(() => {
-        handleSignIn();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+     return (
+        <div style={{ padding: 40, gap: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Title3>Login with your Microsoft Account</Title3>            
+            <Body1>
+                Don't have an account? Create one for free at{' '}
+                <a href="https://account.microsoft.com/" target="_blank" rel="noreferrer">
+                    https://account.microsoft.com/
+                </a>
+            </Body1>
 
-    return <div className={classes.root}>{errorMessage && <Alert intent="error">{errorMessage}</Alert>}</div>;
+            <Button
+                style={{ padding: 0 }}
+                appearance="transparent"
+                onClick={() => instance.loginRedirect()}
+            >
+                <Image src={signInLogo} />
+            </Button>
+        </div>
+    );
 };

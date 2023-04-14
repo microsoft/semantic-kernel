@@ -7,6 +7,8 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
+using SKWebApi.Skills;
+using SKWebApi.Storage;
 
 namespace CopilotChatApi.Service;
 
@@ -137,7 +139,27 @@ public static class Program
             return NullMemory.Instance;
         });
 
+        // Add persistent storage
+        // InMemory version
+        var chatSessionInMemoryContext = new InMemoryContext<ChatSession>();
+        var chatMessageInMemoryContext = new InMemoryContext<ChatMessage>();
+        services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));
+        services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
+        // Comment out the above and uncomment the following to use CosmosDB as the storage context.
+        // Make sure there is only one repository for each type of entity.
+        // var chatSessionCosmosDbContext = new CosmosDbContext<ChatSession>(
+        //     "<connectionString>",
+        //     "<db>",
+        //     "<container>");
+        // var chatMessageCosmosDbContext = new CosmosDbContext<ChatMessage>(
+        //     "<connectionString>",
+        //     "<db>",
+        //     "<container>");
+        // services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionCosmosDbContext));
+        // services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageCosmosDbContext));
+
         // Each REST call gets a fresh new SK instance
         services.AddScoped<Kernel>();
+
     }
 }

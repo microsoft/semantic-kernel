@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount } from '@azure/msal-react';
 import { Label, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { ChatMessage } from '../../libs/models/ChatMessage';
+import { AuthorRoles, ChatMessage } from '../../libs/models/ChatMessage';
 import { SKBotAudienceMember } from '../../libs/semantic-kernel/bot-agent/models/SKBotAudienceMember';
 import { useChat } from '../../libs/useChat';
 import { useAppSelector } from '../../redux/app/hooks';
@@ -66,7 +65,6 @@ const createCommandLink = (command: string) => {
 export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
     const { message } = props;
     const chat = useChat();
-    const account = useAccount();
     const classes = useClasses();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
@@ -97,14 +95,14 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
             time;
     }
 
-    const isMe = message.sender === account?.homeAccountId;
-    const member = chat.getAudienceMemberForId(message.sender, selectedId, conversations[selectedId].audience);
+    const isMe = message.authorRole === AuthorRoles.User;
+    const member = chat.getAudienceMemberForId(message.userName, selectedId, conversations[selectedId].audience);
     const avatar = isMe
         ? member?.photo
             ? { image: { src: member.photo } }
             : undefined
         : { image: { src: conversations[selectedId].botProfilePicture } };
-    const fullName = member?.fullName ?? message.sender;
+    const fullName = member?.fullName ?? message.userName;
 
     return (
         <>
