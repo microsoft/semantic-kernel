@@ -73,7 +73,7 @@ export const useConnectors = () => {
     };
 
     const getAADToken = async (scopes: Array<string>) => {
-        return await TokenHelper.getAccessToken(inProgress, msalInstance, scopes);
+        return await TokenHelper.getAccessToken(inProgress, instance, scopes);
     };
 
     return {
