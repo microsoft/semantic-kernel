@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Azure.Cosmos.Linq;
 using SemanticKernel.Service.Skills;
 
 namespace SemanticKernel.Service.Storage;
@@ -21,9 +22,10 @@ public class ChatMessageRepository : Repository<ChatMessage>
     /// <summary>
     /// Finds chat messages by chat id.
     /// </summary>
-    public Task<IEnumerable<ChatMessage>> FindByChatIdAsync(string chatId)
+    public async Task<IEnumerable<ChatMessage>> FindByChatIdAsync(string chatId)
     {
-        return Task.FromResult(base.StorageContext.QueryableEntities.Where(e => e.ChatId == chatId).AsEnumerable());
+        var matches = base.StorageContext.QueryableEntities.Where(e => e.ChatId == chatId).ToFeedIterator();
+        return await matches.ReadNextAsync();
     }
 
     public async Task<ChatMessage> FindLastByChatIdAsync(string chatId)
