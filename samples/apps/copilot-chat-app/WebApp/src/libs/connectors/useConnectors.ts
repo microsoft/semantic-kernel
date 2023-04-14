@@ -1,5 +1,4 @@
 import { useMsal } from '@azure/msal-react';
-import { msalInstance } from '../..';
 import { Constants } from '../../Constants';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { addAlert } from '../../redux/features/app/appSlice';
@@ -9,12 +8,12 @@ import { IAsk } from '../semantic-kernel/model/Ask';
 import { useSemanticKernel } from '../semantic-kernel/useSemanticKernel';
 
 export const useConnectors = () => {
-    const { inProgress } = useMsal();
+    const { instance, inProgress } = useMsal();
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const dispatch = useAppDispatch();
 
     const makeGraphRequest = async (api: string, scopes: Array<string>, method: string, apiHeaders?: {}) => {
-        return await TokenHelper.getAccessToken(inProgress, msalInstance, scopes)
+        return await TokenHelper.getAccessToken(inProgress, instance, scopes)
             .then(async (token) => {
                 const request = new URL('/v1.0' + api, 'https://graph.microsoft.com');
                 return fetch(request, {
@@ -52,7 +51,7 @@ export const useConnectors = () => {
         functionName: string,
         scopes: Array<string>,
     ) => {
-        return await TokenHelper.getAccessToken(inProgress, msalInstance, scopes).then(async (token: string) => {
+        return await TokenHelper.getAccessToken(inProgress, instance, scopes).then(async (token: string) => {
             return await sk.invokeAsync(ask, skillName, functionName, token);
         });
     };
