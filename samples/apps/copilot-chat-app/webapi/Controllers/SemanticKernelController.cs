@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
-using SKWebApi.Skills;
-using SKWebApi.Storage;
+using SemanticKernel.Service.Storage;
 
-namespace CopilotChatApi.Service.Controllers;
+namespace SemanticKernel.Service.Controllers;
 
 [ApiController]
 public class SemanticKernelController : ControllerBase

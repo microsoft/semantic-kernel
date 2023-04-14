@@ -1,6 +1,9 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SKWebApi.Storage;
+using System.Net;
+using Microsoft.Azure.Cosmos;
+
+namespace SemanticKernel.Service.Storage;
 
 /// <summary>
 /// A storage context that stores entities in a CosmosDB container.
@@ -11,6 +14,7 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
     /// The CosmosDB client.
     /// </summary>
     private readonly CosmosClient _client;
+
     /// <summary>
     /// CosmosDB container.
     /// </summary>
@@ -66,7 +70,7 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
             var response = await this._container.ReadItemAsync<T>(entityId, new PartitionKey(entityId));
             return response.Resource;
         }
-        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
             throw new ArgumentOutOfRangeException(nameof(entityId), "Entity Id cannot be null or empty.");
         }
@@ -97,4 +101,3 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
         }
     }
 }
-

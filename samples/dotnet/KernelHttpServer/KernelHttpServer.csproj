@@ -20,10 +20,11 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.9.0" OutputItemType="Analyzer" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.13.0" />
-    <PackageReference Include="Microsoft.Graph.Core" Version="2.0.15" />
+    <PackageReference Include="Microsoft.Graph" Version="4.54.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.Document\Skills.Document.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.MsGraph\Skills.MsGraph.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.Web\Skills.Web.csproj" />

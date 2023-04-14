@@ -5,10 +5,9 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Skills;
-using SKWebApi.Skills;
-using SKWebApi.Storage;
+using SemanticKernel.Service.Storage;
 
-namespace CopilotChatApi.Service;
+namespace SemanticKernel.Service;
 
 internal static class FunctionLoadingExtensions
 {
