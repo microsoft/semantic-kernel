@@ -25,7 +25,7 @@ public class HuggingFaceEmbeddingGenerationTests : IDisposable
     };
 
     /// <summary>
-    /// Verifies that <see cref="HuggingFaceTextEmbeddingGeneration.GenerateEmbeddingsAsync(IList{string})"/>
+    /// Verifies that <see cref="HuggingFaceTextEmbeddingGeneration.GenerateEmbeddingsAsync"/>
     /// returns expected list of generated embeddings without errors.
     /// </summary>
     [Fact]

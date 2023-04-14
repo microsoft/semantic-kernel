@@ -1,0 +1,4 @@
+openai==0.27.*
+numpy==1.24.*
+aiofiles>=23.1.0
+asyncio==3.4.*
