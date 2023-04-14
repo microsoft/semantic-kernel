@@ -11,7 +11,7 @@
 
 This chat experience is a chat skill containing multiple functions that work together to construct the final prompt for each exchange.
 
-The Copilot Chat sameple showcases how to build an enriched intelligent app, with multiple dynamic components, including command messages, user intent, and context. The chat prompt will evolve as the conversation between user and application proceeds.
+The Copilot Chat sample showcases how to build an enriched intelligent app, with multiple dynamic components, including command messages, user intent, and context. The chat prompt will evolve as the conversation between user and application proceeds.
 
 ## Requirements to run this app
 
