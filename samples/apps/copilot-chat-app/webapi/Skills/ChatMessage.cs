@@ -3,9 +3,9 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using SKWebApi.Storage;
+using CopilotChatApi.Service.Storage;
 
-namespace SKWebApi.Skills;
+namespace CopilotChatApi.Service.Skills;
 
 /// <summary>
 /// Information about a single chat message.

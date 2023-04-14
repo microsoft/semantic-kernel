@@ -1,6 +1,6 @@
-﻿using SKWebApi.Skills;
+﻿using CopilotChatApi.Service.Skills;
 
-namespace SKWebApi.Storage;
+namespace CopilotChatApi.Service.Storage;
 
 /// <summary>
 /// A repository for chat messages.

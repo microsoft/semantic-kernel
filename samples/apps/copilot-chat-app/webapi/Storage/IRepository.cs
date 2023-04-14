@@ -1,4 +1,4 @@
-﻿namespace SKWebApi.Storage;
+﻿namespace CopilotChatApi.Service.Storage;
 
 /// <summary>
 /// Defines the basic CRUD operations for a repository.

@@ -7,8 +7,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
-using SKWebApi.Skills;
-using SKWebApi.Storage;
+using CopilotChatApi.Service.Skills;
+using CopilotChatApi.Service.Storage;
 
 namespace CopilotChatApi.Service.Controllers;
 
@@ -84,9 +84,15 @@ public class SemanticKernelController : ControllerBase
         SKContext result = await kernel.RunAsync(contextVariables, function!);
         if (result.ErrorOccurred)
         {
-            if (result.LastException is AIException aiException && aiException.Detail is not null)
+            // TODO latest NuGets don't have the Detail property on AIException
+            //if (result.LastException is AIException aiException && aiException.Detail is not null)
+            //{
+            //    return this.BadRequest(string.Concat(aiException.Message, " - Detail: " + aiException.Detail));
+            //}
+
+            if (result.LastException is AIException aiException)
             {
-                return this.BadRequest(string.Concat(aiException.Message, " - Detail: " + aiException.Detail));
+                return this.BadRequest(aiException.Message);
             }
 
             return this.BadRequest(result.LastErrorDescription);

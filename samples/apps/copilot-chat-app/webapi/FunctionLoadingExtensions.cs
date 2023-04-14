@@ -5,8 +5,8 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Skills;
-using SKWebApi.Skills;
-using SKWebApi.Storage;
+using CopilotChatApi.Service.Skills;
+using CopilotChatApi.Service.Storage;
 
 namespace CopilotChatApi.Service;
 

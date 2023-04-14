@@ -2,8 +2,8 @@
 using System.Text.Json;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SKWebApi.Skills;
-using SKWebApi.Storage;
+using CopilotChatApi.Service.Skills;
+using CopilotChatApi.Service.Storage;
 
 namespace SemanticKernel.Service.Skills;
 

@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using SKWebApi.Storage;
+using CopilotChatApi.Service.Storage;
 
-namespace SKWebApi.Skills;
+namespace CopilotChatApi.Service.Skills;
 
 /// <summary>
 /// A repository for chat sessions.

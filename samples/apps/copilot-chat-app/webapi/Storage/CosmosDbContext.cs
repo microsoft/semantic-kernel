@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.Cosmos;
 
-namespace SKWebApi.Storage;
+namespace CopilotChatApi.Service.Storage;
 
 /// <summary>
 /// A storage context that stores entities in a CosmosDB container.

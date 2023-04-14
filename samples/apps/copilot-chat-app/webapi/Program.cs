@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
-using SKWebApi.Skills;
-using SKWebApi.Storage;
+using CopilotChatApi.Service.Skills;
+using CopilotChatApi.Service.Storage;
 
 namespace CopilotChatApi.Service;
 
@@ -95,11 +97,31 @@ public static class Program
 
     private static void AddSemanticKernelServices(this IServiceCollection services, ConfigurationManager configuration)
     {
-        // Add memory store only if we have a valid embedding config
+        // Each API call gets a fresh new SK instance
+        services.AddScoped<Kernel>();
+        
+        // Add a semantic memory store only if we have a valid embedding config
         AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
         if (embeddingConfig?.IsValid() == true)
         {
-            services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
+            switch (configuration["MemoriesStore:Type"].ToUpperInvariant())
+            {
+                case "VOLATILE":
+                    services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
+                    break;
+                    
+                case "QDRANT":
+                    QdrantConfig qdrantConfig = configuration.GetSection("MemoriesStore:QdrantConfig").Get<QdrantConfig>();
+                    services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
+                            host: qdrantConfig.Host,
+                            port: qdrantConfig.Port,
+                            vectorSize: qdrantConfig.VectorSize,
+                            logger: sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
+                    break;
+                    
+                default:
+                    throw new InvalidOperationException($"Invalid 'MemoriesStore' setting '{configuration["MemoriesStore"]}'. Value must be 'volatile' or 'qdrant'");
+            }
         }
 
         services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
@@ -139,27 +161,40 @@ public static class Program
             return NullMemory.Instance;
         });
 
-        // Add persistent storage
-        // InMemory version
-        var chatSessionInMemoryContext = new InMemoryContext<ChatSession>();
-        var chatMessageInMemoryContext = new InMemoryContext<ChatMessage>();
+        // Add persistent chat storage
+        IStorageContext<ChatSession> chatSessionInMemoryContext;
+        IStorageContext<ChatMessage> chatMessageInMemoryContext;
+        
+        switch (configuration["ChatStore"].ToUpperInvariant())
+        {
+            case "VOLATILE":
+                chatSessionInMemoryContext = new VolatileContext<ChatSession>();
+                chatMessageInMemoryContext = new VolatileContext<ChatMessage>();
+                break;
+
+            case "FILESYSTEM":
+                FileSystemConfig filesystemConfig = configuration.GetSection("ChatStore:Filesystem").Get<FileSystemConfig>();
+                chatSessionInMemoryContext = new FileSystemContext<ChatSession>(
+                    new FileInfo($"{Path.GetFileNameWithoutExtension(filesystemConfig.FilePath)}_sessions.{Path.GetExtension(filesystemConfig.FilePath)}"));
+                chatMessageInMemoryContext = new FileSystemContext<ChatMessage>(
+                    new FileInfo($"{Path.GetFileNameWithoutExtension(filesystemConfig.FilePath)}_messages.{Path.GetExtension(filesystemConfig.FilePath)}"));
+                break;
+
+            case "COSMOS":
+                CosmosConfig cosmosConfig = configuration.GetSection("ChatStore:Cosmos").Get<CosmosConfig>();
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                chatSessionInMemoryContext = new CosmosDbContext<ChatSession>(
+                    cosmosConfig.ConnectionString, cosmosConfig.Database, "chat_sessions");
+                chatMessageInMemoryContext = new CosmosDbContext<ChatMessage>(
+                    cosmosConfig.ConnectionString, cosmosConfig.Database, "chat_messages");
+#pragma warning restore CA2000 // Dispose objects before losing scope
+                break;
+
+            default:
+                throw new InvalidOperationException($"Invalid 'ChatStore' setting '{configuration["ChatStore"]}'. Value must be 'volatile', 'filesystem', or 'cosmos'.");
+        }
+
         services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));
         services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
-        // Comment out the above and uncomment the following to use CosmosDB as the storage context.
-        // Make sure there is only one repository for each type of entity.
-        // var chatSessionCosmosDbContext = new CosmosDbContext<ChatSession>(
-        //     "<connectionString>",
-        //     "<db>",
-        //     "<container>");
-        // var chatMessageCosmosDbContext = new CosmosDbContext<ChatMessage>(
-        //     "<connectionString>",
-        //     "<db>",
-        //     "<container>");
-        // services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionCosmosDbContext));
-        // services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageCosmosDbContext));
-
-        // Each REST call gets a fresh new SK instance
-        services.AddScoped<Kernel>();
-
     }
 }

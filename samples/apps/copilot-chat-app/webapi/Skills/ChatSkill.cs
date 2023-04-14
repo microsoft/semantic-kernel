@@ -5,8 +5,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SKWebApi.Skills;
-using SKWebApi.Storage;
+using CopilotChatApi.Service.Skills;
+using CopilotChatApi.Service.Storage;
 
 namespace SemanticKernel.Service.Skills;
 

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
-using SKWebApi.Storage;
+using CopilotChatApi.Service.Storage;
 
-namespace SKWebApi.Skills;
+namespace CopilotChatApi.Service.Skills;
 
 /// <summary>
 /// A chat session

@@ -1,4 +1,4 @@
-﻿namespace SKWebApi.Storage;
+﻿namespace CopilotChatApi.Service.Storage;
 
 public interface IStorageEntity
 {
