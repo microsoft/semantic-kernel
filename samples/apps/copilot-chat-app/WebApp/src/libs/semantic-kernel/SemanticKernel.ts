@@ -37,7 +37,7 @@ export class SemanticKernel {
         connectorAccessToken?: string,
     ): Promise<T> => {
         const { commandPath, method, body } = request;
-        return AuthHelper.getSKaSAccessToken(msalInstance)
+        return AuthHelper.getSKaaSAccessToken(msalInstance)
             .then(async (token) => {
                 const headers = new Headers({
                     Authorization: `Bearer ${token}`,
