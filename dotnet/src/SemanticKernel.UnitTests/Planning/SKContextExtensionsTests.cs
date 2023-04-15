@@ -88,7 +88,7 @@ public class SKContextExtensionsTests
         // Act
         var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true)).ToList();
 
-        //Assert
+        // Assert
         Assert.NotNull(result);
         Assert.Equal(2, result.Count);
         Assert.Equal(functionView, result[0]);
@@ -150,7 +150,7 @@ public class SKContextExtensionsTests
         // Act
         var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(true)).ToList();
 
-        //Assert
+        // Assert
         Assert.NotNull(result);
         Assert.Single(result);
         Assert.Equal(functionView, result[0]);
