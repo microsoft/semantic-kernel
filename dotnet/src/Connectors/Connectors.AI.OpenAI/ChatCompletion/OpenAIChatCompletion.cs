@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Reliability;
 
@@ -13,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// OpenAI chat completion client.
 /// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion
+public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, ITextCompletion
 {
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
@@ -46,5 +47,14 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion
     public ChatHistory CreateNewChat(string instructions = "")
     {
         return this.InternalCreateNewChat(instructions);
+    }
+
+    /// <inheritdoc/>
+    public Task<string> CompleteAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken);
     }
 }
