@@ -62,7 +62,7 @@ and to run one of the C# or Python console applications/scripts:
 
 For C#:
 1. Create a new console app.
-2. Add the semantic kernel nuget `Microsoft.SemanticKernel`.
+2. Add the semantic kernel nugets `Microsoft.SemanticKernel` and `Microsoft.SemanticKernel.Connectors.AI.OpenAI`.
 3. Copy the code from [here](dotnet/README.md) into the app `Program.cs` file.
 4. Replace the configuration placeholders for API key and other params with your key and settings.
 5. Run with `F5` or `dotnet run`

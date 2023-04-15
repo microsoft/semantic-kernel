@@ -7,14 +7,15 @@ you have an
 [Open AI API Key](https://openai.com/api/) or
 [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api).
 
-## Nuget package
+## Nuget packages
 
 Here is a quick example of how to use Semantic Kernel from a C# console app.
 First, let's create a new project, targeting .NET 6 or newer, and add the
-`Microsoft.SemanticKernel` nuget package to your project from the command prompt
-in Visual Studio:
+`Microsoft.SemanticKernel` and `Microsoft.SemanticKernel.Connectors.AI.OpenAI`
+nuget packages to your project from the command prompt in Visual Studio:
 
     dotnet add package Microsoft.SemanticKernel --prerelease
+    dotnet add package Microsoft.SemanticKernel.Connectors.AI.OpenAI --prerelease
 
 # Running prompts with input parameters
 
@@ -26,7 +27,7 @@ using Microsoft.SemanticKernel;
 var kernel = Kernel.Builder.Build();
 
 // Azure OpenAI
-kernel.Config.AddAzureOpenAITextCompletionService(
+kernel.Config.AddAzureTextCompletionService(
     "davinci-azure",                     // Alias used by the kernel
     "text-davinci-003",                  // Azure OpenAI Deployment Name
     "https://contoso.openai.azure.com/", // Azure OpenAI Endpoint
