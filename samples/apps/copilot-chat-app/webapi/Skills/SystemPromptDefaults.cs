@@ -37,14 +37,15 @@ internal static class SystemPromptDefaults
     // Memory extraction commands
     internal static string SystemCognitivePrompt = "We are building a cognitive architecture and need to extract the various details necessary to serve as the data for simulating a part of our memory system.  There will eventually be a lot of these, and we will search over them using the embeddings of the labels and details compared to the new incoming chat requests, so keep that in mind when determining what data to store for this particular type of memory simulation.  There are also other types of memory stores for handling different types of memories with differing purposes, levels of detail, and retention, so you don't need to capture everything - just focus on the items needed for {{$memoryName}}.  Do not make up or assume information that is not supported by evidence.  Perform analysis of the chat history so far and extract the details that you think are important in JSON format: {{$format}}";
 
-    internal static string LongTermMemoryName = "Long-term memory";
-
-    internal static string LongTermMemoryExtractionPrompt = "Extract information that is encoded and consolidated from other memory types, such as working memory or sensory memory. It should be useful for maintaining and recalling one's personal identity, history, and knowledge over time.";
-
     internal static string MemoryFormat = "{\"items\": [{\"label\": string, \"details\": string }]}";
 
     internal static string MemoryAntiHallucination = "IMPORTANT: DO NOT INCLUDE ANY OF THE ABOVE INFORMATION IN THE GENERATED RESPONSE AND ALSO DO NOT MAKE UP OR INFER ANY ADDITIONAL INFORMATION THAT IS NOT INCLUDED BELOW";
 
+    internal static string MemoryContinuationPrompt = "Generate a well-formed JSON of extracted context data. Do not provide a preamble or a list of possible responses, just a single response of the json block.\nJson:";
+
+    // Long-term memory
+    internal static string LongTermMemoryName = "Long-term memory";
+    internal static string LongTermMemoryExtractionPrompt = "Extract information that is encoded and consolidated from other memory types, such as working memory or sensory memory. It should be useful for maintaining and recalling one's personal identity, history, and knowledge over time.";
     internal static string[] LongTermMemoryPromptComponents = new string[]
     {
         SystemCognitivePrompt,
@@ -52,10 +53,30 @@ internal static class SystemPromptDefaults
         MemoryAntiHallucination,
         $"Chat Description:\n{SystemDescriptionPrompt}",
         "{{ChatSkill.ExtractChatHistory}}",
-        "Generate a well-formed JSON of extracted context data. Do not provide a preamble or a list of possible responses, just a single response of the json block.",
-        "Json:"
+        MemoryContinuationPrompt
     };
     internal static string LongTermMemoryPrompt = string.Join("\n", LongTermMemoryPromptComponents);
+
+    // Working memory
+    internal static string WorkingMemoryName = "Working memory";
+    internal static string WorkingMemoryExtractionPrompt = "Extract information for a short period of time, such as a few seconds or minutes. It should be useful for performing complex cognitive tasks that require attention, concentration, or mental calculation.";
+    internal static string[] WorkingMemoryPromptComponents = new string[]
+    {
+        SystemCognitivePrompt,
+        $"{WorkingMemoryName} Description:\n{WorkingMemoryExtractionPrompt}",
+        MemoryAntiHallucination,
+        $"Chat Description:\n{SystemDescriptionPrompt}",
+        "{{ChatSkill.ExtractChatHistory}}",
+        MemoryContinuationPrompt
+    };
+    internal static string WorkingMemoryPrompt = string.Join("\n", WorkingMemoryPromptComponents);
+
+    // Memory map
+    internal static IDictionary<string, string> MemoryMap = new Dictionary<string, string>()
+    {
+        { LongTermMemoryName, LongTermMemoryPrompt },
+        { WorkingMemoryName, WorkingMemoryPrompt }
+    };
 
     // Chat commands
     internal const string SystemChatContinuationPrompt = "SINGLE RESPONSE FROM BOT TO USER:\n[{{TimeSkill.Now}} {{timeSkill.Second}}] bot:";
