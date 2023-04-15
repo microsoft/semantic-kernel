@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -17,6 +16,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 using Microsoft.SemanticKernel.Text;
+using SharpYaml.Serialization;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 
@@ -36,7 +36,8 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
         if (result.OpenApiDiagnostic.Errors.Any())
         {
-            throw new OpenApiDocumentParsingException($"Parsing of '{result.OpenApiDocument.Info?.Title}' OpenAPI document failed. Details: {string.Join(";", result.OpenApiDiagnostic.Errors)}");
+            throw new OpenApiDocumentParsingException(
+                $"Parsing of '{result.OpenApiDocument.Info?.Title}' OpenAPI document failed. Details: {string.Join(";", result.OpenApiDiagnostic.Errors)}");
         }
 
         return ExtractRestApiOperations(result.OpenApiDocument);
@@ -99,7 +100,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <returns>JSON content stream.</returns>
     private static async Task<JsonObject?> ConvertContentToJsonAsync(Stream stream, CancellationToken cancellationToken = default)
     {
-        var serializer = new SharpYaml.Serialization.Serializer();
+        var serializer = new Serializer();
 
         var obj = serializer.Deserialize(stream);
 
@@ -256,7 +257,8 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
         if (level > PayloadPropertiesHierarchyMaxDepth)
         {
-            throw new OpenApiDocumentParsingException($"Max level {PayloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
+            throw new OpenApiDocumentParsingException(
+                $"Max level {PayloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
         }
 
         var result = new List<RestApiOperationPayloadProperty>();

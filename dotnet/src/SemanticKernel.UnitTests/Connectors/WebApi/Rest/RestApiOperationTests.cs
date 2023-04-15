@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Connectors.WebApi.Rest;
+
 public class RestApiOperationTests
 {
     [Fact]
@@ -22,7 +23,7 @@ public class RestApiOperationTests
             "fake_description",
             new List<RestApiOperationParameter>(),
             new Dictionary<string, string>()
-            );
+        );
 
         var arguments = new Dictionary<string, string>();
 
@@ -45,7 +46,7 @@ public class RestApiOperationTests
             "fake_description",
             new List<RestApiOperationParameter>(),
             new Dictionary<string, string>()
-            );
+        );
 
         var arguments = new Dictionary<string, string>();
         arguments.Add("server-url", "https://fake-random-test-host-override");
@@ -69,7 +70,7 @@ public class RestApiOperationTests
             "fake_description",
             new List<RestApiOperationParameter>(),
             new Dictionary<string, string>()
-            );
+        );
 
         var arguments = new Dictionary<string, string>();
         arguments.Add("fake-path-parameter", "fake-path-value");
@@ -258,12 +259,14 @@ public class RestApiOperationTests
     {
         //Arrange
         var metadata = new List<RestApiOperationParameter>();
-        metadata.Add(new RestApiOperationParameter("fake_query_param", "string", false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple));
+        metadata.Add(new RestApiOperationParameter("fake_query_param", "string", false, RestApiOperationParameterLocation.Query,
+            RestApiOperationParameterStyle.Simple));
 
         var arguments = new Dictionary<string, string>();
         arguments.Add("fake_query_param", $"fake_query_param_value{specialSymbol}");
 
-        var sut = new RestApiOperation("fake_id", "https://fake-random-test-host", "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var sut = new RestApiOperation("fake_id", "https://fake-random-test-host", "fake_path", HttpMethod.Get, "fake_description", metadata,
+            new Dictionary<string, string>());
 
         //Act
         var url = sut.BuildOperationUrl(arguments);
@@ -324,7 +327,8 @@ public class RestApiOperationTests
         arguments.Add("fake_header_one", "fake_header_one_value");
         arguments.Add("fake_header_two", "fake_header_two_value");
 
-        var sut = new RestApiOperation("fake_id", "fake_url", "fake_path", HttpMethod.Get, "fake_description", new List<RestApiOperationParameter>(), rawHeaders);
+        var sut = new RestApiOperation("fake_id", "fake_url", "fake_path", HttpMethod.Get, "fake_description", new List<RestApiOperationParameter>(),
+            rawHeaders);
 
         //Act
         var headers = sut.RenderHeaders(arguments);
@@ -391,8 +395,10 @@ public class RestApiOperationTests
         rawHeaders.Add("fake_header_two", string.Empty);
 
         var metadata = new List<RestApiOperationParameter>();
-        metadata.Add(new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple));
-        metadata.Add(new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple));
+        metadata.Add(new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header,
+            RestApiOperationParameterStyle.Simple));
+        metadata.Add(new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header,
+            RestApiOperationParameterStyle.Simple));
 
         var sut = new RestApiOperation("fake_id", "fake_url", "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
 
@@ -441,8 +447,10 @@ public class RestApiOperationTests
         rawHeaders.Add("fake_header_two", string.Empty);
 
         var metadata = new List<RestApiOperationParameter>();
-        metadata.Add(new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple));
-        metadata.Add(new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple, defaultValue: "fake_header_two_default_value"));
+        metadata.Add(new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header,
+            RestApiOperationParameterStyle.Simple));
+        metadata.Add(new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header,
+            RestApiOperationParameterStyle.Simple, defaultValue: "fake_header_two_default_value"));
 
         var arguments = new Dictionary<string, string>();
         arguments.Add("fake_header_one", "fake_header_one_value"); //Argument is only provided for the first parameter and not for the second one
@@ -467,12 +475,14 @@ public class RestApiOperationTests
     {
         //Arrange
         var metadata = new List<RestApiOperationParameter>();
-        metadata.Add(new RestApiOperationParameter("fake_query_string_param", "string", false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple));
+        metadata.Add(new RestApiOperationParameter("fake_query_string_param", "string", false, RestApiOperationParameterLocation.Query,
+            RestApiOperationParameterStyle.Simple));
 
         var arguments = new Dictionary<string, string>();
         arguments.Add("fake_query_string_param", "fake_query_string_param_value");
 
-        var sut = new RestApiOperation("fake_id", "https://fake-random-test-host", "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var sut = new RestApiOperation("fake_id", "https://fake-random-test-host", "fake_path", HttpMethod.Get, "fake_description", metadata,
+            new Dictionary<string, string>());
 
         //Act
         var url = sut.BuildOperationUrl(arguments);

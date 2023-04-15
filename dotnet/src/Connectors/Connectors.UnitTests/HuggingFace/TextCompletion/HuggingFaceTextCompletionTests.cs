@@ -3,7 +3,6 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
@@ -25,7 +24,7 @@ public class HuggingFaceTextCompletionTests : IDisposable
     };
 
     /// <summary>
-    /// Verifies that <see cref="HuggingFaceTextCompletion.CompleteAsync(string, CompleteRequestSettings, CancellationToken)"/>
+    /// Verifies that <see cref="HuggingFaceTextCompletion.CompleteAsync"/>
     /// returns expected completed text without errors.
     /// </summary>
     [Fact]

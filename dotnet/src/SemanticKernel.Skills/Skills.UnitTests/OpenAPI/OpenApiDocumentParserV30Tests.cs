@@ -195,6 +195,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         //Assert
         Assert.Equal(2, operations.Count);
     }
+
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId,
         RestApiOperationParameterLocation location, string name)
     {
