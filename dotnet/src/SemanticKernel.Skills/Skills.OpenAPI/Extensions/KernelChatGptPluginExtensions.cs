@@ -136,10 +136,10 @@ public static class KernelChatGptPluginExtensions
 
         Verify.ValidSkillName(skillDirectoryName);
 
-        var skillDir = Path.Join(parentDirectory, skillDirectoryName);
+        var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
         Verify.DirectoryExists(skillDir);
 
-        var chatGptPluginPath = Path.Join(skillDir, CHATGPT_PLUGIN_FILE);
+        var chatGptPluginPath = Path.Combine(skillDir, CHATGPT_PLUGIN_FILE);
         if (!File.Exists(chatGptPluginPath))
         {
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {chatGptPluginPath} is found");
@@ -196,6 +196,6 @@ public static class KernelChatGptPluginExtensions
             throw new InvalidOperationException($"Invalid ChatGPT plugin document. OpenAPI url is missing");
         }
 
-        return openApiUrl;
+        return openApiUrl!;
     }
 }

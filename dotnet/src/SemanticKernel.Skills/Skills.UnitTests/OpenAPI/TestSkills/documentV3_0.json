@@ -12,6 +12,36 @@
   ],
   "paths": {
     "/secrets/{secret-name}": {
+      "get": {
+        "summary": "Get secret",
+        "description": "Get a specified secret from a given key vault. For details, see: https://docs.microsoft.com/rest/api/keyvault/getsecret/getsecret.",
+        "operationId": "GetSecret",
+        "parameters": [
+          {
+            "name": "secret-name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api-version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "7.0"
+            },
+            "x-ms-visibility": "internal"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "default"
+          }
+        }
+      },
       "put": {
         "summary": "Create or update secret value",
         "description": "Sets a secret in a specified key vault.",
@@ -61,6 +91,7 @@
             "name": "X-Operation-Csv-Ids",
             "in": "header",
             "description": "The comma separated list of operation ids.",
+            "style": "simple",
             "schema": {
               "type": "array",
               "items": {
@@ -117,7 +148,7 @@
           "authorizationCode": {
             "authorizationUrl": "https://login.windows.net/common/oauth2/authorize",
             "tokenUrl": "https://login.windows.net/common/oauth2/authorize",
-            "scopes": {}
+            "scopes": { }
           }
         }
       }
@@ -125,7 +156,7 @@
   },
   "security": [
     {
-      "oauth2_auth": []
+      "oauth2_auth": [ ]
     }
   ]
 }

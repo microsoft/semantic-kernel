@@ -68,7 +68,7 @@ internal class RestApiOperationParameter
         string type,
         bool isRequired,
         RestApiOperationParameterLocation location,
-        RestApiOperationParameterStyle? style,
+        RestApiOperationParameterStyle? style = null,
         string? arrayItemType = null,
         string? defaultValue = null,
         string? description = null)
