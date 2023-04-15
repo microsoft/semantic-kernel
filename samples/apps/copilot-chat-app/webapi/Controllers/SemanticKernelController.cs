@@ -114,10 +114,13 @@ public class SemanticKernelController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<string>> ExportAsync([FromServices] Kernel kernel)
+    public async Task<ActionResult<string>> ExportAsync(
+        [FromServices] Kernel kernel,
+        [FromServices] ChatSessionRepository chatRepository,
+        [FromServices] ChatMessageRepository chatMessageRepository)
     {
         this._logger.LogDebug("Received call to export a bot");
-        var memory = await GetAllMemoriesAsync(kernel.Memory).ToArrayAsync();
+        var memory = await GetAllMemoriesAsync(kernel, chatRepository, chatMessageRepository);
 
         return JsonSerializer.Serialize(memory);
     }
@@ -125,15 +128,31 @@ public class SemanticKernelController : ControllerBase
     /// <summary>
     /// Get all chat messages from memory.
     /// </summary>
-    /// <param name="memory">The memory object.</param>
-    private static async IAsyncEnumerable<MemoryQueryResult?> GetAllMemoriesAsync(ISemanticTextMemory memory)
+    /// <param name="kernel">The semantic kernel object.</param>
+    /// <param name="chatRepository">The chat session repository object.</param>
+    /// <param name="chatMessageRepository">The chat message repository object.</param>
+    private async Task<Bot> GetAllMemoriesAsync(
+        Kernel kernel,
+        ChatSessionRepository chatRepository,
+        ChatMessageRepository chatMessageRepository)
     {
-        var allCollections = await memory.GetCollectionsAsync();
+        var bot = new Bot();
+
+        // get chat history
+        var messages = await this.InvokeFunctionAsync(kernel, chatRepository, chatMessageRepository, new Ask(), "ChatHistorySkill", "GetAllChats");
+
+        if (messages?.Value?.Value != null)
+        {
+            bot.ChatHistory = JsonSerializer.Deserialize<IEnumerable<ChatMessage>>(messages.Value.Value);
+        }
+
+        // get memory
+        var allCollections = await kernel.Memory.GetCollectionsAsync();
         IList<MemoryQueryResult> allChatMessageMemories = new List<MemoryQueryResult>();
 
         foreach (var collection in allCollections)
         {
-            var results = await memory.SearchAsync(
+            var results = await kernel.Memory.SearchAsync(
                 collection,
                 "abc", // dummy query since we don't care about relevance. An empty string will cause exception.
                 limit: 1,
@@ -141,11 +160,10 @@ public class SemanticKernelController : ControllerBase
                 cancel: default
             ).ToListAsync();
             allChatMessageMemories.Add(results.First());
+
+            bot.Embeddings.Append(new KeyValuePair<string, IEnumerable<MemoryQueryResult>>(collection, allChatMessageMemories));
         }
 
-        foreach (var item in allChatMessageMemories.OrderBy(item => item.Metadata.Id))
-        {
-            yield return item;
-        }
+        return bot;
     }
 }
