@@ -23,8 +23,8 @@ public class ChatSessionRepository : Repository<ChatSession>
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <returns>A list of chat sessions.</returns>
-    public Task<IEnumerable<ChatSession>> FindByUserIdAsync(string userId)
+    public async Task<IEnumerable<ChatSession>> FindByUserIdAsync(string userId)
     {
-        return Task.FromResult(base.StorageContext.QueryableEntities.Where(e => e.UserId == userId).AsEnumerable());
+        return await base.StorageContext.QueryEntitiesAsync(e => e.UserId == userId);
     }
 }
