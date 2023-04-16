@@ -21,9 +21,9 @@ public class ChatMessageRepository : Repository<ChatMessage>
     /// <summary>
     /// Finds chat messages by chat id.
     /// </summary>
-    public Task<IEnumerable<ChatMessage>> FindByChatIdAsync(string chatId)
+    public async Task<IEnumerable<ChatMessage>> FindByChatIdAsync(string chatId)
     {
-        return Task.FromResult(base.StorageContext.QueryableEntities.Where(e => e.ChatId == chatId).AsEnumerable());
+        return await base.StorageContext.QueryEntitiesAsync(e => e.ChatId == chatId);
     }
 
     public async Task<ChatMessage> FindLastByChatIdAsync(string chatId)

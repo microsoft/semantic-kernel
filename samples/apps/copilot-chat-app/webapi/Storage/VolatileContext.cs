@@ -25,7 +25,10 @@ public class VolatileContext<T> : IStorageContext<T> where T : IStorageEntity
     }
 
     /// <inheritdoc/>
-    public IQueryable<T> QueryableEntities => this._entities.Values.AsQueryable();
+    public Task<IEnumerable<T>> QueryEntitiesAsync(Func<T, bool> predicate)
+    {
+        return Task.FromResult(this._entities.Values.Where(predicate));
+    }
 
     /// <inheritdoc/>
     public Task CreateAsync(T entity)
