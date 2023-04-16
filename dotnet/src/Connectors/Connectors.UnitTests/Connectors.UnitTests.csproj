@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\Connectors.Memory.CosmosDB\Connectors.Memory.CosmosDB.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
   </ItemGroup>

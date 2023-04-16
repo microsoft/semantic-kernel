@@ -3,10 +3,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Scripts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -27,6 +30,8 @@ public class CosmosMemoryStore : IMemoryStore
     private Database _database;
     private string _databaseName;
     private ILogger _log;
+    private readonly string _queryWithEmbedding = "select cc.id,cc.score from (SELECT c.id,c.collectionId,c.timestamp,c.embeddingString,c.metadataString,udf.CosinSimularity('@embedding') as score FROM c) cc where cc.score>@minScore";
+    private readonly string _queryWithoutEmbedding= "select cc.id,cc.score from (SELECT c.id,c.collectionId,c.timestamp,c.metadataString,udf.CosinSimularity('@embedding') as score FROM c) cc where cc.score>@minScore";
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized: Class instance is created and populated via factory method.
     private CosmosMemoryStore()
@@ -69,22 +74,55 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancel = default)
     {
-        // Azure Cosmos DB does not support listing all Containers, this does not break the interface but it is not ideal.
-        this._log.LogWarning("Listing all containers is not supported by Azure Cosmos DB, returning empty list.");
-
-        return Enumerable.Empty<string>().ToAsyncEnumerable();
+        QueryDefinition queryDefinition = new QueryDefinition("select * from c");
+        var iterator=this._database.GetContainerQueryIterator<ContainerProperties>(queryDefinition);
+        while (iterator.HasMoreResults)
+        {
+            foreach (var item in await iterator.ReadNextAsync(cancel))
+            {
+                yield return item.Id;
+            }
+        }
     }
 
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        var response = await this._database.CreateContainerIfNotExistsAsync(collectionName, "/" + collectionName, cancellationToken: cancel);
 
+        ContainerProperties newContainer = new ContainerProperties(collectionName, "/" + collectionName);
+        newContainer.IndexingPolicy = new IndexingPolicy()
+        {
+            Automatic = true,
+            IndexingMode = IndexingMode.Consistent,//id and _ts will automatically indexed
+            ExcludedPaths = {new ExcludedPath() { Path= "/embeddingString/?" } },
+            IncludedPaths = { new IncludedPath() { Path = "/*" } } 
+        };
+        newContainer.PartitionKeyPath = "/id";
+        var response = await this._database.CreateContainerIfNotExistsAsync(newContainer, cancellationToken: cancel);
         if (response.StatusCode == HttpStatusCode.Created)
         {
             this._log.LogInformation("Created collection {0}", collectionName);
+            //change indexing policy
+            response.Resource.IndexingPolicy = new IndexingPolicy();
+
+
+            //create UDF
+            var createFunctionResponse=await response.Container.Scripts.CreateUserDefinedFunctionAsync(new UserDefinedFunctionProperties()
+            {
+                Id= "CosinSimularity",
+                Body=ScriptResources.UDF_CosinSimularity
+            },cancellationToken:cancel);
+            if (createFunctionResponse.StatusCode==HttpStatusCode.Created)
+            {
+                this._log.LogInformation("Created UDF CosinSimularity in collection {0}",collectionName);
+            }
+            else
+            {
+                throw new CosmosException($"Failed create UDF CosinSimularity in collection {collectionName}",createFunctionResponse.StatusCode,0,collectionName,0 );
+            }
+
         }
         else if (response.StatusCode == HttpStatusCode.OK)
         {
@@ -97,11 +135,13 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc />
-    public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
+    public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
     {
-        // Azure Cosmos DB does not support checking if container exists without attempting to create it.
-        // Note that CreateCollectionIfNotExistsAsync() is idempotent. This does not break the interface but it is not ideal.
-        return Task.FromResult(false);
+        QueryDefinition qd = new QueryDefinition("select value(count(1)) from c where c.id=@id").WithParameter("@id",collectionName);
+        var iterator = this._database.GetContainerQueryIterator<int>(qd);
+        var firstBatch = await iterator.ReadNextAsync(cancel);//only one result returns, not need to check if more data exists
+        return firstBatch.First() == 1;
+
     }
 
     /// <inheritdoc />
@@ -122,7 +162,7 @@ public class CosmosMemoryStore : IMemoryStore
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
     {
         var id = this.ToCosmosFriendlyId(key);
-        var partitionKey = PartitionKey.None;
+        var partitionKey = new PartitionKey(key);
 
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
         MemoryRecord? memoryRecord = null;
@@ -216,7 +256,7 @@ public class CosmosMemoryStore : IMemoryStore
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
         var response = await container.DeleteItemAsync<CosmosMemoryRecord>(
             key,
-            PartitionKey.None,
+            new PartitionKey(key),
             cancellationToken: cancel);
 
         if (response.StatusCode == HttpStatusCode.OK)
@@ -252,19 +292,36 @@ public class CosmosMemoryStore : IMemoryStore
 
             var collectionMemories = new List<MemoryRecord>();
             TopNCollection<MemoryRecord> embeddings = new(limit);
+            string embeddingParameter = JsonSerializer.Serialize(embedding.Vector);
+            var container = this._database.Client.GetContainer(this._databaseName, collectionName);
 
-            await foreach (var record in this.GetAllAsync(collectionName, cancel))
+
+
+            QueryDefinition query =
+                new QueryDefinition(withEmbeddings? this._queryWithEmbedding :this._queryWithoutEmbedding)
+                .WithParameter("@embedding", embedding)
+                .WithParameter("@minScore", minRelevanceScore);
+            var iterator = container.GetItemQueryIterator<CosmosMemoryRecordWithScore>(query);
+
+
+            while (iterator.HasMoreResults)
             {
-                if (record != null)
+                var items = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);
+                foreach (var item in items)
                 {
-                    double similarity = embedding
-                        .AsReadOnlySpan()
-                        .CosineSimilarity(record.Embedding.AsReadOnlySpan());
-                    if (similarity >= minRelevanceScore)
+                    Embedding<float>? embeddingObject=null;
+                    if (withEmbeddings)
                     {
-                        var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, Embedding<float>.Empty, record.Key, record.Timestamp);
-                        embeddings.Add(new(entry, similarity));
+                        float[] embeddingValue = JsonSerializer.Deserialize<float[]>(item.EmbeddingString);
+                        embeddingObject = new Embedding<float>(embeddingValue);
                     }
+
+                    var record = MemoryRecord.FromJsonMetadata(
+                    item.MetadataString,
+                        embeddingObject,
+                        item.Id,
+                        item.Timestamp);
+                    embeddings.Add(record, item.Score);
                 }
             }
 
@@ -296,20 +353,22 @@ public class CosmosMemoryStore : IMemoryStore
         var query = new QueryDefinition("SELECT * FROM c");
 
         var iterator = container.GetItemQueryIterator<CosmosMemoryRecord>(query);
-
-        var items = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);
-
-        foreach (var item in items)
+        while (iterator.HasMoreResults)
         {
-            var vector = System.Text.Json.JsonSerializer.Deserialize<float[]>(item.EmbeddingString);
+            var items = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);
 
-            if (vector != null)
+            foreach (var item in items)
             {
-                yield return MemoryRecord.FromJsonMetadata(
-                    item.MetadataString,
-                    new Embedding<float>(vector),
-                    item.Id,
-                    item.Timestamp);
+                var vector = System.Text.Json.JsonSerializer.Deserialize<float[]>(item.EmbeddingString);
+
+                if (vector != null)
+                {
+                    yield return MemoryRecord.FromJsonMetadata(
+                        item.MetadataString,
+                        new Embedding<float>(vector),
+                        item.Id,
+                        item.Timestamp);
+                }
             }
         }
     }
