@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
 </Project>

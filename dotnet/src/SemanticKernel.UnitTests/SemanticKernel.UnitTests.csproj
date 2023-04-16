@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
-    <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
 </Project>

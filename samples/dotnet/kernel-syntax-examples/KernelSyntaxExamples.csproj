@@ -29,6 +29,6 @@
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.OpenAPI\Skills.OpenAPI.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Skills\Skills.Web\Skills.Web.csproj" />
-    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 </Project>

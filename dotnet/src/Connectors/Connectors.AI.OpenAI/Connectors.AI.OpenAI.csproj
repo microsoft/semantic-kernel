@@ -15,6 +15,7 @@
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Connectors.AI.OpenAI</PackageId>
     <Title>Semantic Kernel - OpenAI and Azure OpenAI connectors</Title>
+    <Description>Semantic Kernel connectors for OpenAI and Azure OpenAI. Contains clients for text completion, chat completion, embedding and DALL-E image generation.</Description>
   </PropertyGroup>
 
   <ItemGroup>
