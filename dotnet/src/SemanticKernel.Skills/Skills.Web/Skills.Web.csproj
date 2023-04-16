@@ -15,6 +15,7 @@
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Skills.Web</PackageId>
     <Title>Semantic Kernel - Microsoft Bing Connector</Title>
+    <Description>Semantic Kernel Web Skill: search the web, download files, etc.</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
+  </PropertyGroup>
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+
+  <PropertyGroup>
+    <AssemblyName>Microsoft.SemanticKernel</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <PackageId>Microsoft.SemanticKernel</PackageId>
+    <Title>Semantic Kernel</Title>
+    <Description>Semantic Kernel common package collection, including SK Core, OpenAI, Azure OpenAI, DALL-E 2.
+Empowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" PrivateAssets="none"/>
+  </ItemGroup>
+
+</Project>
