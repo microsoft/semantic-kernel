@@ -74,7 +74,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Cosmos {
         ///        return 0;
         ///    }
         ///    const dotProduct = arrayInput1.reduce((acc, val, i) =&gt; acc + val * arrayInput2[i], 0);
-        ///    const magnitudeA = Math.sqrt(arrayInput1.reduce((acc, [rest of string was truncated]&quot;;.
+        ///    const magnitudeA = Math.sqrt(arrayInput1.reduce((acc, val) =&gt; acc  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string UDF_CosinSimularity {
             get {
