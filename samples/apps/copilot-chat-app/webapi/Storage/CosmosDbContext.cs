@@ -2,6 +2,7 @@
 
 using System.Net;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 
 namespace SemanticKernel.Service.Storage;
 
@@ -10,6 +11,9 @@ namespace SemanticKernel.Service.Storage;
 /// </summary>
 public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : IStorageEntity
 {
+    public bool IsQueryBlocking => true;
+
+
     /// <summary>
     /// The CosmosDB client.
     /// </summary>
@@ -28,12 +32,21 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
     /// <param name="container">The CosmosDB container name.</param>
     public CosmosDbContext(string connectionString, string database, string container)
     {
-        this._client = new CosmosClient(connectionString);
-        this._container = this._client.GetContainer(database, container);
+        // Configure JsonSerializerOptions
+        var options = new CosmosClientOptions
+        {
+            SerializerOptions = new CosmosSerializationOptions
+            {
+                PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+            },
+            
+        };
+        this._client = new CosmosClient(connectionString, options);
+        this._container = this._client.GetContainer(database, container);        
     }
 
     /// <inheritdoc/>
-    public IQueryable<T> QueryableEntities => this._container.GetItemLinqQueryable<T>().AsQueryable();
+    public IQueryable<T> QueryableEntities => this._container.GetItemLinqQueryable<T>(true);
 
     /// <inheritdoc/>
     public async Task CreateAsync(T entity)

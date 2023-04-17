@@ -25,6 +25,12 @@ public class ChatSessionRepository : Repository<ChatSession>
     /// <returns>A list of chat sessions.</returns>
     public Task<IEnumerable<ChatSession>> FindByUserIdAsync(string userId)
     {
+        if (base.StorageContext.IsQueryBlocking)
+        {
+            return Task.Run<IEnumerable<ChatSession>>(
+                () => base.StorageContext.QueryableEntities.Where(e => e.UserId == userId).AsEnumerable());
+        }
+
         return Task.FromResult(base.StorageContext.QueryableEntities.Where(e => e.UserId == userId).AsEnumerable());
     }
 }

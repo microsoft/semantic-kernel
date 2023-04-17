@@ -9,6 +9,9 @@ namespace SemanticKernel.Service.Storage;
 /// </summary>
 public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
 {
+    public bool IsQueryBlocking => false;
+    
+
     /// <summary>
     /// Using a concurrent dictionary to store entities in memory.
     /// </summary>
