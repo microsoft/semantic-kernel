@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 from pytest import mark, raises
 
-import semantic_kernel as sk
+from semantic_kernel import Kernel
 from semantic_kernel.skill_definition import sk_function
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 
@@ -54,7 +54,7 @@ class TestPromptTemplateEngine:
         winner = "SK"
         template = "And the winner\n of {{$input}} \nis: {{  $winner }}!"
 
-        kernel = sk.create_kernel()
+        kernel = Kernel()
         context = kernel.create_new_context()
         context["input"] = input
         context["winner"] = winner
@@ -74,7 +74,7 @@ class TestPromptTemplateEngine:
         template = "And the winner\n of {{'template\ntests'}} \nis: {{  \"SK\" }}!"
         expected = "And the winner\n of template\ntests \nis: SK!"
 
-        kernel = sk.create_kernel()
+        kernel = Kernel()
         context = kernel.create_new_context()
 
         # Act
@@ -87,7 +87,7 @@ class TestPromptTemplateEngine:
     async def test_it_allows_to_pass_variables_to_functions_async(self):
         # Arrange
         template = "== {{my.check123 $call}} =="
-        kernel = sk.create_kernel()
+        kernel = Kernel()
         kernel.import_skill(MySkill(), "my")
         context = kernel.create_new_context()
         context["call"] = "123"
@@ -102,7 +102,7 @@ class TestPromptTemplateEngine:
     async def test_it_allows_to_pass_values_to_functions_async(self):
         # Arrange
         template = "== {{my.check123 '234'}} =="
-        kernel = sk.create_kernel()
+        kernel = Kernel()
         kernel.import_skill(MySkill(), "my")
         context = kernel.create_new_context()
 
@@ -116,7 +116,7 @@ class TestPromptTemplateEngine:
     async def test_it_allows_to_pass_escaped_values1_to_functions_async(self):
         # Arrange
         template = "== {{my.check123 'a\\'b'}} =="
-        kernel = sk.create_kernel()
+        kernel = Kernel()
         kernel.import_skill(MySkill(), "my")
         context = kernel.create_new_context()
 
@@ -130,7 +130,7 @@ class TestPromptTemplateEngine:
     async def test_it_allows_to_pass_escaped_values2_to_functions_async(self):
         # Arrange
         template = '== {{my.check123 "a\\"b"}} =='
-        kernel = sk.create_kernel()
+        kernel = Kernel()
         kernel.import_skill(MySkill(), "my")
         context = kernel.create_new_context()
 
@@ -148,7 +148,7 @@ class TestPromptTemplateEngine:
         self, template: str, expected_result: str
     ):
         # Arrange
-        kernel = sk.create_kernel()
+        kernel = Kernel()
         kernel.import_skill(MySkill())
         context = kernel.create_new_context()
 
