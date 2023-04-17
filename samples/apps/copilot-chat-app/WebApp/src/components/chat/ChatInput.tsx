@@ -12,7 +12,9 @@ import { addAlert } from '../../redux/features/app/appSlice';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 import { useSKSpeechService } from './../../libs/semantic-kernel/useSKSpeech';
 import { useMsal } from '@azure/msal-react';
-import { TokenHelper } from '../../libs/auth/TokenHelper';
+//import { TokenHelper } from '../../libs/auth/TokenHelper';
+import { AuthHelper } from '../../libs/auth/AuthHelper';
+import { useConnectors } from './../../libs/connectors/useConnectors';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -60,18 +62,24 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
     const speechService = useSKSpeechService(process.env.REACT_APP_BACKEND_URI as string);
-    const { instance, inProgress } = useMsal();
+    const { instance } = useMsal();//, inProgress
+    const connectors = useConnectors();
 
     React.useEffect(() => {
         if (recognizer) return;
         void (async () => {
             //const newRecognizer = await speechService.getSpeechRecognizerAsync();
 
-            const aadtoken = await TokenHelper.getAccessToken(inProgress, instance, Constants.azureSpeechScopes);
-            const newRecognizer = await speechService.getSpeechRecognizerFromAADTokenAsync(aadtoken);
+            const aadtoken = await AuthHelper.getAzureSpeechToken(instance);//inProgress, instance, Constants.azureSpeechScopes);
+            
+            //const aadtoken = await TokenHelper.getAccessToken( inProgress, instance, Constants.azureSpeechScopes );
+            
+            //const aadtoken = await connectors.getSpeechAADToken();
+
+            const newRecognizer = await speechService.getSpeechRecognizerFromAADTokenAsync(aadtoken as string);
             setRecognizer(newRecognizer);
         })();
-    }, [recognizer, speechService, inProgress, instance]);
+    }, [recognizer, speechService, connectors, instance]);
 
     const handleSpeech = () => {
         setIsListening(true);
