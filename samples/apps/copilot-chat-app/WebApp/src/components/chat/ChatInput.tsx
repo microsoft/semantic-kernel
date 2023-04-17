@@ -71,7 +71,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
             const newRecognizer = await speechService.getSpeechRecognizerFromAADTokenAsync(aadtoken);
             setRecognizer(newRecognizer);
         })();
-    }, [recognizer, speechService]);
+    }, [recognizer, speechService, inProgress, instance]);
 
     const handleSpeech = () => {
         setIsListening(true);
