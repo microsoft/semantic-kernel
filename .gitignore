@@ -460,5 +460,6 @@ ENV/
 # Python dist
 dist/
 
-# Qdrant peristant storage
+# Peristant storage
 data/qdrant
+data/chatstore*
