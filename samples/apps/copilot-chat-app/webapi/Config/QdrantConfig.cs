@@ -15,11 +15,11 @@ public class QdrantConfig
     /// <summary>
     /// Gets or sets the endpoint port.
     /// </summary>
-    public int Port { get; set; } 
+    public int Port { get; set; }
 
     /// <summary>
     /// Gets or sets the vector size.
     /// </summary>
-    public int VectorSize { get; set; } 
+    public int VectorSize { get; set; }
 
 }

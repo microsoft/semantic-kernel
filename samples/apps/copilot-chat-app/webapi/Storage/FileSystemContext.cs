@@ -121,7 +121,7 @@ public class FileSystemContext<T> : IStorageContext<T> where T : IStorageEntity
                 fileInfo.Directory!.Create();
                 File.WriteAllText(fileInfo.FullName, "{}");
             }
-            
+
             using FileStream fileStream = File.Open(
             path: fileInfo.FullName,
             mode: FileMode.OpenOrCreate,

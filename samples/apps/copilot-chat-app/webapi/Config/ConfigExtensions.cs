@@ -105,7 +105,7 @@ internal static class ConfigExtensions
 
             AIServiceConfig.OpenAI => new OpenAITextEmbeddingGeneration(
                                 serviceConfig.DeploymentOrModelId, serviceConfig.Key, handlerFactory: handlerFactory, log: logger),
-                                
+
             _ => throw new ArgumentException("Invalid AIService value in embeddings backend settings"),
         };
     }
