@@ -17,4 +17,14 @@ public class CosmosConfig
     /// </summary>
     public string ConnectionString { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Gets or sets the Cosmos container for chat sessions.
+    /// </summary>
+    public string ChatSessionsContainer { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the Cosmos container for chat messages.
+    /// </summary>
+    public string ChatMessagesContainer { get; set; } = string.Empty;
+
 }

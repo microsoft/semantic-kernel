@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.IO;
 using System.Text.Json;
 
 namespace SemanticKernel.Service.Storage;
@@ -123,10 +122,10 @@ public class FileSystemContext<T> : IStorageContext<T> where T : IStorageEntity
             }
 
             using FileStream fileStream = File.Open(
-            path: fileInfo.FullName,
-            mode: FileMode.OpenOrCreate,
-            access: FileAccess.Write,
-            share: FileShare.Read);
+                path: fileInfo.FullName,
+                mode: FileMode.OpenOrCreate,
+                access: FileAccess.Write,
+                share: FileShare.Read);
 
             JsonSerializer.Serialize(fileStream, entities);
         }

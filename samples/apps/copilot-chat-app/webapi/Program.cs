@@ -103,23 +103,27 @@ public static class Program
         AIServiceConfig embeddingConfig = configuration.GetSection("Embedding").Get<AIServiceConfig>();
         if (embeddingConfig?.IsValid() == true)
         {
-            switch (configuration["MemoriesStore:Type"].ToUpperInvariant())
+            MemoriesStoreConfig memoriesStoreConfig = configuration.GetSection("MemoriesStore").Get<MemoriesStoreConfig>();
+            switch (memoriesStoreConfig.Type)
             {
-                case "VOLATILE":
+                case MemoriesStoreConfig.MemoriesStoreType.Volatile:
                     services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
                     break;
 
-                case "QDRANT":
-                    QdrantConfig qdrantConfig = configuration.GetSection("MemoriesStore:Qdrant").Get<QdrantConfig>();
+                case MemoriesStoreConfig.MemoriesStoreType.Qdrant:
+                    if (memoriesStoreConfig.Qdrant is null)
+                    {
+                        throw new InvalidOperationException("MemoriesStore:Qdrant is required when MemoriesStore:Type is 'Qdrant'");
+                    }
                     services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
-                            host: qdrantConfig.Host,
-                            port: qdrantConfig.Port,
-                            vectorSize: qdrantConfig.VectorSize,
+                            host: memoriesStoreConfig.Qdrant.Host,
+                            port: memoriesStoreConfig.Qdrant.Port,
+                            vectorSize: memoriesStoreConfig.Qdrant.VectorSize,
                             logger: sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
                     break;
 
                 default:
-                    throw new InvalidOperationException($"Invalid 'MemoriesStore' setting '{configuration["MemoriesStore"]}'. Value must be 'volatile' or 'qdrant'");
+                    throw new InvalidOperationException($"Invalid 'MemoriesStore' setting '{memoriesStoreConfig.Type}'. Value must be 'volatile' or 'qdrant'");
             }
         }
 
@@ -164,16 +168,21 @@ public static class Program
         IStorageContext<ChatSession> chatSessionInMemoryContext;
         IStorageContext<ChatMessage> chatMessageInMemoryContext;
 
-        switch (configuration["ChatStore:Type"].ToUpperInvariant())
+        ChatStoreConfig chatStoreConfig = configuration.GetSection("ChatStore").Get<ChatStoreConfig>();
+
+        switch (chatStoreConfig.Type)
         {
-            case "VOLATILE":
+            case ChatStoreConfig.ChatStoreType.Volatile:
                 chatSessionInMemoryContext = new VolatileContext<ChatSession>();
                 chatMessageInMemoryContext = new VolatileContext<ChatMessage>();
                 break;
 
-            case "FILESYSTEM":
-                FileSystemConfig filesystemConfig = configuration.GetSection("ChatStore:Filesystem").Get<FileSystemConfig>();
-                string fullPath = Path.GetFullPath(filesystemConfig.FilePath);
+            case ChatStoreConfig.ChatStoreType.Filesystem:
+                if (chatStoreConfig.Filesystem == null)
+                {
+                    throw new InvalidOperationException("ChatStore:Filesystem is required when ChatStore:Type is 'Filesystem'");
+                }
+                string fullPath = Path.GetFullPath(chatStoreConfig.Filesystem.FilePath);
                 string directory = Path.GetDirectoryName(fullPath) ?? string.Empty;
                 chatSessionInMemoryContext = new FileSystemContext<ChatSession>(
                     new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_sessions{Path.GetExtension(fullPath)}")));
@@ -181,18 +190,21 @@ public static class Program
                     new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_messages{Path.GetExtension(fullPath)}")));
                 break;
 
-            case "COSMOS":
-                CosmosConfig cosmosConfig = configuration.GetSection("ChatStore:Cosmos").Get<CosmosConfig>();
+            case ChatStoreConfig.ChatStoreType.Cosmos:
+                if (chatStoreConfig.Cosmos == null)
+                {
+                    throw new InvalidOperationException("ChatStore:Cosmos is required when ChatStore:Type is 'Cosmos'");
+                }
 #pragma warning disable CA2000 // Dispose objects before losing scope - objects are singletons for the duration of the process and disposed when the process exits.
                 chatSessionInMemoryContext = new CosmosDbContext<ChatSession>(
-                    cosmosConfig.ConnectionString, cosmosConfig.Database, "chat_sessions");
+                    chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.ChatSessionsContainer);
                 chatMessageInMemoryContext = new CosmosDbContext<ChatMessage>(
-                    cosmosConfig.ConnectionString, cosmosConfig.Database, "chat_messages");
+                    chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.ChatMessagesContainer);
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 break;
 
             default:
-                throw new InvalidOperationException($"Invalid 'ChatStore' setting '{configuration["ChatStore"]}'. Value must be 'volatile', 'filesystem', or 'cosmos'.");
+                throw new InvalidOperationException($"Invalid 'ChatStore' setting 'chatStoreConfig.Type'. Value must be 'volatile', 'filesystem', or 'cosmos'.");
         }
 
         services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));
