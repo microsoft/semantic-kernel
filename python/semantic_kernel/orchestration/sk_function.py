@@ -287,15 +287,11 @@ class SKFunction(SKFunctionBase):
         # Handle "asyncio.run() cannot be called from a running event loop"
         if loop and loop.is_running():
             if self.is_semantic:
-                thread = RunThread(self._invoke_semantic_async(context, settings))
-                thread.start()
-                thread.join()
-                return thread.result
+                return RunThread(
+                    self._invoke_semantic_async(context, settings)
+                ).runThread()
             else:
-                thread = RunThread(self._invoke_native_async(context))
-                thread.start()
-                thread.join()
-                return thread.result
+                return RunThread(self._invoke_semantic_async(context)).runThread()
         else:
             if self.is_semantic:
                 return asyncio.run(self._invoke_semantic_async(context, settings))
@@ -438,6 +434,7 @@ class RunThread(threading.Thread):
     """
     Async code wrapper to allow running async code inside external
     event loops such as Jupyter notebooks.
+    Call runThread to run and get the result of the async code
     """
 
     def __init__(self, code):
@@ -447,3 +444,8 @@ class RunThread(threading.Thread):
 
     def run(self):
         self.result = asyncio.run(self.code)
+
+    def runThread(self):
+        self.start()
+        self.join()
+        return self.result
