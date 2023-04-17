@@ -19,6 +19,7 @@ import { AlertType } from '../../libs/models/AlertType';
 import { IAsk } from '../../libs/semantic-kernel/model/Ask';
 import { useSemanticKernel } from '../../libs/semantic-kernel/useSemanticKernel';
 import { useChat } from '../../libs/useChat';
+import { useFile } from '../../libs/useFile';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
@@ -90,6 +91,7 @@ export const ChatWindow: React.FC = () => {
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const chat = useChat();
     const { instance } = useMsal();
+    const { downloadFile } = useFile();
 
     const onEdit = async () => {
         if (isEditing) {
@@ -156,10 +158,14 @@ export const ChatWindow: React.FC = () => {
                             <Button
                                 icon={<ArrowDownloadRegular />}
                                 appearance="transparent"
-                                onClick={() => {
-                                    // TODO
-                                    console.log('on export a bot');
-                                    chat.exportBot();
+                                onClick={async () => {
+                                    // TODO: Add a loading indicator
+                                    const content = await chat.exportBot(selectedId);
+                                    downloadFile(
+                                        `chat-history-${title}-${new Date().toISOString()}.json`,
+                                        JSON.stringify(content),
+                                        'text/json',
+                                    );
                                 }}
                             />
                         </Tooltip>

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
@@ -110,40 +111,50 @@ public class SemanticKernelController : ControllerBase
     }
 
     [Route("bot/export")]
-    [HttpGet]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<string>> ExportAsync(
         [FromServices] Kernel kernel,
         [FromServices] ChatSessionRepository chatRepository,
-        [FromServices] ChatMessageRepository chatMessageRepository)
+        [FromServices] ChatMessageRepository chatMessageRepository,
+        [FromBody] Ask ask)
     {
         this._logger.LogDebug("Received call to export a bot");
-        var memory = await GetAllMemoriesAsync(kernel, chatRepository, chatMessageRepository);
+        var memory = await this.GetAllMemoriesAsync(kernel, chatRepository, chatMessageRepository, ask);
 
         return JsonSerializer.Serialize(memory);
     }
 
     /// <summary>
-    /// Get all chat messages from memory.
+    /// Get the chat history and memory of a given chat.
     /// </summary>
     /// <param name="kernel">The semantic kernel object.</param>
     /// <param name="chatRepository">The chat session repository object.</param>
     /// <param name="chatMessageRepository">The chat message repository object.</param>
+    /// <param name="ask">Prompt along with its parameters</param>
     private async Task<Bot> GetAllMemoriesAsync(
         Kernel kernel,
         ChatSessionRepository chatRepository,
-        ChatMessageRepository chatMessageRepository)
+        ChatMessageRepository chatMessageRepository,
+        Ask ask)
     {
+        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._logger);
+
         var bot = new Bot();
 
         // get chat history
-        var messages = await this.InvokeFunctionAsync(kernel, chatRepository, chatMessageRepository, new Ask(), "ChatHistorySkill", "GetAllChats");
-
-        if (messages?.Value?.Value != null)
+        var contextVariables = new ContextVariables(ask.Input);
+        foreach (var input in ask.Variables)
         {
-            bot.ChatHistory = JsonSerializer.Deserialize<IEnumerable<ChatMessage>>(messages.Value.Value);
+            contextVariables.Set(input.Key, input.Value);
+        }
+        var messages = await this.GetAllChatMessagesAsync(kernel, contextVariables);
+
+        if (messages?.Value != null)
+        {
+            bot.ChatHistory = JsonSerializer.Deserialize<IEnumerable<ChatMessage>>(messages.Value);
         }
 
         // get memory
@@ -165,5 +176,20 @@ public class SemanticKernelController : ControllerBase
         }
 
         return bot;
+    }
+
+    /// <summary>
+    /// Get chat messages from the ChatHistorySkill
+    /// </summary>
+    /// <param name="kernel">The semantic kernel object.</param>
+    /// <param name="variables">The context variables.</param>
+    /// <returns>The result of the ask.</returns>
+    private async Task<AskResult> GetAllChatMessagesAsync(Kernel kernel, ContextVariables variables)
+    {
+        ISKFunction? function = kernel.Skills.GetFunction("ChatHistorySkill", "GetAllChatMessages");
+
+        // Invoke the GetAllChatMessages function of ChatHistorySkill.
+        SKContext result = await kernel.RunAsync(variables, function!);
+        return new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) };
     }
 }

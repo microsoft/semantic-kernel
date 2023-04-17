@@ -201,10 +201,17 @@ export const useChat = () => {
         }
     };
 
-    const exportBot = async () => {
+    const exportBot = async (chatId: string) => {
+        const ask = {
+            input: chatId,
+            variables: [
+                { key: 'startIdx', value: '0' },
+                { key: 'count', value: '100' },
+            ],
+        };
+
         try {
-            var result = await sk.exportBotAsync(await AuthHelper.getSKaaSAccessToken(instance));
-            console.log(result);
+            return sk.exportBotAsync(ask, await AuthHelper.getSKaaSAccessToken(instance));
         } catch (e: any) {
             const errorMessage = `Unable to export the bot. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
