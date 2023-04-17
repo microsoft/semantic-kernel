@@ -143,39 +143,39 @@ public class {skillName}
         List<PromptConfig.ParameterConfig>? parameters)
     {
         string inputDescription = string.Empty;
-        if (parameters == null || !parameters.Any())
-        {
-            return string.Empty;
-        }
-
         StringBuilder parameterStringBuilder = new();
-        foreach (var parameter in parameters)
+
+        if (parameters != null)
         {
-            if (parameter.Name.Equals("input", StringComparison.InvariantCultureIgnoreCase))
+            foreach (var parameter in parameters)
             {
-                // "input" is a special parameter that is handled differently. It must be added as
-                // the body attribute.
-                if (!string.IsNullOrWhiteSpace(parameter.Description))
+                if (parameter.Name.Equals("input", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    inputDescription = $@", Description = ""{parameter.Description}""";
+                    // "input" is a special parameter that is handled differently. It must be added as
+                    // the body attribute.
+                    if (!string.IsNullOrWhiteSpace(parameter.Description))
+                    {
+                        inputDescription = $@", Description = ""{parameter.Description}""";
+                    }
+
+                    continue;
                 }
 
-                continue;
+                parameterStringBuilder.AppendLine(); // Start with a newline
+                parameterStringBuilder.Append($@"    [OpenApiParameter(name: ""{parameter.Name}""");
+
+                if (!string.IsNullOrWhiteSpace(parameter.Description))
+                {
+                    parameterStringBuilder.Append($@", Description = ""{parameter.Description}""");
+                }
+
+                parameterStringBuilder.Append(", In = ParameterLocation.Query");
+                parameterStringBuilder.Append(", Type = typeof(string))]");
             }
-
-            parameterStringBuilder.AppendLine(); // Start with a newline
-            parameterStringBuilder.Append($@"    [OpenApiParameter(name: ""{parameter.Name}""");
-
-            if (!string.IsNullOrWhiteSpace(parameter.Description))
-            {
-                parameterStringBuilder.Append($@", Description = ""{parameter.Description}""");
-            }
-
-            parameterStringBuilder.Append(", In = ParameterLocation.Query");
-            parameterStringBuilder.Append(", Type = typeof(string))]");
         }
 
-        parameterStringBuilder.Append($@"[OpenApiRequestBody(""text/plain"", typeof(string){inputDescription})]");
+        parameterStringBuilder.AppendLine();
+        parameterStringBuilder.Append($@"    [OpenApiRequestBody(""text/plain"", typeof(string){inputDescription})]");
 
         return parameterStringBuilder.ToString();
     }
