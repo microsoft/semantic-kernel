@@ -52,6 +52,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj">
+      <PrivateAssets>none</PrivateAssets>
+    </ProjectReference>
     <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
   </ItemGroup>
 </Project>
