@@ -3,6 +3,7 @@
 using System.Globalization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Storage;
@@ -103,13 +104,24 @@ public class ChatSkill
         // Find the most recent message.
         var latestMessage = await this._chatMessageRepository.FindLastByChatIdAsync(chatId);
 
+        // Search for relevant memories.
+        List<MemoryQueryResult> relevantMemories = new List<MemoryQueryResult>();
+        foreach (var memoryName in SystemPromptDefaults.MemoryMap.Keys)
+        {
+            var results = context.Memory.SearchAsync(
+                SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName),
+                latestMessage.ToString(),
+                limit: 1000,
+                minRelevanceScore: 0.8);
+            await foreach (var memory in results)
+            {
+                relevantMemories.Add(memory);
+            }
+        }
+        relevantMemories = relevantMemories.OrderByDescending(m => m.Relevance).ToList();
+
         string memoryText = "";
-        var results = context.Memory.SearchAsync(
-            SemanticMemoryExtractor.MemoryCollectionName(chatId, SystemPromptDefaults.LongTermMemoryName),
-            latestMessage.ToString(),
-            limit: 1000,
-            minRelevanceScore: 0.8);
-        await foreach (var memory in results)
+        foreach (var memory in relevantMemories)
         {
             var estimatedTokenCount = this.EstimateTokenCount(memory.Metadata.Text);
             if (remainingToken - estimatedTokenCount > 0)

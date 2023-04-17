@@ -11,11 +11,11 @@ namespace SemanticKernel.Service.Skills;
 internal class SemanticMemoryExtractor
 {
     /// <summary>
-    /// Returns the name of the semantic text memory collection that stores chat message information.
+    /// Returns the name of the semantic text memory collection that stores chat semantic memory.
     /// </summary>
     /// <param name="chatId">Chat ID that is persistent and unique for the chat session.</param>
     /// <param name="memoryName">Name of the memory category</param>
-    internal static string MemoryCollectionName(string chatId, string memoryName) => $"{chatId}-{memoryName}-messages";
+    internal static string MemoryCollectionName(string chatId, string memoryName) => $"{chatId}-{memoryName}";
 
     internal static async Task<SemanticChatMemory> ExtractCognitiveMemoryAsync(string memoryName, IKernel kernel, SKContext context)
     {
