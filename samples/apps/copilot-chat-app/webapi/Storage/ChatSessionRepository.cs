@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using SKWebApi.Storage;
+using SemanticKernel.Service.Skills;
 
-namespace SKWebApi.Skills;
+namespace SemanticKernel.Service.Storage;
 
 /// <summary>
 /// A repository for chat sessions.
@@ -15,7 +15,8 @@ public class ChatSessionRepository : Repository<ChatSession>
     /// <param name="storageContext">The storage context.</param>
     public ChatSessionRepository(IStorageContext<ChatSession> storageContext)
         : base(storageContext)
-    { }
+    {
+    }
 
     /// <summary>
     /// Finds chat sessions by user id.
@@ -24,6 +25,6 @@ public class ChatSessionRepository : Repository<ChatSession>
     /// <returns>A list of chat sessions.</returns>
     public Task<IEnumerable<ChatSession>> FindByUserIdAsync(string userId)
     {
-        return Task.FromResult(base.storageContext.QueryableEntities.Where(e => e.UserId == userId).AsEnumerable());
+        return Task.FromResult(base.StorageContext.QueryableEntities.Where(e => e.UserId == userId).AsEnumerable());
     }
 }

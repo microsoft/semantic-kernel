@@ -42,7 +42,7 @@ public class MathSkill
     /// </summary>
     /// <param name="initialValueText">Initial value as string to subtract the specified amount</param>
     /// <param name="context">Contains the context to get the numbers from</param>
-    /// <returns>The resulting substraction as a string.</returns>
+    /// <returns>The resulting subtraction as a string.</returns>
     [SKFunction("Subtracts value to a value")]
     [SKFunctionName("Subtract")]
     [SKFunctionInput(Description = "The value to subtract")]
