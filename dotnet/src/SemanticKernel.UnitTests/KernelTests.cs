@@ -23,7 +23,7 @@ public class KernelTests
         // Arrange
         var kernel = KernelBuilder.Create();
         var factory = new Mock<Func<IKernel, ITextCompletion>>();
-        kernel.Config.AddTextCompletionService("x", factory.Object, true);
+        kernel.Config.AddTextCompletionService("x", factory.Object);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -51,7 +51,7 @@ public class KernelTests
         // Arrange
         var kernel = KernelBuilder.Create();
         var factory = new Mock<Func<IKernel, ITextCompletion>>();
-        kernel.Config.AddTextCompletionService("x", factory.Object, true);
+        kernel.Config.AddTextCompletionService("x", factory.Object);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");

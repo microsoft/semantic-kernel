@@ -9,8 +9,10 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using static Microsoft.SemanticKernel.CoreSkills.PlannerSkill;
 
+#pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace // Extension methods
 namespace Microsoft.SemanticKernel.Orchestration;
+#pragma warning restore IDE0130
 
 internal static class SKContextPlanningExtensions
 {
@@ -43,7 +45,7 @@ internal static class SKContextPlanningExtensions
     /// <param name="config">The planner skill config.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded skills and functions.</returns>
-    internal static async Task<List<FunctionView>> GetAvailableFunctionsAsync(
+    internal static async Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync(
         this SKContext context,
         PlannerSkillConfig config,
         string? semanticQuery = null)
@@ -77,8 +79,8 @@ internal static class SKContextPlanningExtensions
             await RememberFunctionsAsync(context, availableFunctions);
 
             // Search for functions that match the semantic query.
-            var memories = context.Memory.SearchAsync(PlannerMemoryCollectionName, semanticQuery, config.MaxRelevantFunctions, config.RelevancyThreshold.Value,
-                context.CancellationToken);
+            var memories = context.Memory.SearchAsync(collection: PlannerMemoryCollectionName, query: semanticQuery!, limit: config.MaxRelevantFunctions, minRelevanceScore: config.RelevancyThreshold.Value, withEmbeddings: false,
+                cancel: context.CancellationToken);
 
             // Add functions that were found in the search results.
             result.AddRange(await GetRelevantFunctionsAsync(context, availableFunctions, memories));
@@ -91,7 +93,9 @@ internal static class SKContextPlanningExtensions
             result.AddRange(missingFunctions);
         }
 
-        return result;
+        return result
+            .OrderBy(x => x.SkillName)
+            .ThenBy(x => x.Name);
     }
 
     internal static async Task<IEnumerable<FunctionView>> GetRelevantFunctionsAsync(SKContext context, IEnumerable<FunctionView> availableFunctions,
@@ -131,13 +135,13 @@ internal static class SKContextPlanningExtensions
             var key = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
-            var memoryEntry = await context.Memory.GetAsync(PlannerMemoryCollectionName, key, context.CancellationToken);
+            var memoryEntry = await context.Memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false, cancel: context.CancellationToken);
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
-                await context.Memory.SaveInformationAsync(PlannerMemoryCollectionName, key, functionName, function.ToManualString(),
-                    context.CancellationToken);
+                await context.Memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: functionName, id: key, description: function.ToManualString(),
+                    additionalMetadata: string.Empty, cancel: context.CancellationToken);
             }
         }
 

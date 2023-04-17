@@ -1,0 +1,29 @@
+# To learn more about .editorconfig see https://aka.ms/editorconfigdocs
+
+# All files
+[*]
+indent_style = space
+end_of_line = lf
+
+# Docs
+[*.md]
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Config/data
+[*.json]
+indent_size = 4
+insert_final_newline = false
+trim_trailing_whitespace = true
+
+# Config/data
+[*.yaml]
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Code
+[*.py]
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true

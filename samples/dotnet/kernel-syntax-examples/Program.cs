@@ -76,5 +76,14 @@ public static class Program
 
         await Example23_ReadOnlyMemoryStore.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        Example24_Tokenizer.Run();
+        Console.WriteLine("== DONE ==");
+
+        await Example25_AADAuth.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example26_SemanticFunctionsUsingChatGPT.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }

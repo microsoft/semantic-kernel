@@ -4,13 +4,14 @@
       <RootNamespace>KernelSetup</RootNamespace>
       <TargetFramework>net6.0</TargetFramework>
       <OutputType>Exe</OutputType>
-      <Nullable>disable</Nullable>
+      <Nullable>enable</Nullable>
       <ImplicitUsings>enable</ImplicitUsings>
       <NoWarn>CA2000</NoWarn>
       <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
       <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
     </ItemGroup>
 

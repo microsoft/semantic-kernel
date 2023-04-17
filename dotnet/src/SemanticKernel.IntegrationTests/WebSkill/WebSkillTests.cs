@@ -47,6 +47,7 @@ public sealed class WebSkillTests : IDisposable
 
         using XunitLogger<BingConnector> connectorLogger = new(this._output);
         using BingConnector connector = new(this._bingApiKey, connectorLogger);
+        Assert.NotEmpty(this._bingApiKey);
 
         WebSearchEngineSkill skill = new(connector);
         var search = kernel.ImportSkill(skill, "WebSearchEngine");

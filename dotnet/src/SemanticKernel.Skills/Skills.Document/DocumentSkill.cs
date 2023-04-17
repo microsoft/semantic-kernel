@@ -91,25 +91,21 @@ public class DocumentSkill
             return;
         }
 
-        Stream stream;
-
         // If the document already exists, open it. If not, create it.
-        var fileExists = await this._fileSystemConnector.FileExistsAsync(filePath);
-        if (fileExists)
+        if (await this._fileSystemConnector.FileExistsAsync(filePath))
         {
-            this._logger.LogInformation("Opening file at {0}", filePath);
-            stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(filePath, context.CancellationToken);
+            this._logger.LogInformation("Writing text to file {0}", filePath);
+            using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(filePath, context.CancellationToken);
+            this._documentConnector.AppendText(stream, text);
         }
         else
         {
             this._logger.LogInformation("File does not exist. Creating file at {0}", filePath);
-            stream = await this._fileSystemConnector.CreateFileAsync(filePath);
+            using Stream stream = await this._fileSystemConnector.CreateFileAsync(filePath);
             this._documentConnector.Initialize(stream);
+
+            this._logger.LogInformation("Writing text to {0}", filePath);
+            this._documentConnector.AppendText(stream, text);
         }
-
-        this._logger.LogInformation("Writing text to {0}", filePath);
-        this._documentConnector.AppendText(stream, text);
-
-        await stream.DisposeAsync();
     }
 }

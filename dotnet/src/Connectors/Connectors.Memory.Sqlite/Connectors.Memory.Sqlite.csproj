@@ -8,7 +8,7 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Sqlite</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Connectors.Memory.Sqlite</RootNamespace>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

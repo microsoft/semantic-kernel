@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
@@ -60,7 +61,7 @@ internal class CodeTokenizer
         text = text?.Trim();
 
         // Render NULL to ""
-        if (string.IsNullOrEmpty(text)) { return new List<Block>(); }
+        if (text.IsNullOrEmpty()) { return new List<Block>(); }
 
         // Track what type of token we're reading
         TokenTypes currentTokenType = TokenTypes.None;

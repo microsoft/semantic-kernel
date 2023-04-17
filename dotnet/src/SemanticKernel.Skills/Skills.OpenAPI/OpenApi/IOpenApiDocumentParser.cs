@@ -2,7 +2,9 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 
@@ -15,6 +17,7 @@ internal interface IOpenApiDocumentParser
     /// Parses OpenAPI document.
     /// </summary>
     /// <param name="stream">Stream containing OpenAPI document to parse.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>List of rest operations.</returns>
-    IList<RestApiOperation> Parse(Stream stream);
+    Task<IList<RestApiOperation>> ParseAsync(Stream stream, CancellationToken cancellationToken);
 }
