@@ -36,20 +36,6 @@ class SKFunction(SKFunctionBase):
     Semantic Kernel function.
     """
 
-    class RunThread(threading.Thread):
-        """
-        Async code wrapper to allow running async code inside external
-        event loops such as Jupyter notebooks.
-        """
-
-        def __init__(self, code):
-            self.code = code
-            self.result = None
-            super().__init__()
-
-        def run(self):
-            self.result = asyncio.run(self.code)
-
     _parameters: List[ParameterView]
     _delegate_type: DelegateTypes
     _function: Callable[..., Any]
@@ -301,12 +287,12 @@ class SKFunction(SKFunctionBase):
         # Handle "asyncio.run() cannot be called from a running event loop"
         if loop and loop.is_running():
             if self.is_semantic:
-                thread = self.RunThread(self._invoke_semantic_async(context, settings))
+                thread = RunThread(self._invoke_semantic_async(context, settings))
                 thread.start()
                 thread.join()
                 return thread.result
             else:
-                thread = self.RunThread(self._invoke_native_async(context))
+                thread = RunThread(self._invoke_native_async(context))
                 thread.start()
                 thread.join()
                 return thread.result
@@ -446,3 +432,18 @@ class SKFunction(SKFunctionBase):
 
     def _trace_function_type_Call(self, type: Enum, log: Logger) -> None:
         log.debug(f"Executing function type {type}: {type.name}")
+
+
+class RunThread(threading.Thread):
+    """
+    Async code wrapper to allow running async code inside external
+    event loops such as Jupyter notebooks.
+    """
+
+    def __init__(self, code):
+        self.code = code
+        self.result = None
+        super().__init__()
+
+    def run(self):
+        self.result = asyncio.run(self.code)
