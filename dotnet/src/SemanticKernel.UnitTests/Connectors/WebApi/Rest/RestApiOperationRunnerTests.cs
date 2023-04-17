@@ -50,7 +50,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     [Fact]
     public async Task ItCanRunCrudOperationWithJsonPayloadSuccessfullyAsync()
     {
-        //Arrange
+        // Arrange
         List<RestApiOperationPayloadProperty> payloadProperties = new()
         {
             new("value", "string", true, new List<RestApiOperationPayloadProperty>(), "fake-value-description"),
@@ -79,10 +79,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
-        //Act
+        // Act
         await sut.RunAsync(operation, arguments);
 
-        //Assert
+        // Assert
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
         Assert.Equal("https://fake-random-test-host/fake-path", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
 
@@ -114,7 +114,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     [Fact]
     public async Task ItShouldAddHeadersToHttpRequestAsync()
     {
-        //Arrange
+        // Arrange
         var headers = new Dictionary<string, string>();
         headers.Add("fake-header", string.Empty);
 
@@ -133,10 +133,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
-        //Act
+        // Act
         await sut.RunAsync(operation, arguments);
 
-        //Assert
+        // Assert
         Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
         Assert.Single(this._httpMessageHandlerStub.RequestHeaders);
 
