@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.IO;
 using System.Text.Json;
 
 namespace SemanticKernel.Service.Storage;
@@ -16,7 +17,7 @@ public class FileSystemContext<T> : IStorageContext<T> where T : IStorageEntity
     {
         this._fileStorage = filePath;
 
-        this._entities = Load(this._fileStorage);
+        this._entities = this.Load(this._fileStorage);
     }
 
     /// <inheritdoc/>
@@ -104,30 +105,53 @@ public class FileSystemContext<T> : IStorageContext<T> where T : IStorageEntity
     private readonly FileInfo _fileStorage;
 
     /// <summary>
+    /// A lock object to prevent concurrent access to the file storage.
+    /// </summary>
+    private readonly object _fileStorageLock = new();
+
+    /// <summary>
     /// Save the state of the entities to disk.
     /// </summary>
-    private void Save(EntityDictionary entities, FileInfo filePath)
+    private void Save(EntityDictionary entities, FileInfo fileInfo)
     {
-        using FileStream fileStream = File.Open(
-            path: filePath.FullName,
+        lock (this._fileStorageLock)
+        {
+            if (!fileInfo.Exists)
+            {
+                fileInfo.Directory!.Create();
+                File.WriteAllText(fileInfo.FullName, "{}");
+            }
+            
+            using FileStream fileStream = File.Open(
+            path: fileInfo.FullName,
             mode: FileMode.OpenOrCreate,
             access: FileAccess.Write,
             share: FileShare.Read);
 
-        JsonSerializer.Serialize(fileStream, entities);
+            JsonSerializer.Serialize(fileStream, entities);
+        }
     }
 
     /// <summary>
     /// Load the state of entities from disk.
     /// </summary>
-    private static EntityDictionary Load(FileInfo filePath)
+    private EntityDictionary Load(FileInfo fileInfo)
     {
-        using FileStream fileStream = File.Open(
-            path: filePath.FullName,
-            mode: FileMode.OpenOrCreate,
-            access: FileAccess.Read,
-            share: FileShare.Read);
+        lock (this._fileStorageLock)
+        {
+            if (!fileInfo.Exists)
+            {
+                fileInfo.Directory!.Create();
+                File.WriteAllText(fileInfo.FullName, "{}");
+            }
 
-        return JsonSerializer.Deserialize<EntityDictionary>(fileStream) ?? new EntityDictionary();
+            using FileStream fileStream = File.Open(
+                path: fileInfo.FullName,
+                mode: FileMode.OpenOrCreate,
+                access: FileAccess.Read,
+                share: FileShare.Read);
+
+            return JsonSerializer.Deserialize<EntityDictionary>(fileStream) ?? new EntityDictionary();
+        }
     }
 }

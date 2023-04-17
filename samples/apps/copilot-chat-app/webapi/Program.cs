@@ -100,7 +100,7 @@ public static class Program
         services.AddScoped<Kernel>();
 
         // Add a semantic memory store only if we have a valid embedding config
-        AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
+        AIServiceConfig embeddingConfig = configuration.GetSection("Embedding").Get<AIServiceConfig>();
         if (embeddingConfig?.IsValid() == true)
         {
             switch (configuration["MemoriesStore:Type"].ToUpperInvariant())
@@ -110,7 +110,7 @@ public static class Program
                     break;
 
                 case "QDRANT":
-                    QdrantConfig qdrantConfig = configuration.GetSection("MemoriesStore:QdrantConfig").Get<QdrantConfig>();
+                    QdrantConfig qdrantConfig = configuration.GetSection("MemoriesStore:Qdrant").Get<QdrantConfig>();
                     services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
                             host: qdrantConfig.Host,
                             port: qdrantConfig.Port,
@@ -130,10 +130,10 @@ public static class Program
         services.AddScoped<KernelConfig>(sp =>
         {
             var kernelConfig = new KernelConfig();
-            AIServiceConfig completionConfig = configuration.GetRequiredSection("CompletionConfig").Get<AIServiceConfig>();
+            AIServiceConfig completionConfig = configuration.GetRequiredSection("Completion").Get<AIServiceConfig>();
             kernelConfig.AddCompletionBackend(completionConfig);
 
-            AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
+            AIServiceConfig embeddingConfig = configuration.GetSection("Embedding").Get<AIServiceConfig>();
             if (embeddingConfig?.IsValid() == true)
             {
                 kernelConfig.AddEmbeddingBackend(embeddingConfig);
@@ -147,7 +147,7 @@ public static class Program
             var memoryStore = sp.GetService<IMemoryStore>();
             if (memoryStore is not null)
             {
-                AIServiceConfig embeddingConfig = configuration.GetSection("EmbeddingConfig").Get<AIServiceConfig>();
+                AIServiceConfig embeddingConfig = configuration.GetSection("Embedding").Get<AIServiceConfig>();
                 if (embeddingConfig?.IsValid() == true)
                 {
                     var logger = sp.GetRequiredService<ILogger<AIServiceConfig>>();
@@ -173,10 +173,12 @@ public static class Program
 
             case "FILESYSTEM":
                 FileSystemConfig filesystemConfig = configuration.GetSection("ChatStore:Filesystem").Get<FileSystemConfig>();
+                string fullPath = Path.GetFullPath(filesystemConfig.FilePath);
+                string directory = Path.GetDirectoryName(fullPath) ?? string.Empty;
                 chatSessionInMemoryContext = new FileSystemContext<ChatSession>(
-                    new FileInfo($"{Path.GetFileNameWithoutExtension(filesystemConfig.FilePath)}_sessions.{Path.GetExtension(filesystemConfig.FilePath)}"));
+                    new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_sessions{Path.GetExtension(fullPath)}")));
                 chatMessageInMemoryContext = new FileSystemContext<ChatMessage>(
-                    new FileInfo($"{Path.GetFileNameWithoutExtension(filesystemConfig.FilePath)}_messages.{Path.GetExtension(filesystemConfig.FilePath)}"));
+                    new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_messages{Path.GetExtension(fullPath)}")));
                 break;
 
             case "COSMOS":
