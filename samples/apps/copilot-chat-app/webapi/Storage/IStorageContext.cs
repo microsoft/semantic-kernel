@@ -8,9 +8,9 @@ namespace SemanticKernel.Service.Storage;
 public interface IStorageContext<T> where T : IStorageEntity
 {
     /// <summary>
-    /// Queryable entities.
+    /// Query entities in the storage context.
     /// </summary>
-    IQueryable<T> QueryableEntities { get; }
+    Task<IEnumerable<T>> QueryEntitiesAsync(Func<T, bool> predicate);
 
     /// <summary>
     /// Read an entity from the storage context by id.
