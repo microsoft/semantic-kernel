@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -36,7 +35,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
         if (result.OpenApiDiagnostic.Errors.Any())
         {
-            throw new OpenApiDocumentParsingException($"Parsing of '{result.OpenApiDocument.Info?.Title}' OpenAPI document failed. Details: {string.Join(';', result.OpenApiDiagnostic.Errors)}");
+            throw new OpenApiDocumentParsingException($"Parsing of '{result.OpenApiDocument.Info?.Title}' OpenAPI document failed. Details: {string.Join(";", result.OpenApiDiagnostic.Errors)}");
         }
 
         return ExtractRestApiOperations(result.OpenApiDocument);
@@ -189,8 +188,8 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
                 parameter.Name,
                 parameter.Schema.Type,
                 parameter.Required,
-                Enum.Parse<RestApiOperationParameterLocation>(parameter.In.ToString()),
-                Enum.Parse<RestApiOperationParameterStyle>(parameter.Style.ToString()),
+                (RestApiOperationParameterLocation)Enum.Parse(typeof(RestApiOperationParameterLocation), parameter.In.ToString()),
+                (RestApiOperationParameterStyle)Enum.Parse(typeof(RestApiOperationParameterStyle), parameter.Style.ToString()),
                 parameter.Schema.Items?.Type,
                 GetParameterValue(parameter.Name, parameter.Schema.Default),
                 parameter.Description
@@ -350,13 +349,13 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// </summary>
     private static IList<string> s_supportedMediaTypes = new List<string>
     {
-        MediaTypeNames.Application.Json
+        "application/json"
     };
 
     /// <summary>
     /// An instance of the OpenApiStreamReader class.
     /// </summary>
-    private OpenApiStreamReader _openApiReader = new OpenApiStreamReader();
+    private readonly OpenApiStreamReader _openApiReader = new();
 
     /// <summary>
     /// Latest supported version of OpenAPI document.

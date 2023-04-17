@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
@@ -350,7 +351,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         // Creation is idempotent, ignore error (and for now ignore vector size)
         if (response.StatusCode == HttpStatusCode.BadRequest)
         {
-            if (responseContent.Contains("already exists", StringComparison.InvariantCultureIgnoreCase)) { return; }
+            if (responseContent.ContainsEx("already exists", StringComparison.InvariantCultureIgnoreCase)) { return; }
         }
 
         try
