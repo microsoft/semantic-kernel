@@ -45,7 +45,7 @@ public class SemanticChatMemory
         var result = JsonSerializer.Deserialize<SemanticChatMemory>(json);
         if (result == null)
         {
-            throw new Exception("Failed to deserialize chat memory to json.");
+            throw new ArgumentException("Failed to deserialize chat memory to json.");
         }
         return result;
     }
