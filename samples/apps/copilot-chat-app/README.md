@@ -72,8 +72,8 @@ and these components are functional:
             
 4. Build the back-end API server by following these instructions:
     1. In the terminal navigate to  `\samples\apps\copilot-chat-app\webapi`
-    2. Run the command: `dotnet user-secrets set "CompletionConfig:Key"  "YOUR OPENAI KEY or AZURE OPENAI KEY"`
-    3. Run the command: `dotnet user-secrets set "EmbeddingConfig:Key" "YOUR OPENAI KEY or AZURE OPENAI KEY"`
+    2. Run the command: `dotnet user-secrets set "Completion:Key"  "YOUR OPENAI KEY or AZURE OPENAI KEY"`
+    3. Run the command: `dotnet user-secrets set "Embedding:Key" "YOUR OPENAI KEY or AZURE OPENAI KEY"`
     4. Execute the command `dotnet build`
     5. Once the build is complete, Execute the command `dotnet run`
     6. Test the back-end server to confirm it is running.
