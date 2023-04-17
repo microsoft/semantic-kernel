@@ -193,7 +193,30 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.Equal(2, operations.Count);
+        Assert.Equal(3, operations.Count);
+    }
+
+    [Fact]
+    public async Task ItCanParseOperationHavingTextPlainBodySuccessfullyAsync()
+    {
+        // Act
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
+
+        // Assert
+        Assert.NotNull(operations);
+        Assert.True(operations.Any());
+
+        var operation = operations.Single(o => o.Id == "Excuses");
+        Assert.NotNull(operation);
+
+        var payload = operation.Payload;
+        Assert.NotNull(payload);
+        Assert.Equal("text/plain", payload.MediaType);
+        Assert.Equal("excuse event", payload.Description);
+
+        var properties = payload.Properties;
+        Assert.NotNull(properties);
+        Assert.Equal(0, properties.Count);
     }
 
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId,

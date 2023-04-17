@@ -197,6 +197,36 @@
         },
         "summary": "Create or update secret value"
       }
+    },
+    "/FunSkill/Excuses": {
+      "post": {
+        "description": "Turn a scenario into a creative or humorous excuse to send your boss",
+        "operationId": "Excuses",
+        "consumes": [
+          "text/plain"
+        ],
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description":  "excuse event",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The OK response",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
     }
   },
   "produces": [],
