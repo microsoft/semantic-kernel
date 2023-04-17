@@ -21,12 +21,21 @@ public class SemanticChatMemoryItem
     [JsonPropertyName("details")]
     public string Details { get; set; }
 
+    /// <summary>
+    /// Create a new chat memory item.
+    /// </summary>
+    /// <param name="label">Label of the item.</param>
+    /// <param name="details">Details of the item.</param>
     public SemanticChatMemoryItem(string label, string details)
     {
         this.Label = label;
         this.Details = details;
     }
 
+    /// <summary>
+    /// Format the chat memory item as a string.
+    /// </summary>
+    /// <returns>A formatted string representing the item.</returns>
     public string ToFormattedString()
     {
         return $"{this.Label}: {this.Details}";

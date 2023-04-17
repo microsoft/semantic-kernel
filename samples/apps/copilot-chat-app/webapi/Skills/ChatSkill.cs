@@ -21,10 +21,19 @@ public class ChatSkill
     /// </summary>
     private readonly IKernel _kernel;
 
+    /// <summary>
+    /// A repository to save and retrieve chat messages.
+    /// </summary>
     private readonly ChatMessageRepository _chatMessageRepository;
 
+    /// <summary>
+    /// A repository to save and retrieve chat sessions.
+    /// </summary>
     private readonly ChatSessionRepository _chatSessionRepository;
 
+    /// <summary>
+    /// Create a new instance of <see cref="ChatSkill"/>.
+    /// </summary>
     public ChatSkill(IKernel kernel, ChatMessageRepository chatMessageRepository, ChatSessionRepository chatSessionRepository)
     {
         this._kernel = kernel;
@@ -265,7 +274,7 @@ public class ChatSkill
     /// <summary>
     /// Save a new response to the chat history.
     /// </summary>
-    /// <param name="response"></param>
+    /// <param name="response">Response from the chat.</param>
     /// <param name="chatId">The chat ID</param>
     private async Task SaveNewResponseAsync(string response, string chatId)
     {
@@ -277,11 +286,10 @@ public class ChatSkill
     }
 
     /// <summary>
-    /// Save a new response to the chat history.
-    /// This method will only modify the memory and the log of the context.
+    /// Extract and save semantic memory.
     /// </summary>
-    /// <param name="chatId"></param>
-    /// <param name="context"></param>
+    /// <param name="chatId">The Chat ID.</param>
+    /// <param name="context">The context containing the memory.</param>
     private async Task ExtractSemanticMemoryAsync(string chatId, SKContext context)
     {
         foreach (var memoryName in SystemPromptDefaults.MemoryMap.Keys)
@@ -315,7 +323,6 @@ public class ChatSkill
     /// <param name="chatId">The ID of the chat the memories belong to</param>
     /// <param name="context">The context that contains the memory</param>
     /// <param name="memoryName">Name of the memory</param>
-    /// <returns></returns>
     private async Task CreateMemoryAsync(SemanticChatMemoryItem item, string chatId, SKContext context, string memoryName)
     {
         var memoryCollectionName = SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName);
