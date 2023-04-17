@@ -41,7 +41,7 @@ internal static class SystemPromptDefaults
 
     internal static string MemoryAntiHallucination = "IMPORTANT: DO NOT INCLUDE ANY OF THE ABOVE INFORMATION IN THE GENERATED RESPONSE AND ALSO DO NOT MAKE UP OR INFER ANY ADDITIONAL INFORMATION THAT IS NOT INCLUDED BELOW";
 
-    internal static string MemoryContinuationPrompt = "Generate a well-formed JSON of extracted context data. Do not provide a preamble or a list of possible responses, just a single response of the json block.\nJson:";
+    internal static string MemoryContinuationPrompt = "Generate a well-formed JSON of extracted context data. DO NOT include a preamble in the response. DO NOT give a list of possible responses. Only provide a single response of the json block.\nResponse:";
 
     // Long-term memory
     internal static string LongTermMemoryName = "Long-term memory";
