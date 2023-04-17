@@ -132,7 +132,9 @@ internal static class SKContextPlanningExtensions
         foreach (var function in availableFunctions)
         {
             var functionName = function.ToFullyQualifiedName();
-            var key = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
+            var key = functionName;
+            var description = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
+            var textToEmbed = function.ToManualString();
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
             var memoryEntry = await context.Memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false, cancel: context.CancellationToken);
@@ -140,7 +142,7 @@ internal static class SKContextPlanningExtensions
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
-                await context.Memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: functionName, id: key, description: function.ToManualString(),
+                await context.Memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: textToEmbed, id: key, description: description,
                     additionalMetadata: string.Empty, cancel: context.CancellationToken);
             }
         }
