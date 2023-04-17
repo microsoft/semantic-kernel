@@ -15,7 +15,7 @@ User:> {{$user_input}}
 ChatBot:>
 """
 
-kernel = sk.create_kernel()
+kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.config.add_text_backend(

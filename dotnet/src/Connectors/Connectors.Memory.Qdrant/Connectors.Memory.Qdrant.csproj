@@ -14,6 +14,7 @@
       <!-- NuGet Package Settings -->
         <PackageId>Microsoft.SemanticKernel.Connectors.Memory.Qdrant</PackageId>
         <Title>Semantic Kernel - Qdrant Connector</Title>
+        <Description>Qdrant connector for Semantic Kernel skills and semantic memory</Description>
     </PropertyGroup>
 
     <ItemGroup>

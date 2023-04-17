@@ -15,6 +15,7 @@
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Abstractions</PackageId>
     <Title>Semantic Kernel - Abstractions</Title>
+    <Description>Semantic Kernel interfaces and abstractions. This package is automatically installed by Semantic Kernel packages if needed.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,7 +28,7 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel</_Parameter1>
+      <_Parameter1>Microsoft.SemanticKernel.Core</_Parameter1>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Microsoft.SemanticKernel.Connectors.AI.OpenAI</_Parameter1>
