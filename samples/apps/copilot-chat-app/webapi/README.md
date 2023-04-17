@@ -28,7 +28,6 @@ To enable the Qdrant memory store, you must first deploy Qdrant locally and then
 #### 1. Configure your environment
 Before you get started, make sure you have the following additional requirements in place:
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) for hosting the [Qdrant](https://github.com/qdrant/qdrant) vector search engine.
-   > Note: Different vector stores, such as Azure Cognitive Search, Pinecone or Weviate could also be leveraged.
 
 #### 2. Deploy Qdrant VectorDB locally 
 1. Open a terminal and use Docker to pull down the container image.
