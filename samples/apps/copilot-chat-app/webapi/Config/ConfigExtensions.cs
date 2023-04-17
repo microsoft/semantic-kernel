@@ -94,18 +94,19 @@ internal static class ConfigExtensions
             throw new ArgumentException("The provided embeddings backend settings are not valid");
         }
 
-        switch (serviceConfig.AIService.ToUpperInvariant())
+        return serviceConfig.AIService.ToUpperInvariant() switch
         {
-            case AIServiceConfig.AzureOpenAI:
-                return new AzureTextEmbeddingGeneration(
-                    serviceConfig.DeploymentOrModelId, serviceConfig.Endpoint, serviceConfig.Key, handlerFactory, logger);
+            AIServiceConfig.AzureOpenAI => new AzureTextEmbeddingGeneration(
+                                serviceConfig.DeploymentOrModelId,
+                                serviceConfig.Endpoint,
+                                serviceConfig.Key,
+                                handlerFactory: handlerFactory,
+                                log: logger),
 
-            case AIServiceConfig.OpenAI:
-                return new OpenAITextEmbeddingGeneration(
-                    serviceConfig.DeploymentOrModelId, serviceConfig.Key, handlerFactory: handlerFactory, log: logger);
+            AIServiceConfig.OpenAI => new OpenAITextEmbeddingGeneration(
+                                serviceConfig.DeploymentOrModelId, serviceConfig.Key, handlerFactory: handlerFactory, log: logger),
 
-            default:
-                throw new ArgumentException("Invalid AIService value in embeddings backend settings");
-        }
+            _ => throw new ArgumentException("Invalid AIService value in embeddings backend settings"),
+        };
     }
 }

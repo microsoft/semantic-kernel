@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace SemanticKernel.Service.Storage;
 
 /// <summary>
 /// A storage context that stores entities in memory.
 /// </summary>
-public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+public class VolatileContext<T> : IStorageContext<T> where T : IStorageEntity
 {
     /// <summary>
     /// Using a concurrent dictionary to store entities in memory.
@@ -17,7 +19,7 @@ public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
     /// <summary>
     /// Initializes a new instance of the InMemoryContext class.
     /// </summary>
-    public InMemoryContext()
+    public VolatileContext()
     {
         this._entities = new ConcurrentDictionary<string, T>();
     }
@@ -80,5 +82,10 @@ public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
         this._entities.TryUpdate(entity.Id, entity, this._entities[entity.Id]);
 
         return Task.CompletedTask;
+    }
+
+    private string GetDebuggerDisplay()
+    {
+        return this.ToString() ?? string.Empty;
     }
 }
