@@ -11,6 +11,7 @@ namespace SemanticKernel.Service.Storage;
 /// </summary>
 public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : IStorageEntity
 {
+    ///<inheritdoc />
     public bool IsQueryBlocking => true;
 
 

@@ -16,7 +16,7 @@ public interface IStorageContext<T> where T : IStorageEntity
     /// When true, the consumer of this storage context should handle queryable entities
     /// that are retrieved via a blocking operation with a Task.Run (or similar)
     /// </summary>
-    bool IsQueryBlocking {get;}
+    bool IsQueryBlocking { get; }
 
     /// <summary>
     /// Read an entity from the storage context by id.

@@ -9,6 +9,7 @@ namespace SemanticKernel.Service.Storage;
 /// </summary>
 public class InMemoryContext<T> : IStorageContext<T> where T : IStorageEntity
 {
+    ///<inheritdoc />
     public bool IsQueryBlocking => false;
     
 
