@@ -17,8 +17,13 @@ internal class SemanticMemoryExtractor
     /// <param name="memoryName">Name of the memory category</param>
     internal static string MemoryCollectionName(string chatId, string memoryName) => $"{chatId}-{memoryName}-messages";
 
-    internal static async Task<SemanticChatMemory> ExtractLongTermCognitiveMemoryAsync(IKernel kernel, SKContext context)
+    internal static async Task<SemanticChatMemory> ExtractCognitiveMemoryAsync(string memoryName, IKernel kernel, SKContext context)
     {
+        if (!SystemPromptDefaults.MemoryMap.TryGetValue(memoryName, out var memoryPrompt))
+        {
+            throw new ArgumentException($"Memory name {memoryName} is not supported.");
+        }
+
         var tokenLimit = SystemPromptDefaults.CompletionTokenLimit;
         var remainingToken = tokenLimit - SystemPromptDefaults.ResponseTokenLimit;
         var contextTokenLimit = remainingToken;
@@ -26,18 +31,18 @@ internal class SemanticMemoryExtractor
         var memoryExtractionContext = Utils.CopyContextWithVariablesClone(context);
         memoryExtractionContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
         memoryExtractionContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
-        memoryExtractionContext.Variables.Set("memoryName", SystemPromptDefaults.LongTermMemoryName);
+        memoryExtractionContext.Variables.Set("memoryName", memoryName);
         memoryExtractionContext.Variables.Set("format", SystemPromptDefaults.MemoryFormat);
         memoryExtractionContext.Variables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
 
-        var completionFunction = kernel.CreateSemanticFunction(SystemPromptDefaults.LongTermMemoryPrompt);
+        var completionFunction = kernel.CreateSemanticFunction(memoryPrompt);
         var result = await completionFunction.InvokeAsync(
             context: memoryExtractionContext,
             settings: CreateMemoryExtractionSettings()
         );
 
-        SemanticChatMemory longTermMemory = SemanticChatMemory.FromJson(result.ToString());
-        return longTermMemory;
+        SemanticChatMemory memory = SemanticChatMemory.FromJson(result.ToString());
+        return memory;
     }
 
     /// <summary>

@@ -237,16 +237,7 @@ public class ChatSkill
         }
 
         // Extract semantic memory
-        try
-        {
-            await this.ExtractSemanticMemoryAsync(chatId, chatContext);
-        }
-        catch (Exception ex) when (!ex.IsCriticalException())
-        {
-            // Skip semantic memory extraction if it fails.
-            // We can rely on the model to response with perfect Json each time.
-            context.Log.LogInformation("Unable to extract semantic memory: {0}", ex.Message);
-        }
+        await this.ExtractSemanticMemoryAsync(chatId, chatContext);
 
         context.Variables.Update(chatContext.Result);
         context.Variables.Set("userId", "Bot");
@@ -293,10 +284,27 @@ public class ChatSkill
     /// <param name="context"></param>
     private async Task ExtractSemanticMemoryAsync(string chatId, SKContext context)
     {
-        var longTermSemanticMemory = await SemanticMemoryExtractor.ExtractLongTermCognitiveMemoryAsync(this._kernel, context);
-        foreach (var item in longTermSemanticMemory.Items)
+        foreach (var memoryName in SystemPromptDefaults.MemoryMap.Keys)
         {
-            await this.CreateMemoryAsync(item, chatId, context, SystemPromptDefaults.LongTermMemoryName);
+            try
+            {
+                var semanticMemory = await SemanticMemoryExtractor.ExtractCognitiveMemoryAsync(
+                    memoryName,
+                    this._kernel,
+                    context
+                );
+                foreach (var item in semanticMemory.Items)
+                {
+                    await this.CreateMemoryAsync(item, chatId, context, memoryName);
+                }
+            }
+            catch (Exception ex) when (!ex.IsCriticalException())
+            {
+                // Skip semantic memory extraction for this item if it fails.
+                // We cannot rely on the model to response with perfect Json each time.
+                context.Log.LogInformation("Unable to extract semantic memory for {0}: {1}. Continuing...", memoryName, ex.Message);
+                continue;
+            }
         }
     }
 
