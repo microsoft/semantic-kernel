@@ -77,7 +77,7 @@ public sealed class PlannerSkillTests : IDisposable
         // Act
         ContextVariables variables = new(prompt);
         variables.Set(PlannerSkill.Parameters.ExcludedSkills, "IntentDetectionSkill,FunSkill");
-        variables.Set(PlannerSkill.Parameters.ExcludedFunctions, "EmailTo");
+        variables.Set(PlannerSkill.Parameters.ExcludedFunctions, "EmailTo,EmailGen");
         variables.Set(PlannerSkill.Parameters.IncludedFunctions, "Continue");
         variables.Set(PlannerSkill.Parameters.MaxRelevantFunctions, "9");
         variables.Set(PlannerSkill.Parameters.RelevancyThreshold, "0.77");

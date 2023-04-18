@@ -27,4 +27,14 @@ internal static class FunctionViewExtensions
     {
         return $"{function.SkillName}.{function.Name}";
     }
+
+    /// <summary>
+    /// Create a string for generating an embedding for a function.
+    /// </summary>
+    /// <param name="function">The function to create a string for generating an embedding for.</param>
+    /// <returns>A string for generating an embedding for a function.</returns>
+    internal static string ToEmbeddingString(this FunctionView function)
+    {
+        return string.Join(": ", $"{function.ToFullyQualifiedName()}", function.Description);
+    }
 }

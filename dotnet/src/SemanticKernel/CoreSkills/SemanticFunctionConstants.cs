@@ -5,7 +5,19 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 internal static class SemanticFunctionConstants
 {
     internal const string FunctionFlowFunctionDefinition =
-        @"[PLAN 1]
+        @"ONLY USE XML TAGS IN THIS LIST:
+[XML TAG LIST]
+function: a function to call
+if: if condition
+else: else condition
+while: while condition
+unsure: low confidence
+unknown: don't know
+[END XML TAG LIST]
+
+[EXAMPLE PLANS]
+[EXAMPLE FUNCTIONS]
+
   AuthorAbility.Summarize:
     description: summarizes the input text
     inputs:
@@ -25,15 +37,19 @@ internal static class SemanticFunctionConstants
     - input: the text to email
     - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
 
-<goal>Summarize an input, translate to french, and e-mail to John Doe</goal>
+[END EXAMPLE FUNCTIONS]
+
+<goal>Summarize an input, translate to french, and e-mail to John and Jane</goal>
 <plan>
     <function.AuthorAbility.Summarize/>
     <function.Magician.TranslateTo translate_to_language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
-    <function._GLOBAL_FUNCTIONS_.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
-    <function._GLOBAL_FUNCTIONS_.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
+    <function._GLOBAL_FUNCTIONS_.GetEmailAddress input=""John"" setContextVariable=""EMAIL_ADDRESS_JOHN""/>
+    <function._GLOBAL_FUNCTIONS_.GetEmailAddress input=""Jane"" setContextVariable=""EMAIL_ADDRESS_JANE""/>
+    <function._GLOBAL_FUNCTIONS_.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS_JOHN;$EMAIL_ADDRESS_JANE""/>
 </plan><!-- END -->
 
-[PLAN 2]
+[EXAMPLE FUNCTIONS]
+
   Everything.Summarize:
     description: summarize input text
     inputs:
@@ -61,13 +77,15 @@ internal static class SemanticFunctionConstants
     description: Get the length of a string.
     inputs:
     - input: Input string
- _GLOBAL_FUNCTIONS_.Hour:
+ _GLOBAL_FUNCTIONS_.HourNumber:
     description: Get the current clock hour
     inputs:
 
+[END EXAMPLE FUNCTIONS]
+
 <goal>If its afternoon please Summarize the input, if the input length > 10 and contains ""book"" then Create an outline for a children's book with 3 chapters about a group of kids in a club and summarize it otherwise translate to japanese and email it to Martin.</goal>
 <plan>
-  <function._GLOBAL_FUNCTIONS_.Hour setContextVariable=""HOUR_NUMBER""/>
+  <function._GLOBAL_FUNCTIONS_.HourNumber setContextVariable=""HOUR_NUMBER""/>
   <if condition=""$HOUR_NUMBER greaterthan 12 OR $HOUR_NUMBER equals 12"">
     <function.Everything.Summarize setContextVariable=""SUMMARIZED_INPUT""/>
     <function._GLOBAL_FUNCTIONS_.Length setContextVariable=""SUMMARIZED_INPUT_LENGTH""/>
@@ -75,35 +93,38 @@ internal static class SemanticFunctionConstants
         <function._GLOBAL_FUNCTIONS_.NovelOutline input=""A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic."" chapterCount=""3"" />
        <function.Everything.Summarize/>
     </if>
-    <else> (dont use elseif)
+    <else>
         <function.LanguageHelpers.TranslateTo input=""$SUMMARIZED_INPUT"" translate_to_language=""Japanese"" setContextVariable=""TRANSLATED_TEXT"" />
         <function.EmailConnector.LookupContactEmail input=""Martin"" setContextVariable=""CONTACT_RESULT"" />
         <function.EmailConnector.EmailTo input=""$TRANSLATED_TEXT"" recipient=""$CONTACT_RESULT""/>
     </else>
   </if>
 </plan><!-- END -->
+[END EXAMPLE PLANS]
 
-[PLAN 3]
+Create an XML plan step by step, to satisfy the goal given.
+To create a plan, follow these rules:
+- EMIT WELL FORMED XML ALWAYS. Any code you write should be CDATA.
+- Only use [AVAILABLE TAGS]
+- Use only the [AVAILABLE FUNCTIONS].
+- The functions listed in the [EXAMPLE FUNCTIONS] are only to demonstrate plan creation.
+- If you don't know how to satisfy the goal given, say so.
+- If you are not sure how to satisfy the goal given, say so.
+- From a <goal> create a <plan> as a series of <function> tags.
+- Only use [AVAILABLE FUNCTIONS] that are required for the given goal.
+- A function has an 'input' and an 'output'.
+- The 'output' from each function is automatically passed as 'input' to the subsequent <function>.
+- 'input' does not need to be specified if it consumes the 'output' of the previous function.
+- To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""<UNIQUE_VARIABLE_KEY>""/>
+- To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
+- Comparison operators must be literals.
+- Append an ""END"" XML comment at the end of the plan.
+
+[AVAILABLE FUNCTIONS]
+
 {{$available_functions}}
 
-Plan Rules:
-Create an XML plan step by step, to satisfy the goal given.
-To create a plan, follow these steps:
-1. From a <goal> create a <plan> as a series of <functions>.
-2. Only use functions that are required for the given goal.
-3. A function has an 'input' and an 'output'.
-4. The 'output' from each function is automatically passed as 'input' to the subsequent <function>.
-5. 'input' does not need to be specified if it consumes the 'output' of the previous function.
-6. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""<UNIQUE_VARIABLE_KEY>""/>
-7. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
-8. Only use ""if"", ""else"" or ""while"" tags when needed
-9. ""if"", ""else"" and ""while"" tags must be closed
-10. Do not use <elseif>. For such a condition, use an additional <if>...</if> block instead of <elseif>.
-11. Comparison operators must be literals.
-12. Append an ""END"" XML comment at the end of the plan.
-13. Dont use arrays or objects for variables
-14. Only use variables that where assigned before with setContextVariables
-15. Use only the AVAILABLE FUNCTIONS in the deck
+[END AVAILABLE FUNCTIONS]
 
 <goal>{{$input}}</goal>
 ";
