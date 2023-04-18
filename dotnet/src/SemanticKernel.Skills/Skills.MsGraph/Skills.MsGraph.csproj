@@ -15,6 +15,7 @@
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Skills.MsGraph</PackageId>
     <Title>Semantic Kernel - Microsoft Graph Connector</Title>
+    <Description>Semantic Kernel Microsoft Graph Skill: access your tenant data, schedule meetings, send emails, etc.</Description>
   </PropertyGroup>
   
   <ItemGroup>
