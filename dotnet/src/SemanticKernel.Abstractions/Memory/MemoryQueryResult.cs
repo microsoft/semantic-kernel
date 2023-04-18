@@ -47,32 +47,6 @@ public class MemoryQueryResult
         this.Embedding = embedding;
     }
 
-    /// <summary>
-    /// Create a new instance of MemoryQueryResult from a json string representing MemoryRecord metadata.
-    /// </summary>
-    /// <param name="json">The json string to deserialize.</param>
-    /// <param name="relevance">The similarity score associated with the result.</param>
-    /// <param name="embedding">Optional embedding associated with the metadata.</param>
-    /// <returns>A new instance of MemoryQueryResult.</returns>
-    /// <exception cref="MemoryException"></exception>
-    public static MemoryQueryResult FromJsonMetadata(
-        string json,
-        double relevance,
-        Embedding<float> embedding)
-    {
-        var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
-        if (metadata != null)
-        {
-            return new MemoryQueryResult(metadata, relevance, embedding.IsEmpty ? null : embedding);
-        }
-        else
-        {
-            throw new MemoryException(
-                MemoryException.ErrorCodes.UnableToDeserializeMetadata,
-                "Unable to create memory query result from serialized metadata");
-        }
-    }
-
     internal static MemoryQueryResult FromMemoryRecord(
         MemoryRecord rec,
         double relevance)
