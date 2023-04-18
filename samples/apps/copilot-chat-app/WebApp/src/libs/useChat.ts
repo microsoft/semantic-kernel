@@ -14,6 +14,7 @@ import {
 } from '../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from './auth/AuthHelper';
 import { AlertType } from './models/AlertType';
+import { Bot } from './models/Bot';
 import { AuthorRoles, ChatMessage } from './models/ChatMessage';
 import { ChatUser } from './models/ChatUser';
 import { IAsk } from './semantic-kernel/model/Ask';
@@ -218,11 +219,21 @@ export const useChat = () => {
         }
     };
 
+    const importBot = async (bot: Bot) => {
+        try {
+            return sk.importBotAsync(bot, await AuthHelper.getSKaaSAccessToken(instance));
+        } catch (e: any) {
+            const errorMessage = `Unable to import the bot. Details: ${e.message ?? e}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+    };
+
     return {
         getAudienceMemberForId,
         createChat,
         loadChats,
         getResponse,
+        importBot,
         exportBot,
     };
 };

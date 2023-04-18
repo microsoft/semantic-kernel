@@ -3,6 +3,7 @@ import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 
 import { BotAdd20Regular } from '@fluentui/react-icons';
 import { FC } from 'react';
+import { Bot } from '../../../libs/models/Bot';
 import { useChat } from '../../../libs/useChat';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
@@ -46,8 +47,14 @@ export const ChatList: FC = () => {
     };
 
     const onImportChat = (file: File) => {
-        // TODO
-        console.log('on import chat', file);
+        const fileReader = new FileReader();
+        fileReader.onload = async (event: ProgressEvent<FileReader>) => {
+            const content = event?.target?.result as string;
+            const parsedData = JSON.parse(content) as Bot;
+
+            return await chat.importBot(parsedData);
+        };
+        fileReader.readAsText(file);
     };
 
     return (

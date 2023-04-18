@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+import { Bot } from '../models/Bot';
 import { IAsk } from './model/Ask';
 import { IAskResult } from './model/AskResult';
 
@@ -35,9 +36,23 @@ export class SemanticKernel {
     public exportBotAsync = async (ask: IAsk, accessToken: string, connectorAccessToken?: string): Promise<any> => {
         const result = await this.getResponseAsync<IAskResult>(
             {
-                commandPath: `bot/export`,
+                commandPath: 'bot/export',
                 method: 'Post',
                 body: ask,
+            },
+            accessToken,
+            connectorAccessToken,
+        );
+        return result;
+    };
+
+    public importBotAsync = async (bot: Bot, accessToken: string, connectorAccessToken?: string): Promise<any> => {
+        // TODO: return type
+        const result = await this.getResponseAsync<any>(
+            {
+                commandPath: 'bot/import',
+                method: 'Post',
+                body: bot,
             },
             accessToken,
             connectorAccessToken,

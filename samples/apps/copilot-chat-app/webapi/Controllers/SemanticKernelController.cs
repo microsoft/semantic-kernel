@@ -99,15 +99,15 @@ public class SemanticKernelController : ControllerBase
 
     [Route("bot/import")]
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<string> Import([FromServices] Kernel kernel, [FromBody] string serializedBot)
+    public async Task<string> ImportAsync([FromServices] Kernel kernel, [FromBody] Bot bot)
     {
         this._logger.LogDebug("Received call to import a bot");
+        // TODO: import chat history into CosmosDB and embeddings into SK memory.
 
-
-        return $"import a bot. {serializedBot}";
+        return await Task.FromResult($"import a bot. {bot}");
     }
 
     [Route("bot/export")]
@@ -154,7 +154,7 @@ public class SemanticKernelController : ControllerBase
 
         if (messages?.Value != null)
         {
-            bot.ChatHistory = JsonSerializer.Deserialize<IEnumerable<ChatMessage>>(messages.Value);
+            bot.ChatHistory = JsonSerializer.Deserialize<List<ChatMessage>>(messages.Value);
         }
 
         // get memory
