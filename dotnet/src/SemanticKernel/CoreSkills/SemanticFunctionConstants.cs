@@ -54,29 +54,35 @@ unknown: don't know
     description: summarize input text
     inputs:
     - input: the text to summarize
+
   _GLOBAL_FUNCTIONS_.NovelOutline :
     description: Outlines the input text as if it were a novel
     inputs:
     - input: the title of the novel to outline
     - chapterCount: the number of chapters to outline
+
   LanguageHelpers.TranslateTo:
     description: translate the input to another language
     inputs:
     - input: the text to translate
     - translate_to_language: the language to translate to
+
   EmailConnector.LookupContactEmail:
     description: looks up the a contact and retrieves their email address
     inputs:
     - input: the name to look up
+
   EmailConnector.EmailTo:
     description: email the input text to a recipient
     inputs:
     - input: the text to email
     - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
+
   _GLOBAL_FUNCTIONS_.Length:
     description: Get the length of a string.
     inputs:
     - input: Input string
+
  _GLOBAL_FUNCTIONS_.HourNumber:
     description: Get the current clock hour
     inputs:
