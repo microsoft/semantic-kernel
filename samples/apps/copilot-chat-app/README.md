@@ -70,8 +70,7 @@ and these components are functional:
             * You will insert your Azure endpoint key during build of the backend
               API Server
          
-         * If you are using speech to text as input option then under the `AzureSpeechConfig` block, make sure the following configuration
-          changes to match your instance:
+         * If you are using speech to text as input option then under the `AzureSpeechConfig` block, make sure the following configuration matches your instance:
             * `"Region": "westus2",` or whichever region is appropriate
               for your speech sdk instance.
             * You will insert your Azure speech key during build of the backend
