@@ -85,7 +85,7 @@ const getSKaaSAccessToken = async (instance: IPublicClientApplication) => {
             return token.accessToken;
         }
     }
-    throw new Error('Unable to get SKaaS access token');
+    throw new Error('Failed to get access token for web service.');
 };
 
 export const AuthHelper = {
