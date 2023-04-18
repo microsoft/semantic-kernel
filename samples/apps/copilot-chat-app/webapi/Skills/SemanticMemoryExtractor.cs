@@ -17,28 +17,28 @@ internal class SemanticMemoryExtractor
     /// <param name="memoryName">Name of the memory category</param>
     internal static string MemoryCollectionName(string chatId, string memoryName) => $"{chatId}-{memoryName}";
 
-    internal static async Task<SemanticChatMemory> ExtractCognitiveMemoryAsync(string memoryName, IKernel kernel, SKContext context)
+    internal static async Task<SemanticChatMemory> ExtractCognitiveMemoryAsync(string memoryName, IKernel kernel, SKContext context, PromptSettings promptSettings)
     {
-        if (!SystemPromptDefaults.MemoryMap.TryGetValue(memoryName, out var memoryPrompt))
+        if (!promptSettings.MemoryMap.TryGetValue(memoryName, out var memoryPrompt))
         {
             throw new ArgumentException($"Memory name {memoryName} is not supported.");
         }
 
-        var tokenLimit = SystemPromptDefaults.CompletionTokenLimit;
-        var remainingToken = tokenLimit - SystemPromptDefaults.ResponseTokenLimit;
+        var tokenLimit = promptSettings.CompletionTokenLimit;
+        var remainingToken = tokenLimit - promptSettings.ResponseTokenLimit;
         var contextTokenLimit = remainingToken;
 
         var memoryExtractionContext = Utils.CopyContextWithVariablesClone(context);
         memoryExtractionContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
         memoryExtractionContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
         memoryExtractionContext.Variables.Set("memoryName", memoryName);
-        memoryExtractionContext.Variables.Set("format", SystemPromptDefaults.MemoryFormat);
-        memoryExtractionContext.Variables.Set("knowledgeCutoff", SystemPromptDefaults.KnowledgeCutoffDate);
+        memoryExtractionContext.Variables.Set("format", promptSettings.MemoryFormat);
+        memoryExtractionContext.Variables.Set("knowledgeCutoff", promptSettings.KnowledgeCutoffDate);
 
         var completionFunction = kernel.CreateSemanticFunction(memoryPrompt);
         var result = await completionFunction.InvokeAsync(
             context: memoryExtractionContext,
-            settings: CreateMemoryExtractionSettings()
+            settings: CreateMemoryExtractionSettings(promptSettings)
         );
 
         SemanticChatMemory memory = SemanticChatMemory.FromJson(result.ToString());
@@ -46,17 +46,17 @@ internal class SemanticMemoryExtractor
     }
 
     /// <summary>
-    /// Create a completion settings object for chat response. Parameters are read from the SystemPromptDefaults class.
+    /// Create a completion settings object for chat response. Parameters are read from the PromptSettings class.
     /// </summary>
-    private static CompleteRequestSettings CreateMemoryExtractionSettings()
+    private static CompleteRequestSettings CreateMemoryExtractionSettings(PromptSettings promptSettings)
     {
         var completionSettings = new CompleteRequestSettings
         {
-            MaxTokens = SystemPromptDefaults.ResponseTokenLimit,
-            Temperature = SystemPromptDefaults.ResponseTemperature,
-            TopP = SystemPromptDefaults.ResponseTopP,
-            FrequencyPenalty = SystemPromptDefaults.ResponseFrequencyPenalty,
-            PresencePenalty = SystemPromptDefaults.ResponsePresencePenalty
+            MaxTokens = promptSettings.ResponseTokenLimit,
+            Temperature = promptSettings.ResponseTemperature,
+            TopP = promptSettings.ResponseTopP,
+            FrequencyPenalty = promptSettings.ResponseFrequencyPenalty,
+            PresencePenalty = promptSettings.ResponsePresencePenalty
         };
 
         return completionSettings;

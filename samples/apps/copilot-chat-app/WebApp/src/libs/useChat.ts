@@ -197,9 +197,11 @@ export const useChat = () => {
                 // No chats exist, create first chat window
                 await createChat();
             }
+            return true;
         } catch (e: any) {
             const errorMessage = `Unable to load chats. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            return false;
         }
     };
 

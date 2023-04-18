@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net;
+using System.Reflection;
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
@@ -98,6 +100,17 @@ public static class Program
     {
         // Each API call gets a fresh new SK instance
         services.AddScoped<Kernel>();
+
+        services.AddSingleton<PromptsConfig>(sp =>
+        {
+            string promptsConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "prompts.json");
+            PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(File.ReadAllText(promptsConfigPath)) ??
+                throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
+            promptsConfig.Validate();
+            return promptsConfig;
+        });
+
+        services.AddSingleton<PromptSettings>();
 
         // Add a semantic memory store only if we have a valid embedding config
         AIServiceConfig embeddingConfig = configuration.GetSection("Embedding").Get<AIServiceConfig>();
