@@ -1,18 +1,16 @@
 # Kernel Feature Matrix by Language
 
 ## AI Services
-|-----------------------------------|--|--------|---------------------------------------------------------------------------------|
-|                                      
-|                                     | C# | Python | Notes                                                                           |
+| Feature | C# | Python | Notes |
+|---|---|---|---|                   
 | `OpenAI`                            | ✅ | ✅ | |
 | `AzureOpenAI`                       | ✅ | ✅ | |
 | `Hugging Face`                      | ✅ | ❌ | Coming soon to Python - both native and web endpoint support | 
 | `Custom`                            | ✅ | ❌ | Requires the user to define the service schema in their application |
 
 ## Core Skills
-|-----------------------------------|--|--------|---------------------------------------------------------------------------------|
-|                                      
-|                                     | C# | Python | Notes                                                                           |
+| Feature | C# | Python | Notes |
+|---|---|---|---|                   
 | `TextMemorySkill`                   | ✅ | ✅ | |
 | `PlannerSkill`                      | ✅ | ❌ | |
 | `ConversationSummarySkill`          | ✅ | ❌ | | 
@@ -22,10 +20,9 @@
 | `TextSkill`                         | ✅ | ✅ | |
 | `TimeSkill`                         | ✅ | ✅ | |
 
-## Connectors and Skill Libraries
-|-----------------------------------|--|--------|---------------------------------------------------------------------------------|
-|                                      
-|                                     | C# | Python | Notes                                                                           |
+## Connectors and Skill Libraries  
+| Feature | C# | Python | Notes |
+|---|---|---|---|                   
 | `Qdrant (Memory)`                   | ✅ | ❌ | Vector optimized | 
 | `ChromaDb (Memory)`                 | ❌ | ❌ | |
 | `Milvus (Memory)`                   | ❌ | ❌ | Vector optimized |
