@@ -45,12 +45,14 @@ public class SpeechTokenController : ControllerBase
 
     private async Task<string> FetchTokenAsync(string fetchUri, string subscriptionKey)
     {
+        // TODO: get the HttpClient from the DI container
         using (var client = new HttpClient())
         {
             client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
             UriBuilder uriBuilder = new UriBuilder(fetchUri);
 
             var result = await client.PostAsync(uriBuilder.Uri, null);
+            result.EnsureSuccessStatusCode();
             this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
             return await result.Content.ReadAsStringAsync();
         }

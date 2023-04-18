@@ -58,8 +58,7 @@ and these components are functional:
               appropriate for your instance.  
             * `“Endpoint”:` “Your Azure Endpoint address, i.e. `http://contoso.openai.azure.com`”.
               If you are using OpenAI, leave this blank.
-            * You will insert your Azure endpoint key during build of the backend
-              API Server
+            * Set your Azure endpoint key using the following command: dotnet user-secrets set "Completion:Key" "MY_COMPLETION_KEY"
 
         * Under the `“Embedding”` block, make sure the following configuration
           changes to match your instance:
@@ -67,14 +66,12 @@ and these components are functional:
               for your instance.
             * `“DeploymentOrModelID”: “text-embedding-ada-002”,` or whichever
               option is appropriate for your instance.    
-            * You will insert your Azure endpoint key during build of the backend
-              API Server
+            * Set your Azure endpoint key using the following command: dotnet user-secrets set "Embedding:Key" "MY_EMBEDDING_KEY"
          
-         * If you are using speech to text as input option then under the `AzureSpeechConfig` block, make sure the following configuration matches your instance:
+         * If you are using speech-to-text as input option then under the `AzureSpeechConfig` block, make sure the following configuration matches your instance:
             * `"Region": "westus2",` or whichever region is appropriate
               for your speech sdk instance.
-            * You will insert your Azure speech key during build of the backend
-              API Server
+            * Set your azure speech key using the following command: dotnet user-secrets set "AzureSpeechConfig:Key" "MY_AZURE_SPEECH_KEY"
             
 4. Build the back-end API server by following these instructions:
     1. In the terminal navigate to  `\samples\apps\copilot-chat-app\webapi`
