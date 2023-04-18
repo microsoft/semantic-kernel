@@ -130,6 +130,10 @@ class Kernel(KernelBase, KernelExtensions):
             )
         else: 
             context = input_context
+            if input_vars is not None:
+                self._log.warning("Ignoring input_vars because input_context is not None")
+            elif input_str is not None:
+                self._log.warning("Ignoring input_str because input_context is not None")
 
         pipeline_step = 0
         for func in functions:
