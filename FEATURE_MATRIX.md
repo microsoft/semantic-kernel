@@ -1,23 +1,27 @@
 # Kernel Feature Matrix by Language
 
 ## AI Services
-| Feature | C# | Python | Notes |
+| | C# | Python | Notes |
 |---|---|---|---|                   
 | TextGeneration                    | ✅ | ✅ | Example: Text-Davinci-003 |
-| ChatCompletion                    | ✅ | ❌ | Example: GPT4, Chapt-GPT |
 | TextEmbeddings                    | ✅ | ✅ | Example: Text-Embeddings-Ada-002 |
+| ChatCompletion                    | ✅ | ❌ | Example: GPT4, Chapt-GPT |
 | Image Generation                  | ✅ | ❌ | Example: Dall-E |
 
 ## AI Service Endpoints
-| Feature | C# | Python | Notes |
+| | C# | Python | Notes |
 |---|---|---|---|                   
 | OpenAI                            | ✅ | ✅ | |
 | AzureOpenAI                       | ✅ | ✅ | |
 | Hugging Face                      | ✅ | ❌ | Coming soon to Python - both native and web endpoint support | 
 | Custom                            | ✅ | ❌ | Requires the user to define the service schema in their application |
 
+## Tokenizers
+| | C# | Python | Notes |
+|---|---|---|---|                   
+
 ## Core Skills
-| Feature | C# | Python | Notes |
+| | C# | Python | Notes |
 |---|---|---|---|                   
 | TextMemorySkill                   | ✅ | ✅ | |
 | PlannerSkill                      | ✅ | ❌ | |
@@ -29,7 +33,7 @@
 | TimeSkill                         | ✅ | ✅ | |
 
 ## Connectors and Skill Libraries  
-| Feature | C# | Python | Notes |
+| | C# | Python | Notes |
 |---|---|---|---|                   
 | Qdrant (Memory)                   | ✅ | ❌ | Vector optimized | 
 | ChromaDb (Memory)                 | ❌ | ❌ | |
