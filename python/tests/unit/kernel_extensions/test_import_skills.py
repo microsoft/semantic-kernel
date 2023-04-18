@@ -29,3 +29,25 @@ def test_skill_can_be_imported():
     skill_config = skill_config_dict["TestFunction"]
     assert skill_config.name == "TestFunction"
     assert skill_config.description == "Test Description"
+
+
+def test_native_skill_can_be_imported():
+    # create a kernel
+    kernel = sk.Kernel()
+
+    # import skills
+    skills_directory = os.path.join(
+        os.path.dirname(__file__), "../..", "test_native_skills"
+    )
+    # path to skills directory
+    skill_config_dict = kernel.import_native_skill_from_directory(
+        skills_directory, "FileIOSkill"
+    )
+
+    assert skill_config_dict is not None
+    assert len(skill_config_dict) == 2
+    assert "readAsync" in skill_config_dict
+    assert "writeAsync" in skill_config_dict
+    skill_config = skill_config_dict["readAsync"]
+    assert skill_config.name == "readAsync"
+    assert skill_config.description == "Read a file"
