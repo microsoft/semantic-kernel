@@ -5,15 +5,16 @@
   <!--<Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />-->
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Cosmos</AssemblyName>
-    <RootNamespace>Microsoft.SemanticKernel.Connectors.Memory.Cosmos</RootNamespace>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <PackageId>Microsoft.SemanticKernel.Connectors.Memory.Cosmos</PackageId>
-    <Title>Semantic Kernel - Qdrant Connector</Title>
+    <PackageId>Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb</PackageId>
+    <Title>Semantic Kernel - Azure Cosmos Db Connector</Title>
+    <Description>Azure Cosmos Db connector for Semantic Kernel skills and semantic memory</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -98,7 +98,7 @@ You should be able to run the example under the [tests](tests) folder.
 ## Pipeline checks
 
 To run the same checks that run during the GitHub Action build, you can use
-this command, from the [python](/python) folder:
+this command, from the [python](../python) folder:
 
     poetry run pre-commit run -c .conf/.pre-commit-config.yaml -a
 

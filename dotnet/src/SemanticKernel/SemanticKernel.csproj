@@ -6,7 +6,7 @@
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.SemanticKernel</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Core</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -15,8 +15,11 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <PackageId>Microsoft.SemanticKernel</PackageId>
-    <Title>Semantic Kernel</Title>
+    <PackageId>Microsoft.SemanticKernel.Core</PackageId>
+    <Title>Semantic Kernel Core</Title>
+    <Description>Semantic Kernel core orchestration, runtime and skills.
+This package is automatically installed by 'Microsoft.SemanticKernel' package with other useful packages.
+Install this package manually only if you are selecting individual Semantic Kernel components.</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -31,44 +34,27 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--Setting version overrides to miniumum supported version, to maxiumize compatability.-->
-    <PackageReference Include="Microsoft.Bcl.HashCode" VersionOverride="[1.1.0, )" />
-    <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="[6.0.0, )" />
-    <PackageReference Include="System.Linq.Async" VersionOverride="[6.0.1, )" />
-    <PackageReference Include="System.Text.Json" VersionOverride="[6.0.0, )" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernel.UnitTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernel.IntegrationTests</_Parameter1>
-    </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Microsoft.SemanticKernel.Connectors.OpenAI</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Microsoft.SemanticKernel.Skills.OpenAPI</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>SemanticKernel.UnitTests</_Parameter1>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>SemanticKernel.Skills.UnitTests</_Parameter1>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>DynamicProxyGenAssembly2</_Parameter1> <!-- Moq -->
+      <_Parameter1>SemanticKernel.IntegrationTests</_Parameter1>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Skills.OpenAPI</_Parameter1>
+      <_Parameter1>DynamicProxyGenAssembly2</_Parameter1> <!-- Moq -->
     </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Connectors\OpenAI\Tokenizers\Settings\encoder.json" />
-    <Content Include="Connectors\OpenAI\Tokenizers\Settings\encoder.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <None Remove="Connectors\OpenAI\Tokenizers\Settings\vocab.bpe" />
-    <Content Include="Connectors\OpenAI\Tokenizers\Settings\vocab.bpe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
+    <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
   </ItemGroup>
 </Project>

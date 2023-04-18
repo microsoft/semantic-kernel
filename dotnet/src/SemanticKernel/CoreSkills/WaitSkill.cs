@@ -38,7 +38,7 @@ public class WaitSkill
     }
 
     /// <summary>
-    /// Wait a given ammount of seconds
+    /// Wait a given amount of seconds
     /// </summary>
     /// <example>
     /// {{wait.seconds 10}} (Wait 10 seconds)

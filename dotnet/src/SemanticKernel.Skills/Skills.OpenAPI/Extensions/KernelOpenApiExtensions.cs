@@ -134,10 +134,10 @@ public static class KernelOpenApiExtensions
 
         Verify.ValidSkillName(skillDirectoryName);
 
-        var skillDir = Path.Join(parentDirectory, skillDirectoryName);
+        var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
         Verify.DirectoryExists(skillDir);
 
-        var openApiDocumentPath = Path.Join(skillDir, OPENAPI_FILE);
+        var openApiDocumentPath = Path.Combine(skillDir, OPENAPI_FILE);
         if (!File.Exists(openApiDocumentPath))
         {
             throw new FileNotFoundException($"No OpenApi document for the specified path - {openApiDocumentPath} is found.");
@@ -260,7 +260,7 @@ public static class KernelOpenApiExtensions
                 foreach (var parameter in restOperationParameters)
                 {
                     // A try to resolve argument by alternative parameter name
-                    if (!string.IsNullOrEmpty(parameter.AlternativeName) && context.Variables.Get(parameter.AlternativeName, out var value))
+                    if (!string.IsNullOrEmpty(parameter.AlternativeName) && context.Variables.Get(parameter.AlternativeName!, out var value))
                     {
                         arguments.Add(parameter.Name, value);
                         continue;

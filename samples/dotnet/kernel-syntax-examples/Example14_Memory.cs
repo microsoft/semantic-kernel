@@ -34,7 +34,7 @@ public static class Example14_Memory
 
         var kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .Configure(c => c.AddOpenAIEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY")))
+            .Configure(c => c.AddOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY")))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
