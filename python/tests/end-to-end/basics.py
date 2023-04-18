@@ -5,7 +5,7 @@ import asyncio
 import semantic_kernel as sk
 import semantic_kernel.ai.open_ai as sk_oai
 
-kernel = sk.create_kernel()
+kernel = sk.Kernel()
 
 # Load credentials from .env file
 api_key, org_id = sk.openai_settings_from_dot_env()

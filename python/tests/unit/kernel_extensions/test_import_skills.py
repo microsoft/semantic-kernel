@@ -8,7 +8,7 @@ import semantic_kernel.ai.open_ai as sk_oai
 
 def test_skill_can_be_imported():
     # create a kernel
-    kernel = sk.create_kernel()
+    kernel = sk.Kernel()
     api_key = "test-api-key"
     org_id = "test-org-id"
     kernel.config.add_text_backend(
