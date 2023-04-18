@@ -134,7 +134,7 @@ internal static class SKContextPlanningExtensions
             var functionName = function.ToFullyQualifiedName();
             var key = functionName;
             var description = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
-            var textToEmbed = function.ToManualString();
+            var textToEmbed = function.ToEmbeddingString();
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
             var memoryEntry = await context.Memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false, cancel: context.CancellationToken);
