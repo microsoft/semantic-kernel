@@ -56,7 +56,7 @@ Give me the TLDR in exactly 5 words.""")
 print(prompt()) # => Robots must not harm humans.
 ```
 
-# Prompts are **semantic functions** with input parameters
+# **Semantic functions** are Prompts with input parameters
 
 ```python
 # Create a reusable function with one input parameter
@@ -101,12 +101,7 @@ Python notebooks:
 
 # Frequently asked questions
 
-* How does Python SK compare to the C# version of Semantic Kernel?
+| Question                                                     | Answer                                                                                                                                                                                                                                                               |
+|--------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| How does Python SK compare to the C# version of Semantic Kernel? | The two SDKs are compatible and at the core they follow the same design principles. Some features are still available only in the C# version, and being ported. <br>Refer to the [FEATURE PARITY](FEATURE_PARITY.md) doc to see where things stand in matching the features and functionality of the main SK branch. <br>Over time there will be some features available only in the Python version, and others only in the C# version, for example adapters to external services, scientific libraries, etc. |
 
-  The two SDKs are compatible and at the core they follow the same design principles.
-  Some features are still available only in the C# version, and being ported
-  Refer to the [FEATURE PARITY](FEATURE_PARITY.md) doc to see where
-  things stand in matching the features and functionality of the main SK branch.
-  Over time there will be some features available only in the Python version, and
-  others only in the C# version, for example adapters to external services,
-  scientific libraries, etc.
