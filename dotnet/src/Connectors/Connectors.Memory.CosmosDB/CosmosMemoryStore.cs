@@ -30,8 +30,8 @@ public class CosmosMemoryStore : IMemoryStore
     private Database _database;
     private string _databaseName;
     private ILogger _log;
-    private readonly string _queryWithEmbedding = "select cc.id,cc.score from (SELECT c.id,c.collectionId,c.timestamp,c.embeddingString,c.metadataString,udf.CosinSimularity('@embedding') as score FROM c) cc where cc.score>@minScore";
-    private readonly string _queryWithoutEmbedding= "select cc.id,cc.score from (SELECT c.id,c.collectionId,c.timestamp,c.metadataString,udf.CosinSimularity('@embedding') as score FROM c) cc where cc.score>@minScore";
+    private readonly string _queryWithEmbedding = "select * from (SELECT c.id,c.collectionId,c.timestamp,c.embeddingString,c.metadataString,udf.CosinSimularity(@embedding,c.embeddingString) as score FROM c) cc where cc.score>@minScore";
+    private readonly string _queryWithoutEmbedding= "select * from (SELECT c.id,c.collectionId,c.timestamp,c.metadataString,udf.CosinSimularity(@embedding,c.embeddingString) as score FROM c) cc where cc.score>@minScore";
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized: Class instance is created and populated via factory method.
     private CosmosMemoryStore()
@@ -166,34 +166,49 @@ public class CosmosMemoryStore : IMemoryStore
 
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
         MemoryRecord? memoryRecord = null;
-
-        var response = await container.ReadItemAsync<CosmosMemoryRecord>(id, partitionKey, cancellationToken: cancel);
-
-        if (response == null)
+        try
         {
-            this._log?.LogWarning("Received no get response collection {1}", collectionName);
-        }
-        else if (response.StatusCode != HttpStatusCode.OK)
-        {
-            this._log?.LogWarning("Failed to get record from collection {1} with status code {2}", collectionName, response.StatusCode);
-        }
-        else
-        {
-            var result = response.Resource;
-
-            float[]? vector = withEmbedding ? System.Text.Json.JsonSerializer.Deserialize<float[]>(result.EmbeddingString) : System.Array.Empty<float>();
-
-            if (vector != null)
+            var response = await container.ReadItemAsync<CosmosMemoryRecord>(id, partitionKey, cancellationToken: cancel);
+            if (response == null)
             {
-                memoryRecord = MemoryRecord.FromJsonMetadata(
-                    result.MetadataString,
-                    new Embedding<float>(vector),
-                    result.Id,
-                    result.Timestamp);
+                this._log?.LogWarning("Received no get response collection {1}", collectionName);
             }
-        }
+            else if (response.StatusCode != HttpStatusCode.OK)
+            {
+                this._log?.LogWarning("Failed to get record from collection {1} with status code {2}", collectionName, response.StatusCode);
+            }
+            else
+            {
+                var result = response.Resource;
 
-        return memoryRecord;
+                float[]? vector = withEmbedding ? System.Text.Json.JsonSerializer.Deserialize<float[]>(result.EmbeddingString) : System.Array.Empty<float>();
+
+                if (vector != null)
+                {
+                    memoryRecord = MemoryRecord.FromJsonMetadata(
+                        result.MetadataString,
+                        new Embedding<float>(vector),
+                        result.Id,
+                        result.Timestamp);
+                }
+            }
+
+            return memoryRecord;
+        }
+        catch (CosmosException ce)
+        {
+            if (ce.StatusCode==HttpStatusCode.NotFound)
+            {
+                this._log?.LogWarning("record not found in collection",collectionName);
+                return null;
+            }
+            else
+            {
+                throw;
+            }
+            
+        }
+        
     }
 
     /// <inheritdoc/>
@@ -254,12 +269,28 @@ public class CosmosMemoryStore : IMemoryStore
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
     {
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
-        var response = await container.DeleteItemAsync<CosmosMemoryRecord>(
+        ItemResponse<CosmosMemoryRecord> response=null;
+        try
+        {
+            response = await container.DeleteItemAsync<CosmosMemoryRecord>(
             key,
             new PartitionKey(key),
             cancellationToken: cancel);
-
-        if (response.StatusCode == HttpStatusCode.OK)
+        }
+        catch (CosmosException ce)
+        {
+            if (ce.StatusCode==HttpStatusCode.NotFound)//ignore if no item is found
+            {
+                this._log.LogInformation("Record not found from {0}", collectionName);
+                return;
+            }
+            else
+            {
+                throw;
+            }
+            
+        }
+        if (response.StatusCode == HttpStatusCode.NoContent)
         {
             this._log.LogInformation("Record deleted from {0}", collectionName);
         }
@@ -299,7 +330,7 @@ public class CosmosMemoryStore : IMemoryStore
 
             QueryDefinition query =
                 new QueryDefinition(withEmbeddings? this._queryWithEmbedding :this._queryWithoutEmbedding)
-                .WithParameter("@embedding", embedding)
+                .WithParameter("@embedding", embeddingParameter)
                 .WithParameter("@minScore", minRelevanceScore);
             var iterator = container.GetItemQueryIterator<CosmosMemoryRecordWithScore>(query);
 
@@ -375,6 +406,6 @@ public class CosmosMemoryStore : IMemoryStore
 
     private string ToCosmosFriendlyId(string id)
     {
-        return $"{id.Trim().Replace(' ', '-').Replace('/', '_').Replace('\\', '_').Replace('?', '_').Replace('#', '_').ToUpperInvariant()}";
+        return $"{id.Trim().Replace(' ', '-').Replace('/', '_').Replace('\\', '_').Replace('?', '_').Replace('#', '_')}";
     }
 }
