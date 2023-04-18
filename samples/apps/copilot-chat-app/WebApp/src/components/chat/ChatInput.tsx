@@ -13,7 +13,7 @@ import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRende
 import { useSKSpeechService } from './../../libs/semantic-kernel/useSKSpeech';
 import { useMsal } from '@azure/msal-react';
 //import { TokenHelper } from '../../libs/auth/TokenHelper';
-import { AuthHelper } from '../../libs/auth/AuthHelper';
+//import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { useConnectors } from './../../libs/connectors/useConnectors';
 
 const log = debug(Constants.debug.root).extend('chat-input');
@@ -70,11 +70,11 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         void (async () => {
             //const newRecognizer = await speechService.getSpeechRecognizerAsync();
 
-            const aadtoken = await AuthHelper.getAzureSpeechToken(instance);//inProgress, instance, Constants.azureSpeechScopes);
+            //const aadtoken = await AuthHelper.getAzureSpeechToken(instance);//inProgress, instance, Constants.azureSpeechScopes);
             
             //const aadtoken = await TokenHelper.getAccessToken( inProgress, instance, Constants.azureSpeechScopes );
             
-            //const aadtoken = await connectors.getSpeechAADToken();
+            const aadtoken = await connectors.getSpeechAADToken(instance);
 
             const newRecognizer = await speechService.getSpeechRecognizerFromAADTokenAsync(aadtoken as string);
             setRecognizer(newRecognizer);
