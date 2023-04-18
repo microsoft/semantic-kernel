@@ -3,6 +3,14 @@
 ## AI Services
 | Feature | C# | Python | Notes |
 |---|---|---|---|                   
+| TextGeneration                    | ✅ | ✅ | Example: Text-Davinci-003 |
+| ChatCompletion                    | ✅ | ❌ | Example: GPT4, Chapt-GPT |
+| TextEmbeddings                    | ✅ | ✅ | Example: Text-Embeddings-Ada-002 |
+| Image Generation                  | ✅ | ❌ | Example: Dall-E |
+
+## AI Service Endpoints
+| Feature | C# | Python | Notes |
+|---|---|---|---|                   
 | OpenAI                            | ✅ | ✅ | |
 | AzureOpenAI                       | ✅ | ✅ | |
 | Hugging Face                      | ✅ | ❌ | Coming soon to Python - both native and web endpoint support | 
