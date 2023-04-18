@@ -27,7 +27,7 @@
 | | C# | Python | Notes |
 |---|---|---|---|                   
 | TextMemorySkill                   | ✅ | ✅ | |
-| PlannerSkill                      | ✅ | ❌ | |
+| PlannerSkill                      | ✅ | 🔄 | |
 | ConversationSummarySkill          | ✅ | ❌ | | 
 | FileIOSkill                       | ✅ | ✅ | |
 | HttpSkill                         | ✅ | ❌ | |
@@ -39,7 +39,7 @@
 | | C# | Python | Notes |
 |---|---|---|---|                   
 | Qdrant (Memory)                   | ✅ | ❌ | Vector optimized | 
-| ChromaDb (Memory)                 | ❌ | ❌ | |
+| ChromaDb (Memory)                 | ❌ | 🔄 | |
 | Milvus (Memory)                   | ❌ | ❌ | Vector optimized |
 | Pinecone (Memory)                 | ❌ | ❌ | Vector optimized |
 | Weaviate (Memory)                 | ❌ | ❌ | Vector optimized |
