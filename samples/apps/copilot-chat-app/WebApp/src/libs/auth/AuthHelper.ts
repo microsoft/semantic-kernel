@@ -80,12 +80,6 @@ const getSKaaSAccessToken = async (instance: IPublicClientApplication) => {
     });
 };
 
-const getAzureSpeechToken = async (instance: IPublicClientApplication) => {
-    return instance.acquireTokenSilent({ scopes: Constants.azureSpeechScopes, account: instance.getAllAccounts()[0] }).then((token) => {
-        return token.accessToken;
-    });
-};
-
 export const AuthHelper = {
     getSKaaSAccessToken,
     msalConfig,
@@ -93,5 +87,4 @@ export const AuthHelper = {
     ssoSilentRequest,
     loginAsync,
     logoutAsync,
-    getAzureSpeechToken
 };

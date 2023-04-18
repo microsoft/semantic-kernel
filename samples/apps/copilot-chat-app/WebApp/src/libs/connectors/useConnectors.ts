@@ -6,9 +6,6 @@ import { TokenHelper } from '../auth/TokenHelper';
 import { AlertType } from '../models/AlertType';
 import { IAsk } from '../semantic-kernel/model/Ask';
 import { useSemanticKernel } from '../semantic-kernel/useSemanticKernel';
-import {
-    IPublicClientApplication
-} from '@azure/msal-browser';
 
 export const useConnectors = () => {
     const { instance, inProgress } = useMsal();
@@ -75,15 +72,10 @@ export const useConnectors = () => {
         return await invokeSkillWithConnectorToken(ask, skillName, functionName, Constants.adoScopes);
     };
 
-    const getSpeechAADToken = async (msalInstance: IPublicClientApplication) => {
-        return await TokenHelper.getAccessToken(inProgress, msalInstance, Constants.azureSpeechScopes);
-    };
-
     return {
         makeGraphRequest,
         invokeSkillWithConnectorToken,
         invokeSkillWithGraphToken,
         invokeSkillWithAdoToken,
-        getSpeechAADToken,
     };
 };

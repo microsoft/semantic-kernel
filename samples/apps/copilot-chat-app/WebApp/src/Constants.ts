@@ -13,7 +13,7 @@ export const Constants = {
             cacheLocation: 'localStorage',
             storeAuthStateInCookie: false,
         },
-        skScopes: ['openid', 'offline_access', 'profile'],
+        skScopes: ['openid', 'offline_access', 'profile', 'User.Read'],
     },
     bot: {
         profile: {
@@ -72,5 +72,4 @@ export const Constants = {
         // 'User.ReadBasic.All',
     ],
     adoScopes: ['vso.work'],
-    azureSpeechScopes: ['https://officespeech.platform.bing.com/recognize/speech'],//['speech'],//'https://cognitiveservices.azure.com/.default/'],
 };
