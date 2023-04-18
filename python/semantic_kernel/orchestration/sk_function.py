@@ -431,6 +431,7 @@ class SKFunction(SKFunctionBase):
     Async code wrapper to allow running async code inside external
     event loops such as Jupyter notebooks.
     """
+
     def _runThread(self, code: Callable):
         result = []
         thread = threading.Thread(target=self._runCode, args=(code, result))
