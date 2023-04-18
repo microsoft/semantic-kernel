@@ -35,7 +35,7 @@ public sealed class PlannerSkillTests : IDisposable
             .Build();
     }
 
-    [Theory(Skip = "The test is broken since the changes to planner prompt and format")]
+    [Theory]
     [InlineData("Write a poem or joke and send it in an e-mail to Kai.", "function._GLOBAL_FUNCTIONS_.SendEmail")]
     public async Task CreatePlanWithEmbeddingsTestAsync(string prompt, string expectedAnswerContains)
     {
@@ -76,11 +76,11 @@ public sealed class PlannerSkillTests : IDisposable
 
         // Act
         ContextVariables variables = new(prompt);
-        variables.Set(PlannerSkill.Parameters.ExcludedSkills, "IntentDetectionSkill,FunSkill");
+        variables.Set(PlannerSkill.Parameters.ExcludedSkills, "IntentDetectionSkill,FunSkill,CodingSkill");
         variables.Set(PlannerSkill.Parameters.ExcludedFunctions, "EmailTo");
         variables.Set(PlannerSkill.Parameters.IncludedFunctions, "Continue");
-        variables.Set(PlannerSkill.Parameters.MaxRelevantFunctions, "9");
-        variables.Set(PlannerSkill.Parameters.RelevancyThreshold, "0.77");
+        variables.Set(PlannerSkill.Parameters.MaxRelevantFunctions, "19");
+        variables.Set(PlannerSkill.Parameters.RelevancyThreshold, "0.5");
         SKContext actual = await target.RunAsync(variables, plannerSKill["CreatePlan"]).ConfigureAwait(true);
 
         // Assert
@@ -144,7 +144,9 @@ public sealed class PlannerSkillTests : IDisposable
         var plannerSKill = target.ImportSkill(new PlannerSkill(target));
 
         // Act
-        SKContext createdPlanContext = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
+        var context = new ContextVariables(prompt);
+        context.Set(PlannerSkill.Parameters.UseConditionals, "true");
+        SKContext createdPlanContext = await target.RunAsync(context, plannerSKill["CreatePlan"]).ConfigureAwait(true);
         await target.RunAsync(createdPlanContext.Variables.Clone(), plannerSKill["ExecutePlan"]).ConfigureAwait(false);
         var planResult = createdPlanContext.Variables[SkillPlan.PlanKey];
 
@@ -167,7 +169,8 @@ public sealed class PlannerSkillTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Start with a X number equals to the current minutes of the clock and remove 20 from this number until it becomes 0. After that tell me a math style joke where the input is X number + \"bananas\"",
+    [InlineData(
+        "Start with a X number equals to the current minutes of the clock and remove 20 from this number until it becomes 0. After that tell me a math style joke where the input is X number + \"bananas\"",
         "function.TimeSkill.Minute", 1,
         "function.FunSkill.Joke", 1,
         "<while condition=\"", 1,
@@ -214,7 +217,9 @@ public sealed class PlannerSkillTests : IDisposable
         var plannerSKill = target.ImportSkill(new PlannerSkill(target));
 
         // Act
-        SKContext createdPlanContext = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
+        var context = new ContextVariables(prompt);
+        context.Set(PlannerSkill.Parameters.UseConditionals, "true");
+        SKContext createdPlanContext = await target.RunAsync(context, plannerSKill["CreatePlan"]).ConfigureAwait(true);
         await target.RunAsync(createdPlanContext.Variables.Clone(), plannerSKill["ExecutePlan"]).ConfigureAwait(false);
         var planResult = createdPlanContext.Variables[SkillPlan.PlanKey];
 

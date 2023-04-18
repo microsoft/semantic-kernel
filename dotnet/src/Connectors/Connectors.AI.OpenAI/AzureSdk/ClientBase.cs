@@ -72,13 +72,154 @@ public abstract class ClientBase
             }
         }
 
-        Response<Completions>? response = null;
+        Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
+            async () => await this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken));
+
+        if (response == null || response.Value.Choices.Count < 1)
+        {
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text completions not found");
+        }
+
+        return response.Value.Choices[0].Text;
+    }
+
+    /// <summary>
+    /// Generates an embedding from the given <paramref name="data"/>.
+    /// </summary>
+    /// <param name="data">List of strings to generate embeddings for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of embeddings</returns>
+    protected async Task<IList<Embedding<float>>> InternalGenerateTextEmbeddingsAsync(
+        IList<string> data,
+        CancellationToken cancellationToken = default)
+    {
+        var result = new List<Embedding<float>>();
+        foreach (string text in data)
+        {
+            var options = new EmbeddingsOptions(text);
+
+            Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
+                async () => await this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken));
+
+            if (response == null || response.Value.Data.Count < 1)
+            {
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text embedding not found");
+            }
+
+            EmbeddingItem x = response.Value.Data[0];
+
+            result.Add(new Embedding<float>(x.Embedding));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Generate a new chat message
+    /// </summary>
+    /// <param name="chat">Chat history</param>
+    /// <param name="requestSettings">AI request settings</param>
+    /// <param name="cancellationToken">Async cancellation token</param>
+    /// <returns>Generated chat message in string format</returns>
+    protected async Task<string> InternalGenerateChatMessageAsync(
+        ChatHistory chat,
+        ChatRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(chat, "The chat history cannot be null");
+        Verify.NotNull(requestSettings, "Completion settings cannot be empty");
+
+        if (requestSettings.MaxTokens < 1)
+        {
+            throw new AIException(
+                AIException.ErrorCodes.InvalidRequest,
+                $"MaxTokens {requestSettings.MaxTokens} is not valid, the value must be greater than zero");
+        }
+
+        var options = new ChatCompletionsOptions
+        {
+            MaxTokens = requestSettings.MaxTokens,
+            Temperature = (float?)requestSettings.Temperature,
+            NucleusSamplingFactor = (float?)requestSettings.TopP,
+            FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
+            PresencePenalty = (float?)requestSettings.PresencePenalty,
+            ChoicesPerPrompt = 1,
+        };
+
+        if (requestSettings.StopSequences is { Count: > 0 })
+        {
+            foreach (var s in requestSettings.StopSequences)
+            {
+                options.StopSequences.Add(s);
+            }
+        }
+
+        foreach (ChatHistory.Message message in chat.Messages)
+        {
+            var role = message.AuthorRole switch
+            {
+                ChatHistory.AuthorRoles.User => ChatRole.User,
+                ChatHistory.AuthorRoles.Assistant => ChatRole.Assistant,
+                ChatHistory.AuthorRoles.System => ChatRole.System,
+                _ => throw new ArgumentException($"Invalid chat message author: {message.AuthorRole:G}")
+            };
+
+            options.Messages.Add(new ChatMessage(role, message.Content));
+        }
+
+        Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
+            async () => await this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken));
+
+        if (response == null || response.Value.Choices.Count < 1)
+        {
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
+        }
+
+        return response.Value.Choices[0].Message.Content;
+    }
+
+    /// <summary>
+    /// Create a new empty chat instance
+    /// </summary>
+    /// <param name="instructions">Optional chat instructions for the AI service</param>
+    /// <returns>Chat object</returns>
+    protected ChatHistory InternalCreateNewChat(string instructions = "")
+    {
+        return new OpenAIChatHistory(instructions);
+    }
+
+    /// <summary>
+    /// Creates a completion for the prompt and settings using the chat endpoint
+    /// </summary>
+    /// <param name="text">The prompt to complete.</param>
+    /// <param name="requestSettings">Request settings for the completion API</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Text generated by the remote model</returns>
+    protected async Task<string> InternalCompleteTextUsingChatAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        var chat = this.InternalCreateNewChat();
+        chat.AddMessage(ChatHistory.AuthorRoles.User, text);
+        var settings = new ChatRequestSettings
+        {
+            MaxTokens = requestSettings.MaxTokens,
+            Temperature = requestSettings.Temperature,
+            TopP = requestSettings.TopP,
+            PresencePenalty = requestSettings.PresencePenalty,
+            FrequencyPenalty = requestSettings.FrequencyPenalty,
+            StopSequences = requestSettings.StopSequences,
+        };
+
+        return await this.InternalGenerateChatMessageAsync(chat, settings, cancellationToken);
+    }
+
+    private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
+    {
         try
         {
-            response = await this.Client!.GetCompletionsAsync(
-                this.ModelId,
-                options,
-                cancellationToken);
+            return await request.Invoke();
         }
         catch (RequestFailedException e)
         {
@@ -155,114 +296,5 @@ public abstract class ClientBase
                 AIException.ErrorCodes.UnknownError,
                 $"Something went wrong: {e.Message}", e);
         }
-
-        if (response == null || response.Value.Choices.Count < 1)
-        {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text completions not found");
-        }
-
-        return response.Value.Choices[0].Text;
-    }
-
-    /// <summary>
-    /// Generates an embedding from the given <paramref name="data"/>.
-    /// </summary>
-    /// <param name="data">List of strings to generate embeddings for</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>List of embeddings</returns>
-    protected async Task<IList<Embedding<float>>> InternalGenerateTextEmbeddingsAsync(
-        IList<string> data,
-        CancellationToken cancellationToken = default)
-    {
-        var result = new List<Embedding<float>>();
-        foreach (string text in data)
-        {
-            var options = new EmbeddingsOptions(text);
-            Response<Embeddings>? response = await this.Client!.GetEmbeddingsAsync(this.ModelId, options, cancellationToken);
-
-            if (response == null || response.Value.Data.Count < 1)
-            {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text embedding not found");
-            }
-
-            EmbeddingItem x = response.Value.Data[0];
-
-            result.Add(new Embedding<float>(x.Embedding));
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Generate a new chat message
-    /// </summary>
-    /// <param name="chat">Chat history</param>
-    /// <param name="requestSettings">AI request settings</param>
-    /// <param name="cancellationToken">Async cancellation token</param>
-    /// <returns>Generated chat message in string format</returns>
-    protected async Task<string> InternalGenerateChatMessageAsync(
-        ChatHistory chat,
-        ChatRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(chat, "The chat history cannot be null");
-        Verify.NotNull(requestSettings, "Completion settings cannot be empty");
-
-        if (requestSettings.MaxTokens < 1)
-        {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                $"MaxTokens {requestSettings.MaxTokens} is not valid, the value must be greater than zero");
-        }
-
-        var options = new ChatCompletionsOptions
-        {
-            MaxTokens = requestSettings.MaxTokens,
-            Temperature = (float?)requestSettings.Temperature,
-            NucleusSamplingFactor = (float?)requestSettings.TopP,
-            FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
-            PresencePenalty = (float?)requestSettings.PresencePenalty,
-            ChoicesPerPrompt = 1,
-        };
-
-        if (requestSettings.StopSequences is { Count: > 0 })
-        {
-            foreach (var s in requestSettings.StopSequences)
-            {
-                options.StopSequences.Add(s);
-            }
-        }
-
-        foreach (ChatHistory.Message message in chat.Messages)
-        {
-            var role = message.AuthorRole switch
-            {
-                ChatHistory.AuthorRoles.User => ChatRole.User,
-                ChatHistory.AuthorRoles.Assistant => ChatRole.Assistant,
-                ChatHistory.AuthorRoles.System => ChatRole.System,
-                _ => throw new ArgumentException($"Invalid chat message author: {message.AuthorRole:G}")
-            };
-
-            options.Messages.Add(new ChatMessage(role, message.Content));
-        }
-
-        Response<ChatCompletions>? response = await this.Client!.GetChatCompletionsAsync(this.ModelId, options, cancellationToken);
-
-        if (response == null || response.Value.Choices.Count < 1)
-        {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
-        }
-
-        return response.Value.Choices[0].Message.Content;
-    }
-
-    /// <summary>
-    /// Create a new empty chat instance
-    /// </summary>
-    /// <param name="instructions">Optional chat instructions for the AI service</param>
-    /// <returns>Chat object</returns>
-    protected ChatHistory InternalCreateNewChat(string instructions = "")
-    {
-        return new OpenAIChatHistory(instructions);
     }
 }

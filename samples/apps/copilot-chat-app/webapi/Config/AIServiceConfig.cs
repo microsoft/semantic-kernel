@@ -36,6 +36,8 @@ internal class AIServiceConfig
                     !string.IsNullOrEmpty(this.Label) &&
                     !string.IsNullOrEmpty(this.DeploymentOrModelId) &&
                     !string.IsNullOrEmpty(this.Key);
+            default:
+                break;
         }
 
         return false;

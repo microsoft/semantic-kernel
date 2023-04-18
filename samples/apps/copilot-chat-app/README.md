@@ -49,7 +49,7 @@ and these components are functional:
             you may change `"UseHttp": false,` to `True` to overide the default
             use of https.
 
-          * Under the `“CompletionConfig”` block, make the following configuration
+          * Under the `“Completion”` block, make the following configuration
             changes to match your instance:
 
             * `“AIService”: “AzureOpenAI”`, or whichever option is appropriate for
@@ -61,7 +61,7 @@ and these components are functional:
             * You will insert your Azure endpoint key during build of the backend
               API Server
 
-        * Under the `“EmbeddingConfig”` block, make sure the following configuration
+        * Under the `“Embedding”` block, make sure the following configuration
           changes to match your instance:
             * `“AIService”: “AzureOpenAI”,` or whichever option is appropriate
               for your instance.
@@ -72,8 +72,8 @@ and these components are functional:
             
 4. Build the back-end API server by following these instructions:
     1. In the terminal navigate to  `\samples\apps\copilot-chat-app\webapi`
-    2. Run the command: `dotnet user-secrets set "CompletionConfig:Key"  "YOUR OPENAI KEY or AZURE OPENAI KEY"`
-    3. Run the command: `dotnet user-secrets set "EmbeddingConfig:Key" "YOUR OPENAI KEY or AZURE OPENAI KEY"`
+    2. Run the command: `dotnet user-secrets set "Completion:Key"  "YOUR OPENAI KEY or AZURE OPENAI KEY"`
+    3. Run the command: `dotnet user-secrets set "Embedding:Key" "YOUR OPENAI KEY or AZURE OPENAI KEY"`
     4. Execute the command `dotnet build`
     5. Once the build is complete, Execute the command `dotnet run`
     6. Test the back-end server to confirm it is running.
@@ -88,6 +88,7 @@ and these components are functional:
 >Note: You may need to acknowledge the Windows Defender Firewall, and allow
  the app to communicate over private or public netowrks as appropriate.
 
+ 
 5. Now that the back-end API server is setup, and confirmed operating, let’s
    proceed with setting up the front-end WebApp.
     1. Navigate to `\apps\copilot-chat-app\webapp`

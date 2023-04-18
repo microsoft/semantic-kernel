@@ -23,7 +23,7 @@ public class ChatMessageRepository : Repository<ChatMessage>
     /// </summary>
     public Task<IEnumerable<ChatMessage>> FindByChatIdAsync(string chatId)
     {
-        return Task.FromResult(base.StorageContext.QueryableEntities.Where(e => e.ChatId == chatId).AsEnumerable());
+        return base.StorageContext.QueryEntitiesAsync(e => e.ChatId == chatId);
     }
 
     public async Task<ChatMessage> FindLastByChatIdAsync(string chatId)
