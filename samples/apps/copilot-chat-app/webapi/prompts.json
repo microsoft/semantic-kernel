@@ -12,9 +12,9 @@
   "MemoryAntiHallucination": "IMPORTANT: DO NOT INCLUDE ANY OF THE ABOVE INFORMATION IN THE GENERATED RESPONSE AND ALSO DO NOT MAKE UP OR INFER ANY ADDITIONAL INFORMATION THAT IS NOT INCLUDED BELOW",
   "MemoryContinuation": "Generate a well-formed JSON of extracted context data. DO NOT include a preamble in the response. DO NOT give a list of possible responses. Only provide a single response of the json block.\nResponse:",
 
-  "WorkingMemoryName": "Working memory",
+  "WorkingMemoryName": "WorkingMemory",
   "WorkingMemoryExtraction": "Extract information for a short period of time, such as a few seconds or minutes. It should be useful for performing complex cognitive tasks that require attention, concentration, or mental calculation.",
 
-  "LongTermMemoryName": "Long-term memory",
+  "LongTermMemoryName": "LongTermMemory",
   "LongTermMemoryExtraction": "Extract information that is encoded and consolidated from other memory types, such as working memory or sensory memory. It should be useful for maintaining and recalling one's personal identity, history, and knowledge over time."
 }

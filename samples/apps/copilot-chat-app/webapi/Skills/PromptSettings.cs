@@ -19,11 +19,11 @@ public class PromptSettings
         this._promptsConfig = promptsConfig;
     }
 
-    internal double TokenEstimateFactor = 2.5;
-    internal int ResponseTokenLimit = 1024;
-    internal int CompletionTokenLimit = 8192;
-    internal double MemoriesResponseContextWeight = 0.3;
-    internal double HistoryResponseContextWeight = 0.3;
+    internal double TokenEstimateFactor { get; } = 2.5;
+    internal int ResponseTokenLimit { get; } = 1024;
+    internal int CompletionTokenLimit { get; } = 8192;
+    internal double MemoriesResponseContextWeight { get; } = 0.3;
+    internal double HistoryResponseContextWeight { get; } = 0.3;
     internal string KnowledgeCutoffDate => this._promptsConfig.KnowledgeCutoffDate;
     internal string InitialBotMessage => this._promptsConfig.InitialBotMessage;
 
@@ -99,13 +99,13 @@ public class PromptSettings
     };
     internal string SystemChatPrompt => string.Join("\n", this.SystemChatPromptComponents);
 
-    internal double ResponseTemperature = 0.7;
-    internal double ResponseTopP = 1;
-    internal double ResponsePresencePenalty = 0.5;
-    internal double ResponseFrequencyPenalty = 0.5;
+    internal double ResponseTemperature { get; } = 0.7;
+    internal double ResponseTopP { get; } = 1;
+    internal double ResponsePresencePenalty { get; } = 0.5;
+    internal double ResponseFrequencyPenalty { get; } = 0.5;
 
-    internal double IntentTemperature = 0.7;
-    internal double IntentTopP = 1;
-    internal double IntentPresencePenalty = 0.5;
-    internal double IntentFrequencyPenalty = 0.5;
+    internal double IntentTemperature { get; } = 0.7;
+    internal double IntentTopP { get; } = 1;
+    internal double IntentPresencePenalty { get; } = 0.5;
+    internal double IntentFrequencyPenalty { get; } = 0.5;
 };
