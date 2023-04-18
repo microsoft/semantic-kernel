@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Service.Model;
+using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Controllers;
@@ -16,11 +17,13 @@ public class SemanticKernelController : ControllerBase
     private readonly IServiceProvider _serviceProvider;
     private readonly IConfiguration _configuration;
     private readonly ILogger<SemanticKernelController> _logger;
+    private readonly PromptSettings _promptSettings;
 
-    public SemanticKernelController(IServiceProvider serviceProvider, IConfiguration configuration, ILogger<SemanticKernelController> logger)
+    public SemanticKernelController(IServiceProvider serviceProvider, IConfiguration configuration, PromptSettings promptSettings, ILogger<SemanticKernelController> logger)
     {
         this._serviceProvider = serviceProvider;
         this._configuration = configuration;
+        this._promptSettings = promptSettings;
         this._logger = logger;
     }
 
@@ -59,7 +62,7 @@ public class SemanticKernelController : ControllerBase
             kernel.RegisterSemanticSkills(semanticSkillsDirectory, this._logger);
         }
 
-        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._logger);
+        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, this._logger);
 
         ISKFunction? function = null;
         try

@@ -62,11 +62,15 @@ public class PlannerSkill
         /// The list of functions to include in the plan creation request.
         /// </summary>
         public const string IncludedFunctions = "includedFunctions";
+
+        /// <summary>
+        /// Whether to use conditional capabilities when creating plans.
+        /// </summary>
+        public const string UseConditionals = "useConditionals";
     }
 
     internal sealed class PlannerSkillConfig
     {
-        // 0.78 is a good value for our samples and demonstrations.
         // Depending on the embeddings engine used, the user ask,
         // and the functions available, this value may need to be adjusted.
         // For default, this is set to null to exhibit previous behavior.
@@ -86,6 +90,9 @@ public class PlannerSkill
 
         // A list of functions to include in the plan creation request.
         public HashSet<string> IncludedFunctions { get; } = new() { "BucketOutputs" };
+
+        // Whether to use conditional capabilities when creating plans.
+        public bool UseConditionals { get; set; } = false;
     }
 
     /// <summary>
@@ -109,6 +116,11 @@ public class PlannerSkill
     private readonly ISKFunction _functionFlowFunction;
 
     /// <summary>
+    /// the conditional function flow semantic function, which takes a goal and creates an xml plan that can be executed
+    /// </summary>
+    private readonly ISKFunction _conditionalFunctionFlowFunction;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="PlannerSkill"/> class.
     /// </summary>
     /// <param name="kernel"> The kernel to use </param>
@@ -128,6 +140,15 @@ public class PlannerSkill
             skillName: RestrictedSkillName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
+            maxTokens: maxTokens,
+            temperature: 0.0,
+            stopSequences: new[] { "<!--" });
+
+        this._conditionalFunctionFlowFunction = kernel.CreateSemanticFunction(
+            promptTemplate: SemanticFunctionConstants.ConditionalFunctionFlowFunctionDefinition,
+            skillName: RestrictedSkillName,
+            description: "Given a request or command or goal generate a step by step plan to " +
+                         "fulfill the request using functions. This ability is also known as decision making and function flow. Uses conditional capabilities",
             maxTokens: maxTokens,
             temperature: 0.0,
             stopSequences: new[] { "<!--" });
@@ -234,6 +255,8 @@ public class PlannerSkill
         DefaultValue = "")]
     [SKFunctionContextParameter(Name = Parameters.IncludedFunctions, Description = "A list of functions to include in the plan creation request.",
         DefaultValue = "")]
+    [SKFunctionContextParameter(Name = Parameters.UseConditionals, Description = "Use conditional functions to create the plan.",
+        DefaultValue = "False")]
     public async Task<SKContext> CreatePlanAsync(string goal, SKContext context)
     {
         PlannerSkillConfig config = context.GetPlannerSkillConfig();
@@ -242,7 +265,9 @@ public class PlannerSkill
         context.Variables.Set("available_functions", relevantFunctionsManual);
         // TODO - consider adding the relevancy score for functions added to manual
 
-        var plan = await this._functionFlowFunction.InvokeAsync(context);
+        var plan = config.UseConditionals
+            ? await this._conditionalFunctionFlowFunction.InvokeAsync(context)
+            : await this._functionFlowFunction.InvokeAsync(context);
 
         string fullPlan = $"<{FunctionFlowRunner.GoalTag}>\n{goal}\n</{FunctionFlowRunner.GoalTag}>\n{plan.ToString().Trim()}";
         _ = context.Variables.UpdateWithPlanEntry(new SkillPlan

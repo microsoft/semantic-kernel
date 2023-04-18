@@ -9,7 +9,7 @@ namespace SemanticKernel.IntegrationTests.Fakes;
 
 internal class EmailSkillFake
 {
-    [SKFunction("Given an e-mail and message body, send an email")]
+    [SKFunction("Given an email address and message body, send an email")]
     [SKFunctionInput(Description = "The body of the email message to send.")]
     [SKFunctionContextParameter(Name = "email_address", Description = "The email address to send email to.", DefaultValue = "default@email.com")]
     public Task<SKContext> SendEmailAsync(string input, SKContext context)
@@ -19,7 +19,7 @@ internal class EmailSkillFake
         return Task.FromResult(context);
     }
 
-    [SKFunction("Given a name, find email address")]
+    [SKFunction("Lookup an email address for a person given a name")]
     [SKFunctionInput(Description = "The name of the person to email.")]
     public Task<SKContext> GetEmailAddressAsync(string input, SKContext context)
     {
