@@ -76,11 +76,11 @@ public sealed class PlannerSkillTests : IDisposable
 
         // Act
         ContextVariables variables = new(prompt);
-        variables.Set(PlannerSkill.Parameters.ExcludedSkills, "IntentDetectionSkill,FunSkill");
-        variables.Set(PlannerSkill.Parameters.ExcludedFunctions, "EmailTo,EmailGen");
+        variables.Set(PlannerSkill.Parameters.ExcludedSkills, "IntentDetectionSkill,FunSkill,CodingSkill");
+        variables.Set(PlannerSkill.Parameters.ExcludedFunctions, "EmailTo");
         variables.Set(PlannerSkill.Parameters.IncludedFunctions, "Continue");
-        variables.Set(PlannerSkill.Parameters.MaxRelevantFunctions, "9");
-        variables.Set(PlannerSkill.Parameters.RelevancyThreshold, "0.77");
+        variables.Set(PlannerSkill.Parameters.MaxRelevantFunctions, "19");
+        variables.Set(PlannerSkill.Parameters.RelevancyThreshold, "0.5");
         SKContext actual = await target.RunAsync(variables, plannerSKill["CreatePlan"]).ConfigureAwait(true);
 
         // Assert
@@ -144,7 +144,9 @@ public sealed class PlannerSkillTests : IDisposable
         var plannerSKill = target.ImportSkill(new PlannerSkill(target));
 
         // Act
-        SKContext createdPlanContext = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
+        var context = new ContextVariables(prompt);
+        context.Set(PlannerSkill.Parameters.UseConditionals, "true");
+        SKContext createdPlanContext = await target.RunAsync(context, plannerSKill["CreatePlan"]).ConfigureAwait(true);
         await target.RunAsync(createdPlanContext.Variables.Clone(), plannerSKill["ExecutePlan"]).ConfigureAwait(false);
         var planResult = createdPlanContext.Variables[SkillPlan.PlanKey];
 
@@ -214,7 +216,9 @@ public sealed class PlannerSkillTests : IDisposable
         var plannerSKill = target.ImportSkill(new PlannerSkill(target));
 
         // Act
-        SKContext createdPlanContext = await target.RunAsync(prompt, plannerSKill["CreatePlan"]).ConfigureAwait(true);
+        var context = new ContextVariables(prompt);
+        context.Set(PlannerSkill.Parameters.UseConditionals, "true");
+        SKContext createdPlanContext = await target.RunAsync(context, plannerSKill["CreatePlan"]).ConfigureAwait(true);
         await target.RunAsync(createdPlanContext.Variables.Clone(), plannerSKill["ExecutePlan"]).ConfigureAwait(false);
         var planResult = createdPlanContext.Variables[SkillPlan.PlanKey];
 

@@ -2,8 +2,10 @@
 
 using System.Linq;
 
+#pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace // Extension methods
 namespace Microsoft.SemanticKernel.SkillDefinition;
+#pragma warning restore IDE0130
 
 internal static class FunctionViewExtensions
 {
@@ -35,6 +37,7 @@ internal static class FunctionViewExtensions
     /// <returns>A string for generating an embedding for a function.</returns>
     internal static string ToEmbeddingString(this FunctionView function)
     {
-        return string.Join(": ", $"{function.ToFullyQualifiedName()}", function.Description);
+        var inputs = string.Join("\n", function.Parameters.Select(p => $"    - {p.Name}: {p.Description}"));
+        return $"{function.Name}:\n  description: {function.Description}\n  inputs:\n{inputs}";
     }
 }
