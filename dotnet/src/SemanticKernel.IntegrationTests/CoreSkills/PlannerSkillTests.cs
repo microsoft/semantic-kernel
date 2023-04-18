@@ -35,7 +35,7 @@ public sealed class PlannerSkillTests : IDisposable
             .Build();
     }
 
-    [Theory(Skip = "The test is broken since the changes to planner prompt and format")]
+    [Theory]
     [InlineData("Write a poem or joke and send it in an e-mail to Kai.", "function._GLOBAL_FUNCTIONS_.SendEmail")]
     public async Task CreatePlanWithEmbeddingsTestAsync(string prompt, string expectedAnswerContains)
     {
