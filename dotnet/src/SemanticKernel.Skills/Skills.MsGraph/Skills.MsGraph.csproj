@@ -8,13 +8,14 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel.Skills.MsGraph</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Skills.MsGraph</RootNamespace>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Skills.MsGraph</PackageId>
     <Title>Semantic Kernel - Microsoft Graph Connector</Title>
+    <Description>Semantic Kernel Microsoft Graph Skill: access your tenant data, schedule meetings, send emails, etc.</Description>
   </PropertyGroup>
   
   <ItemGroup>

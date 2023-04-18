@@ -39,10 +39,10 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     [Fact]
     public async Task ItCanParsePutOperationBodySuccessfullyAsync()
     {
-        //Act
+        // Act
         var operations = await this._sut.ParseAsync(this._openApiDocument);
 
-        //Assert
+        // Assert
         Assert.NotNull(operations);
         Assert.True(operations.Any());
 
@@ -82,10 +82,10 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     [Fact]
     public async Task ItCanParsePutOperationMetadataSuccessfullyAsync()
     {
-        //Act
+        // Act
         var operations = await this._sut.ParseAsync(this._openApiDocument);
 
-        //Assert
+        // Assert
         Assert.NotNull(operations);
         Assert.True(operations.Any());
 
@@ -131,7 +131,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     [Fact]
     public async Task ItCanExtractSimpleTypeHeaderParameterMetadataSuccessfullyAsync()
     {
-        //Act
+        // Act
         var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert string header parameter metadata
@@ -154,7 +154,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     [Fact]
     public async Task ItCanExtractCsvStyleHeaderParameterMetadataSuccessfullyAsync()
     {
-        //Act
+        // Act
         var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert header parameters metadata
@@ -171,10 +171,10 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     [Fact]
     public async Task ItCanExtractHeadersSuccessfullyAsync()
     {
-        //Act
+        // Act
         var operations = await this._sut.ParseAsync(this._openApiDocument);
 
-        //Assert
+        // Assert
         Assert.True(operations.Any());
 
         var operation = operations.Single(o => o.Id == "SetSecret");
@@ -184,6 +184,16 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.True(operation.Headers.ContainsKey("Accept"));
         Assert.True(operation.Headers.ContainsKey("X-API-Version"));
         Assert.True(operation.Headers.ContainsKey("X-Operation-Csv-Ids"));
+    }
+
+    [Fact]
+    public async Task ItCanExtractAllPathsAsOperationsAsync()
+    {
+        // Act
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
+
+        // Assert
+        Assert.Equal(2, operations.Count);
     }
 
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId,

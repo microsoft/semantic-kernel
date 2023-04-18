@@ -173,9 +173,10 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureChatCompletionService(this KernelConfig config,
-        string serviceId, string deploymentName, string endpoint, string apiKey)
+        string serviceId, string deploymentName, string endpoint, string apiKey, bool alsoAsTextCompletion = true)
     {
         Verify.NotEmpty(serviceId, "The service Id provided is empty");
 
@@ -183,6 +184,15 @@ public static class KernelConfigOpenAIExtensions
             deploymentName, endpoint, apiKey, kernel.Config.HttpHandlerFactory, kernel.Log);
 
         config.AddChatCompletionService(serviceId, Factory);
+
+        // If the class implements the text completion interface, allow to use it also for semantic functions
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
+        {
+            ITextCompletion TextServiceFactory(IKernel kernel) => new AzureChatCompletion(
+                deploymentName, endpoint, apiKey, kernel.Config.HttpHandlerFactory, kernel.Log);
+
+            config.AddTextCompletionService(serviceId, TextServiceFactory);
+        }
 
         return config;
     }
@@ -196,9 +206,10 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureChatCompletionService(this KernelConfig config,
-        string serviceId, string deploymentName, string endpoint, TokenCredential credentials)
+        string serviceId, string deploymentName, string endpoint, TokenCredential credentials, bool alsoAsTextCompletion = true)
     {
         Verify.NotEmpty(serviceId, "The service Id provided is empty");
 
@@ -206,6 +217,15 @@ public static class KernelConfigOpenAIExtensions
             deploymentName, endpoint, credentials, kernel.Config.HttpHandlerFactory, kernel.Log);
 
         config.AddChatCompletionService(serviceId, Factory);
+
+        // If the class implements the text completion interface, allow to use it also for semantic functions
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
+        {
+            ITextCompletion TextServiceFactory(IKernel kernel) => new AzureChatCompletion(
+                deploymentName, endpoint, credentials, kernel.Config.HttpHandlerFactory, kernel.Log);
+
+            config.AddTextCompletionService(serviceId, TextServiceFactory);
+        }
 
         return config;
     }
@@ -219,9 +239,10 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddOpenAIChatCompletionService(this KernelConfig config,
-        string serviceId, string modelId, string apiKey, string? orgId = null)
+        string serviceId, string modelId, string apiKey, string? orgId = null, bool alsoAsTextCompletion = true)
     {
         Verify.NotEmpty(serviceId, "The service Id provided is empty");
 
@@ -229,6 +250,15 @@ public static class KernelConfigOpenAIExtensions
             modelId, apiKey, orgId, kernel.Config.HttpHandlerFactory, kernel.Log);
 
         config.AddChatCompletionService(serviceId, Factory);
+
+        // If the class implements the text completion interface, allow to use it also for semantic functions
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(OpenAIChatCompletion)))
+        {
+            ITextCompletion TextServiceFactory(IKernel kernel) => new OpenAIChatCompletion(
+                modelId, apiKey, orgId, kernel.Config.HttpHandlerFactory, kernel.Log);
+
+            config.AddTextCompletionService(serviceId, TextServiceFactory);
+        }
 
         return config;
     }

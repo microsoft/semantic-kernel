@@ -8,13 +8,14 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel.Skills.Document</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Skills.Document</RootNamespace>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Skills.Document</PackageId>
     <Title>Semantic Kernel - Document Skill</Title>
+    <Description>Semantic Kernel Document Skill: Word processing, OpenXML, etc.</Description>
   </PropertyGroup>
 
   <ItemGroup>

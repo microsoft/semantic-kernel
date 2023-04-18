@@ -142,7 +142,7 @@ internal class RestApiOperation
 
             //Getting metadata for the header
             var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName);
-            if (headerMetadata == null || headerMetadata.IsRequired)
+            if (headerMetadata == null)
             {
                 //No metadata found for the header.
                 throw new RestApiOperationException($"No value for the '{headerName} header is found.'");

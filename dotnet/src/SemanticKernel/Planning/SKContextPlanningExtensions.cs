@@ -79,7 +79,8 @@ internal static class SKContextPlanningExtensions
             await RememberFunctionsAsync(context, availableFunctions);
 
             // Search for functions that match the semantic query.
-            var memories = context.Memory.SearchAsync(collection: PlannerMemoryCollectionName, query: semanticQuery!, limit: config.MaxRelevantFunctions, minRelevanceScore: config.RelevancyThreshold.Value, withEmbeddings: false,
+            var memories = context.Memory.SearchAsync(collection: PlannerMemoryCollectionName, query: semanticQuery!, limit: config.MaxRelevantFunctions,
+                minRelevanceScore: config.RelevancyThreshold.Value, withEmbeddings: false,
                 cancel: context.CancellationToken);
 
             // Add functions that were found in the search results.
@@ -132,15 +133,19 @@ internal static class SKContextPlanningExtensions
         foreach (var function in availableFunctions)
         {
             var functionName = function.ToFullyQualifiedName();
-            var key = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
+            var key = functionName;
+            var description = string.IsNullOrEmpty(function.Description) ? functionName : function.Description;
+            var textToEmbed = function.ToEmbeddingString();
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
-            var memoryEntry = await context.Memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false, cancel: context.CancellationToken);
+            var memoryEntry = await context.Memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false,
+                cancel: context.CancellationToken);
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
-                await context.Memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: functionName, id: key, description: function.ToManualString(),
+                // Memory now supports these such strategies.
+                await context.Memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: textToEmbed, id: key, description: description,
                     additionalMetadata: string.Empty, cancel: context.CancellationToken);
             }
         }
@@ -192,6 +197,11 @@ internal static class SKContextPlanningExtensions
             // Included functions from context.Variables should not override the default excluded functions.
             config.IncludedFunctions.UnionWith(includedFunctionsList.Except(config.ExcludedFunctions));
             config.IncludedFunctions.ExceptWith(config.ExcludedFunctions);
+        }
+
+        if (context.Variables.Get(Parameters.UseConditionals, out var useConditionals) && bool.TryParse(useConditionals, out var parsedUseConditionals))
+        {
+            config.UseConditionals = parsedUseConditionals;
         }
 
         return config;

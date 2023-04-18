@@ -12,7 +12,7 @@ def test_can_be_instantiated():
 
 
 def test_can_be_imported():
-    kernel = sk.create_kernel()
+    kernel = sk.Kernel()
     assert kernel.import_skill(TimeSkill(), "time")
     assert kernel.skills.has_native_function("time", "now")
 

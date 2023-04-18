@@ -60,9 +60,13 @@ const App: FC = () => {
     useEffect(() => {
         if (isAuthenticated && account && appState === AppState.LoadingChats) {            
             // Load all chats from memory
-            chat.loadChats().then(() => {
-                setAppState(AppState.Chat);
-            });
+            async function loadChats() {
+                if (await chat.loadChats()) {
+                    setAppState(AppState.Chat);
+                }
+            }
+
+            loadChats();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instance, inProgress, isAuthenticated, appState]);

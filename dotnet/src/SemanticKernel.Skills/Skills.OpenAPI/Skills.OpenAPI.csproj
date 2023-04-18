@@ -8,13 +8,14 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel.Skills.OpenAPI</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Skills.OpenAPI</RootNamespace>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Skills.OpenAPI</PackageId>
     <Title>Semantic Kernel - OpenAPI Skills</Title>
+    <Description>Semantic Kernel OpenAPI Skill</Description>
   </PropertyGroup>
 
   <ItemGroup>
