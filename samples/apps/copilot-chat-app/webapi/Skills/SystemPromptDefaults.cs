@@ -12,7 +12,7 @@ public class SystemPromptDefaults
     {
         this._promptsConfig = promptsConfig;
     }
-    
+
     internal double TokenEstimateFactor = 2.5;
     internal int ResponseTokenLimit = 1024;
     internal int CompletionTokenLimit = 8192;
