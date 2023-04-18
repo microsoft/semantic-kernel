@@ -8,30 +8,30 @@ namespace SemanticKernel.Service.Controllers;
 /// <summary>
 /// Token Response is a simple wrapper around the token and region
 /// </summary>
-public class TokenResponse
+public class SpeechTokenResponse
 {
     public string? token { get; set; }
     public string? region { get; set; }
 }
 
 [ApiController]
-public class TokenController : ControllerBase
+public class SpeechTokenController : ControllerBase
 {
     private readonly IConfiguration _configuration;
-    private readonly ILogger<TokenController> _logger;
+    private readonly ILogger<SpeechTokenController> _logger;
 
-    public TokenController(IConfiguration configuration, ILogger<TokenController> logger)
+    public SpeechTokenController(IConfiguration configuration, ILogger<SpeechTokenController> logger)
     {
         this._configuration = configuration;
         this._logger = logger;
     }
 
     /// <summary>
-    /// Use the Azure Speech Config key to return a authorization token and region as a Token Response.
+    /// Use the Azure Speech Config key to return an authorization token and region as a Token Response.
     /// </summary>
     [Route("speechToken")]
     [HttpGet]
-    public ActionResult<TokenResponse> Get()
+    public ActionResult<SpeechTokenResponse> Get()
     {
         AzureSpeechServiceConfig azureSpeechConfig = this._configuration.GetSection("AzureSpeechConfig").Get<AzureSpeechServiceConfig>();
 
@@ -40,7 +40,7 @@ public class TokenController : ControllerBase
 
         var token = this.FetchTokenAsync(FetchTokenUri, subscriptionKey).Result;
 
-        return new TokenResponse { token = token, region = azureSpeechConfig.Region };
+        return new SpeechTokenResponse { token = token, region = azureSpeechConfig.Region };
     }
 
     private async Task<string> FetchTokenAsync(string fetchUri, string subscriptionKey)
