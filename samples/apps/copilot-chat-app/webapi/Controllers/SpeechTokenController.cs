@@ -33,14 +33,14 @@ public class SpeechTokenController : ControllerBase
     [HttpGet]
     public ActionResult<SpeechTokenResponse> Get()
     {
-        AzureSpeechServiceConfig azureSpeechConfig = this._configuration.GetSection("AzureSpeechConfig").Get<AzureSpeechServiceConfig>();
+        AzureSpeechConfig AzureSpeech = this._configuration.GetSection("AzureSpeech").Get<AzureSpeechConfig>();
 
-        string FetchTokenUri = "https://" + azureSpeechConfig.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
-        string subscriptionKey = azureSpeechConfig.Key;
+        string FetchTokenUri = "https://" + AzureSpeech.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
+        string subscriptionKey = AzureSpeech.Key;
 
         var token = this.FetchTokenAsync(FetchTokenUri, subscriptionKey).Result;
 
-        return new SpeechTokenResponse { token = token, region = azureSpeechConfig.Region };
+        return new SpeechTokenResponse { token = token, region = AzureSpeech.Region };
     }
 
     private async Task<string> FetchTokenAsync(string fetchUri, string subscriptionKey)
