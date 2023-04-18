@@ -14,12 +14,6 @@ namespace SemanticKernel.Service.Skills;
 /// </summary>
 public class ChatHistorySkill
 {
-    /// <summary>
-    /// Returns the name of the semantic text memory collection that stores chat message information.
-    /// </summary>
-    /// <param name="chatId">Chat ID that is persistent and unique for the chat session.</param>
-    public static string MessageCollectionName(string chatId) => $"{chatId}-messages";
-
     private readonly ChatMessageRepository _chatMessageRepository;
     private readonly ChatSessionRepository _chatSessionRepository;
 

@@ -15,6 +15,7 @@
     <!-- NuGet Package Settings -->
     <PackageId>Microsoft.SemanticKernel.Skills.Document</PackageId>
     <Title>Semantic Kernel - Document Skill</Title>
+    <Description>Semantic Kernel Document Skill: Word processing, OpenXML, etc.</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -19,7 +19,7 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// <param name="vector">A a vector of contiguous, unmanaged data.</param>
     /// <param name="isNormalized">Indicates whether the data was pre-normalized.</param>
     /// <remarks>
-    /// This does not verified that the data is normalized, nor make any guarantees that it remains so,
+    /// This does not verify that the data is normalized, nor make any guarantees that it remains so,
     /// as the data can be modified at its source. The <paramref name="isNormalized"/> parameter simply
     /// directs these operations to perform faster if the data is known to be normalized.
     /// </remarks>
@@ -37,7 +37,7 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// <param name="vector">A vector of contiguous, unmanaged data.</param>
     /// <param name="isNormalized">Indicates whether the data was pre-normalized.</param>
     /// <remarks>
-    /// This does not verified that the data is normalized, nor make any guarantees that it remains so,
+    /// This does not verify that the data is normalized, nor make any guarantees that it remains so,
     /// as the data can be modified at its source. The <paramref name="isNormalized"/> parameter simply
     /// directs these operations to perform faster if the data is known to be normalized.
     /// </remarks>
@@ -52,7 +52,7 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// <param name="span">A vector of contiguous, unmanaged data.</param>
     /// <param name="isNormalized">Indicates whether the data was pre-normalized.</param>
     /// <remarks>
-    /// This does not verified that the data is normalized, nor make any guarantees that it remains so,
+    /// This does not verify that the data is normalized, nor make any guarantees that it remains so,
     /// as the data can be modified at its source. The <paramref name="isNormalized"/> parameter simply
     /// directs these operations to perform faster if the data is known to be normalized.
     /// </remarks>
