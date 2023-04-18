@@ -19,9 +19,9 @@
 ## Tokenizers
 | | C# | Python | Notes |
 |---|---|---|---|         
-| GPT2                              | ✅ | 🔄 | Can be manually added to Python via the `transformers` library |
+| GPT2                              | ✅ | 🔄 | Can be manually added to Python via `pip install transformers` |
 | GPT3                              | ✅ | ❌ | | 
-| tiktoken                          | 🔄 | ❌ | Coming soon to Python |         
+| tiktoken                          | 🔄 | ❌ | Coming soon to Python and C#. Can be manually added to Python via `pip install tiktoken` |         
 
 ## Core Skills
 | | C# | Python | Notes |
