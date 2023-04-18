@@ -110,7 +110,7 @@ public abstract class MemoryStorageTestBase
 
     #region Why this case? collection does not exists should not be able accept any operation
     //[Fact]
-    //public Task ItCanInsertIntoNonExistentCollectionAsync()
+    //public virtual Task ItCanInsertIntoNonExistentCollectionAsync()
     //{
     //    return this.WithStorageAsync(async db =>
     //    {
@@ -142,7 +142,7 @@ public abstract class MemoryStorageTestBase
     #endregion
 
     [Fact]
-    public Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
+    public virtual Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
 
         return this.WithStorageAsync(async db =>
@@ -175,7 +175,7 @@ public abstract class MemoryStorageTestBase
 
 
     [Fact]
-    public Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
+    public virtual Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -211,7 +211,7 @@ public abstract class MemoryStorageTestBase
 
 
     [Fact]
-    public Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
+    public virtual Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -244,7 +244,7 @@ public abstract class MemoryStorageTestBase
     }
 
     [Fact]
-    public Task UpsertReplacesExistingRecordWithSameIdAsync()
+    public virtual Task UpsertReplacesExistingRecordWithSameIdAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -281,7 +281,7 @@ public abstract class MemoryStorageTestBase
     }
 
     [Fact]
-    public Task ExistingRecordCanBeRemovedAsync()
+    public virtual Task ExistingRecordCanBeRemovedAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -305,7 +305,7 @@ public abstract class MemoryStorageTestBase
     }
 
     [Fact]
-    public Task RemovingNonExistingRecordDoesNothingAsync()
+    public virtual Task RemovingNonExistingRecordDoesNothingAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -324,7 +324,7 @@ public abstract class MemoryStorageTestBase
     }
 
     [Fact]
-    public Task ItCanListAllDatabaseCollectionsAsync()
+    public virtual Task ItCanListAllDatabaseCollectionsAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -360,7 +360,7 @@ public abstract class MemoryStorageTestBase
 
 
     [Fact]
-    public Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
+    public virtual Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -425,7 +425,7 @@ public abstract class MemoryStorageTestBase
     }
 
     [Fact]
-    public Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
+    public virtual Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -488,7 +488,7 @@ public abstract class MemoryStorageTestBase
     }
 
     [Fact]
-    public Task GetNearestMatchAsyncReturnsExpectedAsync()
+    public virtual Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -549,7 +549,7 @@ public abstract class MemoryStorageTestBase
     }
 
     [Fact]
-    public Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
+    public virtual Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -587,7 +587,7 @@ public abstract class MemoryStorageTestBase
     }
 
     [Fact]
-    public Task ItCanBatchUpsertRecordsAsync()
+    public virtual Task ItCanBatchUpsertRecordsAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -610,7 +610,7 @@ public abstract class MemoryStorageTestBase
     }
 
     [Fact]
-    public Task ItCanBatchGetRecordsAsync()
+    public virtual Task ItCanBatchGetRecordsAsync()
     {
         return this.WithStorageAsync(async db =>
         {
@@ -663,7 +663,7 @@ public abstract class MemoryStorageTestBase
     }
 
     [Fact]
-    public Task DeletingNonExistentCollectionDoesNothingAsync()
+    public virtual Task DeletingNonExistentCollectionDoesNothingAsync()
     {
         return this.WithStorageAsync(async db =>
         {

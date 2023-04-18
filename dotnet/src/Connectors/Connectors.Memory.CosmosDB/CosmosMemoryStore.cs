@@ -53,7 +53,7 @@ public class CosmosMemoryStore : IMemoryStore
 
         newStore._databaseName = databaseName;
         newStore._log = log ?? NullLogger<CosmosMemoryStore>.Instance;
-        var response = await client.CreateDatabaseIfNotExistsAsync(newStore._databaseName, cancellationToken: cancel);
+        var response = await client.CreateDatabaseIfNotExistsAsync(newStore._databaseName, cancellationToken: cancel).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
@@ -80,7 +80,7 @@ public class CosmosMemoryStore : IMemoryStore
         var iterator=this._database.GetContainerQueryIterator<ContainerProperties>(queryDefinition);
         while (iterator.HasMoreResults)
         {
-            foreach (var item in await iterator.ReadNextAsync(cancel))
+            foreach (var item in await iterator.ReadNextAsync(cancel).ConfigureAwait(false))
             {
                 yield return item.Id;
             }
@@ -100,7 +100,7 @@ public class CosmosMemoryStore : IMemoryStore
             IncludedPaths = { new IncludedPath() { Path = "/*" } } 
         };
         newContainer.PartitionKeyPath = "/id";
-        var response = await this._database.CreateContainerIfNotExistsAsync(newContainer, cancellationToken: cancel);
+        var response = await this._database.CreateContainerIfNotExistsAsync(newContainer, cancellationToken: cancel).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.Created)
         {
             this._log.LogInformation("Created collection {0}", collectionName);
@@ -109,11 +109,7 @@ public class CosmosMemoryStore : IMemoryStore
 
 
             //create UDF
-            var createFunctionResponse=await response.Container.Scripts.CreateUserDefinedFunctionAsync(new UserDefinedFunctionProperties()
-            {
-                Id= "CosinSimularity",
-                Body=ScriptResources.UDF_CosinSimularity
-            },cancellationToken:cancel);
+            var createFunctionResponse=await response.Container.Scripts.CreateUserDefinedFunctionAsync(new UserDefinedFunctionProperties() { Id = "CosinSimularity", Body = ScriptResources.UDF_CosinSimularity }, cancellationToken: cancel).ConfigureAwait(false);
             if (createFunctionResponse.StatusCode==HttpStatusCode.Created)
             {
                 this._log.LogInformation("Created UDF CosinSimularity in collection {0}",collectionName);
@@ -139,7 +135,7 @@ public class CosmosMemoryStore : IMemoryStore
     {
         QueryDefinition qd = new QueryDefinition("select value(count(1)) from c where c.id=@id").WithParameter("@id",collectionName);
         var iterator = this._database.GetContainerQueryIterator<int>(qd);
-        var firstBatch = await iterator.ReadNextAsync(cancel);//only one result returns, not need to check if more data exists
+        var firstBatch = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);//only one result returns, not need to check if more data exists
         return firstBatch.First() == 1;
 
     }
@@ -150,7 +146,7 @@ public class CosmosMemoryStore : IMemoryStore
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
         try
         {
-            await container.DeleteContainerAsync(cancellationToken: cancel);
+            await container.DeleteContainerAsync(cancellationToken: cancel).ConfigureAwait(false);
         }
         catch (CosmosException ex)
         {
@@ -168,7 +164,7 @@ public class CosmosMemoryStore : IMemoryStore
         MemoryRecord? memoryRecord = null;
         try
         {
-            var response = await container.ReadItemAsync<CosmosMemoryRecord>(id, partitionKey, cancellationToken: cancel);
+            var response = await container.ReadItemAsync<CosmosMemoryRecord>(id, partitionKey, cancellationToken: cancel).ConfigureAwait(false);
             if (response == null)
             {
                 this._log?.LogWarning("Received no get response collection {1}", collectionName);
@@ -217,7 +213,7 @@ public class CosmosMemoryStore : IMemoryStore
     {
         foreach (var key in keys)
         {
-            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel);
+            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel).ConfigureAwait(false);
 
             if (record != null)
             {
@@ -242,7 +238,7 @@ public class CosmosMemoryStore : IMemoryStore
 
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
 
-        var response = await container.UpsertItemAsync(entity, cancellationToken: cancel);
+        var response = await container.UpsertItemAsync(entity, cancellationToken: cancel).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
         {
@@ -261,7 +257,7 @@ public class CosmosMemoryStore : IMemoryStore
     {
         foreach (var r in records)
         {
-            yield return await this.UpsertAsync(collectionName, r, cancel);
+            yield return await this.UpsertAsync(collectionName, r, cancel).ConfigureAwait(false);
         }
     }
 
@@ -272,10 +268,7 @@ public class CosmosMemoryStore : IMemoryStore
         ItemResponse<CosmosMemoryRecord> response=null;
         try
         {
-            response = await container.DeleteItemAsync<CosmosMemoryRecord>(
-            key,
-            new PartitionKey(key),
-            cancellationToken: cancel);
+            response = await container.DeleteItemAsync<CosmosMemoryRecord>(key, new PartitionKey(key), cancellationToken: cancel).ConfigureAwait(false);
         }
         catch (CosmosException ce)
         {
@@ -303,7 +296,7 @@ public class CosmosMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
-        await Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancel)));
+        await Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancel))).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

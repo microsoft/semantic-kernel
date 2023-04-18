@@ -17,11 +17,11 @@ public class CosmosDBMemoryStoreTest : MemoryStorageTestBase
 
     protected override async Task WithStorageAsync(Func<IMemoryStore, Task> factAsync)
     {
-#pragma warning disable CA2000 // CosmosClient is held by CosmosStore, should not be disposed after call
+#pragma warning disable CA2000 // CosmosClient is held by CosmosStore, should not be disposed in this call
         CosmosClient client = new CosmosClient(COSMOS_EMULATOR);
 #pragma warning restore CA2000 // Dispose objects before losing scope
         var db= await CosmosMemoryStore.CreateAsync(client, "TestDB");
-        await factAsync(db);
+        await factAsync(db).ConfigureAwait(false);
     }
 
 }
