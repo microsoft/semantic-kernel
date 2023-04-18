@@ -142,6 +142,7 @@ internal static class SKContextPlanningExtensions
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
+                // Memory now supports these such strategies.
                 await context.Memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: textToEmbed, id: key, description: description,
                     additionalMetadata: string.Empty, cancel: context.CancellationToken);
             }
@@ -194,6 +195,11 @@ internal static class SKContextPlanningExtensions
             // Included functions from context.Variables should not override the default excluded functions.
             config.IncludedFunctions.UnionWith(includedFunctionsList.Except(config.ExcludedFunctions));
             config.IncludedFunctions.ExceptWith(config.ExcludedFunctions);
+        }
+
+        if (context.Variables.Get(Parameters.UseConditionals, out var useConditionals) && bool.TryParse(useConditionals, out var parsedUseConditionals))
+        {
+            config.UseConditionals = parsedUseConditionals;
         }
 
         return config;

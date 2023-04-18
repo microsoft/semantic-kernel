@@ -5,19 +5,149 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 internal static class SemanticFunctionConstants
 {
     internal const string FunctionFlowFunctionDefinition =
-        @"ONLY USE XML TAGS IN THIS LIST:
-[XML TAG LIST]
-function: a function to call
-if: if condition
-else: else condition
-while: while condition
-unsure: low confidence
-unknown: don't know
-[END XML TAG LIST]
+       @"Create an XML plan step by step, to satisfy the goal given.
+To create a plan, follow these steps:
+0. The plan should be as short as possible.
+1. From a <goal> create a <plan> as a series of <functions>.
+2. Before using any function in a plan, check that it is present in the most recent [AVAILABLE FUNCTIONS] list. If it is not, do not use it. Do not assume that any function that was previously defined or used in another plan or in [EXAMPLES] is automatically available or compatible with the current plan.
+3. Only use functions that are required for the given goal.
+4. A function has an 'input' and an 'output'.
+5. The 'output' from each function is automatically passed as 'input' to the subsequent <function>.
+6. 'input' does not need to be specified if it consumes the 'output' of the previous function.
+7. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""$<UNIQUE_VARIABLE_KEY>""/>
+8. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
+9. Append an ""END"" XML comment at the end of the plan.
 
-[EXAMPLE PLANS]
-[EXAMPLE FUNCTIONS]
+[EXAMPLES]
+[AVAILABLE FUNCTIONS]
 
+  _GLOBAL_FUNCTIONS_.BucketOutputs:
+    description: When the output of a function is too big, parse the output into a number of buckets.
+    inputs:
+    - input: The output from a function that needs to be parse into buckets.
+    - bucketCount: The number of buckets.
+    - bucketLabelPrefix: The target label prefix for the resulting buckets. Result will have index appended e.g. bucketLabelPrefix='Result' => Result_1, Result_2, Result_3
+
+  EmailConnector.LookupContactEmail:
+    description: looks up the a contact and retrieves their email address
+    inputs:
+    - input: the name to look up
+
+  EmailConnector.EmailTo:
+    description: email the input text to a recipient
+    inputs:
+    - input: the text to email
+    - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
+
+  LanguageHelpers.TranslateTo:
+    description: translate the input to another language
+    inputs:
+    - input: the text to translate
+    - translate_to_language: the language to translate to
+
+  WriterSkill.Summarize:
+    description: summarize input text
+    inputs:
+    - input: the text to summarize
+
+[END AVAILABLE FUNCTIONS]
+
+<goal>Summarize the input, then translate to japanese and email it to Martin</goal>
+<plan>
+  <function.WriterSkill.Summarize/>
+  <function.LanguageHelpers.TranslateTo translate_to_language=""Japanese"" setContextVariable=""TRANSLATED_TEXT"" />
+  <function.EmailConnector.LookupContactEmail input=""Martin"" setContextVariable=""CONTACT_RESULT"" />
+  <function.EmailConnector.EmailTo input=""$TRANSLATED_TEXT"" recipient=""$CONTACT_RESULT""/>
+</plan><!-- END -->
+
+[AVAILABLE FUNCTIONS]
+
+  _GLOBAL_FUNCTIONS_.BucketOutputs:
+    description: When the output of a function is too big, parse the output into a number of buckets.
+    inputs:
+    - input: The output from a function that needs to be parse into buckets.
+    - bucketCount: The number of buckets.
+    - bucketLabelPrefix: The target label prefix for the resulting buckets. Result will have index appended e.g. bucketLabelPrefix='Result' => Result_1, Result_2, Result_3
+
+  _GLOBAL_FUNCTIONS_.GetEmailAddress:
+    description: Gets email address for given contact
+    inputs:
+    - input: the name to look up
+
+  _GLOBAL_FUNCTIONS_.SendEmail:
+    description: email the input text to a recipient
+    inputs:
+    - input: the text to email
+    - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
+
+  AuthorAbility.Summarize:
+    description: summarizes the input text
+    inputs:
+    - input: the text to summarize
+
+  Magician.TranslateTo:
+    description: translate the input to another language
+    inputs:
+    - input: the text to translate
+    - translate_to_language: the language to translate to
+
+[END AVAILABLE FUNCTIONS]
+
+<goal>Summarize an input, translate to french, and e-mail to John Doe</goal>
+<plan>
+    <function.AuthorAbility.Summarize/>
+    <function.Magician.TranslateTo translate_to_language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
+    <function._GLOBAL_FUNCTIONS_.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
+    <function._GLOBAL_FUNCTIONS_.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
+</plan><!-- END -->
+
+[AVAILABLE FUNCTIONS]
+
+  _GLOBAL_FUNCTIONS_.BucketOutputs:
+    description: When the output of a function is too big, parse the output into a number of buckets.
+    inputs:
+    - input: The output from a function that needs to be parse into buckets.
+    - bucketCount: The number of buckets.
+    - bucketLabelPrefix: The target label prefix for the resulting buckets. Result will have index appended e.g. bucketLabelPrefix='Result' => Result_1, Result_2, Result_3
+
+  _GLOBAL_FUNCTIONS_.NovelOutline :
+    description: Outlines the input text as if it were a novel
+    inputs:
+    - input: the title of the novel to outline
+    - chapterCount: the number of chapters to outline
+
+  Emailer.EmailTo:
+    description: email the input text to a recipient
+    inputs:
+    - input: the text to email
+    - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
+
+  Everything.Summarize:
+    description: summarize input text
+    inputs:
+    - input: the text to summarize
+
+[END AVAILABLE FUNCTIONS]
+
+<goal>Create an outline for a children's book with 3 chapters about a group of kids in a club and then summarize it.</goal>
+<plan>
+  <function._GLOBAL_FUNCTIONS_.NovelOutline input=""A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic."" chapterCount=""3"" />
+  <function.Everything.Summarize/>
+</plan><!-- END -->
+
+[END EXAMPLES]
+
+[AVAILABLE FUNCTIONS]
+
+{{$available_functions}}
+
+[END AVAILABLE FUNCTIONS]
+
+<goal>{{$input}}</goal>
+";
+
+    internal const string ConditionalFunctionFlowFunctionDefinition =
+        @"[PLAN 1]
   AuthorAbility.Summarize:
     description: summarizes the input text
     inputs:
@@ -37,61 +167,49 @@ unknown: don't know
     - input: the text to email
     - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
 
-[END EXAMPLE FUNCTIONS]
-
-<goal>Summarize an input, translate to french, and e-mail to John and Jane</goal>
+<goal>Summarize an input, translate to french, and e-mail to John Doe</goal>
 <plan>
     <function.AuthorAbility.Summarize/>
     <function.Magician.TranslateTo translate_to_language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
-    <function._GLOBAL_FUNCTIONS_.GetEmailAddress input=""John"" setContextVariable=""EMAIL_ADDRESS_JOHN""/>
-    <function._GLOBAL_FUNCTIONS_.GetEmailAddress input=""Jane"" setContextVariable=""EMAIL_ADDRESS_JANE""/>
-    <function._GLOBAL_FUNCTIONS_.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS_JOHN;$EMAIL_ADDRESS_JANE""/>
+    <function._GLOBAL_FUNCTIONS_.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
+    <function._GLOBAL_FUNCTIONS_.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
 </plan><!-- END -->
 
-[EXAMPLE FUNCTIONS]
-
+[PLAN 2]
   Everything.Summarize:
     description: summarize input text
     inputs:
     - input: the text to summarize
-
   _GLOBAL_FUNCTIONS_.NovelOutline :
     description: Outlines the input text as if it were a novel
     inputs:
     - input: the title of the novel to outline
     - chapterCount: the number of chapters to outline
-
   LanguageHelpers.TranslateTo:
     description: translate the input to another language
     inputs:
     - input: the text to translate
     - translate_to_language: the language to translate to
-
   EmailConnector.LookupContactEmail:
     description: looks up the a contact and retrieves their email address
     inputs:
     - input: the name to look up
-
   EmailConnector.EmailTo:
     description: email the input text to a recipient
     inputs:
     - input: the text to email
     - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
-
   _GLOBAL_FUNCTIONS_.Length:
     description: Get the length of a string.
     inputs:
     - input: Input string
-
- _GLOBAL_FUNCTIONS_.HourNumber:
+ _GLOBAL_FUNCTIONS_.Hour:
     description: Get the current clock hour
     inputs:
 
-[END EXAMPLE FUNCTIONS]
-
 <goal>If its afternoon please Summarize the input, if the input length > 10 and contains ""book"" then Create an outline for a children's book with 3 chapters about a group of kids in a club and summarize it otherwise translate to japanese and email it to Martin.</goal>
 <plan>
-  <function._GLOBAL_FUNCTIONS_.HourNumber setContextVariable=""HOUR_NUMBER""/>
+  <function._GLOBAL_FUNCTIONS_.Hour setContextVariable=""HOUR_NUMBER""/>
   <if condition=""$HOUR_NUMBER greaterthan 12 OR $HOUR_NUMBER equals 12"">
     <function.Everything.Summarize setContextVariable=""SUMMARIZED_INPUT""/>
     <function._GLOBAL_FUNCTIONS_.Length setContextVariable=""SUMMARIZED_INPUT_LENGTH""/>
@@ -99,38 +217,35 @@ unknown: don't know
         <function._GLOBAL_FUNCTIONS_.NovelOutline input=""A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic."" chapterCount=""3"" />
        <function.Everything.Summarize/>
     </if>
-    <else>
+    <else> (dont use elseif)
         <function.LanguageHelpers.TranslateTo input=""$SUMMARIZED_INPUT"" translate_to_language=""Japanese"" setContextVariable=""TRANSLATED_TEXT"" />
         <function.EmailConnector.LookupContactEmail input=""Martin"" setContextVariable=""CONTACT_RESULT"" />
         <function.EmailConnector.EmailTo input=""$TRANSLATED_TEXT"" recipient=""$CONTACT_RESULT""/>
     </else>
   </if>
 </plan><!-- END -->
-[END EXAMPLE PLANS]
 
-Create an XML plan step by step, to satisfy the goal given.
-To create a plan, follow these rules:
-- EMIT WELL FORMED XML ALWAYS. Any code you write should be CDATA.
-- Only use [AVAILABLE TAGS]
-- Use only the [AVAILABLE FUNCTIONS].
-- The functions listed in the [EXAMPLE FUNCTIONS] are only to demonstrate plan creation.
-- If you don't know how to satisfy the goal given, say so.
-- If you are not sure how to satisfy the goal given, say so.
-- From a <goal> create a <plan> as a series of <function> tags.
-- Only use [AVAILABLE FUNCTIONS] that are required for the given goal.
-- A function has an 'input' and an 'output'.
-- The 'output' from each function is automatically passed as 'input' to the subsequent <function>.
-- 'input' does not need to be specified if it consumes the 'output' of the previous function.
-- To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""<UNIQUE_VARIABLE_KEY>""/>
-- To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
-- Comparison operators must be literals.
-- Append an ""END"" XML comment at the end of the plan.
-
-[AVAILABLE FUNCTIONS]
-
+[PLAN 3]
 {{$available_functions}}
 
-[END AVAILABLE FUNCTIONS]
+Plan Rules:
+Create an XML plan step by step, to satisfy the goal given.
+To create a plan, follow these steps:
+1. From a <goal> create a <plan> as a series of <functions>.
+2. Only use functions that are required for the given goal.
+3. A function has an 'input' and an 'output'.
+4. The 'output' from each function is automatically passed as 'input' to the subsequent <function>.
+5. 'input' does not need to be specified if it consumes the 'output' of the previous function.
+6. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""<UNIQUE_VARIABLE_KEY>""/>
+7. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: ""RESULT__$<UNIQUE_RESULT_KEY>""/>
+8. Only use ""if"", ""else"" or ""while"" tags when needed
+9. ""if"", ""else"" and ""while"" tags must be closed
+10. Do not use <elseif>. For such a condition, use an additional <if>...</if> block instead of <elseif>.
+11. Comparison operators must be literals.
+12. Append an ""END"" XML comment at the end of the plan.
+13. Dont use arrays or objects for variables
+14. Only use variables that where assigned before with setContextVariables
+15. Use only the AVAILABLE FUNCTIONS in the deck
 
 <goal>{{$input}}</goal>
 ";
