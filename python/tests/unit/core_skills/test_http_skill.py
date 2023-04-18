@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-import semantic_kernel as sk
+from semantic_kernel import Kernel
 from semantic_kernel.core_skills import HttpSkill
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -18,7 +18,7 @@ async def test_it_can_be_instantiated():
 
 @pytest.mark.asyncio
 async def test_it_can_be_imported():
-    kernel = sk.create_kernel()
+    kernel = Kernel()
     skill = HttpSkill()
     assert kernel.import_skill(skill, "http")
     assert kernel.skills.has_native_function("http", "getAsync")
