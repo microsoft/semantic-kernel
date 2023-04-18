@@ -68,11 +68,12 @@ class KernelBase(ABC):
     @abstractmethod
     async def run_async(
         self,
+        *functions: Any,
         input_context: Optional[SKContext],
         input_vars: Optional[ContextVariables],
-        input_str: Optional[str],
-        *args: Any
+        input_str: Optional[str]
     ) -> SKContext:
+        pass
 
     @abstractmethod
     def func(self, skill_name: str, function_name: str) -> SKFunctionBase:

@@ -29,6 +29,6 @@ skills_directory = os.path.join(__file__, "../../../../samples/skills")
 skill = kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
 
 result = asyncio.run(
-    kernel.run_async(input__str="time travel to dinosaur age", functions=skill["Joke"])
+    kernel.run_async(skill["Joke"], input_str="time travel to dinosaur age")
 )
 print(result)

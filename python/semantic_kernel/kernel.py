@@ -107,11 +107,11 @@ class Kernel(KernelBase, KernelExtensions):
         return function
 
     async def run_async(
-            self, 
+            self,
+            *functions: Any,
             input_context: Optional[SKContext] = None,
-            input_vars: Optional[ContextVariables] = None, 
-            input_str: Optional[str] = None, 
-            *functions: Any
+            input_vars: Optional[ContextVariables] = None,
+            input_str: Optional[str] = None,
     ) -> SKContext:
         
         if input_context is None:
@@ -128,6 +128,8 @@ class Kernel(KernelBase, KernelExtensions):
                 self._skill_collection.read_only_skill_collection,
                 self._log,
             )
+        else: 
+            context = input_context
 
         pipeline_step = 0
         for func in functions:
