@@ -47,13 +47,20 @@ internal static class ConfigExtensions
         switch (serviceConfig.AIService.ToUpperInvariant())
         {
             case AIServiceConfig.AzureOpenAI:
-                kernelConfig.AddAzureTextCompletionService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                    serviceConfig.Endpoint, serviceConfig.Key);
+                kernelConfig.AddAzureChatCompletionService(
+                    serviceId: serviceConfig.Label,
+                    deploymentName: serviceConfig.DeploymentOrModelId,
+                    endpoint: serviceConfig.Endpoint,
+                    apiKey: serviceConfig.Key,
+                    alsoAsTextCompletion: true);
                 break;
 
             case AIServiceConfig.OpenAI:
-                kernelConfig.AddOpenAITextCompletionService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                    serviceConfig.Key);
+                kernelConfig.AddOpenAIChatCompletionService(
+                    serviceId: serviceConfig.Label,
+                    modelId: serviceConfig.DeploymentOrModelId,
+                    apiKey: serviceConfig.Key,
+                    alsoAsTextCompletion: true);
                 break;
 
             default:
