@@ -16,16 +16,16 @@ public class ChatHistorySkill
 {
     private readonly ChatMessageRepository _chatMessageRepository;
     private readonly ChatSessionRepository _chatSessionRepository;
-    private readonly SystemPromptDefaults _systemPromptDefaults;
+    private readonly PromptSettings _promptSettings;
 
     public ChatHistorySkill(
         ChatMessageRepository chatMessageRepository,
         ChatSessionRepository chatSessionRepository,
-        SystemPromptDefaults systemPromptDefaults)
+        PromptSettings promptSettings)
     {
         this._chatMessageRepository = chatMessageRepository;
         this._chatSessionRepository = chatSessionRepository;
-        this._systemPromptDefaults = systemPromptDefaults;
+        this._promptSettings = promptSettings;
     }
 
     /// <summary>
@@ -185,7 +185,7 @@ public class ChatHistorySkill
     /// <returns>The initial message in a serialize json string.</returns>
     private async Task<ChatMessage> CreateAndSaveInitialBotMessageAsync(string chatId, string userName)
     {
-        var initialBotMessage = string.Format(CultureInfo.CurrentCulture, this._systemPromptDefaults.InitialBotMessage, userName);
+        var initialBotMessage = string.Format(CultureInfo.CurrentCulture, this._promptSettings.InitialBotMessage, userName);
         await this.SaveNewResponseAsync(initialBotMessage, chatId);
 
         var latestMessage = await this.GetLatestChatMessageAsync(chatId);

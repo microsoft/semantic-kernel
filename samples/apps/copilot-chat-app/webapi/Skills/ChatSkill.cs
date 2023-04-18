@@ -32,17 +32,21 @@ public class ChatSkill
     /// </summary>
     private readonly ChatSessionRepository _chatSessionRepository;
 
-    private readonly SystemPromptDefaults _systemPromptDefaults;
+    private readonly PromptSettings _promptSettings;
 
     /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
     /// </summary>
-    public ChatSkill(IKernel kernel, ChatMessageRepository chatMessageRepository, ChatSessionRepository chatSessionRepository, SystemPromptDefaults systemPromptDefaults)
+    public ChatSkill(
+        IKernel kernel,
+        ChatMessageRepository chatMessageRepository,
+        ChatSessionRepository chatSessionRepository,
+        PromptSettings promptSettings)
     {
         this._kernel = kernel;
         this._chatMessageRepository = chatMessageRepository;
         this._chatSessionRepository = chatSessionRepository;
-        this._systemPromptDefaults = systemPromptDefaults;
+        this._promptSettings = promptSettings;
     }
 
     /// <summary>
@@ -55,25 +59,25 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "audience", Description = "The audience the chat bot is interacting with.")]
     public async Task<string> ExtractUserIntentAsync(SKContext context)
     {
-        var tokenLimit = this._systemPromptDefaults.CompletionTokenLimit;
+        var tokenLimit = this._promptSettings.CompletionTokenLimit;
         var historyTokenBudget =
             tokenLimit -
-            this._systemPromptDefaults.ResponseTokenLimit -
+            this._promptSettings.ResponseTokenLimit -
             this.EstimateTokenCount(string.Join("\n", new string[]
                 {
-                    this._systemPromptDefaults.SystemDescriptionPrompt,
-                    this._systemPromptDefaults.SystemIntentPrompt,
-                    this._systemPromptDefaults.SystemIntentContinuationPrompt
+                    this._promptSettings.SystemDescriptionPrompt,
+                    this._promptSettings.SystemIntentPrompt,
+                    this._promptSettings.SystemIntentContinuationPrompt
                 })
             );
 
         // Clone the context to avoid modifying the original context variables.
         var intentExtractionContext = Utils.CopyContextWithVariablesClone(context);
         intentExtractionContext.Variables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
-        intentExtractionContext.Variables.Set("knowledgeCutoff", this._systemPromptDefaults.KnowledgeCutoffDate);
+        intentExtractionContext.Variables.Set("knowledgeCutoff", this._promptSettings.KnowledgeCutoffDate);
 
         var completionFunction = this._kernel.CreateSemanticFunction(
-            this._systemPromptDefaults.SystemIntentExtractionPrompt,
+            this._promptSettings.SystemIntentExtractionPrompt,
             skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
@@ -101,7 +105,7 @@ public class ChatSkill
         var contextTokenLimit = int.Parse(context["contextTokenLimit"], new NumberFormatInfo());
         var remainingToken = Math.Min(
             tokenLimit,
-            Math.Floor(contextTokenLimit * this._systemPromptDefaults.MemoriesResponseContextWeight)
+            Math.Floor(contextTokenLimit * this._promptSettings.MemoriesResponseContextWeight)
         );
 
         // Find the most recent message.
@@ -109,7 +113,7 @@ public class ChatSkill
 
         // Search for relevant memories.
         List<MemoryQueryResult> relevantMemories = new List<MemoryQueryResult>();
-        foreach (var memoryName in this._systemPromptDefaults.MemoryMap.Keys)
+        foreach (var memoryName in this._promptSettings.MemoryMap.Keys)
         {
             var results = context.Memory.SearchAsync(
                 SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName),
@@ -196,15 +200,15 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
-        var tokenLimit = this._systemPromptDefaults.CompletionTokenLimit;
+        var tokenLimit = this._promptSettings.CompletionTokenLimit;
         var remainingToken =
             tokenLimit -
-            this._systemPromptDefaults.ResponseTokenLimit -
+            this._promptSettings.ResponseTokenLimit -
             this.EstimateTokenCount(string.Join("\n", new string[]
                 {
-                    this._systemPromptDefaults.SystemDescriptionPrompt,
-                    this._systemPromptDefaults.SystemResponsePrompt,
-                    this._systemPromptDefaults.SystemChatContinuationPrompt
+                    this._promptSettings.SystemDescriptionPrompt,
+                    this._promptSettings.SystemResponsePrompt,
+                    this._promptSettings.SystemChatContinuationPrompt
                 })
             );
         var contextTokenLimit = remainingToken;
@@ -230,7 +234,7 @@ public class ChatSkill
         var chatContext = Utils.CopyContextWithVariablesClone(context);
         chatContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
         chatContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
-        chatContext.Variables.Set("knowledgeCutoff", this._systemPromptDefaults.KnowledgeCutoffDate);
+        chatContext.Variables.Set("knowledgeCutoff", this._promptSettings.KnowledgeCutoffDate);
         chatContext.Variables.Set("audience", userName);
 
         // Extract user intent and update remaining token count
@@ -239,7 +243,7 @@ public class ChatSkill
         remainingToken -= this.EstimateTokenCount(userIntent);
 
         var completionFunction = this._kernel.CreateSemanticFunction(
-            this._systemPromptDefaults.SystemChatPrompt,
+            this._promptSettings.SystemChatPrompt,
             skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
@@ -307,7 +311,7 @@ public class ChatSkill
     /// <param name="context">The context containing the memory.</param>
     private async Task ExtractSemanticMemoryAsync(string chatId, SKContext context)
     {
-        foreach (var memoryName in this._systemPromptDefaults.MemoryMap.Keys)
+        foreach (var memoryName in this._promptSettings.MemoryMap.Keys)
         {
             try
             {
@@ -315,7 +319,7 @@ public class ChatSkill
                     memoryName,
                     this._kernel,
                     context,
-                    this._systemPromptDefaults
+                    this._promptSettings
                 );
                 foreach (var item in semanticMemory.Items)
                 {
@@ -364,34 +368,34 @@ public class ChatSkill
     }
 
     /// <summary>
-    /// Create a completion settings object for chat response. Parameters are read from the SystemPromptDefaults class.
+    /// Create a completion settings object for chat response. Parameters are read from the PromptSettings class.
     /// </summary>
     private CompleteRequestSettings CreateChatResponseCompletionSettings()
     {
         var completionSettings = new CompleteRequestSettings
         {
-            MaxTokens = this._systemPromptDefaults.ResponseTokenLimit,
-            Temperature = this._systemPromptDefaults.ResponseTemperature,
-            TopP = this._systemPromptDefaults.ResponseTopP,
-            FrequencyPenalty = this._systemPromptDefaults.ResponseFrequencyPenalty,
-            PresencePenalty = this._systemPromptDefaults.ResponsePresencePenalty
+            MaxTokens = this._promptSettings.ResponseTokenLimit,
+            Temperature = this._promptSettings.ResponseTemperature,
+            TopP = this._promptSettings.ResponseTopP,
+            FrequencyPenalty = this._promptSettings.ResponseFrequencyPenalty,
+            PresencePenalty = this._promptSettings.ResponsePresencePenalty
         };
 
         return completionSettings;
     }
 
     /// <summary>
-    /// Create a completion settings object for intent response. Parameters are read from the SystemPromptDefaults class.
+    /// Create a completion settings object for intent response. Parameters are read from the PromptSettings class.
     /// </summary>
     private CompleteRequestSettings CreateIntentCompletionSettings()
     {
         var completionSettings = new CompleteRequestSettings
         {
-            MaxTokens = this._systemPromptDefaults.ResponseTokenLimit,
-            Temperature = this._systemPromptDefaults.IntentTemperature,
-            TopP = this._systemPromptDefaults.IntentTopP,
-            FrequencyPenalty = this._systemPromptDefaults.IntentFrequencyPenalty,
-            PresencePenalty = this._systemPromptDefaults.IntentPresencePenalty,
+            MaxTokens = this._promptSettings.ResponseTokenLimit,
+            Temperature = this._promptSettings.IntentTemperature,
+            TopP = this._promptSettings.IntentTopP,
+            FrequencyPenalty = this._promptSettings.IntentFrequencyPenalty,
+            PresencePenalty = this._promptSettings.IntentPresencePenalty,
             StopSequences = new string[] { "] bot:" }
         };
 
@@ -404,7 +408,7 @@ public class ChatSkill
     /// </summary>
     private int EstimateTokenCount(string text)
     {
-        return (int)Math.Floor(text.Length / this._systemPromptDefaults.TokenEstimateFactor);
+        return (int)Math.Floor(text.Length / this._promptSettings.TokenEstimateFactor);
     }
 
     # endregion

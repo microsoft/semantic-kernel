@@ -2,6 +2,9 @@
 
 namespace SemanticKernel.Service.Config;
 
+/// <summary>
+/// Prompt configuration.
+/// </summary>
 public class PromptsConfig
 {
     // System

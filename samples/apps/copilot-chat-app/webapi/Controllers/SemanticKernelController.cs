@@ -17,13 +17,13 @@ public class SemanticKernelController : ControllerBase
     private readonly IServiceProvider _serviceProvider;
     private readonly IConfiguration _configuration;
     private readonly ILogger<SemanticKernelController> _logger;
-    private readonly SystemPromptDefaults _systemPromptDefaults;
+    private readonly PromptSettings _promptSettings;
 
-    public SemanticKernelController(IServiceProvider serviceProvider, IConfiguration configuration, SystemPromptDefaults systemPromptDefaults, ILogger<SemanticKernelController> logger)
+    public SemanticKernelController(IServiceProvider serviceProvider, IConfiguration configuration, PromptSettings promptSettings, ILogger<SemanticKernelController> logger)
     {
         this._serviceProvider = serviceProvider;
         this._configuration = configuration;
-        this._systemPromptDefaults = systemPromptDefaults;
+        this._promptSettings = promptSettings;
         this._logger = logger;
     }
 
@@ -62,7 +62,7 @@ public class SemanticKernelController : ControllerBase
             kernel.RegisterSemanticSkills(semanticSkillsDirectory, this._logger);
         }
 
-        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._systemPromptDefaults, this._logger);
+        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, this._logger);
 
         ISKFunction? function = null;
         try

@@ -110,7 +110,7 @@ public static class Program
             return promptsConfig;
         });
 
-        services.AddSingleton<SystemPromptDefaults>();
+        services.AddSingleton<PromptSettings>();
 
         // Add a semantic memory store only if we have a valid embedding config
         AIServiceConfig embeddingConfig = configuration.GetSection("Embedding").Get<AIServiceConfig>();

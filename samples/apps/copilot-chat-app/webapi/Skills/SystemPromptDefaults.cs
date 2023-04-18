@@ -4,11 +4,17 @@ using SemanticKernel.Service.Config;
 
 namespace SemanticKernel.Service.Skills;
 
-public class SystemPromptDefaults
+/// <summary>
+/// Settings for semantic function prompts. 
+/// </summary>
+public class PromptSettings
 {
+    /// <summary>
+    /// Values from the prompt configuration.
+    /// </summary>
     private readonly PromptsConfig _promptsConfig;
 
-    public SystemPromptDefaults(PromptsConfig promptsConfig)
+    public PromptSettings(PromptsConfig promptsConfig)
     {
         this._promptsConfig = promptsConfig;
     }
