@@ -96,21 +96,28 @@ class Kernel(KernelBase, KernelExtensions):
 
         return function
 
-    async def run_async(self, *functions: Any) -> SKContext:
-        return await self.run_on_vars_async(ContextVariables(), *functions)
-
-    async def run_on_str_async(self, input_str: str, *functions: Any) -> SKContext:
-        return await self.run_on_vars_async(ContextVariables(input_str), *functions)
-
-    async def run_on_vars_async(
-        self, input_vars: ContextVariables, *functions: Any
+    async def run_async(
+            self, 
+            input_context: Optional[SKContext] = None,
+            input_vars: Optional[ContextVariables] = None, 
+            input_str: Optional[str] = None, 
+            *functions: Any
     ) -> SKContext:
-        context = SKContext(
-            input_vars,
-            self._memory,
-            self._skill_collection.read_only_skill_collection,
-            self._log,
-        )
+        
+        if input_context is None:
+            if input_vars is not None:
+                context_vars = input_vars
+            elif input_str is not None:
+                context_vars = ContextVariables(input_str)
+            else:
+                context_vars = ContextVariables()
+                
+            context = SKContext(
+                context_vars,
+                self._memory,
+                self._skill_collection.read_only_skill_collection,
+                self._log,
+            )
 
         pipeline_step = 0
         for func in functions:

@@ -50,7 +50,7 @@ print(text_to_summarize)
 print()
 
 # Summarize and print
-summary = asyncio.run(kernel.run_on_str_async(text_to_summarize, tldr_function))
+summary = asyncio.run(kernel.run_async(input_str=text_to_summarize, functions=tldr_function))
 
 output = str(summary).strip()
 print(f"Summary is: '{output}'")

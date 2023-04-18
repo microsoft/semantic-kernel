@@ -56,7 +56,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_on_vars_async(context, chat_function)
+    answer = await kernel.run_async(input_context=context, functions=chat_function)
     print(f"Mosscap:> {answer}")
     return True
 

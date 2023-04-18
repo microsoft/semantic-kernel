@@ -49,7 +49,7 @@ async def chat(context: sk.ContextVariables) -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_on_vars_async(context, chat_function)
+    answer = await kernel.run_async(input_context=context, functions=chat_function)
     context["chat_history"] += f"\nUser:> {user_input}\nChatBot:> {answer}\n"
 
     print(f"ChatBot:> {answer}")
