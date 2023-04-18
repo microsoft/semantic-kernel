@@ -109,5 +109,5 @@ To invoke skills with the required tokens, do the following (see comments tagged
 
 ## Debug the web app
 Aside from debugging within browsers, you can launch VSCode debug session in VSCode. Here are the instructions:
-1. Make sure VSCode opensed the webapp folder (`REPO_ROOT\samples\apps\copilot-chat-app\WebApp`)
-2. In VSCode, go to "Run and Debug", and click on the "Launch Edge against localhost" from the "RUN and DEBUG" dropdown menu. Click [here](https://code.visualstudio.com/docs/typescript/typescript-debugging) to learn more about debug client-code with VSCode.
+1. Make sure VSCode opened the webapp folder (`REPO_ROOT\samples\apps\copilot-chat-app\WebApp`).
+2. In VSCode, go to "Run and Debug", and select on the "Launch Edge against localhost" from the "RUN and DEBUG" dropdown menu. Click [here](https://code.visualstudio.com/docs/typescript/typescript-debugging) to learn more about debug client-code with VSCode.
