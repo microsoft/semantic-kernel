@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 internal static class SemanticFunctionConstants
 {
     internal const string FunctionFlowFunctionDefinition =
-       @"Create an XML plan step by step, to satisfy the goal given.
+        @"Create an XML plan step by step, to satisfy the goal given.
 To create a plan, follow these steps:
 0. The plan should be as short as possible.
 1. From a <goal> create a <plan> as a series of <functions>.

@@ -79,7 +79,8 @@ internal static class SKContextPlanningExtensions
             await RememberFunctionsAsync(context, availableFunctions);
 
             // Search for functions that match the semantic query.
-            var memories = context.Memory.SearchAsync(collection: PlannerMemoryCollectionName, query: semanticQuery!, limit: config.MaxRelevantFunctions, minRelevanceScore: config.RelevancyThreshold.Value, withEmbeddings: false,
+            var memories = context.Memory.SearchAsync(collection: PlannerMemoryCollectionName, query: semanticQuery!, limit: config.MaxRelevantFunctions,
+                minRelevanceScore: config.RelevancyThreshold.Value, withEmbeddings: false,
                 cancel: context.CancellationToken);
 
             // Add functions that were found in the search results.
@@ -137,7 +138,8 @@ internal static class SKContextPlanningExtensions
             var textToEmbed = function.ToEmbeddingString();
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
-            var memoryEntry = await context.Memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false, cancel: context.CancellationToken);
+            var memoryEntry = await context.Memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false,
+                cancel: context.CancellationToken);
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory

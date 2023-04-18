@@ -265,7 +265,9 @@ public class PlannerSkill
         context.Variables.Set("available_functions", relevantFunctionsManual);
         // TODO - consider adding the relevancy score for functions added to manual
 
-        var plan = config.UseConditionals ? await this._conditionalFunctionFlowFunction.InvokeAsync(context) : await this._functionFlowFunction.InvokeAsync(context);
+        var plan = config.UseConditionals
+            ? await this._conditionalFunctionFlowFunction.InvokeAsync(context)
+            : await this._functionFlowFunction.InvokeAsync(context);
 
         string fullPlan = $"<{FunctionFlowRunner.GoalTag}>\n{goal}\n</{FunctionFlowRunner.GoalTag}>\n{plan.ToString().Trim()}";
         _ = context.Variables.UpdateWithPlanEntry(new SkillPlan

@@ -169,7 +169,8 @@ public sealed class PlannerSkillTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Start with a X number equals to the current minutes of the clock and remove 20 from this number until it becomes 0. After that tell me a math style joke where the input is X number + \"bananas\"",
+    [InlineData(
+        "Start with a X number equals to the current minutes of the clock and remove 20 from this number until it becomes 0. After that tell me a math style joke where the input is X number + \"bananas\"",
         "function.TimeSkill.Minute", 1,
         "function.FunSkill.Joke", 1,
         "<while condition=\"", 1,
