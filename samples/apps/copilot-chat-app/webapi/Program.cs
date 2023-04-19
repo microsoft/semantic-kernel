@@ -88,7 +88,7 @@ public static class Program
             });
         }
 
-        services.AddAuth(configuration);
+        services.AddAuthorization(configuration);
 
         services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
