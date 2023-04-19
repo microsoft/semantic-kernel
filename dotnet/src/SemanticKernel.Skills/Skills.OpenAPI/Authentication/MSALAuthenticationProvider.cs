@@ -11,23 +11,33 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 /// <summary>
 /// 
 /// </summary>
-public class MSALAuthenticationProvider : BearerAuthenticationProvider
+public class MsalAuthenticationProvider : BearerAuthenticationProvider
 {
+
     /// <summary>
     /// 
     /// </summary>
     /// <param name="clientId"></param>
     /// <param name="tenantId"></param>
     /// <param name="scopes"></param>
+    /// <param name="resourceUri"></param>
     /// <param name="redirectUri"></param>
-    public MSALAuthenticationProvider(string clientId, string tenantId, string[] scopes, Uri redirectUri)
-        : base(async () => { return await GetTokenAsync(clientId, tenantId, scopes, redirectUri); })
+    public MsalAuthenticationProvider(string clientId, string tenantId, string[] scopes, Uri resourceUri, Uri redirectUri)
+        : base(async () => { return await GetTokenAsync(clientId, tenantId, scopes, resourceUri, redirectUri); })
     {
     }
 
-    private static async Task<string> GetTokenAsync(string clientId, string tenantId, string[] scopes, Uri redirectUri)
+    private static async Task<string> GetTokenAsync(string clientId, string tenantId, string[] scopes, Uri resourceUri, Uri redirectUri)
     {
-        // TODO: format scopes
+        // Prefix scopes with the resource URI
+        var prefix = resourceUri.ToString().TrimEnd('/') + '/';
+        for (int i = 0; i < scopes.Length; i++)
+        {
+            if (!scopes[i].StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
+            {
+                scopes[i] = prefix + scopes[i];
+            }
+        }
 
         IPublicClientApplication app = PublicClientApplicationBuilder.Create(clientId)
             .WithRedirectUri(redirectUri.ToString())
