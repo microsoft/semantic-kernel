@@ -1,16 +1,19 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-using SKWebApi.Skills;
+using SemanticKernel.Service.Skills;
 using Microsoft.SemanticKernel.Memory;
+using SemanticKernel.Service.Config;
 
 namespace SemanticKernel.Service.Model;
 
 public class Bot
 {
-    // TODO: Chat configuation
+    public BotSchemaConfig Schema { get; set; } = new BotSchemaConfig();
 
-    public IEnumerable<ChatMessage> ChatHistory { get; set; } = Enumerable.Empty<ChatMessage>();
+    public BotConfiguration Configurations { get; set; } = new BotConfiguration();
+
+    public List<ChatMessage> ChatHistory { get; set; } = new List<ChatMessage>();
 
     // TODO: Change from MemoryQueryResult to MemoryRecord
-    public IEnumerable<KeyValuePair<string, IEnumerable<MemoryQueryResult>>> Embeddings { get; set; } = Enumerable.Empty<KeyValuePair<string, IEnumerable<MemoryQueryResult>>>();
+    public List<KeyValuePair<string, List<MemoryQueryResult>>> Embeddings { get; set; } = new List<KeyValuePair<string, List<MemoryQueryResult>>>();
 }
