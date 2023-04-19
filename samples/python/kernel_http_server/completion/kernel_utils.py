@@ -29,7 +29,9 @@ def sample_skills_path() -> str:
         found, path = search_path(FOLDER)
 
     if not found:
-        raise ValueError("Skills directory not found. The app needs the skills from the repo to work.")
+        raise ValueError(
+            "Skills directory not found. The app needs the skills from the repo to work."
+        )
 
     return path
 
@@ -52,12 +54,18 @@ def create_kernel_for_request(req: func.HttpRequest, skills: List[str], memory_s
     if api_config.serviceid == AIService.OPENAI.value:
         # Add an OpenAI backend
         kernel.config.add_text_backend(
-            "dv", sk_oai.OpenAITextCompletion(api_config.deployment_model_id, api_config.key, api_config.org_id)
+            "dv",
+            sk_oai.OpenAITextCompletion(
+                api_config.deployment_model_id, api_config.key, api_config.org_id
+            ),
         )
     elif api_config.serviceid == AIService.AZURE_OPENAI.value:
         # Add an Azure backend
         kernel.config.add_text_backend(
-            "dv", sk_oai.AzureTextCompletion(api_config.deployment_model_id, api_config.key, api_config.endpoint)
+            "dv",
+            sk_oai.AzureTextCompletion(
+                api_config.deployment_model_id, api_config.key, api_config.endpoint
+            ),
         )
 
     register_semantic_skills(kernel, sample_skills_path(), skills)
