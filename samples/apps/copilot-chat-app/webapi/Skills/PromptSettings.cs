@@ -19,12 +19,35 @@ public class PromptSettings
         this._promptsConfig = promptsConfig;
     }
 
+    /// <summary>
+    /// Factor used to divide the string length to estimate the number of tokens in the string.
+    /// </summary>
     internal double TokenEstimateFactor { get; } = 2.5;
     internal int ResponseTokenLimit { get; } = 1024;
     internal int CompletionTokenLimit { get; } = 8192;
+    /// <summary>
+    /// Weight of memories in the contextual part of the final prompt.
+    /// Contextual prompt excludes all the system commands.
+    /// </summary>
     internal double MemoriesResponseContextWeight { get; } = 0.3;
-    internal double HistoryResponseContextWeight { get; } = 0.3;
+    /// <summary>
+    /// Weight of documents in the contextual part of the final prompt.
+    /// Contextual prompt excludes all the system commands.
+    /// </summary>
     internal double DocumentContextWeight { get; } = 0.3;
+    /// <summary>
+    /// Maximum number of tokens per line that will be used to split a document into lines.
+    /// Setting this to a low value will result in higher context granularity, but
+    /// takes longer to process the entire document into embeddings.
+    /// </summary>
+    internal int DocumentLineSplitMaxTokens { get; } = 20;
+    /// <summary>
+    /// Maximum number of tokens per paragraph that will be used to combine lines into paragraphs.
+    /// Setting this to a low value will result in higher context granularity, but
+    /// takes longer to process the entire document into embeddings.
+    /// </summary>
+    internal int DocumentParagraphSplitMaxLines { get; } = 80;
+
     internal string KnowledgeCutoffDate => this._promptsConfig.KnowledgeCutoffDate;
     internal string InitialBotMessage => this._promptsConfig.InitialBotMessage;
 

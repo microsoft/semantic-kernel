@@ -156,25 +156,26 @@ public class ChatSkill
             }
         }
 
-        return $"Past memories (format: [memory type] <label>: <details>):\n{memoryText.Trim()}";
+        // Update the token limit.
+        memoryText = $"Past memories (format: [memory type] <label>: <details>):\n{memoryText.Trim()}";
+        tokenLimit -= Utils.EstimateTokenCount(memoryText, this._promptSettings.TokenEstimateFactor);
+        context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
+
+        return memoryText;
     }
 
     /// <summary>
     /// Extract chat history.
     /// </summary>
-    /// <param name="context">Contains the 'tokenLimit' and the 'contextTokenLimit' controlling the length of the prompt.</param>
+    /// <param name="context">Contains the 'tokenLimit' controlling the length of the prompt.</param>
     [SKFunction("Extract chat history")]
     [SKFunctionName("ExtractChatHistory")]
     [SKFunctionContextParameter(Name = "chatId", Description = "Chat ID to extract history from")]
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-    [SKFunctionContextParameter(Name = "contextTokenLimit", Description = "Maximum number of context tokens")]
     public async Task<string> ExtractChatHistoryAsync(SKContext context)
     {
         var chatId = context["chatId"];
         var tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
-
-        // TODO: Use contextTokenLimit to determine how much of the chat history to return
-        // TODO: relevant history
 
         var messages = await this._chatMessageRepository.FindByChatIdAsync(chatId);
         var sortedMessages = messages.OrderByDescending(m => m.Timestamp);
@@ -250,8 +251,6 @@ public class ChatSkill
 
         // Clone the context to avoid modifying the original context variables.
         var chatContext = Utils.CopyContextWithVariablesClone(context);
-        chatContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
-        chatContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
         chatContext.Variables.Set("knowledgeCutoff", this._promptSettings.KnowledgeCutoffDate);
         chatContext.Variables.Set("audience", userName);
 
@@ -263,7 +262,10 @@ public class ChatSkill
         }
 
         chatContext.Variables.Set("userIntent", userIntent);
+        // Update remaining token count
         remainingToken -= Utils.EstimateTokenCount(userIntent, this._promptSettings.TokenEstimateFactor);
+        chatContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
+        chatContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
 
         var completionFunction = this._kernel.CreateSemanticFunction(
             this._promptSettings.SystemChatPrompt,

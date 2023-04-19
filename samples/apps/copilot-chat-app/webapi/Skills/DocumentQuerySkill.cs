@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Globalization;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -55,15 +56,17 @@ public class DocumentQuerySkill
             return;
         }
 
-        var lines = SemanticTextPartitioner.SplitPlainTextLines(text, 20);
-        var paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, 80);
+        var lines =
+            SemanticTextPartitioner.SplitPlainTextLines(text, this._promptSettings.DocumentLineSplitMaxTokens);
+        var paragraphs =
+            SemanticTextPartitioner.SplitPlainTextParagraphs(lines, this._promptSettings.DocumentParagraphSplitMaxLines);
         foreach (var paragraph in paragraphs)
         {
             await context.Memory.SaveInformationAsync(
                 collection: DocumentMemoryCollectionName(userId),
                 text: paragraph,
                 id: Guid.NewGuid().ToString(),
-                description: $"Local File: {localFile}");
+                description: $"Document: {localFile}");
         }
 
         context.Log.LogInformation("Parsed {0} paragraphs from local file {1}", paragraphs.Count, localFile);
@@ -110,7 +113,7 @@ public class DocumentQuerySkill
 
             if (remainingToken - estimatedTokenCount > 0)
             {
-                documentsText += $"\nSnippet from {memory.Metadata.Description}: {memory.Metadata.Text}";
+                documentsText += $"\n\nSnippet from {memory.Metadata.Description}: {memory.Metadata.Text}";
                 remainingToken -= estimatedTokenCount;
             }
             else
@@ -125,6 +128,11 @@ public class DocumentQuerySkill
             return string.Empty;
         }
 
-        return $"User has also shared some document snippets:\n{documentsText}";
+        // Update the token limit.
+        documentsText = $"User has also shared some document snippets:\n{documentsText}";
+        tokenLimit -= Utils.EstimateTokenCount(documentsText, this._promptSettings.TokenEstimateFactor);
+        context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
+
+        return documentsText;
     }
 }
