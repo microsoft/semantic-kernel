@@ -56,6 +56,11 @@ public class SemanticKernelController : ControllerBase
     {
         this._logger.LogDebug("Received call to invoke {SkillName}/{FunctionName}", skillName, functionName);
 
+        if (string.IsNullOrWhiteSpace(ask.Input))
+        {
+            return this.BadRequest("Input is required.");
+        }
+
         string semanticSkillsDirectory = this._configuration.GetSection(CopilotChatApiConstants.SemanticSkillsDirectoryConfigKey).Get<string>();
         if (!string.IsNullOrWhiteSpace(semanticSkillsDirectory))
         {
