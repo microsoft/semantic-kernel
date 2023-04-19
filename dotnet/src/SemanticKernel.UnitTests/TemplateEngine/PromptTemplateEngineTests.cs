@@ -20,7 +20,7 @@ namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public sealed class PromptTemplateEngineTests
 {
-    private readonly IPromptTemplateEngine _target;
+    private readonly PromptTemplateEngine _target;
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlySkillCollection> _skills;
     private readonly ITestOutputHelper _logger;
