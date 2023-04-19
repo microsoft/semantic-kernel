@@ -116,20 +116,19 @@ class Kernel(KernelBase, KernelExtensions):
             
         if input_context is not None:
             context = input_context
-        else:      
-            if input_vars is not None:
-                variables = input_vars
-            elif input_str is not None:
-                variables = ContextVariables(input_str)    
-            else:
-                variables = ContextVariables()      
+        else:       
             context = SKContext(
-                variables,
+                ContextVariables(),
                 self._memory,
                 self._skill_collection.read_only_skill_collection,
                 self._log,
             )
-
+        
+        if input_vars is not None:
+            context._variables = input_vars
+        elif input_str is not None:
+            context._variables = ContextVariables(input_str)
+            
         pipeline_step = 0
         for func in functions:
             assert isinstance(func, SKFunctionBase), (
