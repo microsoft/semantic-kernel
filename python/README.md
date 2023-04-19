@@ -105,7 +105,7 @@ Python notebooks:
 
 The two SDKs are compatible and at the core they follow the same design principles.
 Some features are still available only in the C# version, and being ported
-Refer to the [FEATURE PARITY](FEATURE_PARITY.md) doc to see where
+Refer to the [FEATURE MATRIX](../FEATURE_MATRIX.md) doc to see where
 things stand in matching the features and functionality of the main SK branch.
 Over time there will be some features available only in the Python version, and
 others only in the C# version, for example adapters to external services,
