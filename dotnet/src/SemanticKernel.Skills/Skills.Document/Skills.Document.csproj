@@ -18,6 +18,17 @@
     <Description>Semantic Kernel Document Skill: Word processing, OpenXML, etc.</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DocumentationFile>bin\Release\netstandard2.0\Microsoft.SemanticKernel.Skills.Document.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>portable</DebugType>
+    <DocumentationFile>bin\Debug\netstandard2.0\Microsoft.SemanticKernel.Skills.Document.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" />
   </ItemGroup>

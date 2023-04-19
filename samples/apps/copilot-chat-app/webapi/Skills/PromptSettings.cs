@@ -5,7 +5,7 @@ using SemanticKernel.Service.Config;
 namespace SemanticKernel.Service.Skills;
 
 /// <summary>
-/// Settings for semantic function prompts. 
+/// Settings for semantic function prompts.
 /// </summary>
 public class PromptSettings
 {
@@ -42,6 +42,7 @@ public class PromptSettings
         "{{ChatSkill.ExtractChatHistory}}",
         this.SystemIntentContinuationPrompt
     };
+
     internal string SystemIntentExtractionPrompt => string.Join("\n", this.SystemIntentPromptComponents);
 
     // Memory extraction commands
@@ -53,6 +54,7 @@ public class PromptSettings
     // Long-term memory
     internal string LongTermMemoryName => this._promptsConfig.LongTermMemoryName;
     internal string LongTermMemoryExtractionPrompt => this._promptsConfig.LongTermMemoryExtraction;
+
     internal string[] LongTermMemoryPromptComponents => new string[]
     {
         this.SystemCognitivePrompt,
@@ -62,11 +64,13 @@ public class PromptSettings
         "{{ChatSkill.ExtractChatHistory}}",
         this.MemoryContinuationPrompt
     };
+
     internal string LongTermMemoryPrompt => string.Join("\n", this.LongTermMemoryPromptComponents);
 
     // Working memory
     internal string WorkingMemoryName => this._promptsConfig.WorkingMemoryName;
     internal string WorkingMemoryExtractionPrompt => this._promptsConfig.WorkingMemoryExtraction;
+
     internal string[] WorkingMemoryPromptComponents => new string[]
     {
         this.SystemCognitivePrompt,
@@ -76,6 +80,7 @@ public class PromptSettings
         "{{ChatSkill.ExtractChatHistory}}",
         this.MemoryContinuationPrompt
     };
+
     internal string WorkingMemoryPrompt => string.Join("\n", this.WorkingMemoryPromptComponents);
 
     // Memory map
@@ -97,6 +102,7 @@ public class PromptSettings
         "{{ChatSkill.ExtractChatHistory}}",
         this.SystemChatContinuationPrompt
     };
+
     internal string SystemChatPrompt => string.Join("\n", this.SystemChatPromptComponents);
 
     internal double ResponseTemperature { get; } = 0.7;

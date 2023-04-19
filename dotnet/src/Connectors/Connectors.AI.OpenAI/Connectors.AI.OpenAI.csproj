@@ -19,6 +19,17 @@
     <Description>Semantic Kernel connectors for OpenAI and Azure OpenAI. Contains clients for text completion, chat completion, embedding and DALL-E image generation.</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DocumentationFile>bin\Release\netstandard2.0\Microsoft.SemanticKernel.Connectors.AI.OpenAI.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>portable</DebugType>
+    <DocumentationFile>bin\Debug\netstandard2.0\Microsoft.SemanticKernel.Connectors.AI.OpenAI.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
   </ItemGroup>

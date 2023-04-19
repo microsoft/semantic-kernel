@@ -18,6 +18,17 @@
     <Description>Semantic Kernel interfaces and abstractions. This package is automatically installed by Semantic Kernel packages if needed.</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DocumentationFile>bin\Release\netstandard2.0\Microsoft.SemanticKernel.Abstractions.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>portable</DebugType>
+    <DocumentationFile>bin\Debug\netstandard2.0\Microsoft.SemanticKernel.Abstractions.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <!--Setting version overrides to miniumum supported version, to maximize compatability.-->
     <PackageReference Include="Microsoft.Bcl.HashCode" VersionOverride="[1.1.0, )" />
