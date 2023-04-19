@@ -214,7 +214,7 @@ BEGIN SUMMARY:
     /// </summary>
     private async Task SummarizeCodeDirectoryAsync(string directoryPath, string searchPattern, string repositoryUri, string repositoryBranch, SKContext context)
     {
-        string[] filePaths = await Task.FromResult(Directory.GetFiles(directoryPath, searchPattern, SearchOption.AllDirectories));
+        string[] filePaths = Directory.GetFiles(directoryPath, searchPattern, SearchOption.AllDirectories);
 
         if (filePaths != null && filePaths.Length > 0)
         {
