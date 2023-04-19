@@ -91,7 +91,7 @@ public class ChatSkill
             context.Fail(result.LastErrorDescription, result.LastException);
             return string.Empty;
         }
-        
+
         return $"User intent: {result}";
     }
 
@@ -249,7 +249,7 @@ public class ChatSkill
         {
             return chatContext;
         }
-        
+
         chatContext.Variables.Set("userIntent", userIntent);
         remainingToken -= this.EstimateTokenCount(userIntent);
 
