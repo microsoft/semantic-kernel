@@ -105,7 +105,14 @@ public static class Program
 
     private static void AddAuth(this IServiceCollection services, ConfigurationManager configuration)
     {
-        string authMethod = configuration.GetSection("Auth:Type").Get<string>();
+        var useHttp = configuration.GetSection("UseHttp").Get<bool>();
+        var authMethod = configuration.GetSection("Auth:Type").Get<string>();
+
+        if (useHttp && authMethod?.ToUpperInvariant() != "NONE")
+        {
+            throw new ArgumentException("Using HTTP (as opposed to HTTPS) is only supported when the auth type is set to None");
+        }
+
         switch (authMethod?.ToUpperInvariant())
         {
             case "AZUREAD":
