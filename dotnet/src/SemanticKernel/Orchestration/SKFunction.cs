@@ -116,13 +116,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
             catch (AIException ex)
             {
                 const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
-                log?.LogWarning(ex, message, skillName, functionName, ex.Message, ex.Detail);
+                log?.LogError(ex, message, skillName, functionName, ex.Message, ex.Detail);
                 context.Fail(ex.Message, ex);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
-                log?.LogWarning(ex, message, skillName, functionName, ex.Message);
+                log?.LogError(ex, message, skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
 
