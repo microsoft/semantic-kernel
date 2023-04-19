@@ -108,38 +108,36 @@ public abstract class MemoryStorageTestBase
     }
 
 
-    #region Why this case? collection does not exists should not be able accept any operation
-    //[Fact]
-    //public virtual Task ItCanInsertIntoNonExistentCollectionAsync()
-    //{
-    //    return this.WithStorageAsync(async db =>
-    //    {
-    //        // Arrange
-    //        MemoryRecord testRecord = MemoryRecord.LocalRecord(
-    //        id: "test",
-    //        text: "text",
-    //        description: "description",
-    //        embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
-    //        key: null,
-    //        timestamp: null);
+    [Fact]
+    public virtual Task ItCanInsertIntoNonExistentCollectionAsync()
+    {
+        return this.WithStorageAsync(async db =>
+        {
+            // Arrange
+            MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test",
+            text: "text",
+            description: "description",
+            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            key: null,
+            timestamp: null);
 
-    //        // Arrange
-    //        string collection= this.CreateRandomCollectionName();
-    //        var key = await db.UpsertAsync(collection, testRecord);
-    //        var actual = await db.GetAsync(collection, key, true);
+            // Arrange
+            string collection = this.CreateRandomCollectionName();
+            var key = await db.UpsertAsync(collection, testRecord);
+            var actual = await db.GetAsync(collection, key, true);
 
-    //        // Assert
-    //        Assert.NotNull(actual);
-    //        Assert.Equal(testRecord.Metadata.Id, key);
-    //        Assert.Equal(testRecord.Metadata.Id, actual.Key);
-    //        Assert.Equal(testRecord.Embedding.Vector, actual.Embedding.Vector);
-    //        Assert.Equal(testRecord.Metadata.Text, actual.Metadata.Text);
-    //        Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
-    //        Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
-    //        Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
-    //    });
-    //}
-    #endregion
+            // Assert
+            Assert.NotNull(actual);
+            Assert.Equal(testRecord.Metadata.Id, key);
+            Assert.Equal(testRecord.Metadata.Id, actual.Key);
+            Assert.Equal(testRecord.Embedding.Vector, actual.Embedding.Vector);
+            Assert.Equal(testRecord.Metadata.Text, actual.Metadata.Text);
+            Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
+            Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
+            Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
+        });
+    }
 
     [Fact]
     public virtual Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
