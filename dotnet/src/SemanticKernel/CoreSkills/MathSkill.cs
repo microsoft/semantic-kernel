@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 /// <example>
 /// Usage: kernel.ImportSkill("math", new MathSkill());
 /// Examples:
-/// {{math.Sum}}         => Returns the sum of FirstNumber and SecondNumber (provided in the SKContext)
+/// {{math.Add}}         => Returns the sum of FirstNumber and SecondNumber (provided in the SKContext)
 /// </example>
 public class MathSkill
 {
@@ -28,14 +28,8 @@ public class MathSkill
     [SKFunctionName("Add")]
     [SKFunctionInput(Description = "The value to add")]
     [SKFunctionContextParameter(Name = "Amount", Description = "Amount to add")]
-    public async Task<string> AddAsync(string initialValueText, SKContext context)
-    {
-        (int initialValue, int amount) = Validate(initialValueText, context);
-
-        var result = initialValue + amount;
-
-        return await Task.FromResult(result.ToString(CultureInfo.InvariantCulture));
-    }
+    public Task<string> AddAsync(string initialValueText, SKContext context) =>
+        AddOrSubtractAsync(initialValueText, context, add: true);
 
     /// <summary>
     /// Returns the Sum of two SKContext numbers provided.
@@ -47,27 +41,26 @@ public class MathSkill
     [SKFunctionName("Subtract")]
     [SKFunctionInput(Description = "The value to subtract")]
     [SKFunctionContextParameter(Name = "Amount", Description = "Amount to subtract")]
-    public async Task<string> SubtractAsync(string initialValueText, SKContext context)
-    {
-        (int initialValue, int amount) = Validate(initialValueText, context);
+    public Task<string> SubtractAsync(string initialValueText, SKContext context) =>
+        AddOrSubtractAsync(initialValueText, context, add: false);
 
-        var result = initialValue - amount;
-
-        return await Task.FromResult(result.ToString(CultureInfo.InvariantCulture));
-    }
-
-    private static (int initialValue, int amount) Validate(string initialValueText, SKContext context)
+    private static Task<string> AddOrSubtractAsync(string initialValueText, SKContext context, bool add)
     {
         if (!int.TryParse(initialValueText, NumberStyles.Any, CultureInfo.InvariantCulture, out var initialValue))
         {
-            throw new ArgumentException("Initial value provided is not in numeric format", nameof(initialValueText));
+            return Task.FromException<string>(new ArgumentOutOfRangeException(nameof(initialValueText), initialValueText, "Initial value provided is not in numeric format"));
         }
 
-        if (!int.TryParse(context["Amount"], NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+        string contextAmount = context["Amount"];
+        if (!int.TryParse(contextAmount, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
         {
-            throw new ArgumentException("Context amount provided is not in numeric format", nameof(context));
+            return Task.FromException<string>(new ArgumentOutOfRangeException(nameof(context), contextAmount, "Context amount provided is not in numeric format"));
         }
 
-        return (initialValue, amount);
+        var result = add ?
+            initialValue + amount :
+            initialValue - amount;
+
+        return Task.FromResult(result.ToString(CultureInfo.InvariantCulture));
     }
 }
