@@ -41,17 +41,10 @@ public sealed class AppConfig
     /// Validates an AppConfig object.
     /// </summary>
     /// <param name="appConfig"></param>
-    /// <returns>True is the config object is not null and all fields are filled.</returns>
+    /// <returns>True is the config object is not null.</returns>
     public static bool Validate(AppConfig? appConfig)
     {
         if (appConfig == null)
-        {
-            return false;
-        }
-
-        if (string.IsNullOrEmpty(appConfig.ClientId)
-            || string.IsNullOrEmpty(appConfig.RedirectUri)
-            || string.IsNullOrEmpty(appConfig.ServiceUri))
         {
             return false;
         }
