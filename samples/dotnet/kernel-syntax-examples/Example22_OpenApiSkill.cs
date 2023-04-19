@@ -30,7 +30,7 @@ public static class Example22_OpenApiSkill
         //kernel.ImportOpenApiSkillFromFile
         //kernel.ImportOpenApiSkillFromUrlAsync
         //kernel.RegisterOpenApiSkill
-        var tokenProvider = new TokenAuthenticationProvider(RetrieveAzureKeyVaultToken);
+        var tokenProvider = new BearerAuthenticationProvider(RetrieveAzureKeyVaultToken);
         var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault,
             tokenProvider.AuthenticateRequestAsync);
 
@@ -56,7 +56,7 @@ public static class Example22_OpenApiSkill
         //kernel.ImportOpenApiSkillFromFile
         //kernel.ImportOpenApiSkillFromUrlAsync
         //kernel.RegisterOpenApiSkill
-        var tokenProvider = new TokenAuthenticationProvider(RetrieveAzureKeyVaultToken);
+        var tokenProvider = new BearerAuthenticationProvider(RetrieveAzureKeyVaultToken);
         var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault,
             tokenProvider.AuthenticateRequestAsync);
 
