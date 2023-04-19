@@ -66,7 +66,7 @@ public class KernelAIPluginRunner : IAIPluginRunner
         if (string.IsNullOrEmpty(req.Query.Get("input")))
         {
             // Load the input from the body
-            string? body = req.Body.ToString();
+            string? body = req.ReadAsString();
             if (!string.IsNullOrEmpty(body))
             {
                 contextVariables.Update(body);

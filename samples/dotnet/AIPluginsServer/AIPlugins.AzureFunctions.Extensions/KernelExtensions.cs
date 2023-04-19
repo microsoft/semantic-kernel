@@ -24,7 +24,7 @@ public static class KernelExtensions
             FileInfo fInfo = new(skPromptPath);
             DirectoryInfo? currentFolder = fInfo.Directory;
 
-            while (currentFolder?.Parent?.FullName != skillsFolder)
+            while (currentFolder?.Parent?.Name != skillsFolder)
             {
                 currentFolder = currentFolder?.Parent;
             }

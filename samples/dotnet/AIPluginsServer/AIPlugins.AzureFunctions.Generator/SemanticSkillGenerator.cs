@@ -65,7 +65,7 @@ public class SemanticSkillGenerator : ISourceGenerator
                 functionsCode.AppendLine(GenerateFunctionSource(skillName, promptFile, configFile) ?? string.Empty);
             }
         }
-        
+
         string aiPluginEndpointCode = GenerateAIPluginEndpointCode(skillName);
 
         return $@"/* ### GENERATED CODE - Do not modify. Edits will be lost on build. ### */
