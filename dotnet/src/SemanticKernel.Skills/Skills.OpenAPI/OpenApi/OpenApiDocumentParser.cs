@@ -112,7 +112,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// </summary>
     /// <param name="document">The OpenApi document.</param>
     /// <returns>List of Rest operations.</returns>
-    private static IList<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document)
+    private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document)
     {
         var result = new List<RestApiOperation>();
 
@@ -135,7 +135,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="pathItem">Rest resource metadata.</param>
     /// <param name="serverUrl">The server url.</param>
     /// <returns>Rest operation.</returns>
-    private static IList<RestApiOperation> CreateRestApiOperations(string serverUrl, string path, OpenApiPathItem pathItem)
+    private static List<RestApiOperation> CreateRestApiOperations(string serverUrl, string path, OpenApiPathItem pathItem)
     {
         var operations = new List<RestApiOperation>();
 
@@ -168,7 +168,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="operationId">The operation id.</param>
     /// <param name="parameters">The OpenApi parameters.</param>
     /// <returns>The parameters.</returns>
-    private static IList<RestApiOperationParameter> CreateRestApiOperationParameters(string operationId, IList<OpenApiParameter> parameters)
+    private static List<RestApiOperationParameter> CreateRestApiOperationParameters(string operationId, IList<OpenApiParameter> parameters)
     {
         var result = new List<RestApiOperationParameter>();
 
@@ -206,7 +206,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// </summary>
     /// <param name="parameters">The OpenApi parameters</param>
     /// <returns>The headers.</returns>
-    private static IDictionary<string, string> CreateRestApiOperationHeaders(IList<OpenApiParameter> parameters)
+    private static Dictionary<string, string> CreateRestApiOperationHeaders(IList<OpenApiParameter> parameters)
     {
         return parameters.Where(p => p.In == ParameterLocation.Header).ToDictionary(p => p.Name, p => string.Empty);
     }
@@ -245,7 +245,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="requiredProperties">List of required properties.</param>
     /// <param name="level">Current level in OpenApi schema.</param>
     /// <returns>The REST API operation payload properties.</returns>
-    private static IList<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties,
+    private static List<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties,
         int level = 0)
     {
         if (schema == null)
@@ -347,7 +347,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// List of supported Media Types.
     /// </summary>
-    private static IList<string> s_supportedMediaTypes = new List<string>
+    private static readonly List<string> s_supportedMediaTypes = new List<string>
     {
         "application/json"
     };
@@ -360,7 +360,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// Latest supported version of OpenAPI document.
     /// </summary>
-    private static Version s_latestSupportedVersion = new Version(3, 0, 1);
+    private static readonly Version s_latestSupportedVersion = new Version(3, 0, 1);
 
     /// <summary>
     /// Max depth to traverse down OpenApi schema to discover payload properties.
