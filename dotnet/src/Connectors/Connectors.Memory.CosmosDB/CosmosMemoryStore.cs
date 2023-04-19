@@ -32,7 +32,7 @@ public class CosmosMemoryStore : IMemoryStore
     private ILogger _log;
     private readonly string _queryWithEmbedding = "select * from (SELECT c.id,c.collectionId,c.timestamp,c.embeddingString,c.metadataString,udf.CosinSimularity(@embedding,c.embeddingString) as score FROM c) cc where cc.score>@minScore";
     private readonly string _queryWithoutEmbedding= "select * from (SELECT c.id,c.collectionId,c.timestamp,c.metadataString,udf.CosinSimularity(@embedding,c.embeddingString) as score FROM c) cc where cc.score>@minScore";
-
+    private SortedSet<string> _collectionCache = null;
 #pragma warning disable CS8618 // Non-nullable field is uninitialized: Class instance is created and populated via factory method.
     private CosmosMemoryStore()
     {
@@ -69,20 +69,31 @@ public class CosmosMemoryStore : IMemoryStore
         }
 
         newStore._database = response.Database;
-
+        await newStore.RefreshCollectionCacheAsync(cancel).ConfigureAwait(false);
         return newStore;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancel = default)
     {
+        foreach (var item in this._collectionCache)
+        {
+            yield return item;
+        }
+    }
+
+
+    /// <inheritdoc />
+    private async Task RefreshCollectionCacheAsync(CancellationToken cancel = default)
+    {
+        this._collectionCache = new SortedSet<string>();
         QueryDefinition queryDefinition = new QueryDefinition("select * from c");
         var iterator=this._database.GetContainerQueryIterator<ContainerProperties>(queryDefinition);
         while (iterator.HasMoreResults)
         {
             foreach (var item in await iterator.ReadNextAsync(cancel).ConfigureAwait(false))
             {
-                yield return item.Id;
+                this._collectionCache.Add(item.Id);
             }
         }
     }
@@ -113,6 +124,7 @@ public class CosmosMemoryStore : IMemoryStore
             if (createFunctionResponse.StatusCode==HttpStatusCode.Created)
             {
                 this._log.LogInformation("Created UDF CosinSimularity in collection {0}",collectionName);
+                this._collectionCache.Add(collectionName);
             }
             else
             {
@@ -131,12 +143,13 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc />
-    public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
+    public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
     {
-        QueryDefinition qd = new QueryDefinition("select value(count(1)) from c where c.id=@id").WithParameter("@id",collectionName);
-        var iterator = this._database.GetContainerQueryIterator<int>(qd);
-        var firstBatch = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);//only one result returns, not need to check if more data exists
-        return firstBatch.First() == 1;
+        return Task.FromResult(this._collectionCache.Contains(collectionName));
+        //QueryDefinition qd = new QueryDefinition("select value(count(1)) from c where c.id=@id").WithParameter("@id",collectionName);
+        //var iterator = this._database.GetContainerQueryIterator<int>(qd);
+        //var firstBatch = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);//only one result returns, not need to check if more data exists
+        //return firstBatch.First() == 1;
 
     }
 
@@ -147,6 +160,7 @@ public class CosmosMemoryStore : IMemoryStore
         try
         {
             await container.DeleteContainerAsync(cancellationToken: cancel).ConfigureAwait(false);
+            this._collectionCache.Remove(collectionName);
         }
         catch (CosmosException ex)
         {
@@ -159,7 +173,10 @@ public class CosmosMemoryStore : IMemoryStore
     {
         var id = this.ToCosmosFriendlyId(key);
         var partitionKey = new PartitionKey(key);
-
+        if (!this._collectionCache.Contains(collectionName))
+        {
+            return null;
+        }
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
         MemoryRecord? memoryRecord = null;
         try
@@ -211,6 +228,10 @@ public class CosmosMemoryStore : IMemoryStore
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
+        if (!this._collectionCache.Contains(collectionName))
+        {
+            yield break;
+        }
         foreach (var key in keys)
         {
             var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel).ConfigureAwait(false);
@@ -225,6 +246,10 @@ public class CosmosMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
+        if (!this._collectionCache.Contains(collectionName))
+        {
+            await this.CreateCollectionAsync(collectionName, cancel).ConfigureAwait(false);
+        }
         record.Key = this.ToCosmosFriendlyId(record.Metadata.Id);
 
         var entity = new CosmosMemoryRecord
@@ -264,6 +289,10 @@ public class CosmosMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
     {
+        if (!this._collectionCache.Contains(collectionName))
+        {
+            return;
+        }
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
         ItemResponse<CosmosMemoryRecord> response=null;
         try
@@ -296,6 +325,10 @@ public class CosmosMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
+        if (!this._collectionCache.Contains(collectionName))
+        {
+            return;
+        }
         await Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancel))).ConfigureAwait(false);
     }
 
@@ -309,7 +342,7 @@ public class CosmosMemoryStore : IMemoryStore
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         {
-            if (limit <= 0)
+            if (limit <= 0 || !this._collectionCache.Contains(collectionName))
             {
                 yield break;
             }
@@ -373,6 +406,10 @@ public class CosmosMemoryStore : IMemoryStore
 
     private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
     {
+        if (!this._collectionCache.Contains(collectionName))
+        {
+            yield break;
+        }
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
         var query = new QueryDefinition("SELECT * FROM c");
 
