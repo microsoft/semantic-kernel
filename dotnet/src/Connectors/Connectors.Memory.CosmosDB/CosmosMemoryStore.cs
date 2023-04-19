@@ -146,10 +146,6 @@ public class CosmosMemoryStore : IMemoryStore
     public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
     {
         return Task.FromResult(this._collectionCache.Contains(collectionName));
-        //QueryDefinition qd = new QueryDefinition("select value(count(1)) from c where c.id=@id").WithParameter("@id",collectionName);
-        //var iterator = this._database.GetContainerQueryIterator<int>(qd);
-        //var firstBatch = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);//only one result returns, not need to check if more data exists
-        //return firstBatch.First() == 1;
 
     }
 
