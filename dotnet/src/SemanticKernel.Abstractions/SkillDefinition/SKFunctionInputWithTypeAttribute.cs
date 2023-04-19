@@ -28,7 +28,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public sealed class SKFunctionInputAttribute : Attribute
+public sealed class SKFunctionInputWithTypeAttribute : Attribute
 {
     /// <summary>
     /// Parameter description.
@@ -38,7 +38,18 @@ public sealed class SKFunctionInputAttribute : Attribute
     /// <summary>
     /// Default value when the value is not provided.
     /// </summary>
-    public string DefaultValue { get; set; } = string.Empty;
+    public object? DefaultValue { get; set; } = default;
+
+    /// <summary>
+    /// Gets the content type.
+    /// </summary>
+    public ContentType ContentType { get; set; } = ContentType.Text;
+
+    /// <summary>
+    /// Gets the payload body type. For use with content types such as JSON, XML, etc.
+    /// Describes the outputs for the AI model, so it can retrieve nested properties.
+    /// </summary>
+    public Type BodyType { get; set; } = typeof(string);
 
     /// <summary>
     /// Creates a parameter view, using information from an instance of this class.
@@ -50,12 +61,13 @@ public sealed class SKFunctionInputAttribute : Attribute
         {
             Name = "input",
             Description = this.Description,
-            DefaultValue = this.DefaultValue
+            DefaultValue = this.DefaultValue,
+            ContentType = this.ContentType
         };
     }
 
     public ContentView ToContentView()
     {
-        return new ContentView(this.Description, this.DefaultValue, ContentType.Text, typeof(string));
+        return new ContentView(this.Description, this.DefaultValue, this.ContentType, this.BodyType);
     }
 }
