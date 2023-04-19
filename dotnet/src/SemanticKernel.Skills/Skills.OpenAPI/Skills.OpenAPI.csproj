@@ -4,7 +4,7 @@
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-  
+
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel.Skills.OpenAPI</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Skills.OpenAPI</RootNamespace>
@@ -26,9 +26,6 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>KernelSyntaxExamples</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>SemanticKernel.Skills.UnitTests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
@@ -46,5 +43,5 @@
   <ItemGroup>
     <EmbeddedResource Include="Skills\AzureKeyVaultSkill\openapi.json" />
   </ItemGroup>
-  
+
 </Project>
