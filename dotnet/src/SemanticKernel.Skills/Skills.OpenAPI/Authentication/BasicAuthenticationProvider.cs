@@ -24,7 +24,7 @@ public class BasicAuthenticationProvider
     {
         this._content = content;
     }
-    
+
     /// <summary>
     /// Applies the authentication content to the provided HTTP request message.
     /// </summary>
