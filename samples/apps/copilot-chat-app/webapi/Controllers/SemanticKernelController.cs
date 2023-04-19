@@ -85,15 +85,9 @@ public class SemanticKernelController : ControllerBase
         SKContext result = await kernel.RunAsync(contextVariables, function!);
         if (result.ErrorOccurred)
         {
-            // TODO latest NuGets don't have the Detail property on AIException
-            //if (result.LastException is AIException aiException && aiException.Detail is not null)
-            //{
-            //    return this.BadRequest(string.Concat(aiException.Message, " - Detail: " + aiException.Detail));
-            //}
-
-            if (result.LastException is AIException aiException)
+            if (result.LastException is AIException aiException && aiException.Detail is not null)
             {
-                return this.BadRequest(aiException.Message);
+                return this.BadRequest(string.Concat(aiException.Message, " - Detail: " + aiException.Detail));
             }
 
             return this.BadRequest(result.LastErrorDescription);
