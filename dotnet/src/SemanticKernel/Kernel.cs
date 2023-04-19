@@ -187,7 +187,7 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                context = await f.InvokeAsync(context, log: this._log);
+                context = await f.InvokeAsync(context);
 
                 if (context.ErrorOccurred)
                 {
