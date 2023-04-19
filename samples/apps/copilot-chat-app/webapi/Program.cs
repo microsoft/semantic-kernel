@@ -31,7 +31,7 @@ public static class Program
         var serverPortString = builder.Configuration.GetSection("ServicePort").Get<string>();
         if (!int.TryParse(serverPortString, out int serverPort))
         {
-            serverPort = SkServiceConstants.DefaultServerPort;
+            serverPort = Constants.DefaultServerPort;
         }
 
         // Set the protocol to use
@@ -103,6 +103,7 @@ public static class Program
         services.AddSemanticKernelServices(configuration);
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "Giving app settings arguments rather than code ones")]
     private static void AddAuth(this IServiceCollection services, ConfigurationManager configuration)
     {
         var useHttp = configuration.GetSection("UseHttp").Get<bool>();
@@ -110,7 +111,7 @@ public static class Program
 
         if (useHttp && authMethod?.ToUpperInvariant() != "NONE")
         {
-            throw new ArgumentException("Using HTTP (as opposed to HTTPS) is only supported when the auth type is set to None");
+            throw new ArgumentException("Using HTTP (as opposed to HTTPS) is only supported when the auth type is set to None", "UseHttp");
         }
 
         switch (authMethod?.ToUpperInvariant())
@@ -134,7 +135,7 @@ public static class Program
                 break;
 
             default:
-                throw new ArgumentException($"Invalid auth method: {authMethod}");
+                throw new ArgumentException($"Invalid auth method: {authMethod}", "Auth:Type");
         }
     }
 

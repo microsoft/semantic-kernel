@@ -63,7 +63,7 @@ public class SemanticKernelController : ControllerBase
             return this.BadRequest("Input is required.");
         }
 
-        string semanticSkillsDirectory = this._configuration.GetSection(SkServiceConstants.SemanticSkillsDirectoryConfigKey).Get<string>();
+        string semanticSkillsDirectory = this._configuration.GetSection(Constants.SemanticSkillsDirectoryConfigKey).Get<string>();
         if (!string.IsNullOrWhiteSpace(semanticSkillsDirectory))
         {
             kernel.RegisterSemanticSkills(semanticSkillsDirectory, this._logger);
