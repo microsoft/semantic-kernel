@@ -113,27 +113,21 @@ class Kernel(KernelBase, KernelExtensions):
             input_vars: Optional[ContextVariables] = None,
             input_str: Optional[str] = None,
     ) -> SKContext:
-        
-        if input_context is None:
-            if input_vars is not None:
-                context_vars = input_vars
-            elif input_str is not None:
-                context_vars = ContextVariables(input_str)
-            else:
-                context_vars = ContextVariables()
-                
+            
+        if input_context is not None:
+            context = input_context
+        else:                
             context = SKContext(
-                context_vars,
+                ContextVariables(),
                 self._memory,
                 self._skill_collection.read_only_skill_collection,
                 self._log,
             )
-        else: 
-            context = input_context
-            if input_vars is not None:
-                self._log.warning("Ignoring input_vars because input_context is not None")
-            elif input_str is not None:
-                self._log.warning("Ignoring input_str because input_context is not None")
+
+        if input_vars is not None:
+            context.variables = input_vars
+        elif input_str is not None:
+            context.variables = ContextVariables(input_str)
 
         pipeline_step = 0
         for func in functions:
