@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 /// <summary>
 /// 
 /// </summary>
-public class MSALAuthenticationProvider : TokenAuthenticationProvider
+public class MSALAuthenticationProvider : BearerAuthenticationProvider
 {
     /// <summary>
     /// 

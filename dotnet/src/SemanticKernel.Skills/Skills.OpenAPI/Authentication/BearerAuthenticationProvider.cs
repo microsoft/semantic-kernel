@@ -8,19 +8,20 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 
 /// <summary>
-/// Retrieves an access token via the provided delegate and uses it to authentication HTTP requests.
+/// Retrieves a token via the provided delegate and applies it to HTTP requests using the
+/// "bearer" authentication scheme.
 /// </summary>
-public class TokenAuthenticationProvider
+public class BearerAuthenticationProvider
 {
-    private readonly Func<Task<string>> _accessToken;
+    private readonly Func<Task<string>> _bearerToken;
 
     /// <summary>
-    /// Creates an instance of the <see cref="TokenAuthenticationProvider"/> class.
+    /// Creates an instance of the <see cref="BearerAuthenticationProvider"/> class.
     /// </summary>
-    /// <param name="accessToken">Delegate to retrieve the access token.</param>
-    public TokenAuthenticationProvider(Func<Task<string>> accessToken)
+    /// <param name="bearerToken">Delegate to retrieve the bearer token.</param>
+    public BearerAuthenticationProvider(Func<Task<string>> bearerToken)
     {
-        this._accessToken = accessToken;
+        this._bearerToken = bearerToken;
     }
 
     /// <summary>
@@ -30,7 +31,7 @@ public class TokenAuthenticationProvider
     /// <returns></returns>
     public async Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
-        var token = await this._accessToken();
+        var token = await this._bearerToken();
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 }
