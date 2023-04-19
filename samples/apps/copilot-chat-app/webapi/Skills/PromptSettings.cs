@@ -24,6 +24,7 @@ public class PromptSettings
     internal int CompletionTokenLimit { get; } = 8192;
     internal double MemoriesResponseContextWeight { get; } = 0.3;
     internal double HistoryResponseContextWeight { get; } = 0.3;
+    internal double DocumentContextWeight { get; } = 0.3;
     internal string KnowledgeCutoffDate => this._promptsConfig.KnowledgeCutoffDate;
     internal string InitialBotMessage => this._promptsConfig.InitialBotMessage;
 
@@ -100,6 +101,7 @@ public class PromptSettings
         "{{$userIntent}}",
         "{{ChatSkill.ExtractUserMemories}}",
         "{{ChatSkill.ExtractChatHistory}}",
+        "{{DocumentQuerySkill.QueryDocuments $INPUT}}",
         this.SystemChatContinuationPrompt
     };
 

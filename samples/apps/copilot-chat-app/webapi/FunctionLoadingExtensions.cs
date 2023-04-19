@@ -57,5 +57,8 @@ internal static class FunctionLoadingExtensions
             promptSettings
         );
         kernel.ImportSkill(chatHistorySkill, nameof(ChatHistorySkill));
+
+        var documentQuerySkill = new DocumentQuerySkill(promptSettings);
+        kernel.ImportSkill(documentQuerySkill, nameof(DocumentQuerySkill));
     }
 }

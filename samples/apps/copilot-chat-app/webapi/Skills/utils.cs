@@ -24,4 +24,14 @@ internal static class Utils
             context.CancellationToken
         );
     }
+
+    /// <summary>
+    /// Estimate the number of tokens in a string.
+    /// TODO: This is a very naive implementation. We should use the new implementation that is available in the kernel.
+    /// </summary>
+    internal static int EstimateTokenCount(string text, double tokenEstimateFactor)
+    {
+        return (int)Math.Floor(text.Length / tokenEstimateFactor);
+    }
 }
+
