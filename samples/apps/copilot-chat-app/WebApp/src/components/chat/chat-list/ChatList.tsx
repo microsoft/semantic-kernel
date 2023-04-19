@@ -46,6 +46,7 @@ export const ChatList: FC = () => {
         chat.createChat();
     };
 
+    // TODO: Is this the right place for this function?
     const onImportChat = (file: File) => {
         const fileReader = new FileReader();
         fileReader.onload = async (event: ProgressEvent<FileReader>) => {

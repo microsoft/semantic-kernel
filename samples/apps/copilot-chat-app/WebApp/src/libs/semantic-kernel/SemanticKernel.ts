@@ -10,6 +10,8 @@ interface ServiceRequest {
     body?: unknown;
 }
 
+const noResponseBodyStatusCodes = [202];
+
 export class SemanticKernel {
     // eslint-disable-next-line @typescript-eslint/space-before-function-paren
     constructor(private readonly serviceUrl: string) {}
@@ -46,11 +48,16 @@ export class SemanticKernel {
         return result;
     };
 
-    public importBotAsync = async (bot: Bot, accessToken: string, connectorAccessToken?: string): Promise<any> => {
+    public importBotAsync = async (
+        bot: Bot,
+        userId: string,
+        accessToken: string,
+        connectorAccessToken?: string,
+    ): Promise<any> => {
         // TODO: return type
         const result = await this.getResponseAsync<any>(
             {
-                commandPath: 'bot/import',
+                commandPath: `bot/import?userId=${userId}`,
                 method: 'Post',
                 body: bot,
             },
@@ -86,7 +93,7 @@ export class SemanticKernel {
                 throw Object.assign(new Error(response.statusText + ' => ' + (await response.text())));
             }
 
-            return (await response.json()) as T;
+            return noResponseBodyStatusCodes.includes(response.status) ? ({} as T) : ((await response.json()) as T);
         } catch (e) {
             var additional_error_msg = '';
             if (e instanceof TypeError) {
