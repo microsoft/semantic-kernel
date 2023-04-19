@@ -2,13 +2,14 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
+using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Controllers;
@@ -105,14 +106,66 @@ public class SemanticKernelController : ControllerBase
     [Route("bot/import")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<string> ImportAsync([FromServices] Kernel kernel, [FromBody] Bot bot)
+    public async Task<ActionResult> ImportAsync(
+        [FromServices] Kernel kernel,
+        [FromServices] ChatSessionRepository chatRepository,
+        [FromServices] ChatMessageRepository chatMessageRepository,
+        [FromQuery] string userId,
+        [FromBody] Bot bot)
     {
-        this._logger.LogDebug("Received call to import a bot");
-        // TODO: import chat history into CosmosDB and embeddings into SK memory.
+        // TODO: We should get userId from server context instead of from request for privacy/security reasons when support multipe users.
 
-        return await Task.FromResult($"import a bot. {bot}");
+        this._logger.LogDebug("Received call to import a bot");
+
+        /*if (!this.IsBotCompatible(bot.Schema, bot.Configurations))
+        {
+            return new UnsupportedMediaTypeResult();
+        }*/
+
+        // TODO: Add real chat title, user object id and user name.
+        string chatTitle = "chat-title";
+
+        string chatId = string.Empty;
+
+        // Import chat history into CosmosDB and embeddings into SK memory.
+        try
+        {
+            // 1. Create a new chat and get the chat id.
+
+            var newChat = new ChatSession(userId, chatTitle);
+            await chatRepository.CreateAsync(newChat);
+            chatId = newChat.Id;
+
+            string oldChatId = bot.ChatHistory.First().ChatId;
+
+            // 2. Update the app's chat storage.
+            foreach (var message in bot.ChatHistory)
+            {
+                var chatMessage = new ChatMessage(message.UserId, message.UserName, chatId, message.Content);
+                chatMessage.Timestamp = message.Timestamp;
+                // TODO: should we use UpsertItemAsync?
+                await chatMessageRepository.CreateAsync(chatMessage);
+            }
+
+            // 3. Update SK memory.
+            foreach (var collection in bot.Embeddings)
+            {
+                foreach (var record in collection.Value)
+                {
+                    var newCollectionKey = collection.Key.Replace(oldChatId, chatId, StringComparison.OrdinalIgnoreCase);
+                    await kernel.Memory.UpsertAsync(newCollectionKey, record.Metadata.Text, record.Metadata.Id, record.Embedding);
+                }
+            }
+        }
+        catch
+        {
+            // TODO: Revert changes if any of the actions failed
+            throw;
+        }
+
+        return this.Accepted();
     }
 
     [Route("bot/export")]
@@ -132,6 +185,28 @@ public class SemanticKernelController : ControllerBase
         return JsonSerializer.Serialize(memory);
     }
 
+    private bool IsBotCompatible(BotSchemaConfig externalBotSchema, BotConfiguration externalBotConfiguration)
+    {
+        var embeddingAIServiceConfig = this._configuration.GetSection("Embedding").Get<AIServiceConfig>();
+        var botSchema = this._configuration.GetSection("BotFileSchema").Get<BotSchemaConfig>();
+
+        if (embeddingAIServiceConfig != null && botSchema != null)
+        {
+            // The app can define what schema/version it supports before the community comes out with an open schema.
+            return externalBotSchema.Name.Equals(
+                botSchema.Name, StringComparison.OrdinalIgnoreCase)
+                && externalBotSchema.Verson == botSchema.Verson
+                && externalBotConfiguration.EmbeddingAIService.Equals(
+                embeddingAIServiceConfig.AIService, StringComparison.OrdinalIgnoreCase)
+                && externalBotConfiguration.EmbeddingDeploymentOrModelId.Equals(
+                embeddingAIServiceConfig.DeploymentOrModelId, StringComparison.OrdinalIgnoreCase);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     /// <summary>
     /// Get the chat history and memory of a given chat.
     /// </summary>
@@ -149,6 +224,14 @@ public class SemanticKernelController : ControllerBase
 
         var bot = new Bot();
 
+        // get embedding configuration
+        var embeddingAIServiceConfig = this._configuration.GetSection("Embedding").Get<AIServiceConfig>();
+        bot.Configurations = new BotConfiguration
+        {
+            EmbeddingAIService = embeddingAIServiceConfig?.AIService ?? string.Empty,
+            EmbeddingDeploymentOrModelId = embeddingAIServiceConfig?.DeploymentOrModelId ?? string.Empty
+        };
+
         // get chat history
         var contextVariables = new ContextVariables(ask.Input);
         foreach (var input in ask.Variables)
@@ -164,20 +247,21 @@ public class SemanticKernelController : ControllerBase
 
         // get memory
         var allCollections = await kernel.Memory.GetCollectionsAsync();
-        IList<MemoryQueryResult> allChatMessageMemories = new List<MemoryQueryResult>();
+        List<MemoryQueryResult> allChatMessageMemories = new List<MemoryQueryResult>();
 
         foreach (var collection in allCollections)
         {
             var results = await kernel.Memory.SearchAsync(
                 collection,
                 "abc", // dummy query since we don't care about relevance. An empty string will cause exception.
-                limit: 1,
-                minRelevanceScore: 0.0, // no relevance required since the collection only has one entry
+                limit: 999999999, // hacky way to get as much as record as a workaround. TODO: Call GetAll() when it's in the SK memory storage API.
+                minRelevanceScore: -1, // no relevance required since the collection only has one entry
+                withEmbeddings: true,
                 cancel: default
             ).ToListAsync();
-            allChatMessageMemories.Add(results.First());
+            allChatMessageMemories.AddRange(results);
 
-            bot.Embeddings.Append(new KeyValuePair<string, IEnumerable<MemoryQueryResult>>(collection, allChatMessageMemories));
+            bot.Embeddings.Add(new KeyValuePair<string, List<MemoryQueryResult>>(collection, allChatMessageMemories));
         }
 
         return bot;
@@ -191,7 +275,7 @@ public class SemanticKernelController : ControllerBase
     /// <returns>The result of the ask.</returns>
     private async Task<AskResult> GetAllChatMessagesAsync(Kernel kernel, ContextVariables variables)
     {
-        ISKFunction? function = kernel.Skills.GetFunction("ChatHistorySkill", "GetAllChatMessages");
+        ISKFunction function = kernel.Skills.GetFunction("ChatHistorySkill", "GetAllChatMessages");
 
         // Invoke the GetAllChatMessages function of ChatHistorySkill.
         SKContext result = await kernel.RunAsync(variables, function!);
