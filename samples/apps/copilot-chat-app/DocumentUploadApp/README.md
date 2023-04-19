@@ -45,3 +45,5 @@ specific contexts that are generally unavailable publicly, such as enterprise da
    `dotnet run -- --file C:\Users\taochen\Desktop\paper.txt --user-collection`
 
    > Note that this will open a browser window for you to sign in to retrieve your user id. 
+
+   > Currently only supports txt files. A sample file is provided under ./sample-docs.
