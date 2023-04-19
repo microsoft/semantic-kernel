@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Host": {
+    "CORS": "*"
+  },
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "",
+    "AzureWebJobs.KernelHttpServer.Disabled": "false"
+  }
+}
