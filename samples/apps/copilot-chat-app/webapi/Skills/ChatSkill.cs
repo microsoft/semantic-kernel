@@ -128,7 +128,7 @@ public class ChatSkill
             var results = context.Memory.SearchAsync(
                 SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName),
                 latestMessage.ToString(),
-                limit: 1000,
+                limit: 100,
                 minRelevanceScore: 0.8);
             await foreach (var memory in results)
             {

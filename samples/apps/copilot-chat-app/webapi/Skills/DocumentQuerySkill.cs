@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Globalization;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -16,7 +17,13 @@ public class DocumentQuerySkill
     /// Returns the name of the semantic document memory collection that stores document semantic memory.
     /// </summary>
     /// <param name="userId">ID of the user who owns the documents.</param>
-    internal static string DocumentMemoryCollectionName(string userId) => $"{userId}-documents";
+    internal string UserDocumentMemoryCollectionName(string userId) => $"{userId}-documents";
+
+    /// <summary>
+    /// Name of the semantic document memory collection that stores document semantic memory globally
+    /// available to users accessing the service.
+    /// </summary>
+    internal string GlobalDocumentMemoryCollectionName = "global-documents";
 
     /// <summary>
     /// Prompt settings.
@@ -39,10 +46,18 @@ public class DocumentQuerySkill
     [SKFunction("Parse a local file")]
     [SKFunctionName("ParseLocalFile")]
     [SKFunctionInput(Description = "Path to the local file including the file name.")]
-    [SKFunctionContextParameter(Name = "userId", Description = "ID of the user who owns the documents.")]
+    [SKFunctionContextParameter(
+        Name = "userId",
+        Description = "ID of the user who owns the documents. This is used to create a unique collection name for the user." +
+                      "If the user ID is not specified or empty, the documents will be stored in a global collection.",
+        DefaultValue = "")]
     public async Task ParseLocalFileAsync(string localFile, SKContext context)
     {
-        string userId = context.Variables["userId"];
+        string collection = context.Variables.ContainsKey("userID") ?
+            string.IsNullOrEmpty(context.Variables["userID"]) ?
+                GlobalDocumentMemoryCollectionName :
+                UserDocumentMemoryCollectionName(context.Variables["userID"]) :
+            GlobalDocumentMemoryCollectionName;
 
         string text = string.Empty;
         try
@@ -56,14 +71,14 @@ public class DocumentQuerySkill
             return;
         }
 
-        var lines =
-            SemanticTextPartitioner.SplitPlainTextLines(text, this._promptSettings.DocumentLineSplitMaxTokens);
-        var paragraphs =
-            SemanticTextPartitioner.SplitPlainTextParagraphs(lines, this._promptSettings.DocumentParagraphSplitMaxLines);
+        var lines = SemanticTextPartitioner.SplitPlainTextLines(
+            text, this._promptSettings.DocumentLineSplitMaxTokens);
+        var paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(
+            lines, this._promptSettings.DocumentParagraphSplitMaxLines);
         foreach (var paragraph in paragraphs)
         {
             await context.Memory.SaveInformationAsync(
-                collection: DocumentMemoryCollectionName(userId),
+                collection: collection,
                 text: paragraph,
                 id: Guid.NewGuid().ToString(),
                 description: $"Document: {localFile}");
@@ -93,18 +108,31 @@ public class DocumentQuerySkill
             Math.Floor(contextTokenLimit * this._promptSettings.DocumentContextWeight)
         );
 
-        var results = context.Memory.SearchAsync
-        (
-            collection: DocumentMemoryCollectionName(userId),
-            query: query,
-            limit: 1000,
-            minRelevanceScore: 0.8,
-            withEmbeddings: false,
-            cancel: context.CancellationToken
-        );
+        // Search for relevant document snippets.
+        string[] documentCollections = new string[]
+        {
+            UserDocumentMemoryCollectionName(userId),
+            GlobalDocumentMemoryCollectionName
+        };
 
+        List<MemoryQueryResult> relevantMemories = new List<MemoryQueryResult>();
+        foreach (var documentCollection in documentCollections)
+        {
+            var results = context.Memory.SearchAsync(
+                documentCollection,
+                query,
+                limit: 100,
+                minRelevanceScore: 0.8);
+            await foreach (var memory in results)
+            {
+                relevantMemories.Add(memory);
+            }
+        }
+        relevantMemories = relevantMemories.OrderByDescending(m => m.Relevance).ToList();
+
+        // Concatenate the relevant document snippets.
         string documentsText = string.Empty;
-        await foreach (var memory in results)
+        foreach (var memory in relevantMemories)
         {
             var estimatedTokenCount = Utils.EstimateTokenCount(
                 memory.Metadata.Text,

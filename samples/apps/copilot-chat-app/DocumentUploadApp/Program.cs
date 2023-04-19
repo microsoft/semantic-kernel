@@ -21,22 +21,27 @@ public static class Program
         var fileOption = new Option<FileInfo>(
             name: "--file",
             description: "The file to upload for injection."
+        )
+        { IsRequired = true };
+
+        var userCollectionOption = new Option<bool>(
+            name: "--user-collection",
+            description: "Save the extracted context to an isolated user collection.",
+            getDefaultValue: () => false
         );
 
         var rootCommand = new RootCommand(
             "Sample app that uploads a file to the Document Store."
-        );
-        rootCommand.AddOption(fileOption);
-        rootCommand.SetHandler(
-            async (file) =>
+        )
+        {
+            fileOption, userCollectionOption
+        };
+
+        rootCommand.SetHandler(async (file, userCollection) =>
             {
-                var userId = await AcquireUserIdAsync(appConfig!);
-                if (userId != null)
-                {
-                    await UploadFileAsync(file, userId, appConfig!);
-                }
+                await UploadFileAsync(file, appConfig, userCollection);
             },
-            fileOption
+            fileOption, userCollectionOption
         );
 
         rootCommand.Invoke(args);
@@ -72,9 +77,12 @@ public static class Program
     }
 
     /// <summary>
-    /// Invokes the DocumentQuerySkill to upload a file to the Document Store for parsing.
+    /// Conditionally uploads a file to the Document Store for parsing.
     /// </summary>
-    private static async Task UploadFileAsync(FileInfo file, string userId, AppConfig appConfig)
+    /// <param name="file">The file to upload for injection.</param>
+    /// <param name="appConfig">The app configuration.</param>
+    /// <param name="toUserCollection">Save the extracted context to an isolated user collection.</param>
+    private static async Task UploadFileAsync(FileInfo file, AppConfig appConfig, bool toUserCollection)
     {
         if (!file.Exists)
         {
@@ -82,6 +90,31 @@ public static class Program
             return;
         }
 
+        if (toUserCollection)
+        {
+            var userId = await AcquireUserIdAsync(appConfig!);
+            if (userId != null)
+            {
+                Console.WriteLine("Uploading and parsing file to user collection...");
+                await UploadFileAsync(file, userId, appConfig!);
+            }
+        }
+        else
+        {
+            Console.WriteLine("Uploading and parsing file to global collection...");
+            await UploadFileAsync(file, "", appConfig!);
+        }
+    }
+
+    /// <summary>
+    /// Invokes the DocumentQuerySkill to upload a file to the Document Store for parsing.
+    /// </summary>
+    /// <param name="file">The file to upload for injection.</param>
+    /// <param name="userId">The user unique ID. If empty, the file will be injected to a global collection that is available to all users.</param>
+    /// <param name="appConfig">The app configuration.</param>
+    private static async Task UploadFileAsync(
+        FileInfo file, string userId, AppConfig appConfig)
+    {
         string skillName = "DocumentQuerySkill";
         string functionName = "ParseLocalFile";
         string commandPath = $"skills/{skillName}/functions/{functionName}/invoke";
@@ -112,7 +145,6 @@ public static class Program
         HttpClient httpClient = new(clientHandler) { BaseAddress = new Uri(appConfig.ServiceUri) };
         httpClient.Timeout = Timeout.InfiniteTimeSpan;
 
-        Console.WriteLine("Uploading and parsing file...");
         try
         {
             using HttpResponseMessage response = await httpClient.PostAsync(
