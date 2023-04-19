@@ -21,6 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="[6.0.0, )" />
     <PackageReference Include="System.Text.Json" VersionOverride="[6.0.0, )" />
+    <PackageReference Include="Google.Apis.Customsearch.v1" Version="1.49.0.2084"/>
   </ItemGroup>
 
   <ItemGroup>
