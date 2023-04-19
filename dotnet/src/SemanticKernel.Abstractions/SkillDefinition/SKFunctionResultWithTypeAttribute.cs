@@ -5,28 +5,8 @@ using System;
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
-/// Attribute to describe the main parameter required by a native function,
-/// e.g. the first "string" parameter, if the function requires one.
+/// Attribute to describe the value returned from a native function.
 /// </summary>
-/// <remarks>
-/// The class has no constructor and requires the use of setters for readability.
-/// e.g.
-/// Readable:     [SKFunctionInput(Description = "...", DefaultValue = "...")]
-/// Not readable: [SKFunctionInput("...", "...")]
-/// </remarks>
-/// <example>
-/// <code>
-///   // No main parameter here, only context
-///   public async Task WriteAsync(SKContext context
-/// </code>
-/// </example>
-/// <example>
-/// <code>
-///   // "path" is the input parameter
-///   [SKFunctionInput("Source file path")]
-///   public async Task{string?} ReadAsync(string path, SKContext context
-/// </code>
-/// </example>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public sealed class SKFunctionResultWithTypeAttribute : Attribute
 {
@@ -34,11 +14,6 @@ public sealed class SKFunctionResultWithTypeAttribute : Attribute
     /// Parameter description.
     /// </summary>
     public string Description { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Default value when the value is not provided.
-    /// </summary>
-    public object? DefaultValue { get; set; } = default;
 
     /// <summary>
     /// Gets the content type.
@@ -56,6 +31,6 @@ public sealed class SKFunctionResultWithTypeAttribute : Attribute
     /// </summary>
     public ContentView ToContentView()
     {
-        return new ContentView(this.Description, this.DefaultValue, this.ContentType, this.BodyType);
+        return new ContentView(this.Description, default, this.ContentType, this.BodyType);
     }
 }
