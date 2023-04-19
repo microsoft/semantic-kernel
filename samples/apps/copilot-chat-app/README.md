@@ -113,6 +113,7 @@ and these components are functional:
 > !CAUTION: Each chat interaction will call OpenAI which will use tokens that you will be billed for.
 
 ## Troubleshooting
+### 1. Localhost SSL certificate errors
 ![](images/Cert-Issue.png)
 
 If you are stopped at an error message similar to the one above, your browser
@@ -134,3 +135,16 @@ To resolve this, try the following:
 * If you continue to experience trouble using SSL based linking, you may wish to
   run the back-end API server without an SSL certificate, you may change
   `"UseHttp": false,` to `"UseHttp": true,` to overide the default use of https.
+
+### 2. Configuration issues after updating your repo/fork.
+As of [PR #470](https://github.com/microsoft/semantic-kernel/pull/470), we have updated some of the top-level
+configuration keys. Most notably, 
+  - `CompletionConfig` is now `Completion` 
+  - `EmbeddingConfig` is now `Embedding`
+  
+You may need to update the keys used for any secrets set with `dotnet user-secrets set`. 
+
+### 3. Issues using text completion models, such as `text-davinci-003`.
+As of [PR #499](https://github.com/microsoft/semantic-kernel/pull/499), CopilotChat now focuses support on chat completion models, such as `gpt-3.5-*` and `gpt-4-*`.
+See [OpenAI's model compatiblity](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
+the complete list of current models supporting chat completions.
