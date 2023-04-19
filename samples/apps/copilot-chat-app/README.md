@@ -49,17 +49,15 @@ and these components are functional:
             you may change `"UseHttp": false,` to `True` to overide the default
             use of https.
 
-          * Under the `“Completion”` block, make the following configuration
+         * Under the `“Completion”` block, make the following configuration
             changes to match your instance:
-
             * `“AIService”: “AzureOpenAI”`, or whichever option is appropriate for
               your instance.
             * `“DeploymentOrModelID”: “text-davinci-003”,` or whichever option is
               appropriate for your instance.  
             * `“Endpoint”:` “Your Azure Endpoint address, i.e. `http://contoso.openai.azure.com`”.
               If you are using OpenAI, leave this blank.
-            * You will insert your Azure endpoint key during build of the backend
-              API Server
+            * Set your Azure endpoint key using the following command: dotnet user-secrets set "Completion:Key" "MY_COMPLETION_KEY"
 
         * Under the `“Embedding”` block, make sure the following configuration
           changes to match your instance:
@@ -67,8 +65,14 @@ and these components are functional:
               for your instance.
             * `“DeploymentOrModelID”: “text-embedding-ada-002”,` or whichever
               option is appropriate for your instance.    
-            * You will insert your Azure endpoint key during build of the backend
-              API Server
+            * Set your Azure endpoint key using the following command: dotnet user-secrets set "Embedding:Key" "MY_EMBEDDING_KEY"
+
+         * If you wish to use speech-to-text as input, update the `AzureSpeech` configuration settings in the 
+           `./webapi/appsettings.json` to your instance of Azure Cognitive Services or Azure Speech:
+            * `"Region": "westus2",` or whichever region is appropriate for your speech sdk instance.
+            * Set your Azure speech key using the following command: `dotnet user-secrets set "AzureSpeech:Key" "MY_AZURE_SPEECH_KEY"`. 
+              If you have not already, you will need to [create an Azure Speech resource](https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices).
+              See [./webapi/appsettings.json](webapi/appsettings.json) for more details.
             
 4. Build the back-end API server by following these instructions:
     1. In the terminal navigate to  `\samples\apps\copilot-chat-app\webapi`
@@ -111,6 +115,7 @@ and these components are functional:
 > !CAUTION: Each chat interaction will call OpenAI which will use tokens that you will be billed for.
 
 ## Troubleshooting
+### 1. Localhost SSL certificate errors
 ![](images/Cert-Issue.png)
 
 If you are stopped at an error message similar to the one above, your browser
@@ -132,3 +137,16 @@ To resolve this, try the following:
 * If you continue to experience trouble using SSL based linking, you may wish to
   run the back-end API server without an SSL certificate, you may change
   `"UseHttp": false,` to `"UseHttp": true,` to overide the default use of https.
+
+### 2. Configuration issues after updating your repo/fork.
+As of [PR #470](https://github.com/microsoft/semantic-kernel/pull/470), we have updated some of the top-level
+configuration keys. Most notably, 
+  - `CompletionConfig` is now `Completion` 
+  - `EmbeddingConfig` is now `Embedding`
+  
+You may need to update the keys used for any secrets set with `dotnet user-secrets set`. 
+
+### 3. Issues using text completion models, such as `text-davinci-003`.
+As of [PR #499](https://github.com/microsoft/semantic-kernel/pull/499), CopilotChat now focuses support on chat completion models, such as `gpt-3.5-*` and `gpt-4-*`.
+See [OpenAI's model compatiblity](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
+the complete list of current models supporting chat completions.
