@@ -25,12 +25,12 @@ Install this package manually only if you are selecting individual Semantic Kern
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <DocumentationFile>bin\Release\netstandard2.0\SemanticKernel.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\netstandard2.0\Microsoft.SemanticKernel.Core.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugType>portable</DebugType>
-    <DocumentationFile>bin\Debug\netstandard2.0\SemanticKernel.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\netstandard2.0\Microsoft.SemanticKernel.Core.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
