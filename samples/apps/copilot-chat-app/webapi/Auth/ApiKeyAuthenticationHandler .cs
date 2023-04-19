@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace SemanticKernel.Service.Auth;
 
@@ -31,17 +32,17 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (!this.Request.Headers.ContainsKey(ApiKeyHeaderName))
-        {
-            return Task.FromResult(AuthenticateResult.Fail("No API key provided"));
-        }
-
         if (string.IsNullOrWhiteSpace(this.Options.ApiKey))
         {
             return Task.FromResult(AuthenticateResult.Fail("API key not configured on server"));
         }
+        
+        if (this.Request.Headers.TryGetValue(ApiKeyHeaderName, out StringValues apiKeyFromHeader))
+        {
+            return Task.FromResult(AuthenticateResult.Fail("No API key provided"));
+        }
 
-        if (this.Request.Headers[ApiKeyHeaderName] != this.Options.ApiKey)
+        if (!string.Equals(apiKeyFromHeader, this.Options.ApiKey, StringComparison.Ordinal))
         {
             return Task.FromResult(AuthenticateResult.Fail("Incorrect API key"));
         }
