@@ -104,10 +104,10 @@ public static class Program
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "Giving app settings arguments rather than code ones")]
-    private static void AddAuth(this IServiceCollection services, ConfigurationManager configuration)
+    private static void AddAuthorization(this IServiceCollection services, ConfigurationManager configuration)
     {
         var useHttp = configuration.GetSection("UseHttp").Get<bool>();
-        var authMethod = configuration.GetSection("Auth:Type").Get<string>();
+        var authMethod = configuration.GetSection("Authorization:Type").Get<string>();
 
         if (useHttp && authMethod?.ToUpperInvariant() != "NONE")
         {
@@ -118,14 +118,14 @@ public static class Program
         {
             case "AZUREAD":
                 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                        .AddMicrosoftIdentityWebApi(configuration.GetSection("Auth:AzureAd"));
+                        .AddMicrosoftIdentityWebApi(configuration.GetSection("Authorization:AzureAd"));
                 break;
 
             case "APIKEY":
                 services.AddAuthentication(ApiKeyAuthenticationHandler.AuthenticationScheme)
                         .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
                             ApiKeyAuthenticationHandler.AuthenticationScheme,
-                            options => options.ApiKey = configuration.GetSection("Auth:ApiKey").Get<string>());
+                            options => options.ApiKey = configuration.GetSection("Authorization:ApiKey").Get<string>());
                 break;
 
             case "NONE":
@@ -135,7 +135,7 @@ public static class Program
                 break;
 
             default:
-                throw new ArgumentException($"Invalid auth method: {authMethod}", "Auth:Type");
+                throw new ArgumentException($"Invalid auth method: {authMethod}", "Authorization:Type");
         }
     }
 
