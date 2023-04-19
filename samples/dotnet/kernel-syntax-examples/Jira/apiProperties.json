@@ -1,0 +1,233 @@
+{
+    "properties": {
+      "connectionParameters": {
+        "jirainstance": {
+          "type": "string",
+          "uiDefinition": {
+            "displayName": "JIRA instance",
+            "description": "The url where your JIRA instance is hosted (must support https). ",
+            "tooltip": "Provide your JIRA domain (eg. myjirainstance.atlassian.net or mycompany.com:443/jira)",
+            "constraints": {
+              "required": "true"
+            }
+          }
+        },
+        "username": {
+          "type": "string",
+          "uiDefinition": {
+            "displayName": "Username or Email",
+            "description": "Your JIRA username. For JIRA Cloud you need to use a valid email address.",
+            "tooltip": "Provide your username",
+            "constraints": {
+              "required": "true"
+            }
+          }
+        },
+        "password": {
+          "type": "securestring",
+          "uiDefinition": {
+            "displayName": "API token",
+            "description": "Your API token (https://id.atlassian.com/manage/api-tokens).",
+            "tooltip": "Provide your API token",
+            "constraints": {
+              "required": "true"
+            }
+          }
+        }
+      },
+      "iconBrandColor": "#1F4F81",
+      "capabilities": [
+        "actions",
+        "triggers"
+      ],
+      "policyTemplateInstances": [
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - CreateIssue",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/issue",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "CreateIssue"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - AddComment",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/issue/{issueKey}/comment",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "AddComment"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - ListProjects_V2",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/project/search",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "ListProjects_V2"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - ListProjects/CreateProject",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/project",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "ListProjects",
+              "CreateProject"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - CreateIssueV2",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/issue",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "CreateIssueV2"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - GetIssue/UpdateIssue",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/issue/{issueKey}",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "GetIssue",
+              "UpdateIssue"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - ListIssueTypes",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/issue/createmeta",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "ListIssueTypes"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - ListIssueTypesFields",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/issue/createmeta",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "ListIssueTypesFields"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - ListStatuses",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/project/{projectId}/statuses",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "ListStatuses"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - ListProjectUsers",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/user/permission/search",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "ListProjectUsers"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - ListAssignableUsers",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/user/assignable/search",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "ListAssignableUsers"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - ListPriorityTypes",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/priority",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "ListPriorityTypes"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - OnNewIssue",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/new_issue_trigger/search",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "OnNewIssue"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - OnCloseIssue",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/close_issue_trigger/search",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "OnCloseIssue"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - OnUpdateIssue",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/update_issue_trigger/search",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "OnUpdateIssue"
+            ]
+          }
+        },
+        {
+          "templateId": "routerequesttoendpoint",
+          "title": "Route Request - OnNewIssueJQL",
+          "parameters": {
+            "x-ms-apimTemplateParameter.newPath": "/2/new_issue_jql_trigger/search",
+            "x-ms-apimTemplateParameter.httpMethod": "@Request.OriginalHTTPMethod",
+            "x-ms-apimTemplate-operationName": [
+              "OnNewIssueJQL"
+            ]
+          }
+        },
+        {
+          "templateId": "dynamichosturl",
+          "title": "Set JIRA Address",
+          "parameters": {
+            "x-ms-apimTemplateParameter.urlTemplate": "https://@connectionParameters('jirainstance').atlassian.net/rest/api/"
+          }
+        }
+      ],
+      "publisher": "Microsoft",
+      "stackOwner": "Microsoft"
+    }
+  }

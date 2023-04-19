@@ -1,0 +1,2826 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "x-ms-deployment-version": "1.0.0",
+      "version": "1.0.0",
+      "title": "JIRA",
+      "description": "JIRA is a software development tool for agile teams to plan, track, and release world-class software. Connecting JIRA issues to the rest of your tools helps break down barriers and unleash the potential of your team.",
+      "x-ms-api-annotation": {
+        "status": "Production"
+      },
+      "contact": {
+        "name": "Atlassian",
+        "url": "https://support.atlassian.com"
+      }
+    },
+    "host": "yourhost.yourdomain.com",
+    "basePath": "/rest/api",
+    "schemes": [
+      "https"
+    ],
+    "produces": [
+      "application/json"
+    ],
+    "paths": {
+      "/3/issue/{issueIdOrKey}": {
+        "put": {
+          "description": "Edits an issue. A transition may be applied and issue properties updated as part of the edit.",
+          "summary": "Edit Issue",
+          "tags": [
+            "Issues"
+          ],
+          "operationId": "EditIssue",
+          "deprecated": false,
+          "produces": [
+            "application/json"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "issueIdOrKey",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "x-ms-summary": "Issue ID or Key",
+              "description": "Provide the Issue ID or Key for the issue you wish to edit",
+              "x-ms-url-encoding": "single"
+            },
+            {
+              "name": "notifyUsers",
+              "in": "query",
+              "required": false,
+              "type": "boolean",
+              "x-ms-summary": "Notify Users",
+              "description": "Do you want to notify users?"
+            },
+            {
+              "name": "overrideScreenSecurity",
+              "in": "query",
+              "required": false,
+              "type": "boolean",
+              "x-ms-summary": "Override Screen Security",
+              "description": "Do you want to override the screen security?"
+            },
+            {
+              "name": "overrideEditableFlag",
+              "in": "query",
+              "required": false,
+              "type": "boolean",
+              "x-ms-summary": "Override Editable Flag",
+              "description": "Do you want to override the editable flag?"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "required": false,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "transition": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Transition ID"
+                      },
+                      "looped": {
+                        "type": "string",
+                        "description": "Transition looped"
+                      }
+                    },
+                    "description": "Transition"
+                  },
+                  "fields": {
+                    "type": "string",
+                    "description": "Fields"
+                  },
+                  "update": {
+                    "type": "string",
+                    "description": "Update"
+                  },
+                  "historyMetadata": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "History meta data type"
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "History meta data description"
+                      },
+                      "descriptionKey": {
+                        "type": "string",
+                        "description": "History meta data description key"
+                      },
+                      "activityDescription": {
+                        "type": "string",
+                        "description": "History meta data activity description"
+                      },
+                      "activityDescriptionKey": {
+                        "type": "string",
+                        "description": "History meta data activity description key"
+                      },
+                      "emailDescription": {
+                        "type": "string",
+                        "description": "History meta data email description"
+                      },
+                      "emailDescriptionKey": {
+                        "type": "string",
+                        "description": "History meta data email description key"
+                      },
+                      "actor": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Actor ID"
+                          },
+                          "displayName": {
+                            "type": "string",
+                            "description": "Actor display name"
+                          },
+                          "displayNameKey": {
+                            "type": "string",
+                            "description": "Actor display name key"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Actor type"
+                          },
+                          "avatarUrl": {
+                            "type": "string",
+                            "description": "Actor avatar url"
+                          },
+                          "url": {
+                            "type": "string",
+                            "description": "Actor url"
+                          }
+                        },
+                        "description": "Actor"
+                      },
+                      "generator": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Generator id"
+                          },
+                          "displayName": {
+                            "type": "string",
+                            "description": "Generator display name"
+                          },
+                          "displayNameKey": {
+                            "type": "string",
+                            "description": "Generator display name key"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Generator type"
+                          },
+                          "avatarUrl": {
+                            "type": "string",
+                            "description": "Generator avatar url"
+                          },
+                          "url": {
+                            "type": "string",
+                            "description": "Generator url"
+                          }
+                        },
+                        "description": "Generator"
+                      },
+                      "cause": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Cause id"
+                          },
+                          "displayName": {
+                            "type": "string",
+                            "description": "Cause display name"
+                          },
+                          "displayNameKey": {
+                            "type": "string",
+                            "description": "Cause display name key"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Cause type"
+                          },
+                          "avatarUrl": {
+                            "type": "string",
+                            "description": "Cause avatar url"
+                          },
+                          "url": {
+                            "type": "string",
+                            "description": "Cause url"
+                          }
+                        },
+                        "description": "Cause"
+                      },
+                      "extraData": {
+                        "type": "string",
+                        "description": "Extra data"
+                      }
+                    },
+                    "description": "History meta data"
+                  },
+                  "properties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "description": "Key"
+                        },
+                        "value": {
+                          "type": "object",
+                          "properties": {},
+                          "description": "Value"
+                        }
+                      }
+                    },
+                    "description": "Properties"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Returned if the request is successful.",
+              "schema": {
+                "type": "object"
+              },
+              "examples": {
+                "application/json": {
+                  "self": "https://yourhost.yourdomain.com/rest/api/3/issue/10100",
+                  "id": "10100",
+                  "name": "EDITED",
+                  "description": "Issue Edited"
+                }
+              },
+              "headers": {}
+            },
+            "204": {
+              "description": "Returned if the request is successful.",
+              "schema": {
+                "type": "object"
+              },
+              "headers": {}
+            },
+            "400": {
+              "description": "Returned if the request body is missing. The user does not have the necessary permission to edit one or more fields. The request includes one or more fields that are not found or are not associated with the issue's edit screen. The request includes an invalid transition.",
+              "headers": {}
+            },
+            "401": {
+              "description": "Returned if the authentication credentials are incorrect or missing.",
+              "headers": {}
+            },
+            "403": {
+              "description": "Returned if the user uses `overrideScreenSecurity` or `overrideEditableFlag` but doesn't have the necessary permission.",
+              "headers": {}
+            },
+            "404": {
+              "description": "Returned if the issue is not found or the user does not have permission to view it.",
+              "headers": {}
+            }
+          }
+        }
+      },
+      "/3/project/{projectIdOrKey}": {
+        "delete": {
+          "description": "Deletes a project. Permissions required: Administer Jira (global permissions)",
+          "summary": "Delete Project",
+          "tags": [
+            "Projects"
+          ],
+          "operationId": "DeleteProject",
+          "deprecated": false,
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "projectIdOrKey",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "description": "The project ID or project key (case sensitive).",
+              "x-ms-summary": "Project ID or Key",
+              "x-ms-url-encoding": "single"
+            },
+            {
+              "name": "enableUndo",
+              "in": "query",
+              "required": false,
+              "default": false,
+              "type": "boolean",
+              "description": "Whether this project is placed in the Jira recycle bin where it will be available for restoration.",
+              "x-ms-summary": "Enable Undo"
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Returned if the project is deleted.",
+              "headers": {}
+            },
+            "401": {
+              "description": "Returned if the authentication credentials are incorrect or missing.",
+              "headers": {}
+            },
+            "404": {
+              "description": "Returned if the project is not found or the user does not have permission to delete it.",
+              "headers": {}
+            }
+          }
+        },
+        "put": {
+          "description": "Updates the project details of a project.",
+          "summary": "Update Project",
+          "tags": [
+            "Projects"
+          ],
+          "operationId": "UpdateProject",
+          "deprecated": false,
+          "produces": [
+            "application/json"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "projectIdOrKey",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "x-ms-summary": "Project ID or Key",
+              "description": "Provide the project ID or Key you want to update1",
+              "x-ms-url-encoding": "single"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "required": false,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "Key"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Name"
+                  },
+                  "projectTypeKey": {
+                    "type": "string",
+                    "description": "Project Type Key"
+                  },
+                  "projectTemplateKey": {
+                    "type": "string",
+                    "description": "Project Template Key"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description"
+                  },
+                  "lead": {
+                    "type": "string",
+                    "description": "Lead"
+                  },
+                  "leadAccountId": {
+                    "type": "string",
+                    "description": "Lead Account ID"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "URL"
+                  },
+                  "assigneeType": {
+                    "type": "string",
+                    "description": "Assignee Type"
+                  },
+                  "avatarId": {
+                    "type": "string",
+                    "description": "Avatar ID"
+                  },
+                  "issueSecurityScheme": {
+                    "type": "string",
+                    "description": "Issue Security Scheme"
+                  },
+                  "permissionScheme": {
+                    "type": "string",
+                    "description": "Permission Scheme"
+                  },
+                  "notificationScheme": {
+                    "type": "string",
+                    "description": "Notification Scheme"
+                  },
+                  "categoryId": {
+                    "type": "string",
+                    "description": "Category ID"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Returned if the project is updated.",
+              "schema": {
+                "type": "object"
+              },
+              "headers": {}
+            },
+            "400": {
+              "description": "Returned if the request is not valid.",
+              "headers": {}
+            },
+            "401": {
+              "description": "Returned if the authentication credentials are incorrect or missing.",
+              "headers": {}
+            },
+            "403": {
+              "description": "Returned if:\n\n *  the user does not have the necessary permission to update project details.\n *  the permission scheme is being changed and the Jira instance is Jira Core Free or Jira Software Free. Permission schemes cannot be changed on free plans.",
+              "headers": {}
+            },
+            "404": {
+              "description": "Returned if the project is not found.",
+              "headers": {}
+            }
+          }
+        }
+      },
+      "/3/projectCategory": {
+        "get": {
+          "description": "Returns all project categories.",
+          "summary": "Get All Project Categories",
+          "tags": [
+            "Project categories"
+          ],
+          "operationId": "GetAllProjectCategories",
+          "deprecated": false,
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Returned if the request is successful.",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "self": {
+                      "type": "string",
+                      "description": "Self"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "ID"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Description"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Name"
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "application/json": [
+                  {
+                    "self": "https://yourhost.yourdomain.com/rest/api/3/projectCategory/10000",
+                    "id": "10000",
+                    "name": "FIRST",
+                    "description": "First Project Category"
+                  },
+                  {
+                    "self": "https://yourhost.yourdomain.com/rest/api/3/projectCategory/10001",
+                    "id": "10001",
+                    "name": "SECOND",
+                    "description": "Second Project Category"
+                  }
+                ]
+              }
+            },
+            "401": {
+              "description": "Returned if the authentication credentials are incorrect or missing.",
+              "headers": {}
+            }
+          }
+        },
+        "post": {
+          "description": "Creates a project category. Permissions required: Administer Jira (global permissions)",
+          "summary": "Create Project Category",
+          "tags": [
+            "Project categories"
+          ],
+          "operationId": "CreateProjectCategory",
+          "deprecated": false,
+          "produces": [
+            "application/json"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "required": false,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name",
+                    "title": "name"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description",
+                    "title": "description"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Returned if the request is successful.",
+              "schema": {
+                "type": "object"
+              },
+              "examples": {
+                "application/json": {
+                  "self": "https://yourhost.yourdomain.com/rest/api/3/projectCategory/10100",
+                  "id": "10100",
+                  "name": "CREATED",
+                  "description": "Created Project Category"
+                }
+              },
+              "headers": {}
+            },
+            "400": {
+              "description": "Returned if:\n\n *  `name` is not provided or exceeds 255 characters.\n *  `description` is not provided or exceeds 1000 characters.",
+              "headers": {}
+            },
+            "401": {
+              "description": "Returned if the authentication credentials are incorrect or missing.",
+              "headers": {}
+            },
+            "403": {
+              "description": "Returned if the user does not have the necessary permission.",
+              "headers": {}
+            },
+            "409": {
+              "description": "Returned if the project category name is in use.",
+              "headers": {}
+            }
+          }
+        }
+      },
+      "/3/projectCategory/{id}": {
+        "delete": {
+          "description": "Deletes a project category. Permissions required: Administer Jira (global permissions)",
+          "summary": "Remove Project Category",
+          "tags": [
+            "Project categories"
+          ],
+          "operationId": "RemoveProjectCategory",
+          "deprecated": false,
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "type": "integer",
+              "format": "int64",
+              "description": "ID of the project category to delete.",
+              "x-ms-summary": "Project ID",
+              "x-ms-url-encoding": "single"
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Returned if the request is successful.",
+              "headers": {}
+            },
+            "401": {
+              "description": "Returned if the authentication credentials are incorrect or missing.",
+              "headers": {}
+            },
+            "403": {
+              "description": "Returned if the user does not have the necessary permission.",
+              "headers": {}
+            },
+            "404": {
+              "description": "Returned if the project category is not found.",
+              "headers": {}
+            }
+          }
+        }
+      },
+      "/3/task/{taskId}": {
+        "get": {
+          "description": "Returns the status of a long-running asynchronous task. When a task has finished, this operation returns the JSON blob applicable to the task.",
+          "summary": "Get Task",
+          "tags": [
+            "Tasks"
+          ],
+          "operationId": "GetTask",
+          "deprecated": false,
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "taskId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "description": "The ID of the task.",
+              "x-ms-summary": "Task ID",
+              "x-ms-url-encoding": "single"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Returned if the request is successful.",
+              "schema": {
+                "type": "object"
+              },
+              "headers": {}
+            },
+            "401": {
+              "description": "Returned if the authentication credentials are incorrect or missing.",
+              "headers": {}
+            },
+            "403": {
+              "description": "Returned if the user does not have the necessary permission.",
+              "headers": {}
+            },
+            "404": {
+              "description": "Returned if the task is not found.",
+              "headers": {}
+            }
+          }
+        }
+      },
+      "/3/task/{taskId}/cancel": {
+        "post": {
+          "description": "Cancels a task. Permissions required: either of: Administer Jira or Creator of the task.",
+          "summary": "Cancel Task",
+          "tags": [
+            "Tasks"
+          ],
+          "operationId": "CancelTask",
+          "deprecated": false,
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "taskId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "description": "The ID of the task.",
+              "x-ms-summary": "Task ID",
+              "x-ms-url-encoding": "single"
+            },
+            {
+              "name": "X-Atlassian-Token",
+              "in": "header",
+              "required": true,
+              "type": "string",
+              "description": "The X-Atlassian-Token nocheck requirement",
+              "x-ms-summary": "Token",
+              "default": "nocheck",
+              "x-ms-visibility": "internal"
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Returned if the request is successful.",
+              "schema": {
+                "type": "object"
+              },
+              "examples": {
+                "application/json": {
+                  "self": "https://yourhost.yourdomain.com/rest/api/3/issue/10100",
+                  "id": "10100",
+                  "name": "CANCELLED",
+                  "description": "Task Cancelled"
+                }
+              },
+              "headers": {}
+            },
+            "202": {
+              "description": "Returned if the request is successful.",
+              "schema": {
+                "type": "object"
+              },
+              "headers": {}
+            },
+            "400": {
+              "description": "Returned if cancellation of the task is not possible.",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "headers": {}
+            },
+            "401": {
+              "description": "Returned if the authentication credentials are incorrect or missing.",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "headers": {}
+            },
+            "403": {
+              "description": "Returned if the user does not have the necessary permission.",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "headers": {}
+            },
+            "404": {
+              "description": "Returned if the task is not found.",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "headers": {}
+            }
+          }
+        }
+      },
+      "/3/user": {
+        "get": {
+          "description": "Returns a user. Permissions required: Browse users and groups.",
+          "summary": "Get User",
+          "tags": [
+            "Users"
+          ],
+          "operationId": "GetUser",
+          "deprecated": false,
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "accountId",
+              "in": "query",
+              "required": true,
+              "type": "string",
+              "maxLength": 128,
+              "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required.",
+              "x-ms-summary": "Account ID"
+            },
+            {
+              "name": "expand",
+              "in": "query",
+              "required": false,
+              "type": "string",
+              "description": "Use expand to include additional information about users in the response. This parameter accepts a comma-separated list. Expand options include: *  `groups` includes all groups and nested groups to which the user belongs. *  `applicationRoles` includes details of all the applications to which the user has access.",
+              "x-ms-summary": "Expand"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Returned if the request is successful.",
+              "schema": {
+                "type": "object"
+              },
+              "examples": {
+                "application/json": {
+                  "self": "https://yourhost.yourdomain.com/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+                  "key": "",
+                  "accountId": "5b10a2844c20165700ede21g",
+                  "name": "",
+                  "emailAddress": "mia@example.com",
+                  "avatarUrls": {
+                    "48x48": "https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=48&s=48",
+                    "24x24": "https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=24&s=24",
+                    "16x16": "https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=16&s=16",
+                    "32x32": "https://avatar-management--avatars.server-location.prod.public.atl-paas.net/initials/MK-5.png?size=32&s=32"
+                  },
+                  "displayName": "Mia Krystof",
+                  "active": true,
+                  "timeZone": "Australia/Sydney",
+                  "groups": {
+                    "size": 3,
+                    "items": []
+                  },
+                  "applicationRoles": {
+                    "size": 1,
+                    "items": []
+                  }
+                }
+              },
+              "headers": {}
+            },
+            "401": {
+              "description": "Returned if the authentication credentials are incorrect or missing.",
+              "headers": {}
+            },
+            "403": {
+              "description": "Returned if the calling user does not have the browse users and groups global permission.",
+              "headers": {}
+            },
+            "404": {
+              "description": "Returned if the Account ID is missing.",
+              "headers": {}
+            }
+          }
+        }
+      },
+      "/3/rest/webhooks/1.0/webhook": {
+        "x-ms-notification-content": {
+          "description": "Project Create Response",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "self": {
+                "type": "string",
+                "description": "Self"
+              },
+              "id": {
+                "type": "string",
+                "description": "ID"
+              },
+              "key": {
+                "type": "string",
+                "description": "Key"
+              },
+              "name": {
+                "type": "string",
+                "description": "Name"
+              },
+              "avatarUrls": {
+                "type": "object",
+                "properties": {
+                  "48x48": {
+                    "type": "string",
+                    "description": "48x48 Avatar URL"
+                  },
+                  "24x24": {
+                    "type": "string",
+                    "description": "24x24 Avatar URL"
+                  },
+                  "16x16": {
+                    "type": "string",
+                    "description": "16x16 Avatar URL"
+                  },
+                  "32x32": {
+                    "type": "string",
+                    "description": "32x32 Avatar URL"
+                  }
+                },
+                "description": "Avatar URLs"
+              },
+              "projectCategory": {
+                "type": "object",
+                "properties": {
+                  "self": {
+                    "type": "string",
+                    "description": "Self"
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "ID"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Name"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description"
+                  }
+                },
+                "description": "Project Category"
+              },
+              "simplified": {
+                "type": "boolean",
+                "description": "Simplified"
+              },
+              "style": {
+                "type": "string",
+                "description": "Style"
+              },
+              "insight": {
+                "type": "object",
+                "properties": {
+                  "totalIssueCount": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Total Issue Count"
+                  },
+                  "lastIssueUpdateTime": {
+                    "type": "string",
+                    "description": "Last Issue Update Time"
+                  }
+                },
+                "description": "Insight"
+              }
+            }
+          }
+        }
+      },
+      "/issue": {
+        "post": {
+          "summary": "Create a new issue",
+          "description": "This operation is used to create a new issue.",
+          "operationId": "CreateIssue",
+          "parameters": [
+            {
+              "name": "projectKey",
+              "in": "query",
+              "required": true,
+              "x-ms-summary": "Project",
+              "description": "Pick a project to create the issue in.",
+              "x-ms-dynamic-values": {
+                "operationId": "ListProjects_V2",
+                "value-collection": "value",
+                "value-path": "key",
+                "value-title": "name"
+              },
+              "type": "string",
+              "x-ms-test-value": "TPDND"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "x-ms-summary": "Issue",
+              "schema": {
+                "$ref": "#/definitions/CreateIssueRequest"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/CreateIssueResponse"
+              }
+            }
+          },
+          "deprecated": true,
+          "x-ms-visibility": "important",
+          "x-ms-api-annotation": {
+            "status": "Production",
+            "family": "CreateIssue",
+            "revision": 1
+          }
+        }
+      },
+      "/v2/issue": {
+        "post": {
+          "summary": "Create a new issue (V2)",
+          "description": "This operation is used to create a new issue.",
+          "operationId": "CreateIssueV2",
+          "parameters": [
+            {
+              "name": "projectKey",
+              "in": "query",
+              "required": true,
+              "x-ms-summary": "Project",
+              "description": "Pick a project to create the issue in.",
+              "x-ms-dynamic-values": {
+                "operationId": "ListProjects_V2",
+                "value-collection": "value",
+                "value-path": "key",
+                "value-title": "name"
+              },
+              "type": "string",
+              "x-ms-test-value": "TPDND"
+            },
+            {
+              "name": "issueTypeIds",
+              "in": "query",
+              "required": true,
+              "x-ms-summary": "Issue Type Id",
+              "description": "Pick an issue type.",
+              "x-ms-dynamic-values": {
+                "operationId": "ListIssueTypes",
+                "parameters": {
+                  "projectKey": {
+                    "parameter": "projectKey"
+                  }
+                },
+                "value-path": "id",
+                "value-title": "name"
+              },
+              "type": "string",
+              "x-ms-test-value": "10000"
+            },
+            {
+              "name": "item",
+              "in": "body",
+              "description": "Item",
+              "schema": {
+                "type": "object",
+                "x-ms-dynamic-schema": {
+                  "operationId": "ListIssueTypesFields",
+                  "parameters": {
+                    "projectKey": {
+                      "parameter": "projectKey"
+                    },
+                    "issuetypeIds": {
+                      "parameter": "issueTypeIds"
+                    }
+                  },
+                  "value-path": "items"
+                }
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/CreateIssueResponse"
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "important",
+          "x-ms-api-annotation": {
+            "status": "Production",
+            "family": "CreateIssue",
+            "revision": 2
+          }
+        }
+      },
+      "/issue/{issueKey}": {
+        "get": {
+          "summary": "Get issue by key",
+          "description": "This operation is used to retrieve the issue object for a given issue Key.",
+          "operationId": "GetIssue",
+          "parameters": [
+            {
+              "name": "issueKey",
+              "in": "path",
+              "description": "Unique Key of the issue.",
+              "required": true,
+              "x-ms-summary": "Issue Key",
+              "type": "string",
+              "x-ms-test-value": "TPDND-1"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/FullIssue"
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "advanced"
+        },
+        "put": {
+          "summary": "Update issue",
+          "description": "This operation is used to update an existing JIRA issue.",
+          "x-ms-visibility": "internal",
+          "operationId": "UpdateIssue",
+          "parameters": [
+            {
+              "name": "issueKey",
+              "in": "path",
+              "description": "Unique Key of the issue.",
+              "required": true,
+              "x-ms-summary": "Issue Key",
+              "type": "string",
+              "x-ms-test-value": "TPDND-1"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "x-ms-summary": "Issue",
+              "schema": {
+                "$ref": "#/definitions/UpdateIssueRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "type": "string"
+              }
+            }
+          },
+          "deprecated": false
+        }
+      },
+      "/issue/{issueKey}/comment": {
+        "post": {
+          "summary": "Add comment",
+          "description": "This operation is used to add a comment to an existing JIRA issue.",
+          "operationId": "AddComment",
+          "parameters": [
+            {
+              "name": "issueKey",
+              "in": "path",
+              "description": "Unique Key of the issue to add a comment to.",
+              "required": true,
+              "x-ms-summary": "Issue Key",
+              "type": "string",
+              "x-ms-test-value": "TPDND-1"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/Comment"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/CommentResponse"
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "advanced"
+        }
+      },
+      "/issue/createmeta": {
+        "get": {
+          "summary": "Get issue types",
+          "description": "This operation is used to retrieve a list of issue types for a given project.",
+          "operationId": "ListIssueTypes",
+          "parameters": [
+            {
+              "name": "projectKey",
+              "in": "query",
+              "required": true,
+              "x-ms-summary": "Project",
+              "x-ms-dynamic-values": {
+                "operationId": "ListProjects_V2",
+                "value-collection": "value",
+                "value-path": "key",
+                "value-title": "name"
+              },
+              "type": "string",
+              "x-ms-test-value": "TPDND"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/IssueTypes"
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "internal"
+        }
+      },
+      "/v2/issue/createmeta": {
+        "get": {
+          "summary": "Get issue types fields",
+          "description": "This operation is used to retrieve a list of fields for a specific issue type.",
+          "operationId": "ListIssueTypesFields",
+          "parameters": [
+            {
+              "name": "projectKey",
+              "in": "query",
+              "required": true,
+              "x-ms-summary": "Project",
+              "type": "string",
+              "x-ms-test-value": "TPDND"
+            },
+            {
+              "name": "issuetypeIds",
+              "in": "query",
+              "required": true,
+              "x-ms-summary": "Issue Types",
+              "type": "string",
+              "x-ms-test-value": "10000"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/IssueTypes"
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "internal"
+        }
+      },
+      "/project": {
+        "get": {
+          "summary": "Get projects",
+          "description": "This operation is used to retrieve a list of projects for your JIRA instance.",
+          "operationId": "ListProjects",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/ProjectArray"
+              }
+            }
+          },
+          "deprecated": true,
+          "x-ms-visibility": "advanced",
+          "x-ms-api-annotation": {
+            "status": "Production",
+            "family": "ListProjects",
+            "revision": 1
+          }
+        },
+        "post": {
+          "summary": "Create a new project",
+          "description": "This operation is used to create a new JIRA project.",
+          "operationId": "CreateProject",
+          "parameters": [
+            {
+              "name": "Project",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "required": [
+                  "key",
+                  "name",
+                  "projectTypeKey",
+                  "leadAccountId"
+                ],
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "description": "The unique key, starts with a capital letter.",
+                    "type": "string",
+                    "x-ms-summary": "Project Key"
+                  },
+                  "name": {
+                    "type": "string",
+                    "x-ms-summary": "Name",
+                    "description": "Title of the project."
+                  },
+                  "projectTypeKey": {
+                    "enum": [
+                      "Software - Scrum software development",
+                      "Software - Kanban software development",
+                      "Software - Basic software development",
+                      "Business - Project management",
+                      "Business - Task management",
+                      "Business - Process management"
+                    ],
+                    "type": "string",
+                    "x-ms-summary": "Type",
+                    "description": "Project type key."
+                  },
+                  "leadAccountId": {
+                    "description": "Id of Project lead.",
+                    "type": "string",
+                    "x-ms-summary": "Lead Id"
+                  },
+                  "description": {
+                    "type": "string",
+                    "x-ms-summary": "Description",
+                    "description": "Verbose description of the project."
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "201",
+              "schema": {
+                "$ref": "#/definitions/CreateProjectResponse"
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "advanced",
+          "x-ms-no-generic-test": true
+        }
+      },
+      "/project/search": {
+        "get": {
+          "summary": "Get projects",
+          "description": "This operation is used to retrieve a list of projects for your JIRA instance.",
+          "operationId": "ListProjects_V2",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/ListProjects_ResponseV2"
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "advanced",
+          "x-ms-api-annotation": {
+            "status": "Production",
+            "family": "ListProjects",
+            "revision": 2
+          },
+          "x-ms-pageable": {
+            "nextLinkName": "nextLink"
+          }
+        }
+      },
+      "/project/{projectId}/statuses": {
+        "get": {
+          "summary": "Get statuses",
+          "description": "This operation is used to retrieve a list of statuses for a project and issue type.",
+          "operationId": "ListStatuses",
+          "parameters": [
+            {
+              "name": "issueType",
+              "in": "query",
+              "required": true,
+              "type": "string",
+              "default": "10001"
+            },
+            {
+              "name": "projectId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "10000"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/StatusList"
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "internal"
+        }
+      },
+      "/user/permission/search": {
+        "get": {
+          "summary": "List users by project",
+          "description": "This operation is used to retrieve a list of all users associated with a project.",
+          "operationId": "ListProjectUsers",
+          "parameters": [
+            {
+              "name": "projectKey",
+              "in": "query",
+              "required": true,
+              "x-ms-summary": "Project key",
+              "description": "Unique key of the project.",
+              "x-ms-dynamic-values": {
+                "operationId": "ListProjects_V2",
+                "value-collection": "value",
+                "value-path": "key",
+                "value-title": "name"
+              },
+              "type": "string",
+              "x-ms-test-value": "TPDND"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/UserList"
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "advanced"
+        }
+      },
+      "/user/assignable/search": {
+        "get": {
+          "summary": "Get assignable Users",
+          "description": "This operation returns a list of the users who can be assigned issues for a given project.",
+          "operationId": "ListAssignableUsers",
+          "parameters": [
+            {
+              "name": "projectKey",
+              "in": "query",
+              "required": true,
+              "x-ms-summary": "Project Key",
+              "type": "string",
+              "x-ms-test-value": "TPDND"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/UserList"
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "internal"
+        }
+      },
+      "/priority": {
+        "get": {
+          "summary": "Get priority types",
+          "description": "This operation returns a list of priority types.",
+          "operationId": "ListPriorityTypes",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "$ref": "#/definitions/PriorityList"
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "internal"
+        }
+      },
+      "/new_issue_trigger/search": {
+        "get": {
+          "summary": "When a new issue is created",
+          "description": "This operation triggers when a new issue is added to the given project.",
+          "operationId": "OnNewIssue",
+          "parameters": [
+            {
+              "name": "projectKey",
+              "in": "query",
+              "description": "Unique key of the project to look for new issues.",
+              "required": true,
+              "x-ms-summary": "Project",
+              "x-ms-dynamic-values": {
+                "operationId": "ListProjects_V2",
+                "value-collection": "value",
+                "value-path": "key",
+                "value-title": "name"
+              },
+              "type": "string",
+              "x-ms-test-value": "TPDND"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/FullIssue"
+                }
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "important",
+          "x-ms-trigger": "batch",
+          "x-ms-trigger-hint": "To see it work now, create an issue."
+        }
+      },
+      "/close_issue_trigger/search": {
+        "get": {
+          "summary": "When an issue is closed",
+          "description": "This operation triggers when an existing issue is closed in the given project.",
+          "operationId": "OnCloseIssue",
+          "parameters": [
+            {
+              "name": "projectKey",
+              "in": "query",
+              "description": "Unique key of the project to look for new issues.",
+              "required": true,
+              "x-ms-summary": "Project",
+              "x-ms-dynamic-values": {
+                "operationId": "ListProjects_V2",
+                "value-collection": "value",
+                "value-path": "key",
+                "value-title": "name"
+              },
+              "type": "string",
+              "x-ms-test-value": "TPDND"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/FullIssue"
+                }
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "important",
+          "x-ms-trigger": "batch",
+          "x-ms-trigger-hint": "To see it work now, close an issue."
+        }
+      },
+      "/update_issue_trigger/search": {
+        "get": {
+          "summary": "When an issue is updated",
+          "x-ms-visibility": "internal",
+          "description": "This operation triggers when an existing JIRA issue is updated.",
+          "operationId": "OnUpdateIssue",
+          "parameters": [
+            {
+              "name": "projectKey",
+              "in": "query",
+              "description": "Unique key of the project to look for updated issues.",
+              "required": true,
+              "x-ms-summary": "Project",
+              "x-ms-dynamic-values": {
+                "operationId": "ListProjects_V2",
+                "value-collection": "value",
+                "value-path": "key",
+                "value-title": "name"
+              },
+              "type": "string",
+              "x-ms-test-value": "TPDND"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/FullIssue"
+                }
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-trigger": "batch",
+          "x-ms-trigger-hint": "To see it work now, update an issue."
+        }
+      },
+      "/new_issue_jql_trigger/search": {
+        "get": {
+          "summary": "When a new issue is returned by a JQL query",
+          "description": "This operation triggers when a new issue appears in the latest 100 results of a JQL query.",
+          "operationId": "OnNewIssueJQL",
+          "parameters": [
+            {
+              "name": "jql",
+              "in": "query",
+              "description": "Query to use.",
+              "required": true,
+              "x-ms-summary": "JQL Query",
+              "type": "string",
+              "default": ""
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/FullIssue"
+                }
+              }
+            }
+          },
+          "deprecated": false,
+          "x-ms-visibility": "advanced",
+          "x-ms-trigger": "batch",
+          "x-ms-trigger-hint": "To see it work now, create an issue that matches the JQL query.",
+          "x-ms-no-generic-test": true
+        }
+      }
+    },
+    "definitions": {
+      "CreateProjectResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int32",
+            "type": "integer",
+            "x-ms-summary": "Project Id",
+            "description": "Unique id of the project."
+          },
+          "key": {
+            "type": "string",
+            "x-ms-summary": "Project Key",
+            "description": "Unique key of the project."
+          }
+        }
+      },
+      "CreateIssueResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-ms-summary": "Issue Id",
+            "description": "Unique identifier of the issue."
+          },
+          "key": {
+            "type": "string",
+            "x-ms-summary": "Issue Key",
+            "description": "Unique key of the issue."
+          }
+        }
+      },
+      "ListProjects_ResponseV2": {
+        "type": "object",
+        "properties": {
+          "nextPage": {
+            "type": "string",
+            "x-ms-summary": "Next page",
+            "description": "Next page of projects",
+            "x-ms-visibility": "internal"
+          },
+          "values": {
+            "$ref": "#/definitions/ProjectArray"
+          }
+        }
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "The unique Id of the project.",
+            "type": "string",
+            "x-ms-summary": "Project Id",
+            "x-ms-visibility": "advanced"
+          },
+          "key": {
+            "description": "The unique key of the project.",
+            "type": "string",
+            "x-ms-summary": "Project Key",
+            "x-ms-visibility": "advanced"
+          },
+          "name": {
+            "type": "string",
+            "x-ms-summary": "Project Name",
+            "description": "Name of the project.",
+            "x-ms-visibility": "important"
+          },
+          "projectTypeKey": {
+            "description": "The unique key of the project type.",
+            "type": "string",
+            "x-ms-summary": "Project Type Key",
+            "x-ms-visibility": "advanced"
+          }
+        }
+      },
+      "ProjectArray": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "The unique Id of the project.",
+              "type": "string",
+              "x-ms-summary": "Project Id",
+              "x-ms-visibility": "advanced"
+            },
+            "key": {
+              "description": "The unique key of the project.",
+              "type": "string",
+              "x-ms-summary": "Project Key",
+              "x-ms-visibility": "advanced"
+            },
+            "name": {
+              "type": "string",
+              "x-ms-summary": "Project Name",
+              "description": "Name of the project.",
+              "x-ms-visibility": "important"
+            },
+            "projectTypeKey": {
+              "description": "The unique key of the project type.",
+              "type": "string",
+              "x-ms-summary": "Project Type Key",
+              "x-ms-visibility": "advanced"
+            }
+          }
+        }
+      },
+      "PartialIssue": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "The unique Id of the Issue.",
+            "type": "string",
+            "x-ms-summary": "Issue Id",
+            "x-ms-visibility": "advanced"
+          },
+          "key": {
+            "description": "The unique key of the issue.",
+            "type": "string",
+            "x-ms-summary": "Issue Key",
+            "x-ms-visibility": "advanced"
+          },
+          "fields": {
+            "type": "object",
+            "properties": {
+              "summary": {
+                "type": "string",
+                "x-ms-summary": "Summary"
+              },
+              "issuetype": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Issue Type Id",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "description": {
+                    "type": "string",
+                    "x-ms-summary": "Issue Type Description",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "iconUrl": {
+                    "type": "string",
+                    "x-ms-summary": "Issue Type Icon URL",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "name": {
+                    "type": "string",
+                    "x-ms-summary": "Issue Type Name",
+                    "x-ms-visibility": "important"
+                  }
+                },
+                "x-ms-summary": "Issue Type"
+              },
+              "status": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "x-ms-summary": "Status Description"
+                  },
+                  "iconUrl": {
+                    "type": "string",
+                    "x-ms-summary": "Status Icon URL"
+                  },
+                  "name": {
+                    "type": "string",
+                    "x-ms-summary": "Status Name"
+                  },
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Status Id"
+                  },
+                  "statusCategory": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "format": "int32",
+                        "type": "integer",
+                        "x-ms-summary": "Status Category Id"
+                      },
+                      "key": {
+                        "type": "string",
+                        "x-ms-summary": "Status Category Key"
+                      },
+                      "colorName": {
+                        "type": "string",
+                        "x-ms-summary": "Status Category Color Name"
+                      },
+                      "name": {
+                        "type": "string",
+                        "x-ms-summary": "Status Category Name"
+                      }
+                    },
+                    "x-ms-summary": "Status Category"
+                  }
+                },
+                "x-ms-summary": "Status"
+              },
+              "priority": {
+                "type": "object",
+                "properties": {
+                  "iconUrl": {
+                    "type": "string",
+                    "x-ms-summary": "Priority Icon URL",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "name": {
+                    "type": "string",
+                    "x-ms-summary": "Priority Name",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Priority Id",
+                    "x-ms-visibility": "advanced"
+                  }
+                },
+                "x-ms-summary": "Priority"
+              }
+            },
+            "x-ms-summary": "Fields"
+          }
+        }
+      },
+      "FullIssue": {
+        "type": "object",
+        "x-ms-summary": "Issue",
+        "properties": {
+          "id": {
+            "description": "Unique id of the issue.",
+            "type": "string",
+            "x-ms-summary": "Issue Id",
+            "x-ms-visibility": "advanced"
+          },
+          "key": {
+            "description": "Unique key of the issue.",
+            "type": "string",
+            "x-ms-summary": "Issue Key",
+            "x-ms-visibility": "advanced"
+          },
+          "self": {
+            "description": "Browse to the issue using this URL.",
+            "type": "string",
+            "x-ms-summary": "Issue URL",
+            "x-ms-visibility": "important"
+          },
+          "fields": {
+            "type": "object",
+            "properties": {
+              "issuetype": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Issue Type Id",
+                    "description": "Unique id of the issue type.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "description": {
+                    "type": "string",
+                    "x-ms-summary": "Issue Type Description",
+                    "description": "Verbose title of the issue type.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "iconUrl": {
+                    "type": "string",
+                    "x-ms-summary": "Issue Type Icon URL",
+                    "description": "Icon associated with the issue type.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "name": {
+                    "type": "string",
+                    "x-ms-summary": "Issue Type Name",
+                    "description": "Title of the issue type.",
+                    "x-ms-visibility": "advanced"
+                  }
+                }
+              },
+              "timespent": {
+                "description": "The time spent on an issue",
+                "type": "integer",
+                "format": "int32",
+                "x-ms-summary": "Time Spent",
+                "x-ms-visibility": "advanced"
+              },
+              "project": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "The unique id of the project.",
+                    "type": "string",
+                    "x-ms-summary": "Project Id",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "key": {
+                    "description": "The unique key of the project.",
+                    "type": "string",
+                    "x-ms-summary": "Project Key",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "name": {
+                    "type": "string",
+                    "x-ms-summary": "Project Name",
+                    "description": "Title of the project.",
+                    "x-ms-visibility": "important"
+                  },
+                  "projectTypeKey": {
+                    "description": "Unique key of the project type.",
+                    "type": "string",
+                    "x-ms-summary": "Project Type Key",
+                    "x-ms-visibility": "advanced"
+                  }
+                }
+              },
+              "aggregatetimespent": {
+                "description": "The aggregate time spent on sub-tasks.",
+                "type": "integer",
+                "format": "int32",
+                "x-ms-summary": "Aggregate Time Spent",
+                "x-ms-visibility": "advanced"
+              },
+              "resolution": {
+                "type": "object",
+                "properties": {
+                  "self": {
+                    "type": "string",
+                    "x-ms-summary": "URL of the issue resolution"
+                  },
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "ID of the issue resolution"
+                  },
+                  "description": {
+                    "type": "string",
+                    "x-ms-summary": "Description of the issue resolution"
+                  },
+                  "name": {
+                    "type": "string",
+                    "x-ms-summary": "Name fo the issue resolution"
+                  }
+                },
+                "x-ms-summary": "Resolution",
+                "description": "Type of resolution the issue has achieved.",
+                "x-ms-visibility": "advanced"
+              },
+              "resolutiondate": {
+                "format": "date-time",
+                "type": "string",
+                "x-ms-summary": "Resolution Date",
+                "description": "yyyy-MM-ddTHH:mm:ss.fffZ",
+                "x-ms-visibility": "advanced"
+              },
+              "workratio": {
+                "format": "int32",
+                "description": "The percentage of work logged vs the issue estimate.",
+                "type": "integer",
+                "x-ms-summary": "Work Ratio",
+                "x-ms-visibility": "advanced"
+              },
+              "created": {
+                "format": "date-time",
+                "type": "string",
+                "x-ms-summary": "Created Date",
+                "description": "yyyy-MM-ddTHH:mm:ss.fffZ",
+                "x-ms-visibility": "advanced"
+              },
+              "priority": {
+                "type": "object",
+                "properties": {
+                  "iconUrl": {
+                    "type": "string",
+                    "x-ms-summary": "Priority Icon URL",
+                    "description": "Icon associated with the issue priority.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "name": {
+                    "type": "string",
+                    "x-ms-summary": "Priority Name",
+                    "description": "Title of the priority.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Priority Id",
+                    "description": "Id of the issue priority.",
+                    "x-ms-visibility": "advanced"
+                  }
+                }
+              },
+              "timeestimate": {
+                "format": "int32",
+                "description": "Time remaining estimated time in seconds.",
+                "type": "integer",
+                "x-ms-summary": "Time Estimate",
+                "x-ms-visibility": "advanced"
+              },
+              "aggregatetimeoriginalestimate": {
+                "description": "The original sum of all sub-task time estimates in seconds.",
+                "type": "integer",
+                "format": "int32",
+                "x-ms-summary": "Aggregate Time Estimate",
+                "x-ms-visibility": "advanced"
+              },
+              "assignee": {
+                "type": "object",
+                "properties": {
+                  "accountId": {
+                    "type": "string",
+                    "x-ms-summary": "Assignee Id",
+                    "description": "Person a issue is assigned to.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "key": {
+                    "type": "string",
+                    "x-ms-summary": "Assignee Key",
+                    "description": "User key of the person issue is assigned to.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "emailAddress": {
+                    "type": "string",
+                    "x-ms-summary": "Assignee Email",
+                    "description": "Email of the person issue is assigned to.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "displayName": {
+                    "type": "string",
+                    "x-ms-summary": "Assignee Display Name",
+                    "description": "Display name of the person issue is assigned to.",
+                    "x-ms-visibility": "advanced"
+                  }
+                }
+              },
+              "updated": {
+                "format": "date-time",
+                "type": "string",
+                "x-ms-summary": "Updated Date-Time",
+                "description": "yyyy-MM-ddTHH:mm:ss.fffZ",
+                "x-ms-visibility": "advanced"
+              },
+              "status": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "x-ms-summary": "Status Description",
+                    "description": "Issue status.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "iconUrl": {
+                    "type": "string",
+                    "x-ms-summary": "Status Icon URL",
+                    "description": "Issue status.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "name": {
+                    "type": "string",
+                    "x-ms-summary": "Status Name",
+                    "description": "Issue status.",
+                    "x-ms-visibility": "important"
+                  },
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Status Id",
+                    "description": "Issue status.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "statusCategory": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "format": "int32",
+                        "type": "integer",
+                        "x-ms-summary": "Status Category Id",
+                        "description": "Issue status category.",
+                        "x-ms-visibility": "advanced"
+                      },
+                      "key": {
+                        "type": "string",
+                        "x-ms-summary": "Status Category Key",
+                        "description": "Issue status category.",
+                        "x-ms-visibility": "advanced"
+                      },
+                      "colorName": {
+                        "type": "string",
+                        "x-ms-summary": "Status Category Color Name",
+                        "description": "Issue status category.",
+                        "x-ms-visibility": "advanced"
+                      },
+                      "name": {
+                        "type": "string",
+                        "x-ms-summary": "Status Category Name",
+                        "description": "Issue status category.",
+                        "x-ms-visibility": "advanced"
+                      }
+                    }
+                  }
+                }
+              },
+              "timeoriginalestimate": {
+                "description": "The original time estimate in seconds.",
+                "type": "integer",
+                "format": "int32",
+                "x-ms-summary": "Original Time Estimate",
+                "x-ms-visibility": "advanced"
+              },
+              "description": {
+                "type": "string",
+                "x-ms-summary": "Description",
+                "description": "Issue description.",
+                "x-ms-visibility": "important"
+              },
+              "aggregatetimeestimate": {
+                "format": "int32",
+                "description": "Time sum of all sub-tasks remaining estimated time in seconds.",
+                "type": "integer",
+                "x-ms-summary": "Aggregate Time Estimate",
+                "x-ms-visibility": "advanced"
+              },
+              "summary": {
+                "type": "string",
+                "x-ms-summary": "Summary",
+                "description": "Title of the issue.",
+                "x-ms-visibility": "important"
+              },
+              "components": {
+                "type": "array",
+                "x-ms-summary": "Components",
+                "description": "A system field that is multiple values addressed by 'name' (e.g. Active Directory, Network Switch).",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "x-ms-summary": "Component Id"
+                    },
+                    "name": {
+                      "type": "string",
+                      "x-ms-summary": "Component Name"
+                    }
+                  }
+                }
+              },
+              "creator": {
+                "type": "object",
+                "properties": {
+                  "accountId": {
+                    "type": "string",
+                    "x-ms-summary": "Creator Id",
+                    "description": "User who created the issue.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "key": {
+                    "type": "string",
+                    "x-ms-summary": "Creator Key",
+                    "description": "Unique key of the user who created the issue.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "emailAddress": {
+                    "type": "string",
+                    "x-ms-summary": "Creator Email",
+                    "description": "Email of the user who created the issue.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "displayName": {
+                    "type": "string",
+                    "x-ms-summary": "Creator Display Name",
+                    "description": "Name of the user who created the issue.",
+                    "x-ms-visibility": "advanced"
+                  }
+                }
+              },
+              "reporter": {
+                "type": "object",
+                "properties": {
+                  "accountId": {
+                    "type": "string",
+                    "x-ms-summary": "Reporter Id",
+                    "description": "User who reported the issue.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "key": {
+                    "type": "string",
+                    "x-ms-summary": "Reporter Key",
+                    "description": "Unique key of the user who reported the issue.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "emailAddress": {
+                    "type": "string",
+                    "x-ms-summary": "Reporter Email",
+                    "description": "Email of the user who reported the issue.",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "displayName": {
+                    "type": "string",
+                    "x-ms-summary": "Reporter Display Name",
+                    "description": "Display name of the user who reported the issue.",
+                    "x-ms-visibility": "advanced"
+                  }
+                }
+              },
+              "aggregateprogress": {
+                "type": "object",
+                "properties": {
+                  "progress": {
+                    "format": "int32",
+                    "description": "The total progress completed of all sub-tasks in seconds.",
+                    "type": "integer",
+                    "x-ms-summary": "Aggregate Progress Completed",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "total": {
+                    "format": "int32",
+                    "description": "The total sum of all estimated sub-task effort.",
+                    "type": "integer",
+                    "x-ms-summary": "Aggregate Estimated Effort",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "percent": {
+                    "format": "int32",
+                    "description": "The percent of aggregate completed progress in relation to estimated effort.",
+                    "type": "integer",
+                    "x-ms-summary": "Aggregate Progress Percent",
+                    "x-ms-visibility": "advanced"
+                  }
+                }
+              },
+              "duedate": {
+                "format": "date-time",
+                "type": "string",
+                "x-ms-summary": "Due Date-Time",
+                "description": "yyyy-MM-ddTHH:mm:ss.fffZ",
+                "x-ms-visibility": "advanced"
+              },
+              "progress": {
+                "type": "object",
+                "properties": {
+                  "progress": {
+                    "format": "int32",
+                    "description": "The progress complete in seconds.",
+                    "type": "integer",
+                    "x-ms-summary": "Progress Completed",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "total": {
+                    "format": "int32",
+                    "description": "The estimated effort.",
+                    "type": "integer",
+                    "x-ms-summary": "Estimated Effort",
+                    "x-ms-visibility": "advanced"
+                  },
+                  "percent": {
+                    "format": "int32",
+                    "description": "The percent of completed progress in relation to estimated effort.",
+                    "type": "integer",
+                    "x-ms-summary": "Progress Percent",
+                    "x-ms-visibility": "advanced"
+                  }
+                }
+              },
+              "customfield_10119": {
+                "description": "Epic name is required for epic issue type. This field matches 'customfield_10011' field on JIRA server.",
+                "x-ms-summary": "Epic Name (customfield_10011)",
+                "x-ms-visibility": "advanced"
+              }
+            }
+          }
+        }
+      },
+      "Creator": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "x-ms-summary": "Creator Id",
+            "description": "Person who created the issue.",
+            "x-ms-visibility": "advanced"
+          },
+          "key": {
+            "type": "string",
+            "x-ms-summary": "Creator Key",
+            "description": "Unique key of the person who created the issue.",
+            "x-ms-visibility": "advanced"
+          },
+          "emailAddress": {
+            "type": "string",
+            "x-ms-summary": "Creator Email",
+            "description": "Email of the person who created the issue.",
+            "x-ms-visibility": "advanced"
+          },
+          "displayName": {
+            "type": "string",
+            "x-ms-summary": "Creator Display Name",
+            "description": "Display name of the person who created the issue.",
+            "x-ms-visibility": "advanced"
+          }
+        }
+      },
+      "Assignee": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "x-ms-summary": "Assignee Id",
+            "description": "Person whom the issue is assigned to.",
+            "x-ms-visibility": "advanced"
+          },
+          "key": {
+            "type": "string",
+            "x-ms-summary": "Assignee Key",
+            "description": "Unique key of the person whom the issue is assigned to.",
+            "x-ms-visibility": "advanced"
+          },
+          "emailAddress": {
+            "type": "string",
+            "x-ms-summary": "Assignee Email",
+            "description": "Email of the person whom the issue is assigned to.",
+            "x-ms-visibility": "advanced"
+          },
+          "displayName": {
+            "type": "string",
+            "x-ms-summary": "Assignee Display Name",
+            "description": "Display name of the person whom the issue is assigned to.",
+            "x-ms-visibility": "advanced"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "x-ms-summary": "Id",
+            "description": "Id of the JIRA user.",
+            "x-ms-visibility": "advanced"
+          },
+          "key": {
+            "type": "string",
+            "x-ms-summary": "Key",
+            "description": "Unique key of the JIRA user.",
+            "x-ms-visibility": "advanced"
+          },
+          "emailAddress": {
+            "type": "string",
+            "x-ms-summary": "Email",
+            "description": "Email of the JIRA user.",
+            "x-ms-visibility": "important"
+          },
+          "displayName": {
+            "type": "string",
+            "x-ms-summary": "Display Name",
+            "description": "Display name of the JIRA user.",
+            "x-ms-visibility": "important"
+          }
+        }
+      },
+      "UserList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "x-ms-summary": "Id",
+              "description": "Id of the project member.",
+              "x-ms-visibility": "advanced"
+            },
+            "key": {
+              "type": "string",
+              "x-ms-summary": "Key",
+              "description": "Unique key associated with the user.",
+              "x-ms-visibility": "advanced"
+            },
+            "emailAddress": {
+              "type": "string",
+              "x-ms-summary": "Email",
+              "description": "Email address of the user.",
+              "x-ms-visibility": "important"
+            },
+            "displayName": {
+              "type": "string",
+              "x-ms-summary": "Display Name",
+              "description": "Full name of the  user.",
+              "x-ms-visibility": "important"
+            }
+          }
+        }
+      },
+      "Reporter": {
+        "type": "object",
+        "properties": {
+          "AccountId": {
+            "type": "string",
+            "x-ms-summary": "Reporter Id",
+            "description": "Person who reported the issue.",
+            "x-ms-visibility": "advanced"
+          },
+          "key": {
+            "type": "string",
+            "x-ms-summary": "Reporter Key",
+            "description": "Unique key of the person who reported the issue.",
+            "x-ms-visibility": "advanced"
+          },
+          "emailAddress": {
+            "type": "string",
+            "x-ms-summary": "Reporter Email",
+            "description": "Email of the person who reported the issue.",
+            "x-ms-visibility": "advanced"
+          },
+          "displayName": {
+            "type": "string",
+            "x-ms-summary": "Reporter Display Name",
+            "description": "Display name of the person who reported the issue.",
+            "x-ms-visibility": "advanced"
+          }
+        }
+      },
+      "IssueTypes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreateIssueRequest": {
+        "required": [
+          "fields"
+        ],
+        "type": "object",
+        "properties": {
+          "fields": {
+            "required": [
+              "summary",
+              "issuetype"
+            ],
+            "type": "object",
+            "properties": {
+              "issuetype": {
+                "required": [
+                  "id"
+                ],
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Issue Type Id",
+                    "description": "Pick an issue type.",
+                    "x-ms-dynamic-values": {
+                      "operationId": "ListIssueTypes",
+                      "parameters": {
+                        "projectKey": {
+                          "parameter": "projectKey"
+                        }
+                      },
+                      "value-path": "id",
+                      "value-title": "name"
+                    }
+                  }
+                }
+              },
+              "summary": {
+                "type": "string",
+                "x-ms-summary": "Summary",
+                "description": "Brief description of the issue."
+              },
+              "components": {
+                "type": "string",
+                "x-ms-summary": "Components",
+                "description": "A system field that is multiple values addressed by 'name' (e.g. Active Directory, Network Switch)."
+              },
+              "reporter": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Reporter Id",
+                    "description": "Person reporting the issue.",
+                    "x-ms-visibility": "advanced",
+                    "x-ms-dynamic-values": {
+                      "operationId": "ListProjectUsers",
+                      "parameters": {
+                        "projectKey": {
+                          "parameter": "projectKey"
+                        }
+                      },
+                      "value-path": "accountId",
+                      "value-title": "displayName"
+                    }
+                  }
+                }
+              },
+              "description": {
+                "description": "A detailed description of the issue.",
+                "type": "string",
+                "x-ms-summary": "Description"
+              },
+              "priority": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Priority Id",
+                    "description": "Pick a priority for the issue.",
+                    "x-ms-dynamic-values": {
+                      "operationId": "ListPriorityTypes",
+                      "value-path": "id",
+                      "value-title": "name"
+                    }
+                  }
+                },
+                "x-ms-visibility": "advanced"
+              },
+              "labels": {
+                "description": "Enter a comma separated list of labels",
+                "type": "string",
+                "x-ms-summary": "Labels",
+                "x-ms-visibility": "advanced"
+              },
+              "assignee": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Assignee Id",
+                    "description": "Agent the issue is assigned to.",
+                    "x-ms-dynamic-values": {
+                      "operationId": "ListAssignableUsers",
+                      "parameters": {
+                        "projectKey": {
+                          "parameter": "projectKey"
+                        }
+                      },
+                      "value-path": "accountId",
+                      "value-title": "displayName"
+                    }
+                  }
+                },
+                "x-ms-visibility": "advanced"
+              },
+              "parent": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Set the parent for a sub-task.",
+                    "type": "string",
+                    "x-ms-summary": "Parent Issue Id"
+                  }
+                },
+                "x-ms-visibility": "advanced"
+              },
+              "customfield_10119": {
+                "description": "Epic name is required for epic issue type. This field matches 'customfield_10011' field on JIRA server.",
+                "type": "string",
+                "x-ms-summary": "Epic Name (customfield_10011)",
+                "x-ms-visibility": "advanced"
+              }
+            }
+          }
+        },
+        "x-ms-test-value": {
+          "fields": {
+            "summary": "test issue",
+            "issuetype": {
+              "id": "10101"
+            }
+          }
+        }
+      },
+      "UpdateIssueRequest": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "type": "object",
+            "properties": {
+              "summary": {
+                "type": "string",
+                "x-ms-summary": "Summary",
+                "description": "Brief description of the issue."
+              },
+              "description": {
+                "description": "A detailed description of the issue.",
+                "type": "string",
+                "x-ms-summary": "Description"
+              },
+              "reporter": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Reporter Id",
+                    "description": "Person reporting the issue.",
+                    "x-ms-visibility": "advanced",
+                    "x-ms-dynamic-values": {
+                      "operationId": "ListProjectUsers",
+                      "parameters": {
+                        "projectKey": {
+                          "parameter": "issueKey"
+                        }
+                      },
+                      "value-path": "accountId",
+                      "value-title": "displayName"
+                    }
+                  }
+                }
+              },
+              "priority": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Priority Id",
+                    "description": "Pick a priority for the issue.",
+                    "x-ms-dynamic-values": {
+                      "operationId": "ListPriorityTypes",
+                      "value-path": "id",
+                      "value-title": "name"
+                    }
+                  }
+                },
+                "x-ms-visibility": "advanced"
+              },
+              "labels": {
+                "description": "Enter a comma separated list of labels.",
+                "type": "string",
+                "x-ms-summary": "Labels",
+                "x-ms-visibility": "advanced"
+              },
+              "assignee": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Assignee Id",
+                    "description": "Agent the issue is assigned to.",
+                    "x-ms-dynamic-values": {
+                      "operationId": "ListAssignableUsers",
+                      "parameters": {
+                        "projectKey": {
+                          "parameter": "issueKey"
+                        }
+                      },
+                      "value-path": "accountId",
+                      "value-title": "displayName"
+                    }
+                  }
+                },
+                "x-ms-visibility": "advanced"
+              },
+              "parent": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Set the parent for a sub-task.",
+                    "type": "string",
+                    "x-ms-summary": "Parent Issue Id"
+                  }
+                },
+                "x-ms-visibility": "advanced"
+              }
+            }
+          }
+        },
+        "x-ms-test-value": {
+          "fields": {
+            "description": "some description"
+          }
+        }
+      },
+      "StatusList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-ms-summary": "Status Id"
+            },
+            "name": {
+              "type": "string",
+              "x-ms-summary": "Status Name"
+            }
+          }
+        }
+      },
+      "PriorityList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Comment": {
+        "required": [
+          "body"
+        ],
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "x-ms-summary": "Comment",
+            "description": "Body of the comment."
+          }
+        },
+        "x-ms-test-value": {
+          "body": "here is a comment"
+        }
+      },
+      "CommentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-ms-summary": "Comment Id",
+            "description": "Unique id of the comment.",
+            "x-ms-visibility": "advanced"
+          },
+          "body": {
+            "type": "string",
+            "x-ms-summary": "Comment Body",
+            "description": "Body of the comment.",
+            "x-ms-visibility": "important"
+          },
+          "created": {
+            "format": "date-time",
+            "type": "string",
+            "x-ms-summary": "Created Date-Time",
+            "description": "yyyy-MM-ddTHH:mm:ss.fffZ",
+            "x-ms-visibility": "advanced"
+          }
+        }
+      }
+    },
+    "tags": [
+      {
+        "name": "Issues",
+        "description": "This resource represents Jira issues. Use it to edit issues."
+      },
+      {
+        "name": "Issue attachments",
+        "description": "This resource represents issue attachments and the attachment settings for Jira. Use it to add an attachment."
+      },
+      {
+        "name": "Projects",
+        "description": "This resource represents projects. Use this resource to update and delete projects."
+      },
+      {
+        "name": "Project categories",
+        "description": "This resource represents project categories. Use it to create, and delete project categories as well as obtain a list of all project categories."
+      },
+      {
+        "name": "Tasks",
+        "description": "This resource represents a [long-running asynchronous tasks](#async-operations). Use it to obtain details about the progress of a long-running task or cancel a long-running task."
+      },
+      {
+        "name": "Users",
+        "description": "This resource represent users. Use this resource to get a User."
+      }
+    ],
+    "securityDefinitions": {
+      "Authorization": {
+        "type": "basic"
+      }
+    },
+    "x-ms-capabilities": {
+      "testConnection": {
+        "operationId": "ListProjects_V2"
+      }
+    },
+    "x-ms-connector-metadata": [
+      {
+        "propertyName": "Website",
+        "propertyValue": "https://www.atlassian.com/software/jira"
+      },
+      {
+        "propertyName": "Privacy policy",
+        "propertyValue": "https://www.atlassian.com/legal/privacy-policy"
+      },
+      {
+        "propertyName": "Categories",
+        "propertyValue": "IT Operations;Collaboration"
+      }
+    ]
+  }
