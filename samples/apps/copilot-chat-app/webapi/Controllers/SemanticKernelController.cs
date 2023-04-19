@@ -143,7 +143,7 @@ public class SemanticKernelController : ControllerBase
             // 2. Update the app's chat storage.
             foreach (var message in bot.ChatHistory)
             {
-                var chatMessage = new ChatMessage(message.UserId, message.UserName, chatId, message.Content);
+                var chatMessage = new ChatMessage(message.UserId, message.UserName, chatId, message.Content, ChatMessage.AuthorRoles.Participant);
                 chatMessage.Timestamp = message.Timestamp;
                 // TODO: should we use UpsertItemAsync?
                 await chatMessageRepository.CreateAsync(chatMessage);

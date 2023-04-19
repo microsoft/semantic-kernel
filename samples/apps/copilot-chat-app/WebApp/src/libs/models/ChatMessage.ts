@@ -3,6 +3,7 @@
 export enum AuthorRoles {
     User = 0,
     Bot,
+    Participant
 }
 
 export interface ChatMessage {

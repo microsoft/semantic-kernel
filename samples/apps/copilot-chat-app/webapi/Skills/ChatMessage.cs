@@ -19,6 +19,7 @@ public class ChatMessage : IStorageEntity
     {
         User = 0,
         Bot,
+        Participant
     }
 
     /// <summary>
