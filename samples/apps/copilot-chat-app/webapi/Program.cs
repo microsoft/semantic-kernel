@@ -60,7 +60,7 @@ public static class Program
 
         if (useHttp)
         {
-            logger.LogWarning("Server is using HTTP instead of HTTPS. Do not use HTTP in production." +
+            logger.LogWarning("Server is using HTTP instead of HTTPS. Do not use HTTP in production. " +
                               "All tokens and secrets sent to the server can be intercepted over the network.");
         }
 
@@ -105,7 +105,7 @@ public static class Program
         {
             string promptsConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "prompts.json");
             PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(File.ReadAllText(promptsConfigPath)) ??
-                throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
+                                          throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
             promptsConfig.Validate();
             return promptsConfig;
         });
@@ -128,11 +128,12 @@ public static class Program
                     {
                         throw new InvalidOperationException("MemoriesStore:Qdrant is required when MemoriesStore:Type is 'Qdrant'");
                     }
+
                     services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
-                            host: memoriesStoreConfig.Qdrant.Host,
-                            port: memoriesStoreConfig.Qdrant.Port,
-                            vectorSize: memoriesStoreConfig.Qdrant.VectorSize,
-                            logger: sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
+                        host: memoriesStoreConfig.Qdrant.Host,
+                        port: memoriesStoreConfig.Qdrant.Port,
+                        vectorSize: memoriesStoreConfig.Qdrant.VectorSize,
+                        logger: sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
                     break;
 
                 default:
@@ -195,6 +196,7 @@ public static class Program
                 {
                     throw new InvalidOperationException("ChatStore:Filesystem is required when ChatStore:Type is 'Filesystem'");
                 }
+
                 string fullPath = Path.GetFullPath(chatStoreConfig.Filesystem.FilePath);
                 string directory = Path.GetDirectoryName(fullPath) ?? string.Empty;
                 chatSessionInMemoryContext = new FileSystemContext<ChatSession>(
@@ -217,7 +219,8 @@ public static class Program
                 break;
 
             default:
-                throw new InvalidOperationException($"Invalid 'ChatStore' setting 'chatStoreConfig.Type'. Value must be 'volatile', 'filesystem', or 'cosmos'.");
+                throw new InvalidOperationException(
+                    $"Invalid 'ChatStore' setting 'chatStoreConfig.Type'. Value must be 'volatile', 'filesystem', or 'cosmos'.");
         }
 
         services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));

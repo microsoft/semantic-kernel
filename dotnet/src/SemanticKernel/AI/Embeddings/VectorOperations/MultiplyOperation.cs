@@ -32,7 +32,7 @@ public static class MultiplyOperation
         }
         else
         {
-            SupportedTypes.ThrowTypeNotSupported(typeof(TNumber));
+            SupportedTypes.ThrowTypeNotSupported<TNumber>();
         }
     }
 

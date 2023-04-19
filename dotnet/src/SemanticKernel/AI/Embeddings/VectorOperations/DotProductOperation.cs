@@ -36,7 +36,7 @@ public static class DotProductOperation
             return DotProductImplementation(doubleSpanX, doubleSpanY);
         }
 
-        SupportedTypes.ThrowTypeNotSupported(typeof(TNumber));
+        SupportedTypes.ThrowTypeNotSupported<TNumber>();
         return default;
     }
 

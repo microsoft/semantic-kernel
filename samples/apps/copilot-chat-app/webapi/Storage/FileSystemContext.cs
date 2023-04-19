@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace SemanticKernel.Service.Storage;
@@ -94,7 +96,9 @@ public class FileSystemContext<T> : IStorageContext<T> where T : IStorageEntity
     /// <summary>
     /// A concurrent dictionary to store entities in memory.
     /// </summary>
-    private class EntityDictionary : ConcurrentDictionary<string, T> { }
+    private class EntityDictionary : ConcurrentDictionary<string, T>
+    {
+    }
 
     /// <summary>
     /// Using a concurrent dictionary to store entities in memory.
