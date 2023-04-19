@@ -12,6 +12,8 @@ public class Bot
 
     public BotConfiguration Configurations { get; set; } = new BotConfiguration();
 
+    public string ChatTitle { get; set; } = string.Empty;
+
     public List<ChatMessage> ChatHistory { get; set; } = new List<ChatMessage>();
 
     // TODO: Change from MemoryQueryResult to MemoryRecord

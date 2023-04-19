@@ -125,7 +125,7 @@ public class SemanticKernelController : ControllerBase
         }*/
 
         // TODO: Add real chat title, user object id and user name.
-        string chatTitle = "chat-title";
+        string chatTitle = $"{bot.ChatTitle} - Clone";
 
         string chatId = string.Empty;
 
@@ -224,7 +224,7 @@ public class SemanticKernelController : ControllerBase
 
         var bot = new Bot();
 
-        // get embedding configuration
+        // get the embedding configuration
         var embeddingAIServiceConfig = this._configuration.GetSection("Embedding").Get<AIServiceConfig>();
         bot.Configurations = new BotConfiguration
         {
@@ -232,8 +232,13 @@ public class SemanticKernelController : ControllerBase
             EmbeddingDeploymentOrModelId = embeddingAIServiceConfig?.DeploymentOrModelId ?? string.Empty
         };
 
-        // get chat history
-        var contextVariables = new ContextVariables(ask.Input);
+        // get the chat title
+        var chatId = ask.Input;
+        ChatSession chat = await chatRepository.FindByIdAsync(chatId);
+        bot.ChatTitle = chat.Title;
+
+        // get the chat history
+        var contextVariables = new ContextVariables(chatId);
         foreach (var input in ask.Variables)
         {
             contextVariables.Set(input.Key, input.Value);
@@ -245,7 +250,7 @@ public class SemanticKernelController : ControllerBase
             bot.ChatHistory = JsonSerializer.Deserialize<List<ChatMessage>>(messages.Value);
         }
 
-        // get memory
+        // get the memory
         var allCollections = await kernel.Memory.GetCollectionsAsync();
         List<MemoryQueryResult> allChatMessageMemories = new List<MemoryQueryResult>();
 
