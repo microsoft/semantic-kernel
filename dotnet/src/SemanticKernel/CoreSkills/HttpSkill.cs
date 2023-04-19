@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -48,10 +49,11 @@ public class HttpSkill : IDisposable
     /// Sends an HTTP GET request to the specified URI and returns the response body as a string.
     /// </summary>
     /// <param name="uri">URI of the request</param>
+    /// <param name="context">The context for the operation.</param>
     /// <returns>The response body as a string.</returns>
     [SKFunction("Makes a GET request to a uri")]
-    public Task<string> GetAsync(string uri) =>
-        this._client.GetStringAsync(uri);
+    public Task<string> GetAsync(string uri, SKContext context) =>
+        this.SendRequestAsync(uri, HttpMethod.Get, cancellationToken: context.CancellationToken);
 
     /// <summary>
     /// Sends an HTTP POST request to the specified URI and returns the response body as a string.
@@ -62,7 +64,7 @@ public class HttpSkill : IDisposable
     [SKFunction("Makes a POST request to a uri")]
     [SKFunctionContextParameter(Name = "body", Description = "The body of the request")]
     public Task<string> PostAsync(string uri, SKContext context) =>
-        this.SendRequestAsync(uri, HttpMethod.Post, new StringContent(context["body"]));
+        this.SendRequestAsync(uri, HttpMethod.Post, new StringContent(context["body"]), context.CancellationToken);
 
     /// <summary>
     /// Sends an HTTP PUT request to the specified URI and returns the response body as a string.
@@ -73,26 +75,27 @@ public class HttpSkill : IDisposable
     [SKFunction("Makes a PUT request to a uri")]
     [SKFunctionContextParameter(Name = "body", Description = "The body of the request")]
     public Task<string> PutAsync(string uri, SKContext context) =>
-        this.SendRequestAsync(uri, HttpMethod.Put, new StringContent(context["body"]));
+        this.SendRequestAsync(uri, HttpMethod.Put, new StringContent(context["body"]), context.CancellationToken);
 
     /// <summary>
     /// Sends an HTTP DELETE request to the specified URI and returns the response body as a string.
     /// </summary>
     /// <param name="uri">URI of the request</param>
+    /// <param name="context">The context for the operation.</param>
     /// <returns>The response body as a string.</returns>
     [SKFunction("Makes a DELETE request to a uri")]
-    public Task<string> DeleteAsync(string uri) =>
-        this.SendRequestAsync(uri, HttpMethod.Delete);
+    public Task<string> DeleteAsync(string uri, SKContext context) =>
+        this.SendRequestAsync(uri, HttpMethod.Delete, cancellationToken: context.CancellationToken);
 
     /// <summary>Sends an HTTP request and returns the response content as a string.</summary>
     /// <param name="uri">The URI of the request.</param>
     /// <param name="method">The HTTP method for the request.</param>
     /// <param name="requestContent">Optional request content.</param>
-    /// <returns></returns>
-    private async Task<string> SendRequestAsync(string uri, HttpMethod method, HttpContent? requestContent = null)
+    /// <param name="cancellationToken">The token to use to request cancellation.</param>
+    private async Task<string> SendRequestAsync(string uri, HttpMethod method, HttpContent? requestContent = null, CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
-        using var response = await this._client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        using var response = await this._client.SendAsync(request, cancellationToken);
         return await response.Content.ReadAsStringAsync();
     }
 
