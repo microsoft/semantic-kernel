@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net;
+using System.Reflection;
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
@@ -28,11 +30,7 @@ public static class Program
             serverPort = CopilotChatApiConstants.DefaultServerPort;
         }
 
-        // Set the protocol to use
-        bool useHttp = builder.Configuration.GetSection("UseHttp").Get<bool>();
-        string protocol = useHttp ? "http" : "https";
-
-        builder.WebHost.UseUrls($"{protocol}://*:{serverPort}");
+        builder.WebHost.UseUrls($"https://*:{serverPort}");
 
         // Add services to the DI container
         AddServices(builder.Services, builder.Configuration);
@@ -54,13 +52,7 @@ public static class Program
 
         // Log the health probe URL
         string hostName = Dns.GetHostName();
-        logger.LogInformation("Health probe: {Protocol}://{Host}:{Port}/probe", protocol, hostName, serverPort);
-
-        if (useHttp)
-        {
-            logger.LogWarning("Server is using HTTP instead of HTTPS. Do not use HTTP in production." +
-                              "All tokens and secrets sent to the server can be intercepted over the network.");
-        }
+        logger.LogInformation("Health probe: https://{Host}:{Port}/probe", hostName, serverPort);
 
         app.Run();
     }
@@ -99,6 +91,17 @@ public static class Program
         // Each API call gets a fresh new SK instance
         services.AddScoped<Kernel>();
 
+        services.AddSingleton<PromptsConfig>(sp =>
+        {
+            string promptsConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "prompts.json");
+            PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(File.ReadAllText(promptsConfigPath)) ??
+                                          throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
+            promptsConfig.Validate();
+            return promptsConfig;
+        });
+
+        services.AddSingleton<PromptSettings>();
+
         // Add a semantic memory store only if we have a valid embedding config
         AIServiceConfig embeddingConfig = configuration.GetSection("Embedding").Get<AIServiceConfig>();
         if (embeddingConfig?.IsValid() == true)
@@ -115,11 +118,12 @@ public static class Program
                     {
                         throw new InvalidOperationException("MemoriesStore:Qdrant is required when MemoriesStore:Type is 'Qdrant'");
                     }
+
                     services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
-                            host: memoriesStoreConfig.Qdrant.Host,
-                            port: memoriesStoreConfig.Qdrant.Port,
-                            vectorSize: memoriesStoreConfig.Qdrant.VectorSize,
-                            logger: sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
+                        host: memoriesStoreConfig.Qdrant.Host,
+                        port: memoriesStoreConfig.Qdrant.Port,
+                        vectorSize: memoriesStoreConfig.Qdrant.VectorSize,
+                        logger: sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
                     break;
 
                 default:
@@ -182,6 +186,7 @@ public static class Program
                 {
                     throw new InvalidOperationException("ChatStore:Filesystem is required when ChatStore:Type is 'Filesystem'");
                 }
+
                 string fullPath = Path.GetFullPath(chatStoreConfig.Filesystem.FilePath);
                 string directory = Path.GetDirectoryName(fullPath) ?? string.Empty;
                 chatSessionInMemoryContext = new FileSystemContext<ChatSession>(
@@ -204,7 +209,8 @@ public static class Program
                 break;
 
             default:
-                throw new InvalidOperationException($"Invalid 'ChatStore' setting 'chatStoreConfig.Type'. Value must be 'volatile', 'filesystem', or 'cosmos'.");
+                throw new InvalidOperationException(
+                    $"Invalid 'ChatStore' setting 'chatStoreConfig.Type'. Value must be 'volatile', 'filesystem', or 'cosmos'.");
         }
 
         services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));

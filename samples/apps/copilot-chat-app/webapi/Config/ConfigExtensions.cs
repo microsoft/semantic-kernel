@@ -47,13 +47,20 @@ internal static class ConfigExtensions
         switch (serviceConfig.AIService.ToUpperInvariant())
         {
             case AIServiceConfig.AzureOpenAI:
-                kernelConfig.AddAzureTextCompletionService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                    serviceConfig.Endpoint, serviceConfig.Key);
+                kernelConfig.AddAzureChatCompletionService(
+                    serviceId: serviceConfig.Label,
+                    deploymentName: serviceConfig.DeploymentOrModelId,
+                    endpoint: serviceConfig.Endpoint,
+                    apiKey: serviceConfig.Key,
+                    alsoAsTextCompletion: true);
                 break;
 
             case AIServiceConfig.OpenAI:
-                kernelConfig.AddOpenAITextCompletionService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                    serviceConfig.Key);
+                kernelConfig.AddOpenAIChatCompletionService(
+                    serviceId: serviceConfig.Label,
+                    modelId: serviceConfig.DeploymentOrModelId,
+                    apiKey: serviceConfig.Key,
+                    alsoAsTextCompletion: true);
                 break;
 
             default:
@@ -97,14 +104,14 @@ internal static class ConfigExtensions
         return serviceConfig.AIService.ToUpperInvariant() switch
         {
             AIServiceConfig.AzureOpenAI => new AzureTextEmbeddingGeneration(
-                                serviceConfig.DeploymentOrModelId,
-                                serviceConfig.Endpoint,
-                                serviceConfig.Key,
-                                handlerFactory: handlerFactory,
-                                log: logger),
+                serviceConfig.DeploymentOrModelId,
+                serviceConfig.Endpoint,
+                serviceConfig.Key,
+                handlerFactory: handlerFactory,
+                log: logger),
 
             AIServiceConfig.OpenAI => new OpenAITextEmbeddingGeneration(
-                                serviceConfig.DeploymentOrModelId, serviceConfig.Key, handlerFactory: handlerFactory, log: logger),
+                serviceConfig.DeploymentOrModelId, serviceConfig.Key, handlerFactory: handlerFactory, log: logger),
 
             _ => throw new ArgumentException("Invalid AIService value in embeddings backend settings"),
         };

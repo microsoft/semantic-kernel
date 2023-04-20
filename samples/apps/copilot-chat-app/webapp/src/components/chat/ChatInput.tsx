@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { Button, makeStyles, shorthands, Textarea, tokens } from '@fluentui/react-components';
-import { SendRegular } from '@fluentui/react-icons';
+import { MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
 import React from 'react';
+import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
 import { Constants } from '../../Constants';
 import { AlertType } from '../../libs/models/AlertType';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
+import { useSKSpeechService } from './../../libs/semantic-kernel/useSKSpeech';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -53,9 +55,36 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const dispatch = useAppDispatch();
     const [value, setValue] = React.useState('');
     const [previousValue, setPreviousValue] = React.useState('');
+    const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
+    const [isListening, setIsListening] = React.useState(false);
+    const speechService = useSKSpeechService(process.env.REACT_APP_BACKEND_URI as string);
+
+    React.useEffect(() => {
+        if (recognizer) return;
+        void (async () => {
+            const newRecognizer = await speechService.getSpeechRecognizerAsync();
+            setRecognizer(newRecognizer);
+        })();
+    }, [recognizer, speechService]);
+
+    const handleSpeech = () => {
+        setIsListening(true);
+
+        recognizer?.recognizeOnceAsync((result) => {
+            if (result.reason === speechSdk.ResultReason.RecognizedSpeech) {
+                if (result.text && result.text.length > 0) {
+                    handleSubmit(result.text);
+                }
+            }
+            setIsListening(false);
+        });
+    };
 
     const handleSubmit = (data: string) => {
         try {
+            if (data.trim() === '') {
+                return; // only submit if data is not empty
+            }
             onSubmit(data);
             setPreviousValue(data);
             setValue('');
@@ -105,6 +134,9 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                     }}
                 />
                 <div className={classes.controls}>
+                    {recognizer && (
+                            <Button disabled={isListening} icon={<MicRegular />} onClick={() => handleSpeech()} />
+                    )}
                     <Button icon={<SendRegular />} onClick={() => handleSubmit(value)} />
                 </div>
             </div>

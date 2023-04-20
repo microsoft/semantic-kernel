@@ -6,7 +6,7 @@ import os
 import semantic_kernel as sk
 import semantic_kernel.ai.open_ai as sk_oai
 
-kernel = sk.create_kernel()
+kernel = sk.Kernel()
 
 useAzureOpenAI = False
 model = "text-davinci-002"
@@ -29,6 +29,6 @@ skills_directory = os.path.join(__file__, "../../../../samples/skills")
 skill = kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
 
 result = asyncio.run(
-    kernel.run_on_str_async("time travel to dinosaur age", skill["Joke"])
+    kernel.run_async(skill["Joke"], input_str="time travel to dinosaur age")
 )
 print(result)

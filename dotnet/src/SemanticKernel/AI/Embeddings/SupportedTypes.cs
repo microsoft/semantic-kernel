@@ -15,12 +15,18 @@ public static class SupportedTypes
     /// <summary>
     /// Determines whether a specified type is supported by the vector operations.
     /// </summary>
+    /// <typeparam name="T">The type to check.</typeparam>
+    /// <returns>true if the vector operations support this type.</returns>
+    public static bool IsSupported<T>() =>
+        typeof(T) == typeof(float) || typeof(T) == typeof(double);
+
+    /// <summary>
+    /// Determines whether a specified type is supported by the vector operations.
+    /// </summary>
     /// <param name="type">The <see cref="Type"/> to check.</param>
     /// <returns>true if the vector operations support this type.</returns>
-    public static bool IsSupported(Type type)
-    {
-        return s_types.Contains(type);
-    }
+    public static bool IsSupported(Type type) =>
+        type == typeof(float) || type == typeof(double);
 
     /// <summary>
     /// The collection of types supported by the vector operations.
@@ -30,14 +36,14 @@ public static class SupportedTypes
     /// <summary>
     /// Checks if a specified type is supported by the vector operations.
     /// </summary>
-    /// <param name="type">The type to check.s</param>
-    /// <param name="caller">Caller member name.</param>
+    /// <typeparam name="T">The type to check.</typeparam>
+    /// <param name="callerName">Caller member name.</param>
     /// <exception cref="NotSupportedException">Throws if type is not supported.</exception>
-    internal static void VerifyTypeSupported(Type type, [CallerMemberName] string caller = "")
+    internal static void VerifyTypeSupported<T>([CallerMemberName] string callerName = "")
     {
-        if (!IsSupported(type))
+        if (!IsSupported<T>())
         {
-            ThrowTypeNotSupported(type, caller);
+            ThrowTypeNotSupported<T>(callerName);
         }
     }
 
@@ -46,12 +52,12 @@ public static class SupportedTypes
     /// <summary>
     /// Throws type not supported exception.
     /// </summary>
-    /// <param name="type">The type to check.s</param>
-    /// <param name="caller">Caller member name.</param>
+    /// <typeparam name="T">The unsupported type.</typeparam>
+    /// <param name="callerName">Caller member name.</param>
     /// <exception cref="NotSupportedException">Throws if type is not supported.</exception>
-    internal static void ThrowTypeNotSupported(Type type, [CallerMemberName] string caller = "")
+    internal static void ThrowTypeNotSupported<T>([CallerMemberName] string callerName = "")
     {
-        throw new NotSupportedException($"Type '{type.Name}' not supported by {caller}. "
+        throw new NotSupportedException($"Type '{typeof(T).Name}' not supported by {callerName}. "
                                         + $"Supported types include: [ {ToString()} ]");
     }
 
