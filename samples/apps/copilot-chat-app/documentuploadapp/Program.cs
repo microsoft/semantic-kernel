@@ -133,15 +133,12 @@ public static class Program
             "application/json"
         );
 
-        using HttpClientHandler clientHandler = new()
-        {
-            // Bypass the certificate check
-            ServerCertificateCustomValidationCallback =
-                (sender, cert, chain, sslPolicyErrors) => { return true; }
-        };
-
         // Create a HttpClient instance and set the timeout to infinite since
         // large documents will take a while to parse.
+        using HttpClientHandler clientHandler = new()
+        {
+            CheckCertificateRevocationList = true
+        };
         using HttpClient httpClient = new(clientHandler)
         {
             Timeout = Timeout.InfiniteTimeSpan
