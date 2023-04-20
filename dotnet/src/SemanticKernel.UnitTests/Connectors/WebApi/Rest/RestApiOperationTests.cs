@@ -272,7 +272,7 @@ public class RestApiOperationTests
         // Assert
         Assert.NotNull(url);
 
-        Assert.EndsWith(encodedEquivalent, url.OriginalString, StringComparison.InvariantCulture);
+        Assert.EndsWith(encodedEquivalent, url.OriginalString, StringComparison.Ordinal);
     }
 
     [Fact]
