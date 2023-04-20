@@ -99,7 +99,7 @@ public class TextMemorySkill
         if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultRelevance; }
 
         var limit = context.Variables.ContainsKey(LimitParam) ? context[LimitParam] : DefaultLimit;
-        if (string.IsNullOrWhiteSpace(limit)) { relevance = DefaultLimit; }
+        if (string.IsNullOrWhiteSpace(limit)) { limit = DefaultLimit; }
 
         context.Log.LogTrace("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
 
