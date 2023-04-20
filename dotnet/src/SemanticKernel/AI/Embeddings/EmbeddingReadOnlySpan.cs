@@ -25,7 +25,7 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// </remarks>
     public EmbeddingReadOnlySpan(ReadOnlySpan<TEmbedding> vector, bool isNormalized = false)
     {
-        SupportedTypes.VerifyTypeSupported(typeof(TEmbedding));
+        SupportedTypes.VerifyTypeSupported<TEmbedding>();
 
         this.ReadOnlySpan = vector;
         this.IsNormalized = isNormalized;
@@ -111,5 +111,5 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// Gets a value that indicates whether <typeparamref name="TEmbedding"/> is supported.
     /// </summary>
     [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Following 'IsSupported' pattern of System.Numerics.")]
-    public static bool IsSupported => SupportedTypes.IsSupported(typeof(TEmbedding));
+    public static bool IsSupported => SupportedTypes.IsSupported<TEmbedding>();
 }

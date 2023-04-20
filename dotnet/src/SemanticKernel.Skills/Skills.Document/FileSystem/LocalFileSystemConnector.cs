@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Skills.Document.FileSystem;
 
+#pragma warning disable CA1031 // Exceptions are caught and returned in a task
+
 /// <summary>
 /// Connector for local filesystem
 /// </summary>
@@ -28,7 +30,14 @@ public class LocalFileSystemConnector : IFileSystemConnector
     /// <exception cref="NotSupportedException"></exception>
     public Task<Stream> GetFileContentStreamAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult<Stream>(File.Open(Environment.ExpandEnvironmentVariables(filePath), FileMode.Open, FileAccess.Read));
+        try
+        {
+            return Task.FromResult<Stream>(File.Open(Environment.ExpandEnvironmentVariables(filePath), FileMode.Open, FileAccess.Read));
+        }
+        catch (Exception e)
+        {
+            return Task.FromException<Stream>(e);
+        }
     }
 
     /// <summary>
@@ -47,7 +56,14 @@ public class LocalFileSystemConnector : IFileSystemConnector
     /// <exception cref="NotSupportedException"></exception>
     public Task<Stream> GetWriteableFileStreamAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult<Stream>(File.Open(Environment.ExpandEnvironmentVariables(filePath), FileMode.Open, FileAccess.ReadWrite));
+        try
+        {
+            return Task.FromResult<Stream>(File.Open(Environment.ExpandEnvironmentVariables(filePath), FileMode.Open, FileAccess.ReadWrite));
+        }
+        catch (Exception e)
+        {
+            return Task.FromException<Stream>(e);
+        }
     }
 
     /// <summary>
@@ -64,12 +80,26 @@ public class LocalFileSystemConnector : IFileSystemConnector
     /// <exception cref="NotSupportedException"></exception>
     public Task<Stream> CreateFileAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult<Stream>(File.Create(Environment.ExpandEnvironmentVariables(filePath)));
+        try
+        {
+            return Task.FromResult<Stream>(File.Create(Environment.ExpandEnvironmentVariables(filePath)));
+        }
+        catch (Exception e)
+        {
+            return Task.FromException<Stream>(e);
+        }
     }
 
     /// <inheritdoc/>
     public Task<bool> FileExistsAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(File.Exists(Environment.ExpandEnvironmentVariables(filePath)));
+        try
+        {
+            return Task.FromResult(File.Exists(Environment.ExpandEnvironmentVariables(filePath)));
+        }
+        catch (Exception e)
+        {
+            return Task.FromException<bool>(e);
+        }
     }
 }

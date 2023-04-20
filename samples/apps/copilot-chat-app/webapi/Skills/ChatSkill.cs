@@ -86,6 +86,12 @@ public class ChatSkill
             settings: this.CreateIntentCompletionSettings()
         );
 
+        if (result.ErrorOccurred)
+        {
+            context.Fail(result.LastErrorDescription, result.LastException);
+            return string.Empty;
+        }
+
         return $"User intent: {result}";
     }
 
@@ -125,6 +131,7 @@ public class ChatSkill
                 relevantMemories.Add(memory);
             }
         }
+
         relevantMemories = relevantMemories.OrderByDescending(m => m.Relevance).ToList();
 
         string memoryText = "";
@@ -239,6 +246,11 @@ public class ChatSkill
 
         // Extract user intent and update remaining token count
         var userIntent = await this.ExtractUserIntentAsync(chatContext);
+        if (chatContext.ErrorOccurred)
+        {
+            return chatContext;
+        }
+
         chatContext.Variables.Set("userIntent", userIntent);
         remainingToken -= this.EstimateTokenCount(userIntent);
 
@@ -251,6 +263,11 @@ public class ChatSkill
             context: chatContext,
             settings: this.CreateChatResponseCompletionSettings()
         );
+
+        if (chatContext.ErrorOccurred)
+        {
+            return chatContext;
+        }
 
         // Save this response to memory such that subsequent chat responses can use it
         try
@@ -413,4 +430,3 @@ public class ChatSkill
 
     # endregion
 }
-

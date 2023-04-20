@@ -53,7 +53,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
 
         // Assert
-        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory]
@@ -73,7 +73,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.Empty(actual.LastErrorDescription);
         Assert.False(actual.ErrorOccurred);
-        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory(Skip = "Retry logic needs to be refactored to work with Azure SDK")]
@@ -101,7 +101,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var context = await target.RunAsync(prompt, skill["Summarize"]);
 
         // Assert
-        Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<AIException>(context.LastException);
-        Assert.Contains("Incorrect API key provided", ((AIException)context.LastException).Detail, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Incorrect API key provided", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<AIException>(context.LastException);
-        Assert.Contains("provide a valid key", ((AIException)context.LastException).Detail, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("provide a valid key", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<AIException>(context.LastException);
-        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -209,7 +209,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
 
         // Assert
-        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
     #region internals

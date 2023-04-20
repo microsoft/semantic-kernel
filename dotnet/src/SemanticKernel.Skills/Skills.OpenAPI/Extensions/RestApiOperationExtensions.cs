@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
 // ReSharper disable once CheckNamespace
@@ -21,9 +22,26 @@ internal static class RestApiOperationExtensions
     {
         var parameters = new List<RestApiOperationParameter>(operation.Parameters);
 
-        //Register "server-url" as a parameter so that it's possible to override it if needed.
-        parameters.Add(new RestApiOperationParameter(RestApiOperation.ServerUrlArgumentName, "string", false, RestApiOperationParameterLocation.Path,
-            RestApiOperationParameterStyle.Simple, defaultValue: operation.ServerUrl));
+        //Register the "server-url" parameter so that it's possible to override it if needed.
+        parameters.Add(new RestApiOperationParameter(
+            RestApiOperation.ServerUrlArgumentName,
+            "string",
+            false,
+            RestApiOperationParameterLocation.Path,
+            RestApiOperationParameterStyle.Simple,
+            defaultValue: operation.ServerUrl));
+
+        //Register the "input" parameter to be advertised and used for "text/plain" requests.
+        if (operation.Payload?.MediaType == MediaTypeTextPlain)
+        {
+            parameters.Add(new RestApiOperationParameter(
+                RestApiOperation.InputArgumentName,
+                "string",
+                true,
+                RestApiOperationParameterLocation.Body,
+                RestApiOperationParameterStyle.Simple,
+                description: operation.Payload.Description));
+        }
 
         //Add Payload properties.
         parameters.AddRange(CreateParametersFromPayloadProperties(operation.Payload));
@@ -55,8 +73,13 @@ internal static class RestApiOperationExtensions
 
             if (!property.Properties.Any()) //It's a leaf property
             {
-                parameters.Add(new RestApiOperationParameter(property.Name, property.Type, property.IsRequired, RestApiOperationParameterLocation.Body,
-                    RestApiOperationParameterStyle.Simple, description: property.Description));
+                parameters.Add(new RestApiOperationParameter(
+                    property.Name,
+                    property.Type,
+                    property.IsRequired,
+                    RestApiOperationParameterLocation.Body,
+                    RestApiOperationParameterStyle.Simple,
+                    description: property.Description));
             }
 
             foreach (var childProperty in property.Properties)
@@ -76,4 +99,6 @@ internal static class RestApiOperationExtensions
 
         return result;
     }
+
+    private const string MediaTypeTextPlain = "text/plain";
 }
