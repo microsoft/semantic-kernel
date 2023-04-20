@@ -89,24 +89,34 @@ public class VectorOperationTests
         Assert.Equal(11.0, target, 5);
     }
 
-    [Fact]
-    public void ItComputesDotProductFloat()
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(1, 3.0)]
+    [InlineData(2, -11.0)]
+    [InlineData(3, -15.0)]
+    [InlineData(4, 45.0)]
+    public void ItComputesDotProductFloat(int length, double expectedResult)
     {
         // Arrange
-        var target = this._floatV1.DotProduct(this._floatV2);
+        var target = this._floatV1.AsSpan(0, length).DotProduct(this._floatV2.AsSpan(0, length));
 
         // Assert
-        Assert.Equal(45.0, target, 5);
+        Assert.Equal(expectedResult, target, 5);
     }
 
-    [Fact]
-    public void ItComputesDotProductDouble()
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(1, 3.0)]
+    [InlineData(2, -11.0)]
+    [InlineData(3, -15.0)]
+    [InlineData(4, 45.0)]
+    public void ItComputesDotProductDouble(int length, double expectedResult)
     {
         // Arrange
-        var target = this._doubleV1.DotProduct(this._doubleV2);
+        var target = this._doubleV1.AsSpan(0, length).DotProduct(this._doubleV2.AsSpan(0, length));
 
         // Assert
-        Assert.Equal(45.0, target, 5);
+        Assert.Equal(expectedResult, target, 5);
     }
 
     [Fact]
