@@ -234,7 +234,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
 
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema.Required);
 
-        return new RestApiOperationPayload(mediaType, payloadProperties);
+        return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description);
     }
 
     /// <summary>
@@ -349,7 +349,8 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// </summary>
     private static readonly List<string> s_supportedMediaTypes = new List<string>
     {
-        "application/json"
+        "application/json",
+        "text/plain"
     };
 
     /// <summary>

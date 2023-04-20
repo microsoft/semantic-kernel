@@ -3,7 +3,7 @@
 namespace SemanticKernel.Service.Config;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes - Instantiated by deserializing JSON
-internal class AzureSpeechConfig
+internal sealed class AzureSpeechConfig
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
 {
     public string Label { get; set; } = string.Empty;

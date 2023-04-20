@@ -13,6 +13,7 @@
     <Product>Semantic Kernel</Product>
     <Description>Empowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.</Description>
     <PackageTags>AI, Artificial Intelligence, SDK</PackageTags>
+    <PackageId>$(AssemblyName)</PackageId>
 
     <!-- Required license, copyright, and repo information. Packages can override. -->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -29,6 +30,9 @@
     <!-- Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- Include the XML documentation file in the NuGet package. -->
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
