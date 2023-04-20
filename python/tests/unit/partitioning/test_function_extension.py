@@ -1,13 +1,13 @@
 import pytest
 
-import semantic_kernel as sk
+from semantic_kernel import Kernel
 import semantic_kernel.ai.open_ai as sk_oai
 from semantic_kernel.semantic_functions import aggregate_partionned_results_async
 
 
 @pytest.mark.asyncio
 async def test_aggregate_results():
-    kernel = sk.create_kernel()
+    kernel = Kernel()
 
     kernel.config.add_text_backend(
         "davinci-002", sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none")
