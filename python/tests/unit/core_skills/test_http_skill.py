@@ -56,6 +56,7 @@ async def test_post(mock_post):
     response = await skill.post_async("https://example.org/post", context)
     assert response == "Hello World !"
 
+
 @patch("aiohttp.ClientSession.post")
 @pytest.mark.asyncio
 async def test_post_nobody(mock_post):
@@ -82,6 +83,7 @@ async def test_put(mock_put):
     response = await skill.put_async("https://example.org/put", context)
     assert response == "Hello World !"
 
+
 @patch("aiohttp.ClientSession.put")
 @pytest.mark.asyncio
 async def test_put_nobody(mock_put):
@@ -93,6 +95,7 @@ async def test_put_nobody(mock_put):
     context = SKContext(context_variables, None, None, None)
     response = await skill.put_async("https://example.org/put", context)
     assert response == "Hello World !"
+
 
 @patch("aiohttp.ClientSession.delete")
 @pytest.mark.asyncio
