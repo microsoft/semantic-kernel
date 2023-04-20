@@ -1,7 +1,7 @@
 import pytest
 
-from semantic_kernel import Kernel
 import semantic_kernel.ai.open_ai as sk_oai
+from semantic_kernel import Kernel
 from semantic_kernel.semantic_functions import aggregate_partionned_results_async
 
 
