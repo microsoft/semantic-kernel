@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
@@ -10,6 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Skills.Web.Bing;
 
@@ -31,9 +34,14 @@ public class BingConnector : IWebSearchEngineConnector, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<string> SearchAsync(string query, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
     {
-        Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count=1");
+        Verify.GreaterThan(count, 0, $"{nameof(count)} value must be greater than 0.");
+        Verify.LessThan(count,50, $"{nameof(count)} value must be less than 50.");
+
+        Verify.GreaterThan(offset, -1, $"{nameof(offset)} value must be greater than -1.");
+
+        Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count={count}&offset={offset}");
 
         this._logger.LogDebug("Sending request: {0}", uri);
         HttpResponseMessage response = await this._httpClient.GetAsync(uri, cancellationToken);
@@ -44,14 +52,9 @@ public class BingConnector : IWebSearchEngineConnector, IDisposable
         this._logger.LogTrace("Response content received: {0}", json);
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
-        WebPage? firstResult = data?.WebPages?.Value?.FirstOrDefault();
+        WebPage[]? results = data?.WebPages?.Value;
 
-        this._logger.LogDebug("Result: {0}, {1}, {2}",
-            firstResult?.Name,
-            firstResult?.Url,
-            firstResult?.Snippet);
-
-        return firstResult?.Snippet ?? string.Empty;
+        return results == null ? Enumerable.Empty<string>() : results.Select(x => x.Snippet);
     }
 
     protected virtual void Dispose(bool disposing)
