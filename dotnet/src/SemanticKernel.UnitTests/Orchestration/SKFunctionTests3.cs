@@ -64,7 +64,7 @@ public sealed class SKFunctionTests3
         Assert.Equal(3, count);
     }
 
-    private class InvalidSkill
+    private sealed class InvalidSkill
     {
         [SKFunction("one")]
         public void Invalid1(string x, string y)
@@ -82,7 +82,7 @@ public sealed class SKFunctionTests3
         }
     }
 
-    private class LocalExampleSkill
+    private sealed class LocalExampleSkill
     {
         [SKFunction("one")]
         public void Type01()

@@ -217,7 +217,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         this._httpClient.Dispose();
     }
 
-    private class HttpMessageHandlerStub : DelegatingHandler
+    private sealed class HttpMessageHandlerStub : DelegatingHandler
     {
         public HttpRequestHeaders? RequestHeaders { get; private set; }
 
