@@ -96,7 +96,7 @@ public class FileSystemContext<T> : IStorageContext<T> where T : IStorageEntity
     /// <summary>
     /// A concurrent dictionary to store entities in memory.
     /// </summary>
-    private class EntityDictionary : ConcurrentDictionary<string, T>
+    private sealed class EntityDictionary : ConcurrentDictionary<string, T>
     {
     }
 
