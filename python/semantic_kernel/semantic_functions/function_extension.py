@@ -7,14 +7,14 @@ from semantic_kernel.orchestration.sk_function import SKFunction
 
 
 async def aggregate_partionned_results_async(
-    func: SKFunction, partitioned_results: List[str], context: SKContext
+    func: SKFunction, chunked_results: List[str], context: SKContext
 ) -> SKContext:
     """
     Aggregate the results from the partitioned results.
     """
     results = []
-    for partition in partitioned_results:
-        context.variables.update(partition)
+    for chunk in chunked_results:
+        context.variables.update(chunk)
         context = await func.invoke_async(context=context)
 
         results.append(str(context.variables))
