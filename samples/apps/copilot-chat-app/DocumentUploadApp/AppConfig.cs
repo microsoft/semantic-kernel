@@ -44,11 +44,6 @@ public sealed class AppConfig
     /// <returns>True is the config object is not null.</returns>
     public static bool Validate(AppConfig? appConfig)
     {
-        if (appConfig == null)
-        {
-            return false;
-        }
-
-        return true;
+        return appConfig != null;
     }
 }
