@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
-internal class DeleteVectorsRequest : IValidatable
+internal sealed class DeleteVectorsRequest : IValidatable
 {
     [JsonPropertyName("points")]
     public List<string> Ids { get; set; }

@@ -6,7 +6,7 @@
 namespace SemanticKernel.Service.Config;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes - Instantiated by deserializing JSON
-internal class AIServiceConfig
+internal sealed class AIServiceConfig
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
 {
     public const string OpenAI = "OPENAI";
