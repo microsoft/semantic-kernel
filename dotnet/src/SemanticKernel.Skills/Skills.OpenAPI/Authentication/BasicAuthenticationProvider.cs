@@ -14,15 +14,15 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 /// </summary>
 public class BasicAuthenticationProvider
 {
-    private readonly Func<Task<string>> _content;
+    private readonly Func<Task<string>> _credentials;
 
     /// <summary>
     /// Creates an instance of the <see cref="BasicAuthenticationProvider"/> class.
     /// </summary>
-    /// <param name="content">Delegate for retrieving the authentication content.</param>
-    public BasicAuthenticationProvider(Func<Task<string>> content)
+    /// <param name="credentials">Delegate for retrieving credentials.</param>
+    public BasicAuthenticationProvider(Func<Task<string>> credentials)
     {
-        this._content = content;
+        this._credentials = credentials;
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ public class BasicAuthenticationProvider
     public async Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
         // Base64 encode
-        string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._content()));
+        string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials()));
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic", encodedContent);
     }
 }

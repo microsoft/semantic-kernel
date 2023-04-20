@@ -11,19 +11,18 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 /// <summary>
 /// Uses the Microsoft Authentication Library (MSAL) to authenticate HTTP requests.
 /// </summary>
-public class MsalAuthenticationProvider : BearerAuthenticationProvider
+public class InteractiveMsalAuthenticationProvider : BearerAuthenticationProvider
 {
 
     /// <summary>
-    /// Creates an instance of the <see cref="MsalAuthenticationProvider"/> class.
+    /// Creates an instance of the <see cref="InteractiveMsalAuthenticationProvider"/> class.
     /// </summary>
     /// <param name="clientId">Client ID of the caller.</param>
     /// <param name="tenantId">Tenant ID of the target resource.</param>
     /// <param name="scopes">Requested scopes.</param>
-    /// <param name="resourceUri">URI for the target resource.</param>
     /// <param name="redirectUri">Redirect URI.</param>
-    public MsalAuthenticationProvider(string clientId, string tenantId, string[] scopes, Uri resourceUri, Uri redirectUri)
-        : base(async () => { return await GetTokenAsync(clientId, tenantId, scopes, resourceUri, redirectUri); })
+    public InteractiveMsalAuthenticationProvider(string clientId, string tenantId, string[] scopes, Uri redirectUri)
+        : base(() => GetTokenAsync(clientId, tenantId, scopes, redirectUri))
     {
     }
 
@@ -33,21 +32,10 @@ public class MsalAuthenticationProvider : BearerAuthenticationProvider
     /// <param name="clientId">Client ID of the caller.</param>
     /// <param name="tenantId">Tenant ID of the target resource.</param>
     /// <param name="scopes">Requested scopes.</param>
-    /// <param name="resourceUri">URI for the target resource.</param>
     /// <param name="redirectUri">Redirect URI.</param>
     /// <returns>Access token.</returns>
-    private static async Task<string> GetTokenAsync(string clientId, string tenantId, string[] scopes, Uri resourceUri, Uri redirectUri)
+    private static async Task<string> GetTokenAsync(string clientId, string tenantId, string[] scopes, Uri redirectUri)
     {
-        // Prefix scopes with the resource URI
-        var prefix = resourceUri.ToString().TrimEnd('/') + '/';
-        for (int i = 0; i < scopes.Length; i++)
-        {
-            if (!scopes[i].StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
-            {
-                scopes[i] = prefix + scopes[i];
-            }
-        }
-
         IPublicClientApplication app = PublicClientApplicationBuilder.Create(clientId)
             .WithRedirectUri(redirectUri.ToString())
             .WithTenantId(tenantId)
