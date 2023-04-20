@@ -168,7 +168,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     /// <summary>
     /// List of payload builders/factories.
     /// </summary>
-    private static IDictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>> s_payloadFactoryByMediaType =
+    private static readonly Dictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>> s_payloadFactoryByMediaType =
         new Dictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>>()
         {
             { MediaTypeApplicationJson, BuildAppJsonPayload }

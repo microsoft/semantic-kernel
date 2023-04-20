@@ -131,6 +131,7 @@ public class ChatSkill
                 relevantMemories.Add(memory);
             }
         }
+
         relevantMemories = relevantMemories.OrderByDescending(m => m.Relevance).ToList();
 
         string memoryText = "";
@@ -429,4 +430,3 @@ public class ChatSkill
 
     # endregion
 }
-

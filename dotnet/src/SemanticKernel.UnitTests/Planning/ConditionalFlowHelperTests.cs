@@ -339,7 +339,7 @@ public class ConditionalFlowHelperTests
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var fakeConditionVariables = string.Join(" AND ", conditionVariables.Split(",").Select(x => $"${x} equals 0"));
-        var ifContent = ValidIfStructure.Replace("$a equals 0", fakeConditionVariables, StringComparison.InvariantCultureIgnoreCase);
+        var ifContent = ValidIfStructure.Replace("$a equals 0", fakeConditionVariables, StringComparison.OrdinalIgnoreCase);
 
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
@@ -365,13 +365,13 @@ public class ConditionalFlowHelperTests
         {
             foreach (var variableName in conditionVariables.Split(','))
             {
-                Assert.Contains(variableName, context.Variables["ConditionalVariables"], StringComparison.InvariantCulture);
+                Assert.Contains(variableName, context.Variables["ConditionalVariables"], StringComparison.Ordinal);
             }
         }
 
         foreach (var variableName in notExpectedVariablesInPrompt)
         {
-            Assert.DoesNotContain(variableName, context.Variables["ConditionalVariables"], StringComparison.InvariantCulture);
+            Assert.DoesNotContain(variableName, context.Variables["ConditionalVariables"], StringComparison.Ordinal);
         }
     }
 
@@ -384,7 +384,7 @@ public class ConditionalFlowHelperTests
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var fakeConditionVariables = string.Join(" AND ", conditionVariables.Split(",").Select(x => $"${x} equals 0"));
-        var ifContent = ValidIfStructure.Replace("$a equals 0", fakeConditionVariables, StringComparison.InvariantCultureIgnoreCase);
+        var ifContent = ValidIfStructure.Replace("$a equals 0", fakeConditionVariables, StringComparison.OrdinalIgnoreCase);
 
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
@@ -409,7 +409,7 @@ public class ConditionalFlowHelperTests
         Assert.True(context.Variables.ContainsKey("ConditionalVariables"));
         foreach (var variableName in expectedUndefined)
         {
-            Assert.Contains($"{variableName} = undefined", context.Variables["ConditionalVariables"], StringComparison.InvariantCulture);
+            Assert.Contains($"{variableName} = undefined", context.Variables["ConditionalVariables"], StringComparison.Ordinal);
         }
     }
 
@@ -423,7 +423,7 @@ public class ConditionalFlowHelperTests
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var fakeConditionVariables = string.Join(" AND ", conditionVariables.Split(",").Select(x => $"${x} equals 0"));
-        var ifContent = ValidWhileStructure.Replace("$a equals 0", fakeConditionVariables, StringComparison.InvariantCultureIgnoreCase);
+        var ifContent = ValidWhileStructure.Replace("$a equals 0", fakeConditionVariables, StringComparison.OrdinalIgnoreCase);
 
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
@@ -445,13 +445,13 @@ public class ConditionalFlowHelperTests
         {
             foreach (var variableName in conditionVariables.Split(','))
             {
-                Assert.Contains(variableName, context.Variables["ConditionalVariables"], StringComparison.InvariantCulture);
+                Assert.Contains(variableName, context.Variables["ConditionalVariables"], StringComparison.Ordinal);
             }
         }
 
         foreach (var variableName in notExpectedVariablesInPrompt)
         {
-            Assert.DoesNotContain(variableName, context.Variables["ConditionalVariables"], StringComparison.InvariantCulture);
+            Assert.DoesNotContain(variableName, context.Variables["ConditionalVariables"], StringComparison.Ordinal);
         }
     }
 
@@ -464,7 +464,7 @@ public class ConditionalFlowHelperTests
         var kernel = KernelBuilder.Create();
         _ = kernel.Config.AddOpenAITextCompletionService("test", "test", "test");
         var fakeConditionVariables = string.Join(" AND ", conditionVariables.Split(",").Select(x => $"${x} equals 0"));
-        var ifContent = ValidWhileStructure.Replace("$a equals 0", fakeConditionVariables, StringComparison.InvariantCultureIgnoreCase);
+        var ifContent = ValidWhileStructure.Replace("$a equals 0", fakeConditionVariables, StringComparison.OrdinalIgnoreCase);
 
         var completionBackendMock = SetupCompletionBackendMock(new Dictionary<string, string>
         {
@@ -485,7 +485,7 @@ public class ConditionalFlowHelperTests
         Assert.True(context.Variables.ContainsKey("ConditionalVariables"));
         foreach (var variableName in expectedUndefined)
         {
-            Assert.Contains($"{variableName} = undefined", context.Variables["ConditionalVariables"], StringComparison.InvariantCulture);
+            Assert.Contains($"{variableName} = undefined", context.Variables["ConditionalVariables"], StringComparison.Ordinal);
         }
     }
 

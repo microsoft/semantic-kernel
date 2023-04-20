@@ -59,7 +59,7 @@ public sealed class WebSkillTests : IDisposable
         );
 
         // Assert
-        Assert.Contains(expectedAnswerContains, result.Result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains(expectedAnswerContains, result.Result, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
