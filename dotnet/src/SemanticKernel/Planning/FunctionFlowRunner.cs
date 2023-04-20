@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Extensions.Logging;
@@ -269,35 +269,31 @@ internal class FunctionFlowRunner
                             foreach (XmlAttribute attr in o2.Attributes)
                             {
                                 context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
-                                bool innerTextStartWithSign = attr.InnerText.StartsWith("$", StringComparison.Ordinal);
+                                var variablesRegex = new Regex("\\$(?<variableName>[0-9A-Za-z_]+)");
 
+                                bool containsVariables = variablesRegex.IsMatch(attr.InnerText);
+              
                                 if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    variableTargetName = innerTextStartWithSign
+                                    variableTargetName = attr.InnerText.StartsWith("$", StringComparison.Ordinal)
                                         ? attr.InnerText.Substring(1)
                                         : attr.InnerText;
                                 }
-                                else if (innerTextStartWithSign)
+                                else if (containsVariables)
                                 {
-                                    // Split the attribute value on the comma or ; character
-                                    var attrValues = attr.InnerText.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
-                                    if (attrValues.Length > 0)
+                                    var replacedString = attr.InnerText;
+                                    foreach (Match match in variablesRegex.Matches(attr.InnerText))
                                     {
-                                        // If there are multiple values, create a list of the values
-                                        var attrValueList = new List<string>();
-                                        foreach (var attrValue in attrValues)
+                                        foreach (Capture capture in match.Groups["variableName"].Captures)
                                         {
-                                            if (context.Variables.Get(attrValue.Substring(1), out var variableReplacement))
+                                            if (context.Variables.Get(capture.Value, out var variableReplacement))
                                             {
-                                                attrValueList.Add(variableReplacement);
+                                                replacedString = replacedString.Replace($"${capture.Value}", variableReplacement);
                                             }
                                         }
-
-                                        if (attrValueList.Count > 0)
-                                        {
-                                            functionVariables.Set(attr.Name, string.Concat(attrValueList));
-                                        }
                                     }
+
+                                    functionVariables.Set(attr.Name, replacedString);
                                 }
                                 else if (attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
                                 {
