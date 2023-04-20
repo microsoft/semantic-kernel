@@ -1,13 +1,7 @@
 ﻿# Copilot Chat Document Upload App
 
 > **!IMPORTANT**
-> This learning sample is for educational purposes only and should not be used in any
-> production use case. It is intended to highlight concepts of Semantic Kernel and not
-> any architectural / security design practices to be used.
-
-### Watch the Copilot Chat Sample Quick Start Video [here](https://aka.ms/SK-Copilotchat-video).
-
-## Introduction
+> This sample is for educational purposes only and is not recommended for production deployments.
 
 One of the exciting features of the Copilot Chat App is its ability to store contextual information
 to [memories](https://github.com/microsoft/semantic-kernel/blob/main/docs/EMBEDDINGS.md) and retrieve

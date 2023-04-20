@@ -7,12 +7,15 @@ using Microsoft.Identity.Client;
 
 namespace SemanticKernel.Service.DocumentUploadApp;
 
+/// <summary>
+/// This console app imports a file to the CopilotChat WebAPI's document memory store.
+/// </summary>
 public static class Program
 {
     public static void Main(string[] args)
     {
-        var serviceConfig = ServiceConfig.GetServiceConfig();
-        if (!ServiceConfig.Validate(serviceConfig))
+        var config = Config.GetConfig();
+        if (!Config.Validate(config))
         {
             Console.WriteLine("Error: Failed to read appsettings.json.");
             return;
@@ -31,7 +34,7 @@ public static class Program
         );
 
         var rootCommand = new RootCommand(
-            "Sample app that uploads a file to the Document Store."
+            "This console app imports a file to the CopilotChat WebAPI's document memory store."
         )
         {
             fileOption, userCollectionOption
@@ -39,7 +42,7 @@ public static class Program
 
         rootCommand.SetHandler(async (file, userCollection) =>
             {
-                await UploadFileAsync(file, serviceConfig!, userCollection);
+                await UploadFileAsync(file, config!, userCollection);
             },
             fileOption, userCollectionOption
         );
@@ -50,15 +53,15 @@ public static class Program
     /// <summary>
     /// Acquires a user unique ID from Azure AD.
     /// </summary>
-    private static async Task<string?> AcquireUserIdAsync(ServiceConfig serviceConfig)
+    private static async Task<string?> AcquireUserIdAsync(Config config)
     {
         Console.WriteLine("Requesting User Account ID...");
 
         string[] scopes = { "User.Read" };
         try
         {
-            var app = PublicClientApplicationBuilder.Create(serviceConfig.ClientId)
-                .WithRedirectUri(serviceConfig.RedirectUri)
+            var app = PublicClientApplicationBuilder.Create(config.ClientId)
+                .WithRedirectUri(config.RedirectUri)
                 .Build();
             var result = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
             var accounts = await app.GetAccountsAsync();
@@ -80,9 +83,9 @@ public static class Program
     /// Conditionally uploads a file to the Document Store for parsing.
     /// </summary>
     /// <param name="file">The file to upload for injection.</param>
-    /// <param name="serviceConfig">The service configuration.</param>
+    /// <param name="config">Configuration.</param>
     /// <param name="toUserCollection">Save the extracted context to an isolated user collection.</param>
-    private static async Task UploadFileAsync(FileInfo file, ServiceConfig serviceConfig, bool toUserCollection)
+    private static async Task UploadFileAsync(FileInfo file, Config config, bool toUserCollection)
     {
         if (!file.Exists)
         {
@@ -92,17 +95,17 @@ public static class Program
 
         if (toUserCollection)
         {
-            var userId = await AcquireUserIdAsync(serviceConfig);
+            var userId = await AcquireUserIdAsync(config);
             if (userId != null)
             {
                 Console.WriteLine("Uploading and parsing file to user collection...");
-                await UploadFileAsync(file, userId, serviceConfig);
+                await UploadFileAsync(file, userId, config);
             }
         }
         else
         {
             Console.WriteLine("Uploading and parsing file to global collection...");
-            await UploadFileAsync(file, "", serviceConfig);
+            await UploadFileAsync(file, string.Empty, config);
         }
     }
 
@@ -111,9 +114,9 @@ public static class Program
     /// </summary>
     /// <param name="file">The file to upload for injection.</param>
     /// <param name="userId">The user unique ID. If empty, the file will be injected to a global collection that is available to all users.</param>
-    /// <param name="serviceConfig">The service configuration.</param>
+    /// <param name="config">Configuration.</param>
     private static async Task UploadFileAsync(
-        FileInfo file, string userId, ServiceConfig serviceConfig)
+        FileInfo file, string userId, Config config)
     {
         string skillName = "DocumentQuerySkill";
         string functionName = "ParseLocalFile";
@@ -147,7 +150,7 @@ public static class Program
         try
         {
             using HttpResponseMessage response = await httpClient.PostAsync(
-                new Uri(new Uri(serviceConfig.ServiceUri), commandPath),
+                new Uri(new Uri(config.ServiceUri), commandPath),
                 jsonContent
             );
             Console.WriteLine("Uploading and parsing successful.");

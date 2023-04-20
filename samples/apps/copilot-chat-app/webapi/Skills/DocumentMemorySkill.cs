@@ -9,9 +9,9 @@ using Microsoft.SemanticKernel.SkillDefinition;
 namespace SemanticKernel.Service.Skills;
 
 /// <summary>
-///
+/// This skill provides the ability to parse a file into embeddings and query the document memory.
 /// </summary>
-public class DocumentQuerySkill
+public class DocumentMemorySkill
 {
     /// <summary>
     /// Returns the name of the semantic document memory collection that stores document semantic memory.
@@ -31,9 +31,9 @@ public class DocumentQuerySkill
     private readonly PromptSettings _promptSettings;
 
     /// <summary>
-    /// Create a new instance of DocumentQuerySkill.
+    /// Create a new instance of DocumentMemorySkill.
     /// </summary>
-    public DocumentQuerySkill(PromptSettings promptSettings)
+    public DocumentMemorySkill(PromptSettings promptSettings)
     {
         this._promptSettings = promptSettings;
     }

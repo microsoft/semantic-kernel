@@ -5,9 +5,9 @@ using Microsoft.Extensions.Configuration;
 namespace SemanticKernel.Service.DocumentUploadApp;
 
 /// <summary>
-/// Service configuration for the app.
+/// Configuration for the app.
 /// </summary>
-public sealed class ServiceConfig
+public sealed class Config
 {
     /// <summary>
     /// Client ID for the app as registered in Azure AD.
@@ -29,25 +29,25 @@ public sealed class ServiceConfig
 #pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
-    /// Gets service configuration from appsettings.json.
+    /// Gets configuration from appsettings.json.
     /// </summary>
-    /// <returns>An ServiceConfig instance</returns>
-    public static ServiceConfig? GetServiceConfig()
+    /// <returns>An Config instance</returns>
+    public static Config? GetConfig()
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .Build();
 
-        return config.GetRequiredSection("ServiceConfig").Get<ServiceConfig>();
+        return config.GetRequiredSection("Config").Get<Config>();
     }
 
     /// <summary>
-    /// Validates an ServiceConfig object.
+    /// Validates a Config object.
     /// </summary>
-    /// <param name="serviceConfig"></param>
+    /// <param name="config"></param>
     /// <returns>True is the config object is not null.</returns>
-    public static bool Validate(ServiceConfig? serviceConfig)
+    public static bool Validate(Config? config)
     {
-        return serviceConfig != null;
+        return config != null;
     }
 }
