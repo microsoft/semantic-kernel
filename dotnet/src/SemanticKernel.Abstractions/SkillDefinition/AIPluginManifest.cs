@@ -26,14 +26,6 @@ public class AIPluginManifest
         AIPluginManifest? pluginManifest = classInfo.GetCustomAttribute<AIPluginAttribute>()?.AIPluginManifest;
         if (pluginManifest == null) { return null; }
 
-        pluginManifest.Api = classInfo.GetCustomAttribute<AIPluginApiAttribute>()?.ApiModel
-            ?? throw new MissingFieldException("When specifying AIPluginAttribute on a class, the AIPluginApiModelAttribute is also required.");
-
-        pluginManifest.Auth = classInfo.GetCustomAttribute<AIPluginOAuthAttribute>()?.Auth
-            ?? classInfo.GetCustomAttribute<AIPluginUserHttpAuthAttribute>()?.Auth
-            ?? classInfo.GetCustomAttribute<AIPluginServiceHttpAuthAttribute>()?.Auth
-            ?? AIPluginManifest.ManifestAuth.None;
-
         return pluginManifest;
     }
 
