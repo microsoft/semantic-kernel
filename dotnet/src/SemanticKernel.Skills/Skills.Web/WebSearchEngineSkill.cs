@@ -66,7 +66,7 @@ public class WebSearchEngineSkill
         }
         else
         {
-            resultString = JsonSerializer.Serialize(results.Select(x => x));
+            resultString = JsonSerializer.Serialize(results);
         }
 
         return resultString;
