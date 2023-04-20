@@ -46,8 +46,8 @@ public sealed class HuggingFaceTextCompletionTests
         Assert.NotNull(localResponse);
         Assert.NotNull(remoteResponse);
 
-        Assert.StartsWith(input, localResponse, StringComparison.InvariantCulture);
-        Assert.StartsWith(input, remoteResponse, StringComparison.InvariantCulture);
+        Assert.StartsWith(input, localResponse, StringComparison.Ordinal);
+        Assert.StartsWith(input, remoteResponse, StringComparison.Ordinal);
     }
 
     private string GetApiKey()

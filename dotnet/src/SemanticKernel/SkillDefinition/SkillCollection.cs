@@ -31,7 +31,7 @@ public class SkillCollection : ISkillCollection
         this.ReadOnlySkillCollection = new ReadOnlySkillCollection(this);
 
         // Important: names are case insensitive
-        this._skillCollection = new(StringComparer.InvariantCultureIgnoreCase);
+        this._skillCollection = new(StringComparer.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc/>
@@ -40,7 +40,7 @@ public class SkillCollection : ISkillCollection
         if (!this._skillCollection.ContainsKey(functionInstance.SkillName))
         {
             // Important: names are case insensitive
-            this._skillCollection[functionInstance.SkillName] = new(StringComparer.InvariantCultureIgnoreCase);
+            this._skillCollection[functionInstance.SkillName] = new(StringComparer.OrdinalIgnoreCase);
         }
 
         this._skillCollection[functionInstance.SkillName][functionInstance.Name] = functionInstance;
@@ -55,7 +55,7 @@ public class SkillCollection : ISkillCollection
         if (!this._skillCollection.ContainsKey(functionInstance.SkillName))
         {
             // Important: names are case insensitive
-            this._skillCollection[functionInstance.SkillName] = new(StringComparer.InvariantCultureIgnoreCase);
+            this._skillCollection[functionInstance.SkillName] = new(StringComparer.OrdinalIgnoreCase);
         }
 
         this._skillCollection[functionInstance.SkillName][functionInstance.Name] = functionInstance;

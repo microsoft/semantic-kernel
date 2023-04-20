@@ -20,14 +20,14 @@ public sealed class FunctionsView
     /// Functions are grouped by skill name.
     /// </summary>
     public ConcurrentDictionary<string, List<FunctionView>> SemanticFunctions { get; set; }
-        = new(StringComparer.InvariantCultureIgnoreCase);
+        = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Collection of native skill names and function views, including function parameters.
     /// Functions are grouped by skill name.
     /// </summary>
     public ConcurrentDictionary<string, List<FunctionView>> NativeFunctions { get; set; }
-        = new(StringComparer.InvariantCultureIgnoreCase);
+        = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Add a function to the list
