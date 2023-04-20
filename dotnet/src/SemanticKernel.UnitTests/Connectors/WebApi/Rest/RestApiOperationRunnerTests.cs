@@ -93,7 +93,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
-        Assert.True(messageContent.Any());
+        Assert.True(messageContent.Length != 0);
 
         var deserializedPayload = JsonNode.Parse(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);
