@@ -112,18 +112,14 @@ internal static class SequentialPlanParser
                                 foreach (XmlAttribute attr in o2.Attributes)
                                 {
                                     context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
-                                    if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
+                                    if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase)
+                                        || attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
                                     {
                                         functionOutputs.Set(attr.InnerText, string.Empty);
+                                        continue;
                                     }
-                                    else if (attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        functionOutputs.Set(attr.InnerText, string.Empty);
-                                    }
-                                    else
-                                    {
-                                        functionVariables.Set(attr.Name, attr.InnerText);
-                                    }
+
+                                    functionVariables.Set(attr.Name, attr.InnerText);
                                 }
                             }
 
