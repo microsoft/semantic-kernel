@@ -38,7 +38,7 @@ internal static class GPT3Settings
     private static Dictionary<string, int> BuildEncoder()
     {
         string json = EmbeddedResource.ReadEncodingTable();
-        var encoder = JsonSerializer.Deserialize<Dictionary<string, int>>(json, new JsonSerializerOptions());
+        var encoder = JsonSerializer.Deserialize<Dictionary<string, int>>(json);
 
         return encoder
                ?? throw new AIException(AIException.ErrorCodes.InvalidConfiguration,
