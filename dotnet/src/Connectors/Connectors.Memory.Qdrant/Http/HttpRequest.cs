@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
-using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 
@@ -35,7 +34,7 @@ internal static class HttpRequest
 
     public static HttpRequestMessage CreatePatchRequest(string url, object? payload = null)
     {
-        return new HttpRequestMessage(HttpMethod.Patch, url)
+        return new HttpRequestMessage(new HttpMethod("PATCH"), url)
         {
             Content = GetJsonContent(payload)
         };
@@ -54,6 +53,6 @@ internal static class HttpRequest
         }
 
         string strPayload = payload is string s ? s : JsonSerializer.Serialize(payload);
-        return new StringContent(strPayload, Encoding.UTF8, MediaTypeNames.Application.Json);
+        return new StringContent(strPayload, Encoding.UTF8, "application/json");
     }
 }

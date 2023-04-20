@@ -31,7 +31,7 @@ public static class DivideOperation
         }
         else
         {
-            SupportedTypes.ThrowTypeNotSupported(typeof(TNumber));
+            SupportedTypes.ThrowTypeNotSupported<TNumber>();
         }
     }
 

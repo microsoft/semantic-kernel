@@ -5,8 +5,9 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Skills;
+using SemanticKernel.Service.Storage;
 
-namespace CopilotChatApi.Service;
+namespace SemanticKernel.Service;
 
 internal static class FunctionLoadingExtensions
 {
@@ -32,6 +33,9 @@ internal static class FunctionLoadingExtensions
 
     internal static void RegisterNativeSkills(
         this IKernel kernel,
+        ChatSessionRepository chatSessionRepository,
+        ChatMessageRepository chatMessageRepository,
+        PromptSettings promptSettings,
         ILogger logger)
     {
         // Hardcode your native function registrations here
@@ -39,7 +43,19 @@ internal static class FunctionLoadingExtensions
         var timeSkill = new TimeSkill();
         kernel.ImportSkill(timeSkill, nameof(TimeSkill));
 
-        var chatSkill = new ChatSkill(kernel);
+        var chatSkill = new ChatSkill(
+            kernel,
+            chatMessageRepository,
+            chatSessionRepository,
+            promptSettings
+        );
         kernel.ImportSkill(chatSkill, nameof(ChatSkill));
+
+        var chatHistorySkill = new ChatHistorySkill(
+            chatMessageRepository,
+            chatSessionRepository,
+            promptSettings
+        );
+        kernel.ImportSkill(chatHistorySkill, nameof(ChatHistorySkill));
     }
 }

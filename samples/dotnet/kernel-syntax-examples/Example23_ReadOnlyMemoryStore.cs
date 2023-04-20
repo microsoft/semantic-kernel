@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once InconsistentNaming
-
 using System;
 using System.Collections.Generic;
 using System.Linq;

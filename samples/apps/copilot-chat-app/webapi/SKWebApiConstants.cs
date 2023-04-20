@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace CopilotChatApi.Service;
+namespace SemanticKernel.Service;
 
 internal static class CopilotChatApiConstants
 {

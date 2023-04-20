@@ -13,37 +13,11 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 public class KernelConfigOpenAIExtensionsTests
 {
     [Fact]
-    public void ItFailsWhenAddingTextCompletionServicesWithSameId()
-    {
-        var target = new KernelConfig();
-        target.AddAzureOpenAITextCompletionService("azure", "depl", "https://url", "key");
-
-        var exception = Assert.Throws<KernelException>(() =>
-        {
-            target.AddAzureOpenAITextCompletionService("azure", "depl2", "https://url", "key");
-        });
-        Assert.Equal(KernelException.ErrorCodes.InvalidServiceConfiguration, exception.ErrorCode);
-    }
-
-    [Fact]
-    public void ItFailsWhenAddingEmbeddingGenerationServicesWithSameId()
-    {
-        var target = new KernelConfig();
-        target.AddAzureOpenAIEmbeddingGenerationService("azure", "depl", "https://url", "key");
-
-        var exception = Assert.Throws<KernelException>(() =>
-        {
-            target.AddAzureOpenAIEmbeddingGenerationService("azure", "depl2", "https://url", "key");
-        });
-        Assert.Equal(KernelException.ErrorCodes.InvalidServiceConfiguration, exception.ErrorCode);
-    }
-
-    [Fact]
     public void ItSucceedsWhenAddingDifferentServiceTypeWithSameId()
     {
         var target = new KernelConfig();
-        target.AddAzureOpenAITextCompletionService("azure", "depl", "https://url", "key");
-        target.AddAzureOpenAIEmbeddingGenerationService("azure", "depl2", "https://url", "key");
+        target.AddAzureTextCompletionService("azure", "depl", "https://url", "key");
+        target.AddAzureTextEmbeddingGenerationService("azure", "depl2", "https://url", "key");
 
         Assert.True(target.TextCompletionServices.ContainsKey("azure"));
         Assert.True(target.TextEmbeddingGenerationServices.ContainsKey("azure"));
@@ -54,10 +28,10 @@ public class KernelConfigOpenAIExtensionsTests
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureOpenAITextCompletionService("azure", "depl", "https://url", "key");
+        target.AddAzureTextCompletionService("azure", "depl", "https://url", "key");
         target.AddOpenAITextCompletionService("oai", "model", "apikey");
-        target.AddAzureOpenAIEmbeddingGenerationService("azure", "depl2", "https://url2", "key");
-        target.AddOpenAIEmbeddingGenerationService("oai2", "model2", "apikey2");
+        target.AddAzureTextEmbeddingGenerationService("azure", "depl2", "https://url2", "key");
+        target.AddOpenAITextEmbeddingGenerationService("oai2", "model2", "apikey2");
 
         // Assert
         Assert.True(target.TextCompletionServices.ContainsKey("azure"));
@@ -78,14 +52,14 @@ public class KernelConfigOpenAIExtensionsTests
         var target = new KernelConfig();
 
         // Act - Assert no exception occurs
-        target.AddAzureOpenAITextCompletionService("one", "dep", "https://localhost", "key", overwrite: true);
-        target.AddAzureOpenAITextCompletionService("one", "dep", "https://localhost", "key", overwrite: true);
-        target.AddOpenAITextCompletionService("one", "model", "key", overwrite: true);
-        target.AddOpenAITextCompletionService("one", "model", "key", overwrite: true);
-        target.AddAzureOpenAIEmbeddingGenerationService("one", "dep", "https://localhost", "key", overwrite: true);
-        target.AddAzureOpenAIEmbeddingGenerationService("one", "dep", "https://localhost", "key", overwrite: true);
-        target.AddOpenAIEmbeddingGenerationService("one", "model", "key", overwrite: true);
-        target.AddOpenAIEmbeddingGenerationService("one", "model", "key", overwrite: true);
+        target.AddAzureTextCompletionService("one", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("one", "dep", "https://localhost", "key");
+        target.AddOpenAITextCompletionService("one", "model", "key");
+        target.AddOpenAITextCompletionService("one", "model", "key");
+        target.AddAzureTextEmbeddingGenerationService("one", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("one", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("one", "model", "key");
+        target.AddOpenAITextEmbeddingGenerationService("one", "model", "key");
     }
 
     [Fact]
@@ -93,14 +67,14 @@ public class KernelConfigOpenAIExtensionsTests
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureOpenAITextCompletionService("one", "dep", "https://localhost", "key");
-        target.AddAzureOpenAITextCompletionService("2", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("one", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.AddOpenAITextCompletionService("3", "model", "key");
         target.AddOpenAITextCompletionService("4", "model", "key");
-        target.AddAzureOpenAIEmbeddingGenerationService("5", "dep", "https://localhost", "key");
-        target.AddAzureOpenAIEmbeddingGenerationService("6", "dep", "https://localhost", "key");
-        target.AddOpenAIEmbeddingGenerationService("7", "model", "key");
-        target.AddOpenAIEmbeddingGenerationService("8", "model", "key");
+        target.AddAzureTextEmbeddingGenerationService("5", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("6", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("7", "model", "key");
+        target.AddOpenAITextEmbeddingGenerationService("8", "model", "key");
 
         // Act
         target.RemoveAllTextCompletionServices();
@@ -116,14 +90,14 @@ public class KernelConfigOpenAIExtensionsTests
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureOpenAITextCompletionService("one", "dep", "https://localhost", "key");
-        target.AddAzureOpenAITextCompletionService("2", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("one", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.AddOpenAITextCompletionService("3", "model", "key");
         target.AddOpenAITextCompletionService("4", "model", "key");
-        target.AddAzureOpenAIEmbeddingGenerationService("5", "dep", "https://localhost", "key");
-        target.AddAzureOpenAIEmbeddingGenerationService("6", "dep", "https://localhost", "key");
-        target.AddOpenAIEmbeddingGenerationService("7", "model", "key");
-        target.AddOpenAIEmbeddingGenerationService("8", "model", "key");
+        target.AddAzureTextEmbeddingGenerationService("5", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("6", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("7", "model", "key");
+        target.AddOpenAITextEmbeddingGenerationService("8", "model", "key");
 
         // Act
         target.RemoveAllTextCompletionServices();
@@ -138,14 +112,14 @@ public class KernelConfigOpenAIExtensionsTests
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureOpenAITextCompletionService("one", "dep", "https://localhost", "key");
-        target.AddAzureOpenAITextCompletionService("2", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("one", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.AddOpenAITextCompletionService("3", "model", "key");
         target.AddOpenAITextCompletionService("4", "model", "key");
-        target.AddAzureOpenAIEmbeddingGenerationService("5", "dep", "https://localhost", "key");
-        target.AddAzureOpenAIEmbeddingGenerationService("6", "dep", "https://localhost", "key");
-        target.AddOpenAIEmbeddingGenerationService("7", "model", "key");
-        target.AddOpenAIEmbeddingGenerationService("8", "model", "key");
+        target.AddAzureTextEmbeddingGenerationService("5", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("6", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("7", "model", "key");
+        target.AddOpenAITextEmbeddingGenerationService("8", "model", "key");
 
         // Act
         target.RemoveAllTextEmbeddingGenerationServices();
@@ -160,8 +134,8 @@ public class KernelConfigOpenAIExtensionsTests
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureOpenAITextCompletionService("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAITextCompletionService("2", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("1", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.AddOpenAITextCompletionService("3", "model", "key");
         Assert.Equal("1", target.DefaultTextCompletionServiceId);
 
@@ -179,9 +153,9 @@ public class KernelConfigOpenAIExtensionsTests
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureOpenAIEmbeddingGenerationService("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAIEmbeddingGenerationService("2", "dep", "https://localhost", "key");
-        target.AddOpenAIEmbeddingGenerationService("3", "model", "key");
+        target.AddAzureTextEmbeddingGenerationService("1", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("3", "model", "key");
         Assert.Equal("1", target.DefaultTextEmbeddingGenerationServiceId);
 
         // Act - Assert
@@ -198,8 +172,8 @@ public class KernelConfigOpenAIExtensionsTests
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddOpenAIEmbeddingGenerationService("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAIEmbeddingGenerationService("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("1", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("2", "dep", "https://localhost", "key");
         target.SetDefaultTextEmbeddingGenerationService("2");
 
         // Act
@@ -215,8 +189,8 @@ public class KernelConfigOpenAIExtensionsTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var target = new KernelConfig();
-        target.AddOpenAIEmbeddingGenerationService("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAIEmbeddingGenerationService("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("1", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("2", "dep", "https://localhost", "key");
         target.SetDefaultTextEmbeddingGenerationService("2");
 
         // Act
@@ -232,8 +206,8 @@ public class KernelConfigOpenAIExtensionsTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var target = new KernelConfig();
-        target.AddOpenAIEmbeddingGenerationService("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAIEmbeddingGenerationService("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("1", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("2", "dep", "https://localhost", "key");
         target.SetDefaultTextEmbeddingGenerationService("2");
 
         // Act
@@ -250,7 +224,7 @@ public class KernelConfigOpenAIExtensionsTests
         var kernel = new Mock<IKernel>();
         var target = new KernelConfig();
         target.AddOpenAITextCompletionService("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAITextCompletionService("2", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.SetDefaultTextCompletionService("2");
 
         // Act
@@ -267,7 +241,7 @@ public class KernelConfigOpenAIExtensionsTests
         var kernel = new Mock<IKernel>();
         var target = new KernelConfig();
         target.AddOpenAITextCompletionService("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAITextCompletionService("2", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.SetDefaultTextCompletionService("2");
 
         // Act
@@ -284,7 +258,7 @@ public class KernelConfigOpenAIExtensionsTests
         var kernel = new Mock<IKernel>();
         var target = new KernelConfig();
         target.AddOpenAITextCompletionService("1", "dep", "https://localhost", "key");
-        target.AddAzureOpenAITextCompletionService("2", "dep", "https://localhost", "key");
+        target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.SetDefaultTextCompletionService("2");
 
         // Act

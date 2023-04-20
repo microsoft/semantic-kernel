@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once InconsistentNaming
-
 using System;
-using Microsoft.SemanticKernel.Connectors.OpenAI.Tokenizers;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
