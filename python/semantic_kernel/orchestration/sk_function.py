@@ -322,7 +322,7 @@ class SKFunction(SKFunctionBase):
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
     ) -> SKContext:
-        
+
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
@@ -332,8 +332,11 @@ class SKFunction(SKFunctionBase):
                 # TODO: ctoken?
             )
         else:
+            # If context is passed, we need to merge the variables
             if variables is not None:
-                context._variables = variables
+                context._variables = variables.merge_or_overwrite(
+                    new_vars=context._variables, overwrite=False
+                )
             if memory is not None:
                 context._memory = memory
 

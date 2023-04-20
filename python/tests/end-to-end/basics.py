@@ -75,7 +75,9 @@ print(f"Summary using input context: '{output}'")
 context = kernel.create_new_context()
 context["input"] = text_to_summarize
 context_vars = sk.ContextVariables("4) All birds are robots.")
-summary = asyncio.run(kernel.run_async(tldr_function, input_context=context, input_vars=context_vars))
+summary = asyncio.run(
+    kernel.run_async(tldr_function, input_context=context, input_vars=context_vars)
+)
 
 output = str(summary).strip()
 print(f"Summary using context and additional variables: '{output}'")
@@ -83,7 +85,11 @@ print(f"Summary using context and additional variables: '{output}'")
 # Summarize input context with additional input string and print
 context = kernel.create_new_context()
 context["input"] = text_to_summarize
-summary = asyncio.run(kernel.run_async(tldr_function, input_context=context, input_str="4) All birds are robots."))
+summary = asyncio.run(
+    kernel.run_async(
+        tldr_function, input_context=context, input_str="4) All birds are robots."
+    )
+)
 
 output = str(summary).strip()
 print(f"Summary using context and additional string: '{output}'")
@@ -91,8 +97,15 @@ print(f"Summary using context and additional string: '{output}'")
 # Summarize input context with additional variables and string and print
 context = kernel.create_new_context()
 context["input"] = text_to_summarize
-context_vars = sk.ContextVariables(variables={"input2":"4) All birds are robots."})
-summary = asyncio.run(kernel.run_async(tldr_function, input_context=context, input_vars=context_vars, input_str="new text"))
+context_vars = sk.ContextVariables(variables={"input2": "4) All birds are robots."})
+summary = asyncio.run(
+    kernel.run_async(
+        tldr_function,
+        input_context=context,
+        input_vars=context_vars,
+        input_str="new text",
+    )
+)
 
 output = str(summary).strip()
 print(f"Summary using context, additional variables, and additional string: '{output}'")
