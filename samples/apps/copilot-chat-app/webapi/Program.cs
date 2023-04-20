@@ -96,13 +96,7 @@ public static class Program
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "Giving app settings arguments rather than code ones")]
     private static void AddAuthorization(this IServiceCollection services, ConfigurationManager configuration)
     {
-        var useHttp = configuration.GetSection("UseHttp").Get<bool>();
         var authMethod = configuration.GetSection("Authorization:Type").Get<string>();
-
-        if (useHttp && authMethod?.ToUpperInvariant() != "NONE")
-        {
-            throw new ArgumentException("Using HTTP (as opposed to HTTPS) is only supported when the auth type is set to None", "UseHttp");
-        }
 
         switch (authMethod?.ToUpperInvariant())
         {
