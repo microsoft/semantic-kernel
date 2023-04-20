@@ -19,7 +19,7 @@ public class BasicAuthenticationProviderTests
         using var request = new HttpRequestMessage();
 
         var target = new BasicAuthenticationProvider(() => { return Task.FromResult(credentials); });
-        
+
         // Act
         await target.AuthenticateRequestAsync(request);
 
