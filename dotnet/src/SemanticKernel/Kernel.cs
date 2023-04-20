@@ -311,7 +311,7 @@ public sealed class Kernel : IKernel, IDisposable
         string functionName,
         SemanticFunctionConfig functionConfig)
     {
-        if (!functionConfig.PromptTemplateConfig.Type.EqualsIgnoreCase("completion"))
+        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
         {
             throw new AIException(
                 AIException.ErrorCodes.FunctionTypeNotSupported,

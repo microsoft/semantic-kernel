@@ -160,7 +160,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     private const string MainKey = "INPUT";
 
     // Important: names are case insensitive
-    private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.InvariantCultureIgnoreCase);
+    private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.OrdinalIgnoreCase);
 
     #endregion
 }
