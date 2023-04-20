@@ -30,7 +30,7 @@ public class ServiceConfigTests
         Assert.Equal(ValidationException.ErrorCodes.EmptyValue, exception?.ErrorCode);
     }
 
-    private class FakeAIServiceConfig : ServiceConfig
+    private sealed class FakeAIServiceConfig : ServiceConfig
     {
         public FakeAIServiceConfig(string serviceId) : base(serviceId)
         {
