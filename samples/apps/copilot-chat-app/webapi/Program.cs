@@ -34,11 +34,7 @@ public static class Program
             serverPort = Constants.DefaultServerPort;
         }
 
-        // Set the protocol to use
-        var useHttp = builder.Configuration.GetSection("UseHttp").Get<bool>();
-        string protocol = useHttp ? "http" : "https";
-
-        builder.WebHost.UseUrls($"{protocol}://*:{serverPort}");
+        builder.WebHost.UseUrls($"https://*:{serverPort}");
 
         // Add services to the DI container
         AddServices(builder.Services, builder.Configuration);
@@ -61,13 +57,7 @@ public static class Program
 
         // Log the health probe URL
         string hostName = Dns.GetHostName();
-        logger.LogInformation("Health probe: {Protocol}://{Host}:{Port}/probe", protocol, hostName, serverPort);
-
-        if (useHttp)
-        {
-            logger.LogWarning("Server is using HTTP instead of HTTPS. Do not use HTTP in production. " +
-                              "All tokens and secrets sent to the server can be intercepted over the network.");
-        }
+        logger.LogInformation("Health probe: https://{Host}:{Port}/probe", hostName, serverPort);
 
         app.Run();
     }
