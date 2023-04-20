@@ -69,8 +69,9 @@ public class SKContextExtensionsTests
         var skills = new Mock<ISkillCollection>();
         var memoryQueryResult =
             new MemoryQueryResult(
-                new MemoryRecordMetadata(isReference: false, id: functionView.ToFullyQualifiedName(), text: "text", description: "description", externalSourceName: "sourceName",
-                    additionalMetadata: "value"), relevance: 0.8, embedding: null);
+                new MemoryRecordMetadata(isReference: false, id: functionView.ToFullyQualifiedName(), text: "text", description: "description", externalSourceName: "sourceName", additionalMetadata: "value"),
+                relevance: 0.8,
+                embedding: null);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x =>
