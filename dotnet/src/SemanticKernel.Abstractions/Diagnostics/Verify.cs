@@ -12,59 +12,51 @@ namespace Microsoft.SemanticKernel.Diagnostics;
 
 internal static class Verify
 {
+    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNull([NotNull] object? obj, string message)
     {
-        if (obj != null) { return; }
-
-        throw new ValidationException(ValidationException.ErrorCodes.NullValue, message);
+        if (obj is null)
+        {
+            ThrowValidationException(ValidationException.ErrorCodes.NullValue, message);
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotEmpty([NotNull] string? str, string message)
     {
         NotNull(str, message);
-        if (!string.IsNullOrWhiteSpace(str)) { return; }
-
-        throw new ValidationException(ValidationException.ErrorCodes.EmptyValue, message);
+        if (string.IsNullOrWhiteSpace(str))
+        {
+            ThrowValidationException(ValidationException.ErrorCodes.EmptyValue, message);
+        }
     }
 
     internal static void ValidSkillName([NotNull] string? skillName)
     {
         NotEmpty(skillName, "The skill name cannot be empty");
-        Regex pattern = new("^[0-9A-Za-z_]*$");
-        if (!pattern.IsMatch(skillName))
+        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(skillName))
         {
-            throw new KernelException(
-                KernelException.ErrorCodes.InvalidFunctionDescription,
-                "A skill name can contain only latin letters, 0-9 digits, " +
-                $"and underscore: '{skillName}' is not a valid name.");
+            ThrowInvalidName("skill name", skillName);
         }
     }
 
     internal static void ValidFunctionName([NotNull] string? functionName)
     {
         NotEmpty(functionName, "The function name cannot be empty");
-        Regex pattern = new("^[0-9A-Za-z_]*$");
-        if (!pattern.IsMatch(functionName))
+        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionName))
         {
-            throw new KernelException(
-                KernelException.ErrorCodes.InvalidFunctionDescription,
-                "A function name can contain only latin letters, 0-9 digits, " +
-                $"and underscore: '{functionName}' is not a valid name.");
+            ThrowInvalidName("function name", functionName);
         }
     }
 
     internal static void ValidFunctionParamName([NotNull] string? functionParamName)
     {
         NotEmpty(functionParamName, "The function parameter name cannot be empty");
-        Regex pattern = new("^[0-9A-Za-z_]*$");
-        if (!pattern.IsMatch(functionParamName))
+        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionParamName))
         {
-            throw new KernelException(
-                KernelException.ErrorCodes.InvalidFunctionDescription,
-                "A function parameter name can contain only latin letters, 0-9 digits, " +
-                $"and underscore: '{functionParamName}' is not a valid name.");
+            ThrowInvalidName("function parameter name", functionParamName);
         }
     }
 
@@ -72,38 +64,43 @@ internal static class Verify
     {
         NotEmpty(text, "The text to verify cannot be empty");
         NotNull(prefix, "The prefix to verify is empty");
-        if (text.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase)) { return; }
-
-        throw new ValidationException(ValidationException.ErrorCodes.MissingPrefix, message);
+        if (!text.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            ThrowValidationException(ValidationException.ErrorCodes.MissingPrefix, message);
+        }
     }
 
     internal static void DirectoryExists(string path)
     {
-        if (Directory.Exists(path)) { return; }
-
-        throw new ValidationException(
-            ValidationException.ErrorCodes.DirectoryNotFound,
-            $"Directory not found: {path}");
+        if (!Directory.Exists(path))
+        {
+            ThrowValidationException(ValidationException.ErrorCodes.DirectoryNotFound, $"Directory not found: {path}");
+        }
     }
 
     /// <summary>
     /// Make sure every function parameter name is unique
     /// </summary>
     /// <param name="parameters">List of parameters</param>
-    internal static void ParametersUniqueness(IEnumerable<ParameterView> parameters)
+    internal static void ParametersUniqueness(IList<ParameterView> parameters)
     {
-        var x = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var p in parameters)
+        int count = parameters.Count;
+        if (count > 0)
         {
-            if (x.Contains(p.Name))
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < count; i++)
             {
-                throw new KernelException(
-                    KernelException.ErrorCodes.InvalidFunctionDescription,
-                    $"The function has two or more parameters with the same name '{p.Name}'");
-            }
+                ParameterView p = parameters[i];
 
-            NotEmpty(p.Name, "The parameter name is empty");
-            x.Add(p.Name);
+                NotEmpty(p.Name, "The parameter name is empty");
+
+                if (!seen.Add(p.Name))
+                {
+                    throw new KernelException(
+                        KernelException.ErrorCodes.InvalidFunctionDescription,
+                        $"The function has two or more parameters with the same name '{p.Name}'");
+                }
+            }
         }
     }
 
@@ -126,4 +123,14 @@ internal static class Verify
             throw new ValidationException(ValidationException.ErrorCodes.OutOfRange, message);
         }
     }
+
+    [DoesNotReturn]
+    private static void ThrowInvalidName(string kind, string name) =>
+        throw new KernelException(
+            KernelException.ErrorCodes.InvalidFunctionDescription,
+            $"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.");
+
+    [DoesNotReturn]
+    private static void ThrowValidationException(ValidationException.ErrorCodes errorCodes, string message) =>
+        throw new ValidationException(errorCodes, message);
 }

@@ -56,14 +56,7 @@ public class VectorOperationTests
         var shortVector = new float[] { -1.0F, 4.0F };
 
         // Assert
-        try
-        {
-            shortVector.CosineSimilarity(this._floatV2);
-        }
-        catch (ArgumentException target)
-        {
-            Assert.IsType<ArgumentException>(target);
-        }
+        Assert.Throws<ArgumentException>(() => shortVector.CosineSimilarity(this._floatV2));
     }
 
     [Fact]
@@ -73,14 +66,7 @@ public class VectorOperationTests
         var shortVector = new double[] { -1.0, 4.0 };
 
         // Assert
-        try
-        {
-            shortVector.CosineSimilarity(this._doubleV2);
-        }
-        catch (ArgumentException target)
-        {
-            Assert.IsType<ArgumentException>(target);
-        }
+        Assert.Throws<ArgumentException>(() => shortVector.CosineSimilarity(this._doubleV2));
     }
 
     [Fact]

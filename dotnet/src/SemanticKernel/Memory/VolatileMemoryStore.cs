@@ -24,7 +24,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         if (!this._store.TryAdd(collectionName, new ConcurrentDictionary<string, MemoryRecord>()))
         {
-            throw new MemoryException(MemoryException.ErrorCodes.FailedToCreateCollection, $"Could not create collection {collectionName}");
+            return Task.FromException(new MemoryException(MemoryException.ErrorCodes.FailedToCreateCollection, $"Could not create collection {collectionName}"));
         }
 
         return Task.CompletedTask;
@@ -47,7 +47,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         if (!this._store.TryRemove(collectionName, out _))
         {
-            throw new MemoryException(MemoryException.ErrorCodes.FailedToDeleteCollection, $"Could not delete collection {collectionName}");
+            return Task.FromException(new MemoryException(MemoryException.ErrorCodes.FailedToDeleteCollection, $"Could not delete collection {collectionName}"));
         }
 
         return Task.CompletedTask;
@@ -66,8 +66,8 @@ public class VolatileMemoryStore : IMemoryStore
         }
         else
         {
-            throw new MemoryException(MemoryException.ErrorCodes.AttemptedToAccessNonexistentCollection,
-                $"Attempted to access a memory collection that does not exist: {collectionName}");
+            return Task.FromException<string>(new MemoryException(MemoryException.ErrorCodes.AttemptedToAccessNonexistentCollection,
+                $"Attempted to access a memory collection that does not exist: {collectionName}"));
         }
 
         return Task.FromResult(record.Key);
@@ -93,15 +93,9 @@ public class VolatileMemoryStore : IMemoryStore
         if (this.TryGetCollection(collectionName, out var collectionDict)
             && collectionDict.TryGetValue(key, out var dataEntry))
         {
-            if (withEmbedding)
-            {
-                return Task.FromResult<MemoryRecord?>(dataEntry);
-            }
-            else
-            {
-                return Task.FromResult<MemoryRecord?>(
-                    MemoryRecord.FromMetadata(dataEntry.Metadata, embedding: null, key: dataEntry.Key, timestamp: dataEntry.Timestamp));
-            }
+            return Task.FromResult<MemoryRecord?>(withEmbedding ?
+                dataEntry :
+                MemoryRecord.FromMetadata(dataEntry.Metadata, embedding: null, key: dataEntry.Key, timestamp: dataEntry.Timestamp));
         }
 
         return Task.FromResult<MemoryRecord?>(null);
@@ -139,9 +133,9 @@ public class VolatileMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+    public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
-        await Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancel)));
+        return Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancel)));
     }
 
     public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(

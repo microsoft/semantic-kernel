@@ -47,6 +47,7 @@ public class SemanticChatMemory
         {
             throw new ArgumentException("Failed to deserialize chat memory to json.");
         }
+
         return result;
     }
 }
