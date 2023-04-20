@@ -141,7 +141,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Act
         this._logger.WriteLine("template: " + template);
         this._logger.WriteLine("expected: " + expectedResult);
-        if (expectedResult.StartsWith("ERROR", StringComparison.InvariantCultureIgnoreCase))
+        if (expectedResult.StartsWith("ERROR", StringComparison.OrdinalIgnoreCase))
         {
             await Assert.ThrowsAsync<TemplateException>(
                 async () => await this._target.RenderAsync(template, kernel.CreateNewContext()));
