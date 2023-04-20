@@ -88,7 +88,7 @@ public sealed class PlannerSkillTests : IDisposable
         Assert.False(actual.ErrorOccurred);
 
         this._logger.LogTrace("RESULT: {0}", actual.Result);
-        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory]
@@ -159,7 +159,7 @@ public sealed class PlannerSkillTests : IDisposable
         {
             if (minimumExpectedCount > 0)
             {
-                Assert.Contains(matchingExpression, planResult, StringComparison.InvariantCultureIgnoreCase);
+                Assert.Contains(matchingExpression, planResult, StringComparison.OrdinalIgnoreCase);
             }
 
             var numberOfMatches = Regex.Matches(planResult, matchingExpression, RegexOptions.IgnoreCase).Count;
@@ -232,7 +232,7 @@ public sealed class PlannerSkillTests : IDisposable
         {
             if (minimumExpectedCount > 0)
             {
-                Assert.Contains(matchingExpression, planResult, StringComparison.InvariantCultureIgnoreCase);
+                Assert.Contains(matchingExpression, planResult, StringComparison.OrdinalIgnoreCase);
             }
 
             var numberOfMatches = Regex.Matches(planResult, matchingExpression, RegexOptions.IgnoreCase).Count;

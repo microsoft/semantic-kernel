@@ -21,5 +21,4 @@ public class QdrantConfig
     /// Gets or sets the vector size.
     /// </summary>
     public int VectorSize { get; set; }
-
 }

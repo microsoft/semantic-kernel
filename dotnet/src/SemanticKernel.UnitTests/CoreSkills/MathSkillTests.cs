@@ -110,14 +110,14 @@ public class MathSkillTests
         var target = new MathSkill();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
         {
             await target.AddAsync(initialValue, context);
         });
 
         // Assert
         Assert.NotNull(exception);
-        Assert.IsType<ArgumentException>(exception);
+        Assert.Equal(initialValue, exception.ActualValue);
         Assert.Equal("initialValueText", exception.ParamName);
     }
 
@@ -145,14 +145,14 @@ public class MathSkillTests
         var target = new MathSkill();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
         {
             await target.AddAsync("1", context);
         });
 
         // Assert
         Assert.NotNull(exception);
-        Assert.IsType<ArgumentException>(exception);
+        Assert.Equal(amount, exception.ActualValue);
         Assert.Equal("context", exception.ParamName);
     }
 
@@ -180,14 +180,14 @@ public class MathSkillTests
         var target = new MathSkill();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
         {
             await target.SubtractAsync(initialValue, context);
         });
 
         // Assert
         Assert.NotNull(exception);
-        Assert.IsType<ArgumentException>(exception);
+        Assert.Equal(initialValue, exception.ActualValue);
         Assert.Equal("initialValueText", exception.ParamName);
     }
 
@@ -215,14 +215,14 @@ public class MathSkillTests
         var target = new MathSkill();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
         {
             await target.SubtractAsync("1", context);
         });
 
         // Assert
         Assert.NotNull(exception);
-        Assert.IsType<ArgumentException>(exception);
+        Assert.Equal(amount, exception.ActualValue);
         Assert.Equal("context", exception.ParamName);
     }
 }
