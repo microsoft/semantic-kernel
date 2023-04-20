@@ -17,6 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 internal class RestApiOperationRunner : IRestApiOperationRunner
 {
     private const string MediaTypeApplicationJson = "application/json";
+    private const string MediaTypeTextPlain = "text/plain";
 
     /// <summary>
     /// An instance of the HttpClient class.
@@ -93,11 +94,16 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
 
         using var responseMessage = await this._httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        var content = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
-
         responseMessage.EnsureSuccessStatusCode();
 
-        return JsonNode.Parse(content);
+        var content = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        //First iteration allowing to associate additional metadata with the returned content.
+        var result = new JsonObject();
+        result.Add("content", content);
+        result.Add("contentType", responseMessage.Content.Headers.ContentType.ToString());
+
+        return result;
     }
 
     /// <summary>
@@ -162,7 +168,22 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
         var payload = BuildPayload(payloadMetadata.Properties);
 
         return new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeApplicationJson);
-        ;
+    }
+
+    /// <summary>
+    /// Builds "text/plain" payload.
+    /// </summary>
+    /// <param name="payloadMetadata">The payload meta-data.</param>
+    /// <param name="arguments">The payload arguments.</param>    /// <returns></returns>
+    /// <returns>The HttpContent representing the payload.</returns>
+    private static HttpContent BuildPlainTextPayload(RestApiOperationPayload payloadMetadata, IDictionary<string, string> arguments)
+    {
+        if (!arguments.TryGetValue(RestApiOperation.InputArgumentName, out var propertyValue))
+        {
+            throw new RestApiOperationException($"No argument is found for the '{RestApiOperation.InputArgumentName}' payload content.");
+        }
+
+        return new StringContent(propertyValue, Encoding.UTF8, MediaTypeTextPlain);
     }
 
     /// <summary>
@@ -171,7 +192,8 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     private static readonly Dictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>> s_payloadFactoryByMediaType =
         new Dictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>>()
         {
-            { MediaTypeApplicationJson, BuildAppJsonPayload }
+            { MediaTypeApplicationJson, BuildAppJsonPayload },
+            { MediaTypeTextPlain, BuildPlainTextPayload }
         };
 
     #endregion
