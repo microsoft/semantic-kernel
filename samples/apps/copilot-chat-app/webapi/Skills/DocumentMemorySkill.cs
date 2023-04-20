@@ -43,7 +43,7 @@ public class DocumentMemorySkill
     /// </summary>
     /// <param name="localFile">Path to the local file including the file name.</param>
     /// <param name="context">Contains the 'audience' indicating the name of the user.</param>
-    [SKFunction("Parse a local file")]
+    [SKFunction("Parse a local file on disk into embeddings and save the embeddings to the document memory for querying.")]
     [SKFunctionName("ParseLocalFile")]
     [SKFunctionInput(Description = "Path to the local file including the file name.")]
     [SKFunctionContextParameter(
@@ -62,7 +62,7 @@ public class DocumentMemorySkill
         string text = string.Empty;
         try
         {
-            text = await File.ReadAllTextAsync(localFile);
+            text = await File.ReadAllTextAsync(localFile, context.CancellationToken);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {

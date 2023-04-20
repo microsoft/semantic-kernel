@@ -1,4 +1,4 @@
-﻿# Copilot Chat Document Upload App
+﻿# Copilot Chat Import Document App
 
 > **!IMPORTANT**
 > This sample is for educational purposes only and is not recommended for production deployments.
@@ -11,8 +11,8 @@ Memories can be generated from conversations as well as injected from external s
 Ingesting documents to the service will make the App even more intelligent by having prior knowledge of very
 specific contexts that are generally unavailable publicly, such as enterprise data.
 
-## Requirements to run this app
-1. A registered App in Azure Portal (https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
+## Configure your environment
+1. (Skip if you only need to ingest documents to the global collection) A registered App in Azure Portal (https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)
    - Select Mobile and desktop applications as platform type, and the Redirect URI will be `http://localhost`
    - Select **`Accounts in any organizational directory (Any Azure AD directory - Multitenant)
      and personal Microsoft accounts (e.g. Skype, Xbox)`** as the supported account
@@ -32,11 +32,11 @@ specific contexts that are generally unavailable publicly, such as enterprise da
 3. Change directory to this folder root.
 4. **Run** the following command to ingest a document to the app under the global document collection where
    all users will have access to:
-   `dotnet run -- --file C:\Users\taochen\Desktop\paper.txt`
+   `dotnet run -- --file .\sample-docs\ms10k.txt`
    
    Or **Run** the following command to ingest a document to the app under a user isolated document collection where
    only the user who uploaded the document will have access to:
-   `dotnet run -- --file C:\Users\taochen\Desktop\paper.txt --user-collection`
+   `dotnet run -- --file .\sample-docs\ms10k.txt --user-collection`
 
    > Note that this will open a browser window for you to sign in to retrieve your user id. 
 

@@ -42,6 +42,7 @@ public class PromptSettings
     /// Maximum number of tokens per line that will be used to split a document into lines.
     /// Setting this to a low value will result in higher context granularity, but
     /// takes longer to process the entire document into embeddings.
+    /// Default to 20 tokens per line which is about 50 characters based on the token estimation factor.
     /// </summary>
     internal int DocumentLineSplitMaxTokens { get; } = 20;
 
@@ -49,6 +50,7 @@ public class PromptSettings
     /// Maximum number of tokens per paragraph that will be used to combine lines into paragraphs.
     /// Setting this to a low value will result in higher context granularity, but
     /// takes longer to process the entire document into embeddings.
+    /// Default to 80 tokens per line which is 4 lines.
     /// </summary>
     internal int DocumentParagraphSplitMaxLines { get; } = 80;
 
@@ -128,7 +130,7 @@ public class PromptSettings
         "{{$userIntent}}",
         "{{ChatSkill.ExtractUserMemories}}",
         "{{ChatSkill.ExtractChatHistory}}",
-        "{{DocumentQuerySkill.QueryDocuments $INPUT}}",
+        "{{DocumentMemorySkill.QueryDocuments $INPUT}}",
         this.SystemChatContinuationPrompt
     };
 

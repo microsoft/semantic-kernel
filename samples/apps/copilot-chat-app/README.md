@@ -131,4 +131,5 @@ See [OpenAI's model compatiblity](https://platform.openai.com/docs/models/model-
 the complete list of current models supporting chat completions.
 
 ## Additional resources
+
 1. [Document Upload App](./DocumentUploadApp/README.md): Ingest a document to memory.
