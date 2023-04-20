@@ -15,6 +15,7 @@ namespace KernelHttpServer;
 
 public class SemanticKernelEndpoint
 {
+    private static readonly JsonSerializerOptions s_jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly IMemoryStore _memoryStore;
 
     public SemanticKernelEndpoint(IMemoryStore memoryStore)
@@ -32,7 +33,7 @@ public class SemanticKernelEndpoint
         // once created, we feed the kernel the ask received via POST from the client
         // and attempt to invoke the function with the given name
 
-        var ask = await JsonSerializer.DeserializeAsync<Ask>(req.Body, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var ask = await JsonSerializer.DeserializeAsync<Ask>(req.Body, s_jsonOptions);
 
         if (ask == null)
         {
@@ -77,7 +78,7 @@ public class SemanticKernelEndpoint
         HttpRequestData req,
         FunctionContext executionContext, int? maxSteps = 10)
     {
-        var ask = await JsonSerializer.DeserializeAsync<Ask>(req.Body, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var ask = await JsonSerializer.DeserializeAsync<Ask>(req.Body, s_jsonOptions);
 
         if (ask == null)
         {
