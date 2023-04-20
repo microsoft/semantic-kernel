@@ -540,7 +540,7 @@ def test_split_md_on_newlines():
         "This_is_only_a_test",
         "We_repeat_this_is_only_a_test\nA_unit_test",
         "A_small_note\nAnd_another\nAnd_once_again",
-        "Seriously_this_is_the_end\nWe're_finished\nAll_set\nBye\nDone",
+        f"Seriously_this_is_the_end\nWe're_finished\nAll_set\nBye{NEWLINE}Done",
     ]
     max_token_per_line = 15
     split = split_markdown_paragraph(test, max_token_per_line)
