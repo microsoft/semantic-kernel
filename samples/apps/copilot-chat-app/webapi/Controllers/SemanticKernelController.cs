@@ -116,7 +116,6 @@ public class SemanticKernelController : ControllerBase
         [FromBody] Bot bot)
     {
         // TODO: We should get userId from server context instead of from request for privacy/security reasons when support multipe users.
-
         this._logger.LogDebug("Received call to import a bot");
 
         if (!this.IsBotCompatible(bot.Schema, bot.Configurations))
@@ -133,7 +132,6 @@ public class SemanticKernelController : ControllerBase
         try
         {
             // 1. Create a new chat and get the chat id.
-
             var newChat = new ChatSession(userId, chatTitle);
             await chatRepository.CreateAsync(newChat);
             chatId = newChat.Id;
@@ -258,10 +256,9 @@ public class SemanticKernelController : ControllerBase
         var allCollections = (await kernel.Memory.GetCollectionsAsync())
             .Where(collection => collection.StartsWith(chatId, StringComparison.OrdinalIgnoreCase));
 
-        List<MemoryQueryResult> allChatMessageMemories = new List<MemoryQueryResult>();
         foreach (var collection in allCollections)
         {
-            var results = await kernel.Memory.SearchAsync(
+            List<MemoryQueryResult> collectionMemoryRecords = await kernel.Memory.SearchAsync(
                 collection,
                 "abc", // dummy query since we don't care about relevance. An empty string will cause exception.
                 limit: 999999999, // hacky way to get as much as record as a workaround. TODO: Call GetAll() when it's in the SK memory storage API.
@@ -269,9 +266,8 @@ public class SemanticKernelController : ControllerBase
                 withEmbeddings: true,
                 cancel: default
             ).ToListAsync();
-            allChatMessageMemories.AddRange(results);
 
-            bot.Embeddings.Add(new KeyValuePair<string, List<MemoryQueryResult>>(collection, allChatMessageMemories));
+            bot.Embeddings.Add(new KeyValuePair<string, List<MemoryQueryResult>>(collection, collectionMemoryRecords));
         }
 
         return bot;
