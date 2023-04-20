@@ -1,25 +1,55 @@
 # Semantic Kernel Service - CopilotChat
+This ASP.Net web application exposes the Semantic Kernel through a REST-like interface.
 
-## Introduction
-This ASP.Net web API application exposes the functionalities of the Semantic Kernel online through a REST interface.
+# Configure your environment
+Before you get started, make sure you have the following requirements in place:
+1. [.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for building and deploying .NET 6 projects.
+1. Update the properties in `./appsettings.json` for your Azure OpenAI instance or OpenAI account.
+   > The top of `appsetting.json` has a `Quickstart` section for making the minimally required updates.
+1. Enable https developer certificates to allows SSL connections on localhost. Open a terminal and run:
+   ```
+   dotnet dev-certs https --trust
+   ```
+   Select `Yes` when asked if you want to install this certificate.
+   
+   > To verify the certificate has been installed and trusted, run `dotnet run dev-certs https --check`
 
-## Configuration
-Populate the settings in the file found at **..\semantic-kernel\samples\apps\copilot-chat-app\webapi\appsettings.json**
+   > To clean your system of the developer certificate, run `dotnet run dev-certs https --clean`
+1. **(Optional)** [Visual Studio Code](http://aka.ms/vscode) or [Visual Studio](http://aka.ms/vsdownload)
 
-## Building and Running the Service
-To build and run the service, you can use Visual Studio, or simply the dotnet build tools.
+# Start the WebApi Service
+You can start the WebApi service using the command-line, Visual Studio Code, or Visual Studio.
+## Command-line
+1. Open a terminal
+1. Change directory to the Copilot Chat webapi project directory.
+   ```
+   cd semantic-kernel/samples/app/copilot-chat-app/webapi
+   ```
+1. (Optional) Build the service and verify there are no errors.
+   ```
+   dotnet build
+   ```
+1. Run the service
+   ```
+   dotnet run
+   ```
+1. Early in the startup, the service will provide a probe endpoint you can use in a web browser to verify
+   the service is running.
+   ```
+   info: Microsoft.SemanticKernel.Kernel[0]
+         Health probe: https://localhost:40443/probe
+   ```
 
-### Visual Studio
-- Open **..\semantic-kernel\dotnet\SK-dotnet.sln**
-- In the solution explorer, go in the samples folder, then right-click on CopilotChatApi
-- On the pop-up menu that appears, select "Set as Startup Project"
-- Press F5
+## Visual Studio Code
+> TODO: pending the addition of a `tasks.json`
 
-### dotnet Build Tools
-- cd into **..\semantic-kernel\samples\apps\copilot-chat-app\webapi\\**
-- Enter **dotnet run**
+## Visual Studio (2022 or newer)
+1. Open the solution file in Visual Studio 2022 or newer (`semantic-kernel/dotnet/SK-dotnet.sln`).
+1. In the solution explorer expand the `samples` folder.
+1. Right-click on the `CopilotChatApi` and select `Set as Startup Project`.
+1. Start debugging by pressing `F5` or selecting the menu item `Debug`->`Start Debugging`.
 
-## Enabling the Qdrant Memory Store (Optional)
+# (Optional) Enabling the Qdrant Memory Store
 By default, the Copilot Chat API services uses an in-memory volatile memory store that, when the service stops or restarts, forgets all memories.
 [Qdrant](https://github.com/qdrant/qdrant) is a persistent scalable vector search engine that can be deployed locally in a container or [at-scale in the cloud](https://github.com/Azure-Samples/qdrant-azure).
 

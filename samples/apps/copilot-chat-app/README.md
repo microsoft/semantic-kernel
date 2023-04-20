@@ -1,63 +1,44 @@
 # Copilot Chat Sample Application
->! IMPORTANT  This learning sample is for educational purposes only and should
- not be used in any production use case.  It is intended to highlight concepts of
- Semantic Kernel and not any architectural / Security design practices to be used.
+> This learning sample is for educational purposes only and is not recommended for
+production deployments.
 
-## About the Copilot 
-The Copilot Chat sample allows you to build your own integrated large language
-model chatbot.  This is an enriched intelligence app, with multiple dynamic
-components including command messages, user intent, and memories.  
+# About Copilot Chat
+This sample allows you to build your own integrated large language model chat copilot.
+This is an enriched intelligence app, with multiple dynamic components including 
+command messages, user intent, and memories.
 
-The chat prompt and response will evolve as the conversation between the user
-and the application proceeds.  This chat experience is a chat skill containing
-multiple functions that work together to construct the final prompt for each
-exchange.
-
+The chat prompt and response will evolve as the conversation between the user and the application proceeds. This chat experience is a orchestrated with the Semantic Kernel and a Copilot Chat skill containing 
+numerous functions that work together to construct each response.
 
 ![UI Sample](images/UI-Sample.png)
 
-## Dependencies:
+# Configure your environment
+Before you get started, make sure you have the following requirements in place:
 
-Before following these instructions, please ensure your development environment
-and these components are functional:
-1. [Visual Studio Code](https://code.visualstudio.com/Download)
-2. [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-3. [.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
-4. [Node.js](https://nodejs.org/en/download)
-5. [Yarn](https://classic.yarnpkg.com/lang/en/docs/install)
-
-
-## Running the Sample
-1. You will need an [Open AI Key](https://platform.openai.com/account/api-keys)
-   or Azure Open AI Service Key for this sample.
-2. You will need an application registration.
-   [Follow the steps to register an app here.](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
-
-    1. Select Single-page application (SPA) as platform type, and the redirect
-       URI will be `http://localhost:3000`.
-    2. Select `Accounts in any organizational directory and personal Microsoft Accounts`
-       as supported account types for this sample.
-    3. Make a note of this Application (client) ID from the Azure Portal, we will
-       make use of it later.
-3. The sample uses two applications, a front-end web UI, and a back-end API server.
-    First, let’s set up and verify the back-end API server is running.
-
-    1. Navigate to `\samples\apps\copilot-chat-app\webapi`
-    2. Update `appsettings.json` with these settings:
-
-          * If you wish to run the back-end API server without an SSL certificate,
-            you may change `"UseHttp": false,` to `True` to overide the default
-            use of https.
-
-         * Under the `“Completion”` block, make the following configuration
-            changes to match your instance:
-            * `“AIService”: “AzureOpenAI”`, or whichever option is appropriate for
-              your instance.
-            * `“DeploymentOrModelID”: “text-davinci-003”,` or whichever option is
-              appropriate for your instance.  
-            * `“Endpoint”:` “Your Azure Endpoint address, i.e. `http://contoso.openai.azure.com`”.
-              If you are using OpenAI, leave this blank.
-            * Set your Azure endpoint key using the following command: dotnet user-secrets set "Completion:Key" "MY_COMPLETION_KEY"
+1. [.NET 6.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+1. [Node.js](https://nodejs.org/en/download)
+1. [Yarn](https://classic.yarnpkg.com/lang/en/docs/install)
+1. [Visual Studio Code](https://code.visualstudio.com/Download) **(Optional)** 
+1. [Azure OpenAI](https://aka.ms/oai/access) and/or an account with [OpenAI](https://platform.openai.com).
+1. You will need an application registration. For details on creating an application registration, go [here](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+    - Select `Single-page application (SPA)` as platform type, and set the Web redirect URI to `https://localhost:3000`.
+    - Select `Accounts in any organizational directory and personal Microsoft Accounts` as supported 
+       account types for this sample.
+    - Make a note of this Application (client) ID from the Azure Portal, we will use of it later.
+# Start the WebApi Backend Server
+The sample uses two applications, a front-end web UI, and a back-end API server.
+First, let’s set up and verify the back-end API server is running.
+1. Navigate to `samples/apps/copilot-chat-app/webapi`
+1. Update `appsettings.json`:
+   * Under the `“Completion”` block, make the following configuration
+      changes to match your instance:
+      * `“AIService”: “AzureOpenAI”`, or whichever option is appropriate for
+         your instance.
+      * `“DeploymentOrModelID”: “text-davinci-003”,` or whichever option is
+         appropriate for your instance.  
+      * `“Endpoint”:` “Your Azure Endpoint address, i.e. `http://contoso.openai.azure.com`”.
+         If you are using OpenAI, leave this blank.
+      * Set your Azure endpoint key using the following command: dotnet user-secrets set "Completion:Key" "MY_COMPLETION_KEY"
 
         * Under the `“Embedding”` block, make sure the following configuration
           changes to match your instance:
