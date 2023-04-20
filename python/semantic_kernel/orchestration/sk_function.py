@@ -273,16 +273,6 @@ class SKFunction(SKFunctionBase):
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
     ) -> SKContext:
-        if log is not None and context is not None and variables is not None:
-            self._log.warning(
-                "Function was passed both an SKContext and context variables, given context variables will not be used"
-            )
-
-        if log is not None and context is not None and memory is not None:
-            self._log.warning(
-                "Function was passed both an SKContext and semantic memory, given semantic memory will not be used"
-            )
-
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
@@ -291,6 +281,14 @@ class SKFunction(SKFunctionBase):
                 logger=log if log is not None else self._log,
                 # TODO: ctoken?
             )
+        else:
+            # If context is passed, we need to merge the variables
+            if variables is not None:
+                context._variables = variables.merge_or_overwrite(
+                    new_vars=context._variables, overwrite=False
+                )
+            if memory is not None:
+                context._memory = memory
 
         if input is not None:
             context.variables.update(input)
