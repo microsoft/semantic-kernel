@@ -207,6 +207,6 @@ internal static class Extensions
 
     private static bool ShouldLoad(string skillName, IEnumerable<string>? skillsToLoad = null)
     {
-        return skillsToLoad?.Contains(skillName, StringComparer.InvariantCultureIgnoreCase) != false;
+        return skillsToLoad?.Contains(skillName, StringComparer.OrdinalIgnoreCase) != false;
     }
 }
