@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from python.semantic_kernel.semantic_functions.text_chunker import (
+from semantic_kernel.semantic_functions.text_chunker import (
     split_markdown_lines,
     split_markdown_paragraph,
     split_plaintext_lines,
