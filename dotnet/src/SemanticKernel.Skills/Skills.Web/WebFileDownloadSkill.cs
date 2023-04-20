@@ -76,7 +76,7 @@ public class WebFileDownloadSkill : IDisposable
         using Stream webStream = await response.Content.ReadAsStreamAsync();
         using FileStream outputFileStream = new(Environment.ExpandEnvironmentVariables(filePath), FileMode.Create);
 
-        await webStream.CopyToAsync(outputFileStream, 81920, cancellationToken: context.CancellationToken);
+        await webStream.CopyToAsync(outputFileStream, 81920 /*same value used by default*/, cancellationToken: context.CancellationToken);
     }
 
     /// <summary>
