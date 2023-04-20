@@ -156,7 +156,7 @@ public class Plan : ISKFunction
 
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings, log, cancel);
+            var result = await this.Function.InvokeAsync(context, settings, log, cancel).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -178,7 +178,7 @@ public class Plan : ISKFunction
 
                 AddVariablesToContext(this.State, functionContext);
 
-                await this.InvokeNextStepAsync(functionContext);
+                await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
 
                 context.Variables.Update(this.State.ToString());
             }
@@ -225,7 +225,7 @@ public class Plan : ISKFunction
         {
             var step = this.Steps[this.NextStepIndex];
 
-            context = await step.InvokeAsync(context);
+            context = await step.InvokeAsync(context).ConfigureAwait(false);
 
             if (context.ErrorOccurred)
             {

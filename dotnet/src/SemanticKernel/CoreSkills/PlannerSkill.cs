@@ -199,7 +199,7 @@ public class PlannerSkill
 
         // {'buckets': ['Result 1\nThis is the first result.', 'Result 2\nThis is the second result. It's doubled!', 'Result 3\nThis is the third and final result. Truly astonishing.']}
         var result = await this._bucketFunction.InvokeAsync(new SKContext(bucketVariables, context.Memory, context.Skills, context.Log,
-            context.CancellationToken));
+            context.CancellationToken)).ConfigureAwait(false);
 
         try
         {
@@ -261,13 +261,13 @@ public class PlannerSkill
     {
         PlannerSkillConfig config = context.GetPlannerSkillConfig();
 
-        string relevantFunctionsManual = await context.GetFunctionsManualAsync(goal, config);
+        string relevantFunctionsManual = await context.GetFunctionsManualAsync(goal, config).ConfigureAwait(false);
         context.Variables.Set("available_functions", relevantFunctionsManual);
         // TODO - consider adding the relevancy score for functions added to manual
 
         var plan = config.UseConditionals
-            ? await this._conditionalFunctionFlowFunction.InvokeAsync(context)
-            : await this._functionFlowFunction.InvokeAsync(context);
+            ? await this._conditionalFunctionFlowFunction.InvokeAsync(context).ConfigureAwait(false)
+            : await this._functionFlowFunction.InvokeAsync(context).ConfigureAwait(false);
 
         string fullPlan = $"<{FunctionFlowRunner.GoalTag}>\n{goal}\n</{FunctionFlowRunner.GoalTag}>\n{plan.ToString().Trim()}";
         _ = context.Variables.UpdateWithPlanEntry(new SkillPlan
@@ -295,7 +295,7 @@ public class PlannerSkill
         var planToExecute = context.Variables.ToPlan();
         try
         {
-            var executeResultContext = await this._functionFlowRunner.ExecuteXmlPlanAsync(context, planToExecute.PlanString);
+            var executeResultContext = await this._functionFlowRunner.ExecuteXmlPlanAsync(context, planToExecute.PlanString).ConfigureAwait(false);
             _ = executeResultContext.Variables.Get(SkillPlan.PlanKey, out var planProgress);
             _ = executeResultContext.Variables.Get(SkillPlan.ResultKey, out var results);
 

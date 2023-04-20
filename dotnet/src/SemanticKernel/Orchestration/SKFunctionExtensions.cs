@@ -107,7 +107,7 @@ public static class SKFunctionExtensions
         var tmpContext = new SKContext(input, memory, skills, log, cancellationToken);
         try
         {
-            await function.InvokeAsync(tmpContext);
+            await function.InvokeAsync(tmpContext).ConfigureAwait(false);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {

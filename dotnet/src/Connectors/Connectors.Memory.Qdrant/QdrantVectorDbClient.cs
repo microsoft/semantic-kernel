@@ -69,7 +69,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             .WithVectors(withVectors)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
         try
         {
             response.EnsureSuccessStatusCode();
@@ -119,7 +119,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             .IncludeVectorData(withVector)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
         try
         {
             response.EnsureSuccessStatusCode();
@@ -173,7 +173,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
 
         using var request = requestBuilder.Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
 
         try
         {
@@ -197,7 +197,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <inheritdoc/>
     public async Task DeleteVectorByPayloadIdAsync(string collectionName, string metadataId, CancellationToken cancel = default)
     {
-        QdrantVectorRecord? existingRecord = await this.GetVectorByPayloadIdAsync(collectionName, metadataId, false, cancel);
+        QdrantVectorRecord? existingRecord = await this.GetVectorByPayloadIdAsync(collectionName, metadataId, false, cancel).ConfigureAwait(false);
 
         if (existingRecord == null)
         {
@@ -212,7 +212,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             .DeleteVector(existingRecord.PointId)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
 
         try
         {
@@ -244,7 +244,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
 
         foreach (var record in vectorData)
         {
-            QdrantVectorRecord? existingRecord = await this.GetVectorsByIdAsync(collectionName, new[] { record.PointId }, false, cancel).FirstOrDefaultAsync(cancel);
+            QdrantVectorRecord? existingRecord = await this.GetVectorsByIdAsync(collectionName, new[] { record.PointId }, false, cancel).FirstOrDefaultAsync(cancel).ConfigureAwait(false);
 
             if (existingRecord != null)
             {
@@ -255,7 +255,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         }
 
         using var request = requestBuilder.Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
 
         try
         {
@@ -300,7 +300,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             .Take(top)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
@@ -346,7 +346,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             .Create(collectionName, this._vectorSize, QdrantDistanceType.Cosine)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
 
         // Creation is idempotent, ignore error (and for now ignore vector size)
         if (response.StatusCode == HttpStatusCode.BadRequest)
@@ -371,7 +371,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         this._log.LogDebug("Deleting collection {0}", collectionName);
 
         using var request = DeleteCollectionRequest.Create(collectionName).Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
 
         // Deletion is idempotent, ignore error
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -396,7 +396,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         this._log.LogDebug("Fetching collection {0}", collectionName);
 
         using var request = GetCollectionsRequest.Create(collectionName).Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
 
         if (response.IsSuccessStatusCode)
         {
@@ -419,7 +419,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         this._log.LogDebug("Listing collections");
 
         using var request = ListCollectionsRequest.Create().Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
 
         var collections = JsonSerializer.Deserialize<ListCollectionsResponse>(responseContent);
 
@@ -449,9 +449,9 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         HttpRequestMessage request,
         CancellationToken cancel = default)
     {
-        HttpResponseMessage response = await this._httpClient.SendAsync(request, cancel);
+        HttpResponseMessage response = await this._httpClient.SendAsync(request, cancel).ConfigureAwait(false);
 
-        string responseContent = await response.Content.ReadAsStringAsync();
+        string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
             this._log.LogTrace("Qdrant responded successfully");

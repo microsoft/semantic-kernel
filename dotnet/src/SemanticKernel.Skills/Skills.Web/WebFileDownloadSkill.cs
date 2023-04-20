@@ -69,14 +69,14 @@ public class WebFileDownloadSkill : IDisposable
         }
 
         this._logger.LogDebug("Sending GET request for {0}", source);
-        HttpResponseMessage response = await this._httpClient.GetAsync(new Uri(source), context.CancellationToken);
+        HttpResponseMessage response = await this._httpClient.GetAsync(new Uri(source), context.CancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
-        using Stream webStream = await response.Content.ReadAsStreamAsync();
+        using Stream webStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         using FileStream outputFileStream = new(Environment.ExpandEnvironmentVariables(filePath), FileMode.Create);
 
-        await webStream.CopyToAsync(outputFileStream, (int)webStream.Length, cancellationToken: context.CancellationToken);
+        await webStream.CopyToAsync(outputFileStream, (int)webStream.Length, cancellationToken: context.CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

@@ -33,7 +33,7 @@ internal static class SKContextPlanningExtensions
         PlannerSkillConfig? config = null)
     {
         config ??= new PlannerSkillConfig();
-        var functions = await context.GetAvailableFunctionsAsync(config, semanticQuery);
+        var functions = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false);
 
         return string.Join("\n\n", functions.Select(x => x.ToManualString()));
     }
@@ -76,7 +76,7 @@ internal static class SKContextPlanningExtensions
             result = new List<FunctionView>();
 
             // Remember functions in memory so that they can be searched.
-            await RememberFunctionsAsync(context, availableFunctions);
+            await RememberFunctionsAsync(context, availableFunctions).ConfigureAwait(false);
 
             // Search for functions that match the semantic query.
             var memories = context.Memory.SearchAsync(collection: PlannerMemoryCollectionName, query: semanticQuery!, limit: config.MaxRelevantFunctions,
@@ -84,7 +84,7 @@ internal static class SKContextPlanningExtensions
                 cancel: context.CancellationToken);
 
             // Add functions that were found in the search results.
-            result.AddRange(await GetRelevantFunctionsAsync(context, availableFunctions, memories));
+            result.AddRange(await GetRelevantFunctionsAsync(context, availableFunctions, memories).ConfigureAwait(false));
 
             // Add any missing functions that were included but not found in the search results.
             var missingFunctions = includedFunctions
@@ -139,14 +139,14 @@ internal static class SKContextPlanningExtensions
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
             var memoryEntry = await context.Memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false,
-                cancel: context.CancellationToken);
+                cancel: context.CancellationToken).ConfigureAwait(false);
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
                 // Memory now supports these such strategies.
                 await context.Memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: textToEmbed, id: key, description: description,
-                    additionalMetadata: string.Empty, cancel: context.CancellationToken);
+                    additionalMetadata: string.Empty, cancel: context.CancellationToken).ConfigureAwait(false);
             }
         }
 

@@ -46,4 +46,13 @@ Install this package manually only if you are selecting individual Semantic Kern
   <ItemGroup>
     <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="E:\semantic-kernel-2\dotnet\src\SemanticKernel\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="E:\semantic-kernel-2\dotnet\src\SemanticKernel\.editorconfig" />
+  </ItemGroup>
+
 </Project>

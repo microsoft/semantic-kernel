@@ -83,7 +83,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         foreach (var r in records)
         {
-            yield return await this.UpsertAsync(collectionName, r, cancel);
+            yield return await this.UpsertAsync(collectionName, r, cancel).ConfigureAwait(false);
         }
     }
 
@@ -112,7 +112,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         foreach (var key in keys)
         {
-            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel);
+            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel).ConfigureAwait(false);
 
             if (record != null)
             {
@@ -200,7 +200,7 @@ public class VolatileMemoryStore : IMemoryStore
             limit: 1,
             minRelevanceScore: minRelevanceScore,
             withEmbeddings: withEmbedding,
-            cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
+            cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel).ConfigureAwait(false);
     }
 
     #region protected ================================================================================

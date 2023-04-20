@@ -131,7 +131,7 @@ internal class FunctionFlowRunner
             context.Log.LogDebug("Processing solution");
 
             // Process the solution nodes
-            string stepResults = await this.ProcessNodeListAsync(planNodes, functionInput, context);
+            string stepResults = await this.ProcessNodeListAsync(planNodes, functionInput, context).ConfigureAwait(false);
             // Add the solution and variable updates to the new plan xml
             _ = planContent.Append(stepResults)
                 .AppendLine($"</{PlanTag}>");
@@ -203,7 +203,7 @@ internal class FunctionFlowRunner
 
                     var branchWhile = await this._conditionalFlowHelper.WhileAsync(whileContent,
                         new SKContext(functionVariables, this._kernel.Memory, this._kernel.Skills, this._kernel.Log,
-                            context.CancellationToken));
+                            context.CancellationToken)).ConfigureAwait(false);
 
                     _ = stepAndTextResults.Append(INDENT).AppendLine(branchWhile);
 
@@ -233,7 +233,7 @@ internal class FunctionFlowRunner
 
                     var branchIfOrElse = await this._conditionalFlowHelper.IfAsync(ifFullContent,
                         new SKContext(functionVariables, this._kernel.Memory, this._kernel.Skills, this._kernel.Log,
-                            context.CancellationToken));
+                            context.CancellationToken)).ConfigureAwait(false);
 
                     _ = stepAndTextResults.Append(INDENT).AppendLine(branchIfOrElse);
 
@@ -312,7 +312,7 @@ internal class FunctionFlowRunner
 
                         // capture current keys before running function
                         var keysToIgnore = functionVariables.Select(x => x.Key).ToList();
-                        var result = await this._kernel.RunAsync(functionVariables, skillFunction);
+                        var result = await this._kernel.RunAsync(functionVariables, skillFunction).ConfigureAwait(false);
                         // TODO respect ErrorOccurred
 
                         // copy all values for VariableNames in functionVariables not in keysToIgnore to context.Variables
