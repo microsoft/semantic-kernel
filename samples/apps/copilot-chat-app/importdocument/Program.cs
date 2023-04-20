@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Identity.Client;
 
-namespace SemanticKernel.Service.DocumentUploadApp;
+namespace SemanticKernel.Service.ImportDocument;
 
 /// <summary>
 /// This console app imports a file to the CopilotChat WebAPI's document memory store.
@@ -110,7 +110,7 @@ public static class Program
     }
 
     /// <summary>
-    /// Invokes the DocumentQuerySkill to upload a file to the Document Store for parsing.
+    /// Invokes the DocumentMemorySkill to upload a file to the Document Store for parsing.
     /// </summary>
     /// <param name="file">The file to upload for injection.</param>
     /// <param name="userId">The user unique ID. If empty, the file will be injected to a global collection that is available to all users.</param>
@@ -118,7 +118,7 @@ public static class Program
     private static async Task UploadFileAsync(
         FileInfo file, string userId, Config config)
     {
-        string skillName = "DocumentQuerySkill";
+        string skillName = "DocumentMemorySkill";
         string functionName = "ParseLocalFile";
         string commandPath = $"skills/{skillName}/functions/{functionName}/invoke";
 
@@ -153,6 +153,12 @@ public static class Program
                 new Uri(new Uri(config.ServiceUri), commandPath),
                 jsonContent
             );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Error: {response.StatusCode} {response.ReasonPhrase}");
+                return;
+            }
             Console.WriteLine("Uploading and parsing successful.");
         }
         catch (HttpRequestException ex)

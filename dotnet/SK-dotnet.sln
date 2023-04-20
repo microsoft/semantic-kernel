@@ -73,7 +73,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.Abstractions
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.MetaPackage", "src\SemanticKernel.MetaPackage\SemanticKernel.MetaPackage.csproj", "{E3299033-EB81-4C4C-BCD9-E8DC40937969}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentUploadApp", "..\samples\apps\copilot-chat-app\documentuploadapp\DocumentUploadApp.csproj", "{94E14913-D600-4448-A5C5-A268C23B2C3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImportDocument", "..\samples\apps\copilot-chat-app\importdocument\ImportDocument.csproj", "{94E14913-D600-4448-A5C5-A268C23B2C3B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
