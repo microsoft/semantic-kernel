@@ -13,10 +13,6 @@ public struct ContentType
     public static readonly ContentType Csv = new("text/csv");
     public static readonly ContentType Html = new("text/html");
     public static readonly ContentType Xml = new("application/xml");
-    public static readonly ContentType Jpeg = new("image/jpeg");
-    public static readonly ContentType Png = new("image/png");
-    public static readonly ContentType Zip = new("application/zip");
-    public static readonly ContentType Pdf = new("application/pdf");
 
     private string _contentType;
 
