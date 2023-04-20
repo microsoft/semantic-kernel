@@ -7,7 +7,7 @@ This is an enriched intelligence app, with multiple dynamic components including
 command messages, user intent, and memories.
 
 The chat prompt and response will evolve as the conversation between the user and the application proceeds. 
-This chat experience is a orchestrated with the Semantic Kernel and a Copilot Chat skill containing numerous
+This chat experience is orchestrated with Semantic Kernel and a Copilot Chat skill containing numerous
 functions that work together to construct each response.
 
 ![UI Sample](images/UI-Sample.png)
