@@ -2,9 +2,9 @@
 
 namespace KernelHttpServer.Config;
 
-internal class Constants
+internal static class Constants
 {
-    public class SKHttpHeaders
+    public static class SKHttpHeaders
     {
         public const string CompletionModel = "x-ms-sk-completion-model";
         public const string CompletionEndpoint = "x-ms-sk-completion-endpoint";
