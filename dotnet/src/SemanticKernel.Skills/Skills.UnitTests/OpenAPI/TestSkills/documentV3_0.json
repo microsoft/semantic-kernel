@@ -138,6 +138,35 @@
           }
         }
       }
+    },
+    "/FunSkill/Excuses": {
+      "post": {
+        "description": "Turn a scenario into a creative or humorous excuse to send your boss",
+        "operationId": "Excuses",
+        "requestBody": {
+          "description": "excuse event",
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          },
+          "x-bodyName": "body"
+        },
+        "responses": {
+          "200": {
+            "description": "The OK response",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
