@@ -220,14 +220,12 @@ export const useChat = () => {
     };
 
     const importBot = async (bot: Bot) => {
-        try {
-            sk.importBotAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance)).then(
-                async () => loadChats(),
-            );
-        } catch (e: any) {
-            const errorMessage = `Unable to import the bot. Details: ${e.message ?? e}`;
-            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
-        }
+        sk.importBotAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
+            .then(() => loadChats())
+            .catch((e: any) => {
+                const errorMessage = `Unable to import the bot. Details: ${e.message ?? e}`;
+                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            });
     };
 
     return {
