@@ -40,11 +40,11 @@ chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_co
 
 
 async def chat() -> bool:
-    context = sk.ContextVariables()
+    context_vars = sk.ContextVariables()
 
     try:
         user_input = input("User:> ")
-        context["user_input"] = user_input
+        context_vars["user_input"] = user_input
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
         return False
@@ -56,7 +56,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_on_vars_async(context, chat_function)
+    answer = await kernel.run_async(chat_function, input_vars=context_vars)
     print(f"Mosscap:> {answer}")
     return True
 
