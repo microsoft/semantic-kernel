@@ -59,11 +59,11 @@ public static class KernelOpenApiExtensions
                 //using HttpClient client = new HttpClient(retryHandler, false);
                 using HttpClient client = new HttpClient();
 
-                response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             }
 
             response.EnsureSuccessStatusCode();
@@ -78,10 +78,7 @@ public static class KernelOpenApiExtensions
         }
         finally
         {
-            if (response != null)
-            {
-                response.Dispose();
-            }
+            response?.Dispose();
         }
     }
 
