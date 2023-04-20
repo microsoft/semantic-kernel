@@ -55,9 +55,9 @@ public class DocumentQuerySkill
     {
         string collection = context.Variables.ContainsKey("userID") ?
             string.IsNullOrEmpty(context.Variables["userID"]) ?
-                GlobalDocumentMemoryCollectionName :
-                UserDocumentMemoryCollectionName(context.Variables["userID"]) :
-            GlobalDocumentMemoryCollectionName;
+                this.GlobalDocumentMemoryCollectionName :
+                this.UserDocumentMemoryCollectionName(context.Variables["userID"]) :
+            this.GlobalDocumentMemoryCollectionName;
 
         string text = string.Empty;
         try
@@ -111,8 +111,8 @@ public class DocumentQuerySkill
         // Search for relevant document snippets.
         string[] documentCollections = new string[]
         {
-            UserDocumentMemoryCollectionName(userId),
-            GlobalDocumentMemoryCollectionName
+            this.UserDocumentMemoryCollectionName(userId),
+            this.GlobalDocumentMemoryCollectionName
         };
 
         List<MemoryQueryResult> relevantMemories = new List<MemoryQueryResult>();
