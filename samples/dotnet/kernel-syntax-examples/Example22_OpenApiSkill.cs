@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
 
@@ -14,48 +13,58 @@ public static class Example22_OpenApiSkill
 {
     public static async Task RunAsync()
     {
-        await GetSecretFromAzureKeyVaultAsync();
+        // To run this example, you must register a client application with the Microsoft identity platform.
+        // Instructions here: https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
+        var authenticationProvider = new InteractiveMsalAuthenticationProvider(
+            Env.Var("AZURE_KEYVAULT_CLIENTID"),
+            Env.Var("AZURE_KEYVAULT_TENANTID"),
+            new[] { "https://vault.azure.net/.default" },
+            new Uri("http://localhost"));
 
-        await AddSecretToAzureKeyVaultAsync();
+        await GetSecretFromAzureKeyVaultAsync(authenticationProvider);
+
+        await AddSecretToAzureKeyVaultAsync(authenticationProvider);
     }
 
-    public static async Task GetSecretFromAzureKeyVaultAsync()
+    public static async Task GetSecretFromAzureKeyVaultAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        //Import a OpenApi skill using one of the following Kernel extension methods
-        //kernel.ImportOpenApiSkillFromResource
-        //kernel.ImportOpenApiSkillFromDirectory
-        //kernel.ImportOpenApiSkillFromFile
-        //kernel.ImportOpenApiSkillFromUrlAsync
-        //kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
+        // Import a OpenApi skill using one of the following Kernel extension methods
+        // kernel.ImportOpenApiSkillFromResource
+        // kernel.ImportOpenApiSkillFromDirectory
+        // kernel.ImportOpenApiSkillFromFile
+        // kernel.ImportOpenApiSkillFromUrlAsync
+        // kernel.RegisterOpenApiSkill
+        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault,
+            authenticationProvider.AuthenticateRequestAsync);
 
-        //Add arguments for required parameters, arguments for optional ones can be skipped.
+        // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
         contextVariables.Set("server-url", "https://<keyvault-name>.vault.azure.net");
         contextVariables.Set("secret-name", "<secret-name>");
         contextVariables.Set("api-version", "7.0");
 
-        //Run
+        // Run
         var result = await kernel.RunAsync(contextVariables, skill["GetSecret"]);
 
         Console.WriteLine("GetSecret skill response: {0}", result);
     }
 
-    public static async Task AddSecretToAzureKeyVaultAsync()
+    public static async Task AddSecretToAzureKeyVaultAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        //Import a OpenApi skill using one of the following Kernel extension methods
-        //kernel.ImportOpenApiSkillFromResource
-        //kernel.ImportOpenApiSkillFromDirectory
-        //kernel.ImportOpenApiSkillFromFile
-        //kernel.ImportOpenApiSkillFromUrlAsync
-        //kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, AuthenticateWithBearerToken);
+        // Import a OpenApi skill using one of the following Kernel extension methods
+        // kernel.ImportOpenApiSkillFromResource
+        // kernel.ImportOpenApiSkillFromDirectory
+        // kernel.ImportOpenApiSkillFromFile
+        // kernel.ImportOpenApiSkillFromUrlAsync
+        // kernel.RegisterOpenApiSkill
+        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault,
+            authenticationProvider.AuthenticateRequestAsync);
 
-        //Add arguments for required parameters, arguments for optional ones can be skipped.
+        // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
         contextVariables.Set("server-url", "https://<keyvault-name>.vault.azure.net");
         contextVariables.Set("secret-name", "<secret-name>");
@@ -63,15 +72,9 @@ public static class Example22_OpenApiSkill
         contextVariables.Set("enabled", "true");
         contextVariables.Set("value", "<secret>");
 
-        //Run
+        // Run
         var result = await kernel.RunAsync(contextVariables, skill["SetSecret"]);
 
         Console.WriteLine("SetSecret skill response: {0}", result);
-    }
-
-    private static Task AuthenticateWithBearerToken(HttpRequestMessage request)
-    {
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Env.Var("AZURE_KEYVAULT_TOKEN"));
-        return Task.CompletedTask;
     }
 }
