@@ -89,10 +89,7 @@ def _split_text_paragraph(text: List[str], max_tokens: int) -> List[str]:
         num_tokens_line = _token_count(line)
         num_tokens_paragraph = _token_count("".join(current_paragraph))
 
-        if (
-            num_tokens_paragraph + num_tokens_line + 1 >= max_tokens
-            and len(current_paragraph) > 0
-        ):
+        if num_tokens_paragraph + num_tokens_line + 1 >= max_tokens and len(current_paragraph) > 0:
             paragraphs.append("".join(current_paragraph).strip())
             current_paragraph = []
 
@@ -144,9 +141,7 @@ def _split_text_lines(text: str, max_token_per_line: int, trim: bool) -> List[st
     return lines
 
 
-def _split_str_lines(
-    text: str, max_tokens: int, seprators: List[List[str]], trim: bool
-) -> List[str]:
+def _split_str_lines(text: str, max_tokens: int, seprators: List[List[str]], trim: bool) -> List[str]:
     if not text:
         return []
 
@@ -164,9 +159,7 @@ def _split_str_lines(
     return lines
 
 
-def _split_str(
-    text: str, max_tokens: int, separators: List[str], trim: bool
-) -> List[str]:
+def _split_str(text: str, max_tokens: int, separators: List[str], trim: bool) -> List[str]:
     """
     Split text into lines.
     """
@@ -203,12 +196,8 @@ def _split_str(
 
     if 0 < cutpoint < len(text):
         lines = []
-        first_split, has_split1 = _split_str(
-            text[:cutpoint], max_tokens, separators, trim
-        )
-        second_split, has_split2 = _split_str(
-            text[cutpoint:], max_tokens, separators, trim
-        )
+        first_split, has_split1 = _split_str(text[:cutpoint], max_tokens, separators, trim)
+        second_split, has_split2 = _split_str(text[cutpoint:], max_tokens, separators, trim)
 
         lines.extend(first_split)
         lines.extend(second_split)
@@ -220,9 +209,7 @@ def _split_str(
     return lines, input_was_split
 
 
-def _split_list(
-    text: List[str], max_tokens: int, separators: List[str], trim: bool
-) -> List[str]:
+def _split_list(text: List[str], max_tokens: int, separators: List[str], trim: bool) -> List[str]:
     """
     Split list of sring into lines.
     """
@@ -243,7 +230,7 @@ def _token_count(text: str) -> int:
     """
     Count the number of tokens in a string.
 
-    TODO: partitioning methods should be configurable to allow for different
+    TODO: chunking methods should be configurable to allow for different
           tokenization strategies depending on the model to be called.
           For now, we use an extremely rough estimate.
     """

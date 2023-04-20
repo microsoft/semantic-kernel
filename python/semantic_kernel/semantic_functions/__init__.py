@@ -7,7 +7,7 @@ from semantic_kernel.semantic_functions.text_chunker import (
     split_plaintext_paragraph,
 )
 from semantic_kernel.semantic_functions.function_extension import (
-    aggregate_partionned_results_async,
+    aggregate_chunked_results_async,
 )
 
 __all__ = [
@@ -15,5 +15,5 @@ __all__ = [
     "split_markdown_paragraph",
     "split_plaintext_paragraph",
     "split_markdown_lines",
-    "aggregate_partionned_results_async",
+    "aggregate_chunked_results_async",
 ]

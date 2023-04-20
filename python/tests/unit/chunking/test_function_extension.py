@@ -2,16 +2,14 @@ import pytest
 
 import semantic_kernel.ai.open_ai as sk_oai
 from semantic_kernel import Kernel
-from semantic_kernel.semantic_functions import aggregate_partionned_results_async
+from semantic_kernel.semantic_functions import aggregate_chunked_results_async
 
 
 @pytest.mark.asyncio
 async def test_aggregate_results():
     kernel = Kernel()
 
-    kernel.config.add_text_backend(
-        "davinci-002", sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none")
-    )
+    kernel.config.add_text_backend("davinci-002", sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none"))
     sk_prompt = """
         {{$input}}
         How is that ?
@@ -26,7 +24,7 @@ async def test_aggregate_results():
         top_p=0.5,
     )
 
-    partitioned = [
+    chunked = [
         "This is a test of the emergency broadcast system.",
         "This is only a test",
         "We repeat, this is only a test? A unit test",
@@ -34,6 +32,6 @@ async def test_aggregate_results():
         "Seriously, this is the end.",
         "We're finished. All set. Bye. Done",
     ]
-    context = await aggregate_partionned_results_async(func, partitioned, context)
+    context = await aggregate_chunked_results_async(func, chunked, context)
 
-    assert context.variables.input == "\n".join(partitioned)
+    assert context.variables.input == "\n".join(chunked)
