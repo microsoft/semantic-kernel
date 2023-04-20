@@ -11,10 +11,10 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        var appConfig = AppConfig.GetAppConfig();
-        if (!AppConfig.Validate(appConfig))
+        var serviceConfig = ServiceConfig.GetServiceConfig();
+        if (!ServiceConfig.Validate(serviceConfig))
         {
-            Console.WriteLine("Failed to read appsettings.json.");
+            Console.WriteLine("Error: Failed to read appsettings.json.");
             return;
         }
 
@@ -39,7 +39,7 @@ public static class Program
 
         rootCommand.SetHandler(async (file, userCollection) =>
             {
-                await UploadFileAsync(file, appConfig, userCollection);
+                await UploadFileAsync(file, serviceConfig!, userCollection);
             },
             fileOption, userCollectionOption
         );
@@ -50,28 +50,28 @@ public static class Program
     /// <summary>
     /// Acquires a user unique ID from Azure AD.
     /// </summary>
-    private static async Task<string?> AcquireUserIdAsync(AppConfig appConfig)
+    private static async Task<string?> AcquireUserIdAsync(ServiceConfig serviceConfig)
     {
         Console.WriteLine("Requesting User Account ID...");
 
         string[] scopes = { "User.Read" };
         try
         {
-            var app = PublicClientApplicationBuilder.Create(appConfig.ClientId)
-                .WithRedirectUri(appConfig.RedirectUri)
+            var app = PublicClientApplicationBuilder.Create(serviceConfig.ClientId)
+                .WithRedirectUri(serviceConfig.RedirectUri)
                 .Build();
             var result = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
             var accounts = await app.GetAccountsAsync();
             if (!accounts.Any())
             {
-                Console.WriteLine("No accounts found");
+                Console.WriteLine("Error: No accounts found");
                 return null;
             }
             return accounts.First().HomeAccountId.Identifier;
         }
-        catch (MsalServiceException ex)
+        catch (Exception ex) when (ex is MsalServiceException || ex is MsalClientException)
         {
-            Console.WriteLine(ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
             return null;
         }
     }
@@ -80,9 +80,9 @@ public static class Program
     /// Conditionally uploads a file to the Document Store for parsing.
     /// </summary>
     /// <param name="file">The file to upload for injection.</param>
-    /// <param name="appConfig">The app configuration.</param>
+    /// <param name="serviceConfig">The service configuration.</param>
     /// <param name="toUserCollection">Save the extracted context to an isolated user collection.</param>
-    private static async Task UploadFileAsync(FileInfo file, AppConfig appConfig, bool toUserCollection)
+    private static async Task UploadFileAsync(FileInfo file, ServiceConfig serviceConfig, bool toUserCollection)
     {
         if (!file.Exists)
         {
@@ -92,17 +92,17 @@ public static class Program
 
         if (toUserCollection)
         {
-            var userId = await AcquireUserIdAsync(appConfig!);
+            var userId = await AcquireUserIdAsync(serviceConfig);
             if (userId != null)
             {
                 Console.WriteLine("Uploading and parsing file to user collection...");
-                await UploadFileAsync(file, userId, appConfig!);
+                await UploadFileAsync(file, userId, serviceConfig);
             }
         }
         else
         {
             Console.WriteLine("Uploading and parsing file to global collection...");
-            await UploadFileAsync(file, "", appConfig!);
+            await UploadFileAsync(file, "", serviceConfig);
         }
     }
 
@@ -111,9 +111,9 @@ public static class Program
     /// </summary>
     /// <param name="file">The file to upload for injection.</param>
     /// <param name="userId">The user unique ID. If empty, the file will be injected to a global collection that is available to all users.</param>
-    /// <param name="appConfig">The app configuration.</param>
+    /// <param name="serviceConfig">The service configuration.</param>
     private static async Task UploadFileAsync(
-        FileInfo file, string userId, AppConfig appConfig)
+        FileInfo file, string userId, ServiceConfig serviceConfig)
     {
         string skillName = "DocumentQuerySkill";
         string functionName = "ParseLocalFile";
@@ -133,32 +133,31 @@ public static class Program
             "application/json"
         );
 
-        HttpClientHandler clientHandler = new()
+        using HttpClientHandler clientHandler = new()
         {
             // Bypass the certificate check
             ServerCertificateCustomValidationCallback =
                 (sender, cert, chain, sslPolicyErrors) => { return true; }
         };
 
-        // Create a HttpClient intance and set the timeout to infinite since
+        // Create a HttpClient instance and set the timeout to infinite since
         // large documents will take a while to parse.
-        HttpClient httpClient = new(clientHandler) { BaseAddress = new Uri(appConfig.ServiceUri) };
-        httpClient.Timeout = Timeout.InfiniteTimeSpan;
+        using HttpClient httpClient = new(clientHandler)
+        {
+            Timeout = Timeout.InfiniteTimeSpan
+        };
 
         try
         {
             using HttpResponseMessage response = await httpClient.PostAsync(
-                commandPath,
+                new Uri(new Uri(serviceConfig.ServiceUri), commandPath),
                 jsonContent
             );
             Console.WriteLine("Uploading and parsing successful.");
         }
         catch (HttpRequestException ex)
         {
-            Console.WriteLine(ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
-
-        httpClient.Dispose();
-        clientHandler.Dispose();
     }
 }

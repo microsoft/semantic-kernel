@@ -62,7 +62,7 @@ public class DocumentQuerySkill
         string text = string.Empty;
         try
         {
-            text = File.ReadAllText(localFile);
+            text = await File.ReadAllTextAsync(localFile);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -101,8 +101,8 @@ public class DocumentQuerySkill
     public async Task<string> QueryDocumentsAsync(string query, SKContext context)
     {
         string userId = context.Variables["userId"];
-        int tokenLimit = int.Parse(context.Variables["tokenLimit"]);
-        int contextTokenLimit = int.Parse(context.Variables["contextTokenLimit"]);
+        int tokenLimit = int.Parse(context.Variables["tokenLimit"], new NumberFormatInfo());
+        int contextTokenLimit = int.Parse(context.Variables["contextTokenLimit"], new NumberFormatInfo());
         var remainingToken = Math.Min(
             tokenLimit,
             Math.Floor(contextTokenLimit * this._promptSettings.DocumentContextWeight)
