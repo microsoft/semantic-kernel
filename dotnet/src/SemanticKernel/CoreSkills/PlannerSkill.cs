@@ -299,10 +299,9 @@ public class PlannerSkill
             _ = executeResultContext.Variables.Get(SkillPlan.PlanKey, out var planProgress);
             _ = executeResultContext.Variables.Get(SkillPlan.ResultKey, out var results);
 
-            var isComplete = planProgress.ContainsEx($"<{FunctionFlowRunner.PlanTag}>", StringComparison.InvariantCultureIgnoreCase) &&
-                             !planProgress.ContainsEx($"<{FunctionFlowRunner.FunctionTag}", StringComparison.InvariantCultureIgnoreCase);
-            var isSuccessful = !executeResultContext.ErrorOccurred &&
-                               planProgress.ContainsEx($"<{FunctionFlowRunner.PlanTag}>", StringComparison.InvariantCultureIgnoreCase);
+            bool containsPlanTag = planProgress.IndexOf($"<{FunctionFlowRunner.PlanTag}>", StringComparison.OrdinalIgnoreCase) >= 0;
+            var isComplete = containsPlanTag && planProgress.IndexOf($"<{FunctionFlowRunner.FunctionTag}", StringComparison.OrdinalIgnoreCase) < 0;
+            var isSuccessful = containsPlanTag && !executeResultContext.ErrorOccurred;
 
             if (string.IsNullOrEmpty(results) && isComplete && isSuccessful)
             {
