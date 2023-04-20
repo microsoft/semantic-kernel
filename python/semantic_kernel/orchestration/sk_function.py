@@ -322,7 +322,6 @@ class SKFunction(SKFunctionBase):
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
     ) -> SKContext:
-
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
