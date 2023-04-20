@@ -20,6 +20,11 @@ internal class RestApiOperation
     internal const string ServerUrlArgumentName = "server-url";
 
     /// <summary>
+    /// An artificial parameter to be advertised and used for operation having "text/plain" payload media type.
+    /// </summary>
+    internal const string InputArgumentName = "input";
+
+    /// <summary>
     /// The operation identifier.
     /// </summary>
     public string Id { get; }
