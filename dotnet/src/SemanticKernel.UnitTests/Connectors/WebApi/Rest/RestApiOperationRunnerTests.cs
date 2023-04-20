@@ -51,6 +51,8 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItCanRunCrudOperationWithJsonPayloadSuccessfullyAsync()
     {
         // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
         List<RestApiOperationPayloadProperty> payloadProperties = new()
         {
             new("value", "string", true, new List<RestApiOperationPayloadProperty>(), "fake-value-description"),
@@ -80,7 +82,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
-        await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, arguments);
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
@@ -107,6 +109,68 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var enabledProperty = attributesProperty["enabled"]?.AsValue();
         Assert.NotNull(enabledProperty);
         Assert.Equal("true", enabledProperty.ToString());
+
+        Assert.NotNull(result);
+
+        var contentProperty = result["content"]?.ToString();
+        Assert.Equal("fake-content", contentProperty);
+
+        var contentTypeProperty = result["contentType"]?.ToString();
+        Assert.Equal("application/json; charset=utf-8", contentTypeProperty);
+
+        this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ItCanRunCrudOperationWithPlainTextPayloadSuccessfullyAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
+
+        var payload = new RestApiOperationPayload(MediaTypeNames.Text.Plain, new List<RestApiOperationPayloadProperty>(), "fake-description");
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            "https://fake-random-test-host",
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            new Dictionary<string, string>(),
+            payload
+        );
+
+        var arguments = new Dictionary<string, string>();
+        arguments.Add("input", "fake-input-value");
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
+        Assert.Equal("https://fake-random-test-host/fake-path", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
+
+        Assert.Equal(HttpMethod.Post, this._httpMessageHandlerStub.Method);
+
+        Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
+        Assert.Contains(this._httpMessageHandlerStub.ContentHeaders, h => h.Key == "Content-Type" && h.Value.Contains("text/plain; charset=utf-8"));
+
+        var messageContent = this._httpMessageHandlerStub.RequestContent;
+        Assert.NotNull(messageContent);
+        Assert.True(messageContent.Any());
+
+        var payloadText = System.Text.Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
+        Assert.Equal("fake-input-value", payloadText);
+
+        Assert.NotNull(result);
+
+        var contentProperty = result["content"]?.ToString();
+        Assert.Equal("fake-content", contentProperty);
+
+        var contentTypeProperty = result["contentType"]?.ToString();
+        Assert.Equal("text/plain; charset=utf-8", contentTypeProperty);
 
         this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
     }

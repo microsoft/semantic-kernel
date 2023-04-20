@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.SemanticKernel.Text;
 
@@ -15,6 +15,10 @@ namespace Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 /// </summary>
 public static class SemanticTextPartitioner
 {
+    private static readonly char[] s_spaceChar = new[] { ' ' };
+    private static readonly string?[] s_plaintextSplitOptions = new[] { "\n\r", ".", "?!", ";", ":", ",", ")]}", " ", "-", null };
+    private static readonly string?[] s_markdownSplitOptions = new[] { ".", "?!", ";", ":", ",", ")]}", " ", "-", "\n\r", null };
+
     /// <summary>
     /// Split plain text into lines.
     /// </summary>
@@ -23,7 +27,9 @@ public static class SemanticTextPartitioner
     /// <returns>List of lines.</returns>
     public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine)
     {
-        return InternalSplitPlaintextLines(text, maxTokensPerLine, true);
+        var result = new List<string>();
+        InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions, result);
+        return result;
     }
 
     /// <summary>
@@ -34,7 +40,9 @@ public static class SemanticTextPartitioner
     /// <returns>List of lines.</returns>
     public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine)
     {
-        return InternalSplitMarkdownLines(text, maxTokensPerLine, true);
+        var result = new List<string>();
+        InternalSplitLines(text, maxTokensPerLine, trim: true, s_markdownSplitOptions, result);
+        return result;
     }
 
     /// <summary>
@@ -43,10 +51,8 @@ public static class SemanticTextPartitioner
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
     /// <returns>List of paragraphs.</returns>
-    public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph)
-    {
-        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, text => InternalSplitPlaintextLines(text, maxTokensPerParagraph, false));
-    }
+    public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph) =>
+        InternalSplitTextParagraphs(lines, maxTokensPerParagraph, (text, result) => InternalSplitLines(text, maxTokensPerParagraph, trim: false, s_plaintextSplitOptions, result));
 
     /// <summary>
     /// Split markdown text into paragraphs.
@@ -54,12 +60,10 @@ public static class SemanticTextPartitioner
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
     /// <returns>List of paragraphs.</returns>
-    public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph)
-    {
-        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, text => InternalSplitMarkdownLines(text, maxTokensPerParagraph, false));
-    }
+    public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph) =>
+        InternalSplitTextParagraphs(lines, maxTokensPerParagraph, (text, result) => InternalSplitLines(text, maxTokensPerParagraph, trim: false, s_markdownSplitOptions, result));
 
-    private static List<string> InternalSplitTextParagraphs(List<string> lines, int maxTokensPerParagraph, Func<string, List<string>> longLinesSplitter)
+    private static List<string> InternalSplitTextParagraphs(List<string> lines, int maxTokensPerParagraph, Action<string, List<string>> longLinesSplitter)
     {
         if (lines.Count == 0)
         {
@@ -67,12 +71,11 @@ public static class SemanticTextPartitioner
         }
 
         // Split long lines first
-        var truncatedLines = new List<string>();
+        var truncatedLines = new List<string>(lines.Count);
         foreach (var line in lines)
         {
-            truncatedLines.AddRange(longLinesSplitter(line));
+            longLinesSplitter(line, truncatedLines);
         }
-
         lines = truncatedLines;
 
         // Group lines in paragraphs
@@ -81,8 +84,8 @@ public static class SemanticTextPartitioner
         foreach (var line in lines)
         {
             // "+1" to account for the "new line" added by AppendLine()
-            if (TokenCount(currentParagraph.ToString()) + TokenCount(line) + 1 >= maxTokensPerParagraph &&
-                currentParagraph.Length > 0)
+            if (currentParagraph.Length > 0 &&
+                TokenCount(currentParagraph.Length) + TokenCount(line.Length) + 1 >= maxTokensPerParagraph)
             {
                 paragraphs.Add(currentParagraph.ToString().Trim());
                 currentParagraph.Clear();
@@ -103,10 +106,10 @@ public static class SemanticTextPartitioner
             var lastParagraph = paragraphs[paragraphs.Count - 1];
             var secondLastParagraph = paragraphs[paragraphs.Count - 2];
 
-            if (TokenCount(lastParagraph) < maxTokensPerParagraph / 4)
+            if (TokenCount(lastParagraph.Length) < maxTokensPerParagraph / 4)
             {
-                var lastParagraphTokens = lastParagraph.SplitEx(' ', StringSplitOptions.RemoveEmptyEntries);
-                var secondLastParagraphTokens = secondLastParagraph.SplitEx(' ', StringSplitOptions.RemoveEmptyEntries);
+                var lastParagraphTokens = lastParagraph.Split(s_spaceChar, StringSplitOptions.RemoveEmptyEntries);
+                var secondLastParagraphTokens = secondLastParagraph.Split(s_spaceChar, StringSplitOptions.RemoveEmptyEntries);
 
                 var lastParagraphTokensCount = lastParagraphTokens.Length;
                 var secondLastParagraphTokensCount = secondLastParagraphTokens.Length;
@@ -116,14 +119,20 @@ public static class SemanticTextPartitioner
                     var newSecondLastParagraph = new StringBuilder();
                     for (var i = 0; i < secondLastParagraphTokensCount; i++)
                     {
-                        newSecondLastParagraph.Append(secondLastParagraphTokens[i])
-                            .Append(' ');
+                        if (newSecondLastParagraph.Length != 0)
+                        {
+                            newSecondLastParagraph.Append(' ');
+                        }
+                        newSecondLastParagraph.Append(secondLastParagraphTokens[i]);
                     }
 
                     for (var i = 0; i < lastParagraphTokensCount; i++)
                     {
-                        newSecondLastParagraph.Append(lastParagraphTokens[i])
-                            .Append(' ');
+                        if (newSecondLastParagraph.Length != 0)
+                        {
+                            newSecondLastParagraph.Append(' ');
+                        }
+                        newSecondLastParagraph.Append(lastParagraphTokens[i]);
                     }
 
                     paragraphs[paragraphs.Count - 2] = newSecondLastParagraph.ToString().Trim();
@@ -135,160 +144,106 @@ public static class SemanticTextPartitioner
         return paragraphs;
     }
 
-    private static List<string> InternalSplitPlaintextLines(string text, int maxTokensPerLine, bool trim)
+    private static void InternalSplitLines(string text, int maxTokensPerLine, bool trim, string?[] splitOptions, List<string> result)
     {
         text = text.NormalizeLineEndings();
 
-        var splitOptions = new List<List<char>?>
+        Split(text.AsSpan(), text, maxTokensPerLine, splitOptions[0].AsSpan(), trim, out bool inputWasSplit, result);
+        if (inputWasSplit)
         {
-            new List<char> { '\n', '\r' },
-            new List<char> { '.' },
-            new List<char> { '?', '!' },
-            new List<char> { ';' },
-            new List<char> { ':' },
-            new List<char> { ',' },
-            new List<char> { ')', ']', '}' },
-            new List<char> { ' ' },
-            new List<char> { '-' },
-            null
-        };
-
-        List<string>? result = null;
-        bool inputWasSplit;
-        foreach (var splitOption in splitOptions)
-        {
-            if (result is null)
+            for (int i = 1; i < splitOptions.Length; i++)
             {
-                result = Split(text, maxTokensPerLine, splitOption, trim, out inputWasSplit);
-            }
-            else
-            {
-                result = Split(result, maxTokensPerLine, splitOption, trim, out inputWasSplit);
-            }
-
-            if (!inputWasSplit)
-            {
-                break;
-            }
-        }
-
-        return result ?? new List<string>();
-    }
-
-    private static List<string> InternalSplitMarkdownLines(string text, int maxTokensPerLine, bool trim)
-    {
-        text = text.NormalizeLineEndings();
-
-        var splitOptions = new List<List<char>?>
-        {
-            new List<char> { '.' },
-            new List<char> { '?', '!' },
-            new List<char> { ';', },
-            new List<char> { ':' },
-            new List<char> { ',', },
-            new List<char> { ')', ']', '}' },
-            new List<char> { ' ' },
-            new List<char> { '-' },
-            new List<char> { '\n', '\r' },
-            null
-        };
-
-        List<string>? result = null;
-        bool inputWasSplit;
-        foreach (var splitOption in splitOptions)
-        {
-            if (result is null)
-            {
-                result = Split(text, maxTokensPerLine, splitOption, trim, out inputWasSplit);
-            }
-            else
-            {
-                result = Split(result, maxTokensPerLine, splitOption, trim, out inputWasSplit);
-            }
-
-            if (!inputWasSplit)
-            {
-                break;
-            }
-        }
-
-        return result ?? new List<string>();
-    }
-
-    private static List<string> Split(IEnumerable<string> input, int maxTokens, List<char>? separators, bool trim, out bool inputWasSplit)
-    {
-        inputWasSplit = false;
-        var result = new List<string>();
-        foreach (string text in input)
-        {
-            result.AddRange(Split(text, maxTokens, separators, trim, out bool split));
-            inputWasSplit = inputWasSplit || split;
-        }
-
-        return result;
-    }
-
-    private static List<string> Split(string input, int maxTokens, List<char>? separators, bool trim, out bool inputWasSplit)
-    {
-        inputWasSplit = false;
-        var asIs = new List<string> { trim ? input.Trim() : input };
-        if (TokenCount(input) <= maxTokens)
-        {
-            return asIs;
-        }
-
-        inputWasSplit = true;
-        var result = new List<string>();
-
-        int half = input.Length / 2;
-        int cutPoint = -1;
-
-        if (separators == null || separators.Count == 0)
-        {
-            cutPoint = half;
-        }
-        else if (input.Any(separators.Contains) && input.Length > 2)
-        {
-            for (var index = 0; index < input.Length - 1; index++)
-            {
-                if (!separators.Contains(input[index]))
+                int count = result.Count; // track where the original input left off
+                Split(result, maxTokensPerLine, splitOptions[i].AsSpan(), trim, out inputWasSplit, result);
+                result.RemoveRange(0, count); // remove the original input
+                if (!inputWasSplit)
                 {
-                    continue;
-                }
-
-                if (Math.Abs(half - index) < Math.Abs(half - cutPoint))
-                {
-                    cutPoint = index + 1;
+                    break;
                 }
             }
         }
-
-        if (cutPoint > 0)
-        {
-            var firstHalf = input.Substring(0, cutPoint);
-            var secondHalf = input.Substring(cutPoint);
-            if (trim)
-            {
-                firstHalf = firstHalf.Trim();
-                secondHalf = secondHalf.Trim();
-            }
-
-            // Recursion
-            result.AddRange(Split(firstHalf, maxTokens, separators, trim, out bool split1));
-            result.AddRange(Split(secondHalf, maxTokens, separators, trim, out bool split2));
-
-            inputWasSplit = split1 || split2;
-
-            return result;
-        }
-
-        return asIs;
     }
 
-    private static int TokenCount(string input)
+    private static void Split(List<string> input, int maxTokens, ReadOnlySpan<char> separators, bool trim, out bool inputWasSplit, List<string> result)
+    {
+        inputWasSplit = false;
+        int count = input.Count;
+        for (int i = 0; i < count; i++)
+        {
+            Split(input[i].AsSpan(), input[i], maxTokens, separators, trim, out bool split, result);
+            inputWasSplit |= split;
+        }
+    }
+
+    private static void Split(ReadOnlySpan<char> input, string? inputString, int maxTokens, ReadOnlySpan<char> separators, bool trim, out bool inputWasSplit, List<string> result)
+    {
+        Debug.Assert(inputString is null || input.SequenceEqual(inputString.AsSpan()));
+
+        inputWasSplit = false;
+        if (TokenCount(input.Length) > maxTokens)
+        {
+            inputWasSplit = true;
+
+            int half = input.Length / 2;
+            int cutPoint = -1;
+
+            if (separators.IsEmpty)
+            {
+                cutPoint = half;
+            }
+            else if (input.Length > 2)
+            {
+                int pos = 0;
+                while (true)
+                {
+                    int index = input.Slice(pos, input.Length - 1 - pos).IndexOfAny(separators);
+                    if (index < 0)
+                    {
+                        break;
+                    }
+                    index += pos;
+
+                    if (Math.Abs(half - index) < Math.Abs(half - cutPoint))
+                    {
+                        cutPoint = index + 1;
+                    }
+
+                    pos = index + 1;
+                }
+            }
+
+            if (cutPoint > 0)
+            {
+                var firstHalf = input.Slice(0, cutPoint);
+                var secondHalf = input.Slice(cutPoint);
+                if (trim)
+                {
+                    firstHalf = firstHalf.Trim();
+                    secondHalf = secondHalf.Trim();
+                }
+
+                // Recursion
+                Split(firstHalf, null, maxTokens, separators, trim, out bool split1, result);
+                Split(secondHalf, null, maxTokens, separators, trim, out bool split2, result);
+
+                inputWasSplit = split1 || split2;
+                return;
+            }
+        }
+
+        result.Add((inputString is not null, trim) switch
+        {
+            (true, true) => inputString!.Trim(),
+            (true, false) => inputString!,
+            (false, true) => input.Trim().ToString(),
+            (false, false) => input.ToString(),
+        });
+    }
+
+    private static int TokenCount(int inputLength)
     {
         // TODO: partitioning methods should be configurable to allow for different tokenization strategies
         //       depending on the model to be called. For now, we use an extremely rough estimate.
-        return input.Length / 4;
+        return inputLength / 4;
     }
 }
