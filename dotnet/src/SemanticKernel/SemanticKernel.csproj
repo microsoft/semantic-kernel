@@ -1,21 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
-  </PropertyGroup>
-  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-
-  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Core</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
+  
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <PackageId>Microsoft.SemanticKernel.Core</PackageId>
     <Title>Semantic Kernel Core</Title>
     <Description>Semantic Kernel core orchestration, runtime and skills.
 This package is automatically installed by 'Microsoft.SemanticKernel' package with other useful packages.
@@ -46,4 +43,5 @@ Install this package manually only if you are selecting individual Semantic Kern
   <ItemGroup>
     <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
   </ItemGroup>
+
 </Project>
