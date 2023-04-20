@@ -63,6 +63,8 @@ internal class FunctionFlowRunner
 
     private readonly ConditionalFlowHelper _conditionalFlowHelper;
 
+    private static readonly string[] s_functionTagArray = new string[] { FunctionTag };
+
     public FunctionFlowRunner(IKernel kernel, ITextCompletion? completionBackend = null)
     {
         this._kernel = kernel;
@@ -245,7 +247,7 @@ internal class FunctionFlowRunner
 
                 if (o2.Name.StartsWith(FunctionTag, StringComparison.OrdinalIgnoreCase))
                 {
-                    var splits = o2.Name.SplitEx(FunctionTag);
+                    var splits = o2.Name.Split(s_functionTagArray, StringSplitOptions.None);
                     string skillFunctionName = (splits.Length > 1) ? splits[1] : string.Empty;
                     context.Log.LogTrace("{0}: found skill node {1}", parentNodeName, skillFunctionName);
                     GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
