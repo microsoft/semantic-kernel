@@ -56,6 +56,8 @@ internal static class SemanticKernelFactory
                         config.CompletionConfig.Endpoint,
                         config.CompletionConfig.Key);
                     break;
+                default:
+                    break;
             }
 
             if (memoryStore != null && config.EmbeddingConfig.IsValid())
@@ -70,6 +72,8 @@ internal static class SemanticKernelFactory
                         c.AddAzureTextEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
                             config.EmbeddingConfig.Endpoint, config.EmbeddingConfig.Key);
                         break;
+                    default:
+                        break;
                 }
 
                 builder.WithMemoryStorage(memoryStore);
@@ -83,7 +87,6 @@ internal static class SemanticKernelFactory
 
         kernel.RegisterSemanticSkills(RepoFiles.SampleSkillsPath(), logger, skillsToLoad);
         kernel.RegisterNativeSkills(skillsToLoad);
-        kernel.RegisterPlanner();
 
         if (req.Headers.TryGetValues(SKHttpHeaders.MSGraph, out var graphToken))
         {
