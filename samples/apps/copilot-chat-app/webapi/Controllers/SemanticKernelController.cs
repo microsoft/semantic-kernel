@@ -119,10 +119,10 @@ public class SemanticKernelController : ControllerBase
 
         this._logger.LogDebug("Received call to import a bot");
 
-        /*if (!this.IsBotCompatible(bot.Schema, bot.Configurations))
+        if (!this.IsBotCompatible(bot.Schema, bot.Configurations))
         {
             return new UnsupportedMediaTypeResult();
-        }*/
+        }
 
         // TODO: Add real chat title, user object id and user name.
         string chatTitle = $"{bot.ChatTitle} - Clone";
@@ -180,7 +180,7 @@ public class SemanticKernelController : ControllerBase
         [FromBody] Ask ask)
     {
         this._logger.LogDebug("Received call to export a bot");
-        var memory = await this.GetAllMemoriesAsync(kernel, chatRepository, chatMessageRepository, ask);
+        var memory = await this.CreateBotAsync(kernel, chatRepository, chatMessageRepository, ask);
 
         return JsonSerializer.Serialize(memory);
     }
@@ -208,13 +208,13 @@ public class SemanticKernelController : ControllerBase
     }
 
     /// <summary>
-    /// Get the chat history and memory of a given chat.
+    /// Prepare the bot information of a given chat.
     /// </summary>
     /// <param name="kernel">The semantic kernel object.</param>
     /// <param name="chatRepository">The chat session repository object.</param>
     /// <param name="chatMessageRepository">The chat message repository object.</param>
     /// <param name="ask">Prompt along with its parameters</param>
-    private async Task<Bot> GetAllMemoriesAsync(
+    private async Task<Bot> CreateBotAsync(
         Kernel kernel,
         ChatSessionRepository chatRepository,
         ChatMessageRepository chatMessageRepository,
@@ -223,6 +223,9 @@ public class SemanticKernelController : ControllerBase
         kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._logger);
 
         var bot = new Bot();
+
+        // get the bot schema version
+        bot.Schema = this._configuration.GetSection("BotFileSchema").Get<BotSchemaConfig>();
 
         // get the embedding configuration
         var embeddingAIServiceConfig = this._configuration.GetSection("Embedding").Get<AIServiceConfig>();
@@ -250,10 +253,12 @@ public class SemanticKernelController : ControllerBase
             bot.ChatHistory = JsonSerializer.Deserialize<List<ChatMessage>>(messages.Value);
         }
 
-        // get the memory
-        var allCollections = await kernel.Memory.GetCollectionsAsync();
-        List<MemoryQueryResult> allChatMessageMemories = new List<MemoryQueryResult>();
+        // get the memory collections associated with this chat
+        // TODO: filtering memory collections by name might be risky. We can discuss if there is a better way.
+        var allCollections = (await kernel.Memory.GetCollectionsAsync())
+            .Where(collection => collection.StartsWith(chatId, StringComparison.OrdinalIgnoreCase));
 
+        List<MemoryQueryResult> allChatMessageMemories = new List<MemoryQueryResult>();
         foreach (var collection in allCollections)
         {
             var results = await kernel.Memory.SearchAsync(
