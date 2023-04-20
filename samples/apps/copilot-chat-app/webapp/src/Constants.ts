@@ -13,7 +13,7 @@ export const Constants = {
             cacheLocation: 'localStorage',
             storeAuthStateInCookie: false,
         },
-        skScopes: ['openid', 'offline_access', 'profile', 'User.Read'],
+        skScopes: ['openid', 'offline_access', 'profile'],
     },
     bot: {
         profile: {

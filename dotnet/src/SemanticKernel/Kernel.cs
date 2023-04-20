@@ -311,7 +311,7 @@ public sealed class Kernel : IKernel, IDisposable
         string functionName,
         SemanticFunctionConfig functionConfig)
     {
-        if (!functionConfig.PromptTemplateConfig.Type.EqualsIgnoreCase("completion"))
+        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
         {
             throw new AIException(
                 AIException.ErrorCodes.FunctionTypeNotSupported,
@@ -339,7 +339,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="skillName">Skill name, used to group functions under a shared namespace</param>
     /// <param name="log">Application logger</param>
     /// <returns>List of functions imported from the given class instance</returns>
-    private static IList<ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log)
+    private static List<ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log)
     {
         log.LogTrace("Importing skill name: {0}", skillName);
         MethodInfo[] methods = skillInstance.GetType()
