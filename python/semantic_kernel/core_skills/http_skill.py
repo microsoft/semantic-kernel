@@ -53,13 +53,9 @@ class HttpSkill:
             The response body as a string.
         """
 
-        has_body, body = context.variables.get("body")
+        _, body = context.variables.get("body")
         if not url:
             raise ValueError("url cannot be `None` or empty")
-        if not has_body:
-            raise ValueError("no Body found in context")
-        if not body:
-            raise ValueError("Body of the POST request cannot be None")
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
@@ -80,13 +76,9 @@ class HttpSkill:
         returns:
             The response body as a string.
         """
-        has_body, body = context.variables.get("body")
+        _, body = context.variables.get("body")
         if not url:
             raise ValueError("url cannot be `None` or empty")
-        if not has_body:
-            raise ValueError("no Body found in context")
-        if not body:
-            raise ValueError("Body of the POST request cannot be None")
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
