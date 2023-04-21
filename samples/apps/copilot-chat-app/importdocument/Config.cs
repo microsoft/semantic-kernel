@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Configuration;
 
-namespace SemanticKernel.Service.ImportDocument;
+namespace ImportDocument;
 
 /// <summary>
 /// Configuration for the app.

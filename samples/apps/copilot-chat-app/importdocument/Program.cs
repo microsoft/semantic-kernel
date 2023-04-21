@@ -12,10 +12,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 
-namespace SemanticKernel.Service.ImportDocument;
+namespace ImportDocument;
 
 /// <summary>
-/// This console app imports a file to the CopilotChat WebAPI's document memory store.
+/// This console app imports a file to the CopilotChat WebAPI document memory store.
 /// </summary>
 public static class Program
 {
@@ -28,11 +28,10 @@ public static class Program
             return;
         }
 
-        var fileOption = new Option<FileInfo>(
-            name: "--file",
-            description: "The file to upload for injection."
-        )
-        { IsRequired = true };
+        var fileOption = new Option<FileInfo>(name: "--file", description: "The file to upload for injection.")
+        {
+            IsRequired = true
+        };
 
         var userCollectionOption = new Option<bool>(
             name: "--user-collection",
@@ -77,6 +76,7 @@ public static class Program
                 Console.WriteLine("Error: No accounts found");
                 return null;
             }
+
             return accounts.First().HomeAccountId.Identifier;
         }
         catch (Exception ex) when (ex is MsalServiceException || ex is MsalClientException)
@@ -134,7 +134,8 @@ public static class Program
                 new
                 {
                     input = file.FullName,
-                    Variables = new List<KeyValuePair<string, string>> {
+                    Variables = new List<KeyValuePair<string, string>>
+                    {
                         new KeyValuePair<string, string>("userId", userId)
                     }
                 }
@@ -166,6 +167,7 @@ public static class Program
                 Console.WriteLine($"Error: {response.StatusCode} {response.ReasonPhrase}");
                 return;
             }
+
             Console.WriteLine("Uploading and parsing successful.");
         }
         catch (HttpRequestException ex)
