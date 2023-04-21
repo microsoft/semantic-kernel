@@ -113,7 +113,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
 
         await foreach ((MemoryRecord, double) result in results.WithCancellation(cancel))
         {
-            yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2, withEmbeddings);
+            yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
         }
     }
 
@@ -121,27 +121,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
     public async Task<IList<string>> GetCollectionsAsync(CancellationToken cancel = default)
     {
         return await this._storage.GetCollectionsAsync(cancel).ToListAsync(cancel);
-    }
-
-    /// <inheritdoc/>
-    public async Task<string> UpsertAsync(
-        string collection,
-        string text,
-        string id,
-        Embedding<float> embedding,
-        string? description = null,
-        string? additionalMetadata = null,
-        CancellationToken cancel = default)
-    {
-        if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
-        {
-            await this._storage.CreateCollectionAsync(collection, cancel);
-        }
-
-        MemoryRecord data = MemoryRecord.LocalRecord(
-            id: id, text: text, description: description, additionalMetadata: additionalMetadata, embedding: embedding);
-
-        return await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
     }
 
     public void Dispose()

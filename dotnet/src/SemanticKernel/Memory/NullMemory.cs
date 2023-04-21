@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -74,19 +73,6 @@ public sealed class NullMemory : ISemanticTextMemory
         CancellationToken cancel = default)
     {
         return AsyncEnumerable.Empty<MemoryQueryResult>();
-    }
-
-    /// <inheritdoc/>
-    public Task<string> UpsertAsync(
-        string collection,
-        string text,
-        string id,
-        Embedding<float> embedding,
-        string? description = null,
-        string? additionalMetadata = null,
-        CancellationToken cancel = default)
-    {
-        return Task.FromResult(string.Empty);
     }
 
     /// <inheritdoc/>

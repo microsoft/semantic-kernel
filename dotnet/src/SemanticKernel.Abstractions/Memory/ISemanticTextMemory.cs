@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -88,26 +87,6 @@ public interface ISemanticTextMemory
         int limit = 1,
         double minRelevanceScore = 0.7,
         bool withEmbeddings = false,
-        CancellationToken cancel = default);
-
-    /// <summary>
-    /// Save and update a memory record into the semantic memory, keeping a copy of the source information.
-    /// </summary>
-    /// <param name="collection">Collection where to save the information.</param>
-    /// <param name="id">Unique identifier.</param>
-    /// <param name="text">Information to save.</param>
-    /// <param name="embedding">The embedding vectors</param>
-    /// <param name="description">Optional description.</param>
-    /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
-    /// <param name="cancel">Cancellation token.</param>
-    /// <returns>Unique identifier of the saved memory record.</returns>
-    public Task<string> UpsertAsync(
-        string collection,
-        string text,
-        string id,
-        Embedding<float> embedding,
-        string? description = null,
-        string? additionalMetadata = null,
         CancellationToken cancel = default);
 
     /// <summary>
