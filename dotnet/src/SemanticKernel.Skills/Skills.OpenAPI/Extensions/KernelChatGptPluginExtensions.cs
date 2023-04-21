@@ -145,7 +145,10 @@ public static class KernelChatGptPluginExtensions
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {chatGptPluginPath} is found");
         }
 
-        kernel.Log.LogTrace("Registering Rest functions from {0} ChatGPT Plugin", chatGptPluginPath);
+        if (kernel.Log.IsEnabled(LogLevel.Trace))
+        {
+            kernel.Log.LogTrace("Registering Rest functions from {0} ChatGPT Plugin", chatGptPluginPath);
+        }
 
         using var stream = File.OpenRead(chatGptPluginPath);
 
@@ -173,7 +176,10 @@ public static class KernelChatGptPluginExtensions
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {filePath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering Rest functions from {0} ChatGPT Plugin.", filePath);
+        if (kernel.Log.IsEnabled(LogLevel.Trace))
+        {
+            kernel.Log.LogTrace("Registering Rest functions from {0} ChatGPT Plugin.", filePath);
+        }
 
         using var stream = File.OpenRead(filePath);
 

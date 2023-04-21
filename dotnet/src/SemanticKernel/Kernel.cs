@@ -103,11 +103,17 @@ public sealed class Kernel : IKernel, IDisposable
         if (string.IsNullOrWhiteSpace(skillName))
         {
             skillName = SkillCollection.GlobalSkill;
-            this._log.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
+            if (this._log.IsEnabled(LogLevel.Trace))
+            {
+                this._log.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
+            }
         }
         else
         {
-            this._log.LogTrace("Importing skill {0}", skillName);
+            if (this._log.IsEnabled(LogLevel.Trace))
+            {
+                this._log.LogTrace("Importing skill {0}", skillName);
+            }
         }
 
         var skill = new Dictionary<string, ISKFunction>(StringComparer.OrdinalIgnoreCase);
@@ -176,9 +182,12 @@ public sealed class Kernel : IKernel, IDisposable
         {
             if (context.ErrorOccurred)
             {
-                this._log.LogError(
-                    context.LastException,
-                    "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastErrorDescription);
+                if (this._log.IsEnabled(LogLevel.Error))
+                {
+                    this._log.LogError(
+                        context.LastException,
+                        "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastErrorDescription);
+                }
                 return context;
             }
 
@@ -191,15 +200,21 @@ public sealed class Kernel : IKernel, IDisposable
 
                 if (context.ErrorOccurred)
                 {
-                    this._log.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
-                        pipelineStepCount, f.SkillName, f.Name, context.LastErrorDescription);
+                    if (this._log.IsEnabled(LogLevel.Error))
+                    {
+                        this._log.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
+                            pipelineStepCount, f.SkillName, f.Name, context.LastErrorDescription);
+                    }
                     return context;
                 }
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
-                this._log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
-                    pipelineStepCount, f.SkillName, f.Name, e.Message);
+                if (this._log.IsEnabled(LogLevel.Error))
+                {
+                    this._log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
+                        pipelineStepCount, f.SkillName, f.Name, e.Message);
+                }
                 context.Fail(e.Message, e);
                 return context;
             }
@@ -341,15 +356,24 @@ public sealed class Kernel : IKernel, IDisposable
     /// <returns>List of functions imported from the given class instance</returns>
     private static List<ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log)
     {
-        log.LogTrace("Importing skill name: {0}", skillName);
+        if (log.IsEnabled(LogLevel.Trace))
+        {
+            log.LogTrace("Importing skill name: {0}", skillName);
+        }
         MethodInfo[] methods = skillInstance.GetType()
             .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod);
-        log.LogTrace("Methods found {0}", methods.Length);
+        if (log.IsEnabled(LogLevel.Trace))
+        {
+            log.LogTrace("Methods found {0}", methods.Length);
+        }
 
         // Filter out null functions
         IEnumerable<ISKFunction> functions = from method in methods select SKFunction.FromNativeMethod(method, skillInstance, skillName, log);
         List<ISKFunction> result = (from function in functions where function != null select function).ToList();
-        log.LogTrace("Methods imported {0}", result.Count);
+        if (log.IsEnabled(LogLevel.Trace))
+        {
+            log.LogTrace("Methods imported {0}", result.Count);
+        }
 
         // Fail if two functions have the same name
         var uniquenessCheck = new HashSet<string>(from x in result select x.Name, StringComparer.OrdinalIgnoreCase);

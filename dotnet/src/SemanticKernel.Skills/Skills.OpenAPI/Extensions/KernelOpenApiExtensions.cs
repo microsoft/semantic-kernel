@@ -140,7 +140,10 @@ public static class KernelOpenApiExtensions
             throw new FileNotFoundException($"No OpenApi document for the specified path - {openApiDocumentPath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document.", openApiDocumentPath);
+        if (kernel.Log.IsEnabled(LogLevel.Trace))
+        {
+            kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document.", openApiDocumentPath);
+        }
 
         // TODO: never used, why?
         var skill = new Dictionary<string, ISKFunction>();
@@ -171,7 +174,10 @@ public static class KernelOpenApiExtensions
             throw new FileNotFoundException($"No OpenApi document for the specified path - {filePath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document", filePath);
+        if (kernel.Log.IsEnabled(LogLevel.Trace))
+        {
+            kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document", filePath);
+        }
 
         // TODO: never used, why?
         var skill = new Dictionary<string, ISKFunction>();
@@ -211,15 +217,21 @@ public static class KernelOpenApiExtensions
         {
             try
             {
-                kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
+                if (kernel.Log.IsEnabled(LogLevel.Trace))
+                {
+                    kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
+                }
                 var function = kernel.RegisterRestApiFunction(skillName, operation, authCallback, cancellationToken);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other Rest functions
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
-                    skillName, operation.Id, ex.Message);
+                if (kernel.Log.IsEnabled(LogLevel.Warning))
+                {
+                    kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                        skillName, operation.Id, ex.Message);
+                }
             }
         }
 
@@ -285,8 +297,11 @@ public static class KernelOpenApiExtensions
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
-                    ex.Message);
+                if (kernel.Log.IsEnabled(LogLevel.Warning))
+                {
+                    kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
+                        ex.Message);
+                }
                 context.Fail(ex.Message, ex);
             }
 

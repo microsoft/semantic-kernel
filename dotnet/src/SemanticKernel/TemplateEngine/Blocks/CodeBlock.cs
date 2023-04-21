@@ -34,7 +34,10 @@ internal class CodeBlock : Block, ICodeRendering
         {
             if (!token.IsValid(out errorMsg))
             {
-                this.Log.LogError(errorMsg);
+                if (this.Log.IsEnabled(LogLevel.Error))
+                {
+                    this.Log.LogError(errorMsg);
+                }
                 return false;
             }
         }
@@ -44,14 +47,20 @@ internal class CodeBlock : Block, ICodeRendering
             if (this._tokens[0].Type != BlockTypes.FunctionId)
             {
                 errorMsg = $"Unexpected second token found: {this._tokens[1].Content}";
-                this.Log.LogError(errorMsg);
+                if (this.Log.IsEnabled(LogLevel.Error))
+                {
+                    this.Log.LogError(errorMsg);
+                }
                 return false;
             }
 
             if (this._tokens[1].Type != BlockTypes.Value && this._tokens[1].Type != BlockTypes.Variable)
             {
                 errorMsg = "Functions support only one parameter";
-                this.Log.LogError(errorMsg);
+                if (this.Log.IsEnabled(LogLevel.Error))
+                {
+                    this.Log.LogError(errorMsg);
+                }
                 return false;
             }
         }
@@ -59,7 +68,10 @@ internal class CodeBlock : Block, ICodeRendering
         if (this._tokens.Count > 2)
         {
             errorMsg = $"Unexpected second token found: {this._tokens[1].Content}";
-            this.Log.LogError(errorMsg);
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError(errorMsg);
+            }
             return false;
         }
 
@@ -75,7 +87,10 @@ internal class CodeBlock : Block, ICodeRendering
             throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, error);
         }
 
-        this.Log.LogTrace("Rendering code: `{0}`", this.Content);
+        if (this.Log.IsEnabled(LogLevel.Trace))
+        {
+            this.Log.LogTrace("Rendering code: `{0}`", this.Content);
+        }
 
         switch (this._tokens[0].Type)
         {
@@ -102,7 +117,10 @@ internal class CodeBlock : Block, ICodeRendering
         if (!this.GetFunctionFromSkillCollection(context.Skills!, fBlock, out ISKFunction? function))
         {
             var errorMsg = $"Function `{fBlock.Content}` not found";
-            this.Log.LogError(errorMsg);
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError(errorMsg);
+            }
             throw new TemplateException(TemplateException.ErrorCodes.FunctionNotFound, errorMsg);
         }
 
@@ -113,7 +131,10 @@ internal class CodeBlock : Block, ICodeRendering
         if (this._tokens.Count > 1)
         {
             // TODO: PII
-            this.Log.LogTrace("Passing variable/value: `{0}`", this._tokens[1].Content);
+            if (this.Log.IsEnabled(LogLevel.Trace))
+            {
+                this.Log.LogTrace("Passing variable/value: `{0}`", this._tokens[1].Content);
+            }
             string input = ((ITextRendering)this._tokens[1]).Render(variablesClone);
             variablesClone.Update(input);
         }
@@ -128,7 +149,10 @@ internal class CodeBlock : Block, ICodeRendering
         if (result.ErrorOccurred)
         {
             var errorMsg = $"Function `{fBlock.Content}` execution failed. {result.LastException?.GetType().FullName}: {result.LastErrorDescription}";
-            this.Log.LogError(errorMsg);
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError(errorMsg);
+            }
             throw new TemplateException(TemplateException.ErrorCodes.RuntimeError, errorMsg, result.LastException);
         }
 

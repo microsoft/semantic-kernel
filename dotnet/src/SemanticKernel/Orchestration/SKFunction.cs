@@ -116,13 +116,19 @@ public sealed class SKFunction : ISKFunction, IDisposable
             catch (AIException ex)
             {
                 const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
-                log?.LogError(ex, message, skillName, functionName, ex.Message, ex.Detail);
+                if (log is not null && log.IsEnabled(LogLevel.Error))
+                {
+                    log.LogError(ex, message, skillName, functionName, ex.Message, ex.Detail);
+                }
                 context.Fail(ex.Message, ex);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
-                log?.LogError(ex, message, skillName, functionName, ex.Message);
+                if (log is not null && log.IsEnabled(LogLevel.Error))
+                {
+                    log.LogError(ex, message, skillName, functionName, ex.Message);
+                }
                 context.Fail(ex.Message, ex);
             }
 
@@ -324,7 +330,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         if (this.IsSemantic) { return; }
 
-        this._log.LogError("The function is not semantic");
+        if (this._log.IsEnabled(LogLevel.Error))
+        {
+            this._log.LogError("The function is not semantic");
+        }
         throw new KernelException(
             KernelException.ErrorCodes.InvalidFunctionType,
             "Invalid operation, the method requires a semantic function");
@@ -515,7 +524,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (!result.HasSkFunctionAttribute || skFunctionAttribute == null)
         {
-            log?.LogTrace("Method {0} doesn't have SKFunctionAttribute", result.Name);
+            if (log is not null && log.IsEnabled(LogLevel.Trace))
+            {
+                log.LogTrace("Method {0} doesn't have SKFunctionAttribute", result.Name);
+            }
             return result;
         }
 
@@ -572,7 +584,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         result.Description = skFunctionAttribute.Description ?? "";
 
-        log?.LogTrace("Method {0} found", result.Name);
+        if (log is not null && log.IsEnabled(LogLevel.Trace))
+        {
+            log.LogTrace("Method {0} found", result.Name);
+        }
 
         return result;
     }

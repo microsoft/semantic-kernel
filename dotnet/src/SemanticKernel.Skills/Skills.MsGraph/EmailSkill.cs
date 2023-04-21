@@ -75,7 +75,10 @@ public class EmailSkill
             return;
         }
 
-        this._logger.LogInformation("Sending email to '{0}' with subject '{1}'", recipients, subject);
+        if (this._logger.IsEnabled(LogLevel.Information))
+        {
+            this._logger.LogInformation("Sending email to '{0}' with subject '{1}'", recipients, subject);
+        }
         string[] recipientList = recipients.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
         await this._connector.SendEmailAsync(subject, content, recipientList);
     }

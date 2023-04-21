@@ -16,7 +16,10 @@ internal class VarBlock : Block, ITextRendering
     {
         if (this.Content.Length < 2)
         {
-            this.Log.LogError("The variable name is empty");
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError("The variable name is empty");
+            }
             return;
         }
 
@@ -32,21 +35,30 @@ internal class VarBlock : Block, ITextRendering
         if (string.IsNullOrEmpty(this.Content))
         {
             errorMsg = $"A variable must start with the symbol {Symbols.VarPrefix} and have a name";
-            this.Log.LogError(errorMsg);
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError(errorMsg);
+            }
             return false;
         }
 
         if (this.Content[0] != Symbols.VarPrefix)
         {
             errorMsg = $"A variable must start with the symbol {Symbols.VarPrefix}";
-            this.Log.LogError(errorMsg);
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError(errorMsg);
+            }
             return false;
         }
 
         if (this.Content.Length < 2)
         {
             errorMsg = "The variable name is empty";
-            this.Log.LogError(errorMsg);
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError(errorMsg);
+            }
             return false;
         }
 
@@ -54,7 +66,10 @@ internal class VarBlock : Block, ITextRendering
         {
             errorMsg = $"The variable name '{this.Name}' contains invalid characters. " +
                        "Only alphanumeric chars and underscore are allowed.";
-            this.Log.LogError(errorMsg);
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError(errorMsg);
+            }
             return false;
         }
 
@@ -69,12 +84,18 @@ internal class VarBlock : Block, ITextRendering
         if (string.IsNullOrEmpty(this.Name))
         {
             const string errMsg = "Variable rendering failed, the variable name is empty";
-            this.Log.LogError(errMsg);
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError(errMsg);
+            }
             throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, errMsg);
         }
 
         var exists = variables.Get(this.Name, out string value);
-        if (!exists) { this.Log.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name); }
+        if (!exists && this.Log.IsEnabled(LogLevel.Warning))
+        {
+            this.Log.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name);
+        }
 
         return exists ? value : string.Empty;
     }

@@ -179,7 +179,10 @@ public abstract class OpenAIClientBase : IDisposable
         }
         catch (Exception ex) when (ex is NotSupportedException or JsonException)
         {
-            this.Log.LogTrace("Unable to extract error from response body content. Exception: {0}:{1}", ex.GetType(), ex.Message);
+            if (this.Log.IsEnabled(LogLevel.Trace))
+            {
+                this.Log.LogTrace("Unable to extract error from response body content. Exception: {0}:{1}", ex.GetType(), ex.Message);
+            }
             return null;
         }
     }
@@ -203,7 +206,10 @@ public abstract class OpenAIClientBase : IDisposable
                 throw new AIException(AIException.ErrorCodes.NoResponse, "Empty response");
             }
 
-            this.Log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
+            if (this.Log.IsEnabled(LogLevel.Trace))
+            {
+                this.Log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
+            }
 
             responseJson = await response.Content.ReadAsStringAsync();
             string? errorDetail = this.GetErrorMessageFromResponse(responseJson);

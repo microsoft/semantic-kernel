@@ -67,7 +67,10 @@ public class TextMemorySkill
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
         Verify.NotEmpty(key, "Memory key not defined");
 
-        context.Log.LogTrace("Recalling memory with key '{0}' from collection '{1}'", key, collection);
+        if (context.Log.IsEnabled(LogLevel.Trace))
+        {
+            context.Log.LogTrace("Recalling memory with key '{0}' from collection '{1}'", key, collection);
+        }
 
         var memory = await context.Memory.GetAsync(collection, key);
 
@@ -101,7 +104,10 @@ public class TextMemorySkill
         var limit = context.Variables.ContainsKey(LimitParam) ? context[LimitParam] : DefaultLimit;
         if (string.IsNullOrWhiteSpace(limit)) { limit = DefaultLimit; }
 
-        context.Log.LogTrace("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
+        if (context.Log.IsEnabled(LogLevel.Trace))
+        {
+            context.Log.LogTrace("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
+        }
 
         // TODO: support locales, e.g. "0.7" and "0,7" must both work
         int limitInt = int.Parse(limit, CultureInfo.InvariantCulture);
@@ -109,7 +115,10 @@ public class TextMemorySkill
             .SearchAsync(collection, text, limitInt, minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture))
             .ToEnumerable();
 
-        context.Log.LogTrace("Done looking for memories in collection '{0}')", collection);
+        if (context.Log.IsEnabled(LogLevel.Trace))
+        {
+            context.Log.LogTrace("Done looking for memories in collection '{0}')", collection);
+        }
 
         string resultString;
 
@@ -123,7 +132,8 @@ public class TextMemorySkill
             resultString = JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
         }
 
-        if (resultString.Length == 0)
+        if (resultString.Length == 0 &&
+            context.Log.IsEnabled(LogLevel.Warning))
         {
             context.Log.LogWarning("Memories not found in collection: {0}", collection);
         }
@@ -155,7 +165,10 @@ public class TextMemorySkill
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
         Verify.NotEmpty(key, "Memory key not defined");
 
-        context.Log.LogTrace("Saving memory to collection '{0}'", collection);
+        if (context.Log.IsEnabled(LogLevel.Trace))
+        {
+            context.Log.LogTrace("Saving memory to collection '{0}'", collection);
+        }
 
         await context.Memory.SaveInformationAsync(collection, text: text, id: key);
     }
@@ -181,7 +194,10 @@ public class TextMemorySkill
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
         Verify.NotEmpty(key, "Memory key not defined");
 
-        context.Log.LogTrace("Removing memory from collection '{0}'", collection);
+        if (context.Log.IsEnabled(LogLevel.Trace))
+        {
+            context.Log.LogTrace("Removing memory from collection '{0}'", collection);
+        }
 
         await context.Memory.RemoveAsync(collection, key);
     }

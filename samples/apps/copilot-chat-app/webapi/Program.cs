@@ -57,7 +57,10 @@ public static class Program
 
         // Log the health probe URL
         string hostName = Dns.GetHostName();
-        logger.LogInformation("Health probe: https://{Host}:{Port}/probe", hostName, serverPort);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Health probe: https://{Host}:{Port}/probe", hostName, serverPort);
+        }
 
         app.Run();
     }

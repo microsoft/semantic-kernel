@@ -21,7 +21,10 @@ internal class FunctionIdBlock : Block, ITextRendering
         var functionNameParts = this.Content.Split('.');
         if (functionNameParts.Length > 2)
         {
-            this.Log.LogError("Invalid function name `{0}`", this.Content);
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError("Invalid function name `{0}`", this.Content);
+            }
             throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
                 "A function name can contain at most one dot separating the skill name from the function name");
         }

@@ -31,7 +31,8 @@ internal static class SemanticKernelFactory
 
         // Text embedding service is optional, don't fail if we were not given the config
         if (memoryStore != null &&
-            !apiConfig.EmbeddingConfig.IsValid())
+            !apiConfig.EmbeddingConfig.IsValid() &&
+            logger.IsEnabled(LogLevel.Warning))
         {
             logger.LogWarning("Text embedding service has not been supplied");
         }

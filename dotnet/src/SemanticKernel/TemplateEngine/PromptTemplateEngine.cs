@@ -36,7 +36,10 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     /// <inheritdoc/>
     public IList<Block> ExtractBlocks(string? templateText, bool validate = true)
     {
-        this._log.LogTrace("Extracting blocks from template: {0}", templateText);
+        if (this._log.IsEnabled(LogLevel.Trace))
+        {
+            this._log.LogTrace("Extracting blocks from template: {0}", templateText);
+        }
         var blocks = this._tokenizer.Tokenize(templateText);
 
         if (validate)
@@ -56,7 +59,10 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     /// <inheritdoc/>
     public async Task<string> RenderAsync(string templateText, SKContext context)
     {
-        this._log.LogTrace("Rendering string template: {0}", templateText);
+        if (this._log.IsEnabled(LogLevel.Trace))
+        {
+            this._log.LogTrace("Rendering string template: {0}", templateText);
+        }
         var blocks = this.ExtractBlocks(templateText);
         return await this.RenderAsync(blocks, context);
     }
@@ -64,7 +70,10 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     /// <inheritdoc/>
     public async Task<string> RenderAsync(IList<Block> blocks, SKContext context)
     {
-        this._log.LogTrace("Rendering list of {0} blocks", blocks.Count);
+        if (this._log.IsEnabled(LogLevel.Trace))
+        {
+            this._log.LogTrace("Rendering list of {0} blocks", blocks.Count);
+        }
         var result = new StringBuilder();
         foreach (var block in blocks)
         {
@@ -80,20 +89,29 @@ public class PromptTemplateEngine : IPromptTemplateEngine
 
                 default:
                     const string error = "Unexpected block type, the block doesn't have a rendering method";
-                    this._log.LogError(error);
+                    if (this._log.IsEnabled(LogLevel.Error))
+                    {
+                        this._log.LogError(error);
+                    }
                     throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, error);
             }
         }
 
         // TODO: remove PII, allow tracing prompts differently
-        this._log.LogDebug("Rendered prompt: {0}", result);
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Rendered prompt: {0}", result);
+        }
         return result.ToString();
     }
 
     /// <inheritdoc/>
     public IList<Block> RenderVariables(IList<Block> blocks, ContextVariables? variables)
     {
-        this._log.LogTrace("Rendering variables");
+        if (this._log.IsEnabled(LogLevel.Trace))
+        {
+            this._log.LogTrace("Rendering variables");
+        }
         return blocks.Select(block => block.Type != BlockTypes.Variable
             ? block
             : new TextBlock(((ITextRendering)block).Render(variables), this._log)).ToList();
@@ -104,7 +122,10 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         IList<Block> blocks,
         SKContext executionContext)
     {
-        this._log.LogTrace("Rendering code");
+        if (this._log.IsEnabled(LogLevel.Trace))
+        {
+            this._log.LogTrace("Rendering code");
+        }
         var updatedBlocks = new List<Block>();
         foreach (var block in blocks)
         {

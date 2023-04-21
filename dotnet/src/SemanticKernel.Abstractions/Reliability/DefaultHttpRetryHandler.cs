@@ -75,8 +75,10 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                 // just return
                 if (retryCount >= this._config.MaxRetryCount)
                 {
-                    this._log.LogError(
-                        "Error executing request, max retry count reached. Reason: {0}", reason);
+                    if (this._log.IsEnabled(LogLevel.Error))
+                    {
+                        this._log.LogError("Error executing request, max retry count reached. Reason: {0}", reason);
+                    }
                     return response;
                 }
 
@@ -85,9 +87,12 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                 if (!this.HasTimeForRetry(start, retryCount, response, out waitFor))
                 {
                     var timeTaken = this._timeProvider.GetCurrentTime() - start;
-                    this._log.LogError(
-                        "Error executing request, max total retry time reached. Reason: {0}. Time spent: {1}ms", reason,
-                        timeTaken.TotalMilliseconds);
+                    if (this._log.IsEnabled(LogLevel.Error))
+                    {
+                        this._log.LogError(
+                            "Error executing request, max total retry time reached. Reason: {0}. Time spent: {1}ms", reason,
+                            timeTaken.TotalMilliseconds);
+                    }
                     return response;
                 }
             }
@@ -96,27 +101,35 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                 reason = e.GetType().ToString();
                 if (retryCount >= this._config.MaxRetryCount)
                 {
-                    this._log.LogError(e,
-                        "Error executing request, max retry count reached. Reason: {0}", reason);
+                    if (this._log.IsEnabled(LogLevel.Error))
+                    {
+                        this._log.LogError(e, "Error executing request, max retry count reached. Reason: {0}", reason);
+                    }
                     throw;
                 }
                 else if (!this.HasTimeForRetry(start, retryCount, response, out waitFor))
                 {
                     var timeTaken = this._timeProvider.GetCurrentTime() - start;
-                    this._log.LogError(
+                    if (this._log.IsEnabled(LogLevel.Error))
+                    {
+                        this._log.LogError(
                         "Error executing request, max total retry time reached. Reason: {0}. Time spent: {1}ms", reason,
                         timeTaken.TotalMilliseconds);
+                    }
                     throw;
                 }
             }
 
             // If the request requires a retry then we'll retry
-            this._log.LogWarning(
-                "Error executing action [attempt {0} of {1}]. Reason: {2}. Will retry after {3}ms",
-                retryCount + 1,
-                this._config.MaxRetryCount,
-                reason,
-                waitFor.TotalMilliseconds);
+            if (this._log.IsEnabled(LogLevel.Warning))
+            {
+                this._log.LogWarning(
+                    "Error executing action [attempt {0} of {1}]. Reason: {2}. Will retry after {3}ms",
+                    retryCount + 1,
+                    this._config.MaxRetryCount,
+                    reason,
+                    waitFor.TotalMilliseconds);
+            }
 
             // Increase retryCount
             retryCount++;

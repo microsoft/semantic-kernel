@@ -50,13 +50,19 @@ public class CosmosMemoryStore : IMemoryStore
         newStore._log = log ?? NullLogger<CosmosMemoryStore>.Instance;
         var response = await client.CreateDatabaseIfNotExistsAsync(newStore._databaseName, cancellationToken: cancel);
 
-        if (response.StatusCode == HttpStatusCode.Created)
+        if (response.StatusCode is HttpStatusCode.Created)
         {
-            newStore._log.LogInformation("Created database {0}", newStore._databaseName);
+            if (newStore._log.IsEnabled(LogLevel.Information))
+            {
+                newStore._log.LogInformation("Created database {0}", newStore._databaseName);
+            }
         }
         else if (response.StatusCode == HttpStatusCode.OK)
         {
-            newStore._log.LogInformation("Database {0}", newStore._databaseName);
+            if (newStore._log.IsEnabled(LogLevel.Information))
+            {
+                newStore._log.LogInformation("Database {0}", newStore._databaseName);
+            }
         }
         else
         {
@@ -72,7 +78,10 @@ public class CosmosMemoryStore : IMemoryStore
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
     {
         // Azure Cosmos DB does not support listing all Containers, this does not break the interface but it is not ideal.
-        this._log.LogWarning("Listing all containers is not supported by Azure Cosmos DB, returning empty list.");
+        if (this._log.IsEnabled(LogLevel.Warning))
+        {
+            this._log.LogWarning("Listing all containers is not supported by Azure Cosmos DB, returning empty list.");
+        }
 
         return Enumerable.Empty<string>().ToAsyncEnumerable();
     }
@@ -84,11 +93,17 @@ public class CosmosMemoryStore : IMemoryStore
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
-            this._log.LogInformation("Created collection {0}", collectionName);
+            if (this._log.IsEnabled(LogLevel.Information))
+            {
+                this._log.LogInformation("Created collection {0}", collectionName);
+            }
         }
         else if (response.StatusCode == HttpStatusCode.OK)
         {
-            this._log.LogInformation("Collection {0} already exists", collectionName);
+            if (this._log.IsEnabled(LogLevel.Information))
+            {
+                this._log.LogInformation("Collection {0} already exists", collectionName);
+            }
         }
         else
         {
@@ -114,7 +129,10 @@ public class CosmosMemoryStore : IMemoryStore
         }
         catch (CosmosException ex)
         {
-            this._log.LogError(ex, "Failed to delete collection {0}: {2} - {3}", collectionName, ex.StatusCode, ex.Message);
+            if (this._log.IsEnabled(LogLevel.Error))
+            {
+                this._log.LogError(ex, "Failed to delete collection {0}: {2} - {3}", collectionName, ex.StatusCode, ex.Message);
+            }
         }
     }
 
@@ -131,11 +149,17 @@ public class CosmosMemoryStore : IMemoryStore
 
         if (response == null)
         {
-            this._log?.LogWarning("Received no get response collection {1}", collectionName);
+            if (this._log is ILogger log && log.IsEnabled(LogLevel.Warning))
+            {
+                log.LogWarning("Received no get response collection {1}", collectionName);
+            }
         }
         else if (response.StatusCode != HttpStatusCode.OK)
         {
-            this._log?.LogWarning("Failed to get record from collection {1} with status code {2}", collectionName, response.StatusCode);
+            if (this._log is ILogger log && log.IsEnabled(LogLevel.Warning))
+            {
+                log.LogWarning("Failed to get record from collection {1} with status code {2}", collectionName, response.StatusCode);
+            }
         }
         else
         {
@@ -191,7 +215,10 @@ public class CosmosMemoryStore : IMemoryStore
 
         if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
         {
-            this._log.LogInformation("Upserted item to collection {0}", collectionName);
+            if (this._log.IsEnabled(LogLevel.Information))
+            {
+                this._log.LogInformation("Upserted item to collection {0}", collectionName);
+            }
         }
         else
         {
@@ -221,7 +248,10 @@ public class CosmosMemoryStore : IMemoryStore
 
         if (response.StatusCode == HttpStatusCode.OK)
         {
-            this._log.LogInformation("Record deleted from {0}", collectionName);
+            if (this._log.IsEnabled(LogLevel.Information))
+            {
+                this._log.LogInformation("Record deleted from {0}", collectionName);
+            }
         }
         else
         {

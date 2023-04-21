@@ -56,7 +56,10 @@ public class SpeechTokenController : ControllerBase
 
             var result = await client.PostAsync(uriBuilder.Uri, null);
             result.EnsureSuccessStatusCode();
-            this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
+            if (this._logger.IsEnabled(LogLevel.Debug))
+            {
+                this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
+            }
             return await result.Content.ReadAsStringAsync();
         }
     }

@@ -44,12 +44,18 @@ public class CloudDriveSkill
     [SKFunctionInput(Description = "Path to file")]
     public async Task<string> GetFileContentAsync(string filePath, SKContext context)
     {
-        this._logger.LogDebug("Getting file content for '{0}'", filePath);
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("Getting file content for '{0}'", filePath);
+        }
         Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, context.CancellationToken);
 
         using StreamReader sr = new StreamReader(fileContentStream);
         string content = await sr.ReadToEndAsync();
-        this._logger.LogDebug("File content: {0}", content);
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("File content: {0}", content);
+        }
         return content;
     }
 
@@ -65,7 +71,10 @@ public class CloudDriveSkill
             return;
         }
 
-        this._logger.LogDebug("Uploading file '{0}'", filePath);
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("Uploading file '{0}'", filePath);
+        }
 
         // TODO Add support for large file uploads (i.e. upload sessions)
 
@@ -86,7 +95,10 @@ public class CloudDriveSkill
     [SKFunctionInput(Description = "Path to file")]
     public async Task<string> CreateLinkAsync(string filePath, SKContext context)
     {
-        this._logger.LogDebug("Creating link for '{0}'", filePath);
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("Creating link for '{0}'", filePath);
+        }
         const string type = "view"; // TODO expose this as an SK variable
         const string scope = "anonymous"; // TODO expose this as an SK variable
 

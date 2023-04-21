@@ -56,7 +56,10 @@ public class SemanticKernelController : ControllerBase
         [FromBody] Ask ask,
         string skillName, string functionName)
     {
-        this._logger.LogDebug("Received call to invoke {SkillName}/{FunctionName}", skillName, functionName);
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("Received call to invoke {SkillName}/{FunctionName}", skillName, functionName);
+        }
 
         if (string.IsNullOrWhiteSpace(ask.Input))
         {

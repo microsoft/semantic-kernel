@@ -116,7 +116,10 @@ public class CalendarSkill
             calendarEvent.Attendees = attendees.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        this._logger.LogInformation("Adding calendar event '{0}'", calendarEvent.Subject);
+        if (this._logger.IsEnabled(LogLevel.Information))
+        {
+            this._logger.LogInformation("Adding calendar event '{0}'", calendarEvent.Subject);
+        }
         await this._connector.AddEventAsync(calendarEvent);
     }
 }

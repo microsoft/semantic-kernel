@@ -111,7 +111,10 @@ internal static class SequentialPlanParser
                             {
                                 foreach (XmlAttribute attr in o2.Attributes)
                                 {
-                                    context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
+                                    if (context.Log.IsEnabled(LogLevel.Trace))
+                                    {
+                                        context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
+                                    }
                                     if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase)
                                         || attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
                                     {
@@ -130,7 +133,10 @@ internal static class SequentialPlanParser
                         }
                         else
                         {
-                            context.Log.LogTrace("{0}: appending function node {1}", parentNodeName, skillFunctionName);
+                            if (context.Log.IsEnabled(LogLevel.Trace))
+                            {
+                                context.Log.LogTrace("{0}: appending function node {1}", parentNodeName, skillFunctionName);
+                            }
                             plan.AddSteps(new Plan(o2.InnerText));
                         }
 
@@ -145,7 +151,10 @@ internal static class SequentialPlanParser
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            context.Log.LogError(e, "Plan parsing failed: {0}", e.Message);
+            if (context.Log.IsEnabled(LogLevel.Error))
+            {
+                context.Log.LogError(e, "Plan parsing failed: {0}", e.Message);
+            }
             throw;
         }
     }

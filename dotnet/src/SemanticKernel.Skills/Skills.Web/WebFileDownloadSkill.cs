@@ -57,21 +57,33 @@ public class WebFileDownloadSkill : IDisposable
     [SKFunctionContextParameter(Name = Parameters.FilePath, Description = "Path where to save file locally")]
     public async Task DownloadToFileAsync(string source, SKContext context)
     {
-        this._logger.LogDebug($"{nameof(this.DownloadToFileAsync)} got called");
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug($"{nameof(this.DownloadToFileAsync)} got called");
+        }
 
         if (!context.Variables.Get(Parameters.FilePath, out string filePath))
         {
-            this._logger.LogError($"Missing context variable in {nameof(this.DownloadToFileAsync)}");
+            if (this._logger.IsEnabled(LogLevel.Error))
+            {
+                this._logger.LogError($"Missing context variable in {nameof(this.DownloadToFileAsync)}");
+            }
             string errorMessage = $"Missing variable {Parameters.FilePath}";
             context.Fail(errorMessage);
 
             return;
         }
 
-        this._logger.LogDebug("Sending GET request for {0}", source);
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("Sending GET request for {0}", source);
+        }
         using HttpResponseMessage response = await this._httpClient.GetAsync(new Uri(source), HttpCompletionOption.ResponseHeadersRead, context.CancellationToken);
         response.EnsureSuccessStatusCode();
-        this._logger.LogDebug("Response received: {0}", response.StatusCode);
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("Response received: {0}", response.StatusCode);
+        }
 
         using Stream webStream = await response.Content.ReadAsStreamAsync();
         using FileStream outputFileStream = new(Environment.ExpandEnvironmentVariables(filePath), FileMode.Create);

@@ -27,7 +27,10 @@ internal class ValBlock : Block, ITextRendering
     {
         if (this.Content.Length < 2)
         {
-            this.Log.LogError("A value must have single quotes or double quotes on both sides");
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError("A value must have single quotes or double quotes on both sides");
+            }
             return;
         }
 
@@ -46,7 +49,10 @@ internal class ValBlock : Block, ITextRendering
         if (this.Content.Length < 2)
         {
             errorMsg = "A value must have single quotes or double quotes on both sides";
-            this.Log.LogError(errorMsg);
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError(errorMsg);
+            }
             return false;
         }
 
@@ -54,7 +60,10 @@ internal class ValBlock : Block, ITextRendering
         if (this._first != this._last)
         {
             errorMsg = "A value must be defined using either single quotes or double quotes, not both";
-            this.Log.LogError(errorMsg);
+            if (this.Log.IsEnabled(LogLevel.Error))
+            {
+                this.Log.LogError(errorMsg);
+            }
             return false;
         }
 

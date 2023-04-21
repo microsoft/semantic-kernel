@@ -85,7 +85,10 @@ public static class ImportSemanticSkillFromDirectoryExtension
                 Verify.NotNull(config, $"Invalid prompt template configuration, unable to parse {configPath}");
             }
 
-            kernel.Log.LogTrace("Config {0}: {1}", functionName, config.ToJson());
+            if (kernel.Log.IsEnabled(LogLevel.Trace))
+            {
+                kernel.Log.LogTrace("Config {0}: {1}", functionName, config.ToJson());
+            }
 
             // Load prompt template
             var template = new PromptTemplate(File.ReadAllText(promptPath), config, kernel.PromptTemplateEngine);
@@ -93,7 +96,10 @@ public static class ImportSemanticSkillFromDirectoryExtension
             // Prepare lambda wrapping AI logic
             var functionConfig = new SemanticFunctionConfig(config, template);
 
-            kernel.Log.LogTrace("Registering function {0}.{1} loaded from {2}", skillDirectoryName, functionName, dir);
+            if (kernel.Log.IsEnabled(LogLevel.Trace))
+            {
+                kernel.Log.LogTrace("Registering function {0}.{1} loaded from {2}", skillDirectoryName, functionName, dir);
+            }
             skill[functionName] = kernel.RegisterSemanticFunction(skillDirectoryName, functionName, functionConfig);
         }
 

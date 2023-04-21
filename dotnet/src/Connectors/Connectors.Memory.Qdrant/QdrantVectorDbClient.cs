@@ -60,7 +60,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     public async IAsyncEnumerable<QdrantVectorRecord> GetVectorsByIdAsync(string collectionName, IEnumerable<string> pointIds, bool withVectors = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        this._log.LogDebug("Searching vectors by point ID");
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Searching vectors by point ID");
+        }
 
         using HttpRequestMessage request = GetVectorsRequest.Create(collectionName)
             .WithPointIDs(pointIds)
@@ -75,7 +78,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         catch (HttpRequestException e)
         {
-            this._log.LogDebug("Vectors not found {0}", e.Message);
+            if (this._log.IsEnabled(LogLevel.Debug))
+            {
+                this._log.LogDebug("Vectors not found {0}", e.Message);
+            }
             yield break;
         }
 
@@ -83,13 +89,19 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
 
         if (data == null)
         {
-            this._log.LogWarning("Unable to deserialize Get response");
+            if (this._log.IsEnabled(LogLevel.Warning))
+            {
+                this._log.LogWarning("Unable to deserialize Get response");
+            }
             yield break;
         }
 
         if (!data.Result.Any())
         {
-            this._log.LogWarning("Vectors not found");
+            if (this._log.IsEnabled(LogLevel.Warning))
+            {
+                this._log.LogWarning("Vectors not found");
+            }
             yield break;
         }
 
@@ -125,7 +137,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         catch (HttpRequestException e)
         {
-            this._log.LogDebug("Request for vector with payload ID failed {0}", e.Message);
+            if (this._log.IsEnabled(LogLevel.Debug))
+            {
+                this._log.LogDebug("Request for vector with payload ID failed {0}", e.Message);
+            }
             return null;
         }
 
@@ -133,13 +148,19 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
 
         if (data == null)
         {
-            this._log.LogWarning("Unable to deserialize Search response");
+            if (this._log.IsEnabled(LogLevel.Warning))
+            {
+                this._log.LogWarning("Unable to deserialize Search response");
+            }
             return null;
         }
 
         if (!data.Results.Any())
         {
-            this._log.LogDebug("Vector not found");
+            if (this._log.IsEnabled(LogLevel.Debug))
+            {
+                this._log.LogDebug("Vector not found");
+            }
             return null;
         }
 
@@ -150,7 +171,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             embedding: point.Vector ?? Array.Empty<float>(),
             payload: point.Payload,
             tags: null);
-        this._log.LogDebug("Vector found}");
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Vector found}");
+        }
 
         return record;
     }
@@ -158,7 +182,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <inheritdoc/>
     public async Task DeleteVectorsByIdAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancel = default)
     {
-        this._log.LogDebug("Deleting vector by point ID");
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Deleting vector by point ID");
+        }
 
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
         Verify.NotNull(pointIds, "Qdrant point IDs are NULL");
@@ -180,16 +207,25 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
             if (result?.Status == "ok")
             {
-                this._log.LogDebug("Vector being deleted");
+                if (this._log.IsEnabled(LogLevel.Debug))
+                {
+                    this._log.LogDebug("Vector being deleted");
+                }
             }
             else
             {
-                this._log.LogWarning("Vector delete failed");
+                if (this._log.IsEnabled(LogLevel.Warning))
+                {
+                    this._log.LogWarning("Vector delete failed");
+                }
             }
         }
         catch (HttpRequestException e)
         {
-            this._log.LogError(e, "Vector delete request failed: {0}", e.Message);
+            if (this._log.IsEnabled(LogLevel.Error))
+            {
+                this._log.LogError(e, "Vector delete request failed: {0}", e.Message);
+            }
         }
     }
 
@@ -200,11 +236,17 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
 
         if (existingRecord == null)
         {
-            this._log.LogDebug("Vector not found, nothing to delete");
+            if (this._log.IsEnabled(LogLevel.Debug))
+            {
+                this._log.LogDebug("Vector not found, nothing to delete");
+            }
             return;
         }
 
-        this._log.LogDebug("Vector found, deleting");
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Vector found, deleting");
+        }
 
         using var request = DeleteVectorsRequest
             .DeleteFrom(collectionName)
@@ -219,23 +261,35 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
             if (result?.Status == "ok")
             {
-                this._log.LogDebug("Vector being deleted");
+                if (this._log.IsEnabled(LogLevel.Debug))
+                {
+                    this._log.LogDebug("Vector being deleted");
+                }
             }
             else
             {
-                this._log.LogWarning("Vector delete failed");
+                if (this._log.IsEnabled(LogLevel.Warning))
+                {
+                    this._log.LogWarning("Vector delete failed");
+                }
             }
         }
         catch (HttpRequestException e)
         {
-            this._log.LogError(e, "Vector delete request failed: {0}", e.Message);
+            if (this._log.IsEnabled(LogLevel.Error))
+            {
+                this._log.LogError(e, "Vector delete request failed: {0}", e.Message);
+            }
         }
     }
 
     /// <inheritdoc/>
     public async Task UpsertVectorsAsync(string collectionName, IEnumerable<QdrantVectorRecord> vectorData, CancellationToken cancel = default)
     {
-        this._log.LogDebug("Upserting vectors");
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Upserting vectors");
+        }
         Verify.NotNull(vectorData, "The vector data entries are NULL");
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
 
@@ -262,16 +316,25 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             var result = JsonSerializer.Deserialize<UpsertVectorResponse>(responseContent);
             if (result?.Status == "ok")
             {
-                this._log.LogDebug("Vectors upserted");
+                if (this._log.IsEnabled(LogLevel.Debug))
+                {
+                    this._log.LogDebug("Vectors upserted");
+                }
             }
             else
             {
-                this._log.LogWarning("Vector upserts failed");
+                if (this._log.IsEnabled(LogLevel.Warning))
+                {
+                    this._log.LogWarning("Vector upserts failed");
+                }
             }
         }
         catch (HttpRequestException e)
         {
-            this._log.LogError(e, "Vector upserts request failed: {0}", e.Message);
+            if (this._log.IsEnabled(LogLevel.Error))
+            {
+                this._log.LogError(e, "Vector upserts request failed: {0}", e.Message);
+            }
         }
     }
 
@@ -285,7 +348,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         IEnumerable<string>? requiredTags = null,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        this._log.LogDebug("Searching top {0} nearest vectors", top);
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Searching top {0} nearest vectors", top);
+        }
 
         Verify.NotNull(target, "The given vector is NULL");
 
@@ -306,13 +372,19 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
 
         if (data == null)
         {
-            this._log.LogWarning("Unable to deserialize Search response");
+            if (this._log.IsEnabled(LogLevel.Warning))
+            {
+                this._log.LogWarning("Unable to deserialize Search response");
+            }
             yield break;
         }
 
         if (!data.Results.Any())
         {
-            this._log.LogWarning("Nothing found");
+            if (this._log.IsEnabled(LogLevel.Warning))
+            {
+                this._log.LogWarning("Nothing found");
+            }
             yield break;
         }
 
@@ -339,7 +411,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        this._log.LogDebug("Creating collection {0}", collectionName);
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Creating collection {0}", collectionName);
+        }
 
         using var request = CreateCollectionRequest
             .Create(collectionName, this._vectorSize, QdrantDistanceType.Cosine)
@@ -359,7 +434,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         catch (HttpRequestException e)
         {
-            this._log.LogError(e, "Collection upsert failed: {0}, {1}", e.Message, responseContent);
+            if (this._log.IsEnabled(LogLevel.Error))
+            {
+                this._log.LogError(e, "Collection upsert failed: {0}, {1}", e.Message, responseContent);
+            }
             throw;
         }
     }
@@ -367,7 +445,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        this._log.LogDebug("Deleting collection {0}", collectionName);
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Deleting collection {0}", collectionName);
+        }
 
         using var request = DeleteCollectionRequest.Create(collectionName).Build();
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
@@ -384,7 +465,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         catch (HttpRequestException e)
         {
-            this._log.LogError(e, "Collection deletion failed: {0}, {1}", e.Message, responseContent);
+            if (this._log.IsEnabled(LogLevel.Error))
+            {
+                this._log.LogError(e, "Collection deletion failed: {0}, {1}", e.Message, responseContent);
+            }
             throw;
         }
     }
@@ -392,7 +476,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
     {
-        this._log.LogDebug("Fetching collection {0}", collectionName);
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Fetching collection {0}", collectionName);
+        }
 
         using var request = GetCollectionsRequest.Create(collectionName).Build();
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
@@ -407,7 +494,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         else
         {
-            this._log.LogError("Collection fetch failed: {0}, {1}", response.StatusCode, responseContent);
+            if (this._log.IsEnabled(LogLevel.Error))
+            {
+                this._log.LogError("Collection fetch failed: {0}, {1}", response.StatusCode, responseContent);
+            }
             return false;
         }
     }
@@ -415,7 +505,10 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> ListCollectionsAsync([EnumeratorCancellation] CancellationToken cancel = default)
     {
-        this._log.LogDebug("Listing collections");
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Listing collections");
+        }
 
         using var request = ListCollectionsRequest.Create().Build();
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel);
@@ -453,11 +546,17 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         string responseContent = await response.Content.ReadAsStringAsync();
         if (response.IsSuccessStatusCode)
         {
-            this._log.LogTrace("Qdrant responded successfully");
+            if (this._log.IsEnabled(LogLevel.Trace))
+            {
+                this._log.LogTrace("Qdrant responded successfully");
+            }
         }
         else
         {
-            this._log.LogTrace("Qdrant responded with error");
+            if (this._log.IsEnabled(LogLevel.Trace))
+            {
+                this._log.LogTrace("Qdrant responded with error");
+            }
         }
 
         return (response, responseContent);

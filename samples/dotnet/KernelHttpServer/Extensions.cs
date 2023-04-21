@@ -193,7 +193,10 @@ internal static class Extensions
                 }
                 catch (TemplateException e)
                 {
-                    logger.LogWarning("Could not load skill from {0} with error: {1}", currentFolder.Name, e.Message);
+                    if (logger.IsEnabled(LogLevel.Warning))
+                    {
+                        logger.LogWarning("Could not load skill from {0} with error: {1}", currentFolder.Name, e.Message);
+                    }
                 }
             }
         }

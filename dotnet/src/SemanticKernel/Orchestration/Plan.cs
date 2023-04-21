@@ -301,9 +301,12 @@ public sealed class Plan : ISKFunction
 
             if (result.ErrorOccurred)
             {
-                result.Log.LogError(
-                    result.LastException,
-                    "Something went wrong in plan step {0}.{1}:'{2}'", this.SkillName, this.Name, context.LastErrorDescription);
+                if (result.Log.IsEnabled(LogLevel.Error))
+                {
+                    result.Log.LogError(
+                        result.LastException,
+                        "Something went wrong in plan step {0}.{1}:'{2}'", this.SkillName, this.Name, context.LastErrorDescription);
+                }
                 return result;
             }
 

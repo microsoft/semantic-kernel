@@ -85,7 +85,10 @@ public class TaskListSkill
             task.Reminder = reminder;
         }
 
-        this._logger.LogInformation("Adding task '{0}' to task list '{1}'", task.Title, defaultTaskList.Name);
+        if (this._logger.IsEnabled(LogLevel.Information))
+        {
+            this._logger.LogInformation("Adding task '{0}' to task list '{1}'", task.Title, defaultTaskList.Name);
+        }
         await this._connector.AddTaskAsync(defaultTaskList.Id, task, context.CancellationToken);
     }
 }

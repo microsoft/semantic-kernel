@@ -35,21 +35,33 @@ public class BingConnector : IWebSearchEngineConnector, IDisposable
     {
         Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count=1");
 
-        this._logger.LogDebug("Sending request: {0}", uri);
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("Sending request: {0}", uri);
+        }
         HttpResponseMessage response = await this._httpClient.GetAsync(uri, cancellationToken);
         response.EnsureSuccessStatusCode();
-        this._logger.LogDebug("Response received: {0}", response.StatusCode);
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("Response received: {0}", response.StatusCode);
+        }
 
         string json = await response.Content.ReadAsStringAsync();
-        this._logger.LogTrace("Response content received: {0}", json);
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this._logger.LogTrace("Response content received: {0}", json);
+        }
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
         WebPage? firstResult = data?.WebPages?.Value?.FirstOrDefault();
 
-        this._logger.LogDebug("Result: {0}, {1}, {2}",
-            firstResult?.Name,
-            firstResult?.Url,
-            firstResult?.Snippet);
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this._logger.LogDebug("Result: {0}, {1}, {2}",
+                firstResult?.Name,
+                firstResult?.Url,
+                firstResult?.Snippet);
+        }
 
         return firstResult?.Snippet ?? string.Empty;
     }

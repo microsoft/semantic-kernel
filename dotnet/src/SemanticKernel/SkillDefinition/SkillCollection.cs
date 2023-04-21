@@ -110,7 +110,10 @@ public class SkillCollection : ISkillCollection
             return this._skillCollection[skillName][functionName];
         }
 
-        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        if (this._log.IsEnabled(LogLevel.Error))
+        {
+            this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        }
         throw new KernelException(
             KernelException.ErrorCodes.FunctionNotAvailable,
             $"Function not available {skillName}.{functionName}");
@@ -130,7 +133,10 @@ public class SkillCollection : ISkillCollection
             return this._skillCollection[skillName][functionName];
         }
 
-        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        if (this._log.IsEnabled(LogLevel.Error))
+        {
+            this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        }
         throw new KernelException(
             KernelException.ErrorCodes.FunctionNotAvailable,
             $"Function not available {skillName}.{functionName}");
@@ -144,7 +150,10 @@ public class SkillCollection : ISkillCollection
             return this._skillCollection[skillName][functionName];
         }
 
-        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        if (this._log.IsEnabled(LogLevel.Error))
+        {
+            this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        }
         throw new KernelException(
             KernelException.ErrorCodes.FunctionNotAvailable,
             $"Function not available {skillName}.{functionName}");
