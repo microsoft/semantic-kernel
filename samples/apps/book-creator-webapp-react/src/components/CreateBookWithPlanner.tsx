@@ -11,7 +11,7 @@ import {
     Spinner,
     Subtitle1,
     Subtitle2,
-    Title3
+    Title3,
 } from '@fluentui/react-components';
 import { Book24Regular, Code24Regular, Thinking24Regular } from '@fluentui/react-icons';
 import { FC, useState } from 'react';
@@ -154,7 +154,7 @@ const CreateBookWithPlanner: FC<IData> = ({ uri, title, description, keyConfig, 
             functionName: 'createplan',
             input: JSON.stringify(ask),
             timestamp: new Date().toTimeString(),
-            uri: '/api/skills/plannerskill/invoke/createplanasync',
+            uri: '/api/planner/createplan',
         };
         setProcessHistory((processHistory) => [...processHistory, historyItem]);
     };
