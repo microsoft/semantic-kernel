@@ -113,7 +113,6 @@ class Kernel(KernelBase, KernelExtensions):
         input_vars: Optional[ContextVariables] = None,
         input_str: Optional[str] = None,
     ) -> SKContext:
-
         # if the user passed in a context, prioritize it, but merge with any other inputs
         if input_context is not None:
             context = input_context
