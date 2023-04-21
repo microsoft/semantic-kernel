@@ -40,7 +40,7 @@ public static class Program
 
         await Example11_WebSearchQueries.RunAsync();
         Console.WriteLine("== DONE ==");
-
+        // a comment for testings
         await Example12_Planning.RunAsync();
         Console.WriteLine("== DONE ==");
 
