@@ -318,7 +318,7 @@ public sealed class PlanTests
             })
             .Returns(() => Task.FromResult(returnContext));
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView()
-        { Parameters = new List<ParameterView>() { new ParameterView() { Name = "variables" } } });
+            { Parameters = new List<ParameterView>() { new ParameterView() { Name = "variables" } } });
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
