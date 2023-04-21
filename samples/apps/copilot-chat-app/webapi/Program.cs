@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Options;
-using SemanticKernel.Service.Config;
 
 namespace SemanticKernel.Service;
 
@@ -30,7 +29,8 @@ public sealed class Program
             .AddLogging()
             .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Program>>()) // some services require an untemplated ILogger
             .AddOptions(builder.Configuration)
-            .AddSemanticKernelServices();
+            .AddSemanticKernelServices()
+            .AddPersistentChatStore();
 
         // Add in the rest of the services.
         builder.Services

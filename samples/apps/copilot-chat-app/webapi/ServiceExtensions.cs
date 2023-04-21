@@ -7,8 +7,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Auth;
@@ -25,7 +28,7 @@ internal static class ServicesExtensions
     /// </summary>
     internal static IServiceCollection AddOptions(this IServiceCollection services, Microsoft.Extensions.Configuration.ConfigurationManager configuration)
     {
-        // General configuration
+        // General  configuration
         services.AddOptions<ServiceOptions>()
             .Bind(configuration.GetSection(ServiceOptions.PropertyName))
             .ValidateDataAnnotations().ValidateOnStart();
@@ -115,71 +118,9 @@ internal static class ServicesExtensions
     }
 
     /// <summary>
-    /// Add Semantic Kernel services
-    /// </summary>
-    internal static IServiceCollection AddSemanticKernelServices(this IServiceCollection services)
-    {
-        
-        // The chat skill's prompts are stored in a separate file.
-        services.AddSingleton<PromptsConfig>(sp =>
-        {
-            string promptsConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "prompts.json");
-            PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(File.ReadAllText(promptsConfigPath)) ??
-                                            throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
-            promptsConfig.Validate();
-            return promptsConfig;
-        });
-        services.AddSingleton<PromptSettings>();
-
-        services.AddSingleton<IMemoryStore>(serviceProvider =>
-        {
-            MemoriesStoreOptions config = serviceProvider.GetRequiredService<IOptions<MemoriesStoreOptions>>().Value;
-
-            switch (config.Type)
-            {
-                case MemoriesStoreOptions.MemoriesStoreType.Volatile:
-                    return new VolatileMemoryStore();
-
-                case MemoriesStoreOptions.MemoriesStoreType.Qdrant:
-                    if (config.Qdrant is null)
-                    {
-                        throw new InvalidOperationException($"MemoriesStore:Qdrant is required when MemoriesStore:Type is '{MemoriesStoreOptions.MemoriesStoreType.Qdrant}'");
-                    }
-
-                    return new QdrantMemoryStore(
-                        host: config.Qdrant.Host,
-                        port: config.Qdrant.Port,
-                        vectorSize: config.Qdrant.VectorSize,
-                        logger: serviceProvider.GetRequiredService<ILogger<QdrantMemoryStore>>());
-
-                default:
-                    throw new InvalidOperationException($"Invalid 'MemoriesStore' type '{config.Type}'.");
-            }
-        });
-
-        services.AddScoped<ISemanticTextMemory>(serviceProvider => new SemanticTextMemory(
-                serviceProvider.GetRequiredService<IMemoryStore>(),
-                serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
-                    .ToTextEmbeddingsService(serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>())));
-
-        // Add persistent chat storage
-        AddPersistentChatStore(services);
-
-        // Add the Semantic Kernel
-        services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
-        services.AddScoped<ISkillCollection, SkillCollection>();
-        services.AddScoped<KernelConfig>(serviceProvider => new KernelConfig()
-                    .AddCompletionBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>())
-                    .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()));
-        services.AddScoped<IKernel, Kernel>();
-
-        return services;
-    }
-
-    /// <summary>
     /// Add persistent chat store services.
     /// </summary>
-    internal static void AddPersistentChatStore(IServiceCollection services)
+    internal static void AddPersistentChatStore(this IServiceCollection services)
     {
         IStorageContext<ChatSession> chatSessionInMemoryContext;
         IStorageContext<ChatMessage> chatMessageInMemoryContext;

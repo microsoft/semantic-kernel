@@ -1,56 +1,83 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Reflection;
-using Azure.Identity;
+using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.TemplateEngine;
+using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Skills;
 
-namespace SemanticKernel.Service.Config;
+namespace SemanticKernel.Service;
 
-internal static class ConfigExtensions
+internal static class SemanticKernelExtensions
 {
-    public static IHostBuilder AddConfiguration(this IHostBuilder host)
+    /// <summary>
+    /// Add Semantic Kernel services
+    /// </summary>
+    internal static IServiceCollection AddSemanticKernelServices(this IServiceCollection services)
     {
-        string? environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-
-        host.ConfigureAppConfiguration((builderContext, configBuilder) =>
+        // The chat skill's prompts are stored in a separate file.
+        services.AddSingleton<PromptsConfig>(sp =>
         {
-            configBuilder.AddJsonFile(
-                path: "appsettings.json",
-                optional: false,
-                reloadOnChange: true);
+            string promptsConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "prompts.json");
+            PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(File.ReadAllText(promptsConfigPath)) ??
+                                            throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
+            promptsConfig.Validate();
+            return promptsConfig;
+        });
+        services.AddSingleton<PromptSettings>();
 
-            configBuilder.AddJsonFile(
-                path: $"appsettings.{environment}.json",
-                optional: true,
-                reloadOnChange: true);
+        services.AddSingleton<IMemoryStore>(serviceProvider =>
+        {
+            MemoriesStoreOptions config = serviceProvider.GetRequiredService<IOptions<MemoriesStoreOptions>>().Value;
 
-            configBuilder.AddEnvironmentVariables();
-
-            configBuilder.AddUserSecrets(
-                assembly: Assembly.GetExecutingAssembly(),
-                optional: true,
-                reloadOnChange: true);
-
-            // For settings from Key Vault, see https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-8.0
-            string? keyVaultUri = builderContext.Configuration["KeyVaultUri"];
-            if (!string.IsNullOrWhiteSpace(keyVaultUri))
+            switch (config.Type)
             {
-                configBuilder.AddAzureKeyVault(
-                    new Uri(keyVaultUri),
-                    new DefaultAzureCredential());
+                case MemoriesStoreOptions.MemoriesStoreType.Volatile:
+                    return new VolatileMemoryStore();
 
-                // for more information on how to use DefaultAzureCredential, see https://learn.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet
+                case MemoriesStoreOptions.MemoriesStoreType.Qdrant:
+                    if (config.Qdrant is null)
+                    {
+                        throw new InvalidOperationException($"MemoriesStore:Qdrant is required when MemoriesStore:Type is '{MemoriesStoreOptions.MemoriesStoreType.Qdrant}'");
+                    }
+
+                    return new QdrantMemoryStore(
+                        host: config.Qdrant.Host,
+                        port: config.Qdrant.Port,
+                        vectorSize: config.Qdrant.VectorSize,
+                        logger: serviceProvider.GetRequiredService<ILogger<QdrantMemoryStore>>());
+
+                default:
+                    throw new InvalidOperationException($"Invalid 'MemoriesStore' type '{config.Type}'.");
             }
         });
 
-        return host;
+        services.AddScoped<ISemanticTextMemory>(serviceProvider => new SemanticTextMemory(
+                serviceProvider.GetRequiredService<IMemoryStore>(),
+                serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
+                    .ToTextEmbeddingsService(serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>())));
+
+
+        // Add the Semantic Kernel
+        services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
+        services.AddScoped<ISkillCollection, SkillCollection>();
+        services.AddScoped<KernelConfig>(serviceProvider => new KernelConfig()
+                    .AddCompletionBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>())
+                    .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()));
+        services.AddScoped<IKernel, Kernel>();
+
+        return services;
     }
 
-    public static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
+    internal static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
     {
         AIServiceOptions config = aiServiceOptions.Get(AIServiceOptions.CompletionPropertyName);
 
