@@ -15,18 +15,8 @@ namespace Microsoft.SemanticKernel.Skills.Web;
 /// </summary>
 public class WebSearchEngineSkill
 {
-    public static class Parameters
-    {
-        /// <summary>
-        /// Number of results.
-        /// </summary>
-        public const string Count = "count";
-
-        /// <summary>
-        /// Number of results to skip.
-        /// </summary>
-        public const string Offset = "offset";         
-    }
+    public const string CountParam = "count";
+    public const string OffsetParam = "offset";
 
     private const string DefaultCount = "1";
     private const string DefaultOffset = "0";
@@ -39,20 +29,21 @@ public class WebSearchEngineSkill
     }
 
     [SKFunction("Perform a web search.")]
+    [SKFunctionName("Search")]
     [SKFunctionInput(Description = "Text to search for")]
-    [SKFunctionContextParameter(Name = Parameters.Count, Description = "Number of results")]
-    [SKFunctionContextParameter(Name = Parameters.Offset, Description = "Number of results to skip")]
+    [SKFunctionContextParameter(Name = CountParam, Description = "Number of results", DefaultValue = DefaultCount)]
+    [SKFunctionContextParameter(Name = OffsetParam, Description = "Number of results to skip", DefaultValue = DefaultOffset)]
     public async Task<string> SearchAsync(string query, SKContext context)
     {
-        var count = context.Variables.ContainsKey(Parameters.Count) ? context[Parameters.Count] : "1";        
+        var count = context.Variables.ContainsKey(CountParam) ? context[CountParam] : DefaultCount;
         if (string.IsNullOrWhiteSpace(count)) { count = DefaultCount; }
 
-        var offset = context.Variables.ContainsKey(Parameters.Offset) ? context[Parameters.Offset] : "1";
+        var offset = context.Variables.ContainsKey(OffsetParam) ? context[OffsetParam] : DefaultOffset;
         if (string.IsNullOrWhiteSpace(offset)) { offset = DefaultOffset; }
 
         int countInt = int.Parse(count, CultureInfo.InvariantCulture);
         int offsetInt = int.Parse(offset, CultureInfo.InvariantCulture);
-        var  results = await this._connector.SearchAsync(query, countInt, offsetInt, context.CancellationToken);
+        var results = await this._connector.SearchAsync(query, countInt, offsetInt, context.CancellationToken);
         if (!results.Any())
         {
             context.Fail("Failed to get a response from the web search engine.");
@@ -61,8 +52,7 @@ public class WebSearchEngineSkill
         string resultString;
         if (countInt == 1)
         {
-            var result = results.FirstOrDefault();
-            resultString = result ?? string.Empty;
+            resultString = results.FirstOrDefault() ?? string.Empty;
         }
         else
         {

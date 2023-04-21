@@ -37,7 +37,7 @@ public class BingConnector : IWebSearchEngineConnector, IDisposable
     public async Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
     {
         Verify.GreaterThan(count, 0, $"{nameof(count)} value must be greater than 0.");
-        Verify.LessThan(count,50, $"{nameof(count)} value must be less than 50.");
+        Verify.LessThan(count, 50, $"{nameof(count)} value must be less than 50.");
 
         Verify.GreaterThan(offset, -1, $"{nameof(offset)} value must be greater than -1.");
 
