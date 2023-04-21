@@ -47,13 +47,21 @@ public class MemoryQueryResult
         this.Embedding = embedding;
     }
 
+    /// <summary>
+    /// Create MemoryQueryResult from a MemoryRecord
+    /// </summary>
+    /// <param name="rec">The memory record.</param>
+    /// <param name="relevance">The search relevance score.</param>
+    /// <param name="withEmbedding">Whether return the embedding from the memory record</param>
+    /// <returns></returns>
     internal static MemoryQueryResult FromMemoryRecord(
         MemoryRecord rec,
-        double relevance)
+        double relevance,
+        bool withEmbedding = false)
     {
         return new MemoryQueryResult(
             (MemoryRecordMetadata)rec.Metadata.Clone(),
             relevance,
-            rec.Embedding.IsEmpty ? null : rec.Embedding);
+            (withEmbedding && !rec.Embedding.IsEmpty) ? rec.Embedding : null);
     }
 }
