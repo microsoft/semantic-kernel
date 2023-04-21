@@ -2,7 +2,7 @@
 
 ## AI Services
 | | C# | Python | Notes |
-|---|---|---|---|                   
+|---|---|---|---|
 | TextGeneration                    | ✅ | ✅ | Example: Text-Davinci-003 |
 | TextEmbeddings                    | ✅ | ✅ | Example: Text-Embeddings-Ada-002 |
 | ChatCompletion                    | ✅ | ❌ | Example: GPT4, Chat-GPT |
@@ -10,35 +10,40 @@
 
 ## AI Service Endpoints
 | | C# | Python | Notes |
-|---|---|---|---|                   
+|---|---|---|---|
 | OpenAI                            | ✅ | ✅ | |
 | AzureOpenAI                       | ✅ | ✅ | |
-| Hugging Face                      | ✅ | ❌ | Coming soon to Python - both native and web endpoint support | 
+| Hugging Face                      | ✅ | ❌ | Coming soon to Python - both native and web endpoint support |
 | Custom                            | ✅ | ❌ | Requires the user to define the service schema in their application |
 
 ## Tokenizers
 | | C# | Python | Notes |
-|---|---|---|---|         
+|---|---|---|---|
 | GPT2                              | ✅ | 🔄 | Can be manually added to Python via `pip install transformers` |
-| GPT3                              | ✅ | ❌ | | 
-| tiktoken                          | 🔄 | ❌ | Coming soon to Python and C#. Can be manually added to Python via `pip install tiktoken` |         
+| GPT3                              | ✅ | ❌ | |
+| tiktoken                          | 🔄 | ❌ | Coming soon to Python and C#. Can be manually added to Python via `pip install tiktoken` |
 
 ## Core Skills
 | | C# | Python | Notes |
-|---|---|---|---|                   
+|---|---|---|---|
 | TextMemorySkill                   | ✅ | ✅ | |
-| PlannerSkill                      | ✅ | 🔄 | |
-| ConversationSummarySkill          | ✅ | ❌ | | 
+| ConversationSummarySkill          | ✅ | ❌ | |
 | FileIOSkill                       | ✅ | ✅ | |
 | HttpSkill                         | ✅ | ❌ | |
 | MathSkill                         | ✅ | ❌ | |
 | TextSkill                         | ✅ | ✅ | |
 | TimeSkill                         | ✅ | ✅ | |
 
-## Connectors and Skill Libraries  
+## Planning
 | | C# | Python | Notes |
-|---|---|---|---|                   
-| Qdrant (Memory)                   | ✅ | ❌ | Vector optimized | 
+|---|---|---|---|
+| Plan | ✅ | ❌ | |
+| SequentialPlanner | ✅ | ❌ | |
+
+## Connectors and Skill Libraries
+| | C# | Python | Notes |
+|---|---|---|---|
+| Qdrant (Memory)                   | ✅ | ❌ | Vector optimized |
 | ChromaDb (Memory)                 | ❌ | 🔄 | |
 | Milvus (Memory)                   | ❌ | ❌ | Vector optimized |
 | Pinecone (Memory)                 | ❌ | ❌ | Vector optimized |
