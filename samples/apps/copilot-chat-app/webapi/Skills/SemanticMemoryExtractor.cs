@@ -5,10 +5,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.Service.Skills;
 
-/// <summary>
-///
-/// </summary>
-internal class SemanticMemoryExtractor
+internal static class SemanticMemoryExtractor
 {
     /// <summary>
     /// Returns the name of the semantic text memory collection that stores chat semantic memory.

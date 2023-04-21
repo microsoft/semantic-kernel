@@ -105,7 +105,6 @@ dotnet_diagnostic.CS1591.severity = none # Missing XML comment for publicly visi
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static
 dotnet_diagnostic.CA1848.severity = none # For improved performance, use the LoggerMessage delegates
-dotnet_diagnostic.CA1852.severity = none # Type '...' can be sealed because it has no subtypes in its containing assembly and is not externally visible
 dotnet_diagnostic.CA2007.severity = none # Do not directly await a Task
 dotnet_diagnostic.CA2225.severity = none # Operator overloads have named alternates
 dotnet_diagnostic.CA2227.severity = none # Change to be read-only by removing the property setter

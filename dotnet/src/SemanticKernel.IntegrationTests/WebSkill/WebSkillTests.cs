@@ -38,7 +38,7 @@ public sealed class WebSkillTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-    [Theory]
+    [Theory(Skip = "Bing search results not consistent enough for testing.")]
     [InlineData("What is generally recognized as the tallest building in Seattle, Washington, USA?", "Columbia Center")]
     public async Task BingSkillTestAsync(string prompt, string expectedAnswerContains)
     {
