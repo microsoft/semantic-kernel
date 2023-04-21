@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -316,6 +317,8 @@ public sealed class PlanTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView()
+        { Parameters = new List<ParameterView>() { new ParameterView() { Name = "variables" } } });
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -330,6 +333,7 @@ public sealed class PlanTests
 
         // Act
         cv.Set("variables", "bar");
+        cv.Update(string.Empty);
         plan = await kernel.Object.StepAsync(cv, plan);
 
         // Assert
@@ -454,7 +458,8 @@ public sealed class PlanTests
             .Returns(() => Task.FromResult(returnContext));
 
         subPlan.AddSteps(childFunction1.Object, childFunction2.Object, childFunction3.Object);
-        plan.AddSteps(subPlan, nodeFunction1.Object);
+        plan.AddSteps(subPlan);
+        plan.AddSteps(nodeFunction1.Object);
 
         // Act
         while (plan.HasNextStep)
@@ -464,7 +469,7 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(plan);
-        Assert.Equal($"Child 3 heard Child 2 is happy about Child 1 output! - this just happened.", plan.State.ToString());
+        Assert.Equal($"Child 3 heard Child 2 is happy about Child 1 output!Write a poem or joke - this just happened.", plan.State.ToString());
         nodeFunction1.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null), Times.Once);
         childFunction1.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null), Times.Once);
         childFunction2.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null), Times.Once);
