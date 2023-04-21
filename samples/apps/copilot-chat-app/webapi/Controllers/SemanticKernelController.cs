@@ -4,7 +4,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Memory;
@@ -156,8 +155,11 @@ public class SemanticKernelController : ControllerBase
             {
                 foreach (var record in collection.Value)
                 {
-                    var newCollectionKey = collection.Key.Replace(oldChatId, chatId, StringComparison.OrdinalIgnoreCase);
-                    await kernel.Memory.UpsertAsync(newCollectionKey, record.Metadata.Text, record.Metadata.Id, record.Embedding);
+                    if (record != null && record.Embedding != null)
+                    {
+                        var newCollectionKey = collection.Key.Replace(oldChatId, chatId, StringComparison.OrdinalIgnoreCase);
+                        await kernel.Memory.UpsertAsync(newCollectionKey, record.Metadata.Text, record.Metadata.Id, record.Embedding.Value);
+                    }
                 }
             }
         }
