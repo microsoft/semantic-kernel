@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
@@ -143,23 +142,33 @@ public sealed class Kernel : IKernel, IDisposable
 
     /// <inheritdoc/>
     public Task<SKContext> RunAsync(params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), pipeline);
+    {
+        return this.RunAsync(new ContextVariables(), pipeline);
+    }
 
     /// <inheritdoc/>
     public Task<SKContext> RunAsync(string input, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), pipeline);
+    {
+        return this.RunAsync(new ContextVariables(input), pipeline);
+    }
 
     /// <inheritdoc/>
     public Task<SKContext> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
-        => this.RunAsync(variables, CancellationToken.None, pipeline);
+    {
+        return this.RunAsync(variables, CancellationToken.None, pipeline);
+    }
 
     /// <inheritdoc/>
     public Task<SKContext> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), cancellationToken, pipeline);
+    {
+        return this.RunAsync(new ContextVariables(), cancellationToken, pipeline);
+    }
 
     /// <inheritdoc/>
     public Task<SKContext> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
+    {
+        return this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
+    }
 
     /// <inheritdoc/>
     public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
@@ -211,12 +220,9 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public ISKFunction Func(string skillName, string functionName)
     {
-        if (this.Skills.HasNativeFunction(skillName, functionName))
-        {
-            return this.Skills.GetNativeFunction(skillName, functionName);
-        }
-
-        return this.Skills.GetSemanticFunction(skillName, functionName);
+        return this.Skills.HasNativeFunction(skillName, functionName)
+            ? this.Skills.GetNativeFunction(skillName, functionName)
+            : this.Skills.GetSemanticFunction(skillName, functionName);
     }
 
     /// <inheritdoc/>
@@ -316,7 +322,7 @@ public sealed class Kernel : IKernel, IDisposable
             throw new AIException(
                 AIException.ErrorCodes.FunctionTypeNotSupported,
                 $"Function type not supported: {functionConfig.PromptTemplateConfig}");
-        }
+        }// comment for testing
 
         ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig, this._log);
 
@@ -353,14 +359,11 @@ public sealed class Kernel : IKernel, IDisposable
 
         // Fail if two functions have the same name
         var uniquenessCheck = new HashSet<string>(from x in result select x.Name, StringComparer.OrdinalIgnoreCase);
-        if (result.Count > uniquenessCheck.Count)
-        {
-            throw new KernelException(
+        return result.Count > uniquenessCheck.Count
+            ? throw new KernelException(
                 KernelException.ErrorCodes.FunctionOverloadNotSupported,
-                "Function overloads are not supported, please differentiate function names");
-        }
-
-        return result;
+                "Function overloads are not supported, please differentiate function names")
+            : result;
     }
 
     #endregion
