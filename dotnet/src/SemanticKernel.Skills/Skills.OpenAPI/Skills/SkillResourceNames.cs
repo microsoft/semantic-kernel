@@ -11,4 +11,9 @@ public static class SkillResourceNames
     /// Azure KeyVault skill name.
     /// </summary>
     public const string AzureKeyVault = "AzureKeyVaultSkill";
+
+    /// <summary>
+    /// GitHub skill name.
+    /// </summary>
+    public const string GitHub = "GitHubSkill";
 }

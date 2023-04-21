@@ -19,6 +19,7 @@
     <None Remove="Skills\AzureKeyVaultSkill\documentV2_0.json" />
     <None Remove="Skills\AzureKeyVaultSkill\documentV3_0.json" />
     <None Remove="Skills\AzureKeyVaultSkill\openapi.json" />
+    <None Remove="Skills\GitHubSkill\openapi.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +41,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Skills\AzureKeyVaultSkill\openapi.json" />
+    <EmbeddedResource Include="Skills\GitHubSkill\openapi.json" />
   </ItemGroup>
 
 </Project>
