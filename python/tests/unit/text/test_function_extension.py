@@ -2,7 +2,7 @@ import pytest
 
 import semantic_kernel.ai.open_ai as sk_oai
 from semantic_kernel import Kernel
-from semantic_kernel.semantic_functions import aggregate_chunked_results_async
+from semantic_kernel.text import aggregate_chunked_results_async
 
 
 @pytest.mark.asyncio

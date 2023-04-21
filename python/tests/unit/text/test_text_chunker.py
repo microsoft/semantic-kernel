@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import os
 
-from semantic_kernel.semantic_functions import (
+from semantic_kernel.text import (
     split_markdown_lines,
     split_markdown_paragraph,
     split_plaintext_lines,
