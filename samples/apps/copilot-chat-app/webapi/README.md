@@ -8,7 +8,7 @@ Before you get started, make sure you have the following requirements in place:
 1. Generate and trust a localhost developer certificate.
    - For Windows and Mac run 
      ```bash
-     dotnet dev-certs https --trust`
+     dotnet dev-certs https --trust
      ```
      > Select `Yes` when asked if you want to install this certificate.
    - For Linux run 
