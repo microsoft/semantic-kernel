@@ -26,6 +26,7 @@ Install this package manually only if you are selecting individual Semantic Kern
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Microsoft.SemanticKernel.Skills.OpenAPI</_Parameter1>
     </AssemblyAttribute>
+    <!-- Testing -->
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>SemanticKernel.UnitTests</_Parameter1>
     </AssemblyAttribute>
