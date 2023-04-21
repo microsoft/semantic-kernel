@@ -9,7 +9,9 @@ from semantic_kernel.semantic_functions import aggregate_chunked_results_async
 async def test_aggregate_results():
     kernel = Kernel()
 
-    kernel.config.add_text_backend("davinci-002", sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none"))
+    kernel.config.add_text_backend(
+        "davinci-002", sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none")
+    )
     sk_prompt = """
         {{$input}}
         How is that ?
