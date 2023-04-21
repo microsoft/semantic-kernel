@@ -56,7 +56,7 @@ First, let’s set up and verify the back-end API server is running.
        dotnet user-secrets set "AzureSpeech:Key" "MY_AZURE_SPEECH_KEY" 
        ```
      - In the .env file that you create below, set ENABLE_SPEECH_INPUT to 1.  
-       ```ENABLE_SPEECH_INPUT=1```
+       ```REACT_APP_ENABLE_SPEECH=true```
 
 1. Build and run the back-end API server
     1. Open a terminal and navigate to `samples/apps/copilot-chat-app/webapi`
@@ -86,7 +86,7 @@ First, let’s set up and verify the back-end API server is running.
       ```bash
       REACT_APP_BACKEND_URI=https://localhost:40443/
       REACT_APP_AAD_CLIENT_ID=00000000-0000-0000-0000-000000000000
-      ENABLE_SPEECH_INPUT=0
+      REACT_APP_ENABLE_SPEECH=0
       ```
    
    1. To build and run the front-end application
