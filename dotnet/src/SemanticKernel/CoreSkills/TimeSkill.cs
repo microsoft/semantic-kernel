@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Globalization;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
@@ -50,6 +48,20 @@ public class TimeSkill
     {
         // Example: Sunday, 12 January, 2025
         return DateTimeOffset.Now.ToString("D", CultureInfo.CurrentCulture);
+    }
+
+    /// <summary>
+    /// Get the current date
+    /// </summary>
+    /// <example>
+    /// {{time.today}} => Sunday, 12 January, 2031
+    /// </example>
+    /// <returns> The current date </returns>
+    [SKFunction("Get the current date")]
+    public string Today()
+    {
+        // Example: Sunday, 12 January, 2025
+        return Date();
     }
 
     /// <summary>
