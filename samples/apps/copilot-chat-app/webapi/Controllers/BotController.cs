@@ -18,13 +18,15 @@ public class BotController : ControllerBase
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<SemanticKernelController> _logger;
+    private readonly IMemoryStore _memoryStore;
     private readonly PromptSettings _promptSettings;
 
-    public BotController(IConfiguration configuration, PromptSettings promptSettings, ILogger<SemanticKernelController> logger)
+    public BotController(IConfiguration configuration, IMemoryStore memoryStore, PromptSettings promptSettings, ILogger<SemanticKernelController> logger)
     {
         this._configuration = configuration;
-        this._promptSettings = promptSettings;
         this._logger = logger;
+        this._memoryStore = memoryStore;
+        this._promptSettings = promptSettings;
     }
 
     [Authorize]
@@ -68,22 +70,11 @@ public class BotController : ControllerBase
             {
                 var chatMessage = new ChatMessage(message.UserId, message.UserName, chatId, message.Content, ChatMessage.AuthorRoles.Participant);
                 chatMessage.Timestamp = message.Timestamp;
-                // TODO: should we use UpsertItemAsync?
                 await chatMessageRepository.CreateAsync(chatMessage);
             }
 
             // 3. Update SK memory.
-            foreach (var collection in bot.Embeddings)
-            {
-                foreach (var record in collection.Value)
-                {
-                    if (record != null && record.Embedding != null)
-                    {
-                        var newCollectionKey = collection.Key.Replace(oldChatId, chatId, StringComparison.OrdinalIgnoreCase);
-                        await kernel.Memory.UpsertAsync(newCollectionKey, record.Metadata.Text, record.Metadata.Id, record.Embedding.Value);
-                    }
-                }
-            }
+            await this.BulkUpsertMemoryRecordsAsync(oldChatId, chatId, bot.Embeddings);
         }
         catch
         {
@@ -214,5 +205,39 @@ public class BotController : ControllerBase
         // Invoke the GetAllChatMessages function of ChatHistorySkill.
         SKContext result = await kernel.RunAsync(variables, function!);
         return new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) };
+    }
+
+    /// <summary>
+    /// Bulk upsert memory records into memory store.
+    /// </summary>
+    /// <param name="oldChatId"></param>
+    /// <param name="chatId"></param>
+    /// <param name="embeddings"></param>
+    /// <returns></returns>
+    private async Task BulkUpsertMemoryRecordsAsync(string oldChatId, string chatId, List<KeyValuePair<string, List<MemoryQueryResult>>> embeddings)
+    {
+        foreach (var collection in embeddings)
+        {
+            foreach (var record in collection.Value)
+            {
+                if (record != null && record.Embedding != null)
+                {
+                    var newCollectionName = collection.Key.Replace(oldChatId, chatId, StringComparison.OrdinalIgnoreCase);
+
+                    MemoryRecord data = MemoryRecord.LocalRecord(
+                        id: record.Metadata.Id,
+                        text: record.Metadata.Text,
+                        embedding: record.Embedding.Value,
+                        description: null, additionalMetadata: null);
+
+                    if (!(await this._memoryStore.DoesCollectionExistAsync(newCollectionName, default)))
+                    {
+                        await this._memoryStore.CreateCollectionAsync(newCollectionName, default);
+                    }
+
+                    await this._memoryStore.UpsertAsync(newCollectionName, data, default);
+                }
+            }
+        }
     }
 }
