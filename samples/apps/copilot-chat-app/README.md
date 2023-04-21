@@ -68,7 +68,7 @@ First, let’s set up and verify the back-end API server is running.
          Select the option to accept/continue - this is expected when running a service on `localhost`
          It is important to do this, as your browser may need to accept the certificate before allowing the frontend to communicate with the backend.
 
-      > You may also need to acknowledge the Windows Defender Firewall, and allow the app to communicate over private or public netowrks as appropriate.
+      > You may also need to acknowledge the Windows Defender Firewall, and allow the app to communicate over private or public networks as appropriate.
  
 1. Build and start the front-end application
    1. You will also need an Azure Active Directory (AAD) application registration. 

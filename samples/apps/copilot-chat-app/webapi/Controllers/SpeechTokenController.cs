@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SemanticKernel.Service.Config;
 
@@ -14,6 +15,7 @@ public class SpeechTokenResponse
     public string? Region { get; set; }
 }
 
+[Authorize]
 [ApiController]
 public class SpeechTokenController : ControllerBase
 {
@@ -31,6 +33,7 @@ public class SpeechTokenController : ControllerBase
     /// </summary>
     [Route("speechToken")]
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<SpeechTokenResponse> Get()
     {
         AzureSpeechConfig azureSpeech = this._configuration.GetSection("AzureSpeech").Get<AzureSpeechConfig>();
