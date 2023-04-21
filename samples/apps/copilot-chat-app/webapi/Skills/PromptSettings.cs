@@ -19,10 +19,6 @@ public class PromptSettings
         this._promptsConfig = promptsConfig;
     }
 
-    /// <summary>
-    /// Factor used to divide the string length to estimate the number of tokens in the string.
-    /// </summary>
-    internal double TokenEstimateFactor { get; } = 2.5;
     internal int ResponseTokenLimit { get; } = 1024;
     internal int CompletionTokenLimit { get; } = 8192;
 
@@ -42,17 +38,18 @@ public class PromptSettings
     /// Maximum number of tokens per line that will be used to split a document into lines.
     /// Setting this to a low value will result in higher context granularity, but
     /// takes longer to process the entire document into embeddings.
-    /// Default to 20 tokens per line which is about 50 characters based on the token estimation factor.
+    /// Default to 30 tokens as suggested by OpenAI:
+    /// https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
     /// </summary>
-    internal int DocumentLineSplitMaxTokens { get; } = 20;
+    internal int DocumentLineSplitMaxTokens { get; } = 30;
 
     /// <summary>
     /// Maximum number of tokens per paragraph that will be used to combine lines into paragraphs.
     /// Setting this to a low value will result in higher context granularity, but
     /// takes longer to process the entire document into embeddings.
-    /// Default to 80 tokens per line which is 4 lines.
-    /// </summary>
-    internal int DocumentParagraphSplitMaxLines { get; } = 80;
+    /// Default to 100 tokens as suggested by OpenAI:
+    /// https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them    /// </summary>
+    internal int DocumentParagraphSplitMaxLines { get; } = 100;
 
     internal string KnowledgeCutoffDate => this._promptsConfig.KnowledgeCutoffDate;
     internal string InitialBotMessage => this._promptsConfig.InitialBotMessage;

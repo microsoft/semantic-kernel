@@ -1,4 +1,5 @@
-﻿using Microsoft.SemanticKernel.Orchestration;
+﻿using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.Service.Skills;
 
@@ -26,12 +27,12 @@ internal static class Utils
     }
 
     /// <summary>
-    /// Estimate the number of tokens in a string.
-    /// TODO: This is a very naive implementation. We should use the new implementation that is available in the kernel.
+    /// Calculate the number of tokens in a string.
     /// </summary>
-    internal static int EstimateTokenCount(string text, double tokenEstimateFactor)
+    internal static int TokenCount(string text)
     {
-        return (int)Math.Floor(text.Length / tokenEstimateFactor);
+        var tokens = GPT3Tokenizer.Encode(text);
+        return tokens.Count;
     }
 }
 

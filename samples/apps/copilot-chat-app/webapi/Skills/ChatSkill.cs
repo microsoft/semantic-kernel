@@ -66,13 +66,12 @@ public class ChatSkill
         var historyTokenBudget =
             tokenLimit -
             this._promptSettings.ResponseTokenLimit -
-            Utils.EstimateTokenCount(string.Join("\n", new string[]
+            Utils.TokenCount(string.Join("\n", new string[]
                 {
                     this._promptSettings.SystemDescriptionPrompt,
                     this._promptSettings.SystemIntentPrompt,
                     this._promptSettings.SystemIntentContinuationPrompt
-                }),
-                this._promptSettings.TokenEstimateFactor
+                })
             );
 
         // Clone the context to avoid modifying the original context variables.
@@ -141,14 +140,11 @@ public class ChatSkill
         string memoryText = "";
         foreach (var memory in relevantMemories)
         {
-            var estimatedTokenCount = Utils.EstimateTokenCount(
-                memory.Metadata.Text,
-                this._promptSettings.TokenEstimateFactor
-            );
-            if (remainingToken - estimatedTokenCount > 0)
+            var tokenCount = Utils.TokenCount(memory.Metadata.Text);
+            if (remainingToken - tokenCount > 0)
             {
                 memoryText += $"\n[{memory.Metadata.Description}] {memory.Metadata.Text}";
-                remainingToken -= estimatedTokenCount;
+                remainingToken -= tokenCount;
             }
             else
             {
@@ -158,7 +154,7 @@ public class ChatSkill
 
         // Update the token limit.
         memoryText = $"Past memories (format: [memory type] <label>: <details>):\n{memoryText.Trim()}";
-        tokenLimit -= Utils.EstimateTokenCount(memoryText, this._promptSettings.TokenEstimateFactor);
+        tokenLimit -= Utils.TokenCount(memoryText);
         context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
 
         return memoryText;
@@ -185,14 +181,11 @@ public class ChatSkill
         foreach (var chatMessage in sortedMessages)
         {
             var formattedMessage = chatMessage.ToFormattedString();
-            var estimatedTokenCount = Utils.EstimateTokenCount(
-                formattedMessage,
-                this._promptSettings.TokenEstimateFactor
-            );
-            if (remainingToken - estimatedTokenCount > 0)
+            var tokenCount = Utils.TokenCount(formattedMessage);
+            if (remainingToken - tokenCount > 0)
             {
                 historyText = $"{formattedMessage}\n{historyText}";
-                remainingToken -= estimatedTokenCount;
+                remainingToken -= tokenCount;
             }
             else
             {
@@ -222,13 +215,12 @@ public class ChatSkill
         var remainingToken =
             tokenLimit -
             this._promptSettings.ResponseTokenLimit -
-            Utils.EstimateTokenCount(string.Join("\n", new string[]
+            Utils.TokenCount(string.Join("\n", new string[]
                 {
                     this._promptSettings.SystemDescriptionPrompt,
                     this._promptSettings.SystemResponsePrompt,
                     this._promptSettings.SystemChatContinuationPrompt
-                }),
-                this._promptSettings.TokenEstimateFactor
+                })
             );
         var contextTokenLimit = remainingToken;
         var userId = context["userId"];
@@ -263,7 +255,7 @@ public class ChatSkill
 
         chatContext.Variables.Set("userIntent", userIntent);
         // Update remaining token count
-        remainingToken -= Utils.EstimateTokenCount(userIntent, this._promptSettings.TokenEstimateFactor);
+        remainingToken -= Utils.TokenCount(userIntent);
         chatContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
         chatContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
 
