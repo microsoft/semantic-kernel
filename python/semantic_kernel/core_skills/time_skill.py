@@ -52,7 +52,7 @@ class TimeSkill:
             {{time.today}} => Sunday, 12 January, 2031
         """
         return self.date()
-    
+
     @sk_function(description="Get the current date and time in the local time zone")
     def now(self) -> str:
         """

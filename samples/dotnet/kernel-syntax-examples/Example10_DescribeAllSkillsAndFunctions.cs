@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.KernelExtensions;
-using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 using Skills;
 
