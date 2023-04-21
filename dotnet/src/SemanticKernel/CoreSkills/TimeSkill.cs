@@ -60,11 +60,7 @@ public class TimeSkill
     /// </example>
     /// <returns> The current date </returns>
     [SKFunction("Get the current date")]
-    public string Today()
-    {
-        // Example: Sunday, 12 January, 2025
-        return this.Date();
-    }
+    public string Today() => Date();
 
     /// <summary>
     /// Get the current date and time in the local time zone"
