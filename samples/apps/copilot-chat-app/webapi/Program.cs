@@ -24,24 +24,24 @@ public static class Program
     public static void Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
         builder.Host.ConfigureAppSettings();
 
-        // Set port to run on
-        var serverPortString = builder.Configuration.GetSection("ServicePort").Get<string>();
-        if (!int.TryParse(serverPortString, out int serverPort))
-        {
-            serverPort = Constants.DefaultServerPort;
-        }
+        builder.Services
+            .AddSingleton<IConfiguration>(builder.Configuration)
+            .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Kernel>>())
+            .AddCors()
+            .AddAuthorization()
+            .AddEndpointsApiExplorer()
+            .AddSwaggerGen()
+            .AddSemanticKernelServices()
+            .AddControllers();
 
-        builder.WebHost.UseUrls($"https://*:{serverPort}");
+        ServiceConfig serviceConfig = builder.Configuration.GetSection("Service").Get<ServiceConfig>();
+        serviceConfig.Validate();
 
-        // Add services to the DI container
-        AddServices(builder.Services, builder.Configuration);
+        builder.WebHost.UseUrls($"https://*:{serviceConfig.Port}");
 
         WebApplication app = builder.Build();
-
-        var logger = app.Services.GetRequiredService<ILogger>();
 
         // Configure the HTTP request pipeline
         if (app.Environment.IsDevelopment())
@@ -56,14 +56,17 @@ public static class Program
         app.MapControllers();
 
         // Log the health probe URL
-        string hostName = Dns.GetHostName();
-        logger.LogInformation("Health probe: https://{Host}:{Port}/probe", hostName, serverPort);
+        app.Services.GetRequiredService<ILogger>().LogInformation(
+            "Health probe: https://{Host}:{Port}/probe",
+            Dns.GetHostName(),
+            serviceConfig.Port);
 
         app.Run();
     }
 
-    private static void AddServices(IServiceCollection services, ConfigurationManager configuration)
+    private static IServiceCollection AddCors(this IServiceCollection services)
     {
+        var configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
         string[] allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
         if (allowedOrigins is not null && allowedOrigins.Length > 0)
         {
@@ -78,24 +81,14 @@ public static class Program
             });
         }
 
-        services.AddAuthorization(configuration);
-
-        services.AddControllers();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-
-        services.AddSingleton<IConfiguration>(configuration);
-
-        // To support ILogger (as opposed to the generic ILogger<T>)
-        services.AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Kernel>>());
-
-        services.AddSemanticKernelServices(configuration);
+        return services;
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "Giving app settings arguments rather than code ones")]
-    private static void AddAuthorization(this IServiceCollection services, ConfigurationManager configuration)
+    private static IServiceCollection AddAuthorization(this IServiceCollection services)
     {
+        var configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+
         var authMethod = configuration.GetSection("Authorization:Type").Get<string>();
 
         switch (authMethod?.ToUpperInvariant())
@@ -121,10 +114,14 @@ public static class Program
             default:
                 throw new ArgumentException($"Invalid auth method: {authMethod}", "Authorization:Type");
         }
+
+        return services;
     }
 
-    private static void AddSemanticKernelServices(this IServiceCollection services, ConfigurationManager configuration)
+    private static IServiceCollection AddSemanticKernelServices(this IServiceCollection services)
     {
+        var configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+
         // Each API call gets a fresh new SK instance
         services.AddScoped<Kernel>();
 
@@ -252,5 +249,7 @@ public static class Program
 
         services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));
         services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
+
+        return services;
     }
 }

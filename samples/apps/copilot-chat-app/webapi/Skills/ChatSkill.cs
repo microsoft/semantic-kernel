@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Globalization;
+using System.Numerics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning.Planners;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Storage;
 
@@ -32,6 +34,9 @@ public class ChatSkill
     /// </summary>
     private readonly ChatSessionRepository _chatSessionRepository;
 
+    /// <summary>
+    /// Settings containing prompt texts.
+    /// </summary>
     private readonly PromptSettings _promptSettings;
 
     /// <summary>
@@ -264,6 +269,7 @@ public class ChatSkill
             settings: this.CreateChatResponseCompletionSettings()
         );
 
+        // If the completion function failed, return the context containing the error.
         if (chatContext.ErrorOccurred)
         {
             return chatContext;

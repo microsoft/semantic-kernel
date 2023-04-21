@@ -1,4 +1,7 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// TODO move memory items to different directory
+
+
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
 

@@ -15,22 +15,34 @@ internal static class ConfigExtensions
     {
         string? environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-        host.ConfigureAppConfiguration((ctx, builder) =>
+        host.ConfigureAppConfiguration((builderContext, configBuilder) =>
         {
-            builder.AddJsonFile("appsettings.json", false, true);
-            builder.AddJsonFile($"appsettings.{environment}.json", true, true);
-            builder.AddEnvironmentVariables();
-            builder.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true, reloadOnChange: true);
+            configBuilder.AddJsonFile(
+                path: "appsettings.json",
+                optional: false,
+                reloadOnChange: true);
+
+            configBuilder.AddJsonFile(
+                path: $"appsettings.{environment}.json",
+                optional: true,
+                reloadOnChange: true);
+
+            configBuilder.AddEnvironmentVariables();
+
+            configBuilder.AddUserSecrets(
+                assembly: Assembly.GetExecutingAssembly(),
+                optional: true,
+                reloadOnChange: true);
+
             // For settings from Key Vault, see https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-8.0
-            string? keyVaultUri = ctx.Configuration["KeyVaultUri"];
+            string? keyVaultUri = builderContext.Configuration["KeyVaultUri"];
             if (!string.IsNullOrWhiteSpace(keyVaultUri))
             {
-                builder.AddAzureKeyVault(
+                configBuilder.AddAzureKeyVault(
                     new Uri(keyVaultUri),
                     new DefaultAzureCredential());
 
-                /* See https://learn.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet
-                   for more information on how to use DefaultAzureCredential */
+                // for more information on how to use DefaultAzureCredential, see https://learn.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet
             }
         });
 

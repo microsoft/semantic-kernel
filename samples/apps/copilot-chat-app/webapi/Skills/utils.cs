@@ -1,4 +1,7 @@
-﻿using Microsoft.SemanticKernel.Orchestration;
+﻿// TODO fix casing of file name
+
+// Copyright (c) Microsoft. All rights reserved.
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.Service.Skills;
 
