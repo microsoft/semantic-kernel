@@ -20,6 +20,7 @@ import { ChatUser } from './models/ChatUser';
 import { IAsk } from './semantic-kernel/model/Ask';
 import { IAskResult, Variables } from './semantic-kernel/model/AskResult';
 import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
+import { BotService } from './services/BotService';
 // import { useConnectors } from './connectors/useConnectors'; // ConnectorTokenExample
 
 export const useChat = () => {
@@ -28,6 +29,8 @@ export const useChat = () => {
     const account = useAccount(accounts[0] || {});
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const { botProfilePictureIndex } = useAppSelector((state: RootState) => state.conversations);
+
+    const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
 
     // const connectors = useConnectors(); // ConnectorTokenExample
 
@@ -205,16 +208,8 @@ export const useChat = () => {
     };
 
     const exportBot = async (chatId: string) => {
-        const ask = {
-            input: chatId,
-            variables: [
-                { key: 'startIdx', value: '0' },
-                { key: 'count', value: '100' },
-            ],
-        };
-
         try {
-            return sk.exportBotAsync(ask, await AuthHelper.getSKaaSAccessToken(instance));
+            return botService.exportAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance));
         } catch (e: any) {
             const errorMessage = `Unable to export the bot. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -222,7 +217,7 @@ export const useChat = () => {
     };
 
     const importBot = async (bot: Bot) => {
-        sk.importBotAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
+        botService.importAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
             .then(() => loadChats())
             .catch((e: any) => {
                 const errorMessage = `Unable to import the bot. Details: ${e.message ?? e}`;
