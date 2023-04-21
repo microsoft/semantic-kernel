@@ -27,7 +27,10 @@ public class SKContextExtensionsTests
 
         // Arrange Mock Memory and Result
         var memory = new Mock<ISemanticTextMemory>();
-        var memoryQueryResult = new MemoryQueryResult(new MemoryRecordMetadata(false, "sourceName", "id", "description", "text", "value"), 0.8);
+        var memoryQueryResult = new MemoryQueryResult(
+            new MemoryRecordMetadata(isReference: false, id: "id", text: "text", description: "description", externalSourceName: "sourceName", additionalMetadata: "value"),
+            relevance: 0.8,
+            embedding: null);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         memory.Setup(x =>
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
@@ -67,9 +70,11 @@ public class SKContextExtensionsTests
 
         // Arrange Mock Memory and Result
         var skills = new Mock<ISkillCollection>();
-        var memoryQueryResult = new MemoryQueryResult(
-            new MemoryRecordMetadata(false, "sourceName", functionView.ToFullyQualifiedName(), "description", "text", "value"),
-            0.8);
+        var memoryQueryResult =
+            new MemoryQueryResult(
+                new MemoryRecordMetadata(isReference: false, id: functionView.ToFullyQualifiedName(), text: "text", description: "description", externalSourceName: "sourceName", additionalMetadata: "value"),
+                relevance: 0.8,
+                embedding: null);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x =>
@@ -131,8 +136,9 @@ public class SKContextExtensionsTests
         var skills = new Mock<ISkillCollection>();
         var memoryQueryResult =
             new MemoryQueryResult(
-                new MemoryRecordMetadata(isReference: false, id: functionView.ToFullyQualifiedName(), text: "text", description: "description",
-                    externalSourceName: "sourceName", additionalMetadata: "value"), relevance: 0.8);
+                new MemoryRecordMetadata(isReference: false, id: functionView.ToFullyQualifiedName(), text: "text", description: "description", externalSourceName: "sourceName", additionalMetadata: "value"),
+                relevance: 0.8,
+                embedding: null);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x =>
@@ -337,7 +343,11 @@ public class SKContextExtensionsTests
 
         // Arrange Mock Memory and Result
         var memory = new Mock<ISemanticTextMemory>();
-        var memoryQueryResult = new MemoryQueryResult(new MemoryRecordMetadata(false, "sourceName", "id", "description", "text", "value"), 0.8);
+        var memoryQueryResult =
+            new MemoryQueryResult(
+                new MemoryRecordMetadata(isReference: false, id: "id", text: "text", description: "description", externalSourceName: "sourceName", additionalMetadata: "value"),
+                relevance: 0.8,
+                embedding: null);
         var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         memory.Setup(x =>
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
