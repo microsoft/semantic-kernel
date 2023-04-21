@@ -30,21 +30,24 @@ First, let’s set up and verify the back-end API server is running.
    > **Note:** It is recommended you close all instances of your web browser after installing the developer certificates.
 
 1. Navigate to `samples/apps/copilot-chat-app/webapi` and open `appsettings.json`
-   - Update the `Completion` and `Embedding` configuration sections:
+   - Update the `Completion` configuration sections:
      - Update `AIService` to the AI service you will be using (i.e., `AzureOpenAI` or `OpenAI`).
-     - If your are using Azure OpenAI, update `Endpoint` to your Azure OpenAI resource Endpoint address (e.g.,  
+      - CopilotChat is optimized for Chat completion models, such as gpt-3.5-turbo and gpt-4
+         > **Important:** gpt-3.5-turbo is normally labelled as "`gpt-35-turbo`" (no period) in Azure OpenAI and "`gpt-3.5-turbo`" (with a period) in OpenAI.
+     - If you are using Azure OpenAI, update `Endpoint` to your Azure OpenAI resource Endpoint address (e.g.,  
        `http://contoso.openai.azure.com`).
         > If you are using OpenAI, this property will be ignored.
+   - Update the and `Embedding` configuration sections:
+     - Update `DeploymentOrModelID` to the Azure OpenAI deployment or OpenAI models you want to use. 
+
+      - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effect for generating embeddings.
      - Set your Azure OpenAI key by opening a terminal in the webapi project directory and using `dotnet user-secrets`
        ```bash
        cd semantic-kernel/samples/apps/copilot-chat-app/webapi
        dotnet user-secrets set "Completion:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
        dotnet user-secrets set "Embedding:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
        ```
-     - Update `DeploymentOrModelID` to the Azure OpenAI deployment or OpenAI models you want to use. 
-       - For `Completion`, CopilotChat is optimized for Chat completion models, such as gpt-3.5-turbo and gpt-4
-         > **Important:** gpt-3.5-turbo is normally labelled as "`gpt-35-turbo`" (no period) in Azure OpenAI and "`gpt-3.5-turbo`" (with a period) in OpenAI.
-       - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effect for generating embeddings.
+
    
    - **(Optional)** To enable speech-to-text for chat input, update the `AzureSpeech` configuration section:
      > If you have not already, you will need to [create an Azure Speech resource](https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices) 
@@ -59,9 +62,7 @@ First, let’s set up and verify the back-end API server is running.
 1. Build and run the back-end API server
     1. Open a terminal and navigate to `samples/apps/copilot-chat-app/webapi`
     
-    1. Run `dotnet build` to build the project.
-    
-    1. Run `dotnet run` to start the server.
+    1. Execute `dotnet run` to build and start the server.
     
     1. Verify the back-end server is responding, open a web browser and navigate to `https://localhost:40443/probe`
        > The first time accessing the probe you may get a warning saying that there is a problem with website's certificate. 
@@ -129,6 +130,9 @@ You may also need to update the keys used for any secrets set with `dotnet user-
 As of [PR #499](https://github.com/microsoft/semantic-kernel/pull/499), CopilotChat now focuses support on chat completion models, such as `gpt-3.5-*` and `gpt-4-*`
 See [OpenAI's model compatiblity](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
 the complete list of current models supporting chat completions.
+
+### 4. Issues upgrading from prior repos
+As of [PR #499](https://github.com/microsoft/semantic-kernel/pull/499), VS Code users may need to clear their repo and re-clone it to clear all VS Code Cache before restarting Copilot Chat
 
 ## Additional resources
 
