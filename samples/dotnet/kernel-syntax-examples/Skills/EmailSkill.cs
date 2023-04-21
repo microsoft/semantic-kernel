@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Skills;
 
-internal class EmailSkill
+internal sealed class EmailSkill
 {
     [SKFunction("Given an e-mail and message body, send an email")]
     [SKFunctionInput(Description = "The body of the email message to send.")]
