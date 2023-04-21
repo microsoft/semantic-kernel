@@ -63,7 +63,7 @@ export const useChat = () => {
     };
 
     const createChat = async () => {
-        const chatTitle = `SK Chatbot @ ${new Date().toLocaleString()}`;
+        const chatTitle = `Copilot @ ${new Date().toLocaleString()}`;
         try {
             var ask: IAsk = {
                 input: chatTitle,
