@@ -60,7 +60,7 @@ public class TimeSkill
     /// </example>
     /// <returns> The current date </returns>
     [SKFunction("Get the current date")]
-    public string Today() => Date();
+    public string Today() => this.Date();
 
     /// <summary>
     /// Get the current date and time in the local time zone"
