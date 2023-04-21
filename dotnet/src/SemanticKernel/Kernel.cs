@@ -318,7 +318,7 @@ public sealed class Kernel : IKernel, IDisposable
                 $"Function type not supported: {functionConfig.PromptTemplateConfig}");
         }
 
-        ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig);
+        ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig, this._log);
 
         // Connect the function to the current kernel skill collection, in case the function
         // is invoked manually without a context and without a way to find other functions.
