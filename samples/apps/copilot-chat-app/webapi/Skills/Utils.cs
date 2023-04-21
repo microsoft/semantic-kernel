@@ -1,4 +1,5 @@
-﻿using Microsoft.SemanticKernel.Orchestration;
+﻿using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.Service.Skills;
 
@@ -24,4 +25,14 @@ internal static class Utils
             context.CancellationToken
         );
     }
+
+    /// <summary>
+    /// Calculate the number of tokens in a string.
+    /// </summary>
+    internal static int TokenCount(string text)
+    {
+        var tokens = GPT3Tokenizer.Encode(text);
+        return tokens.Count;
+    }
 }
+
