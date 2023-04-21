@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Button, makeStyles, shorthands, Textarea, tokens } from '@fluentui/react-components';
-import { MicRegular, SendRegular } from '@fluentui/react-icons';
+import { Button, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
-import React from 'react';
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
+import React, { useRef } from 'react';
 import { Constants } from '../../Constants';
 import { AlertType } from '../../libs/models/AlertType';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { addAlert } from '../../redux/features/app/appSlice';
-import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 import { useSKSpeechService } from './../../libs/semantic-kernel/useSKSpeech';
+import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -38,9 +38,17 @@ const useClasses = makeStyles({
     },
     controls: {
         display: 'flex',
-        flexDirection: 'column',
-        ...shorthands.gap(tokens.spacingVerticalS),
+        flexDirection: 'row',
     },
+    essentials: {
+        display: 'flex',
+        flexDirection: 'row',
+        marginLeft: 'auto', // align to right
+    },
+    functional: {
+        display: 'flex',
+        flexDirection: 'row',
+    }
 });
 
 interface ChatInputProps {
@@ -58,6 +66,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
     const speechService = useSKSpeechService(process.env.REACT_APP_BACKEND_URI as string);
+    const attachmentFile = useRef<HTMLInputElement | null>(null);
 
     React.useEffect(() => {
         if (recognizer) return;
@@ -78,6 +87,19 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
             }
             setIsListening(false);
         });
+    };
+
+    const selectAttachment = () => {
+        console.log('selectAttachment');
+        attachmentFile.current?.click();
+    };
+
+    const uploadAttachment = () => {
+        console.log('uploadAttachment');
+        const file = attachmentFile.current?.files?.[0];
+        if (file) {
+            console.log(file);
+        }
     };
 
     const handleSubmit = (data: string) => {
@@ -133,11 +155,25 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         // void chat.sendTypingStartSignalAsync();
                     }}
                 />
-                <div className={classes.controls}>
+            </div>
+            <div className={classes.controls}>
+                <div className={classes.functional}>
+                    {/* Hidden input for file upload. Only accept .txt files for now. */}
+                    <input
+                        type="file"
+                        ref={attachmentFile}
+                        style={{ display: 'none' }}
+                        accept='.txt'
+                        multiple={false}
+                        onChange={() => uploadAttachment()}
+                    />
+                    <Button appearance="transparent" icon={<AttachRegular />} onClick={() => selectAttachment()} />
+                </div>
+                <div className={classes.essentials}>
                     {recognizer && (
-                            <Button disabled={isListening} icon={<MicRegular />} onClick={() => handleSpeech()} />
+                        <Button appearance="transparent" disabled={isListening} icon={<MicRegular />} onClick={() => handleSpeech()} />
                     )}
-                    <Button icon={<SendRegular />} onClick={() => handleSubmit(value)} />
+                    <Button appearance="transparent" icon={<SendRegular />} onClick={() => handleSubmit(value)} />
                 </div>
             </div>
         </div>
