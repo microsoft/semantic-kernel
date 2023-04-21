@@ -11,6 +11,9 @@ namespace SemanticKernel.Service;
 
 internal static class FunctionLoadingExtensions
 {
+    /// <summary>
+    /// Register local semantic skills with the kernel.
+    /// </summary>
     internal static void RegisterSemanticSkills(
         this IKernel kernel,
         string skillsDirectory,
@@ -31,6 +34,9 @@ internal static class FunctionLoadingExtensions
         }
     }
 
+    /// <summary>
+    /// Register native skills with the kernel.
+    /// </summary>
     internal static void RegisterNativeSkills(
         this IKernel kernel,
         ChatSessionRepository chatSessionRepository,

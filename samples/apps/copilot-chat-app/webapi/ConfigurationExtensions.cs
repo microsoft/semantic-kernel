@@ -7,6 +7,9 @@ namespace SemanticKernel.Service;
 
 internal static class ConfigExtensions
 {
+    /// <summary>
+    /// Build the configuration for the service.
+    /// </summary>
     public static IHostBuilder AddConfiguration(this IHostBuilder host)
     {
         string? environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");

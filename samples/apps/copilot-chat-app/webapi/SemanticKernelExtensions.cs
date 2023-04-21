@@ -77,6 +77,9 @@ internal static class SemanticKernelExtensions
         return services;
     }
 
+    /// <summary>
+    /// Add the completion backend to the kernel config
+    /// </summary>
     internal static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
     {
         AIServiceOptions config = aiServiceOptions.Get(AIServiceOptions.CompletionPropertyName);
@@ -107,7 +110,10 @@ internal static class SemanticKernelExtensions
         return kernelConfig;
     }
 
-    public static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
+    /// <summary>
+    /// Add the embedding backend to the kernel config
+    /// </summary>
+    internal static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
     {
         AIServiceOptions config = aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName);
 
@@ -135,10 +141,14 @@ internal static class SemanticKernelExtensions
         return kernelConfig;
     }
 
-    public static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
+    /// <summary>
+    /// Construct IEmbeddingGeneration from <see cref="AIServiceOptions"/>
+    /// </summary>
+    internal static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
         ILogger? logger = null,
         IDelegatingHandlerFactory? handlerFactory = null)
     {
+
         return serviceConfig.AIService switch
         {
             AIServiceOptions.AIServiceType.AzureOpenAI => new AzureTextEmbeddingGeneration(
