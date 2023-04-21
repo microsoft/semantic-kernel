@@ -142,7 +142,7 @@ public class VolatileMemoryStore : IMemoryStore
         string collectionName,
         Embedding<float> embedding,
         int limit,
-        double minRelevanceScore = 0,
+        double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
         CancellationToken cancel = default)
     {
@@ -190,7 +190,7 @@ public class VolatileMemoryStore : IMemoryStore
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
         string collectionName,
         Embedding<float> embedding,
-        double minRelevanceScore = 0,
+        double minRelevanceScore = 0.0,
         bool withEmbedding = false,
         CancellationToken cancel = default)
     {
