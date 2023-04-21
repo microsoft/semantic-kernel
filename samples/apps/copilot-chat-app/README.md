@@ -136,4 +136,4 @@ the complete list of current models supporting chat completions.
 
 ## Additional resources
 
-1. [Document Upload App](./DocumentUploadApp/README.md): Ingest a document to memory.
+1. [Import Document Application](./importdocument/README.md): Ingest a document to the memory store.
