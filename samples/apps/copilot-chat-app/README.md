@@ -129,3 +129,7 @@ You may also need to update the keys used for any secrets set with `dotnet user-
 As of [PR #499](https://github.com/microsoft/semantic-kernel/pull/499), CopilotChat now focuses support on chat completion models, such as `gpt-3.5-*` and `gpt-4-*`
 See [OpenAI's model compatiblity](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
 the complete list of current models supporting chat completions.
+
+## Additional resources
+
+1. [Document Upload App](./DocumentUploadApp/README.md): Ingest a document to memory.
