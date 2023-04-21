@@ -2,62 +2,53 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Model;
 
 namespace SemanticKernel.Service.Controllers;
-
-/// <summary>
-/// Token Response is a simple wrapper around the token and region
-/// </summary>
-public class SpeechTokenResponse
-{
-    public string? Token { get; set; }
-    public string? Region { get; set; }
-}
 
 [Authorize]
 [ApiController]
 public class SpeechTokenController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
     private readonly ILogger<SpeechTokenController> _logger;
+    private readonly AzureSpeechOptions _config;
 
-    public SpeechTokenController(IConfiguration configuration, ILogger<SpeechTokenController> logger)
+    public SpeechTokenController(IOptions<AzureSpeechOptions> config, ILogger<SpeechTokenController> logger)
     {
-        this._configuration = configuration;
         this._logger = logger;
+        this._config = config.Value;
     }
 
     /// <summary>
-    /// Use the Azure Speech Config key to return an authorization token and region as a Token Response.
+    /// Get an authorization token and region
     /// </summary>
     [Route("speechToken")]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<SpeechTokenResponse> Get()
     {
-        AzureSpeechConfig azureSpeech = this._configuration.GetSection("AzureSpeech").Get<AzureSpeechConfig>();
+        if (string.IsNullOrWhiteSpace(this._config.Region))
+        {
+            throw new InvalidOperationException($"Missing value for {AzureSpeechOptions.PropertyName}:{nameof(this._config.Region)}");
+        }
 
-        string fetchTokenUri = "https://" + azureSpeech.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
-        string subscriptionKey = azureSpeech.Key;
-
-        var token = this.FetchTokenAsync(fetchTokenUri, subscriptionKey).Result;
-
-        return new SpeechTokenResponse { Token = token, Region = azureSpeech.Region };
+        string fetchTokenUri = $"https://{this._config.Region}.api.cognitive.microsoft.com/sts/v1.0/issueToken";
+        string token = this.FetchTokenAsync(fetchTokenUri, this._config.Key).Result;
+        return new SpeechTokenResponse { Token = token, Region = this._config.Region };
     }
 
     private async Task<string> FetchTokenAsync(string fetchUri, string subscriptionKey)
     {
         // TODO: get the HttpClient from the DI container
-        using (var client = new HttpClient())
-        {
-            client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
-            UriBuilder uriBuilder = new UriBuilder(fetchUri);
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
+        UriBuilder uriBuilder = new(fetchUri);
 
-            var result = await client.PostAsync(uriBuilder.Uri, null);
-            result.EnsureSuccessStatusCode();
-            this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
-            return await result.Content.ReadAsStringAsync();
-        }
+        var result = await client.PostAsync(uriBuilder.Uri, null);
+        result.EnsureSuccessStatusCode();
+        this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
+        return await result.Content.ReadAsStringAsync();
     }
 }

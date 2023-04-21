@@ -3,9 +3,11 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
+using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
@@ -15,17 +17,18 @@ namespace SemanticKernel.Service.Controllers;
 [ApiController]
 public class SemanticKernelController : ControllerBase
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<SemanticKernelController> _logger;
     private readonly PromptSettings _promptSettings;
+    private readonly ServiceOptions _config;
 
-    public SemanticKernelController(IServiceProvider serviceProvider, IConfiguration configuration, PromptSettings promptSettings, ILogger<SemanticKernelController> logger)
+    public SemanticKernelController(
+        IOptions<ServiceOptions> config,
+        PromptSettings promptSettings,
+        ILogger<SemanticKernelController> logger)
     {
-        this._serviceProvider = serviceProvider;
-        this._configuration = configuration;
-        this._promptSettings = promptSettings;
         this._logger = logger;
+        this._config = config.Value;
+        this._promptSettings = promptSettings;
     }
 
     /// <summary>
@@ -50,7 +53,7 @@ public class SemanticKernelController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AskResult>> InvokeFunctionAsync(
-        [FromServices] Kernel kernel,
+        [FromServices] IKernel kernel,
         [FromServices] ChatSessionRepository chatRepository,
         [FromServices] ChatMessageRepository chatMessageRepository,
         [FromBody] Ask ask,
@@ -63,12 +66,10 @@ public class SemanticKernelController : ControllerBase
             return this.BadRequest("Input is required.");
         }
 
-        //TODO
-        //string semanticSkillsDirectory = this._configuration.GetSection(Constants.SemanticSkillsDirectoryConfigKey).Get<string>();
-        //if (!string.IsNullOrWhiteSpace(semanticSkillsDirectory))
-        //{
-        //    kernel.RegisterSemanticSkills(semanticSkillsDirectory, this._logger);
-        //}
+        if (!string.IsNullOrWhiteSpace(this._config.SemanticSkillsDirectory))
+        {
+            kernel.RegisterSemanticSkills(this._config.SemanticSkillsDirectory, this._logger);
+        }
 
         kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, this._logger);
 

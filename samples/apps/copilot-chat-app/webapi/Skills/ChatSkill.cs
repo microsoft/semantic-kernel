@@ -123,7 +123,7 @@ public class ChatSkill
         var latestMessage = await this._chatMessageRepository.FindLastByChatIdAsync(chatId);
 
         // Search for relevant memories.
-        List<MemoryQueryResult> relevantMemories = new List<MemoryQueryResult>();
+        List<MemoryQueryResult> relevantMemories = new();
         foreach (var memoryName in this._promptSettings.MemoryMap.Keys)
         {
             var results = context.Memory.SearchAsync(

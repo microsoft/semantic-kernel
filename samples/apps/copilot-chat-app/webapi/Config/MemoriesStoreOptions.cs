@@ -5,8 +5,10 @@ namespace SemanticKernel.Service.Config;
 /// <summary>
 /// Configuration settings for the memories store.
 /// </summary>
-public class MemoriesStoreConfig
+public class MemoriesStoreOptions
 {
+    public const string PropertyName = "MemoriesStore";
+
     /// <summary>
     /// The type of memories store to use.
     /// </summary>

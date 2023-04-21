@@ -2,6 +2,7 @@
 
 using System.Reflection;
 using Azure.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
@@ -11,7 +12,7 @@ namespace SemanticKernel.Service.Config;
 
 internal static class ConfigExtensions
 {
-    public static IHostBuilder ConfigureAppSettings(this IHostBuilder host)
+    public static IHostBuilder AddConfiguration(this IHostBuilder host)
     {
         string? environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
@@ -49,80 +50,78 @@ internal static class ConfigExtensions
         return host;
     }
 
-    public static void AddCompletionBackend(this KernelConfig kernelConfig, AIServiceConfig serviceConfig)
+    public static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
     {
-        if (!serviceConfig.IsValid())
-        {
-            throw new ArgumentException("The provided completion backend settings are not valid");
-        }
+        AIServiceOptions config = aiServiceOptions.Get(AIServiceOptions.CompletionPropertyName);
 
-        switch (serviceConfig.AIService.ToUpperInvariant())
+        switch (config.AIService)
         {
-            case AIServiceConfig.AzureOpenAI:
+            case AIServiceOptions.AIServiceType.AzureOpenAI:
                 kernelConfig.AddAzureChatCompletionService(
-                    serviceId: serviceConfig.Label,
-                    deploymentName: serviceConfig.DeploymentOrModelId,
-                    endpoint: serviceConfig.Endpoint,
-                    apiKey: serviceConfig.Key,
+                    serviceId: config.Label,
+                    deploymentName: config.DeploymentOrModelId,
+                    endpoint: config.Endpoint,
+                    apiKey: config.Key,
                     alsoAsTextCompletion: true);
                 break;
 
-            case AIServiceConfig.OpenAI:
+            case AIServiceOptions.AIServiceType.OpenAI:
                 kernelConfig.AddOpenAIChatCompletionService(
-                    serviceId: serviceConfig.Label,
-                    modelId: serviceConfig.DeploymentOrModelId,
-                    apiKey: serviceConfig.Key,
+                    serviceId: config.Label,
+                    modelId: config.DeploymentOrModelId,
+                    apiKey: config.Key,
                     alsoAsTextCompletion: true);
                 break;
 
             default:
-                throw new ArgumentException("Invalid AIService value in completion backend settings");
+                throw new ArgumentException($"Invalid {nameof(config.AIService)} value in '{AIServiceOptions.CompletionPropertyName}' settings.");
         }
+
+        return kernelConfig;
     }
 
-    public static void AddEmbeddingBackend(this KernelConfig kernelConfig, AIServiceConfig serviceConfig)
+    public static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
     {
-        if (!serviceConfig.IsValid())
-        {
-            throw new ArgumentException("The provided embeddings backend settings are not valid");
-        }
+        AIServiceOptions config = aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName);
 
-        switch (serviceConfig.AIService.ToUpperInvariant())
+        switch (config.AIService)
         {
-            case AIServiceConfig.AzureOpenAI:
-                kernelConfig.AddAzureTextEmbeddingGenerationService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                    serviceConfig.Endpoint, serviceConfig.Key);
+            case AIServiceOptions.AIServiceType.AzureOpenAI:
+                kernelConfig.AddAzureTextEmbeddingGenerationService(
+                    serviceId: config.Label,
+                    deploymentName: config.DeploymentOrModelId,
+                    endpoint: config.Endpoint,
+                    apiKey: config.Key);
                 break;
 
-            case AIServiceConfig.OpenAI:
-                kernelConfig.AddOpenAITextEmbeddingGenerationService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
-                    serviceConfig.Key);
+            case AIServiceOptions.AIServiceType.OpenAI:
+                kernelConfig.AddOpenAITextEmbeddingGenerationService(
+                    serviceId: config.Label,
+                    modelId: config.DeploymentOrModelId,
+                    apiKey: config.Key);
                 break;
 
             default:
-                throw new ArgumentException("Invalid AIService value in embedding backend settings");
+                throw new ArgumentException($"Invalid {nameof(config.AIService)} value in '{AIServiceOptions.EmbeddingPropertyName}' settings.");
         }
+
+        return kernelConfig;
     }
 
-    public static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceConfig serviceConfig,
+    public static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
         ILogger? logger = null,
         IDelegatingHandlerFactory? handlerFactory = null)
     {
-        if (!serviceConfig.IsValid())
+        return serviceConfig.AIService switch
         {
-            throw new ArgumentException("The provided embeddings backend settings are not valid");
-        }
-
-        return serviceConfig.AIService.ToUpperInvariant() switch
-        {
-            AIServiceConfig.AzureOpenAI => new AzureTextEmbeddingGeneration(
+            AIServiceOptions.AIServiceType.AzureOpenAI => new AzureTextEmbeddingGeneration(
                 serviceConfig.DeploymentOrModelId,
                 serviceConfig.Endpoint,
                 serviceConfig.Key,
                 handlerFactory: handlerFactory,
                 log: logger),
 
-            AIServiceConfig.OpenAI => new OpenAITextEmbeddingGeneration(
+            AIServiceOptions.AIServiceType.OpenAI => new OpenAITextEmbeddingGeneration(
                 serviceConfig.DeploymentOrModelId, serviceConfig.Key, handlerFactory: handlerFactory, log: logger),
 
             _ => throw new ArgumentException("Invalid AIService value in embeddings backend settings"),

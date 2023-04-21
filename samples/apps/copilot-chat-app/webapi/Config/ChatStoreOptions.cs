@@ -5,8 +5,10 @@ namespace SemanticKernel.Service.Config;
 /// <summary>
 /// Configuration settings for the chat store.
 /// </summary>
-public class ChatStoreConfig
+public class ChatStoreOptions
 {
+    public const string PropertyName = "ChatStore";
+
     /// <summary>
     /// The type of chat store to use.
     /// </summary>
