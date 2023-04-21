@@ -5,7 +5,7 @@ using System.Resources;
 
 namespace SemanticKernel.Skills.UnitTests.OpenAPI.TestSkills;
 
-internal class ResourceSkillsProvider
+internal static class ResourceSkillsProvider
 {
     /// <summary>
     /// Loads OpenApi document from assembly resource.

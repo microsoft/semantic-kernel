@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
 internal sealed class ListCollectionsResponse : QdrantResponse
 {
-    internal class CollectionResult
+    internal sealed class CollectionResult
     {
         internal sealed class CollectionDescription
         {

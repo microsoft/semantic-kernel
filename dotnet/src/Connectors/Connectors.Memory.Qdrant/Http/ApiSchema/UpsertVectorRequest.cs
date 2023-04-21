@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
-internal class UpsertVectorRequest
+internal sealed class UpsertVectorRequest
 {
     public static UpsertVectorRequest Create(string collectionName)
     {
@@ -34,7 +34,7 @@ internal class UpsertVectorRequest
     [JsonPropertyName("batch")]
     public BatchRequest Batch { get; set; }
 
-    internal class BatchRequest
+    internal sealed class BatchRequest
     {
         [JsonPropertyName("ids")]
         public IList<string> Ids { get; set; }
