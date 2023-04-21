@@ -43,6 +43,16 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%A, %d %B, %Y")
 
+    @sk_function(description="Get the current time.")
+    def today(self) -> str:
+        """
+        Get the current date
+
+        Example:
+            {{time.today}} => Sunday, 12 January, 2031
+        """
+        return self.date()
+
     @sk_function(description="Get the current date and time in the local time zone")
     def now(self) -> str:
         """
