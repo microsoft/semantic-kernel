@@ -1,7 +1,5 @@
-﻿// TODO fix casing of file name
-
-// Copyright (c) Microsoft. All rights reserved.
-using Microsoft.SemanticKernel.Orchestration;
+﻿//Copyright (c) Microsoft. All rights reserved.
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 
 namespace SemanticKernel.Service.Skills;
 
@@ -27,4 +25,14 @@ internal static class Utils
             context.CancellationToken
         );
     }
+
+    /// <summary>
+    /// Calculate the number of tokens in a string.
+    /// </summary>
+    internal static int TokenCount(string text)
+    {
+        var tokens = GPT3Tokenizer.Encode(text);
+        return tokens.Count;
+    }
 }
+
