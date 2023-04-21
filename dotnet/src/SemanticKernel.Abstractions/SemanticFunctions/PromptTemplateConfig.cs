@@ -179,7 +179,10 @@ public class PromptTemplateConfig
     public static PromptTemplateConfig FromJson(string json)
     {
         var result = Json.Deserialize<PromptTemplateConfig>(json);
-        Verify.NotNull(result, "Unable to deserialize prompt template config. The deserialized returned NULL.");
+        if (result is null)
+        {
+            Verify.ThrowValidationException(ValidationException.ErrorCodes.NullValue, "Unable to deserialize prompt template config. The deserialized returned NULL.");
+        }
         return result;
     }
 }

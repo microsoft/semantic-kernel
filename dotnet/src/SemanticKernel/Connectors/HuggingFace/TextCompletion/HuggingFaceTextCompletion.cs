@@ -34,7 +34,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
     public HuggingFaceTextCompletion(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
+        Verify.NotNull(endpoint);
         Verify.NotEmpty(model, "Model cannot be empty.");
 
         this._endpoint = endpoint;
@@ -53,7 +53,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="model">Model to use for service API call.</param>
     public HuggingFaceTextCompletion(Uri endpoint, string model)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
+        Verify.NotNull(endpoint);
         Verify.NotEmpty(model, "Model cannot be empty.");
 
         this._endpoint = endpoint;

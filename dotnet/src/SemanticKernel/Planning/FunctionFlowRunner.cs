@@ -259,8 +259,10 @@ internal class FunctionFlowRunner
 
                     if (processFunctions && !string.IsNullOrEmpty(functionName))
                     {
-                        Verify.NotNull(functionName, nameof(functionName));
-                        Verify.NotNull(skillFunction, nameof(skillFunction));
+                        if (skillFunction is null)
+                        {
+                            Verify.ThrowValidationException(ValidationException.ErrorCodes.NullValue, nameof(skillFunction));
+                        }
                         context.Log.LogTrace("{0}: processing function {1}.{2}", parentNodeName, skillName, functionName);
 
                         var functionVariables = new ContextVariables(functionInput);

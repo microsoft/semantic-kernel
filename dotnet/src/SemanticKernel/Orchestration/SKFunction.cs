@@ -96,14 +96,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SemanticFunctionConfig functionConfig,
         ILogger? log = null)
     {
-        Verify.NotNull(functionConfig, "Function configuration is empty");
+        Verify.NotNull(functionConfig);
 
         async Task<SKContext> LocalFunc(
             ITextCompletion client,
             CompleteRequestSettings requestSettings,
             SKContext context)
         {
-            Verify.NotNull(client, "AI LLM backed is empty");
+            Verify.NotNull(client);
 
             try
             {
@@ -201,7 +201,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
-        Verify.NotNull(serviceFactory, "AI LLM service factory is empty");
+        Verify.NotNull(serviceFactory);
         this.VerifyIsSemantic();
         this._aiService = serviceFactory.Invoke();
         return this;
@@ -210,7 +210,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
     {
-        Verify.NotNull(settings, "AI LLM request settings are empty");
+        Verify.NotNull(settings);
         this.VerifyIsSemantic();
         this._aiRequestSettings = settings;
         return this;
@@ -286,7 +286,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         ILogger? log = null
     )
     {
-        Verify.NotNull(delegateFunction, "The function delegate is empty");
+        Verify.NotNull(delegateFunction);
         Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
         Verify.ParametersUniqueness(parameters);
@@ -491,7 +491,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     private static MethodDetails GetMethodDetails(MethodInfo methodSignature, object? methodContainerInstance, ILogger? log = null)
     {
-        Verify.NotNull(methodSignature, "Method is NULL");
+        Verify.NotNull(methodSignature);
 
         var result = new MethodDetails
         {

@@ -51,7 +51,7 @@ public class SkillCollection : ISkillCollection
     /// <inheritdoc/>
     public ISkillCollection AddNativeFunction(ISKFunction functionInstance)
     {
-        Verify.NotNull(functionInstance, "The function is NULL");
+        Verify.NotNull(functionInstance);
         if (!this._skillCollection.ContainsKey(functionInstance.SkillName))
         {
             // Important: names are case insensitive
