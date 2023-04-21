@@ -1,12 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+import { useMsal } from '@azure/msal-react';
 import { Button, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
 import React, { useRef } from 'react';
 import { Constants } from '../../Constants';
+import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
+import { useDocumentImportService } from '../../libs/semantic-kernel/useDocumentImport';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { useSKSpeechService } from './../../libs/semantic-kernel/useSKSpeech';
@@ -60,13 +63,15 @@ interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const { isTyping, onSubmit } = props;
     const classes = useClasses();
+    const { instance } = useMsal();
     const dispatch = useAppDispatch();
     const [value, setValue] = React.useState('');
     const [previousValue, setPreviousValue] = React.useState('');
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
     const speechService = useSKSpeechService(process.env.REACT_APP_BACKEND_URI as string);
-    const attachmentFile = useRef<HTMLInputElement | null>(null);
+    const documentImportService = useDocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
+    const documentFileRef = useRef<HTMLInputElement | null>(null);
 
     React.useEffect(() => {
         if (recognizer) return;
@@ -89,16 +94,22 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         });
     };
 
-    const selectAttachment = () => {
-        console.log('selectAttachment');
-        attachmentFile.current?.click();
+    const selectDocument = () => {
+        documentFileRef.current?.click();
     };
 
-    const uploadAttachment = () => {
-        console.log('uploadAttachment');
-        const file = attachmentFile.current?.files?.[0];
-        if (file) {
-            console.log(file);
+    const uploadDocument = async () => {
+        const documentFile = documentFileRef.current?.files?.[0];
+        if (documentFile) {
+            try {
+                documentImportService.importDocumentAsync(
+                    documentFile,
+                    await AuthHelper.getSKaaSAccessToken(instance)
+                );
+            }  catch (e: any) {
+                const errorMessage = `Failed to upload document. Details: ${e.message ?? e}`;
+                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            }
         }
     };
 
@@ -161,13 +172,13 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                     {/* Hidden input for file upload. Only accept .txt files for now. */}
                     <input
                         type="file"
-                        ref={attachmentFile}
+                        ref={documentFileRef}
                         style={{ display: 'none' }}
                         accept='.txt'
                         multiple={false}
-                        onChange={() => uploadAttachment()}
+                        onChange={() => uploadDocument()}
                     />
-                    <Button appearance="transparent" icon={<AttachRegular />} onClick={() => selectAttachment()} />
+                    <Button appearance="transparent" icon={<AttachRegular />} onClick={() => selectDocument()} />
                 </div>
                 <div className={classes.essentials}>
                     {recognizer && (
