@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Memory;
@@ -219,7 +220,7 @@ public class SemanticKernelController : ControllerBase
         ChatMessageRepository chatMessageRepository,
         Ask ask)
     {
-        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._logger);
+        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, this._logger);
 
         var bot = new Bot();
 
