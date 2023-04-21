@@ -61,7 +61,7 @@ public class TimeSkill
     public string Today()
     {
         // Example: Sunday, 12 January, 2025
-        return Date();
+        return this.Date();
     }
 
     /// <summary>
