@@ -4,11 +4,11 @@ import inspect
 from logging import Logger
 from typing import Any, Dict, Optional
 
-from semantic_kernel.ai.ai_exception import AIException
-from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.complete_request_settings import CompleteRequestSettings
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.kernel_exception import KernelException

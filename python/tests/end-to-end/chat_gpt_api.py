@@ -3,7 +3,7 @@
 import asyncio
 
 import semantic_kernel as sk
-import semantic_kernel.ai.open_ai as sk_oai
+import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 system_message = """
 You are a chat bot. Your name is Mosscap and

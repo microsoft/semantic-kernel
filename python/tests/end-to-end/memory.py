@@ -4,7 +4,7 @@ import asyncio
 from typing import Tuple
 
 import semantic_kernel as sk
-import semantic_kernel.ai.open_ai as sk_oai
+import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 async def populate_memory(kernel: sk.Kernel) -> None:

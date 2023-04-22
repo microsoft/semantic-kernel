@@ -4,12 +4,12 @@
 from logging import Logger
 from typing import Any, Optional
 
-from semantic_kernel.ai.open_ai.services.open_ai_text_completion import (
-    OpenAITextCompletion,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
+    OpenAIChatCompletion,
 )
 
 
-class AzureTextCompletion(OpenAITextCompletion):
+class AzureChatCompletion(OpenAIChatCompletion):
     _endpoint: str
     _api_version: str
     _api_type: str
@@ -19,12 +19,12 @@ class AzureTextCompletion(OpenAITextCompletion):
         deployment_name: str,
         endpoint: Optional[str] = None,
         api_key: Optional[str] = None,
-        api_version: str = "2022-12-01",
+        api_version: str = "2023-03-15-preview",
         logger: Optional[Logger] = None,
         ad_auth=False,
     ) -> None:
         """
-        Initialize an AzureTextCompletion service.
+        Initialize an AzureChatCompletion service.
 
         You must provide:
         - A deployment_name, endpoint, and api_key (plus, optionally: ad_auth)

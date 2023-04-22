@@ -3,7 +3,7 @@
 import os
 
 import semantic_kernel as sk
-import semantic_kernel.ai.open_ai as sk_oai
+import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 def test_skill_can_be_imported():

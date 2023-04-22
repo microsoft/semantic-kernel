@@ -4,7 +4,7 @@
 from logging import Logger
 from typing import Any, Optional
 
-from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
 )
 

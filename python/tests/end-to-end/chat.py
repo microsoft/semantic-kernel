@@ -3,7 +3,7 @@
 import asyncio
 
 import semantic_kernel as sk
-import semantic_kernel.ai.open_ai as sk_oai
+import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 sk_prompt = """
 ChatBot can have a conversation with you about any topic.

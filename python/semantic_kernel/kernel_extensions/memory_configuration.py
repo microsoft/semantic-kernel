@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from semantic_kernel.ai.embeddings.embedding_generator_base import (
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
 from semantic_kernel.kernel_extensions.extends_kernel import ExtendsKernel
