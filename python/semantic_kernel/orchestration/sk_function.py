@@ -249,31 +249,46 @@ class SKFunction(SKFunctionBase):
     def __call__(
         self,
         input: Optional[str] = None,
+        variables: ContextVariables = None,
         context: Optional[SKContext] = None,
+        memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
     ) -> SKContext:
-        return self.invoke(input=input, context=context, settings=settings, log=log)
+        return self.invoke(
+            input=input,
+            variables=variables,
+            context=context,
+            memory=memory,
+            settings=settings,
+            log=log,
+        )
 
     def invoke(
         self,
         input: Optional[str] = None,
+        variables: ContextVariables = None,
         context: Optional[SKContext] = None,
+        memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
     ) -> SKContext:
         if context is None:
-            if self._skill_collection is None:
-                raise ValueError("Skill collection cannot be `None`")
-            assert self._skill_collection is not None
-
             context = SKContext(
-                ContextVariables(""),
-                NullMemory.instance,  # type: ignore
-                self._skill_collection,
-                log if log is not None else self._log,
+                variables=ContextVariables("") if variables is None else variables,
+                skill_collection=self._skill_collection,
+                memory=memory if memory is not None else NullMemory.instance,
+                logger=log if log is not None else self._log,
                 # TODO: ctoken?
             )
+        else:
+            # If context is passed, we need to merge the variables
+            if variables is not None:
+                context._variables = variables.merge_or_overwrite(
+                    new_vars=context._variables, overwrite=False
+                )
+            if memory is not None:
+                context._memory = memory
 
         if input is not None:
             context.variables.update(input)
@@ -299,68 +314,40 @@ class SKFunction(SKFunctionBase):
     async def invoke_async(
         self,
         input: Optional[str] = None,
+        variables: ContextVariables = None,
         context: Optional[SKContext] = None,
+        memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
     ) -> SKContext:
         if context is None:
-            if self._skill_collection is None:
-                raise ValueError("Skill collection cannot be `None`")
-            assert self._skill_collection is not None
-
             context = SKContext(
-                ContextVariables(""),
-                NullMemory.instance,  # type: ignore
-                self._skill_collection,
-                log if log is not None else self._log,
+                variables=ContextVariables("") if variables is None else variables,
+                skill_collection=self._skill_collection,
+                memory=memory if memory is not None else NullMemory.instance,
+                logger=log if log is not None else self._log,
                 # TODO: ctoken?
             )
+        else:
+            # If context is passed, we need to merge the variables
+            if variables is not None:
+                context._variables = variables.merge_or_overwrite(
+                    new_vars=context._variables, overwrite=False
+                )
+            if memory is not None:
+                context._memory = memory
 
         if input is not None:
             context.variables.update(input)
 
-        if self.is_semantic:
-            return await self._invoke_semantic_async(context, settings)
-        else:
-            return await self._invoke_native_async(context)
-
-    def invoke_with_vars(
-        self,
-        input: ContextVariables,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        log: Optional[Logger] = None,
-    ) -> SKContext:
-        tmp_context = SKContext(
-            variables=input,
-            skill_collection=self._skill_collection,
-            memory=memory if memory is not None else NullMemory.instance,
-            logger=log if log is not None else self._log,
-        )
-
         try:
-            return self.invoke(input=None, context=tmp_context, log=log)
+            if self.is_semantic:
+                return await self._invoke_semantic_async(context, settings)
+            else:
+                return await self._invoke_native_async(context)
         except Exception as e:
-            tmp_context.fail(str(e), e)
-            return tmp_context
-
-    async def invoke_with_vars_async(
-        self,
-        input: ContextVariables,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        log: Optional[Logger] = None,
-    ) -> SKContext:
-        tmp_context = SKContext(
-            variables=input,
-            skill_collection=self._skill_collection,
-            memory=memory if memory is not None else NullMemory.instance,
-            logger=log if log is not None else self._log,
-        )
-
-        try:
-            return await self.invoke_async(input=None, context=tmp_context, log=log)
-        except Exception as e:
-            tmp_context.fail(str(e), e)
-            return tmp_context
+            context.fail(str(e), e)
+            return context
 
     async def _invoke_semantic_async(self, context, settings):
         self._verify_is_semantic()
