@@ -57,7 +57,7 @@ public class CalendarSkillTests : IDisposable
         this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
 
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        await target.AddEventAsync(anySubject, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
@@ -92,7 +92,7 @@ public class CalendarSkillTests : IDisposable
         this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
 
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        await target.AddEventAsync(anySubject, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
@@ -127,7 +127,7 @@ public class CalendarSkillTests : IDisposable
         this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
 
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        await target.AddEventAsync(anySubject, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
@@ -162,7 +162,7 @@ public class CalendarSkillTests : IDisposable
         this._context.Variables.Set(Parameters.Content, anyContent);
 
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        await target.AddEventAsync(anySubject, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
@@ -189,7 +189,7 @@ public class CalendarSkillTests : IDisposable
         this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
 
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        await target.AddEventAsync(anySubject, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.True(this._context.ErrorOccurred);
@@ -215,7 +215,7 @@ public class CalendarSkillTests : IDisposable
         this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
 
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        await target.AddEventAsync(anySubject, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.True(this._context.ErrorOccurred);
@@ -242,7 +242,7 @@ public class CalendarSkillTests : IDisposable
         this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
 
         // Act
-        await target.AddEventAsync(string.Empty, this._context);
+        await target.AddEventAsync(string.Empty, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.True(this._context.ErrorOccurred);

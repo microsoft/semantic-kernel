@@ -119,7 +119,7 @@ public sealed class PlanningTests
         var planner = new SequentialPlanner(kernel.Object);
 
         // Act
-        var plan = await planner.CreatePlanAsync(goal);
+        var plan = await planner.CreatePlanAsync(goal).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(goal, plan.Description);

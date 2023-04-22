@@ -89,20 +89,20 @@ public class LocalUserMSALCredentialManager
                 return newPublicApp;
             });
 
-        IEnumerable<IAccount> accounts = await app.GetAccountsAsync();
+        IEnumerable<IAccount> accounts = await app.GetAccountsAsync().ConfigureAwait(false);
 
         AuthenticationResult result;
         try
         {
             result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
         }
         catch (MsalUiRequiredException)
         {
             // A MsalUiRequiredException happened on AcquireTokenSilent.
             // This indicates you need to call AcquireTokenInteractive to acquire a token
             result = await app.AcquireTokenInteractive(scopes)
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
             // throws MsalException
         }
 

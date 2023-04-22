@@ -37,7 +37,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         context["winner"] = winner;
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(template, context).ConfigureAwait(false);
 
         // Assert
         var expected = template
@@ -57,7 +57,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(template, context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(expected, result);
@@ -74,7 +74,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         context["call"] = "123";
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(template, context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("== 123 ok ==", result);
@@ -90,7 +90,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(template, context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("== 234 != 123 ==", result);
@@ -107,7 +107,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(template, context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("== a'b != 123 ==", result);
@@ -124,7 +124,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(template, context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("== a\"b != 123 ==", result);
@@ -144,11 +144,11 @@ public sealed class PromptTemplateEngineTests : IDisposable
         if (expectedResult.StartsWith("ERROR", StringComparison.OrdinalIgnoreCase))
         {
             await Assert.ThrowsAsync<TemplateException>(
-                async () => await this._target.RenderAsync(template, kernel.CreateNewContext()));
+                async () => await this._target.RenderAsync(template, kernel.CreateNewContext()).ConfigureAwait(false)).ConfigureAwait(false);
         }
         else
         {
-            var result = await this._target.RenderAsync(template, kernel.CreateNewContext());
+            var result = await this._target.RenderAsync(template, kernel.CreateNewContext()).ConfigureAwait(false);
             this._logger.WriteLine("  result: " + result);
 
             // Assert

@@ -20,7 +20,7 @@ public class HttpRetryConfigTests
         {
             var httpRetryConfig = new HttpRetryConfig() { MaxRetryCount = -1 };
             return Task.CompletedTask;
-        });
+        }).ConfigureAwait(false);
     }
 
     [Fact]

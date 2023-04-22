@@ -42,8 +42,8 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         var embeddingGenerator = new OpenAITextEmbeddingGeneration(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
 
         // Act
-        var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
-        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
+        var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString).ConfigureAwait(false);
+        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString }).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(AdaVectorLength, singleResult.Count);
@@ -63,8 +63,8 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
             azureOpenAIConfiguration.ApiKey);
 
         // Act
-        var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
-        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
+        var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString).ConfigureAwait(false);
+        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString }).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(AdaVectorLength, singleResult.Count);

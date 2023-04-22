@@ -21,7 +21,7 @@ public class BasicAuthenticationProviderTests
         var target = new BasicAuthenticationProvider(() => { return Task.FromResult(credentials); });
 
         // Act
-        await target.AuthenticateRequestAsync(request);
+        await target.AuthenticateRequestAsync(request).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("Basic", request.Headers.Authorization?.Scheme);

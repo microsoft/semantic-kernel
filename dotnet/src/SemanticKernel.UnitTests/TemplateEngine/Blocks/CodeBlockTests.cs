@@ -37,7 +37,7 @@ public class CodeBlockTests
         var target = new CodeBlock("functionName", this._log.Object);
 
         // Act
-        var exception = await Assert.ThrowsAsync<TemplateException>(async () => await target.RenderCodeAsync(context));
+        var exception = await Assert.ThrowsAsync<TemplateException>(async () => await target.RenderCodeAsync(context).ConfigureAwait(false)).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(TemplateException.ErrorCodes.FunctionNotFound, exception.ErrorCode);
@@ -57,7 +57,7 @@ public class CodeBlockTests
         var target = new CodeBlock("functionName", this._log.Object);
 
         // Act
-        var exception = await Assert.ThrowsAsync<TemplateException>(async () => await target.RenderCodeAsync(context));
+        var exception = await Assert.ThrowsAsync<TemplateException>(async () => await target.RenderCodeAsync(context).ConfigureAwait(false)).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(TemplateException.ErrorCodes.RuntimeError, exception.ErrorCode);
@@ -131,7 +131,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock("$varName", NullLogger.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("foo", result);
@@ -147,7 +147,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { varBlock }, "", NullLogger.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("bar", result);
@@ -161,7 +161,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock("'ciao'", NullLogger.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("ciao", result);
@@ -176,7 +176,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { valBlock }, "", NullLogger.Instance);
-        var result = await codeBlock.RenderCodeAsync(context);
+        var result = await codeBlock.RenderCodeAsync(context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("arrivederci", result);
@@ -214,7 +214,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId }, "", NullLogger.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
+        string result = await codeBlock.RenderCodeAsync(context).ConfigureAwait(false);
 
         // Assert - Values are received
         Assert.Equal("zero", canary0);
@@ -254,7 +254,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLogger.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
+        string result = await codeBlock.RenderCodeAsync(context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(VAR_VALUE, result);
@@ -286,7 +286,7 @@ public class CodeBlockTests
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLogger.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
+        string result = await codeBlock.RenderCodeAsync(context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(VALUE, result);
