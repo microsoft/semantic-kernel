@@ -7,29 +7,23 @@ import {
     InputOnChangeData,
     Label,
     makeStyles,
-    Menu,
-    MenuItem,
-    MenuList,
-    MenuPopover,
-    MenuTrigger,
     Persona,
     shorthands,
     tokens,
     Tooltip,
 } from '@fluentui/react-components';
-import { ArrowDownloadRegular, EditRegular, Save24Regular, ShareRegular } from '@fluentui/react-icons';
+import { EditRegular, Save24Regular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
 import { IAsk } from '../../libs/semantic-kernel/model/Ask';
 import { useSemanticKernel } from '../../libs/semantic-kernel/useSemanticKernel';
-import { useChat } from '../../libs/useChat';
-import { useFile } from '../../libs/useFile';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
 import { ChatRoom } from './ChatRoom';
+import { ShareBotMenu } from './ShareBotMenu';
 
 const useClasses = makeStyles({
     root: {
@@ -94,9 +88,7 @@ export const ChatWindow: React.FC = () => {
     const chatName = conversations[selectedId].title;
     const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const chat = useChat();
     const { instance } = useMsal();
-    const { downloadFile } = useFile();
 
     const onEdit = async () => {
         if (isEditing) {
@@ -161,31 +153,7 @@ export const ChatWindow: React.FC = () => {
                         </Tooltip>
                     </div>
                     <div className={classes.controls}>
-                        <Menu>
-                            <MenuTrigger disableButtonEnhancement>
-                                <Tooltip content="Share" relationship="label">
-                                    <Button icon={<ShareRegular />} appearance="transparent" />
-                                </Tooltip>
-                            </MenuTrigger>
-                            <MenuPopover>
-                                <MenuList>
-                                    <MenuItem
-                                        icon={<ArrowDownloadRegular />}
-                                        onClick={async () => {
-                                            // TODO: Add a loading indicator
-                                            const content = await chat.downloadBot(selectedId);
-                                            downloadFile(
-                                                `chat-history-${title}-${new Date().toISOString()}.json`,
-                                                JSON.stringify(content),
-                                                'text/json',
-                                            );
-                                        }}
-                                    >
-                                        Download your Bot
-                                    </MenuItem>
-                                </MenuList>
-                            </MenuPopover>
-                        </Menu>
+                        <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
                     </div>
                 </div>
             </div>
