@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Memory;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
-using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
 
 namespace SemanticKernel.Service.Controllers;
 
@@ -19,14 +18,14 @@ public class BotController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly ILogger<SemanticKernelController> _logger;
     private readonly IMemoryStore _memoryStore;
-    private readonly PromptSettings _promptSettings;
+    private readonly ChatMessageRepository _chatMessageRepository;
 
-    public BotController(IConfiguration configuration, IMemoryStore memoryStore, PromptSettings promptSettings, ILogger<SemanticKernelController> logger)
+    public BotController(IConfiguration configuration, IMemoryStore memoryStore, ChatMessageRepository chatMessageRepository, ILogger<SemanticKernelController> logger)
     {
         this._configuration = configuration;
         this._logger = logger;
         this._memoryStore = memoryStore;
-        this._promptSettings = promptSettings;
+        this._chatMessageRepository = chatMessageRepository;
     }
 
     [Authorize]
@@ -55,7 +54,7 @@ public class BotController : ControllerBase
 
         string chatId = string.Empty;
 
-        // Import chat history into CosmosDB and embeddings into SK memory.
+        // Import chat history into chat repository and embeddings into memory.
         try
         {
             // 1. Create a new chat and get the chat id.
@@ -73,7 +72,7 @@ public class BotController : ControllerBase
                 await chatMessageRepository.CreateAsync(chatMessage);
             }
 
-            // 3. Update SK memory.
+            // 3. Update the memory.
             await this.BulkUpsertMemoryRecordsAsync(oldChatId, chatId, bot.Embeddings);
         }
         catch
@@ -138,8 +137,6 @@ public class BotController : ControllerBase
         ChatMessageRepository chatMessageRepository,
         Guid chatId)
     {
-        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, this._logger);
-
         var chatIdString = chatId.ToString();
         var bot = new Bot();
 
@@ -159,19 +156,10 @@ public class BotController : ControllerBase
         bot.ChatTitle = chat.Title;
 
         // get the chat history
-        // TODO: should we call skill or call the storage directly?
-        var contextVariables = new ContextVariables(chatIdString);
-        contextVariables.Set("startIdx", "0");
-        contextVariables.Set("count", "100");
-        var messages = await this.GetAllChatMessagesAsync(kernel, contextVariables);
-
-        if (messages?.Value != null)
-        {
-            bot.ChatHistory = JsonSerializer.Deserialize<List<ChatMessage>>(messages.Value);
-        }
+        bot.ChatHistory = await this.GetAllChatMessagesAsync(chatIdString);
 
         // get the memory collections associated with this chat
-        // TODO: filtering memory collections by name might be risky. We can discuss if there is a better way.
+        // TODO: filtering memory collections by name might be fragiled.
         var allCollections = (await kernel.Memory.GetCollectionsAsync())
             .Where(collection => collection.StartsWith(chatIdString, StringComparison.OrdinalIgnoreCase));
 
@@ -193,18 +181,15 @@ public class BotController : ControllerBase
     }
 
     /// <summary>
-    /// Get chat messages from the ChatHistorySkill
+    /// Get chat messages of a given chat id.
     /// </summary>
-    /// <param name="kernel">The semantic kernel object.</param>
-    /// <param name="variables">The context variables.</param>
-    /// <returns>The result of the ask.</returns>
-    private async Task<AskResult> GetAllChatMessagesAsync(Kernel kernel, ContextVariables variables)
+    /// <param name="chatId">The chat id</param>
+    /// <returns>The list of chat messages in descending order of the timestamp</returns>
+    private async Task<List<ChatMessage>> GetAllChatMessagesAsync(string chatId)
     {
-        ISKFunction function = kernel.Skills.GetFunction("ChatHistorySkill", "GetAllChatMessages");
-
-        // Invoke the GetAllChatMessages function of ChatHistorySkill.
-        SKContext result = await kernel.RunAsync(variables, function!);
-        return new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) };
+        // TODO: We might want to set limitation on the number of messages that are pulled from the storage.
+        return (await this._chatMessageRepository.FindByChatIdAsync(chatId))
+            .OrderByDescending(m => m.Timestamp).ToList();
     }
 
     /// <summary>
