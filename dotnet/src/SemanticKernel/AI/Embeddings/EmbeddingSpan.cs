@@ -19,7 +19,7 @@ public ref struct EmbeddingSpan<TEmbedding>
     /// <param name="vector">A a vector of contiguous, unmanaged data.</param>
     public EmbeddingSpan(Span<TEmbedding> vector)
     {
-        SupportedTypes.VerifyTypeSupported(typeof(TEmbedding));
+        SupportedTypes.VerifyTypeSupported<TEmbedding>();
 
         this.Span = vector;
     }
@@ -83,5 +83,5 @@ public ref struct EmbeddingSpan<TEmbedding>
     /// Gets a value that indicates whether <typeparamref name="TEmbedding"/> is supported.
     /// </summary>
     [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Following 'IsSupported' pattern of System.Numerics.")]
-    public static bool IsSupported => SupportedTypes.IsSupported(typeof(TEmbedding));
+    public static bool IsSupported => SupportedTypes.IsSupported<TEmbedding>();
 }

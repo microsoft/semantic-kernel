@@ -14,10 +14,24 @@ namespace SemanticKernel.Service.Skills;
 /// </summary>
 public class ChatHistorySkill
 {
+    /// <summary>
+    /// A repository to save and retrieve chat messages.
+    /// </summary>
     private readonly ChatMessageRepository _chatMessageRepository;
+
+    /// <summary>
+    /// A repository to save and retrieve chat sessions.
+    /// </summary>
     private readonly ChatSessionRepository _chatSessionRepository;
+
+    /// <summary>
+    /// Prompt settings.
+    /// </summary>
     private readonly PromptSettings _promptSettings;
 
+    /// <summary>
+    /// Create a new instance of ChatHistorySkill.
+    /// </summary>
     public ChatHistorySkill(
         ChatMessageRepository chatMessageRepository,
         ChatSessionRepository chatSessionRepository,

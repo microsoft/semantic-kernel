@@ -64,7 +64,7 @@ public class SKContextTests
         Assert.Equal("ciao", result.Result);
     }
 
-    private class Parrot
+    private sealed class Parrot
     {
         [SKFunction("say something")]
         // ReSharper disable once UnusedMember.Local

@@ -5,7 +5,7 @@ using SemanticKernel.Service.Config;
 namespace SemanticKernel.Service.Skills;
 
 /// <summary>
-/// Settings for semantic function prompts. 
+/// Settings for semantic function prompts.
 /// </summary>
 public class PromptSettings
 {
@@ -19,11 +19,38 @@ public class PromptSettings
         this._promptsConfig = promptsConfig;
     }
 
-    internal double TokenEstimateFactor { get; } = 2.5;
     internal int ResponseTokenLimit { get; } = 1024;
     internal int CompletionTokenLimit { get; } = 8192;
+
+    /// <summary>
+    /// Weight of memories in the contextual part of the final prompt.
+    /// Contextual prompt excludes all the system commands.
+    /// </summary>
     internal double MemoriesResponseContextWeight { get; } = 0.3;
-    internal double HistoryResponseContextWeight { get; } = 0.3;
+
+    /// <summary>
+    /// Weight of documents in the contextual part of the final prompt.
+    /// Contextual prompt excludes all the system commands.
+    /// </summary>
+    internal double DocumentContextWeight { get; } = 0.3;
+
+    /// <summary>
+    /// Maximum number of tokens per line that will be used to split a document into lines.
+    /// Setting this to a low value will result in higher context granularity, but
+    /// takes longer to process the entire document into embeddings.
+    /// Default to 30 tokens as suggested by OpenAI:
+    /// https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
+    /// </summary>
+    internal int DocumentLineSplitMaxTokens { get; } = 30;
+
+    /// <summary>
+    /// Maximum number of tokens per paragraph that will be used to combine lines into paragraphs.
+    /// Setting this to a low value will result in higher context granularity, but
+    /// takes longer to process the entire document into embeddings.
+    /// Default to 100 tokens as suggested by OpenAI:
+    /// https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them    /// </summary>
+    internal int DocumentParagraphSplitMaxLines { get; } = 100;
+
     internal string KnowledgeCutoffDate => this._promptsConfig.KnowledgeCutoffDate;
     internal string InitialBotMessage => this._promptsConfig.InitialBotMessage;
 
@@ -42,6 +69,7 @@ public class PromptSettings
         "{{ChatSkill.ExtractChatHistory}}",
         this.SystemIntentContinuationPrompt
     };
+
     internal string SystemIntentExtractionPrompt => string.Join("\n", this.SystemIntentPromptComponents);
 
     // Memory extraction commands
@@ -53,6 +81,7 @@ public class PromptSettings
     // Long-term memory
     internal string LongTermMemoryName => this._promptsConfig.LongTermMemoryName;
     internal string LongTermMemoryExtractionPrompt => this._promptsConfig.LongTermMemoryExtraction;
+
     internal string[] LongTermMemoryPromptComponents => new string[]
     {
         this.SystemCognitivePrompt,
@@ -62,11 +91,13 @@ public class PromptSettings
         "{{ChatSkill.ExtractChatHistory}}",
         this.MemoryContinuationPrompt
     };
+
     internal string LongTermMemoryPrompt => string.Join("\n", this.LongTermMemoryPromptComponents);
 
     // Working memory
     internal string WorkingMemoryName => this._promptsConfig.WorkingMemoryName;
     internal string WorkingMemoryExtractionPrompt => this._promptsConfig.WorkingMemoryExtraction;
+
     internal string[] WorkingMemoryPromptComponents => new string[]
     {
         this.SystemCognitivePrompt,
@@ -76,6 +107,7 @@ public class PromptSettings
         "{{ChatSkill.ExtractChatHistory}}",
         this.MemoryContinuationPrompt
     };
+
     internal string WorkingMemoryPrompt => string.Join("\n", this.WorkingMemoryPromptComponents);
 
     // Memory map
@@ -95,8 +127,10 @@ public class PromptSettings
         "{{$userIntent}}",
         "{{ChatSkill.ExtractUserMemories}}",
         "{{ChatSkill.ExtractChatHistory}}",
+        "{{DocumentMemorySkill.QueryDocuments $INPUT}}",
         this.SystemChatContinuationPrompt
     };
+
     internal string SystemChatPrompt => string.Join("\n", this.SystemChatPromptComponents);
 
     internal double ResponseTemperature { get; } = 0.7;

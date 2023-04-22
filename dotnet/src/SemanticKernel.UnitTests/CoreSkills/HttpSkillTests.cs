@@ -55,7 +55,7 @@ public class HttpSkillTests : IDisposable
         using var skill = new HttpSkill(client);
 
         // Act
-        var result = await skill.GetAsync(this._uriString);
+        var result = await skill.GetAsync(this._uriString, this._context);
 
         // Assert
         Assert.Equal(this._content, result);
@@ -105,7 +105,7 @@ public class HttpSkillTests : IDisposable
         using var skill = new HttpSkill(client);
 
         // Act
-        var result = await skill.DeleteAsync(this._uriString);
+        var result = await skill.DeleteAsync(this._uriString, this._context);
 
         // Assert
         Assert.Equal(this._content, result);

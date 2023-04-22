@@ -71,6 +71,7 @@ public class VectorSpanTests
         try
         {
             vSpan1.CosineSimilarity(vSpan2);
+            Assert.True(false, "No exception thrown");
         }
         catch (ArgumentException target)
         {
@@ -89,6 +90,7 @@ public class VectorSpanTests
         try
         {
             vSpan1.CosineSimilarity(vSpan2);
+            Assert.True(false, "No exception thrown");
         }
         catch (ArgumentException target)
         {
@@ -161,6 +163,7 @@ public class VectorSpanTests
         try
         {
             vSpan1.Dot(vSpan2);
+            Assert.True(false, "No exception thrown");
         }
         catch (ArgumentException target)
         {
@@ -179,6 +182,7 @@ public class VectorSpanTests
         try
         {
             vSpan1.Dot(vSpan2);
+            Assert.True(false, "No exception thrown");
         }
         catch (ArgumentException target)
         {
