@@ -7,33 +7,6 @@ import semantic_kernel as sk
 import semantic_kernel.ai.open_ai as sk_oai
 
 
-def build_kernel() -> sk.Kernel:
-    # Setup kernel with OpenAI completion and embedding backends
-    api_key, org_id = sk.openai_settings_from_dot_env()
-
-    kernel = (
-        sk.kernel_builder()
-        .configure(
-            lambda c: c.add_text_backend(
-                "davinci-003",
-                sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id),
-            )
-        )
-        .configure(
-            lambda c: c.add_embedding_backend(
-                "ada-002",
-                sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id),
-            )
-        )
-        .with_memory_storage(sk.memory.VolatileMemoryStore())
-        .build()
-    )
-
-    kernel.import_skill(sk.core_skills.TextMemorySkill())
-
-    return kernel
-
-
 async def populate_memory(kernel: sk.Kernel) -> None:
     # Add some documents to the semantic memory
     await kernel.memory.save_information_async(
@@ -160,17 +133,35 @@ async def main() -> None:
         chatting = await chat(kernel, chat_func, context)
 
 
-if __name__ == "__main__":
-    volatile_memory_storage = sk.memory.VolatileMemoryStore()
-    asyncio.run(main(volatile_memory_storage))
+async def chroma_main() -> None:
+    kernel = sk.Kernel()
 
-    chroma_memory_storage = sk.memory.ChromaMemoryStore()
-    asyncio.run(main(chroma_memory_storage))
-
-    def test_compute_similarity_scores_func(query_embedding, documents_embeddings):
-        return [[(i + 7) / 10 for i in range(len(documents_embeddings))]]
-
-    chroma_memory_storage = sk.memory.ChromaMemoryStore(
-        compute_similarity_scores_func=test_compute_similarity_scores_func
+    api_key, org_id = sk.openai_settings_from_dot_env()
+    kernel.config.add_text_backend(
+        "dv", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
     )
-    asyncio.run(main(chroma_memory_storage))
+    kernel.config.add_embedding_backend(
+        "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
+    )
+
+    kernel.register_memory_store(memory_store=sk.memory.ChromaMemoryStore())
+    kernel.import_skill(sk.core_skills.TextMemorySkill())
+
+    print("Populating memory...")
+    await populate_memory(kernel)
+
+    print("Asking questions... (manually)")
+    await search_memory_examples(kernel)
+
+    print("Setting up a chat (with memory!)")
+    chat_func, context = await setup_chat_with_memory(kernel)
+
+    print("Begin chatting (type 'exit' to exit):\n")
+    chatting = True
+    while chatting:
+        chatting = await chat(kernel, chat_func, context)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+    asyncio.run(chroma_main())
