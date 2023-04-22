@@ -52,7 +52,7 @@ public class EmailSkill
     /// </summary>
     [SKFunction("Gets the email address for me.")]
     public async Task<string> GetMyEmailAddressAsync()
-        => await this._connector.GetMyEmailAddressAsync();
+        => await this._connector.GetMyEmailAddressAsync().ConfigureAwait(false);
 
     /// <summary>
     /// Send an email using <see cref="ContextVariables.Input"/> as the body.
@@ -77,6 +77,6 @@ public class EmailSkill
 
         this._logger.LogInformation("Sending email to '{0}' with subject '{1}'", recipients, subject);
         string[] recipientList = recipients.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
-        await this._connector.SendEmailAsync(subject, content, recipientList);
+        await this._connector.SendEmailAsync(subject, content, recipientList).ConfigureAwait(false);
     }
 }
