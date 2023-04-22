@@ -3,12 +3,13 @@ import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 
 import { BotAdd20Regular } from '@fluentui/react-icons';
 import { FC } from 'react';
-import { Bot } from '../../../libs/models/Bot';
 import { useChat } from '../../../libs/useChat';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { BotUploader } from '../../BotUploader';
 import { ChatListItem } from './ChatListItem';
+import { useFile } from '../../../libs/useFile';
+import { Bot } from '../../../libs/models/Bot';
 
 const useClasses = makeStyles({
     root: {
@@ -41,21 +42,10 @@ export const ChatList: FC = () => {
     const classes = useClasses();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chat = useChat();
+    const fileHandler = useFile();
 
     const onAddChat = () => {
         chat.createChat();
-    };
-
-    // TODO: Is this the right place for this function?
-    const onImportChat = (file: File) => {
-        const fileReader = new FileReader();
-        fileReader.onload = async (event: ProgressEvent<FileReader>) => {
-            const content = event?.target?.result as string;
-            const parsedData = JSON.parse(content) as Bot;
-
-            return await chat.importBot(parsedData);
-        };
-        fileReader.readAsText(file);
     };
 
     return (
@@ -71,7 +61,7 @@ export const ChatList: FC = () => {
                         icon={<Filter20Regular />}
                         appearance="transparent" /> */}
                         <Tooltip content="Import a bot" relationship="label">
-                            <BotUploader onUpload={onImportChat} />
+                            <BotUploader onUpload={(file: File) => fileHandler.loadFile<Bot>(file, chat.importBot)} />
                         </Tooltip>
                         <Tooltip content="Create a new chat" relationship="label">
                             <Button icon={<BotAdd20Regular />} appearance="transparent" onClick={onAddChat} />

@@ -1,10 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
-// import { useAppDispatch } from '../redux/app/hooks';
 
 export const useFile = () => {
-    // const dispatch = useAppDispatch();
+    function loadFile<T>(file: File, loadCallBack: (bot: T) => Promise<void>) {
+        const fileReader = new FileReader();
+        fileReader.onload = async (event: ProgressEvent<FileReader>) => {
+            const content = event?.target?.result as string;
+            const parsedData = JSON.parse(content) as T;
 
-    const downloadFile = (filename: string, content: string, type: string) => {
+            return await loadCallBack(parsedData);
+        };
+        fileReader.readAsText(file);
+    }
+
+    function downloadFile(filename: string, content: string, type: string) {
         const data: BlobPart[] = [content];
         let file: File | null = new File(data, filename, { type });
 
@@ -16,9 +24,10 @@ export const useFile = () => {
         URL.revokeObjectURL(link.href);
         link.remove();
         file = null;
-    };
+    }
 
     return {
+        loadFile,
         downloadFile,
     };
 };
