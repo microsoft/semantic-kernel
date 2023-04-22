@@ -18,6 +18,7 @@ export const NewBotMenu: FC = () => {
 
     const onAddChat = () => {
         chat.createChat();
+        setIsNewBotMenuOpen(false);
     };
 
     const onUpload = useCallback(
