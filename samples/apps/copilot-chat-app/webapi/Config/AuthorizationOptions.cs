@@ -49,7 +49,7 @@ public class AuthorizationOptions
         public string? TenantId { get; set; }
 
         /// <summary>
-        /// Application registration ID
+        /// Application (client) ID
         /// </summary>
         public string? ClientId { get; set; }
 

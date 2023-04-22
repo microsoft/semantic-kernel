@@ -10,7 +10,7 @@ public sealed class AzureSpeechOptions
     public const string PropertyName = "AzureSpeech";
 
     /// <summary>
-    /// Region of the Azure speech service.
+    /// Location of the Azure speech service to use (e.g. "South Central US")
     /// </summary>
     public string Region { get; set; } = string.Empty;
 
