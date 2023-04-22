@@ -41,7 +41,7 @@ public static class Program
         await Example11_WebSearchQueries.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example12_Planning.RunAsync();
+        await Example12_SequentialPlanner.RunAsync();
         Console.WriteLine("== DONE ==");
 
         await Example13_ConversationSummarySkill.RunAsync();
@@ -84,6 +84,9 @@ public static class Program
         Console.WriteLine("== DONE ==");
 
         await Example26_SemanticFunctionsUsingChatGPT.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example27_ActionPlanner.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
