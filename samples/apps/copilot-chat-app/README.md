@@ -31,17 +31,18 @@ First, let’s set up and verify the back-end API server is running.
 
 1. Navigate to `samples/apps/copilot-chat-app/webapi` and open `appsettings.json`
    - Update the `Completion` configuration sections:
-     - Update `AIService` to the AI service you will be using (i.e., `AzureOpenAI` or `OpenAI`).
-      - CopilotChat is optimized for Chat completion models, such as gpt-3.5-turbo and gpt-4
+     - Set `AIService` to the AI service you will be using (i.e., `AzureOpenAI` or `OpenAI`).
+     - Set `DeploymentorModelID` to a chat completion, such as gpt-3.5-turbo or gpt-4.
          > **Important:** gpt-3.5-turbo is normally labelled as "`gpt-35-turbo`" (no period) in Azure OpenAI and "`gpt-3.5-turbo`" (with a period) in OpenAI.
      - If you are using Azure OpenAI, update `Endpoint` to your Azure OpenAI resource Endpoint address (e.g.,  
        `http://contoso.openai.azure.com`).
-        > If you are using OpenAI, this property will be ignored.
-   - Update the and `Embedding` configuration sections:
-     - Update `DeploymentOrModelID` to the Azure OpenAI deployment or OpenAI models you want to use. 
-
-      - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effect for generating embeddings.
-     - Set your Azure OpenAI key by opening a terminal in the webapi project directory and using `dotnet user-secrets`
+        > When using OpenAI, this property will be ignored.
+   - Update the `Embedding` configuration sections:
+      - Set the `AIService` to the AI service you will be using (i.e., `AzureOpenAI` or `OpenAI`).
+     - Set `DeploymentOrModelID` to the Azure OpenAI deployment or OpenAI models you want to use. 
+         > For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effect for generating embeddings.
+     
+   - When running locally, set your Azure OpenAI key by opening a terminal in the `webapi` project directory and using `dotnet user-secrets`to set their values securely.
        ```bash
        cd semantic-kernel/samples/apps/copilot-chat-app/webapi
        dotnet user-secrets set "Completion:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
