@@ -2,8 +2,8 @@
 
 """
 ChromaMemoryStore provides functionality to find the nearest matches based on embedding similarity.
-By inherit ChromaDataStore, ChromaMemoryStore is storing and retrieving data for SemanticTextMemory.
-For information about the connection to ChromaDB and persistency settings, please check ChromaDataStore class.
+By inheriting ChromaDataStore, ChromaMemoryStore is storing and retrieving data for SemanticTextMemory.
+For information about the connection to ChromaDB and persistency settings, please check the ChromaDataStore class.
 
 The similarity_compute_func parameter can affect the behavior of the get_nearest_matches_async method.
 similarity_compute_func can be one of the following:
@@ -39,7 +39,6 @@ from logging import Logger
 from typing import TYPE_CHECKING, Callable, List, Optional, Tuple, Union
 
 from numpy import array, linalg, ndarray
-
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.storage.chroma_data_store import ChromaDataStore
