@@ -66,8 +66,7 @@ public static class DivideOperation
                 {
                     *(Vector<float>*)px /= divisorVec;
                     px += Vector<float>.Count;
-                }
-                while (px <= pxOneVectorFromEnd);
+                } while (px <= pxOneVectorFromEnd);
             }
 
             while (px < pxEnd)
@@ -94,8 +93,7 @@ public static class DivideOperation
                 {
                     *(Vector<double>*)px /= divisorVec;
                     px += Vector<double>.Count;
-                }
-                while (px <= pxOneVectorFromEnd);
+                } while (px <= pxOneVectorFromEnd);
             }
 
             while (px < pxEnd)
