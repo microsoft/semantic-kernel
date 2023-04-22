@@ -26,7 +26,6 @@ public sealed class Program
 
         // Add in configuration options and Semantic Kernel services.
         builder.Services
-            .AddLogging()
             .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Program>>()) // some services require an untemplated ILogger
             .AddOptions(builder.Configuration)
             .AddSemanticKernelServices()

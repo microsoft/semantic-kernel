@@ -44,7 +44,7 @@ public class AuthorizationOptions
         public string? Instance { get; set; }
 
         /// <summary>
-        /// Active directory/tenant ID
+        /// Tenant (directory) ID
         /// </summary>
         public string? TenantId { get; set; }
 
