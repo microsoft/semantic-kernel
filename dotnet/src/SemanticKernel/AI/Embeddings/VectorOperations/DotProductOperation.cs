@@ -93,8 +93,7 @@ public static class DotProductOperation
 
                     px += Vector<double>.Count;
                     py += Vector<double>.Count;
-                }
-                while (px <= pxOneVectorFromEnd);
+                } while (px <= pxOneVectorFromEnd);
             }
 
             while (px < pxEnd)
@@ -133,8 +132,7 @@ public static class DotProductOperation
 
                     px += Vector<float>.Count;
                     py += Vector<float>.Count;
-                }
-                while (px <= pxOneVectorFromEnd);
+                } while (px <= pxOneVectorFromEnd);
             }
 
             while (px < pxEnd)
