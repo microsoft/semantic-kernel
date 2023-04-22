@@ -102,20 +102,20 @@ public static class Program
         {
             case "AZUREAD":
                 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                        .AddMicrosoftIdentityWebApi(configuration.GetSection("Authorization:AzureAd"));
+                    .AddMicrosoftIdentityWebApi(configuration.GetSection("Authorization:AzureAd"));
                 break;
 
             case "APIKEY":
                 services.AddAuthentication(ApiKeyAuthenticationHandler.AuthenticationScheme)
-                        .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
-                            ApiKeyAuthenticationHandler.AuthenticationScheme,
-                            options => options.ApiKey = configuration.GetSection("Authorization:ApiKey").Get<string>());
+                    .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+                        ApiKeyAuthenticationHandler.AuthenticationScheme,
+                        options => options.ApiKey = configuration.GetSection("Authorization:ApiKey").Get<string>());
                 break;
 
             case "NONE":
                 services.AddAuthentication(PassThroughAuthenticationHandler.AuthenticationScheme)
-                        .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>(
-                            PassThroughAuthenticationHandler.AuthenticationScheme, null);
+                    .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>(
+                        PassThroughAuthenticationHandler.AuthenticationScheme, null);
                 break;
 
             default:
