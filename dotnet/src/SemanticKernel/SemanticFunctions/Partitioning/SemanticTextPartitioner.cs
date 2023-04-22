@@ -76,6 +76,7 @@ public static class SemanticTextPartitioner
         {
             longLinesSplitter(line, truncatedLines);
         }
+
         lines = truncatedLines;
 
         // Group lines in paragraphs
@@ -123,6 +124,7 @@ public static class SemanticTextPartitioner
                         {
                             newSecondLastParagraph.Append(' ');
                         }
+
                         newSecondLastParagraph.Append(secondLastParagraphTokens[i]);
                     }
 
@@ -132,6 +134,7 @@ public static class SemanticTextPartitioner
                         {
                             newSecondLastParagraph.Append(' ');
                         }
+
                         newSecondLastParagraph.Append(lastParagraphTokens[i]);
                     }
 
@@ -201,6 +204,7 @@ public static class SemanticTextPartitioner
                     {
                         break;
                     }
+
                     index += pos;
 
                     if (Math.Abs(half - index) < Math.Abs(half - cutPoint))

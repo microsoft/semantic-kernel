@@ -29,7 +29,7 @@
 | TextMemorySkill                   | ✅ | ✅ | |
 | ConversationSummarySkill          | ✅ | ❌ | |
 | FileIOSkill                       | ✅ | ✅ | |
-| HttpSkill                         | ✅ | ❌ | |
+| HttpSkill                         | ✅ | ✅ | |
 | MathSkill                         | ✅ | ❌ | |
 | TextSkill                         | ✅ | ✅ | |
 | TimeSkill                         | ✅ | ✅ | |
