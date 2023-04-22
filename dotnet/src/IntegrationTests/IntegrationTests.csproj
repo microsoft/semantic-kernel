@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>SemanticKernel.IntegrationTests</AssemblyName>
+    <AssemblyName>IntegrationTests</AssemblyName>
     <RootNamespace>SemanticKernel.IntegrationTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
-    <ProjectReference Include="..\SemanticKernel.Skills\Skills.Web\Skills.Web.csproj" />
+    <ProjectReference Include="..\Skills\Skills.Web\Skills.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 
