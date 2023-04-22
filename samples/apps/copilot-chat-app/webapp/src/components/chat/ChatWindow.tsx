@@ -7,12 +7,17 @@ import {
     InputOnChangeData,
     Label,
     makeStyles,
+    Menu,
+    MenuItem,
+    MenuList,
+    MenuPopover,
+    MenuTrigger,
     Persona,
     shorthands,
     tokens,
     Tooltip,
 } from '@fluentui/react-components';
-import { ArrowDownloadRegular, EditRegular, Save24Regular } from '@fluentui/react-icons';
+import { ArrowDownloadRegular, EditRegular, Save24Regular, ShareRegular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
@@ -62,7 +67,7 @@ const useClasses = makeStyles({
     controls: {
         ...shorthands.gridArea('controls'),
         ...shorthands.gap(tokens.spacingHorizontalM),
-        alignItems: 'center',
+        alignItems: 'right',
         display: 'flex',
         flexDirection: 'row',
     },
@@ -154,21 +159,33 @@ export const ChatWindow: React.FC = () => {
                                 disabled={title === undefined || !title}
                             />
                         </Tooltip>
-                        <Tooltip content="Export a bot" relationship="label">
-                            <Button
-                                icon={<ArrowDownloadRegular />}
-                                appearance="transparent"
-                                onClick={async () => {
-                                    // TODO: Add a loading indicator
-                                    const content = await chat.exportBot(selectedId);
-                                    downloadFile(
-                                        `chat-history-${title}-${new Date().toISOString()}.json`,
-                                        JSON.stringify(content),
-                                        'text/json',
-                                    );
-                                }}
-                            />
-                        </Tooltip>
+                    </div>
+                    <div className={classes.controls}>
+                        <Menu>
+                            <MenuTrigger disableButtonEnhancement>
+                                <Tooltip content="Share" relationship="label">
+                                    <Button icon={<ShareRegular />} appearance="transparent" />
+                                </Tooltip>
+                            </MenuTrigger>
+                            <MenuPopover>
+                                <MenuList>
+                                    <MenuItem
+                                        icon={<ArrowDownloadRegular />}
+                                        onClick={async () => {
+                                            // TODO: Add a loading indicator
+                                            const content = await chat.exportBot(selectedId);
+                                            downloadFile(
+                                                `chat-history-${title}-${new Date().toISOString()}.json`,
+                                                JSON.stringify(content),
+                                                'text/json',
+                                            );
+                                        }}
+                                    >
+                                        Download your bot
+                                    </MenuItem>
+                                </MenuList>
+                            </MenuPopover>
+                        </Menu>
                     </div>
                 </div>
             </div>
