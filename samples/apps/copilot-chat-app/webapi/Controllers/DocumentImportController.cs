@@ -30,7 +30,11 @@ public class DocumentImportController : ControllerBase
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
     /// </summary>
-    public DocumentImportController(IServiceProvider serviceProvider, IConfiguration configuration, PromptSettings promptSettings, ILogger<DocumentImportController> logger)
+    public DocumentImportController(
+        IServiceProvider serviceProvider,
+        IConfiguration configuration,
+        PromptSettings promptSettings,
+        ILogger<DocumentImportController> logger)
     {
         this._serviceProvider = serviceProvider;
         this._configuration = configuration;
@@ -46,32 +50,35 @@ public class DocumentImportController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> ImportDocumentAsync([FromServices] Kernel kernel, [FromForm] FileModel file)
+    public async Task<IActionResult> ImportDocumentAsync(
+        [FromServices] Kernel kernel,
+        [FromForm] DocumentImportForm documentImportForm)
     {
-        if (file.FormFile == null)
+        var formFile = documentImportForm.FormFile;
+        if (formFile == null)
         {
             return this.BadRequest("No file was uploaded.");
         }
 
-        if (file.FormFile.Length == 0)
+        if (formFile.Length == 0)
         {
             return this.BadRequest("File is empty.");
         }
 
         // TODO: set a max file size limit
-        this._logger.LogInformation("Importing document {0}", file.FormFile.FileName);
+        this._logger.LogInformation("Importing document {0}", formFile.FileName);
 
         try
         {
-            var fileType = this.GetFileType(Path.GetFileName(file.FormFile.FileName));
+            var fileType = this.GetFileType(Path.GetFileName(formFile.FileName));
             var fileContent = string.Empty;
             switch (fileType)
             {
                 case SupportedFileType.TXT:
-                    fileContent = await this.ReadTxtFileAsync(file.FormFile);
+                    fileContent = await this.ReadTxtFileAsync(formFile);
                     break;
                 case SupportedFileType.PDF:
-                    fileContent = await this.ReadPdfFileAsync(file.FormFile);
+                    fileContent = await this.ReadPdfFileAsync(formFile);
                     break;
                 default:
                     break;
