@@ -1,28 +1,12 @@
-import {
-    Button,
-    Dialog,
-    Label,
-    makeStyles,
-    Menu,
-    MenuItem,
-    MenuList,
-    MenuPopover,
-    MenuTrigger,
-    shorthands,
-    Text,
-    Tooltip,
-} from '@fluentui/react-components';
-import { Tree, TreeItem } from '@fluentui/react-components/unstable';
+// Copyright (c) Microsoft. All rights reserved.
 
-import { ArrowUploadRegular, BotAdd20Regular } from '@fluentui/react-icons';
-import { FC, useCallback, useState } from 'react';
-import { useChat } from '../../../libs/useChat';
+import { Label, makeStyles, shorthands, Text } from '@fluentui/react-components';
+import { Tree, TreeItem } from '@fluentui/react-components/unstable';
+import { FC } from 'react';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
-import { BotUploader } from '../../BotUploader';
 import { ChatListItem } from './ChatListItem';
-import { useFile } from '../../../libs/useFile';
-import { Bot } from '../../../libs/models/Bot';
+import { NewBotMenu } from './NewBotMenu';
 
 const useClasses = makeStyles({
     root: {
@@ -54,22 +38,6 @@ const useClasses = makeStyles({
 export const ChatList: FC = () => {
     const classes = useClasses();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const chat = useChat();
-    const fileHandler = useFile();
-
-    const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-
-    const onAddChat = () => {
-        chat.createChat();
-    };
-
-    const onUpload = useCallback(
-        (file: File) => {
-            fileHandler.loadFile<Bot>(file, chat.importBot);
-            setUploadDialogOpen(false);
-        },
-        [fileHandler, chat, setUploadDialogOpen],
-    );
 
     return (
         <>
@@ -78,26 +46,7 @@ export const ChatList: FC = () => {
                     <Text weight="bold" size={500}>
                         Conversations
                     </Text>
-                    <Menu>
-                        <MenuTrigger disableButtonEnhancement>
-                            <Tooltip content="Add Bot" relationship="label">
-                                <Button icon={<BotAdd20Regular />} appearance="transparent" />
-                            </Tooltip>
-                        </MenuTrigger>
-                        <MenuPopover>
-                            <MenuList>
-                                <MenuItem icon={<BotAdd20Regular />} onClick={onAddChat}>
-                                    Add a new Bot
-                                </MenuItem>
-                                <MenuItem icon={<ArrowUploadRegular />}>
-                                    <div onClick={() => setUploadDialogOpen(true)}>Upload a Bot</div>
-                                </MenuItem>
-                            </MenuList>
-                        </MenuPopover>
-                    </Menu>
-                    <Dialog open={uploadDialogOpen} onOpenChange={(_event, data) => setUploadDialogOpen(data.open)}>
-                        <BotUploader onUpload={onUpload} />
-                    </Dialog>
+                    <NewBotMenu />
                 </div>
                 <Label className={classes.label}>Your Bot</Label>
                 <Tree aria-label={'chat list'}>
