@@ -1,13 +1,37 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 """
-3 cases
+ChromaMemoryStore provides functionality to find the nearest matches based on embedding similarity.
+By inherit ChromaDataStore, ChromaMemoryStore is storing and retrieving data for SemanticTextMemory.
+For information about the connection to ChromaDB and persistency settings, please check ChromaDataStore class.
 
-Case 1) use semantic kernel's default compute similarity function
-Case 2) use chroma's nearest neighbor search
-Case 3) use custom similarity function
+The similarity_compute_func parameter can affect the behavior of the get_nearest_matches_async method.
+similarity_compute_func can be one of the following:
 
+1) "sk-default" (default): Use Semantic Kernel's default compute similarity function. It computes cosine similarity 
+   between the query embedding and the embeddings in the collection.
 
+2) "chroma": Use ChromaDB's default distance as the similarity score. In this case, lower values are considered better 
+   matches. Note that min_relevance_score should be adjusted accordingly for this case.
+
+3) Custom function: Provide a custom function that computes similarity scores between the query embedding and the 
+   embeddings in the collection. The custom function should have the signature Callable[[ndarray, ndarray], ndarray] 
+   and return a numpy array of similarity scores.
+
+Example:
+
+    # Create a ChromaMemoryStore with the default similarity computation function
+    chroma_memory_store = ChromaMemoryStore()
+
+    # Or use ChromaDB's default distance as the similarity score
+    chroma_memory_store_chroma = ChromaMemoryStore(similarity_compute_func="chroma")
+
+    # Or provide a custom similarity computation function
+    def custom_similarity(embedding: ndarray, embedding_array: ndarray) -> ndarray:
+        # custom implementation
+        pass
+
+    chroma_memory_store_custom = ChromaMemoryStore(similarity_compute_func=custom_similarity)
 """
 
 import inspect
