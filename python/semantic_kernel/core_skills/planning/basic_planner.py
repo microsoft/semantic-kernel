@@ -163,7 +163,7 @@ class BasicPlanner:
         # Add the goal to the context
         context["goal"] = goal
         context["available_functions"] = available_functions_string
-        generated_plan = await planner.invoke_with_vars_async(input=context)
+        generated_plan = await planner.invoke_async(variables=context)
         return Plan(prompt=prompt, goal=goal, plan=generated_plan)
 
     @sk_function(
@@ -191,10 +191,10 @@ class BasicPlanner:
             if args:
                 for key, value in args.items():
                     context[key] = value
-                output = await sk_function.invoke_with_vars_async(input=context)
+                output = await sk_function.invoke_async(variables=context)
 
             else:
-                output = await sk_function.invoke_with_vars_async(input=context)
+                output = await sk_function.invoke_async(variables=context)
 
             # Override the input context variable with the output of the function
             context["input"] = output.result
