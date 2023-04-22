@@ -140,7 +140,7 @@ public static class KernelOpenApiExtensions
             throw new FileNotFoundException($"No OpenApi document for the specified path - {openApiDocumentPath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document.", openApiDocumentPath);
+        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document", openApiDocumentPath);
 
         // TODO: never used, why?
         var skill = new Dictionary<string, ISKFunction>();
