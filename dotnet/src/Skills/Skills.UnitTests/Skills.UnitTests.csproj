@@ -29,6 +29,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +37,7 @@
     <ProjectReference Include="..\Skills.Document\Skills.Document.csproj" />
     <ProjectReference Include="..\Skills.MsGraph\Skills.MsGraph.csproj" />
     <ProjectReference Include="..\Skills.OpenAPI\Skills.OpenAPI.csproj" />
+    <ProjectReference Include="..\Skills.Planning\Skills.Planning.csproj" />
     <ProjectReference Include="..\Skills.Web\Skills.Web.csproj" />
   </ItemGroup>
 

@@ -9,13 +9,13 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning.Planners;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Planning;
+namespace SemanticKernel.Skills.UnitTests.Planning;
 
 public sealed class PlanningTests
 {
@@ -116,7 +116,7 @@ public sealed class PlanningTests
             It.IsAny<SemanticFunctionConfig>()
         )).Returns(mockFunctionFlowFunction.Object);
 
-        var planner = new SequentialPlanner(kernel.Object);
+        var planner = new Planner(kernel.Object);
 
         // Act
         var plan = await planner.CreatePlanAsync(goal);

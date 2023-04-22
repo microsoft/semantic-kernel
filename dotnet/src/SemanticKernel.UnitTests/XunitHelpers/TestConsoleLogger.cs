@@ -8,7 +8,7 @@ namespace SemanticKernel.UnitTests.XunitHelpers;
 /// <summary>
 /// Basic logger printing to console
 /// </summary>
-internal static class ConsoleLogger
+internal static class TestConsoleLogger
 {
     internal static ILogger Log => LogFactory.CreateLogger<object>();
 

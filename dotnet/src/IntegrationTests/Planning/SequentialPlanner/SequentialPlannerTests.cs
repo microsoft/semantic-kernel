@@ -7,13 +7,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planning.Planners;
+using Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planning;
+namespace SemanticKernel.IntegrationTests.Planning.SequentialPlanner;
 
 public sealed class SequentialPlannerTests : IDisposable
 {
@@ -39,7 +39,7 @@ public sealed class SequentialPlannerTests : IDisposable
         IKernel kernel = this.InitializeKernel();
         TestHelpers.GetSkill("FunSkill", kernel);
 
-        var planner = new SequentialPlanner(kernel);
+        var planner = new Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner.Planner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -61,7 +61,7 @@ public sealed class SequentialPlannerTests : IDisposable
         // Import all sample skills available for demonstration purposes.
         TestHelpers.ImportSampleSkills(kernel);
 
-        var planner = new SequentialPlanner(kernel, new PlannerConfig() { RelevancyThreshold = 0.70, MaxRelevantFunctions = 20 });
+        var planner = new Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner.Planner(kernel, new PlannerConfig() { RelevancyThreshold = 0.70, MaxRelevantFunctions = 20 });
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);

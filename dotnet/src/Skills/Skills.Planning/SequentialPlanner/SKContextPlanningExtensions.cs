@@ -6,13 +6,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planning.Planners;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace // Extension methods
-namespace Microsoft.SemanticKernel.Orchestration;
-#pragma warning restore IDE0130
+namespace Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner;
 
 public static class SKContextPlanningExtensions
 {

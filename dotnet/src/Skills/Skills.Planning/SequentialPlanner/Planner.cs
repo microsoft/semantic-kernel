@@ -1,22 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.Planning.Planners;
+namespace Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner;
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
 /// </summary>
-public class SequentialPlanner
+public class Planner
 {
     /// <summary>
-    /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
+    /// Initialize a new instance of the <see cref="Planner"/> class.
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">The planner configuration.</param>
-    public SequentialPlanner(IKernel? kernel, PlannerConfig? config = null)
+    public Planner(IKernel? kernel, PlannerConfig? config = null)
     {
         Verify.NotNull(kernel, $"{this.GetType().FullName} requires a kernel instance.");
         this.Config = config ?? new();
@@ -24,7 +25,7 @@ public class SequentialPlanner
         this.Config.ExcludedSkills.Add(RestrictedSkillName);
 
         this._functionFlowFunction = kernel.CreateSemanticFunction(
-            promptTemplate: SemanticFunctionConstants.FunctionFlowFunctionDefinition,
+            promptTemplate: File.ReadAllText("SequentialPlanner/skprompt.txt"),
             skillName: RestrictedSkillName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
@@ -49,7 +50,7 @@ public class SequentialPlanner
 
         var planResult = await this._functionFlowFunction.InvokeAsync(this._context);
 
-        string fullPlan = $"<{SequentialPlanParser.GoalTag}>\n{goal}\n</{SequentialPlanParser.GoalTag}>\n{planResult.Result.Trim()}";
+        string fullPlan = $"<{PlanParser.GoalTag}>\n{goal}\n</{PlanParser.GoalTag}>\n{planResult.Result.Trim()}";
 
         var plan = fullPlan.ToPlanFromXml(this._context);
 

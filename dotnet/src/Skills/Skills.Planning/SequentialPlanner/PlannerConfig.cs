@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Planning.Planners;
+namespace Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner;
 
 /// <summary>
 /// Common configuration for planner instances.

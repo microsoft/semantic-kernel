@@ -2,13 +2,13 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planning;
+namespace SemanticKernel.IntegrationTests.Planning.SequentialPlanner;
 
 public class SequentialPlanParserTests
 {
@@ -57,7 +57,10 @@ Summarize an input, translate to french, and e-mail to John Doe
 </plan>";
 
         // Act
+        // TODO - a test should not rely on the code under test, e.g. if there's a bug in ToPlanFromXml
+        // it'll result in false positives/negatives
         var plan = planString.ToPlanFromXml(kernel.CreateNewContext());
+        // Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner.SequentialPlanParser.
 
         // Assert
         Assert.NotNull(plan);

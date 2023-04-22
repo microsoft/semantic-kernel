@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning.Planners;
+using Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner;
 
 namespace KernelHttpServer;
 
@@ -97,7 +97,7 @@ public class SemanticKernelEndpoint
             return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, "Missing one or more expected HTTP Headers");
         }
 
-        var planner = new SequentialPlanner(kernel);
+        var planner = new Planner(kernel);
         var goal = ask.Value;
 
         var plan = await planner.CreatePlanAsync(goal);

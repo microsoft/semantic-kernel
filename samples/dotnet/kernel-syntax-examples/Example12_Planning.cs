@@ -7,10 +7,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning.Planners;
+using Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner;
 using RepoUtils;
 using Skills;
-using TextSkill = Skills.TextSkill;
 
 // ReSharper disable once InconsistentNaming
 internal static class Example12_Planning
@@ -37,7 +36,7 @@ internal static class Example12_Planning
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
 
-        var planner = new SequentialPlanner(kernel);
+        var planner = new Planner(kernel);
 
         var planObject = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
 
@@ -164,7 +163,7 @@ internal static class Example12_Planning
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
-        var planner = new SequentialPlanner(kernel, new PlannerConfig() { RelevancyThreshold = 0.78 });
+        var planner = new Planner(kernel, new PlannerConfig() { RelevancyThreshold = 0.78 });
 
         var plan = await planner.CreatePlanAsync(goal);
 
@@ -172,7 +171,7 @@ internal static class Example12_Planning
         Console.WriteLine(plan.ToJson());
     }
 
-    private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
+    private static IKernel InitializeKernelAndPlanner(out Planner planner, int maxTokens = 1024)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         kernel.Config.AddAzureTextCompletionService(
@@ -181,7 +180,7 @@ internal static class Example12_Planning
             Env.Var("AZURE_OPENAI_ENDPOINT"),
             Env.Var("AZURE_OPENAI_KEY"));
 
-        planner = new SequentialPlanner(kernel, new PlannerConfig() { MaxTokens = maxTokens });
+        planner = new Planner(kernel, new PlannerConfig() { MaxTokens = maxTokens });
 
         return kernel;
     }

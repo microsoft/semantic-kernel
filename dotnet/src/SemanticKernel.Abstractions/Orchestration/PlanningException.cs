@@ -3,7 +3,7 @@
 using System;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Planning;
+namespace Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
 /// Planning exception.

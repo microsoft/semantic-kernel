@@ -7,12 +7,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.Planning;
+namespace Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner;
 
 /// <summary>
 /// Parse sequential plan text into a plan.
 /// </summary>
-internal static class SequentialPlanParser
+internal static class PlanParser
 {
     /// <summary>
     /// The tag name used in the plan xml for the user's goal/ask.

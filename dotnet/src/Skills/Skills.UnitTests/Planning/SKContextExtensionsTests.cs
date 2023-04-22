@@ -6,13 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning.Planners;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.Planning.SequentialPlanner;
 using Moq;
-using SemanticKernel.UnitTests.XunitHelpers;
+using SemanticKernel.Skills.UnitTests.Planning.TestHelpers;
+using SemanticKernel.Skills.UnitTests.XunitHelpers;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Planning;
+namespace SemanticKernel.Skills.UnitTests.Planning;
 
 public class SKContextExtensionsTests
 {
@@ -22,7 +23,7 @@ public class SKContextExtensionsTests
         // Arrange
         var variables = new ContextVariables();
         var skills = new SkillCollection();
-        var logger = ConsoleLogger.Log;
+        var logger = TestConsoleLogger.Log;
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
@@ -56,7 +57,7 @@ public class SKContextExtensionsTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var logger = ConsoleLogger.Log;
+        var logger = TestConsoleLogger.Log;
         var cancellationToken = default(CancellationToken);
 
         // Arrange FunctionView
@@ -120,7 +121,7 @@ public class SKContextExtensionsTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var logger = ConsoleLogger.Log;
+        var logger = TestConsoleLogger.Log;
         var cancellationToken = default(CancellationToken);
 
         // Arrange FunctionView
@@ -185,7 +186,7 @@ public class SKContextExtensionsTests
         // Arrange
         var variables = new ContextVariables();
         var skills = new SkillCollection();
-        var logger = ConsoleLogger.Log;
+        var logger = TestConsoleLogger.Log;
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result

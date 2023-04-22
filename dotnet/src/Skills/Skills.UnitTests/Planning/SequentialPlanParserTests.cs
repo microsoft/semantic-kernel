@@ -6,14 +6,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
+using SemanticKernel.Skills.UnitTests.Planning.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.UnitTests.Planning;
+namespace SemanticKernel.Skills.UnitTests.Planning;
 
 public class SequentialPlanParserTests
 {
@@ -132,6 +132,7 @@ Summarize an input, translate to french, and e-mail to John Doe
 </plan>";
 
         // Act
+        // TODO: unit tests should not depend on the code under test
         var plan = planString.ToPlanFromXml(kernel.CreateNewContext());
 
         // Assert

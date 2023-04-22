@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
+using Microsoft.SemanticKernel.SkillDefinition;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace // Extension methods
-namespace Microsoft.SemanticKernel.SkillDefinition;
-#pragma warning restore IDE0130
+namespace SemanticKernel.Skills.UnitTests.Planning.TestHelpers;
 
 internal static class FunctionViewExtensions
 {
