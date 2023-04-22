@@ -11,6 +11,40 @@
 
 ## Setup
 
+### Option 1: Use Secret Manager
+
+Integration tests will require secrets and credentials, to access OpenAI, Azure OpenAI,
+Bing and other resources. 
+
+We suggest using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
+to avoid the risk of leaking secrets into the repository, branches and pull requests.
+You can also use environment variables if you prefer.
+
+To set your secrets with Secret Manager:
+
+```
+cd dotnet/src/IntegrationTests
+
+dotnet user-secrets init
+dotnet user-secrets set "OpenAI:ServiceId" "text-davinci-003"
+dotnet user-secrets set "OpenAI:ModelId" "text-davinci-003"
+dotnet user-secrets set "OpenAI:ApiKey" "..."
+
+dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-text-davinci-003"
+dotnet user-secrets set "AzureOpenAI:DeploymentName" "text-davinci-003"
+dotnet user-secrets set "AzureOpenAI:Endpoint" "https://contoso.openai.azure.com/"
+dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
+
+dotnet user-secrets set "AzureOpenAIEmbeddings:ServiceId" "azure-text-embedding-ada-002"
+dotnet user-secrets set "AzureOpenAIEmbeddings:DeploymentName" "text-embedding-ada-002"
+dotnet user-secrets set "AzureOpenAIEmbeddings:Endpoint" "https://contoso.openai.azure.com/"
+dotnet user-secrets set "AzureOpenAIEmbeddings:ApiKey" "..."
+
+dotnet user-secrets set "HuggingFace:ApiKey" "..."
+dotnet user-secrets set "Bing:ApiKey" "..."
+```
+
+### Option 2: Use Configuration File
 1. Create a `testsettings.development.json` file next to `testsettings.json`. This file will be ignored by git,
    the content will not end up in pull requests, so it's safe for personal settings. Keep the file safe.
 2. Edit `testsettings.development.json` and
@@ -52,28 +86,31 @@ For example:
 }
 ```
 
-3. (Optional) You may also set the test settings in your environment variables. The environment variables will override the settings in the `testsettings.development.json` file. When setting environment variables, use a double underscore (i.e. "\_\_") to delineate between parent and child properties. For example:
+### Option 3: Use Environment Variables
+You may also set the test settings in your environment variables. The environment variables will override the settings in the `testsettings.development.json` file.
 
-    - bash:
+When setting environment variables, use a double underscore (i.e. "\_\_") to delineate between parent and child properties. For example:
 
-      ```bash
-      export OpenAI__ApiKey="sk-...."
-      export AzureOpenAI__ApiKey="...."
-      export AzureOpenAI__DeploymentName="azure-text-davinci-003"
-      export AzureOpenAIEmbeddings__DeploymentName="azure-text-embedding-ada-002"
-      export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
-      export HuggingFace__ApiKey="...."
-      export Bing__ApiKey="...."
-      ```
+- bash:
 
-    - PowerShell:
+  ```bash
+  export OpenAI__ApiKey="sk-...."
+  export AzureOpenAI__ApiKey="...."
+  export AzureOpenAI__DeploymentName="azure-text-davinci-003"
+  export AzureOpenAIEmbeddings__DeploymentName="azure-text-embedding-ada-002"
+  export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
+  export HuggingFace__ApiKey="...."
+  export Bing__ApiKey="...."
+  ```
 
-      ```ps
-      $env:OpenAI__ApiKey = "sk-...."
-      $env:AzureOpenAI__ApiKey = "...."
-      $env:AzureOpenAI__DeploymentName = "azure-text-davinci-003"
-      $env:AzureOpenAIEmbeddings__DeploymentName = "azure-text-embedding-ada-002"
-      $env:AzureOpenAI__Endpoint = "https://contoso.openai.azure.com/"
-      $env:HuggingFace__ApiKey = "...."
-      $env:Bing__ApiKey = "...."
-      ```
+- PowerShell:
+
+  ```ps
+  $env:OpenAI__ApiKey = "sk-...."
+  $env:AzureOpenAI__ApiKey = "...."
+  $env:AzureOpenAI__DeploymentName = "azure-text-davinci-003"
+  $env:AzureOpenAIEmbeddings__DeploymentName = "azure-text-embedding-ada-002"
+  $env:AzureOpenAI__Endpoint = "https://contoso.openai.azure.com/"
+  $env:HuggingFace__ApiKey = "...."
+  $env:Bing__ApiKey = "...."
+  ```
