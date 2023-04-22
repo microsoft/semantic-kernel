@@ -137,4 +137,4 @@ As of [PR #499](https://github.com/microsoft/semantic-kernel/pull/499), VS Code 
 
 ## Additional resources
 
-1. [Document Upload App](./DocumentUploadApp/README.md): Ingest a document to memory.
+1. [Import Document Application](./importdocument/README.md): Ingest a document to memory.
