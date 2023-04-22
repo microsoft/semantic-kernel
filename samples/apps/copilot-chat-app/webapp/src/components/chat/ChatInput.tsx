@@ -98,15 +98,17 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         documentFileRef.current?.click();
     };
 
-    const uploadDocument = async () => {
+    const importDocument = async () => {
         const documentFile = documentFileRef.current?.files?.[0];
         if (documentFile) {
             try {
-                documentImportService.importDocumentAsync(
+                await documentImportService.importDocumentAsync(
                     documentFile,
                     await AuthHelper.getSKaaSAccessToken(instance)
                 );
-            }  catch (e: any) {
+                dispatch(addAlert({ message: 'Document uploaded successfully', type: AlertType.Success }));
+                // TODO: Add document import message to the chat
+            } catch (e: any) {
                 const errorMessage = `Failed to upload document. Details: ${e.message ?? e}`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
             }
@@ -176,7 +178,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         style={{ display: 'none' }}
                         accept='.txt'
                         multiple={false}
-                        onChange={() => uploadDocument()}
+                        onChange={() => importDocument()}
                     />
                     <Button appearance="transparent" icon={<AttachRegular />} onClick={() => selectDocument()} />
                 </div>
