@@ -13,6 +13,8 @@ from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.kernel_extensions import KernelExtensions
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -26,9 +28,11 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
 )
 from semantic_kernel.skill_definition.skill_collection import SkillCollection
 from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
+from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
+from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.validation import validate_function_name, validate_skill_name
 
 
@@ -41,17 +45,23 @@ class Kernel(KernelBase, KernelExtensions):
 
     def __init__(
         self,
-        skill_collection: SkillCollectionBase,
-        prompt_template_engine: PromptTemplatingEngine,
-        memory: SemanticTextMemoryBase,
-        config: KernelConfig,
-        log: Logger,
+        skill_collection: Optional[SkillCollectionBase] = None,
+        prompt_template_engine: Optional[PromptTemplatingEngine] = None,
+        memory: Optional[SemanticTextMemoryBase] = None,
+        config: Optional[KernelConfig] = None,
+        log: Optional[Logger] = None,
     ) -> None:
-        self._log = log
-        self._config = config
-        self._skill_collection = skill_collection
-        self._prompt_template_engine = prompt_template_engine
-        self._memory = memory
+        self._log = log if log else NullLogger()
+        self._config = config if config else KernelConfig()
+        self._skill_collection = (
+            skill_collection if skill_collection else SkillCollection(self._log)
+        )
+        self._prompt_template_engine = (
+            prompt_template_engine
+            if prompt_template_engine
+            else PromptTemplateEngine(self._log)
+        )
+        self._memory = memory if memory else NullMemory()
 
     def kernel(self) -> KernelBase:
         return self
@@ -96,22 +106,41 @@ class Kernel(KernelBase, KernelExtensions):
 
         return function
 
-    async def run_async(self, *functions: Any) -> SKContext:
-        return await self.run_on_vars_async(ContextVariables(), *functions)
-
-    async def run_on_str_async(self, input_str: str, *functions: Any) -> SKContext:
-        return await self.run_on_vars_async(ContextVariables(input_str), *functions)
-
-    async def run_on_vars_async(
-        self, input_vars: ContextVariables, *functions: Any
+    async def run_async(
+            self,
+            *functions: Any,
+            input_context: Optional[SKContext] = None,
+            input_vars: Optional[ContextVariables] = None,
+            input_str: Optional[str] = None,
     ) -> SKContext:
-        context = SKContext(
-            input_vars,
-            self._memory,
-            self._skill_collection.read_only_skill_collection,
-            self._log,
-        )
+            
+        # if the user passed in a context, prioritize it, but merge with any other inputs
+        if input_context is not None:
+            context = input_context
+            if input_vars is not None:
+                context._variables = input_vars.merge_or_overwrite(new_vars=context._variables, overwrite=False)
 
+            if input_str is not None:
+                context._variables = ContextVariables(input_str).merge_or_overwrite(new_vars=context._variables, overwrite=False)
+                
+        # if the user did not pass in a context, prioritize an input string, and merge that with input context variables
+        else:
+            if input_str is not None and input_vars is None:
+                variables = ContextVariables(input_str)
+            elif input_str is None and input_vars is not None:
+                variables = input_vars
+            elif input_str is not None and input_vars is not None:
+                variables = ContextVariables(input_str)
+                variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
+            else:
+                variables = ContextVariables()
+            context = SKContext(
+                variables,
+                self._memory,
+                self._skill_collection.read_only_skill_collection,
+                self._log,
+            )
+            
         pipeline_step = 0
         for func in functions:
             assert isinstance(func, SKFunctionBase), (
@@ -157,6 +186,9 @@ class Kernel(KernelBase, KernelExtensions):
 
     def register_memory(self, memory: SemanticTextMemoryBase) -> None:
         self._memory = memory
+
+    def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
+        self.use_memory(memory_store)
 
     def create_new_context(self) -> SKContext:
         return SKContext(

@@ -1,12 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net;
+using System.Reflection;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
+using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
@@ -17,27 +23,23 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
         builder.Host.ConfigureAppSettings();
 
         // Set port to run on
-        string serverPortString = builder.Configuration.GetSection("ServicePort").Get<string>();
+        var serverPortString = builder.Configuration.GetSection("ServicePort").Get<string>();
         if (!int.TryParse(serverPortString, out int serverPort))
         {
-            serverPort = CopilotChatApiConstants.DefaultServerPort;
+            serverPort = Constants.DefaultServerPort;
         }
 
-        // Set the protocol to use
-        bool useHttp = builder.Configuration.GetSection("UseHttp").Get<bool>();
-        string protocol = useHttp ? "http" : "https";
-
-        builder.WebHost.UseUrls($"{protocol}://*:{serverPort}");
+        builder.WebHost.UseUrls($"https://*:{serverPort}");
 
         // Add services to the DI container
         AddServices(builder.Services, builder.Configuration);
 
-        var app = builder.Build();
+        WebApplication app = builder.Build();
 
         var logger = app.Services.GetRequiredService<ILogger>();
 
@@ -49,18 +51,13 @@ public static class Program
         }
 
         app.UseCors();
+        app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
 
         // Log the health probe URL
         string hostName = Dns.GetHostName();
-        logger.LogInformation("Health probe: {Protocol}://{Host}:{Port}/probe", protocol, hostName, serverPort);
-
-        if (useHttp)
-        {
-            logger.LogWarning("Server is using HTTP instead of HTTPS. Do not use HTTP in production." +
-                              "All tokens and secrets sent to the server can be intercepted over the network.");
-        }
+        logger.LogInformation("Health probe: https://{Host}:{Port}/probe", hostName, serverPort);
 
         app.Run();
     }
@@ -81,6 +78,8 @@ public static class Program
             });
         }
 
+        services.AddAuthorization(configuration);
+
         services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
@@ -94,13 +93,54 @@ public static class Program
         services.AddSemanticKernelServices(configuration);
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "Giving app settings arguments rather than code ones")]
+    private static void AddAuthorization(this IServiceCollection services, ConfigurationManager configuration)
+    {
+        var authMethod = configuration.GetSection("Authorization:Type").Get<string>();
+
+        switch (authMethod?.ToUpperInvariant())
+        {
+            case "AZUREAD":
+                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                        .AddMicrosoftIdentityWebApi(configuration.GetSection("Authorization:AzureAd"));
+                break;
+
+            case "APIKEY":
+                services.AddAuthentication(ApiKeyAuthenticationHandler.AuthenticationScheme)
+                        .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+                            ApiKeyAuthenticationHandler.AuthenticationScheme,
+                            options => options.ApiKey = configuration.GetSection("Authorization:ApiKey").Get<string>());
+                break;
+
+            case "NONE":
+                services.AddAuthentication(PassThroughAuthenticationHandler.AuthenticationScheme)
+                        .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>(
+                            PassThroughAuthenticationHandler.AuthenticationScheme, null);
+                break;
+
+            default:
+                throw new ArgumentException($"Invalid auth method: {authMethod}", "Authorization:Type");
+        }
+    }
+
     private static void AddSemanticKernelServices(this IServiceCollection services, ConfigurationManager configuration)
     {
         // Each API call gets a fresh new SK instance
         services.AddScoped<Kernel>();
 
+        services.AddSingleton<PromptsConfig>(sp =>
+        {
+            string promptsConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "prompts.json");
+            PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(File.ReadAllText(promptsConfigPath)) ??
+                                          throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
+            promptsConfig.Validate();
+            return promptsConfig;
+        });
+
+        services.AddSingleton<PromptSettings>();
+
         // Add a semantic memory store only if we have a valid embedding config
-        AIServiceConfig embeddingConfig = configuration.GetSection("Embedding").Get<AIServiceConfig>();
+        var embeddingConfig = configuration.GetSection("Embedding").Get<AIServiceConfig>();
         if (embeddingConfig?.IsValid() == true)
         {
             MemoriesStoreConfig memoriesStoreConfig = configuration.GetSection("MemoriesStore").Get<MemoriesStoreConfig>();
@@ -115,11 +155,12 @@ public static class Program
                     {
                         throw new InvalidOperationException("MemoriesStore:Qdrant is required when MemoriesStore:Type is 'Qdrant'");
                     }
+
                     services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
-                            host: memoriesStoreConfig.Qdrant.Host,
-                            port: memoriesStoreConfig.Qdrant.Port,
-                            vectorSize: memoriesStoreConfig.Qdrant.VectorSize,
-                            logger: sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
+                        host: memoriesStoreConfig.Qdrant.Host,
+                        port: memoriesStoreConfig.Qdrant.Port,
+                        vectorSize: memoriesStoreConfig.Qdrant.VectorSize,
+                        logger: sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
                     break;
 
                 default:
@@ -182,6 +223,7 @@ public static class Program
                 {
                     throw new InvalidOperationException("ChatStore:Filesystem is required when ChatStore:Type is 'Filesystem'");
                 }
+
                 string fullPath = Path.GetFullPath(chatStoreConfig.Filesystem.FilePath);
                 string directory = Path.GetDirectoryName(fullPath) ?? string.Empty;
                 chatSessionInMemoryContext = new FileSystemContext<ChatSession>(
@@ -204,7 +246,8 @@ public static class Program
                 break;
 
             default:
-                throw new InvalidOperationException($"Invalid 'ChatStore' setting 'chatStoreConfig.Type'. Value must be 'volatile', 'filesystem', or 'cosmos'.");
+                throw new InvalidOperationException(
+                    $"Invalid 'ChatStore' setting 'chatStoreConfig.Type'. Value must be 'volatile', 'filesystem', or 'cosmos'.");
         }
 
         services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));

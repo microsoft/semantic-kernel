@@ -55,7 +55,7 @@ public class JsonPathSkillTests
 
         string actual = target.GetJsonElementValue(Json, context);
 
-        Assert.Equal(expected, actual, StringComparer.InvariantCultureIgnoreCase);
+        Assert.Equal(expected, actual, StringComparer.OrdinalIgnoreCase);
     }
 
     [Theory]
@@ -72,6 +72,6 @@ public class JsonPathSkillTests
 
         string actual = target.GetJsonElements(Json, context);
 
-        Assert.Equal(expected, actual, StringComparer.InvariantCultureIgnoreCase);
+        Assert.Equal(expected, actual, StringComparer.OrdinalIgnoreCase);
     }
 }

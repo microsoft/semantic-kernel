@@ -5,10 +5,9 @@ from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.ai.open_ai as sk_oai
-from semantic_kernel.memory.storage.data_store_base import DataStoreBase
 
 
-def build_kernel(memory_storage: DataStoreBase) -> sk.Kernel:
+def build_kernel() -> sk.Kernel:
     # Setup kernel with OpenAI completion and embedding backends
     api_key, org_id = sk.openai_settings_from_dot_env()
 
@@ -26,7 +25,7 @@ def build_kernel(memory_storage: DataStoreBase) -> sk.Kernel:
                 sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id),
             )
         )
-        .with_memory_storage(memory_storage)
+        .with_memory_storage(sk.memory.VolatileMemoryStore())
         .build()
     )
 
@@ -125,15 +124,26 @@ async def chat(
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_on_vars_async(context.variables, chat_func)
+    answer = await kernel.run_async(chat_func, input_vars=context.variables)
     context["chat_history"] += f"\nUser:> {user_input}\nChatBot:> {answer}\n"
 
     print(f"ChatBot:> {answer}")
     return True
 
 
-async def main(memory_storage: DataStoreBase) -> None:
-    kernel = build_kernel(memory_storage)
+async def main() -> None:
+    kernel = sk.Kernel()
+
+    api_key, org_id = sk.openai_settings_from_dot_env()
+    kernel.config.add_text_backend(
+        "dv", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
+    )
+    kernel.config.add_embedding_backend(
+        "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
+    )
+
+    kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
+    kernel.import_skill(sk.core_skills.TextMemorySkill())
 
     print("Populating memory...")
     await populate_memory(kernel)

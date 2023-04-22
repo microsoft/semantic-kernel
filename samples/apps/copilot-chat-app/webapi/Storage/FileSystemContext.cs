@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace SemanticKernel.Service.Storage;
@@ -20,7 +22,10 @@ public class FileSystemContext<T> : IStorageContext<T> where T : IStorageEntity
     }
 
     /// <inheritdoc/>
-    public IQueryable<T> QueryableEntities => this._entities.Values.AsQueryable();
+    public Task<IEnumerable<T>> QueryEntitiesAsync(Func<T, bool> predicate)
+    {
+        return Task.FromResult(this._entities.Values.Where(predicate));
+    }
 
     /// <inheritdoc/>
     public Task CreateAsync(T entity)
@@ -68,7 +73,7 @@ public class FileSystemContext<T> : IStorageContext<T> where T : IStorageEntity
         }
         else
         {
-            throw new KeyNotFoundException($"Entity with id {entityId} not found.");
+            return Task.FromException<T>(new KeyNotFoundException($"Entity with id {entityId} not found."));
         }
     }
 
@@ -91,7 +96,9 @@ public class FileSystemContext<T> : IStorageContext<T> where T : IStorageEntity
     /// <summary>
     /// A concurrent dictionary to store entities in memory.
     /// </summary>
-    private class EntityDictionary : ConcurrentDictionary<string, T> { }
+    private sealed class EntityDictionary : ConcurrentDictionary<string, T>
+    {
+    }
 
     /// <summary>
     /// Using a concurrent dictionary to store entities in memory.

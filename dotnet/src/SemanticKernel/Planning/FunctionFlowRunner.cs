@@ -63,6 +63,8 @@ internal class FunctionFlowRunner
 
     private readonly ConditionalFlowHelper _conditionalFlowHelper;
 
+    private static readonly string[] s_functionTagArray = new string[] { FunctionTag };
+
     public FunctionFlowRunner(IKernel kernel, ITextCompletion? completionBackend = null)
     {
         this._kernel = kernel;
@@ -174,7 +176,7 @@ internal class FunctionFlowRunner
                     continue;
                 }
 
-                if (o2.Name.StartsWith(ConditionElseTag, StringComparison.InvariantCultureIgnoreCase))
+                if (o2.Name.StartsWith(ConditionElseTag, StringComparison.OrdinalIgnoreCase))
                 {
                     //If else is the first node throws
                     if (o2.PreviousSibling == null)
@@ -193,7 +195,7 @@ internal class FunctionFlowRunner
                     }
                 }
 
-                if (processFunctions && o2.Name.StartsWith(ConditionWhileTag, StringComparison.InvariantCultureIgnoreCase))
+                if (processFunctions && o2.Name.StartsWith(ConditionWhileTag, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Log.LogTrace("{0}: found WHILE tag node", parentNodeName);
                     var whileContent = o2.OuterXml;
@@ -213,7 +215,7 @@ internal class FunctionFlowRunner
                     continue;
                 }
 
-                if (processFunctions && o2.Name.StartsWith(ConditionIfTag, StringComparison.InvariantCultureIgnoreCase))
+                if (processFunctions && o2.Name.StartsWith(ConditionIfTag, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Log.LogTrace("{0}: found IF tag node", parentNodeName);
                     // Includes IF + ELSE statement
@@ -243,9 +245,9 @@ internal class FunctionFlowRunner
                     continue;
                 }
 
-                if (o2.Name.StartsWith(FunctionTag, StringComparison.InvariantCultureIgnoreCase))
+                if (o2.Name.StartsWith(FunctionTag, StringComparison.OrdinalIgnoreCase))
                 {
-                    var splits = o2.Name.SplitEx(FunctionTag);
+                    var splits = o2.Name.Split(s_functionTagArray, StringSplitOptions.None);
                     string skillFunctionName = (splits.Length > 1) ? splits[1] : string.Empty;
                     context.Log.LogTrace("{0}: found skill node {1}", parentNodeName, skillFunctionName);
                     GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
@@ -269,7 +271,7 @@ internal class FunctionFlowRunner
                             foreach (XmlAttribute attr in o2.Attributes)
                             {
                                 context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
-                                bool innerTextStartWithSign = attr.InnerText.StartsWith("$", StringComparison.InvariantCultureIgnoreCase);
+                                bool innerTextStartWithSign = attr.InnerText.StartsWith("$", StringComparison.Ordinal);
 
                                 if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
                                 {
@@ -318,7 +320,7 @@ internal class FunctionFlowRunner
                         // copy all values for VariableNames in functionVariables not in keysToIgnore to context.Variables
                         foreach (var variable in functionVariables)
                         {
-                            if (!keysToIgnore.Contains(variable.Key, StringComparer.InvariantCultureIgnoreCase)
+                            if (!keysToIgnore.Contains(variable.Key, StringComparer.OrdinalIgnoreCase)
                                 && functionVariables.Get(variable.Key, out var value))
                             {
                                 context.Variables.Set(variable.Key, value);

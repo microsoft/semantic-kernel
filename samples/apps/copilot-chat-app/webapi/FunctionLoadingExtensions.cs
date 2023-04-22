@@ -35,6 +35,7 @@ internal static class FunctionLoadingExtensions
         this IKernel kernel,
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
+        PromptSettings promptSettings,
         ILogger logger)
     {
         // Hardcode your native function registrations here
@@ -45,13 +46,15 @@ internal static class FunctionLoadingExtensions
         var chatSkill = new ChatSkill(
             kernel,
             chatMessageRepository,
-            chatSessionRepository
+            chatSessionRepository,
+            promptSettings
         );
         kernel.ImportSkill(chatSkill, nameof(ChatSkill));
 
         var chatHistorySkill = new ChatHistorySkill(
             chatMessageRepository,
-            chatSessionRepository
+            chatSessionRepository,
+            promptSettings
         );
         kernel.ImportSkill(chatHistorySkill, nameof(ChatHistorySkill));
     }

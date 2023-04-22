@@ -11,5 +11,4 @@ public class FileSystemConfig
     /// Gets or sets the file path for persistent file system storage.
     /// </summary>
     public string FilePath { get; set; } = string.Empty;
-
 }

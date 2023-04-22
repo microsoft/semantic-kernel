@@ -26,5 +26,4 @@ public class CosmosConfig
     /// Gets or sets the Cosmos container for chat messages.
     /// </summary>
     public string ChatMessagesContainer { get; set; } = string.Empty;
-
 }
