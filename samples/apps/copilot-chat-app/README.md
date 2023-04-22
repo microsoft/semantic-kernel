@@ -25,19 +25,26 @@ The sample uses two applications, a front-end web UI, and a back-end API server.
 First, let’s set up and verify the back-end API server is running.
 
 1. Generate and trust a localhost developer certificate. Open a terminal and run:
-   - For Windows and Mac run `dotnet dev-certs https --trust` and select `Yes` when asked if you want to install this certificate.
-   - For Linux run `dotnet dev-certs https`
+   - For Windows and Mac run 
+    ```bash
+    dotnet dev-certs https --trust
+    ``` 
+    and select `Yes` when asked if you want to install this certificate.
+   - For Linux run 
+    ```bash 
+    dotnet dev-certs https
+    ```
    > **Note:** It is recommended you close all instances of your web browser after installing the developer certificates.
 
 1. Navigate to `samples/apps/copilot-chat-app/webapi` and open `appsettings.json`
-   - Update the `Completion` configuration sections:
+   - Update the `Completion` configuration section:
      - Set `AIService` to the AI service you will be using (i.e., `AzureOpenAI` or `OpenAI`).
      - Set `DeploymentorModelID` to a chat completion, such as gpt-3.5-turbo or gpt-4.
          > **Important:** gpt-3.5-turbo is normally labelled as "`gpt-35-turbo`" (no period) in Azure OpenAI and "`gpt-3.5-turbo`" (with a period) in OpenAI.
      - If you are using Azure OpenAI, update `Endpoint` to your Azure OpenAI resource Endpoint address (e.g.,  
        `http://contoso.openai.azure.com`).
         > When using OpenAI, this property will be ignored.
-   - Update the `Embedding` configuration sections:
+   - Update the `Embedding` configuration section:
       - Set the `AIService` to the AI service you will be using (i.e., `AzureOpenAI` or `OpenAI`).
      - Set `DeploymentOrModelID` to the Azure OpenAI deployment or OpenAI models you want to use. 
          > For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effect for generating embeddings.
@@ -132,8 +139,16 @@ As of [PR #499](https://github.com/microsoft/semantic-kernel/pull/499), CopilotC
 See [OpenAI's model compatiblity](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
 the complete list of current models supporting chat completions.
 
-### 4. Issues upgrading from prior repos
-As of [PR #499](https://github.com/microsoft/semantic-kernel/pull/499), VS Code users may need to clear their repo and re-clone it to clear all VS Code Cache before restarting Copilot Chat
+### 4. Issues upgrading from repos or commits prior to 4/20
+If you have previously built CopilotChat before April 20, 2023, you may need to clear the caches. Open a terminal window, go to the `samples/apps/copilot-chat-app`, and run a `git clean -xfd`.
+
+> **Note:** This will remove all files that are not tracked by git, such as `.env`, and `appsettings.Development.json`.
+
+```bash
+cd samples/apps/copiot-chat-app
+git clean -xfd
+```
+
 
 ## Additional resources
 
