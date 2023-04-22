@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning.Planners;
 using RepoUtils;
 using Skills;
 using TextSkill = Skills.TextSkill;
@@ -22,106 +21,33 @@ internal static class Example12_Planning
         await EmailSamplesAsync();
         await BookSamplesAsync();
         await MemorySampleAsync();
-        await IfConditionalSampleAsync();
-        await WhileConditionalSampleAsync();
-    }
-
-    private static async Task IfConditionalSampleAsync()
-    {
-        Console.WriteLine("======== Planning - If/Else Conditional flow example ========");
-        var kernel = InitializeKernelAndPlanner(out var planner);
-
-        // Load additional skills to enable planner to do non-trivial asks.
-        string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
-        kernel.ImportSkill(new TimeSkill());
-
-        var originalPlan = await kernel.RunAsync(
-            @"If is still morning please give me a joke about coffee otherwise tell me one about afternoon, but if its night give me a poem about the moon",
-            planner["CreatePlan"]);
-
-        /*
-        <goal>If is still morning please give me a joke about coffee otherwise tell me one about afternoon, but if its night give me a poem about the moon</goal>
-        <plan>
-          <function._GLOBAL_FUNCTIONS_.HourNumber setContextVariable="CURRENT_HOUR"/>
-          <if condition="$CURRENT_HOUR lessthan 12">
-            <function.FunSkill.Joke input="coffee"/>
-          </if>
-          <else>
-            <if condition="$CURRENT_HOUR lessthan 18">
-              <function.FunSkill.Joke input="afternoon"/>
-            </if>
-            <else>
-              <function.FunSkill.ShortPoem input="the moon"/>
-            </else>
-          </else>
-        </plan>
-        */
-
-        Console.WriteLine("Original plan:");
-        Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
-
-        await ExecutePlanAsync(kernel, planner, originalPlan, 20);
-    }
-
-    private static async Task WhileConditionalSampleAsync()
-    {
-        Console.WriteLine("======== Planning - While Loop Conditional flow example ========");
-        var kernel = InitializeKernelAndPlanner(out var planner);
-
-        // Load additional skills to enable planner to do non-trivial asks.
-        string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
-        kernel.ImportSkill(new MathSkill());
-        kernel.ImportSkill(new TimeSkill());
-
-        var originalPlan = await kernel.RunAsync(
-            @"Start with a X number equals to the current minutes of the clock and remove 20 from this number until it becomes 0. After that tell me a math style joke where the input is X number + ""bananas""",
-            planner["CreatePlan"]);
-
-        /*
-        <goal>
-        Start with a X number equals to the current minutes of the clock and remove 20 from this number until it becomes 0. After that tell me a math style joke where the input is X number + "bananas"
-        </goal>
-        <plan>
-          <function._GLOBAL_FUNCTIONS_.Minute setContextVariable="X_NUMBER"/>
-          <while condition="$X_NUMBER greaterthan 0">
-            <function._GLOBAL_FUNCTIONS_.Subtract input="$X_NUMBER" Amount="20" setContextVariable="X_NUMBER"/>
-          </while>
-          <function.FunSkill.Joke input="$X_NUMBER bananas" style="Math" appendToResult="RESULT__JOKE"/>
-        </plan>
-        */
-
-        Console.WriteLine("Original plan:");
-        Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
-
-        await ExecutePlanAsync(kernel, planner, originalPlan, 20);
     }
 
     private static async Task PoetrySamplesAsync()
     {
         Console.WriteLine("======== Planning - Create and Execute Poetry Plan ========");
-        var kernel = InitializeKernelAndPlanner(out var planner);
+        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        kernel.Config.AddAzureTextCompletionService(
+            Env.Var("AZURE_OPENAI_SERVICE_ID"),
+            Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
+            Env.Var("AZURE_OPENAI_ENDPOINT"),
+            Env.Var("AZURE_OPENAI_KEY"));
 
-        // Load additional skills to enable planner to do non-trivial asks.
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
 
-        var originalPlan = await kernel.RunAsync("Write a poem about John Doe, then translate it into Italian.", planner["CreatePlan"]);
-        // <goal>
-        // Write a poem about John Doe, then translate it into Italian.
-        // </goal>
-        // <plan>
-        //   <function.WriterSkill.ShortPoem input="John Doe is a kind and generous man who loves to help others and make them smile."/>
-        //   <function.WriterSkill.Translate language="Italian"/>
-        // </plan>
+        var planner = new SequentialPlanner(kernel);
+
+        var planObject = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
+        Console.WriteLine(planObject.ToJson());
 
-        await ExecutePlanAsync(kernel, planner, originalPlan, 5);
+        var result = await kernel.RunAsync(planObject);
+
+        Console.WriteLine("Result:");
+        Console.WriteLine(result.Result);
     }
 
     private static async Task EmailSamplesAsync()
@@ -135,7 +61,7 @@ internal static class Example12_Planning
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
 
-        var originalPlan = await kernel.RunAsync("Summarize an input, translate to french, and e-mail to John Doe", planner["CreatePlan"]);
+        var originalPlan = await planner.CreatePlanAsync("Summarize an input, translate to french, and e-mail to John Doe");
         // <goal>
         // Summarize an input, translate to french, and e-mail to John Doe
         // </goal>
@@ -147,10 +73,9 @@ internal static class Example12_Planning
         // </plan>
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
+        Console.WriteLine(originalPlan.ToJson());
 
-        var executionResults = originalPlan;
-        executionResults.Variables.Update(
+        var input =
             "Once upon a time, in a faraway kingdom, there lived a kind and just king named Arjun. " +
             "He ruled over his kingdom with fairness and compassion, earning him the love and admiration of his people. " +
             "However, the kingdom was plagued by a terrible dragon that lived in the nearby mountains and terrorized the nearby villages, " +
@@ -161,8 +86,8 @@ internal static class Example12_Planning
             "she was able to strike the dragon with a single shot through its heart, killing it instantly. The people rejoiced " +
             "and the kingdom was at peace once again. The king was so grateful to Mira that he asked her to marry him and she agreed. " +
             "They ruled the kingdom together, ruling with fairness and compassion, just as Arjun had done before. They lived " +
-            "happily ever after, with the people of the kingdom remembering Mira as the brave young woman who saved them from the dragon.");
-        await ExecutePlanAsync(kernel, planner, executionResults, 5);
+            "happily ever after, with the people of the kingdom remembering Mira as the brave young woman who saved them from the dragon.";
+        await ExecutePlanAsync(kernel, originalPlan, input, 5);
     }
 
     private static async Task BookSamplesAsync()
@@ -174,9 +99,8 @@ internal static class Example12_Planning
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
 
-        var originalPlan = await kernel.RunAsync(
-            "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'",
-            planner["CreatePlan"]);
+        var originalPlan = await planner.CreatePlanAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
+
         // <goal>
         // Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'
         // </goal>
@@ -189,11 +113,11 @@ internal static class Example12_Planning
         // </plan>
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(originalPlan.Variables.ToPlan().PlanString);
+        Console.WriteLine(originalPlan.ToJson());
 
         Stopwatch sw = new();
         sw.Start();
-        await ExecutePlanAsync(kernel, planner, originalPlan);
+        await ExecutePlanAsync(kernel, originalPlan);
     }
 
     private static async Task MemorySampleAsync()
@@ -220,9 +144,6 @@ internal static class Example12_Planning
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
-        // Load native skill into the kernel skill collection, sharing its functions with prompt templates
-        var planner = kernel.ImportSkill(new PlannerSkill(kernel), "planning");
-
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
@@ -241,16 +162,17 @@ internal static class Example12_Planning
         kernel.ImportSkill(new TextSkill(), "text");
         kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "coretext");
 
-        var context = new ContextVariables("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
-        context.Set(PlannerSkill.Parameters.RelevancyThreshold, "0.78");
+        var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
-        var executionResults = await kernel.RunAsync(context, planner["CreatePlan"]);
+        var planner = new SequentialPlanner(kernel, new PlannerConfig() { RelevancyThreshold = 0.78 });
+
+        var plan = await planner.CreatePlanAsync(goal);
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(executionResults.Variables.ToPlan().PlanString);
+        Console.WriteLine(plan.ToJson());
     }
 
-    private static IKernel InitializeKernelAndPlanner(out IDictionary<string, ISKFunction> planner, int maxTokens = 1024)
+    private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         kernel.Config.AddAzureTextCompletionService(
@@ -259,55 +181,57 @@ internal static class Example12_Planning
             Env.Var("AZURE_OPENAI_ENDPOINT"),
             Env.Var("AZURE_OPENAI_KEY"));
 
-        // Load native skill into the kernel skill collection, sharing its functions with prompt templates
-        planner = kernel.ImportSkill(new PlannerSkill(kernel, maxTokens), "planning");
+        planner = new SequentialPlanner(kernel, new PlannerConfig() { MaxTokens = maxTokens });
+
         return kernel;
     }
 
-    private static async Task<SKContext> ExecutePlanAsync(
+    private static async Task<Plan> ExecutePlanAsync(
         IKernel kernel,
-        IDictionary<string, ISKFunction> planner,
-        SKContext executionResults,
+        Plan plan,
+        string input = "",
         int maxSteps = 10)
     {
         Stopwatch sw = new();
         sw.Start();
 
         // loop until complete or at most N steps
-        for (int step = 1; !executionResults.Variables.ToPlan().IsComplete && step < maxSteps; step++)
+        try
         {
-            var results = await kernel.RunAsync(executionResults.Variables, planner["ExecutePlan"]);
-            if (results.Variables.ToPlan().IsSuccessful)
+            for (int step = 1; plan.HasNextStep && step < maxSteps; step++)
             {
-                Console.WriteLine($"Step {step} - Execution results:");
-                Console.WriteLine(results.Variables.ToPlan().PlanString);
+                if (string.IsNullOrEmpty(input))
+                {
+                    await plan.InvokeNextStepAsync(kernel.CreateNewContext());
+                    // or await kernel.StepAsync(plan);
+                }
+                else
+                {
+                    plan = await kernel.StepAsync(input, plan);
+                }
 
-                if (results.Variables.ToPlan().IsComplete)
+                Console.WriteLine($"Step {step} - Execution results:");
+                Console.WriteLine(plan.ToJson());
+                if (!plan.HasNextStep)
                 {
                     Console.WriteLine($"Step {step} - COMPLETE!");
-                    Console.WriteLine(results.Variables.ToPlan().Result);
-
-                    // Console.WriteLine("VARIABLES: ");
-                    // Console.WriteLine(string.Join("\n\n", results.Variables.Select(v => $"{v.Key} = {v.Value}")));
+                    Console.WriteLine(plan.State.ToString());
                     break;
                 }
 
-                // Console.WriteLine($"Step {step} - Results so far:");
-                // Console.WriteLine(results.ToPlan().Result);
+                Console.WriteLine($"Step {step} - Results so far:");
+                Console.WriteLine(plan.State.ToString());
             }
-            else
-            {
-                Console.WriteLine($"Step {step} - Execution failed:");
-                Console.WriteLine(results.Variables.ToPlan().Result);
-                break;
-            }
-
-            executionResults = results;
+        }
+        catch (KernelException e)
+        {
+            Console.WriteLine($"Step - Execution failed:");
+            Console.WriteLine(e.Message);
         }
 
         sw.Stop();
         Console.WriteLine($"Execution complete in {sw.ElapsedMilliseconds} ms!");
-        return executionResults;
+        return plan;
     }
 }
 

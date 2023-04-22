@@ -32,7 +32,7 @@ export class TaskRunner {
             skills: skills,
         };
 
-        var createPlanResult = await this.sk.invokeAsync(this.keyConfig, createPlanAsk, 'plannerskill', 'createplan');
+        var createPlanResult = await this.sk.createPlanAsync(this.keyConfig, createPlanAsk);
 
         onPlanCreated?.(createPlanAsk, createPlanResult.value);
 
