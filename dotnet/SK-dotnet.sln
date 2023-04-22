@@ -16,13 +16,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsGraphSkillsExample", "..\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelHttpServer", "..\samples\dotnet\KernelHttpServer\KernelHttpServer.csproj", "{34A7F1EF-D243-4160-A413-D713FEABCD94}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.IntegrationTests", "src\SemanticKernel.IntegrationTests\SemanticKernel.IntegrationTests.csproj", "{E4B777A1-28E1-41BE-96AE-7F3EC61FD5D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "src\IntegrationTests\IntegrationTests.csproj", "{E4B777A1-28E1-41BE-96AE-7F3EC61FD5D4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Document", "src\SemanticKernel.Skills\Skills.Document\Skills.Document.csproj", "{F94D1938-9DB7-4B24-9FF3-166DDFD96330}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Document", "src\Skills\Skills.Document\Skills.Document.csproj", "{F94D1938-9DB7-4B24-9FF3-166DDFD96330}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.MsGraph", "src\SemanticKernel.Skills\Skills.MsGraph\Skills.MsGraph.csproj", "{689A5041-BAE7-448F-9BDC-4672E96249AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.MsGraph", "src\Skills\Skills.MsGraph\Skills.MsGraph.csproj", "{689A5041-BAE7-448F-9BDC-4672E96249AA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Web", "src\SemanticKernel.Skills\Skills.Web\Skills.Web.csproj", "{EEA87FBC-4ED5-458C-ABD3-BEAEEB535BAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Web", "src\Skills\Skills.Web\Skills.Web.csproj", "{EEA87FBC-4ED5-458C-ABD3-BEAEEB535BAF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{158A4E5E-AEE0-4D60-83C7-8E089B2D881D}"
 	ProjectSection(SolutionItems) = preProject
@@ -38,7 +38,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.UnitTests", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.UnitTests", "src\SemanticKernel.Skills\Skills.UnitTests\Skills.UnitTests.csproj", "{107156B4-5A8B-45C7-97A2-4544D7FA19DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.UnitTests", "src\Skills\Skills.UnitTests\Skills.UnitTests.csproj", "{107156B4-5A8B-45C7-97A2-4544D7FA19DE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{F4243136-252A-4459-A7C4-EE8C056D6B0B}"
 	ProjectSection(SolutionItems) = preProject
@@ -51,7 +51,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelBuilder", "..\samples
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubSkills", "..\samples\dotnet\github-skills\GitHubSkills.csproj", "{39E5F0F6-8B36-4ECA-A5F6-FC7522DC2ECF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.OpenAPI", "src\SemanticKernel.Skills\Skills.OpenAPI\Skills.OpenAPI.csproj", "{F2A1F81E-700E-4C0E-B021-B9EF29AA20BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.OpenAPI", "src\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj", "{F2A1F81E-700E-4C0E-B021-B9EF29AA20BD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileCompression", "..\samples\dotnet\FileCompression\FileCompression.csproj", "{BC70A5D8-2125-4C37-8C0E-C903EAFA9772}"
 EndProject
