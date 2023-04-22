@@ -268,10 +268,10 @@ class Kernel(KernelBase, KernelExtensions):
         function.set_default_skill_collection(self.skills)
 
         if function_config.has_chat_prompt:
-            backend = self._config.get_ai_backend(
+            service = self._config.get_ai_service(
                 ChatCompletionClientBase,
-                function_config.prompt_template_config.default_backends[0]
-                if len(function_config.prompt_template_config.default_backends) > 0
+                function_config.prompt_template_config.default_services[0]
+                if len(function_config.prompt_template_config.default_services) > 0
                 else None,
             )
 
@@ -281,20 +281,20 @@ class Kernel(KernelBase, KernelExtensions):
                 )
             )
 
-            if backend is None:
+            if service is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    "Could not load chat backend, unable to prepare semantic function. "
+                    "Could not load chat service, unable to prepare semantic function. "
                     "Function description: "
                     "{function_config.prompt_template_config.description}",
                 )
 
-            function.set_chat_backend(lambda: backend(self))
+            function.set_chat_service(lambda: service(self))
         else:
-            backend = self._config.get_ai_backend(
+            service = self._config.get_ai_service(
                 TextCompletionClientBase,
-                function_config.prompt_template_config.default_backends[0]
-                if len(function_config.prompt_template_config.default_backends) > 0
+                function_config.prompt_template_config.default_services[0]
+                if len(function_config.prompt_template_config.default_services) > 0
                 else None,
             )
 
@@ -304,14 +304,14 @@ class Kernel(KernelBase, KernelExtensions):
                 )
             )
 
-            if backend is None:
+            if service is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    "Could not load text backend, unable to prepare semantic function. "
+                    "Could not load text service, unable to prepare semantic function. "
                     "Function description: "
                     "{function_config.prompt_template_config.description}",
                 )
 
-            function.set_ai_backend(lambda: backend(self))
+            function.set_ai_service(lambda: service(self))
 
         return function

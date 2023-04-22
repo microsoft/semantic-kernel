@@ -24,7 +24,7 @@ class AzureTextEmbedding(OpenAITextEmbedding):
         ad_auth=False,
     ) -> None:
         """
-        Initialize an AzureTextEmbedding backend.
+        Initialize an AzureTextEmbedding service.
 
         You must provide:
         - A deployment_name, endpoint, and api_key (plus, optionally: ad_auth)

@@ -33,7 +33,7 @@ class PromptTemplateConfig:
     completion: "PromptTemplateConfig.CompletionConfig" = field(
         default_factory=CompletionConfig
     )
-    default_backends: List[str] = field(default_factory=list)
+    default_services: List[str] = field(default_factory=list)
     input: "PromptTemplateConfig.InputConfig" = field(default_factory=InputConfig)
 
     @staticmethod
@@ -52,7 +52,7 @@ class PromptTemplateConfig:
         config.completion.frequency_penalty = completion_dict.get("frequency_penalty")
         config.completion.max_tokens = completion_dict.get("max_tokens")
         config.completion.stop_sequences = completion_dict.get("stop_sequences", [])
-        config.default_backends = data.get("default_backends", [])
+        config.default_services = data.get("default_services", [])
 
         # Some skills may not have input parameters defined
         config.input = PromptTemplateConfig.InputConfig()

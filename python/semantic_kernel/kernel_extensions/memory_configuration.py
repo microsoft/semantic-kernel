@@ -19,19 +19,19 @@ class MemoryConfiguration(ExtendsKernel):
         kernel = self.kernel()
 
         if embeddings_generator is None:
-            backend_label = kernel.config.get_embedding_backend_service_id()
-            if not backend_label:
+            service_id = kernel.config.get_embedding_service_id()
+            if not service_id:
                 raise ValueError(
-                    "The embedding backend label cannot be `None` or empty"
+                    "The embedding service id cannot be `None` or empty"
                 )
 
-            embeddings_backend = kernel.config.get_ai_backend(
-                EmbeddingGeneratorBase, backend_label
+            embeddings_service = kernel.config.get_ai_service(
+                EmbeddingGeneratorBase, service_id
             )
-            if not embeddings_backend:
-                raise ValueError(f"AI configuration is missing for: {backend_label}")
+            if not embeddings_service:
+                raise ValueError(f"AI configuration is missing for: {service_id}")
 
-            embeddings_generator = embeddings_backend(kernel)
+            embeddings_generator = embeddings_service(kernel)
 
         if storage is None:
             raise ValueError("The storage instance provided cannot be `None`")

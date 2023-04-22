@@ -24,7 +24,7 @@ class AzureTextCompletion(OpenAITextCompletion):
         ad_auth=False,
     ) -> None:
         """
-        Initialize an AzureTextCompletion backend.
+        Initialize an AzureTextCompletion service.
 
         You must provide:
         - A deployment_name, endpoint, and api_key (plus, optionally: ad_auth)

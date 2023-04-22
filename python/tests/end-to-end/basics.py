@@ -11,11 +11,11 @@ kernel = sk.Kernel()
 api_key, org_id = sk.openai_settings_from_dot_env()
 # deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
-# Configure LLM backend
-kernel.config.add_text_backend(
+# Configure LLM service
+kernel.config.add_text_service(
     "davinci-003", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
 )
-# kernel.config.add_text_backend(
+# kernel.config.add_text_service(
 #     "davinci-003", sk_oai.AzureTextCompletion(
 #         "text-davinci-003", deployment_name, endpoint, api_key
 #     )

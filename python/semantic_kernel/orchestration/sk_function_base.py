@@ -80,7 +80,7 @@ class SKFunctionBase(ABC):
     @property
     @abstractmethod
     def request_settings(self) -> CompleteRequestSettings:
-        """AI backend settings"""
+        """AI service settings"""
         pass
 
     @abstractmethod
@@ -203,16 +203,16 @@ class SKFunctionBase(ABC):
         pass
 
     @abstractmethod
-    def set_ai_backend(
-        self, backend_factory: Callable[[], TextCompletionClientBase]
+    def set_ai_service(
+        self, service_factory: Callable[[], TextCompletionClientBase]
     ) -> "SKFunctionBase":
         """
-        Sets the AI backend used by the semantic function, passing in a factory
+        Sets the AI service used by the semantic function, passing in a factory
         method. The factory allows us to lazily instantiate the client and to
         properly handle its disposal
 
         Arguments:
-            backend_factory -- AI backend factory
+            service_factory -- AI service factory
 
         Returns:
             SKFunctionBase -- The function instance

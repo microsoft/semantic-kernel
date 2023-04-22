@@ -11,8 +11,8 @@ def test_skill_can_be_imported():
     kernel = sk.Kernel()
     api_key = "test-api-key"
     org_id = "test-org-id"
-    kernel.config.add_text_backend(
-        "test-completion-backend",
+    kernel.config.add_text_service(
+        "test-completion-service",
         sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id),
     )
 

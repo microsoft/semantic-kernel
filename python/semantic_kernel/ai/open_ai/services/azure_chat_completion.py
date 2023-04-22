@@ -24,7 +24,7 @@ class AzureChatCompletion(OpenAIChatCompletion):
         ad_auth=False,
     ) -> None:
         """
-        Initialize an AzureChatCompletion backend.
+        Initialize an AzureChatCompletion service.
 
         You must provide:
         - A deployment_name, endpoint, and api_key (plus, optionally: ad_auth)
