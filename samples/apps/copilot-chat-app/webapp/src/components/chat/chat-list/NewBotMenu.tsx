@@ -23,7 +23,7 @@ export const NewBotMenu: FC = () => {
 
     const onUpload = useCallback(
         (file: File) => {
-            fileHandler.loadFile<Bot>(file, chat.importBot);
+            fileHandler.loadFile<Bot>(file, chat.uploadBot);
             setIsNewBotMenuOpen(false);
         },
         [fileHandler, chat],

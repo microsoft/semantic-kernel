@@ -173,7 +173,7 @@ export const ChatWindow: React.FC = () => {
                                         icon={<ArrowDownloadRegular />}
                                         onClick={async () => {
                                             // TODO: Add a loading indicator
-                                            const content = await chat.exportBot(selectedId);
+                                            const content = await chat.downloadBot(selectedId);
                                             downloadFile(
                                                 `chat-history-${title}-${new Date().toISOString()}.json`,
                                                 JSON.stringify(content),

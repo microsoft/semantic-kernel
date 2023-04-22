@@ -207,20 +207,20 @@ export const useChat = () => {
         }
     };
 
-    const exportBot = async (chatId: string) => {
+    const downloadBot = async (chatId: string) => {
         try {
-            return botService.exportAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance));
+            return botService.downloadAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance));
         } catch (e: any) {
-            const errorMessage = `Unable to export the bot. Details: ${e.message ?? e}`;
+            const errorMessage = `Unable to download the bot. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
         }
     };
 
-    const importBot = async (bot: Bot) => {
-        botService.importAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
+    const uploadBot = async (bot: Bot) => {
+        botService.uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
             .then(() => loadChats())
             .catch((e: any) => {
-                const errorMessage = `Unable to import the bot. Details: ${e.message ?? e}`;
+                const errorMessage = `Unable to upload the bot. Details: ${e.message ?? e}`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
             });
     };
@@ -230,7 +230,7 @@ export const useChat = () => {
         createChat,
         loadChats,
         getResponse,
-        importBot,
-        exportBot,
+        downloadBot,
+        uploadBot,
     };
 };

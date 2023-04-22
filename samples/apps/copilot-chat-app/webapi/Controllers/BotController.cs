@@ -18,48 +18,61 @@ public class BotController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly ILogger<SemanticKernelController> _logger;
     private readonly IMemoryStore _memoryStore;
+    private readonly ChatSessionRepository _chatRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
 
-    public BotController(IConfiguration configuration, IMemoryStore memoryStore, ChatMessageRepository chatMessageRepository, ILogger<SemanticKernelController> logger)
+    /// <summary>
+    /// The constructor of BotController.
+    /// </summary>
+    /// <param name="configuration">The application configuration.</param>
+    /// <param name="memoryStore">The memory store.</param>
+    /// <param name="chatRepository">The chat session repository.</param>
+    /// <param name="chatMessageRepository">The chat message repository.</param>
+    /// <param name="logger">The logger.</param>
+    public BotController(IConfiguration configuration, IMemoryStore memoryStore, ChatSessionRepository chatRepository, ChatMessageRepository chatMessageRepository, ILogger<SemanticKernelController> logger)
     {
         this._configuration = configuration;
         this._logger = logger;
         this._memoryStore = memoryStore;
+        this._chatRepository = chatRepository;
         this._chatMessageRepository = chatMessageRepository;
     }
 
+    /// <summary>
+    /// Upload a bot.
+    /// </summary>
+    /// <param name="kernel">The Semantic Kernel instance.</param>
+    /// <param name="userId">The user id.</param>
+    /// <param name="bot">The bot object from the message body</param>
+    /// <returns>The HTTP action result.</returns>
     [Authorize]
     [HttpPost]
-    [Route("bot/import")]
+    [Route("bot/upload")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> ImportAsync(
+    public async Task<ActionResult> UploadAsync(
         [FromServices] Kernel kernel,
-        [FromServices] ChatSessionRepository chatRepository,
-        [FromServices] ChatMessageRepository chatMessageRepository,
         [FromQuery] string userId,
         [FromBody] Bot bot)
     {
         // TODO: We should get userId from server context instead of from request for privacy/security reasons when support multipe users.
-        this._logger.LogDebug("Received call to import a bot");
+        this._logger.LogDebug("Received call to upload a bot");
 
-        if (!this.IsBotCompatible(bot.Schema, bot.Configurations))
+        if (!this.IsBotCompatible(bot.Schema, bot.EmbeddingConfigurations))
         {
             return new UnsupportedMediaTypeResult();
         }
 
-        // TODO: Add real chat title, user object id and user name.
         string chatTitle = $"{bot.ChatTitle} - Clone";
-
         string chatId = string.Empty;
 
-        // Import chat history into chat repository and embeddings into memory.
+        // Upload chat history into chat repository and embeddings into memory.
         try
         {
             // 1. Create a new chat and get the chat id.
             var newChat = new ChatSession(userId, chatTitle);
-            await chatRepository.CreateAsync(newChat);
+            await this._chatRepository.CreateAsync(newChat);
             chatId = newChat.Id;
 
             string oldChatId = bot.ChatHistory.First().ChatId;
@@ -69,7 +82,7 @@ public class BotController : ControllerBase
             {
                 var chatMessage = new ChatMessage(message.UserId, message.UserName, chatId, message.Content, ChatMessage.AuthorRoles.Participant);
                 chatMessage.Timestamp = message.Timestamp;
-                await chatMessageRepository.CreateAsync(chatMessage);
+                await this._chatMessageRepository.CreateAsync(chatMessage);
             }
 
             // 3. Update the memory.
@@ -84,25 +97,38 @@ public class BotController : ControllerBase
         return this.Accepted();
     }
 
+    /// <summary>
+    /// Download a bot.
+    /// </summary>
+    /// <param name="kernel"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
     [Authorize]
     [HttpGet]
-    [Route("bot/export/{chatId:guid}")]
+    [Route("bot/download/{chatId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<string>> ExportAsync(
+    public async Task<ActionResult<string>> DownloadAsync(
         [FromServices] Kernel kernel,
-        [FromServices] ChatSessionRepository chatRepository,
-        [FromServices] ChatMessageRepository chatMessageRepository,
         Guid chatId)
     {
-        this._logger.LogDebug("Received call to export a bot");
-        var memory = await this.CreateBotAsync(kernel, chatRepository, chatMessageRepository, chatId);
+        this._logger.LogDebug("Received call to download a bot");
+        var memory = await this.CreateBotAsync(kernel, this._chatRepository, this._chatMessageRepository, chatId);
 
         return JsonSerializer.Serialize(memory);
     }
 
-    private bool IsBotCompatible(BotSchemaConfig externalBotSchema, BotConfiguration externalBotConfiguration)
+    /// <summary>
+    /// Check if an external bot file is compatible with the application.
+    /// </summary>
+    /// <remarks>
+    /// If the embeddings are not generated from the same model, the bot file is not compatible.
+    /// </remarks>
+    /// <param name="externalBotSchema">The external bot schemal.</param>
+    /// <param name="externalBotEmbeddingConfig">The external bot embedding configuration.</param>
+    /// <returns></returns>
+    private bool IsBotCompatible(BotSchemaConfig externalBotSchema, BotEmbeddingConfig externalBotEmbeddingConfig)
     {
         var embeddingAIServiceConfig = this._configuration.GetSection("Embedding").Get<AIServiceConfig>();
         var botSchema = this._configuration.GetSection("BotFileSchema").Get<BotSchemaConfig>();
@@ -113,9 +139,9 @@ public class BotController : ControllerBase
             return externalBotSchema.Name.Equals(
                 botSchema.Name, StringComparison.OrdinalIgnoreCase)
                 && externalBotSchema.Verson == botSchema.Verson
-                && externalBotConfiguration.EmbeddingAIService.Equals(
+                && externalBotEmbeddingConfig.AIService.Equals(
                 embeddingAIServiceConfig.AIService, StringComparison.OrdinalIgnoreCase)
-                && externalBotConfiguration.EmbeddingDeploymentOrModelId.Equals(
+                && externalBotEmbeddingConfig.DeploymentOrModelId.Equals(
                 embeddingAIServiceConfig.DeploymentOrModelId, StringComparison.OrdinalIgnoreCase);
         }
         else
@@ -145,10 +171,10 @@ public class BotController : ControllerBase
 
         // get the embedding configuration
         var embeddingAIServiceConfig = this._configuration.GetSection("Embedding").Get<AIServiceConfig>();
-        bot.Configurations = new BotConfiguration
+        bot.EmbeddingConfigurations = new BotEmbeddingConfig
         {
-            EmbeddingAIService = embeddingAIServiceConfig?.AIService ?? string.Empty,
-            EmbeddingDeploymentOrModelId = embeddingAIServiceConfig?.DeploymentOrModelId ?? string.Empty
+            AIService = embeddingAIServiceConfig?.AIService ?? string.Empty,
+            DeploymentOrModelId = embeddingAIServiceConfig?.DeploymentOrModelId ?? string.Empty
         };
 
         // get the chat title
@@ -168,7 +194,7 @@ public class BotController : ControllerBase
             List<MemoryQueryResult> collectionMemoryRecords = await kernel.Memory.SearchAsync(
                 collection,
                 "abc", // dummy query since we don't care about relevance. An empty string will cause exception.
-                limit: 999999999, // hacky way to get as much as record as a workaround. TODO: Call GetAll() when it's in the SK memory storage API.
+                limit: 999999999, // temp solution to get as much as record as a workaround.
                 minRelevanceScore: -1, // no relevance required since the collection only has one entry
                 withEmbeddings: true,
                 cancel: default
