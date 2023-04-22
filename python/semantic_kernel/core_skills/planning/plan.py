@@ -1,7 +1,7 @@
 from typing import Any
 
-class Plan:
 
+class Plan:
     # The goal that wants to be achieved
     goal: str
 
@@ -15,4 +15,3 @@ class Plan:
         self.goal = goal
         self.prompt = prompt
         self.generated_plan = plan
-

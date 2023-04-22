@@ -2,11 +2,11 @@
 
 """A basic JSON-based planner for the Python Semantic Kernel"""
 import json
-from semantic_kernel.kernel import Kernel
+
 from semantic_kernel.core_skills.planning.plan import Plan
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.skill_definition import sk_function
-
 
 PROMPT = """
 You are a planner for the Semantic Kernel.
@@ -58,7 +58,7 @@ args:
         ]
     }
 
-[AVAILABLE FUNCTIONS] 
+[AVAILABLE FUNCTIONS]
 WriterSkill.Brainstorm
 description: Brainstorm ideas
 args:
@@ -99,6 +99,7 @@ E-mail these ideas to my significant other"
 [OUTPUT]
 """
 
+
 class BasicPlanner:
     """
     Description: Basic planner for the Semantic Kernel.
@@ -117,10 +118,10 @@ class BasicPlanner:
         name="create_plan",
     )
     async def create_plan_async(
-            self,
-            goal: str,
-            kernel: Kernel,
-            prompt: str = PROMPT,
+        self,
+        goal: str,
+        kernel: Kernel,
+        prompt: str = PROMPT,
     ) -> Plan:
         """
         Creates a plan for the given goal based off the functions that
@@ -128,7 +129,9 @@ class BasicPlanner:
         """
 
         # Create the semantic function for the planner with the given prompt
-        planner = kernel.create_semantic_function(prompt, max_tokens=1000, temperature=0.8)
+        planner = kernel.create_semantic_function(
+            prompt, max_tokens=1000, temperature=0.8
+        )
 
         # Get a dictionary of skill names to all native and semantic functions
         native_functions = kernel.skills.get_functions_view()._native_functions
@@ -138,7 +141,6 @@ class BasicPlanner:
         # Create a flattened list of all functions
         all_functions = native_functions
         skill_names = list(all_functions.keys())
-        all_functions_list = []
         all_functions_dict = {}
         for skill_name in skill_names:
             for f in all_functions[skill_name]:
@@ -149,12 +151,14 @@ class BasicPlanner:
         available_functions_string = ""
         for name in list(all_functions_dict.keys()):
             available_functions_string += name + "\n"
-            available_functions_string += "description: " + all_functions_dict[name] + "\n"
+            available_functions_string += (
+                "description: " + all_functions_dict[name] + "\n"
+            )
             available_functions_string += "args:\n"
             # TODO: FIGURE OUT HOW TO GET ARGS FROM FUNCTIONS
             available_functions_string += "\n"
 
-        # Create the context for the planner 
+        # Create the context for the planner
         context = ContextVariables()
         # Add the goal to the context
         context["goal"] = goal
@@ -162,31 +166,26 @@ class BasicPlanner:
         generated_plan = await planner.invoke_with_vars_async(input=context)
         return Plan(prompt=prompt, goal=goal, plan=generated_plan)
 
-
     @sk_function(
-        description="Given a plan, execute each of the functions within the plan from start to finish and output the result.",
+        description="Given a plan, execute each of the functions within the plan from \
+              start to finish and output the result.",
         name="execute_plan",
     )
-    async def execute_plan_async(
-            self,
-            plan: Plan,
-            kernel: Kernel
-    ) -> str:
+    async def execute_plan_async(self, plan: Plan, kernel: Kernel) -> str:
         """
         Given a plan, execute each of the functions within the plan
         from start to finish and output the result.
         """
         generated_plan = json.loads(plan.generated_plan.result)
 
-        context = ContextVariables()    
+        context = ContextVariables()
         context["input"] = generated_plan["input"]
         subtasks = generated_plan["subtasks"]
 
-        all_functions = []
         for subtask in subtasks:
             skill_name, function_name = subtask["function"].split(".")
             sk_function = kernel.skills.get_function(skill_name, function_name)
-            
+
             # Get the arguments dictionary for the function
             args = subtask.get("args", None)
             if args:
