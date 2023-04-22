@@ -82,7 +82,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
-        var result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, arguments).ConfigureAwait(false);
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
@@ -146,7 +146,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
-        var result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, arguments).ConfigureAwait(false);
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
@@ -198,7 +198,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
-        await sut.RunAsync(operation, arguments);
+        await sut.RunAsync(operation, arguments).ConfigureAwait(false);
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
@@ -242,10 +242,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             this.Method = request.Method;
             this.RequestUri = request.RequestUri;
             this.RequestHeaders = request.Headers;
-            this.RequestContent = request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+            this.RequestContent = request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
             this.ContentHeaders = request.Content?.Headers;
 
-            return await Task.FromResult(this.ResponseToReturn);
+            return await Task.FromResult(this.ResponseToReturn).ConfigureAwait(false);
         }
     }
 }

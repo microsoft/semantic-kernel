@@ -36,11 +36,11 @@ public class BingConnector : IWebSearchEngineConnector, IDisposable
         Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count=1");
 
         this._logger.LogDebug("Sending request: {0}", uri);
-        HttpResponseMessage response = await this._httpClient.GetAsync(uri, cancellationToken);
+        HttpResponseMessage response = await this._httpClient.GetAsync(uri, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
-        string json = await response.Content.ReadAsStringAsync();
+        string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         this._logger.LogTrace("Response content received: {0}", json);
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);

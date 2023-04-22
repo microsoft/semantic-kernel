@@ -55,7 +55,7 @@ public class HttpSkillTests : IDisposable
         using var skill = new HttpSkill(client);
 
         // Act
-        var result = await skill.GetAsync(this._uriString, this._context);
+        var result = await skill.GetAsync(this._uriString, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(this._content, result);
@@ -72,7 +72,7 @@ public class HttpSkillTests : IDisposable
         this._context["body"] = this._content;
 
         // Act
-        var result = await skill.PostAsync(this._uriString, this._context);
+        var result = await skill.PostAsync(this._uriString, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(this._content, result);
@@ -89,7 +89,7 @@ public class HttpSkillTests : IDisposable
         this._context["body"] = this._content;
 
         // Act
-        var result = await skill.PutAsync(this._uriString, this._context);
+        var result = await skill.PutAsync(this._uriString, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(this._content, result);
@@ -105,7 +105,7 @@ public class HttpSkillTests : IDisposable
         using var skill = new HttpSkill(client);
 
         // Act
-        var result = await skill.DeleteAsync(this._uriString, this._context);
+        var result = await skill.DeleteAsync(this._uriString, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(this._content, result);

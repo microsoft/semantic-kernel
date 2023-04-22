@@ -41,7 +41,7 @@ public class CloudDriveSkillTests : IDisposable
         CloudDriveSkill target = new CloudDriveSkill(connectorMock.Object);
 
         // Act
-        await target.UploadFileAsync(anyFilePath, this._context);
+        await target.UploadFileAsync(anyFilePath, this._context).ConfigureAwait(false);
 
         // Assert
         connectorMock.VerifyAll();
@@ -61,7 +61,7 @@ public class CloudDriveSkillTests : IDisposable
         CloudDriveSkill target = new CloudDriveSkill(connectorMock.Object);
 
         // Act
-        string actual = await target.CreateLinkAsync(anyFilePath, this._context);
+        string actual = await target.CreateLinkAsync(anyFilePath, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(anyLink, actual);
@@ -83,7 +83,7 @@ public class CloudDriveSkillTests : IDisposable
         CloudDriveSkill target = new CloudDriveSkill(connectorMock.Object);
 
         // Act
-        string actual = await target.GetFileContentAsync(anyFilePath, this._context);
+        string actual = await target.GetFileContentAsync(anyFilePath, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(expectedContent, actual);

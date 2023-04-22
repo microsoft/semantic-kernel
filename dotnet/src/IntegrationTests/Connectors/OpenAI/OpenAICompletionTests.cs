@@ -50,7 +50,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
 
         // Act
-        SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
+        SKContext actual = await target.RunAsync(prompt, skill["Chat"]).ConfigureAwait(false);
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
@@ -68,7 +68,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
 
         // Act
-        SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
+        SKContext actual = await target.RunAsync(prompt, skill["Chat"]).ConfigureAwait(false);
 
         // Assert
         Assert.Empty(actual.LastErrorDescription);
@@ -98,7 +98,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
 
         // Act
-        var context = await target.RunAsync(prompt, skill["Summarize"]);
+        var context = await target.RunAsync(prompt, skill["Summarize"]).ConfigureAwait(false);
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
@@ -122,7 +122,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
 
         // Act
-        var context = await target.RunAsync("Any", skill["Summarize"]);
+        var context = await target.RunAsync("Any", skill["Summarize"]).ConfigureAwait(false);
 
         // Assert
         Assert.True(context.ErrorOccurred);
@@ -149,7 +149,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
 
         // Act
-        var context = await target.RunAsync("Any", skill["Summarize"]);
+        var context = await target.RunAsync("Any", skill["Summarize"]).ConfigureAwait(false);
 
         // Assert
         Assert.True(context.ErrorOccurred);
@@ -176,7 +176,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
 
         // Act
-        var context = await skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)));
+        var context = await skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))).ConfigureAwait(false);
 
         // Assert
         Assert.True(context.ErrorOccurred);
@@ -206,7 +206,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
 
         // Act
-        SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
+        SKContext actual = await target.RunAsync(prompt, skill["Chat"]).ConfigureAwait(false);
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);

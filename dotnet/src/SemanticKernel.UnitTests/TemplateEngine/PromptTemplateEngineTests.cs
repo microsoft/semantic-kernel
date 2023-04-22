@@ -144,7 +144,7 @@ public sealed class PromptTemplateEngineTests
         var context = this.MockContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(template, context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("foo-F(INPUT-BAR)-baz", result);
@@ -172,7 +172,7 @@ public sealed class PromptTemplateEngineTests
         var context = this.MockContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(template, context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("foo-F(BAR)-baz", result);
@@ -202,7 +202,7 @@ public sealed class PromptTemplateEngineTests
         var context = this.MockContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(template, context).ConfigureAwait(false);
 
         // Assert
         Assert.Equal("foo-BAR-baz", result);

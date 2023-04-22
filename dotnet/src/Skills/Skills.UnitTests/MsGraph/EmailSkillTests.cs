@@ -35,7 +35,7 @@ public class EmailSkillTests
         this._context.Variables.Set(Parameters.Subject, anySubject);
 
         // Act
-        await target.SendEmailAsync(anyContent, this._context);
+        await target.SendEmailAsync(anyContent, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
@@ -56,7 +56,7 @@ public class EmailSkillTests
         this._context.Variables.Update(anyContent);
 
         // Act
-        await target.SendEmailAsync(anyContent, this._context);
+        await target.SendEmailAsync(anyContent, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.True(this._context.ErrorOccurred);
@@ -77,7 +77,7 @@ public class EmailSkillTests
         this._context.Variables.Update(anyContent);
 
         // Act
-        await target.SendEmailAsync(anyContent, this._context);
+        await target.SendEmailAsync(anyContent, this._context).ConfigureAwait(false);
 
         // Assert
         Assert.True(this._context.ErrorOccurred);
@@ -96,7 +96,7 @@ public class EmailSkillTests
         EmailSkill target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.GetMyEmailAddressAsync();
+        string actual = await target.GetMyEmailAddressAsync().ConfigureAwait(false);
 
         // Assert
         Assert.Equal(anyEmailAddress, actual);

@@ -56,7 +56,7 @@ public sealed class WebSkillTests : IDisposable
         SKContext result = await kernel.RunAsync(
             prompt,
             search["SearchAsync"]
-        );
+        ).ConfigureAwait(false);
 
         // Assert
         Assert.Contains(expectedAnswerContains, result.Result, StringComparison.OrdinalIgnoreCase);
@@ -75,7 +75,7 @@ public sealed class WebSkillTests : IDisposable
         contextVariables.Set(WebFileDownloadSkill.Parameters.FilePath, fileWhereToSaveWebPage);
 
         // Act
-        await kernel.RunAsync(contextVariables, download["DownloadToFile"]);
+        await kernel.RunAsync(contextVariables, download["DownloadToFile"]).ConfigureAwait(false);
 
         // Assert
         var fileInfo = new FileInfo(fileWhereToSaveWebPage);

@@ -62,7 +62,7 @@ public sealed class PlanTests : IDisposable
         var cv = new ContextVariables();
         cv.Update(inputToEmail);
         cv.Set("email_address", expectedEmail);
-        var result = await target.RunAsync(cv, plan);
+        var result = await target.RunAsync(cv, plan).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(expectedBody, result.Result);
@@ -86,7 +86,7 @@ public sealed class PlanTests : IDisposable
         cv.Update(inputToTranslate);
         cv.Set("email_address", expectedEmail);
         cv.Set("language", language);
-        var result = await target.RunAsync(cv, plan);
+        var result = await target.RunAsync(cv, plan).ConfigureAwait(false);
 
         // Assert
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
@@ -112,7 +112,7 @@ public sealed class PlanTests : IDisposable
         plan.State.Set("email_address", "something@email.com");
 
         // Act
-        var result = await target.RunAsync("PlanInput", plan);
+        var result = await target.RunAsync("PlanInput", plan).ConfigureAwait(false);
 
         // Assert
         Assert.NotNull(result);
@@ -144,7 +144,7 @@ public sealed class PlanTests : IDisposable
         plan.State.Set("TheEmailFromState", email); // manually prepare the state
 
         // Act
-        var result = await target.StepAsync(input, plan);
+        var result = await target.StepAsync(input, plan).ConfigureAwait(false);
 
         // Assert
         var expectedBody = string.IsNullOrEmpty(input) ? goal : input;
@@ -179,7 +179,7 @@ public sealed class PlanTests : IDisposable
         plan.State.Set("TheEmailFromState", email); // manually prepare the state
 
         // Act
-        var result = await target.StepAsync(input, plan);
+        var result = await target.StepAsync(input, plan).ConfigureAwait(false);
 
         // Assert
         var expectedBody = string.IsNullOrEmpty(input) ? goal : input;
@@ -235,19 +235,19 @@ public sealed class PlanTests : IDisposable
         plan.AddSteps(summarizePlan, translatePlan, getEmailPlan, sendEmailPlan);
 
         // Act
-        var result = await target.StepAsync(inputToSummarize, plan);
+        var result = await target.StepAsync(inputToSummarize, plan).ConfigureAwait(false);
         Assert.Equal(4, result.Steps.Count);
         Assert.Equal(1, result.NextStepIndex);
         Assert.True(result.HasNextStep);
-        result = await target.StepAsync(result);
+        result = await target.StepAsync(result).ConfigureAwait(false);
         Assert.Equal(4, result.Steps.Count);
         Assert.Equal(2, result.NextStepIndex);
         Assert.True(result.HasNextStep);
-        result = await target.StepAsync(result);
+        result = await target.StepAsync(result).ConfigureAwait(false);
         Assert.Equal(4, result.Steps.Count);
         Assert.Equal(3, result.NextStepIndex);
         Assert.True(result.HasNextStep);
-        result = await target.StepAsync(result);
+        result = await target.StepAsync(result).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(4, result.Steps.Count);
@@ -305,7 +305,7 @@ public sealed class PlanTests : IDisposable
         plan.AddSteps(summarizePlan, translatePlan, getEmailPlan, sendEmailPlan);
 
         // Act
-        var result = await target.RunAsync(inputToSummarize, plan);
+        var result = await target.RunAsync(inputToSummarize, plan).ConfigureAwait(false);
 
         // Assert
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
@@ -337,7 +337,7 @@ public sealed class PlanTests : IDisposable
         cv.Update(inputToSummarize);
         cv.Set("email_address", expectedEmail);
         cv.Set("language", inputLanguage);
-        var result = await target.RunAsync(cv, plan);
+        var result = await target.RunAsync(cv, plan).ConfigureAwait(false);
 
         // Assert
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);

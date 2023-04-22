@@ -58,7 +58,7 @@ public class KernelTests
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
         // Act
-        SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]);
+        SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]).ConfigureAwait(false);
 
         // Assert - 3 functions, var name is not case sensitive
         Assert.Equal("Nice fun", result["jk.joker"]);
@@ -81,7 +81,7 @@ public class KernelTests
         cts.Cancel();
 
         // Act
-        SKContext result = await kernel.RunAsync(cts.Token, skill["GetAnyValue"]);
+        SKContext result = await kernel.RunAsync(cts.Token, skill["GetAnyValue"]).ConfigureAwait(false);
 
         // Assert
         Assert.True(string.IsNullOrEmpty(result.Result));
@@ -100,7 +100,7 @@ public class KernelTests
         using CancellationTokenSource cts = new CancellationTokenSource();
 
         // Act
-        SKContext result = await kernel.RunAsync(cts.Token, kernel.Func("mySk", "GetAnyValue"));
+        SKContext result = await kernel.RunAsync(cts.Token, kernel.Func("mySk", "GetAnyValue")).ConfigureAwait(false);
 
         // Assert
         Assert.False(string.IsNullOrEmpty(result.Result));
@@ -162,7 +162,7 @@ public class KernelTests
         [SKFunction("Export info.")]
         public async Task<SKContext> ReadSkillCollectionAsync(SKContext context)
         {
-            await Task.Delay(0);
+            await Task.Delay(0).ConfigureAwait(false);
 
             context.ThrowIfSkillCollectionNotSet();
 

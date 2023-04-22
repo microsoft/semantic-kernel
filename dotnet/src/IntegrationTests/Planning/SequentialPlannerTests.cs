@@ -42,7 +42,7 @@ public sealed class SequentialPlannerTests : IDisposable
         var planner = new SequentialPlanner(kernel);
 
         // Act
-        var plan = await planner.CreatePlanAsync(prompt);
+        var plan = await planner.CreatePlanAsync(prompt).ConfigureAwait(false);
         // Assert
         Assert.Contains(
             plan.Steps,
@@ -64,7 +64,7 @@ public sealed class SequentialPlannerTests : IDisposable
         var planner = new SequentialPlanner(kernel, new PlannerConfig() { RelevancyThreshold = 0.70, MaxRelevantFunctions = 20 });
 
         // Act
-        var plan = await planner.CreatePlanAsync(prompt);
+        var plan = await planner.CreatePlanAsync(prompt).ConfigureAwait(false);
 
         // Assert
         Assert.Contains(

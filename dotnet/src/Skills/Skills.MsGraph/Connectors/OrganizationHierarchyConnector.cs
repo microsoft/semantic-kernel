@@ -28,26 +28,26 @@ public class OrganizationHierarchyConnector : IOrganizationHierarchyConnector
     public async Task<string> GetManagerEmailAsync(CancellationToken cancellationToken = default) =>
         ((User)await this._graphServiceClient.Me
             .Manager
-            .Request().GetAsync(cancellationToken)).UserPrincipalName;
+            .Request().GetAsync(cancellationToken).ConfigureAwait(false)).UserPrincipalName;
 
     /// <inheritdoc/>
     public async Task<string> GetManagerNameAsync(CancellationToken cancellationToken = default) =>
         ((User)await this._graphServiceClient.Me
             .Manager
-            .Request().GetAsync(cancellationToken)).DisplayName;
+            .Request().GetAsync(cancellationToken).ConfigureAwait(false)).DisplayName;
 
     /// <inheritdoc/>
     public async Task<IEnumerable<string>> GetDirectReportsEmailAsync(CancellationToken cancellationToken = default)
     {
         IUserDirectReportsCollectionWithReferencesPage directsPage = await this._graphServiceClient.Me
             .DirectReports
-            .Request().GetAsync(cancellationToken);
+            .Request().GetAsync(cancellationToken).ConfigureAwait(false);
 
         List<User> directs = directsPage.Cast<User>().ToList();
 
         while (directs.Count != 0 && directsPage.NextPageRequest != null)
         {
-            directsPage = await directsPage.NextPageRequest.GetAsync(cancellationToken);
+            directsPage = await directsPage.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
             directs.AddRange(directsPage.Cast<User>());
         }
 
