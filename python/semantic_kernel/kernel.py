@@ -107,22 +107,25 @@ class Kernel(KernelBase, KernelExtensions):
         return function
 
     async def run_async(
-            self,
-            *functions: Any,
-            input_context: Optional[SKContext] = None,
-            input_vars: Optional[ContextVariables] = None,
-            input_str: Optional[str] = None,
+        self,
+        *functions: Any,
+        input_context: Optional[SKContext] = None,
+        input_vars: Optional[ContextVariables] = None,
+        input_str: Optional[str] = None,
     ) -> SKContext:
-            
         # if the user passed in a context, prioritize it, but merge with any other inputs
         if input_context is not None:
             context = input_context
             if input_vars is not None:
-                context._variables = input_vars.merge_or_overwrite(new_vars=context._variables, overwrite=False)
+                context._variables = input_vars.merge_or_overwrite(
+                    new_vars=context._variables, overwrite=False
+                )
 
             if input_str is not None:
-                context._variables = ContextVariables(input_str).merge_or_overwrite(new_vars=context._variables, overwrite=False)
-                
+                context._variables = ContextVariables(input_str).merge_or_overwrite(
+                    new_vars=context._variables, overwrite=False
+                )
+
         # if the user did not pass in a context, prioritize an input string, and merge that with input context variables
         else:
             if input_str is not None and input_vars is None:
@@ -131,7 +134,9 @@ class Kernel(KernelBase, KernelExtensions):
                 variables = input_vars
             elif input_str is not None and input_vars is not None:
                 variables = ContextVariables(input_str)
-                variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
+                variables = variables.merge_or_overwrite(
+                    new_vars=input_vars, overwrite=False
+                )
             else:
                 variables = ContextVariables()
             context = SKContext(
@@ -140,7 +145,7 @@ class Kernel(KernelBase, KernelExtensions):
                 self._skill_collection.read_only_skill_collection,
                 self._log,
             )
-            
+
         pipeline_step = 0
         for func in functions:
             assert isinstance(func, SKFunctionBase), (
