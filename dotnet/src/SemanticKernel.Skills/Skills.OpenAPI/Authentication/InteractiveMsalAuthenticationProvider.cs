@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 /// </summary>
 public class InteractiveMsalAuthenticationProvider : BearerAuthenticationProvider
 {
-
     /// <summary>
     /// Creates an instance of the <see cref="InteractiveMsalAuthenticationProvider"/> class.
     /// </summary>
