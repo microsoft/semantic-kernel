@@ -32,6 +32,9 @@ public class ChatSkill
     /// </summary>
     private readonly ChatSessionRepository _chatSessionRepository;
 
+    /// <summary>
+    /// Prompt settings.
+    /// </summary>
     private readonly PromptSettings _promptSettings;
 
     /// <summary>
@@ -63,7 +66,7 @@ public class ChatSkill
         var historyTokenBudget =
             tokenLimit -
             this._promptSettings.ResponseTokenLimit -
-            this.EstimateTokenCount(string.Join("\n", new string[]
+            Utils.TokenCount(string.Join("\n", new string[]
                 {
                     this._promptSettings.SystemDescriptionPrompt,
                     this._promptSettings.SystemIntentPrompt,
@@ -124,7 +127,7 @@ public class ChatSkill
             var results = context.Memory.SearchAsync(
                 SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName),
                 latestMessage.ToString(),
-                limit: 1000,
+                limit: 100,
                 minRelevanceScore: 0.8);
             await foreach (var memory in results)
             {
@@ -137,11 +140,11 @@ public class ChatSkill
         string memoryText = "";
         foreach (var memory in relevantMemories)
         {
-            var estimatedTokenCount = this.EstimateTokenCount(memory.Metadata.Text);
-            if (remainingToken - estimatedTokenCount > 0)
+            var tokenCount = Utils.TokenCount(memory.Metadata.Text);
+            if (remainingToken - tokenCount > 0)
             {
                 memoryText += $"\n[{memory.Metadata.Description}] {memory.Metadata.Text}";
-                remainingToken -= estimatedTokenCount;
+                remainingToken -= tokenCount;
             }
             else
             {
@@ -149,25 +152,26 @@ public class ChatSkill
             }
         }
 
-        return $"Past memories (format: [memory type] <label>: <details>):\n{memoryText.Trim()}";
+        // Update the token limit.
+        memoryText = $"Past memories (format: [memory type] <label>: <details>):\n{memoryText.Trim()}";
+        tokenLimit -= Utils.TokenCount(memoryText);
+        context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
+
+        return memoryText;
     }
 
     /// <summary>
     /// Extract chat history.
     /// </summary>
-    /// <param name="context">Contains the 'tokenLimit' and the 'contextTokenLimit' controlling the length of the prompt.</param>
+    /// <param name="context">Contains the 'tokenLimit' controlling the length of the prompt.</param>
     [SKFunction("Extract chat history")]
     [SKFunctionName("ExtractChatHistory")]
     [SKFunctionContextParameter(Name = "chatId", Description = "Chat ID to extract history from")]
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-    [SKFunctionContextParameter(Name = "contextTokenLimit", Description = "Maximum number of context tokens")]
     public async Task<string> ExtractChatHistoryAsync(SKContext context)
     {
         var chatId = context["chatId"];
         var tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
-
-        // TODO: Use contextTokenLimit to determine how much of the chat history to return
-        // TODO: relevant history
 
         var messages = await this._chatMessageRepository.FindByChatIdAsync(chatId);
         var sortedMessages = messages.OrderByDescending(m => m.Timestamp);
@@ -177,11 +181,11 @@ public class ChatSkill
         foreach (var chatMessage in sortedMessages)
         {
             var formattedMessage = chatMessage.ToFormattedString();
-            var estimatedTokenCount = this.EstimateTokenCount(formattedMessage);
-            if (remainingToken - estimatedTokenCount > 0)
+            var tokenCount = Utils.TokenCount(formattedMessage);
+            if (remainingToken - tokenCount > 0)
             {
                 historyText = $"{formattedMessage}\n{historyText}";
-                remainingToken -= estimatedTokenCount;
+                remainingToken -= tokenCount;
             }
             else
             {
@@ -211,7 +215,7 @@ public class ChatSkill
         var remainingToken =
             tokenLimit -
             this._promptSettings.ResponseTokenLimit -
-            this.EstimateTokenCount(string.Join("\n", new string[]
+            Utils.TokenCount(string.Join("\n", new string[]
                 {
                     this._promptSettings.SystemDescriptionPrompt,
                     this._promptSettings.SystemResponsePrompt,
@@ -239,8 +243,6 @@ public class ChatSkill
 
         // Clone the context to avoid modifying the original context variables.
         var chatContext = Utils.CopyContextWithVariablesClone(context);
-        chatContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
-        chatContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
         chatContext.Variables.Set("knowledgeCutoff", this._promptSettings.KnowledgeCutoffDate);
         chatContext.Variables.Set("audience", userName);
 
@@ -252,7 +254,10 @@ public class ChatSkill
         }
 
         chatContext.Variables.Set("userIntent", userIntent);
-        remainingToken -= this.EstimateTokenCount(userIntent);
+        // Update remaining token count
+        remainingToken -= Utils.TokenCount(userIntent);
+        chatContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
+        chatContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
 
         var completionFunction = this._kernel.CreateSemanticFunction(
             this._promptSettings.SystemChatPrompt,
@@ -417,15 +422,6 @@ public class ChatSkill
         };
 
         return completionSettings;
-    }
-
-    /// <summary>
-    /// Estimate the number of tokens in a string.
-    /// TODO: This is a very naive implementation. We should use the new implementation that is available in the kernel.
-    /// </summary>
-    private int EstimateTokenCount(string text)
-    {
-        return (int)Math.Floor(text.Length / this._promptSettings.TokenEstimateFactor);
     }
 
     # endregion
