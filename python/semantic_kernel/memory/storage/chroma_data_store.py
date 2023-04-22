@@ -27,7 +27,8 @@ def camel_to_snake(camel_str):
 class ChromaDataStore(DataStoreBase):
     """
     ChromaDataStore provides an interface to store and retrieve data using ChromaDB.
-    This implementation does not use ChromaDB's built-in embedding function, as embeddings are directly provided from SemanticTextMemory.
+    ChromaDataStore does not use ChromaDB's built-in embedding function,
+    as embeddings are directly provided from SemanticTextMemory.
     Collection names with uppercase characters are not supported by ChromaDB, they will be automatically converted.
 
     Args:

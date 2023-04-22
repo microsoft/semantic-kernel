@@ -8,14 +8,14 @@ For information about the connection to ChromaDB and persistency settings, pleas
 The similarity_compute_func parameter can affect the behavior of the get_nearest_matches_async method.
 similarity_compute_func can be one of the following:
 
-1) "sk-default" (default): Use Semantic Kernel's default compute similarity function. It computes cosine similarity 
+1) "sk-default" (default): Use Semantic Kernel's default compute similarity function. It computes cosine similarity
    between the query embedding and the embeddings in the collection.
 
-2) "chroma": Use ChromaDB's default distance as the similarity score. In this case, lower values are considered better 
+2) "chroma": Use ChromaDB's default distance as the similarity score. In this case, lower values are considered better
    matches. Note that min_relevance_score should be adjusted accordingly for this case.
 
-3) Custom function: Provide a custom function that computes similarity scores between the query embedding and the 
-   embeddings in the collection. The custom function should have the signature Callable[[ndarray, ndarray], ndarray] 
+3) Custom function: Provide a custom function that computes similarity scores between the query embedding and the
+   embeddings in the collection. The custom function should have the signature Callable[[ndarray, ndarray], ndarray]
    and return a numpy array of similarity scores.
 
 Example:
@@ -39,6 +39,7 @@ from logging import Logger
 from typing import TYPE_CHECKING, Callable, List, Optional, Tuple, Union
 
 from numpy import array, linalg, ndarray
+
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.storage.chroma_data_store import ChromaDataStore

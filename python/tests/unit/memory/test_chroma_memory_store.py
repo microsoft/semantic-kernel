@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 import numpy as np
 from numpy import ndarray
 from pytest import approx, fixture, mark, raises
+
 from semantic_kernel.memory import ChromaMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
