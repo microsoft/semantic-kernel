@@ -25,6 +25,31 @@ def camel_to_snake(camel_str):
 
 
 class ChromaDataStore(DataStoreBase):
+    """
+    ChromaDataStore provides an interface to store and retrieve data using ChromaDB.
+    This implementation does not use ChromaDB's built-in embedding function, as embeddings are directly provided from SemanticTextMemory.
+    Collection names with uppercase characters are not supported by ChromaDB, they will be automatically converted.
+
+    Args:
+        persist_directory (Optional[str], optional): Path to the directory where data will be persisted.
+            Defaults to None, which means the default settings for ChromaDB will be used.
+        client_settings (Optional["chromadb.config.Settings"], optional): A Settings instance to configure
+            the ChromaDB client. Defaults to None, which means the default settings for ChromaDB will be used.
+
+    Example:
+        # Create a ChromaDataStore with a local specified directory for data persistence
+        chroma_local_data_store = ChromaDataStore(persist_directory='/path/to/persist/directory')
+
+        # Create a ChromaDataStore with a custom Settings instance
+        chroma_remote_data_store = ChromaDataStore(
+            client_settings=Settings(
+                chroma_api_impl="rest",
+                chroma_server_host="xxx.xxx.xxx.xxx",
+                chroma_server_http_port="8000"
+            )
+        )
+    """
+
     def __init__(
         self,
         persist_directory: Optional[str] = None,
@@ -51,13 +76,12 @@ class ChromaDataStore(DataStoreBase):
         self._client = chromadb.Client(self._client_settings)
         self._persist_directory = persist_directory
         # ChromaDataStore will get embeddings from SemanticTextMemory. Never use this.
-        self._default_embdding_function = "ChromaShouldNotUseThisEmbeddingFunction"
+        self._default_embdding_function = "DoNotUseChromaEmbeddingFunction"
         self._default_query_includes = ["embeddings", "metadatas", "documents"]
 
     async def get_collection_async(self, collection: str) -> Optional["Collection"]:
         try:
-            # TODO: Current version of ChromeDB reject camel case collection names.
-            # ChromaDataStore will do auto conversion inside
+            # Current version of ChromeDB reject camel case collection names.
             collection_snake_case = camel_to_snake(collection)
             return self._client.get_collection(
                 name=collection_snake_case,
@@ -114,6 +138,7 @@ class ChromaDataStore(DataStoreBase):
                 "external_source_name": record.external_source_name or "",
                 "description": record.description or "",
             },
+            # by providing embeddings, we can skip the chroma's embedding function call
             embeddings=record.embedding.tolist(),
             documents=record.text,
             ids=value.key,
