@@ -1,8 +1,21 @@
-import { Button, Label, makeStyles, shorthands, Text, Tooltip } from '@fluentui/react-components';
+import {
+    Button,
+    Dialog,
+    Label,
+    makeStyles,
+    Menu,
+    MenuItem,
+    MenuList,
+    MenuPopover,
+    MenuTrigger,
+    shorthands,
+    Text,
+    Tooltip,
+} from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 
-import { BotAdd20Regular } from '@fluentui/react-icons';
-import { FC } from 'react';
+import { ArrowUploadRegular, BotAdd20Regular } from '@fluentui/react-icons';
+import { FC, useCallback, useState } from 'react';
 import { useChat } from '../../../libs/useChat';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
@@ -44,9 +57,19 @@ export const ChatList: FC = () => {
     const chat = useChat();
     const fileHandler = useFile();
 
+    const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+
     const onAddChat = () => {
         chat.createChat();
     };
+
+    const onUpload = useCallback(
+        (file: File) => {
+            fileHandler.loadFile<Bot>(file, chat.importBot);
+            setUploadDialogOpen(false);
+        },
+        [fileHandler, chat, setUploadDialogOpen],
+    );
 
     return (
         <>
@@ -55,18 +78,26 @@ export const ChatList: FC = () => {
                     <Text weight="bold" size={500}>
                         Conversations
                     </Text>
-                    <div>
-                        {/* TODO: Allow users to filter conversations by name
-                        <Button
-                        icon={<Filter20Regular />}
-                        appearance="transparent" /> */}
-                        <Tooltip content="Import a bot" relationship="label">
-                            <BotUploader onUpload={(file: File) => fileHandler.loadFile<Bot>(file, chat.importBot)} />
-                        </Tooltip>
-                        <Tooltip content="Create a new chat" relationship="label">
-                            <Button icon={<BotAdd20Regular />} appearance="transparent" onClick={onAddChat} />
-                        </Tooltip>
-                    </div>
+                    <Menu>
+                        <MenuTrigger disableButtonEnhancement>
+                            <Tooltip content="Add Bot" relationship="label">
+                                <Button icon={<BotAdd20Regular />} appearance="transparent" />
+                            </Tooltip>
+                        </MenuTrigger>
+                        <MenuPopover>
+                            <MenuList>
+                                <MenuItem icon={<BotAdd20Regular />} onClick={onAddChat}>
+                                    Add a new Bot
+                                </MenuItem>
+                                <MenuItem icon={<ArrowUploadRegular />}>
+                                    <div onClick={() => setUploadDialogOpen(true)}>Upload a Bot</div>
+                                </MenuItem>
+                            </MenuList>
+                        </MenuPopover>
+                    </Menu>
+                    <Dialog open={uploadDialogOpen} onOpenChange={(_event, data) => setUploadDialogOpen(data.open)}>
+                        <BotUploader onUpload={onUpload} />
+                    </Dialog>
                 </div>
                 <Label className={classes.label}>Your Bot</Label>
                 <Tree aria-label={'chat list'}>

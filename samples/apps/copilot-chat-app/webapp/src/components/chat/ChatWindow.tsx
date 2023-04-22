@@ -181,7 +181,7 @@ export const ChatWindow: React.FC = () => {
                                             );
                                         }}
                                     >
-                                        Download your bot
+                                        Download your Bot
                                     </MenuItem>
                                 </MenuList>
                             </MenuPopover>
