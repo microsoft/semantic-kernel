@@ -68,8 +68,7 @@ public static class MultiplyOperation
                 {
                     *(Vector<float>*)px *= multiplierVec;
                     px += Vector<float>.Count;
-                }
-                while (px <= pxOneVectorFromEnd);
+                } while (px <= pxOneVectorFromEnd);
             }
 
             while (px < pxEnd)
@@ -96,8 +95,7 @@ public static class MultiplyOperation
                 {
                     *(Vector<double>*)px *= multiplierVec;
                     px += Vector<double>.Count;
-                }
-                while (px <= pxOneVectorFromEnd);
+                } while (px <= pxOneVectorFromEnd);
             }
 
             while (px < pxEnd)
