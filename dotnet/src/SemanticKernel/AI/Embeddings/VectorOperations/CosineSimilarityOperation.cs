@@ -95,8 +95,7 @@ public static class CosineSimilarityOperation
 
                     px += Vector<double>.Count;
                     py += Vector<double>.Count;
-                }
-                while (px <= pxOneVectorFromEnd);
+                } while (px <= pxOneVectorFromEnd);
             }
 
             while (px < pxEnd)
@@ -141,14 +140,13 @@ public static class CosineSimilarityOperation
                     Vector<float> xVec = *(Vector<float>*)px;
                     Vector<float> yVec = *(Vector<float>*)py;
 
-                    dotSum += Vector.Dot(xVec, yVec);  // Dot product
+                    dotSum += Vector.Dot(xVec, yVec); // Dot product
                     lenXSum += Vector.Dot(xVec, xVec); // For magnitude of x
                     lenYSum += Vector.Dot(yVec, yVec); // For magnitude of y
 
                     px += Vector<float>.Count;
                     py += Vector<float>.Count;
-                }
-                while (px <= pxOneVectorFromEnd);
+                } while (px <= pxOneVectorFromEnd);
             }
 
             while (px < pxEnd)
@@ -156,7 +154,7 @@ public static class CosineSimilarityOperation
                 float xVal = *px;
                 float yVal = *py;
 
-                dotSum += xVal * yVal;  // Dot product
+                dotSum += xVal * yVal; // Dot product
                 lenXSum += xVal * xVal; // For magnitude of x
                 lenYSum += yVal * yVal; // For magnitude of y
 

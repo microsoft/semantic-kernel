@@ -80,7 +80,7 @@ public class SemanticKernelEndpoint
         HttpRequestData req,
         FunctionContext executionContext)
     {
-        var ask = await JsonSerializer.DeserializeAsync<Ask>(req.Body, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var ask = await JsonSerializer.DeserializeAsync<Ask>(req.Body, s_jsonOptions);
 
         if (ask == null)
         {

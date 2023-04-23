@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
