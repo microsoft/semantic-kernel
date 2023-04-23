@@ -27,7 +27,7 @@ internal sealed class NotEmptyOrWhitespaceAttribute : ValidationAttribute
 
             return new ValidationResult($"'{validationContext.MemberName}' cannot be empty or whitespace.");
         }
-        
+
         return new ValidationResult($"'{validationContext.MemberName}' must be a string.");
     }
 }
