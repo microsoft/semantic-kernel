@@ -93,9 +93,9 @@ public class VolatileMemoryStore : IMemoryStore
         if (this.TryGetCollection(collectionName, out var collectionDict)
             && collectionDict.TryGetValue(key, out var dataEntry))
         {
-            return Task.FromResult<MemoryRecord?>(withEmbedding ?
-                dataEntry :
-                MemoryRecord.FromMetadata(dataEntry.Metadata, embedding: null, key: dataEntry.Key, timestamp: dataEntry.Timestamp));
+            return Task.FromResult<MemoryRecord?>(withEmbedding
+                ? dataEntry
+                : MemoryRecord.FromMetadata(dataEntry.Metadata, embedding: null, key: dataEntry.Key, timestamp: dataEntry.Timestamp));
         }
 
         return Task.FromResult<MemoryRecord?>(null);

@@ -48,18 +48,20 @@ public class MathSkill
     {
         if (!int.TryParse(initialValueText, NumberStyles.Any, CultureInfo.InvariantCulture, out var initialValue))
         {
-            return Task.FromException<string>(new ArgumentOutOfRangeException(nameof(initialValueText), initialValueText, "Initial value provided is not in numeric format"));
+            return Task.FromException<string>(new ArgumentOutOfRangeException(
+                nameof(initialValueText), initialValueText, "Initial value provided is not in numeric format"));
         }
 
         string contextAmount = context["Amount"];
         if (!int.TryParse(contextAmount, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
         {
-            return Task.FromException<string>(new ArgumentOutOfRangeException(nameof(context), contextAmount, "Context amount provided is not in numeric format"));
+            return Task.FromException<string>(new ArgumentOutOfRangeException(
+                nameof(context), contextAmount, "Context amount provided is not in numeric format"));
         }
 
-        var result = add ?
-            initialValue + amount :
-            initialValue - amount;
+        var result = add
+            ? initialValue + amount
+            : initialValue - amount;
 
         return Task.FromResult(result.ToString(CultureInfo.InvariantCulture));
     }

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
@@ -112,11 +113,16 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 string completion = await client.CompleteAsync(prompt, requestSettings, context.CancellationToken);
                 context.Variables.Update(completion);
             }
+            catch (AIException ex)
+            {
+                const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
+                log?.LogError(ex, message, skillName, functionName, ex.Message, ex.Detail);
+                context.Fail(ex.Message, ex);
+            }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                log?.LogWarning(ex,
-                    "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}",
-                    skillName, functionName, ex.Message);
+                const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
+                log?.LogError(ex, message, skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
 
