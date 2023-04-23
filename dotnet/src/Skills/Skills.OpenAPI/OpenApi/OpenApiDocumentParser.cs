@@ -55,7 +55,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <returns>OpenAPI document with downgraded document version.</returns>
     private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
     {
-        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken);
+        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false);
         if (jsonObject == null)
         {
             //The document is malformed.
