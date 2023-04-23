@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -26,7 +27,7 @@ public class SkillCollection : ISkillCollection
 
     public SkillCollection(ILogger? log = null)
     {
-        if (log != null) { this._log = log; }
+        this._log = log ?? NullLogger.Instance;
 
         this.ReadOnlySkillCollection = new ReadOnlySkillCollection(this);
 
@@ -35,125 +36,78 @@ public class SkillCollection : ISkillCollection
     }
 
     /// <inheritdoc/>
-    public ISkillCollection AddSemanticFunction(ISKFunction functionInstance)
-    {
-        if (!this._skillCollection.ContainsKey(functionInstance.SkillName))
-        {
-            // Important: names are case insensitive
-            this._skillCollection[functionInstance.SkillName] = new(StringComparer.OrdinalIgnoreCase);
-        }
-
-        this._skillCollection[functionInstance.SkillName][functionInstance.Name] = functionInstance;
-
-        return this;
-    }
+    public ISkillCollection AddSemanticFunction(ISKFunction functionInstance) =>
+        this.AddFunction(functionInstance);
 
     /// <inheritdoc/>
-    public ISkillCollection AddNativeFunction(ISKFunction functionInstance)
-    {
-        Verify.NotNull(functionInstance, "The function is NULL");
-        if (!this._skillCollection.ContainsKey(functionInstance.SkillName))
-        {
-            // Important: names are case insensitive
-            this._skillCollection[functionInstance.SkillName] = new(StringComparer.OrdinalIgnoreCase);
-        }
-
-        this._skillCollection[functionInstance.SkillName][functionInstance.Name] = functionInstance;
-        return this;
-    }
+    public ISkillCollection AddNativeFunction(ISKFunction functionInstance) =>
+        this.AddFunction(functionInstance);
 
     /// <inheritdoc/>
-    public bool HasFunction(string skillName, string functionName)
-    {
-        return this._skillCollection.ContainsKey(skillName) &&
-               this._skillCollection[skillName].ContainsKey(functionName);
-    }
+    public bool HasFunction(string skillName, string functionName) =>
+        this.TryGetFunction(skillName, functionName, out _);
 
     /// <inheritdoc/>
-    public bool HasFunction(string functionName)
-    {
-        return this._skillCollection.ContainsKey(GlobalSkill) &&
-               this._skillCollection[GlobalSkill].ContainsKey(functionName);
-    }
+    public bool HasFunction(string functionName) =>
+        this.HasFunction(GlobalSkill);
 
     /// <inheritdoc/>
-    public bool HasSemanticFunction(string skillName, string functionName)
-    {
-        return this.HasFunction(skillName, functionName)
-               && this._skillCollection[skillName][functionName].IsSemantic;
-    }
+    public bool HasSemanticFunction(string skillName, string functionName) =>
+        this.TryGetFunction(skillName, functionName, out ISKFunction? func) &&
+        func.IsSemantic;
 
     /// <inheritdoc/>
-    public bool HasNativeFunction(string skillName, string functionName)
-    {
-        return this.HasFunction(skillName, functionName)
-               && !this._skillCollection[skillName][functionName].IsSemantic;
-    }
+    public bool HasNativeFunction(string functionName) =>
+        this.HasNativeFunction(GlobalSkill, functionName);
 
     /// <inheritdoc/>
-    public bool HasNativeFunction(string functionName)
-    {
-        return this.HasNativeFunction(GlobalSkill, functionName);
-    }
+    public bool HasNativeFunction(string skillName, string functionName) =>
+        this.TryGetFunction(skillName, functionName, out ISKFunction? func) &&
+        !func.IsSemantic;
 
     /// <inheritdoc/>
-    public ISKFunction GetFunction(string functionName)
-    {
-        return this.GetFunction(GlobalSkill, functionName);
-    }
+    public ISKFunction GetFunction(string functionName) =>
+        this.GetFunction(GlobalSkill, functionName);
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string skillName, string functionName)
     {
-        if (this.HasFunction(skillName, functionName))
+        if (!this.TryGetFunction(skillName, functionName, out ISKFunction? func))
         {
-            return this._skillCollection[skillName][functionName];
+            this.ThrowFunctionNotAvailable(skillName, functionName);
         }
 
-        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
-        throw new KernelException(
-            KernelException.ErrorCodes.FunctionNotAvailable,
-            $"Function not available {skillName}.{functionName}");
+        return func;
     }
 
     /// <inheritdoc/>
-    public ISKFunction GetSemanticFunction(string functionName)
-    {
-        return this.GetSemanticFunction(GlobalSkill, functionName);
-    }
+    public ISKFunction GetSemanticFunction(string functionName) =>
+        this.GetSemanticFunction(GlobalSkill, functionName);
 
     /// <inheritdoc/>
     public ISKFunction GetSemanticFunction(string skillName, string functionName)
     {
-        if (this.HasSemanticFunction(skillName, functionName))
+        if (!this.TryGetFunction(skillName, functionName, out ISKFunction? func) || !func.IsSemantic)
         {
-            return this._skillCollection[skillName][functionName];
+            this.ThrowFunctionNotAvailable(skillName, functionName);
         }
 
-        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
-        throw new KernelException(
-            KernelException.ErrorCodes.FunctionNotAvailable,
-            $"Function not available {skillName}.{functionName}");
+        return func;
     }
+
+    /// <inheritdoc/>
+    public ISKFunction GetNativeFunction(string functionName) =>
+        this.GetNativeFunction(GlobalSkill, functionName);
 
     /// <inheritdoc/>
     public ISKFunction GetNativeFunction(string skillName, string functionName)
     {
-        if (this.HasNativeFunction(skillName, functionName))
+        if (!this.TryGetFunction(skillName, functionName, out ISKFunction? func) || func.IsSemantic)
         {
-            return this._skillCollection[skillName][functionName];
+            this.ThrowFunctionNotAvailable(skillName, functionName);
         }
 
-        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
-        throw new KernelException(
-            KernelException.ErrorCodes.FunctionNotAvailable,
-            $"Function not available {skillName}.{functionName}");
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction GetNativeFunction(string functionName)
-    {
-        return this.GetNativeFunction(GlobalSkill, functionName);
+        return func;
     }
 
     /// <inheritdoc/>
@@ -161,24 +115,17 @@ public class SkillCollection : ISkillCollection
     {
         var result = new FunctionsView();
 
-        if (includeSemantic)
+        if (includeSemantic || includeNative)
         {
             foreach (var skill in this._skillCollection)
             {
                 foreach (KeyValuePair<string, ISKFunction> f in skill.Value)
                 {
-                    if (f.Value.IsSemantic) { result.AddFunction(f.Value.Describe()); }
+                    if (f.Value.IsSemantic ? includeSemantic : includeNative)
+                    {
+                        result.AddFunction(f.Value.Describe());
+                    }
                 }
-            }
-        }
-
-        if (!includeNative) { return result; }
-
-        foreach (var skill in this._skillCollection)
-        {
-            foreach (KeyValuePair<string, ISKFunction> f in skill.Value)
-            {
-                if (!f.Value.IsSemantic) { result.AddFunction(f.Value.Describe()); }
             }
         }
 
@@ -187,7 +134,37 @@ public class SkillCollection : ISkillCollection
 
     #region private ================================================================================
 
-    private readonly ILogger _log = NullLogger.Instance;
+    private SkillCollection AddFunction(ISKFunction functionInstance)
+    {
+        Verify.NotNull(functionInstance, "The function is NULL");
+
+        ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.SkillName, static _ => new(StringComparer.OrdinalIgnoreCase));
+        skill[functionInstance.Name] = functionInstance;
+
+        return this;
+    }
+
+    private bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? func)
+    {
+        if (this._skillCollection.TryGetValue(skillName, out ConcurrentDictionary<string, ISKFunction>? skill))
+        {
+            return skill.TryGetValue(functionName, out func);
+        }
+
+        func = null;
+        return false;
+    }
+
+    [DoesNotReturn]
+    private void ThrowFunctionNotAvailable(string skillName, string functionName)
+    {
+        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        throw new KernelException(
+            KernelException.ErrorCodes.FunctionNotAvailable,
+            $"Function not available {skillName}.{functionName}");
+    }
+
+    private readonly ILogger _log;
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ISKFunction>> _skillCollection;
 
