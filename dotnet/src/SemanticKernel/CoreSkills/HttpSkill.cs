@@ -95,8 +95,8 @@ public class HttpSkill : IDisposable
     private async Task<string> SendRequestAsync(string uri, HttpMethod method, HttpContent? requestContent = null, CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
-        using var response = await this._client.SendAsync(request, cancellationToken);
-        return await response.Content.ReadAsStringAsync();
+        using var response = await this._client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     }
 
     /// <summary>
