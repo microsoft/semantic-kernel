@@ -49,16 +49,8 @@ public class WebSearchEngineSkill
             context.Fail("Failed to get a response from the web search engine.");
         }
 
-        string resultString;
-        if (countInt == 1)
-        {
-            resultString = results.FirstOrDefault() ?? string.Empty;
-        }
-        else
-        {
-            resultString = JsonSerializer.Serialize(results);
-        }
-
-        return resultString;
+        return countInt == 1
+            ? results.FirstOrDefault() ?? string.Empty
+            : JsonSerializer.Serialize(results);
     }
 }
