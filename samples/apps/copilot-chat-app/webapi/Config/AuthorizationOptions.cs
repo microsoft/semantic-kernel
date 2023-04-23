@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel.DataAnnotations;
 using Microsoft.Identity.Web;
 
 namespace SemanticKernel.Service.Config;
@@ -21,16 +22,18 @@ public class AuthorizationOptions
     /// <summary>
     /// Type of authorization.
     /// </summary>
-    public AuthorizationType Type { get; set; }
+    public AuthorizationType Type { get; set; } = AuthorizationType.None;
 
     /// <summary>
     /// When <see cref="Type"/> is <see cref="AuthorizationType.ApiKey"/>, this is the API key to use.
     /// </summary>
-    public string? ApiKey { get; set; }
+    [Required, NotEmptyOrWhitespace]
+    public string ApiKey { get; set; } = string.Empty;
 
     /// <summary>
     /// When <see cref="Type"/> is <see cref="AuthorizationType.AzureAd"/>, these are the Azure AD options to use.
     /// </summary>
+    [RequiredOnPropertyValue(nameof(Type), AuthorizationType.AzureAd)]
     public AzureAdOptions? AzureAd { get; set; }
 
     /// <summary>
@@ -41,21 +44,25 @@ public class AuthorizationOptions
         /// <summary>
         /// AAD instance url, i.e., https://login.microsoftonline.com/
         /// </summary>
-        public string? Instance { get; set; }
+        [Required, NotEmptyOrWhitespace]
+        public string Instance { get; set; } = string.Empty;
 
         /// <summary>
         /// Tenant (directory) ID
         /// </summary>
-        public string? TenantId { get; set; }
+        [Required, NotEmptyOrWhitespace]
+        public string TenantId { get; set; } = string.Empty;
 
         /// <summary>
         /// Application (client) ID
         /// </summary>
-        public string? ClientId { get; set; }
+        [Required, NotEmptyOrWhitespace]
+        public string ClientId { get; set; } = string.Empty;
 
         /// <summary>
         /// Required scopes.
         /// </summary>
-        public string? Scopes { get; set; }
+        [Required]
+        public string? Scopes { get; set; } = string.Empty;
     }
 }

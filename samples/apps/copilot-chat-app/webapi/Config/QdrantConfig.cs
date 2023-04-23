@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace SemanticKernel.Service.Config;
 
 /// <summary>
@@ -10,15 +12,18 @@ public class QdrantConfig
     /// <summary>
     /// Gets or sets the endpoint protocol and host (e.g. http://localhost).
     /// </summary>
-    public string Host { get; set; } = string.Empty;
+    [Required, Url]
+    public string Host { get; set; } = string.Empty; // TODO update to use System.Uri
 
     /// <summary>
     /// Gets or sets the endpoint port.
     /// </summary>
+    [Required, Range(0, 65535)]
     public int Port { get; set; }
 
     /// <summary>
     /// Gets or sets the vector size.
     /// </summary>
+    [Required, Range(1, int.MaxValue)]
     public int VectorSize { get; set; }
 }

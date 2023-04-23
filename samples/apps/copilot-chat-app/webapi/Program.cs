@@ -57,8 +57,15 @@ public sealed class Program
         Task runTask = app.RunAsync();
 
         // Log the health probe URL for users to validate the service is running.
-        string? address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses.FirstOrDefault();
-        app.Services.GetRequiredService<ILogger>().LogInformation("Health probe: {0}/probe", address);
+        try
+        {
+            string? address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses.FirstOrDefault();
+            app.Services.GetRequiredService<ILogger>().LogInformation("Health probe: {0}/probe", address);
+        }
+        catch (ObjectDisposedException)
+        {
+            // We likely failed startup which disposes 'app.Services' - don't attempt to display the health probe URL.
+        }
 
         // Wait for the service to complete.
         await runTask;

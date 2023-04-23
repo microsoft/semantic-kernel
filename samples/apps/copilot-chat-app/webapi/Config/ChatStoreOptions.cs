@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using static SemanticKernel.Service.Config.AuthorizationOptions;
+
 namespace SemanticKernel.Service.Config;
 
 /// <summary>
@@ -38,10 +40,12 @@ public class ChatStoreOptions
     /// <summary>
     /// Gets or sets the configuration for the file system chat store.
     /// </summary>
+    [RequiredOnPropertyValue(nameof(Type), ChatStoreType.Filesystem)]
     public FileSystemConfig? Filesystem { get; set; }
 
     /// <summary>
     /// Gets or sets the configuration for the Azure CosmosDB chat store.
     /// </summary>
+    [RequiredOnPropertyValue(nameof(Type), ChatStoreType.Cosmos)]
     public CosmosConfig? Cosmos { get; set; }
 }

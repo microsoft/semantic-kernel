@@ -21,31 +21,33 @@ public sealed class AIServiceOptions
     /// <summary>
     /// Label used for referencing the AI service in Semantic Kernel.
     /// </summary>
-    [Required]
+    [Required, NotEmptyOrWhitespace]
     public string Label { get; set; } = string.Empty;
 
     /// <summary>
     /// Type of AI service.
     /// </summary>
     [Required]
-    public AIServiceType AIService { get; set; }
+    public AIServiceType AIService { get; set; } = AIServiceType.AzureOpenAI;
 
     /// <summary>
     /// Azure OpenAI deployment name or OpenAI model name.
     /// </summary>
-    [Required]
+    [Required, NotEmptyOrWhitespace]
     public string DeploymentOrModelId { get; set; } = string.Empty;
 
     /// <summary>
     /// (Azure OpenAI only) Azure OpenAI endpoint.
     /// </summary>
+    [RequiredOnPropertyValue(nameof(AIService), AIServiceType.AzureOpenAI)]
+    [NotEmptyOrWhitespace]
     public string Endpoint { get; set; } = string.Empty;
 
     /// <summary>
     /// Key to access teh AI service.
     /// </summary>
-    [Required]
+    [Required, NotEmptyOrWhitespace]
     public string Key { get; set; } = string.Empty;
 
-    // TODO support OpenAI's orgID 
+    // TODO support OpenAI's orgID
 }

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace SemanticKernel.Service.Config;
 
 /// <summary>
@@ -10,8 +12,9 @@ public class ServiceOptions
     public const string PropertyName = "Service";
 
     /// <summary>
-    /// Configuration Keyvault URI
+    /// Configuration Key Vault URI
     /// </summary>
+    [Url]
     public Uri? KeyVaultUri { get; set; }
 
     /// <summary>
