@@ -48,7 +48,7 @@ public class TaskListSkillTests
         Assert.False(this._context.Variables.Get(Parameters.Reminder, out _));
 
         // Act
-        await target.AddTaskAsync(anyTitle, this._context).ConfigureAwait(false);
+        await target.AddTaskAsync(anyTitle, this._context);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
@@ -74,7 +74,7 @@ public class TaskListSkillTests
         this._context.Variables.Set(Parameters.Reminder, anyReminder);
 
         // Act
-        await target.AddTaskAsync(anyTitle, this._context).ConfigureAwait(false);
+        await target.AddTaskAsync(anyTitle, this._context);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
@@ -99,7 +99,7 @@ public class TaskListSkillTests
         this._context.Variables.Set(Parameters.Reminder, anyReminder);
 
         // Act
-        await target.AddTaskAsync(anyTitle, this._context).ConfigureAwait(false);
+        await target.AddTaskAsync(anyTitle, this._context);
 
         // Assert
         Assert.True(this._context.ErrorOccurred);

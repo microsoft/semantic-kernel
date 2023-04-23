@@ -20,7 +20,7 @@ public class BearerAuthenticationProviderTests
         var target = new BearerAuthenticationProvider(() => { return Task.FromResult(token); });
 
         // Act
-        await target.AuthenticateRequestAsync(request).ConfigureAwait(false);
+        await target.AuthenticateRequestAsync(request);
 
         // Assert
         Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);

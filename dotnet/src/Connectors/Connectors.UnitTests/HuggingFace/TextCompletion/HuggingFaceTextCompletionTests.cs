@@ -38,7 +38,7 @@ public class HuggingFaceTextCompletionTests : IDisposable
         using var service = this.CreateService(HuggingFaceTestHelper.GetTestResponse("completion_test_response.json"));
 
         // Act
-        var completion = await service.CompleteAsync(prompt, requestSettings).ConfigureAwait(false);
+        var completion = await service.CompleteAsync(prompt, requestSettings);
 
         // Assert
         Assert.Equal("This is test completion response", completion);

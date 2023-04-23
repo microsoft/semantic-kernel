@@ -56,7 +56,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        await vectorStore.CreateCollectionAsync("test").ConfigureAwait(false);
+        await vectorStore.CreateCollectionAsync("test");
 
         // Assert
         mockQdrantClient
@@ -79,7 +79,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        await vectorStore.CreateCollectionAsync("test").ConfigureAwait(false);
+        await vectorStore.CreateCollectionAsync("test");
 
         // Assert
         mockQdrantClient
@@ -100,7 +100,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var collections = await vectorStore.GetCollectionsAsync().ToArrayAsync().ConfigureAwait(false);
+        var collections = await vectorStore.GetCollectionsAsync().ToArrayAsync();
 
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<string>>(x => x.ListCollectionsAsync(It.IsAny<CancellationToken>()), Times.Once());
@@ -120,7 +120,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        await vectorStore.DeleteCollectionAsync("test").ConfigureAwait(false);
+        await vectorStore.DeleteCollectionAsync("test");
 
         // Assert
         mockQdrantClient.Verify<Task>(x => x.DeleteCollectionAsync("test", It.IsAny<CancellationToken>()), Times.Once());
@@ -154,7 +154,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Assert
-        await Assert.ThrowsAsync<QdrantMemoryException>(() => vectorStore.UpsertAsync("test_collection", memoryRecord)).ConfigureAwait(false);
+        await Assert.ThrowsAsync<QdrantMemoryException>(() => vectorStore.UpsertAsync("test_collection", memoryRecord));
     }
 
     [Fact]
@@ -184,7 +184,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        string guidString = await vectorStore.UpsertAsync("test_collection", memoryRecord).ConfigureAwait(false);
+        string guidString = await vectorStore.UpsertAsync("test_collection", memoryRecord);
 
         // Assert
         mockQdrantClient
@@ -226,7 +226,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        string guidString = await vectorStore.UpsertAsync("test_collection", memoryRecord).ConfigureAwait(false);
+        string guidString = await vectorStore.UpsertAsync("test_collection", memoryRecord);
 
         // Assert
         mockQdrantClient
@@ -278,7 +278,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        string guidString = await vectorStore.UpsertAsync("test_collection", memoryRecord).ConfigureAwait(false);
+        string guidString = await vectorStore.UpsertAsync("test_collection", memoryRecord);
 
         // Assert
         mockQdrantClient
@@ -329,7 +329,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        string guidString = await vectorStore.UpsertAsync("test_collection", memoryRecord).ConfigureAwait(false);
+        string guidString = await vectorStore.UpsertAsync("test_collection", memoryRecord);
 
         // Assert
         mockQdrantClient
@@ -381,7 +381,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var keys = await vectorStore.UpsertBatchAsync("test_collection", new[] { memoryRecord, memoryRecord2, memoryRecord3 }).ToListAsync().ConfigureAwait(false);
+        var keys = await vectorStore.UpsertBatchAsync("test_collection", new[] { memoryRecord, memoryRecord2, memoryRecord3 }).ToListAsync();
 
         // Assert
         mockQdrantClient

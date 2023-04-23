@@ -58,7 +58,7 @@ public class SKContextTests
 
         // Act
         var say = target.Skills.GetNativeFunction("func");
-        SKContext result = await say.InvokeAsync("ciao").ConfigureAwait(false);
+        SKContext result = await say.InvokeAsync("ciao");
 
         // Assert
         Assert.Equal("ciao", result.Result);

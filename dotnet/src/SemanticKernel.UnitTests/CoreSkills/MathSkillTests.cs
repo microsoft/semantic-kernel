@@ -53,7 +53,7 @@ public class MathSkillTests
         var target = new MathSkill();
 
         // Act
-        string result = await target.AddAsync(initialValue, context).ConfigureAwait(false);
+        string result = await target.AddAsync(initialValue, context);
 
         // Assert
         Assert.Equal(expectedResult, result);
@@ -80,7 +80,7 @@ public class MathSkillTests
         var target = new MathSkill();
 
         // Act
-        string result = await target.SubtractAsync(initialValue, context).ConfigureAwait(false);
+        string result = await target.SubtractAsync(initialValue, context);
 
         // Assert
         Assert.Equal(expectedResult, result);
@@ -112,8 +112,8 @@ public class MathSkillTests
         // Act
         var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
         {
-            await target.AddAsync(initialValue, context).ConfigureAwait(false);
-        }).ConfigureAwait(false);
+            await target.AddAsync(initialValue, context);
+        });
 
         // Assert
         Assert.NotNull(exception);
@@ -147,8 +147,8 @@ public class MathSkillTests
         // Act
         var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
         {
-            await target.AddAsync("1", context).ConfigureAwait(false);
-        }).ConfigureAwait(false);
+            await target.AddAsync("1", context);
+        });
 
         // Assert
         Assert.NotNull(exception);
@@ -182,8 +182,8 @@ public class MathSkillTests
         // Act
         var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
         {
-            await target.SubtractAsync(initialValue, context).ConfigureAwait(false);
-        }).ConfigureAwait(false);
+            await target.SubtractAsync(initialValue, context);
+        });
 
         // Assert
         Assert.NotNull(exception);
@@ -217,8 +217,8 @@ public class MathSkillTests
         // Act
         var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
         {
-            await target.SubtractAsync("1", context).ConfigureAwait(false);
-        }).ConfigureAwait(false);
+            await target.SubtractAsync("1", context);
+        });
 
         // Assert
         Assert.NotNull(exception);

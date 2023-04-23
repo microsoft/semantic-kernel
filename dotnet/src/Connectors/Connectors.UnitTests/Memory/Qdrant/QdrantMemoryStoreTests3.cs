@@ -45,23 +45,23 @@ public class QdrantMemoryStoreTests3
         _ = await vectorStore.GetNearestMatchAsync(
             collectionName: "test_collection",
             embedding: this._embedding,
-            minRelevanceScore: 0.0).ConfigureAwait(false);
+            minRelevanceScore: 0.0);
         _ = await vectorStore.GetNearestMatchAsync(
             collectionName: "test_collection",
             embedding: this._embedding,
             withEmbedding: true,
-            minRelevanceScore: 0.0).ConfigureAwait(false);
+            minRelevanceScore: 0.0);
         _ = await vectorStore.GetNearestMatchesAsync(
             collectionName: "test_collection",
             embedding: this._embedding,
             limit: 3,
-            minRelevanceScore: 0.0).ToListAsync().ConfigureAwait(false);
+            minRelevanceScore: 0.0).ToListAsync();
         _ = await vectorStore.GetNearestMatchesAsync(
             collectionName: "test_collection",
             embedding: this._embedding,
             limit: 3,
             withEmbeddings: true,
-            minRelevanceScore: 0.0).ToListAsync().ConfigureAwait(false);
+            minRelevanceScore: 0.0).ToListAsync();
 
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
@@ -124,7 +124,7 @@ public class QdrantMemoryStoreTests3
         var similarityResult = await vectorStore.GetNearestMatchAsync(
             collectionName: "test_collection",
             embedding: this._embedding,
-            minRelevanceScore: 0.0).ConfigureAwait(false);
+            minRelevanceScore: 0.0);
 
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
@@ -176,7 +176,7 @@ public class QdrantMemoryStoreTests3
         var similarityResult = await vectorStore.GetNearestMatchAsync(
             collectionName: "test_collection",
             embedding: this._embedding,
-            minRelevanceScore: 0.0).ConfigureAwait(false);
+            minRelevanceScore: 0.0);
 
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
@@ -219,7 +219,7 @@ public class QdrantMemoryStoreTests3
             collectionName: "test_collection",
             embedding: this._embedding,
             limit: 3,
-            minRelevanceScore: 0.0).ToListAsync().ConfigureAwait(false);
+            minRelevanceScore: 0.0).ToListAsync();
 
         // Assert
         Assert.Empty(similarityResults);

@@ -34,7 +34,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockHandler.Protected()
@@ -59,7 +59,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockHandler.Protected()
@@ -81,7 +81,7 @@ public class DefaultHttpRetryHandlerTests
 
         // Act
         var response = await Assert.ThrowsAsync(exceptionType,
-            async () => await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false)).ConfigureAwait(false);
+            async () => await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None));
 
         // Assert
         mockHandler.Protected()
@@ -102,7 +102,7 @@ public class DefaultHttpRetryHandlerTests
 
         // Act
         var response = await Assert.ThrowsAsync(exceptionType,
-            async () => await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false)).ConfigureAwait(false);
+            async () => await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None));
 
         // Assert
         mockHandler.Protected()
@@ -126,7 +126,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockHandler.Protected()
@@ -148,7 +148,7 @@ public class DefaultHttpRetryHandlerTests
 
         // Act
         var response = await Assert.ThrowsAsync(exceptionType,
-            async () => await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false)).ConfigureAwait(false);
+            async () => await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None));
 
         // Assert
         mockHandler.Protected()
@@ -184,7 +184,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockHandler.Protected()
@@ -216,7 +216,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockHandler.Protected()
@@ -241,7 +241,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockHandler.Protected()
@@ -263,7 +263,7 @@ public class DefaultHttpRetryHandlerTests
 
         // Act
         var response = await Assert.ThrowsAsync(expectedException,
-            async () => await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false)).ConfigureAwait(false);
+            async () => await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None));
 
         // Assert
         mockHandler.Protected()
@@ -283,7 +283,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockHandler.Protected()
@@ -306,7 +306,7 @@ public class DefaultHttpRetryHandlerTests
 
         // Act
         var response = await Assert.ThrowsAsync<TaskCanceledException>(async () =>
-            await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
+            await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, cancellationToken));
 
         // Assert
         mockHandler.Protected()
@@ -327,7 +327,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, cancellationToken).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, cancellationToken);
 
         // Assert
         mockHandler.Protected()
@@ -365,7 +365,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(2));
@@ -409,7 +409,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(2));
@@ -460,7 +460,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(6));
@@ -506,7 +506,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(4)); // 1 initial, 2 retries, 1 for logging time taken.
@@ -549,7 +549,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        await Assert.ThrowsAsync<HttpRequestException>(() => httpClient.GetAsync(new Uri("https://www.microsoft.com"), CancellationToken.None)).ConfigureAwait(false);
+        await Assert.ThrowsAsync<HttpRequestException>(() => httpClient.GetAsync(new Uri("https://www.microsoft.com"), CancellationToken.None));
 
         // Assert
         mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(4)); // 1 initial, 2 retries, 1 for logging time taken.
@@ -573,7 +573,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockHandler.Protected()
@@ -596,7 +596,7 @@ public class DefaultHttpRetryHandlerTests
         using var httpClient = new HttpClient(retry);
 
         // Act
-        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
         mockHandler.Protected()
@@ -619,7 +619,7 @@ public class DefaultHttpRetryHandlerTests
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false)).ConfigureAwait(false);
+            await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None));
 
         // Assert
         mockHandler.Protected()
@@ -641,7 +641,7 @@ public class DefaultHttpRetryHandlerTests
 
         // Act
         await Assert.ThrowsAsync<ArgumentException>(async () =>
-            await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None).ConfigureAwait(false)).ConfigureAwait(false);
+            await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None));
 
         // Assert
         mockHandler.Protected()

@@ -46,7 +46,7 @@ public class WaitSkillTests
         var target = new WaitSkill(waitProviderMock.Object);
 
         // Act
-        await target.SecondsAsync(textSeconds).ConfigureAwait(false);
+        await target.SecondsAsync(textSeconds);
 
         // Assert
         waitProviderMock.Verify(w => w.DelayAsync(It.IsIn(expectedMilliseconds)), Times.Once);
@@ -73,8 +73,8 @@ public class WaitSkillTests
         // Act
         var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
         {
-            await target.SecondsAsync(textSeconds).ConfigureAwait(false);
-        }).ConfigureAwait(false);
+            await target.SecondsAsync(textSeconds);
+        });
 
         // Assert
         Assert.NotNull(exception);

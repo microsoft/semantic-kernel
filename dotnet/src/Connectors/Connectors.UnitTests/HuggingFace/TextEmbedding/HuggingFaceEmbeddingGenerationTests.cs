@@ -39,7 +39,7 @@ public class HuggingFaceEmbeddingGenerationTests : IDisposable
         using var service = this.CreateService(HuggingFaceTestHelper.GetTestResponse("embeddings_test_response.json"));
 
         // Act
-        var embeddings = await service.GenerateEmbeddingsAsync(data).ConfigureAwait(false);
+        var embeddings = await service.GenerateEmbeddingsAsync(data);
 
         // Assert
         Assert.NotNull(embeddings);

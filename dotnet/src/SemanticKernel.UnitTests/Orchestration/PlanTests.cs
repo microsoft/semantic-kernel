@@ -39,7 +39,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Act
-        var result = await plan.InvokeAsync("Some input").ConfigureAwait(false);
+        var result = await plan.InvokeAsync("Some input");
 
         // Assert
         Assert.NotNull(result);
@@ -77,7 +77,7 @@ public sealed class PlanTests
         plan.AddSteps(new Plan(mockFunction.Object));
 
         // Act
-        var result = await plan.InvokeAsync(planInput).ConfigureAwait(false);
+        var result = await plan.InvokeAsync(planInput);
 
         // Assert
         Assert.NotNull(result);
@@ -116,7 +116,7 @@ public sealed class PlanTests
         plan.AddSteps(mockFunction.Object);
 
         // Act
-        var result = await plan.InvokeAsync(planInput).ConfigureAwait(false);
+        var result = await plan.InvokeAsync(planInput);
 
         // Assert
         Assert.NotNull(result);
@@ -155,7 +155,7 @@ public sealed class PlanTests
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
         // Act
-        var result = await plan.InvokeAsync(planInput).ConfigureAwait(false);
+        var result = await plan.InvokeAsync(planInput);
 
         // Assert
         Assert.NotNull(result);
@@ -194,7 +194,7 @@ public sealed class PlanTests
         plan.AddSteps(new Plan(mockFunction.Object), mockFunction.Object);
 
         // Act
-        var result = await plan.InvokeAsync(planInput).ConfigureAwait(false);
+        var result = await plan.InvokeAsync(planInput);
 
         // Assert
         Assert.NotNull(result);
@@ -233,7 +233,7 @@ public sealed class PlanTests
         plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
 
         // Act
-        var result = await plan.InvokeAsync(planInput).ConfigureAwait(false);
+        var result = await plan.InvokeAsync(planInput);
 
         // Assert
         Assert.NotNull(result);
@@ -272,14 +272,14 @@ public sealed class PlanTests
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
         // Act
-        var result = await kernel.Object.StepAsync(planInput, plan).ConfigureAwait(false);
+        var result = await kernel.Object.StepAsync(planInput, plan);
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal($"{stepOutput}{planInput}", result.State.ToString());
 
         // Act
-        result = await kernel.Object.StepAsync(result).ConfigureAwait(false);
+        result = await kernel.Object.StepAsync(result);
 
         // Assert
         Assert.NotNull(result);
@@ -330,7 +330,7 @@ public sealed class PlanTests
         // Act
         var cv = new ContextVariables(planInput);
         cv.Set("variables", "foo");
-        plan = await kernel.Object.StepAsync(cv, plan).ConfigureAwait(false);
+        plan = await kernel.Object.StepAsync(cv, plan);
 
         // Assert
         Assert.NotNull(plan);
@@ -339,7 +339,7 @@ public sealed class PlanTests
         // Act
         cv.Set("variables", "bar");
         cv.Update(string.Empty);
-        plan = await kernel.Object.StepAsync(cv, plan).ConfigureAwait(false);
+        plan = await kernel.Object.StepAsync(cv, plan);
 
         // Assert
         Assert.NotNull(plan);
@@ -379,7 +379,7 @@ public sealed class PlanTests
 
         // Act
         var cv = new ContextVariables(planInput);
-        await Assert.ThrowsAsync<KernelException>(async () => await kernel.Object.StepAsync(cv, plan).ConfigureAwait(false)).ConfigureAwait(false);
+        await Assert.ThrowsAsync<KernelException>(async () => await kernel.Object.StepAsync(cv, plan));
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null), Times.Once);
     }
 
@@ -415,7 +415,7 @@ public sealed class PlanTests
 
         // Act
         var cv = new ContextVariables(planInput);
-        await Assert.ThrowsAsync<KernelException>(async () => await kernel.Object.StepAsync(cv, plan).ConfigureAwait(false)).ConfigureAwait(false);
+        await Assert.ThrowsAsync<KernelException>(async () => await kernel.Object.StepAsync(cv, plan));
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null), Times.Once);
     }
 
@@ -469,7 +469,7 @@ public sealed class PlanTests
         // Act
         while (plan.HasNextStep)
         {
-            plan = await kernel.Object.StepAsync(plan).ConfigureAwait(false);
+            plan = await kernel.Object.StepAsync(plan);
         }
 
         // Assert

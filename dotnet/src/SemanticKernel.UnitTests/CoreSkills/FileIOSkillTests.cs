@@ -42,7 +42,7 @@ public class FileIOSkillTests
         File.WriteAllText(path, "hello world");
 
         // Act
-        var result = await skill.ReadAsync(path).ConfigureAwait(false);
+        var result = await skill.ReadAsync(path);
 
         // Assert
         Assert.Equal("hello world", result);
@@ -63,7 +63,7 @@ public class FileIOSkillTests
         }
 
         // Assert
-        _ = await Assert.ThrowsAsync<FileNotFoundException>(Fn).ConfigureAwait(false);
+        _ = await Assert.ThrowsAsync<FileNotFoundException>(Fn);
     }
 
     [Fact]
@@ -76,10 +76,10 @@ public class FileIOSkillTests
         this._context["content"] = "hello world";
 
         // Act
-        await skill.WriteAsync(this._context).ConfigureAwait(false);
+        await skill.WriteAsync(this._context);
 
         // Assert
-        Assert.Equal("hello world", await File.ReadAllTextAsync(path).ConfigureAwait(false));
+        Assert.Equal("hello world", await File.ReadAllTextAsync(path));
     }
 
     [Fact]
@@ -99,6 +99,6 @@ public class FileIOSkillTests
         }
 
         // Assert
-        _ = await Assert.ThrowsAsync<UnauthorizedAccessException>(Fn).ConfigureAwait(false);
+        _ = await Assert.ThrowsAsync<UnauthorizedAccessException>(Fn);
     }
 }

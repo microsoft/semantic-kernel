@@ -40,7 +40,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     public async Task ItCanParsePutOperationBodySuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument).ConfigureAwait(false);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
         Assert.NotNull(operations);
@@ -83,7 +83,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     public async Task ItCanParsePutOperationMetadataSuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument).ConfigureAwait(false);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
         Assert.NotNull(operations);
@@ -132,7 +132,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     public async Task ItCanExtractSimpleTypeHeaderParameterMetadataSuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument).ConfigureAwait(false);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert string header parameter metadata
         var accept = GetParameterMetadata(operations, "SetSecret", RestApiOperationParameterLocation.Header, "Accept");
@@ -155,7 +155,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     public async Task ItCanExtractCsvStyleHeaderParameterMetadataSuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument).ConfigureAwait(false);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert header parameters metadata
         var acceptParameter = GetParameterMetadata(operations, "SetSecret", RestApiOperationParameterLocation.Header, "X-Operation-Csv-Ids");
@@ -172,7 +172,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     public async Task ItCanExtractHeadersSuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument).ConfigureAwait(false);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
         Assert.True(operations.Any());
@@ -190,7 +190,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     public async Task ItCanExtractAllPathsAsOperationsAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument).ConfigureAwait(false);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
         Assert.Equal(3, operations.Count);
@@ -200,7 +200,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     public async Task ItCanParseOperationHavingTextPlainBodySuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument).ConfigureAwait(false);
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
         Assert.NotNull(operations);

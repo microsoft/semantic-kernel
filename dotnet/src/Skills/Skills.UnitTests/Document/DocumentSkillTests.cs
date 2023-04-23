@@ -40,7 +40,7 @@ public class DocumentSkillTests
         var target = new DocumentSkill(documentConnectorMock.Object, fileSystemConnectorMock.Object);
 
         // Act
-        string actual = await target.ReadTextAsync(anyFilePath, this._context).ConfigureAwait(false);
+        string actual = await target.ReadTextAsync(anyFilePath, this._context);
 
         // Assert
         Assert.Equal(expectedText, actual);
@@ -75,7 +75,7 @@ public class DocumentSkillTests
         this._context.Variables.Set(Parameters.FilePath, anyFilePath);
 
         // Act
-        await target.AppendTextAsync(anyText, this._context).ConfigureAwait(false);
+        await target.AppendTextAsync(anyText, this._context);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
@@ -111,7 +111,7 @@ public class DocumentSkillTests
         this._context.Variables.Set(Parameters.FilePath, anyFilePath);
 
         // Act
-        await target.AppendTextAsync(anyText, this._context).ConfigureAwait(false);
+        await target.AppendTextAsync(anyText, this._context);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
@@ -131,7 +131,7 @@ public class DocumentSkillTests
         var target = new DocumentSkill(documentConnectorMock.Object, fileSystemConnectorMock.Object);
 
         // Act
-        await target.AppendTextAsync(anyText, this._context).ConfigureAwait(false);
+        await target.AppendTextAsync(anyText, this._context);
 
         // Assert
         Assert.True(this._context.ErrorOccurred);
