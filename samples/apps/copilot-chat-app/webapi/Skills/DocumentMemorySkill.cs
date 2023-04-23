@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
+using SemanticKernel.Service.Config;
 
 namespace SemanticKernel.Service.Skills;
 
@@ -31,11 +32,17 @@ public class DocumentMemorySkill
     private readonly PromptSettings _promptSettings;
 
     /// <summary>
+    /// Configuration settings for importing documents to memory.
+    /// </summary>
+    private readonly DocumentImportConfig _documentImportConfig;
+
+    /// <summary>
     /// Create a new instance of DocumentMemorySkill.
     /// </summary>
-    public DocumentMemorySkill(PromptSettings promptSettings)
+    public DocumentMemorySkill(PromptSettings promptSettings, DocumentImportConfig documentImportConfig)
     {
         this._promptSettings = promptSettings;
+        this._documentImportConfig = documentImportConfig;
     }
 
     /// <summary>
@@ -111,8 +118,8 @@ public class DocumentMemorySkill
         // Search for relevant document snippets.
         string[] documentCollections = new string[]
         {
-            this.UserDocumentMemoryCollectionName(userId),
-            this.GlobalDocumentMemoryCollectionName
+            this._documentImportConfig.UserDocumentCollectionNamePrefix + userId,
+            this._documentImportConfig.GlobalDocumentCollectionName
         };
 
         List<MemoryQueryResult> relevantMemories = new List<MemoryQueryResult>();
