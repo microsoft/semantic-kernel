@@ -77,7 +77,7 @@ public sealed class Program
 
         // Add authentication handler.
         IList<DelegatingHandler> handlers = GraphClientFactory.CreateDefaultHandlers(
-            CreateAuthenticationProvider(new LocalUserMSALCredentialManager(), graphApiConfiguration));
+            CreateAuthenticationProvider(await LocalUserMSALCredentialManager.CreateAsync(), graphApiConfiguration));
 
         // Add logging handler to log Graph API requests and responses request IDs.
         using MsGraphClientLoggingHandler loggingHandler = new(logger);
