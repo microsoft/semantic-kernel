@@ -53,11 +53,11 @@ public class DocumentMemorySkill
         DefaultValue = "")]
     public async Task ParseLocalFileAsync(string localFile, SKContext context)
     {
-        string collection = context.Variables.ContainsKey("userID") ?
-            string.IsNullOrEmpty(context.Variables["userID"]) ?
-                this.GlobalDocumentMemoryCollectionName :
-                this.UserDocumentMemoryCollectionName(context.Variables["userID"]) :
-            this.GlobalDocumentMemoryCollectionName;
+        string collection = context.Variables.ContainsKey("userID")
+            ? string.IsNullOrEmpty(context.Variables["userID"])
+                ? this.GlobalDocumentMemoryCollectionName
+                : this.UserDocumentMemoryCollectionName(context.Variables["userID"])
+            : this.GlobalDocumentMemoryCollectionName;
 
         string text = string.Empty;
         try
@@ -128,6 +128,7 @@ public class DocumentMemorySkill
                 relevantMemories.Add(memory);
             }
         }
+
         relevantMemories = relevantMemories.OrderByDescending(m => m.Relevance).ToList();
 
         // Concatenate the relevant document snippets.
