@@ -4,7 +4,6 @@
     <AssemblyName>SemanticKernel.Skills.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Skills.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
