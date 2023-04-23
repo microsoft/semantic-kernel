@@ -3,6 +3,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
+using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 
@@ -83,6 +85,7 @@ public class DocumentImportController : ControllerBase
                 default:
                     break;
             }
+            await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm);
         }
         catch (Exception e)
         {
@@ -127,8 +130,43 @@ public class DocumentImportController : ControllerBase
     /// </summary>
     /// <param name="file">An IFormFile object.</param>
     /// <returns>A string of the content of the file.</returns>
-    private async Task<string> ReadPdfFileAsync(IFormFile file)
+    private Task<string> ReadPdfFileAsync(IFormFile file)
     {
-        return await new StreamReader(file.OpenReadStream()).ReadToEndAsync();
+        throw new ArgumentException("PDF file is not supported yet.");
+    }
+
+    /// <summary>
+    /// Parse the content of the document to memory.
+    /// </summary>
+    /// <param name="kernel">The kernel instance from the service</param>
+    /// <param name="content">The file content read from the uploaded document</param>
+    /// <param name="documentImportForm">The document upload form that contains additional necessary info</param>
+    /// <returns></returns>
+    private async Task ParseDocumentContentToMemoryAsync(Kernel kernel, string content, DocumentImportForm documentImportForm)
+    {
+        var config = this._configuration.GetSection("DocumentImport").Get<DocumentImportConfig>();
+        var globalDocumentCollectionName = config.GlobalDocumentCollectionName;
+        var userDocumentCollectionNamePrefix = config.UserDocumentCollectionNamePrefix;
+        var documentLineSplitMaxTokens = config.DocumentLineSplitMaxTokens;
+        var documentParagraphSplitMaxLines = config.DocumentParagraphSplitMaxLines;
+
+        var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
+        var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.GLOBAL ?
+            globalDocumentCollectionName :
+                string.IsNullOrEmpty(documentImportForm.UserId) ?
+                    globalDocumentCollectionName :
+                    userDocumentCollectionNamePrefix + documentImportForm.UserId;
+
+        var lines = SemanticTextPartitioner.SplitPlainTextLines(content, documentLineSplitMaxTokens);
+        var paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, documentParagraphSplitMaxLines);
+
+        foreach (var paragraph in paragraphs)
+        {
+            await kernel.Memory.SaveInformationAsync(
+                collection: targetCollectionName,
+                text: paragraph,
+                id: Guid.NewGuid().ToString(),
+                description: $"Document: {documentName}");
+        }
     }
 }
