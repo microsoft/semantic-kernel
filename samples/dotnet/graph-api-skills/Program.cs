@@ -69,7 +69,7 @@ public sealed class Program
         // Note that LocalUserMSALCredentialManager is NOT safe for multi-user and cloud-service deployments.
         // TODO: Include sample code credential manager for multi-user and cloud service scenario.
         // TODO: the var is never used
-        LocalUserMSALCredentialManager credentialManager = new();
+        LocalUserMSALCredentialManager credentialManager = await LocalUserMSALCredentialManager.CreateAsync();
 
         // For more details on creating a Graph API client and choosing authentication provider see:
         //   https://learn.microsoft.com/graph/sdks/create-client
