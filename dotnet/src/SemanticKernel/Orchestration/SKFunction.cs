@@ -100,7 +100,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         Verify.NotNull(functionConfig, "Function configuration is empty");
 
         async Task<SKContext> LocalFunc(
-            ITextCompletion client,
+            ITextCompletionService client,
             CompleteRequestSettings requestSettings,
             SKContext context)
         {
@@ -205,7 +205,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    public ISKFunction SetAIService(Func<ITextCompletionService> serviceFactory)
     {
         Verify.NotNull(serviceFactory, "AI LLM service factory is empty");
         this.VerifyIsSemantic();
@@ -245,7 +245,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private readonly Delegate _function;
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
-    private ITextCompletion? _aiService = null;
+    private ITextCompletionService? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
 
     private struct MethodDetails
@@ -339,7 +339,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         settings ??= this._aiRequestSettings;
 
-        var callable = (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>>)this._function;
+        var callable = (Func<ITextCompletionService?, CompleteRequestSettings?, SKContext, Task<SKContext>>)this._function;
         context.Variables.Update((await callable(this._aiService, settings, context)).Variables);
         return context;
     }

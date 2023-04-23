@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.AI.TextCompletion;
 /// <summary>
 /// Interface for text completion services
 /// </summary>
-public interface ITextCompletion
+public interface ITextCompletionService
 {
     /// <summary>
     /// Creates a completion for the prompt and settings.

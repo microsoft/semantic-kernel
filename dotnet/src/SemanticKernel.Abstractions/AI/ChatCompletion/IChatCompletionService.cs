@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
-public interface IChatCompletion
+public interface IChatCompletionService
 {
     /// <summary>
     /// Generate a new chat message

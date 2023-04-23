@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.AI.ImageGeneration;
 
-public interface IImageGeneration
+public interface IImageGenerationService
 {
     /// <summary>
     /// Generate an image matching the given description

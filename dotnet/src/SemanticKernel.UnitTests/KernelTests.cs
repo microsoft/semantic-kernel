@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
@@ -22,8 +23,8 @@ public class KernelTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
-        kernel.Config.AddTextCompletionService("x", factory.Object);
+        var factory = new Mock<Func<INamedServiceProvider, ITextCompletionService>>();
+        kernel.Config.AddTransient("x", factory.Object);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -50,8 +51,8 @@ public class KernelTests
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
-        kernel.Config.AddTextCompletionService("x", factory.Object);
+        var factory = new Mock<Func<INamedServiceProvider, ITextCompletionService>>();
+        kernel.Config.AddTransient<ITextCompletionService>("x", factory.Object);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -77,7 +78,7 @@ public class KernelTests
         var nativeSkill = new MySkill();
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
-        using CancellationTokenSource cts = new CancellationTokenSource();
+        using CancellationTokenSource cts = new();
         cts.Cancel();
 
         // Act
@@ -97,7 +98,7 @@ public class KernelTests
         var nativeSkill = new MySkill();
         kernel.ImportSkill(nativeSkill, "mySk");
 
-        using CancellationTokenSource cts = new CancellationTokenSource();
+        using CancellationTokenSource cts = new();
 
         // Act
         SKContext result = await kernel.RunAsync(cts.Token, kernel.Func("mySk", "GetAnyValue"));

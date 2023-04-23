@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// OpenAI chat completion client.
 /// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, ITextCompletion
+public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletionService, ITextCompletionService
 {
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector

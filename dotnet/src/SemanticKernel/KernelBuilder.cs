@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -23,6 +24,7 @@ public sealed class KernelBuilder
     private ILogger _log = NullLogger.Instance;
     private IMemoryStore? _memoryStorage = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
+    private readonly INamedServiceCollection _serviceCollection = new NamedServiceCollection();
 
     /// <summary>
     /// Create a new kernel instance
@@ -105,7 +107,7 @@ public sealed class KernelBuilder
     /// <param name="embeddingGenerator">Embedding generator to add.</param>
     /// <returns>Updated kernel builder including the memory storage and embedding generator.</returns>
     public KernelBuilder WithMemoryStorageAndTextEmbeddingGeneration(
-        IMemoryStore storage, IEmbeddingGeneration<string, float> embeddingGenerator)
+        IMemoryStore storage, ITextEmbeddingGenerationService embeddingGenerator)
     {
         Verify.NotNull(storage, "The memory instance provided is NULL");
         Verify.NotNull(embeddingGenerator, "The embedding generator instance provided is NULL");
@@ -138,14 +140,24 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
+    /// Configure the registered services
+    /// </summary>
+    /// <param name="services">Action that updates the services.</param>
+    /// <returns>Updated kernel builder including the updated services.</returns>
+    public KernelBuilder WithServices(Action<INamedServiceCollection> services)
+    {
+        services?.Invoke(this._serviceCollection);
+        return this;
+    }
+
+    /// <summary>
     /// Update the configuration using the instructions provided.
     /// </summary>
     /// <param name="configure">Action that updates the current configuration.</param>
     /// <returns>Updated kernel builder including the updated configuration.</returns>
     public KernelBuilder Configure(Action<KernelConfig> configure)
     {
-        Verify.NotNull(configure, "The configuration action provided is NULL");
-        configure.Invoke(this._config);
+        configure?.Invoke(this._config);
         return this;
     }
 }

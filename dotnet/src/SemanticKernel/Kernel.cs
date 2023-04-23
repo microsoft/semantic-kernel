@@ -8,14 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -229,60 +227,9 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public T GetService<T>(string? name = "")
+    public T GetService<T>(string? name = null)
     {
-        // TODO: use .NET ServiceCollection (will require a lot of changes)
-        // TODO: support Connectors, IHttpFactory and IDelegatingHandlerFactory
-
-        if (typeof(T) == typeof(ITextCompletion))
-        {
-            name = this.Config.GetTextCompletionServiceIdOrDefault(name);
-            if (!this.Config.TextCompletionServices.TryGetValue(name, out Func<IKernel, ITextCompletion> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No text completion service available");
-            }
-
-            var service = factory.Invoke(this);
-            return (T)service;
-        }
-
-        if (typeof(T) == typeof(IEmbeddingGeneration<string, float>))
-        {
-            name = this.Config.GetTextEmbeddingGenerationServiceIdOrDefault(name);
-            if (!this.Config.TextEmbeddingGenerationServices.TryGetValue(name, out Func<IKernel, IEmbeddingGeneration<string, float>> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No text embedding service available");
-            }
-
-            var service = factory.Invoke(this);
-            return (T)service;
-        }
-
-        if (typeof(T) == typeof(IChatCompletion))
-        {
-            name = this.Config.GetChatCompletionServiceIdOrDefault(name);
-            if (!this.Config.ChatCompletionServices.TryGetValue(name, out Func<IKernel, IChatCompletion> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No chat completion service available");
-            }
-
-            var service = factory.Invoke(this);
-            return (T)service;
-        }
-
-        if (typeof(T) == typeof(IImageGeneration))
-        {
-            name = this.Config.GetImageGenerationServiceIdOrDefault(name);
-            if (!this.Config.ImageGenerationServices.TryGetValue(name, out Func<IKernel, IImageGeneration> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No image generation service available");
-            }
-
-            var service = factory.Invoke(this);
-            return (T)service;
-        }
-
-        throw new NotSupportedException("The kernel service collection doesn't support the type " + typeof(T).FullName);
+        return this._config.GetRequiredService<T>(name);
     }
 
     /// <summary>
@@ -326,7 +273,7 @@ public sealed class Kernel : IKernel, IDisposable
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>());
+        func.SetAIService(() => this.GetService<ITextCompletionService>());
 
         return func;
     }

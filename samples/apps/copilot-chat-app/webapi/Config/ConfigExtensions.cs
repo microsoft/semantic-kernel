@@ -92,7 +92,7 @@ internal static class ConfigExtensions
         }
     }
 
-    public static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceConfig serviceConfig,
+    public static ITextEmbeddingGenerationService ToTextEmbeddingsService(this AIServiceConfig serviceConfig,
         ILogger? logger = null,
         IDelegatingHandlerFactory? handlerFactory = null)
     {

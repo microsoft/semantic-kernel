@@ -91,7 +91,7 @@ public interface ISKFunction
     /// </summary>
     /// <param name="serviceFactory">AI service factory</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIService(Func<ITextCompletion> serviceFactory);
+    ISKFunction SetAIService(Func<ITextCompletionService> serviceFactory);
 
     /// <summary>
     /// Set the AI completion settings used with LLM requests
