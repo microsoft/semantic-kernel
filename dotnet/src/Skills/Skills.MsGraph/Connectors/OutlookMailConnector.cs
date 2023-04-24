@@ -26,7 +26,7 @@ public class OutlookMailConnector : IEmailConnector
 
     /// <inheritdoc/>
     public async Task<string> GetMyEmailAddressAsync(CancellationToken cancellationToken = default)
-        => (await this._graphServiceClient.Me.Request().GetAsync(cancellationToken)).UserPrincipalName;
+        => (await this._graphServiceClient.Me.Request().GetAsync(cancellationToken).ConfigureAwait(false)).UserPrincipalName;
 
     /// <inheritdoc/>
     public async Task SendEmailAsync(string subject, string content, string[] recipients, CancellationToken cancellationToken = default)
@@ -48,6 +48,6 @@ public class OutlookMailConnector : IEmailConnector
             })
         };
 
-        await this._graphServiceClient.Me.SendMail(message).Request().PostAsync(cancellationToken);
+        await this._graphServiceClient.Me.SendMail(message).Request().PostAsync(cancellationToken).ConfigureAwait(false);
     }
 }
