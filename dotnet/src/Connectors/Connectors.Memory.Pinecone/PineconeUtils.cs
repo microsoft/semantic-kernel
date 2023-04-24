@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
-internal static class PineconeUtils
+public static class PineconeUtils
 {
     private const int MaxMetadataSize = 40 * 1024;
 
@@ -188,7 +188,7 @@ internal static class PineconeUtils
         return pineconeFilter;
     }
 
-    internal static string EnvironmentToString(PineconeEnvironment environment)
+    public static string EnvironmentToString(PineconeEnvironment environment)
     {
         return environment switch
         {
@@ -202,8 +202,23 @@ internal static class PineconeUtils
             _ => throw new ArgumentOutOfRangeException(nameof(environment), environment, null)
         };
     }
+    
+    public static PineconeEnvironment GetEnvironment(string environment)
+    {
+        return environment switch
+        {
+            "us-west1-gcp" => PineconeEnvironment.UsWest1Gcp,
+            "us-west4-gcp" => PineconeEnvironment.UsWest4Gcp,
+            "us-central1-gcp" => PineconeEnvironment.UsCentral1Gcp,
+            "us-east1-gcp" => PineconeEnvironment.UsEast1Gcp,
+            "us-east4-gcp" => PineconeEnvironment.UsEast4Gcp,
+            "eu-west1-gcp" => PineconeEnvironment.EuWest1Gcp,
+            "us-east1-aws" => PineconeEnvironment.UsEast1Aws,
+            _ => throw new ArgumentOutOfRangeException(nameof(environment), environment, null)
+        };
+    }
 
-    internal static string MetricTypeToString(IndexMetric x)
+    public static string MetricTypeToString(IndexMetric x)
     {
         return x switch
         {
@@ -214,7 +229,7 @@ internal static class PineconeUtils
         };
     }
 
-    internal static string PodTypeToString(PodType podType)
+    public static string PodTypeToString(PodType podType)
     {
         return podType switch
         {

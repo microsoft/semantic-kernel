@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
-internal interface IPineconeClient
+public interface IPineconeClient
 {
     /// <summary>
     ///  The name of the index this client is connected to

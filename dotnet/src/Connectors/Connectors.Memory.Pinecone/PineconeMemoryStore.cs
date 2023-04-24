@@ -29,12 +29,65 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <summary>
     /// Constructor for a memory store backed by a <see cref="IPineconeClient"/>
     /// </summary>
-    private PineconeMemoryStore(
+    public PineconeMemoryStore(
         IPineconeClient pineconeClient,
         ILogger? logger = null)
     {
         this._pineconeClient = pineconeClient;
         this._logger = logger ?? NullLogger.Instance;
+    }
+    
+    /// <summary>
+    ///   Initializes a new instance of the <see cref="PineconeMemoryStore"/> class and ensures that the index exists and is ready.
+    /// </summary>
+    /// <param name="pineconeEnvironment"> the location of the pinecone server </param>
+    /// <param name="apiKey"> the api key for the pinecone server </param>
+    /// <param name="indexDefinition"> the index definition </param>
+    /// <param name="logger"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns> a new instance of the <see cref="PineconeMemoryStore"/> class </returns>
+    /// <remarks>
+    ///  This is the preferred method of creating a new instance of the <see cref="PineconeMemoryStore"/>
+    ///  class because it ensures that the index exists and is ready. I think it makes sense to have this
+    ///  method be static because it is a factory method that returns a new instance of the class.
+    ///  If the index does not exist, it will be created. If the index exists, it will be connected to.
+    ///  If it is a new index, the method will block until it is ready.
+    ///  If the index exists but is not ready, it will be connected to and the method will block until it is ready.
+    /// </remarks>
+    public static async Task<PineconeMemoryStore?> InitializeAsync(
+        PineconeEnvironment pineconeEnvironment,
+        string apiKey,
+        IndexDefinition indexDefinition,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+    {
+
+        logger ??= NullLogger.Instance;
+        PineconeClient client = new(pineconeEnvironment, apiKey, logger);
+
+        bool exists = await client.DoesIndexExistAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(false);
+
+        if (exists)
+        {
+            if (await client.ConnectToHostAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(true))
+            {
+                return new PineconeMemoryStore(client, logger);
+            }
+
+            logger.LogError("Failed to connect to host.");
+            return null;
+        }
+
+        string? indexName = await client.CreateIndexAsync(indexDefinition, cancellationToken).ConfigureAwait(false);
+
+        if (!string.IsNullOrEmpty(indexName) && client.Ready)
+        {
+            return new PineconeMemoryStore(client, logger);
+        }
+
+        logger.LogError("Failed to create index.");
+        return null;
+
     }
 
     /// <inheritdoc/>
@@ -87,7 +140,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
 
         PineconeDocument? vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, "", cancel).ConfigureAwait(false);
-
+        
         if (vectorData == null)
         {
             throw new PineconeMemoryException(PineconeMemoryException.ErrorCodes.FailedToConvertMemoryRecordToPineconeDocument,
@@ -804,42 +857,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             yield return nameSpace;
         }
-    }
-
-    public static async Task<PineconeMemoryStore?> InitializeAsync(
-        PineconeEnvironment pineconeEnvironment,
-        string apiKey,
-        IndexDefinition indexDefinition,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-
-        logger ??= NullLogger.Instance;
-        PineconeClient client = new(pineconeEnvironment, apiKey, logger);
-
-        bool exists = await client.DoesIndexExistAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(false);
-
-        if (exists)
-        {
-            if (await client.ConnectToHostAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(true))
-            {
-                return new PineconeMemoryStore(client, logger);
-            }
-
-            logger.LogError("Failed to connect to host.");
-            return null;
-        }
-
-        string? indexName = await client.CreateIndexAsync(indexDefinition, cancellationToken).ConfigureAwait(false);
-
-        if (!string.IsNullOrEmpty(indexName) && client.Ready)
-        {
-            return new PineconeMemoryStore(client, logger);
-        }
-
-        logger.LogError("Failed to create index.");
-        return null;
-
     }
 
     #region private ================================================================================
