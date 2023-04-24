@@ -7,12 +7,11 @@ One of the exciting features of the Copilot Chat App is its ability to store con
 to [memories](https://github.com/microsoft/semantic-kernel/blob/main/docs/EMBEDDINGS.md) and retrieve
 relevant information from memories to provide more meaningful answers to users through out the conversations.
 
-Memories can be generated from conversations as well as imported from external sources, such as text documents.
-Importing documents to the service will make the App even more intelligent by having prior knowledge of very
-specific contexts that are generally unavailable publicly, such as enterprise data.
+Memories can be generated from conversations as well as imported from external sources, such as documents.
+Importing documents enables Copilot Chat to have up-to-date knowledge of specific contexts, such as enterprise and personal data.
 
 ## Configure your environment
-1. (Skip if you only need to import documents to the global collection) A registered App in Azure Portal (https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)
+1. (Optional when importing documents to the global collection) A registered App in Azure Portal (https://learn.microsoft.com/azure/active-directory/develop/quickstart-register-app)
    - Select Mobile and desktop applications as platform type, and the Redirect URI will be `http://localhost`
    - Select **`Accounts in any organizational directory (Any Azure AD directory - Multitenant)
      and personal Microsoft accounts (e.g. Skype, Xbox)`** as the supported account
@@ -42,5 +41,5 @@ specific contexts that are generally unavailable publicly, such as enterprise da
 
    > Currently only supports txt files. A sample file is provided under ./sample-docs.
 
-   It will take a while for the service to import a document as it needs to invoke the embedding model multiple times.
+   Importing may take some time to generate embeddings for each piece/chunk of a document.
 5. Chat with the bot. Example: ![](../images/Document-Memory-Sample.png)

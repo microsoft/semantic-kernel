@@ -150,7 +150,7 @@ public static class Program
         try
         {
             using HttpResponseMessage response = await httpClient.PostAsync(
-                new Uri(new Uri(config.ServiceUri), config.CommandPath),
+                new Uri(new Uri(config.ServiceUri), "importDocument"),
                 multipartFormDataContent
             );
 
