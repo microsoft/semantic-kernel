@@ -3,10 +3,9 @@
 """A basic JSON-based planner for the Python Semantic Kernel"""
 import json
 
-from semantic_kernel.core_skills.planning.plan import Plan
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.skill_definition import sk_function
+from semantic_kernel.orchestration.plan import Plan
 
 PROMPT = """
 You are a planner for the Semantic Kernel.
@@ -102,21 +101,9 @@ E-mail these ideas to my significant other"
 
 class BasicPlanner:
     """
-    Description: Basic planner for the Semantic Kernel.
-
-    Usage:
-        kernel.import_skill(BasicPlanner(), "planner");
-
-    Examples:
-
-    {{planner.create_plan}}
-    {{planner.execute_plan}}
+    Basic JSON-based planner for the Semantic Kernel.
     """
 
-    @sk_function(
-        description="Creates a plan for the given goal based off the functions that are available in the kernel.",
-        name="create_plan",
-    )
     async def create_plan_async(
         self,
         goal: str,
@@ -166,11 +153,6 @@ class BasicPlanner:
         generated_plan = await planner.invoke_async(variables=context)
         return Plan(prompt=prompt, goal=goal, plan=generated_plan)
 
-    @sk_function(
-        description="Given a plan, execute each of the functions within the plan from \
-              start to finish and output the result.",
-        name="execute_plan",
-    )
     async def execute_plan_async(self, plan: Plan, kernel: Kernel) -> str:
         """
         Given a plan, execute each of the functions within the plan
