@@ -19,10 +19,14 @@ public class DocumentImportController : ControllerBase
     /// <summary>
     /// Supported file types for import.
     /// </summary>
-    internal enum SupportedFileType
+    private enum SupportedFileType
     {
-        TXT,    // .txt
+        /// <summary>
+        /// .txt
+        /// </summary>
+        Txt
     };
+
     private readonly IServiceProvider _serviceProvider;
     private readonly IConfiguration _configuration;
     private readonly ILogger<DocumentImportController> _logger;
@@ -80,12 +84,13 @@ public class DocumentImportController : ControllerBase
             var fileContent = string.Empty;
             switch (fileType)
             {
-                case SupportedFileType.TXT:
+                case SupportedFileType.Txt:
                     fileContent = await this.ReadTxtFileAsync(formFile);
                     break;
                 default:
                     return this.BadRequest($"Unsupported file type: {fileType}");
             }
+
             await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm);
         }
         catch (Exception ex) when (ex is ArgumentOutOfRangeException)
@@ -107,7 +112,7 @@ public class DocumentImportController : ControllerBase
         string extension = Path.GetExtension(fileName);
         return extension switch
         {
-            ".txt" => SupportedFileType.TXT,
+            ".txt" => SupportedFileType.Txt,
             _ => throw new ArgumentOutOfRangeException($"Unsupported file type: {extension}"),
         };
     }
@@ -139,11 +144,11 @@ public class DocumentImportController : ControllerBase
         var documentParagraphSplitMaxLines = config.DocumentParagraphSplitMaxLines;
 
         var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
-        var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global ?
-            globalDocumentCollectionName :
-                string.IsNullOrEmpty(documentImportForm.UserId) ?
-                    globalDocumentCollectionName :
-                    userDocumentCollectionNamePrefix + documentImportForm.UserId;
+        var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global
+            ? globalDocumentCollectionName
+            : string.IsNullOrEmpty(documentImportForm.UserId)
+                ? globalDocumentCollectionName
+                : userDocumentCollectionNamePrefix + documentImportForm.UserId;
 
         // Split the document into lines of text and then combine them into paragraphs.
         // NOTE that this is only one of the strategies to chunk documents. Feel free to experiment with other strategies.
