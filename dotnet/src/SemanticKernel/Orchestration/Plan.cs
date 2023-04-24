@@ -239,7 +239,7 @@ public sealed class Plan : ISKFunction
 
             // Execute the step
             var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
-            var result = await step.InvokeAsync(functionContext);
+            var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -297,7 +297,7 @@ public sealed class Plan : ISKFunction
 
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings, log, cancel);
+            var result = await this.Function.InvokeAsync(context, settings, log, cancel).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -318,7 +318,7 @@ public sealed class Plan : ISKFunction
 
                 AddVariablesToContext(this.State, functionContext);
 
-                await this.InvokeNextStepAsync(functionContext);
+                await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
 
                 context.Variables.Update(this.State.ToString());
             }

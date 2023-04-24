@@ -69,7 +69,7 @@ public class TaskListSkill
     [SKFunctionContextParameter(Name = Parameters.Reminder, Description = "Reminder for the task in DateTimeOffset (optional)")]
     public async Task AddTaskAsync(string title, SKContext context)
     {
-        TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(context.CancellationToken);
+        TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(context.CancellationToken).ConfigureAwait(false);
         if (defaultTaskList == null)
         {
             context.Fail("No default task list found.");
@@ -86,6 +86,6 @@ public class TaskListSkill
         }
 
         this._logger.LogInformation("Adding task '{0}' to task list '{1}'", task.Title, defaultTaskList.Name);
-        await this._connector.AddTaskAsync(defaultTaskList.Id, task, context.CancellationToken);
+        await this._connector.AddTaskAsync(defaultTaskList.Id, task, context.CancellationToken).ConfigureAwait(false);
     }
 }

@@ -38,13 +38,13 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
 
         ITodoListsCollectionPage lists = await this._graphServiceClient.Me
             .Todo.Lists
-            .Request().GetAsync(cancellationToken);
+            .Request().GetAsync(cancellationToken).ConfigureAwait(false);
 
         TodoTaskList? result = lists.SingleOrDefault(list => list.WellknownListName == WellknownListName.DefaultList);
 
         while (result == null && lists.Count != 0 && lists.NextPageRequest != null)
         {
-            lists = await lists.NextPageRequest.GetAsync(cancellationToken);
+            lists = await lists.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
             result = lists.SingleOrDefault(list => list.WellknownListName == WellknownListName.DefaultList);
         }
 
@@ -61,13 +61,13 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
     {
         ITodoListsCollectionPage lists = await this._graphServiceClient.Me
             .Todo.Lists
-            .Request().GetAsync(cancellationToken);
+            .Request().GetAsync(cancellationToken).ConfigureAwait(false);
 
         List<TodoTaskList> taskLists = lists.ToList();
 
         while (lists.Count != 0 && lists.NextPageRequest != null)
         {
-            lists = await lists.NextPageRequest.GetAsync(cancellationToken);
+            lists = await lists.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
             taskLists.AddRange(lists.ToList());
         }
 
@@ -83,13 +83,13 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
 
         ITodoTaskListTasksCollectionPage tasksPage = await this._graphServiceClient.Me
             .Todo.Lists[listId]
-            .Tasks.Request().GetAsync(cancellationToken);
+            .Tasks.Request().GetAsync(cancellationToken).ConfigureAwait(false);
 
         List<TodoTask> tasks = tasksPage.ToList();
 
         while (tasksPage.Count != 0 && tasksPage.NextPageRequest != null)
         {
-            tasksPage = await tasksPage.NextPageRequest.GetAsync(cancellationToken);
+            tasksPage = await tasksPage.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
             tasks.AddRange(tasksPage.ToList());
         }
 
@@ -110,7 +110,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
         return ToTaskListTask(await this._graphServiceClient.Me
             .Todo.Lists[listId]
             .Tasks
-            .Request().AddAsync(FromTaskListTask(task), cancellationToken));
+            .Request().AddAsync(FromTaskListTask(task), cancellationToken).ConfigureAwait(false));
     }
 
     /// <inheritdoc/>
