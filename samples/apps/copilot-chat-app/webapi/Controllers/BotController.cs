@@ -100,9 +100,9 @@ public class BotController : ControllerBase
     /// <summary>
     /// Download a bot.
     /// </summary>
-    /// <param name="kernel"></param>
-    /// <param name="chatId"></param>
-    /// <returns></returns>
+    /// <param name="kernel">The Semantic Kernel instance.</param>
+    /// <param name="chatId">The chat id to be downloaded.</param>
+    /// <returns>The serialized Bot object of the chat id.</returns>
     [Authorize]
     [HttpGet]
     [Route("bot/download/{chatId:guid}")]
@@ -136,13 +136,10 @@ public class BotController : ControllerBase
         if (embeddingAIServiceConfig != null && botSchema != null)
         {
             // The app can define what schema/version it supports before the community comes out with an open schema.
-            return externalBotSchema.Name.Equals(
-                botSchema.Name, StringComparison.OrdinalIgnoreCase)
+            return externalBotSchema.Name.Equals(botSchema.Name, StringComparison.OrdinalIgnoreCase)
                 && externalBotSchema.Version == botSchema.Version
-                && externalBotEmbeddingConfig.AIService.Equals(
-                embeddingAIServiceConfig.AIService, StringComparison.OrdinalIgnoreCase)
-                && externalBotEmbeddingConfig.DeploymentOrModelId.Equals(
-                embeddingAIServiceConfig.DeploymentOrModelId, StringComparison.OrdinalIgnoreCase);
+                && externalBotEmbeddingConfig.AIService.Equals(embeddingAIServiceConfig.AIService, StringComparison.OrdinalIgnoreCase)
+                && externalBotEmbeddingConfig.DeploymentOrModelId.Equals(embeddingAIServiceConfig.DeploymentOrModelId, StringComparison.OrdinalIgnoreCase);
         }
         else
         {
@@ -221,10 +218,10 @@ public class BotController : ControllerBase
     /// <summary>
     /// Bulk upsert memory records into memory store.
     /// </summary>
-    /// <param name="oldChatId"></param>
-    /// <param name="chatId"></param>
-    /// <param name="embeddings"></param>
-    /// <returns></returns>
+    /// <param name="oldChatId">The original chat id of the memory records.</param>
+    /// <param name="chatId">The new chat id that will replace the original chat id.</param>
+    /// <param name="embeddings">The list of embeddings of the chat id.</param>
+    /// <returns>The function doesn't return anything.</returns>
     private async Task BulkUpsertMemoryRecordsAsync(string oldChatId, string chatId, List<KeyValuePair<string, List<MemoryQueryResult>>> embeddings)
     {
         foreach (var collection in embeddings)
