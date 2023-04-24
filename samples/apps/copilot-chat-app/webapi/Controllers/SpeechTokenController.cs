@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SemanticKernel.Service.Config;
 
@@ -14,6 +15,7 @@ public class SpeechTokenResponse
     public string? Region { get; set; }
 }
 
+[Authorize]
 [ApiController]
 public class SpeechTokenController : ControllerBase
 {
@@ -31,14 +33,15 @@ public class SpeechTokenController : ControllerBase
     /// </summary>
     [Route("speechToken")]
     [HttpGet]
-    public ActionResult<SpeechTokenResponse> Get()
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<SpeechTokenResponse>> GetAsync()
     {
         AzureSpeechConfig azureSpeech = this._configuration.GetSection("AzureSpeech").Get<AzureSpeechConfig>();
 
         string fetchTokenUri = "https://" + azureSpeech.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
         string subscriptionKey = azureSpeech.Key;
 
-        var token = this.FetchTokenAsync(fetchTokenUri, subscriptionKey).Result;
+        var token = await this.FetchTokenAsync(fetchTokenUri, subscriptionKey);
 
         return new SpeechTokenResponse { Token = token, Region = azureSpeech.Region };
     }

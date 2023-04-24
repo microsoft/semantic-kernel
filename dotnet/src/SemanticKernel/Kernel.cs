@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
@@ -187,7 +186,7 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                context = await f.InvokeAsync(context);
+                context = await f.InvokeAsync(context).ConfigureAwait(false);
 
                 if (context.ErrorOccurred)
                 {
@@ -318,7 +317,7 @@ public sealed class Kernel : IKernel, IDisposable
                 $"Function type not supported: {functionConfig.PromptTemplateConfig}");
         }
 
-        ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig);
+        ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig, this._log);
 
         // Connect the function to the current kernel skill collection, in case the function
         // is invoked manually without a context and without a way to find other functions.
