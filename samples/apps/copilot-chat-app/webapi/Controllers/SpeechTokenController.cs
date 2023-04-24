@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SemanticKernel.Service.Config;
-using System.Net;
 
 namespace SemanticKernel.Service.Controllers;
 
@@ -51,7 +51,7 @@ public class SpeechTokenController : ControllerBase
         string subscriptionKey = azureSpeech.Key;
 
         var tokenResult = await this.FetchTokenAsync(fetchTokenUri, subscriptionKey);
-        var bSuccess = tokenResult.ResponseCode==HttpStatusCode.NotFound? false:true;
+        var bSuccess = tokenResult.ResponseCode == HttpStatusCode.NotFound ? false : true;
         return new SpeechTokenResponse { Token = tokenResult.Token, Region = azureSpeech.Region, StatusCode = bSuccess };
     }
 
@@ -64,14 +64,15 @@ public class SpeechTokenController : ControllerBase
             UriBuilder uriBuilder = new UriBuilder(fetchUri);
 
             var result = await client.PostAsync(uriBuilder.Uri, null);
-            if(result.IsSuccessStatusCode)
+            if (result.IsSuccessStatusCode)
             {
                 var response = result.EnsureSuccessStatusCode();
                 this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
                 string token = await result.Content.ReadAsStringAsync();
                 return new TokenResult { Token = token, ResponseCode = response.StatusCode };
             }
-            else{
+            else
+            {
                 return new TokenResult { Token = "", ResponseCode = HttpStatusCode.NotFound };
             }
         }
