@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client;
@@ -28,7 +25,7 @@ public static class Program
             return;
         }
 
-        var fileOption = new Option<FileInfo>(name: "--file", description: "The file to upload for injection.")
+        var fileOption = new Option<FileInfo>(name: "--file", description: "The file to import to document memory store.")
         {
             IsRequired = true
         };
@@ -100,50 +97,45 @@ public static class Program
             return;
         }
 
+        using var fileContent = new StreamContent(file.OpenRead());
+        using var formContent = new MultipartFormDataContent
+        {
+            { fileContent, "formFile", file.Name }
+        };
         if (toUserCollection)
         {
+            Console.WriteLine("Uploading and parsing file to user collection...");
             var userId = await AcquireUserIdAsync(config);
+
             if (userId != null)
             {
-                Console.WriteLine("Uploading and parsing file to user collection...");
-                await UploadFileAsync(file, userId, config);
+                using var userScopeContent = new StringContent("User");
+                using var userIdContent = new StringContent(userId);
+                formContent.Add(userScopeContent, "documentScope");
+                formContent.Add(userIdContent, "userId");
+
+                // Calling UploadAsync here to make sure disposable objects are still in scope.
+                await UploadAsync(formContent, config);
             }
         }
         else
         {
             Console.WriteLine("Uploading and parsing file to global collection...");
-            await UploadFileAsync(file, string.Empty, config);
+            using var globalScopeContent = new StringContent("Global");
+            formContent.Add(globalScopeContent, "documentScope");
+
+            // Calling UploadAsync here to make sure disposable objects are still in scope.
+            await UploadAsync(formContent, config);
         }
     }
 
     /// <summary>
-    /// Invokes the DocumentMemorySkill to upload a file to the Document Store for parsing.
+    /// Sends a POST request to the Document Store to upload a file for parsing.
     /// </summary>
-    /// <param name="file">The file to upload for injection.</param>
-    /// <param name="userId">The user unique ID. If empty, the file will be injected to a global collection that is available to all users.</param>
+    /// <param name="multipartFormDataContent">The multipart form data content to send.</param>
     /// <param name="config">Configuration.</param>
-    private static async Task UploadFileAsync(
-        FileInfo file, string userId, Config config)
+    private static async Task UploadAsync(MultipartFormDataContent multipartFormDataContent, Config config)
     {
-        string skillName = "DocumentMemorySkill";
-        string functionName = "ParseLocalFile";
-        string commandPath = $"skills/{skillName}/functions/{functionName}/invoke";
-
-        using StringContent jsonContent = new(
-            JsonSerializer.Serialize(
-                new
-                {
-                    input = file.FullName,
-                    Variables = new List<KeyValuePair<string, string>>
-                    {
-                        new KeyValuePair<string, string>("userId", userId)
-                    }
-                }
-            ),
-            Encoding.UTF8,
-            "application/json"
-        );
-
         // Create a HttpClient instance and set the timeout to infinite since
         // large documents will take a while to parse.
         using HttpClientHandler clientHandler = new()
@@ -158,13 +150,14 @@ public static class Program
         try
         {
             using HttpResponseMessage response = await httpClient.PostAsync(
-                new Uri(new Uri(config.ServiceUri), commandPath),
-                jsonContent
+                new Uri(new Uri(config.ServiceUri), "importDocument"),
+                multipartFormDataContent
             );
 
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Error: {response.StatusCode} {response.ReasonPhrase}");
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
                 return;
             }
 
