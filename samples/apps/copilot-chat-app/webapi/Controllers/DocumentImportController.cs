@@ -22,7 +22,6 @@ public class DocumentImportController : ControllerBase
     internal enum SupportedFileType
     {
         TXT,    // .txt
-        PDF,    // .pdf
     };
     private readonly IServiceProvider _serviceProvider;
     private readonly IConfiguration _configuration;
@@ -84,11 +83,8 @@ public class DocumentImportController : ControllerBase
                 case SupportedFileType.TXT:
                     fileContent = await this.ReadTxtFileAsync(formFile);
                     break;
-                case SupportedFileType.PDF:
-                    fileContent = await this.ReadPdfFileAsync(formFile);
-                    break;
                 default:
-                    break;
+                    return this.BadRequest($"Unsupported file type: {fileType}");
             }
             await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm);
         }
@@ -112,7 +108,6 @@ public class DocumentImportController : ControllerBase
         return extension switch
         {
             ".txt" => SupportedFileType.TXT,
-            ".pdf" => SupportedFileType.PDF,
             _ => throw new ArgumentOutOfRangeException($"Unsupported file type: {extension}"),
         };
     }
@@ -126,16 +121,6 @@ public class DocumentImportController : ControllerBase
     {
         using var streamReader = new StreamReader(file.OpenReadStream());
         return await streamReader.ReadToEndAsync();
-    }
-
-    /// <summary>
-    /// Read the content of a PDF file.
-    /// </summary>
-    /// <param name="file">An IFormFile object.</param>
-    /// <returns>A string of the content of the file.</returns>
-    private Task<string> ReadPdfFileAsync(IFormFile file)
-    {
-        throw new ArgumentException("PDF file is not supported yet.");
     }
 
     /// <summary>
@@ -154,12 +139,14 @@ public class DocumentImportController : ControllerBase
         var documentParagraphSplitMaxLines = config.DocumentParagraphSplitMaxLines;
 
         var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
-        var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.GLOBAL ?
+        var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global ?
             globalDocumentCollectionName :
                 string.IsNullOrEmpty(documentImportForm.UserId) ?
                     globalDocumentCollectionName :
                     userDocumentCollectionNamePrefix + documentImportForm.UserId;
 
+        // Split the document into lines of text and then combine them into paragraphs.
+        // NOTE that this is only one of the strategies to chunk documents. Feel free to experience with other strategies.
         var lines = SemanticTextPartitioner.SplitPlainTextLines(content, documentLineSplitMaxTokens);
         var paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, documentParagraphSplitMaxLines);
 

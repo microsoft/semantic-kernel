@@ -2,6 +2,9 @@
 
 namespace SemanticKernel.Service.Model;
 
+/// <summary>
+/// Form for importing a document from a POST Http request.
+/// </summary>
 public class DocumentImportForm
 {
     /// <summary>
@@ -9,8 +12,8 @@ public class DocumentImportForm
     /// </summary>
     public enum DocumentScopes
     {
-        GLOBAL,
-        USER,
+        Global,
+        User,
     }
 
     /// <summary>
@@ -21,7 +24,7 @@ public class DocumentImportForm
     /// <summary>
     /// Scope of the document. This determines the collection name in the document memory.
     /// </summary>
-    public DocumentScopes DocumentScope { get; set; } = DocumentScopes.GLOBAL;
+    public DocumentScopes DocumentScope { get; set; } = DocumentScopes.Global;
 
     /// <summary>
     /// The ID of the user who owns the document. This is used to create a unique collection name for the user.

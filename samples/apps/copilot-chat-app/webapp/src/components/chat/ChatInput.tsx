@@ -109,7 +109,6 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                     await AuthHelper.getSKaaSAccessToken(instance)
                 );
                 dispatch(addAlert({ message: 'Document uploaded successfully', type: AlertType.Success }));
-                // TODO: Add document import message to the chat
             } catch (e: any) {
                 const errorMessage = `Failed to upload document. Details: ${e.message ?? e}`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));

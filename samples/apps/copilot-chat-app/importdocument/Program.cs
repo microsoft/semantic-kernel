@@ -109,7 +109,7 @@ public static class Program
 
             if (userId != null)
             {
-                using var userScopeContent = new StringContent("USER");
+                using var userScopeContent = new StringContent("User");
                 using var userIdContent = new StringContent(userId);
                 formContent.Add(userScopeContent, "documentScope");
                 formContent.Add(userIdContent, "userId");
@@ -121,7 +121,7 @@ public static class Program
         else
         {
             Console.WriteLine("Uploading and parsing file to global collection...");
-            using var globalScopeContent = new StringContent("GLOBAL");
+            using var globalScopeContent = new StringContent("Global");
             formContent.Add(globalScopeContent, "documentScope");
 
             // Calling UploadAsync here to make sure disposable objects are still in scope.

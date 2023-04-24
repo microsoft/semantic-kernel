@@ -9,22 +9,10 @@ using SemanticKernel.Service.Config;
 namespace SemanticKernel.Service.Skills;
 
 /// <summary>
-/// This skill provides the ability to parse a file into embeddings and query the document memory.
+/// This skill provides the functions to query the document memory.
 /// </summary>
 public class DocumentMemorySkill
 {
-    /// <summary>
-    /// Returns the name of the semantic document memory collection that stores document semantic memory.
-    /// </summary>
-    /// <param name="userId">ID of the user who owns the documents.</param>
-    internal string UserDocumentMemoryCollectionName(string userId) => $"{userId}-documents";
-
-    /// <summary>
-    /// Name of the semantic document memory collection that stores document semantic memory globally
-    /// available to users accessing the service.
-    /// </summary>
-    internal string GlobalDocumentMemoryCollectionName = "global-documents";
-
     /// <summary>
     /// Prompt settings.
     /// </summary>
