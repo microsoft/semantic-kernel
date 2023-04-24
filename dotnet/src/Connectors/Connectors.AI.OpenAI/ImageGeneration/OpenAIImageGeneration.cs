@@ -63,7 +63,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             Format = "url",
         });
 
-        var list = await this.ExecuteImageUrlGenerationRequestAsync(OpenaiEndpoint, requestBody, cancellationToken);
+        var list = await this.ExecuteImageUrlGenerationRequestAsync(OpenaiEndpoint, requestBody, cancellationToken).ConfigureAwait(false);
         return list.First();
     }
 
@@ -77,7 +77,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             Format = "b64_json",
         });
 
-        var list = await this.ExecuteImageBase64GenerationRequestAsync(OpenaiEndpoint, requestBody, cancellationToken);
+        var list = await this.ExecuteImageBase64GenerationRequestAsync(OpenaiEndpoint, requestBody, cancellationToken).ConfigureAwait(false);
         return list.First();
     }
 }
