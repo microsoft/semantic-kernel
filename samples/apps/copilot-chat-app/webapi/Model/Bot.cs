@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using SemanticKernel.Service.Skills;
 using Microsoft.SemanticKernel.Memory;
 using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Skills;
 
 namespace SemanticKernel.Service.Model;
 
