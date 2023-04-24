@@ -81,7 +81,7 @@ public static class PineconeUtils
                 int availableSpace = MaxMetadataSize - remainingMetadataSize;
                 int textSplitSize = Math.Min(textSize, availableSpace);
 
-                while (textSplitSize > 0 && Encoding.UTF8.GetByteCount(text.AsSpan(textIndex, textSplitSize)) > availableSpace)
+                while (textSplitSize > 0 && Encoding.UTF8.GetByteCount(text.ToCharArray(textIndex, textSplitSize)) > availableSpace)
                 {
                     textSplitSize--;
                 }
@@ -202,7 +202,7 @@ public static class PineconeUtils
             _ => throw new ArgumentOutOfRangeException(nameof(environment), environment, null)
         };
     }
-    
+
     public static PineconeEnvironment GetEnvironment(string environment)
     {
         return environment switch

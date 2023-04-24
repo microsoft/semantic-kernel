@@ -141,7 +141,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             .WithSparseVector(sparseVector)
             .WithId(id)
             .Build();
-        
+
         request.Headers.Add("accept", "application/json");
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
@@ -339,14 +339,14 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
                 {
                     if (filter != null)
                     {
-                        this._logger.LogInformation("Deleting vectors {0} in namespace {1} with filter {2}", string.Join(',', ids), nameSpace, filter);
+                        this._logger.LogInformation("Deleting vectors {0} in namespace {1} with filter {2}", string.Join(",", ids), nameSpace, filter);
                         deleteRequest = DeleteRequest.DeleteVectors(ids)
                             .FromNamespace(nameSpace)
                             .FilterBy(filter);
                     }
                     else
                     {
-                        this._logger.LogInformation("Deleting vectors {0} in namespace {1}", string.Join(',', ids), nameSpace);
+                        this._logger.LogInformation("Deleting vectors {0} in namespace {1}", string.Join(",", ids), nameSpace);
                         deleteRequest = DeleteRequest.DeleteVectors(ids)
                             .FromNamespace(nameSpace);
                     }
@@ -356,13 +356,13 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
                 {
                     if (filter != null)
                     {
-                        this._logger.LogInformation("Deleting vectors {0} with filter {1}", string.Join(',', ids), filter);
+                        this._logger.LogInformation("Deleting vectors {0} with filter {1}", string.Join(",", ids), filter);
                         deleteRequest = DeleteRequest.DeleteVectors(ids)
                             .FilterBy(filter);
                     }
                     else
                     {
-                        this._logger.LogInformation("Deleting vectors {0}", string.Join(',', ids));
+                        this._logger.LogInformation("Deleting vectors {0}", string.Join(",", ids));
                         deleteRequest = DeleteRequest.DeleteVectors(ids);
                     }
                 }
@@ -384,7 +384,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         }
         catch (HttpRequestException e)
         {
-            this._logger.LogWarning("Vector update for Documents {0} failed. Message: {1}", string.Join(',', ids), e.Message);
+            this._logger.LogWarning("Vector update for Documents {0} failed. Message: {1}", string.Join(",", ids), e.Message);
         }
     }
 
@@ -465,9 +465,9 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     {
         using HttpRequestMessage request = ListIndexesRequest.Create().Build();
         request.Headers.Add("accept", "application/json; charset=utf-8");
-        
+
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
-        
+
         string[]? indices = JsonSerializer.Deserialize<string[]?>(responseContent, this._jsonSerializerOptions);
 
         if (indices == null)
@@ -484,7 +484,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     /// <inheritdoc />
     public async Task<string?> CreateIndexAsync(IndexDefinition indexDefinition, CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Creating index {0} with metadata config: {1}", indexDefinition.Name, string.Join(',', indexDefinition.MetadataConfig?.Indexed));
+        this._logger.LogInformation("Creating index {0} with metadata config: {1}", indexDefinition.Name, string.Join(",", indexDefinition.MetadataConfig?.Indexed));
 
         string indexName = indexDefinition.Name;
         using HttpRequestMessage request = indexDefinition.Build();

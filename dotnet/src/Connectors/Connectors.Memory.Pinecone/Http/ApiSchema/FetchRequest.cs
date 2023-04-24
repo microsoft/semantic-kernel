@@ -63,7 +63,7 @@ internal class FetchRequest
     {
         StringBuilder sb = new();
         sb.Append("class FetchRequest {\n");
-        sb.Append("  Ids: ").Append(string.Join(',', this.Ids)).Append('\n');
+        sb.Append("  Ids: ").Append(string.Join(",", this.Ids)).Append('\n');
         sb.Append("  Namespace: ").Append(this.Namespace).Append('\n');
         sb.Append("}\n");
         return sb.ToString();

@@ -31,7 +31,7 @@ public class MetadataIndexConfig
     /// <returns>String presentation of the object</returns>
     public override string ToString()
     {
-        return string.Join(',', this.Indexed);
+        return string.Join(",", this.Indexed);
     }
 
     /// <summary>
