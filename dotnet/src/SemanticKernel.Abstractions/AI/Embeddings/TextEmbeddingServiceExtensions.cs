@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 public static class TextEmbeddingServiceExtensions
 {
     /// <summary>
-    /// Adds an <see cref="AIServiceType"/> instance to the services collection
+    /// Adds an <see cref="ITextEmbeddingGenerationService"/> instance to the services collection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="serviceId">The service ID</param>
