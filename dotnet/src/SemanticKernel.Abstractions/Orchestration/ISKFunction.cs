@@ -54,14 +54,14 @@ public interface ISKFunction
     /// <param name="context">SK context</param>
     /// <param name="settings">LLM completion settings</param>
     /// <param name="log">Application logger</param>
-    /// <param name="cancel">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     Task<SKContext> InvokeAsync(
         string input,
         SKContext? context = null,
         CompleteRequestSettings? settings = null,
         ILogger? log = null,
-        CancellationToken? cancel = null);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Invoke the internal delegate
@@ -69,13 +69,13 @@ public interface ISKFunction
     /// <param name="context">SK context</param>
     /// <param name="settings">LLM completion settings</param>
     /// <param name="log">Application logger</param>
-    /// <param name="cancel">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     Task<SKContext> InvokeAsync(
         SKContext? context = null,
         CompleteRequestSettings? settings = null,
         ILogger? log = null,
-        CancellationToken? cancel = null);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Set the default skill collection to use when the function is invoked

@@ -239,7 +239,7 @@ public sealed class Plan : ISKFunction
 
             // Execute the step
             var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
-            var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
+            var result = await step.InvokeAsync(functionContext, cancellationToken: context.CancellationToken).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -283,21 +283,21 @@ public sealed class Plan : ISKFunction
 
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
-        context ??= new SKContext(new ContextVariables(input), null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
-        return this.InvokeAsync(context, settings, log, cancel);
+        context ??= new SKContext(new ContextVariables(input), null!, null, log ?? NullLogger.Instance, cancellationToken);
+        return this.InvokeAsync(context, settings, log, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
-        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
+        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
 
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings, log, cancel).ConfigureAwait(false);
+            var result = await this.Function.InvokeAsync(context, settings, log, cancellationToken).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {

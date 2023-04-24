@@ -86,7 +86,8 @@ public class ChatSkill
 
         var result = await completionFunction.InvokeAsync(
             intentExtractionContext,
-            settings: this.CreateIntentCompletionSettings()
+            settings: this.CreateIntentCompletionSettings(),
+            cancellationToken: context.CancellationToken
         );
 
         if (result.ErrorOccurred)
@@ -266,7 +267,8 @@ public class ChatSkill
 
         chatContext = await completionFunction.InvokeAsync(
             context: chatContext,
-            settings: this.CreateChatResponseCompletionSettings()
+            settings: this.CreateChatResponseCompletionSettings(),
+            cancellationToken: context.CancellationToken
         );
 
         if (chatContext.ErrorOccurred)
@@ -374,7 +376,7 @@ public class ChatSkill
             query: item.ToFormattedString(),
             limit: 1,
             minRelevanceScore: 0.8,
-            cancel: context.CancellationToken
+            cancellationToken: context.CancellationToken
         ).ToEnumerable();
 
         if (!memories.Any())
@@ -384,7 +386,7 @@ public class ChatSkill
                 text: item.ToFormattedString(),
                 id: Guid.NewGuid().ToString(),
                 description: memoryName,
-                cancel: context.CancellationToken
+                cancellationToken: context.CancellationToken
             );
         }
     }

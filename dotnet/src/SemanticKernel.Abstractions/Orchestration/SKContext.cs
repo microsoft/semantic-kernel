@@ -41,7 +41,7 @@ public sealed class SKContext
     public Exception? LastException { get; private set; }
 
     /// <summary>
-    /// Cancellation token.
+    /// The token to monitor for cancellation requests.
     /// </summary>
     public CancellationToken CancellationToken { get; }
 
