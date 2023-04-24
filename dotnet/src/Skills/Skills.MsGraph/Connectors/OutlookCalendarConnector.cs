@@ -28,7 +28,7 @@ public class OutlookCalendarConnector : ICalendarConnector
     /// <inheritdoc/>
     public async Task<CalendarEvent> AddEventAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default)
     {
-        Event resultEvent = await this._graphServiceClient.Me.Events.Request().AddAsync(ToGraphEvent(calendarEvent), cancellationToken);
+        Event resultEvent = await this._graphServiceClient.Me.Events.Request().AddAsync(ToGraphEvent(calendarEvent), cancellationToken).ConfigureAwait(false);
         return ToCalendarEvent(resultEvent);
     }
 

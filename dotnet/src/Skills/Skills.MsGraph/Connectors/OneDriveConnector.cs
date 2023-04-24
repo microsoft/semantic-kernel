@@ -36,7 +36,7 @@ public class OneDriveConnector : ICloudDriveConnector
         return await this._graphServiceClient.Me
             .Drive.Root
             .ItemWithPath(filePath).Content
-            .Request().GetAsync(cancellationToken);
+            .Request().GetAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -62,7 +62,7 @@ public class OneDriveConnector : ICloudDriveConnector
         {
             await this._graphServiceClient.Me
                 .Drive.Root
-                .ItemWithPath(filePath).Request().GetAsync(cancellationToken);
+                .ItemWithPath(filePath).Request().GetAsync(cancellationToken).ConfigureAwait(false);
 
             // If no exception is thrown, the file exists.
             return true;
@@ -99,7 +99,7 @@ public class OneDriveConnector : ICloudDriveConnector
         GraphResponse<DriveItem> response = await this._graphServiceClient.Me
             .Drive.Root
             .ItemWithPath(destinationPath).Content
-            .Request().PutResponseAsync<DriveItem>(fileContentStream, cancellationToken, HttpCompletionOption.ResponseContentRead);
+            .Request().PutResponseAsync<DriveItem>(fileContentStream, cancellationToken, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false);
 
         response.ToHttpResponseMessage().EnsureSuccessStatusCode();
     }
@@ -116,11 +116,11 @@ public class OneDriveConnector : ICloudDriveConnector
             .Drive.Root
             .ItemWithPath(filePath)
             .CreateLink(type, scope)
-            .Request().PostResponseAsync(cancellationToken);
+            .Request().PostResponseAsync(cancellationToken).ConfigureAwait(false);
 
         response.ToHttpResponseMessage().EnsureSuccessStatusCode();
 
-        string? result = (await response.GetResponseObjectAsync()).Link?.WebUrl;
+        string? result = (await response.GetResponseObjectAsync().ConfigureAwait(false)).Link?.WebUrl;
         if (string.IsNullOrWhiteSpace(result))
         {
             throw new MsGraphConnectorException("Shareable file link was null or whitespace.");
