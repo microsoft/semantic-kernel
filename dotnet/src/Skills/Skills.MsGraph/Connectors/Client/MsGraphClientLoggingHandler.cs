@@ -51,7 +51,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     {
         request.Headers.Add(ClientRequestIdHeaderName, Guid.NewGuid().ToString());
         this.LogHttpMessage(request.Headers, request.RequestUri, "REQUEST");
-        HttpResponseMessage response = await base.SendAsync(request, cancellationToken);
+        HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         this.LogHttpMessage(response.Headers, response.RequestMessage.RequestUri, "RESPONSE");
         return response;
     }

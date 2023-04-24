@@ -117,6 +117,6 @@ public class CalendarSkill
         }
 
         this._logger.LogInformation("Adding calendar event '{0}'", calendarEvent.Subject);
-        await this._connector.AddEventAsync(calendarEvent);
+        await this._connector.AddEventAsync(calendarEvent).ConfigureAwait(false);
     }
 }

@@ -100,7 +100,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <inheritdoc/>
     public async Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        return await this.ExecuteCompleteRequestAsync(text, cancellationToken);
+        return await this.ExecuteCompleteRequestAsync(text, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
