@@ -7,7 +7,7 @@ namespace SemanticKernel.Service.Config;
 /// <summary>
 /// Configuration settings for connecting to Azure CosmosDB.
 /// </summary>
-public class CosmosConfig
+public class CosmosOptions
 {
     /// <summary>
     /// Gets or sets the Cosmos database name.

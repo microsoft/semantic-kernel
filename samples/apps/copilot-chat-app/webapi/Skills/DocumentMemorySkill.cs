@@ -21,12 +21,12 @@ public class DocumentMemorySkill
     /// <summary>
     /// Configuration settings for importing documents to memory.
     /// </summary>
-    private readonly DocumentImportConfig _documentImportConfig;
+    private readonly DocumentMemoryOptions _documentImportConfig;
 
     /// <summary>
     /// Create a new instance of DocumentMemorySkill.
     /// </summary>
-    public DocumentMemorySkill(PromptSettings promptSettings, DocumentImportConfig documentImportConfig)
+    public DocumentMemorySkill(PromptSettings promptSettings, DocumentMemoryOptions documentImportConfig)
     {
         this._promptSettings = promptSettings;
         this._documentImportConfig = documentImportConfig;

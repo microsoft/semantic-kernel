@@ -43,7 +43,7 @@ internal static class FunctionLoadingExtensions
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
         PromptSettings promptSettings,
-        IConfiguration configuration,
+        DocumentMemoryOptions documentMemoryOptions,
         ILogger logger)
     {
         // Hardcode your native function registrations here
@@ -66,8 +66,7 @@ internal static class FunctionLoadingExtensions
         );
         kernel.ImportSkill(chatHistorySkill, nameof(ChatHistorySkill));
 
-        var documentImportConfig = configuration.GetSection("DocumentImport").Get<DocumentImportConfig>();
-        var documentMemorySkill = new DocumentMemorySkill(promptSettings, documentImportConfig);
+        var documentMemorySkill = new DocumentMemorySkill(promptSettings, documentMemoryOptions);
         kernel.ImportSkill(documentMemorySkill, nameof(DocumentMemorySkill));
     }
 }

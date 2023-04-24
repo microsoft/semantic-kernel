@@ -7,7 +7,7 @@ namespace SemanticKernel.Service.Config;
 /// <summary>
 /// File system storage configuration.
 /// </summary>
-public class FileSystemConfig
+public class FileSystemOptions
 {
     /// <summary>
     /// Gets or sets the file path for persistent file system storage.

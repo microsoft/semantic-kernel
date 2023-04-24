@@ -28,7 +28,7 @@ internal sealed class RequiredOnPropertyValueAttribute : ValidationAttribute
     /// <param name="otherPropertyValue">Value of the other property when this property is required.</param>
     public RequiredOnPropertyValueAttribute(string otherPropertyName, object? otherPropertyValue)
     {
-        this.OtherPropertyName = otherPropertyName; ;
+        this.OtherPropertyName = otherPropertyName;
         this.OtherPropertyValue = otherPropertyValue;
     }
 

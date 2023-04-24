@@ -42,6 +42,7 @@ public class SemanticKernelController : ControllerBase
     /// <param name="kernel">Semantic kernel obtained through dependency injection</param>
     /// <param name="chatRepository">Storage repository to store chat sessions</param>
     /// <param name="chatMessageRepository">Storage repository to store chat messages</param>
+    /// <param name="documentMemoryOptions">Options for document memory handline.</param>
     /// <param name="ask">Prompt along with its parameters</param>
     /// <param name="skillName">Skill in which function to invoke resides</param>
     /// <param name="functionName">Name of function to invoke</param>
@@ -56,6 +57,7 @@ public class SemanticKernelController : ControllerBase
         [FromServices] IKernel kernel,
         [FromServices] ChatSessionRepository chatRepository,
         [FromServices] ChatMessageRepository chatMessageRepository,
+        [FromServices] IOptions<DocumentMemoryOptions> documentMemoryOptions,
         [FromBody] Ask ask,
         string skillName, string functionName)
     {
@@ -71,7 +73,7 @@ public class SemanticKernelController : ControllerBase
             kernel.RegisterSemanticSkills(this._config.SemanticSkillsDirectory, this._logger);
         }
 
-        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, this._configuration, this._logger);
+        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, documentMemoryOptions.Value, this._logger);
 
         ISKFunction? function = null;
         try

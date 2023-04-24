@@ -6,7 +6,7 @@ using System.Reflection;
 namespace SemanticKernel.Service.Config;
 
 /// <summary>
-/// If the other property is set to the expected value, then this property is required.
+/// If the string is set, it must not be empty or whitespace.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 internal sealed class NotEmptyOrWhitespaceAttribute : ValidationAttribute

@@ -44,7 +44,7 @@ public sealed class AIServiceOptions
     public string Endpoint { get; set; } = string.Empty;
 
     /// <summary>
-    /// Key to access teh AI service.
+    /// Key to access the AI service.
     /// </summary>
     [Required, NotEmptyOrWhitespace]
     public string Key { get; set; } = string.Empty;

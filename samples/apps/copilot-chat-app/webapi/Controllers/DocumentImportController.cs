@@ -132,7 +132,7 @@ public class DocumentImportController : ControllerBase
     /// <returns></returns>
     private async Task ParseDocumentContentToMemoryAsync(Kernel kernel, string content, DocumentImportForm documentImportForm)
     {
-        var config = this._configuration.GetSection("DocumentImport").Get<DocumentImportConfig>();
+        var config = this._configuration.GetSection("DocumentImport").Get<DocumentMemoryOptions>();
         var globalDocumentCollectionName = config.GlobalDocumentCollectionName;
         var userDocumentCollectionNamePrefix = config.UserDocumentCollectionNamePrefix;
         var documentLineSplitMaxTokens = config.DocumentLineSplitMaxTokens;

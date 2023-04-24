@@ -34,5 +34,5 @@ public class MemoriesStoreOptions
     /// Gets or sets the configuration for the Qdrant memories store.
     /// </summary>
     [RequiredOnPropertyValue(nameof(Type), MemoriesStoreType.Qdrant)]
-    public QdrantConfig? Qdrant { get; set; }
+    public QdrantOptions? Qdrant { get; set; }
 }

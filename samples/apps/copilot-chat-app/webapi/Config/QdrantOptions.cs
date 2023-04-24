@@ -7,7 +7,7 @@ namespace SemanticKernel.Service.Config;
 /// <summary>
 /// Configuration settings for connecting to Qdrant.
 /// </summary>
-public class QdrantConfig
+public class QdrantOptions
 {
     /// <summary>
     /// Gets or sets the endpoint protocol and host (e.g. http://localhost).
