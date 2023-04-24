@@ -132,7 +132,8 @@ public class KernelTests
 
         // Assert
         Assert.Equal(3, skill.Count);
-        Assert.True(kernel.Skills.HasNativeFunction("GetAnyValue"));
+        Assert.True(kernel.Skills.TryGetNativeFunction("GetAnyValue", out ISKFunction? functionInstance));
+        Assert.NotNull(functionInstance);
     }
 
     [Fact]

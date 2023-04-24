@@ -96,12 +96,7 @@ public sealed class SKContext
     {
         Verify.NotNull(this.Skills, "The skill collection hasn't been set");
 
-        if (this.Skills.HasNativeFunction(skillName, functionName))
-        {
-            return this.Skills.GetNativeFunction(skillName, functionName);
-        }
-
-        return this.Skills.GetSemanticFunction(skillName, functionName);
+        return this.Skills.GetFunction(skillName, functionName);
     }
 
     /// <summary>

@@ -139,7 +139,10 @@ public sealed class PromptTemplateEngineTests
 
         this._variables.Update("INPUT-BAR");
         var template = "foo-{{function}}-baz";
-        this._skills.Setup(x => x.HasFunction("function")).Returns(true);
+        {
+            ISKFunction? outFunc = func;
+            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+        }
         this._skills.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
@@ -167,7 +170,10 @@ public sealed class PromptTemplateEngineTests
 
         this._variables.Set("myVar", "BAR");
         var template = "foo-{{function $myVar}}-baz";
-        this._skills.Setup(x => x.HasFunction("function")).Returns(true);
+        {
+            ISKFunction? outFunc = func;
+            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+        }
         this._skills.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
@@ -197,7 +203,10 @@ public sealed class PromptTemplateEngineTests
         this._variables.Set("myVar", "BAR");
 
         var template = "foo-{{function $myVar}}-baz";
-        this._skills.Setup(x => x.HasFunction("function")).Returns(true);
+        {
+            ISKFunction? outFunc = func;
+            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+        }
         this._skills.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 

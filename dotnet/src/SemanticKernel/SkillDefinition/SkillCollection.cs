@@ -16,7 +16,6 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// The class holds a list of all the functions, native and semantic, known to the kernel instance.
 /// The list is used by the planner and when executing pipelines of function compositions.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "It is a collection")]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "It is a collection")]
 public class SkillCollection : ISkillCollection
 {
@@ -44,40 +43,37 @@ public class SkillCollection : ISkillCollection
         this.AddFunction(functionInstance);
 
     /// <inheritdoc/>
-    public bool HasFunction(string skillName, string functionName) =>
-        this.TryGetFunction(skillName, functionName, out _);
-
-    /// <inheritdoc/>
-    public bool HasFunction(string functionName) =>
-        this.HasFunction(GlobalSkill);
-
-    /// <inheritdoc/>
-    public bool HasSemanticFunction(string skillName, string functionName) =>
-        this.TryGetFunction(skillName, functionName, out ISKFunction? func) &&
-        func.IsSemantic;
-
-    /// <inheritdoc/>
-    public bool HasNativeFunction(string functionName) =>
-        this.HasNativeFunction(GlobalSkill, functionName);
-
-    /// <inheritdoc/>
-    public bool HasNativeFunction(string skillName, string functionName) =>
-        this.TryGetFunction(skillName, functionName, out ISKFunction? func) &&
-        !func.IsSemantic;
-
-    /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName) =>
         this.GetFunction(GlobalSkill, functionName);
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string skillName, string functionName)
     {
-        if (!this.TryGetFunction(skillName, functionName, out ISKFunction? func))
+        if (!this.TryGetFunction(skillName, functionName, out ISKFunction? functionInstance))
         {
             this.ThrowFunctionNotAvailable(skillName, functionName);
         }
 
-        return func;
+        return functionInstance;
+    }
+
+    /// <inheritdoc/>
+    public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance) =>
+        this.TryGetFunction(GlobalSkill, functionName, out functionInstance);
+
+    /// <inheritdoc/>
+    public bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance)
+    {
+        Verify.NotNull(skillName, nameof(skillName));
+        Verify.NotNull(functionName, nameof(functionName));
+
+        if (this._skillCollection.TryGetValue(skillName, out ConcurrentDictionary<string, ISKFunction>? skill))
+        {
+            return skill.TryGetValue(functionName, out functionInstance);
+        }
+
+        functionInstance = null;
+        return false;
     }
 
     /// <inheritdoc/>
@@ -87,12 +83,29 @@ public class SkillCollection : ISkillCollection
     /// <inheritdoc/>
     public ISKFunction GetSemanticFunction(string skillName, string functionName)
     {
-        if (!this.TryGetFunction(skillName, functionName, out ISKFunction? func) || !func.IsSemantic)
+        if (!this.TryGetSemanticFunction(skillName, functionName, out ISKFunction? functionInstance))
         {
             this.ThrowFunctionNotAvailable(skillName, functionName);
         }
 
-        return func;
+        return functionInstance;
+    }
+
+    /// <inheritdoc/>
+    public bool TryGetSemanticFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance) =>
+        this.TryGetSemanticFunction(GlobalSkill, functionName, out functionInstance);
+
+    /// <inheritdoc/>
+    public bool TryGetSemanticFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance)
+    {
+        if (this.TryGetFunction(skillName, functionName, out ISKFunction? func) && func.IsSemantic)
+        {
+            functionInstance = func;
+            return true;
+        }
+
+        functionInstance = null;
+        return false;
     }
 
     /// <inheritdoc/>
@@ -102,12 +115,29 @@ public class SkillCollection : ISkillCollection
     /// <inheritdoc/>
     public ISKFunction GetNativeFunction(string skillName, string functionName)
     {
-        if (!this.TryGetFunction(skillName, functionName, out ISKFunction? func) || func.IsSemantic)
+        if (!this.TryGetNativeFunction(skillName, functionName, out ISKFunction? functionInstance))
         {
             this.ThrowFunctionNotAvailable(skillName, functionName);
         }
 
-        return func;
+        return functionInstance;
+    }
+
+    /// <inheritdoc/>
+    public bool TryGetNativeFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance) =>
+        this.TryGetNativeFunction(GlobalSkill, functionName, out functionInstance);
+
+    /// <inheritdoc/>
+    public bool TryGetNativeFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance)
+    {
+        if (this.TryGetFunction(skillName, functionName, out ISKFunction? func) && !func.IsSemantic)
+        {
+            functionInstance = func;
+            return true;
+        }
+
+        functionInstance = null;
+        return false;
     }
 
     /// <inheritdoc/>
@@ -139,20 +169,9 @@ public class SkillCollection : ISkillCollection
         Verify.NotNull(functionInstance, "The function is NULL");
 
         ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.SkillName, static _ => new(StringComparer.OrdinalIgnoreCase));
-        skill[functionInstance.Name] = functionInstance;
+        skill.TryAdd(functionInstance.Name, functionInstance);
 
         return this;
-    }
-
-    private bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? func)
-    {
-        if (this._skillCollection.TryGetValue(skillName, out ConcurrentDictionary<string, ISKFunction>? skill))
-        {
-            return skill.TryGetValue(functionName, out func);
-        }
-
-        func = null;
-        return false;
     }
 
     [DoesNotReturn]
