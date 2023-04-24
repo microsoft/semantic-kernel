@@ -49,7 +49,7 @@ public class BotController : ControllerBase
     [HttpPost]
     [Route("bot/upload")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UploadAsync(
         [FromServices] Kernel kernel,
@@ -61,7 +61,7 @@ public class BotController : ControllerBase
 
         if (!this.IsBotCompatible(bot.Schema, bot.EmbeddingConfigurations))
         {
-            return new UnsupportedMediaTypeResult();
+            return this.BadRequest("Incompatible schema");
         }
 
         string chatTitle = $"{bot.ChatTitle} - Clone";
