@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { useMsal } from '@azure/msal-react';
-import { Button, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { Button, Spinner, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
@@ -70,6 +70,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
     const speechService = useSKSpeechService(process.env.REACT_APP_BACKEND_URI as string);
+    const [documentImporting, SetDocumentImporting] = React.useState(false);
     const documentImportService = useDocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
 
@@ -102,6 +103,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         const documentFile = documentFileRef.current?.files?.[0];
         if (documentFile) {
             try {
+                SetDocumentImporting(true);
                 await documentImportService.importDocumentAsync(
                     documentFile,
                     await AuthHelper.getSKaaSAccessToken(instance)
@@ -112,6 +114,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                 const errorMessage = `Failed to upload document. Details: ${e.message ?? e}`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
             }
+            SetDocumentImporting(false);
         }
     };
 
@@ -180,7 +183,8 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         multiple={false}
                         onChange={() => importDocument()}
                     />
-                    <Button appearance="transparent" icon={<AttachRegular />} onClick={() => selectDocument()} />
+                    <Button disabled={ documentImporting } appearance="transparent" icon={<AttachRegular />} onClick={() => selectDocument()} />
+                    {documentImporting && <Spinner size="tiny" />}
                 </div>
                 <div className={classes.essentials}>
                     {recognizer && (
