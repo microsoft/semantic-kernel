@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
-    <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props"/>
+    <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
     <PropertyGroup>
         <!-- NuGet Package Settings -->
@@ -17,11 +17,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Text.Json"/>
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj"/>
+        <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
     </ItemGroup>
 
 </Project>
