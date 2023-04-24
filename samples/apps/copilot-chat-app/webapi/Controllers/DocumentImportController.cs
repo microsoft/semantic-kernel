@@ -146,7 +146,7 @@ public class DocumentImportController : ControllerBase
                     userDocumentCollectionNamePrefix + documentImportForm.UserId;
 
         // Split the document into lines of text and then combine them into paragraphs.
-        // NOTE that this is only one of the strategies to chunk documents. Feel free to experience with other strategies.
+        // NOTE that this is only one of the strategies to chunk documents. Feel free to experiment with other strategies.
         var lines = SemanticTextPartitioner.SplitPlainTextLines(content, documentLineSplitMaxTokens);
         var paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, documentParagraphSplitMaxLines);
 
