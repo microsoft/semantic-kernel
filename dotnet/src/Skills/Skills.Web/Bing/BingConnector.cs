@@ -39,14 +39,14 @@ public class BingConnector : IWebSearchEngineConnector, IDisposable
         {
             this._logger.LogDebug("Sending request: {0}", uri);
         }
-        HttpResponseMessage response = await this._httpClient.GetAsync(uri, cancellationToken);
+        HttpResponseMessage response = await this._httpClient.GetAsync(uri, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
         if (this._logger.IsEnabled(LogLevel.Debug))
         {
             this._logger.LogDebug("Response received: {0}", response.StatusCode);
         }
 
-        string json = await response.Content.ReadAsStringAsync();
+        string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         if (this._logger.IsEnabled(LogLevel.Trace))
         {
             this._logger.LogTrace("Response content received: {0}", json);

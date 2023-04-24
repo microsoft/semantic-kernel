@@ -107,6 +107,6 @@ public sealed class PromptTemplate : IPromptTemplate
     /// <returns>Prompt rendered to string</returns>
     public async Task<string> RenderAsync(SKContext executionContext)
     {
-        return await this._templateEngine.RenderAsync(this._template, executionContext);
+        return await this._templateEngine.RenderAsync(this._template, executionContext).ConfigureAwait(false);
     }
 }

@@ -48,14 +48,15 @@ public class CloudDriveSkill
         {
             this._logger.LogDebug("Getting file content for '{0}'", filePath);
         }
-        Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, context.CancellationToken);
+        Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
 
         using StreamReader sr = new StreamReader(fileContentStream);
-        string content = await sr.ReadToEndAsync();
+        string content = await sr.ReadToEndAsync().ConfigureAwait(false);
         if (this._logger.IsEnabled(LogLevel.Debug))
         {
             this._logger.LogDebug("File content: {0}", content);
         }
+
         return content;
     }
 
@@ -80,7 +81,7 @@ public class CloudDriveSkill
 
         try
         {
-            await this._connector.UploadSmallFileAsync(filePath, destinationPath, context.CancellationToken);
+            await this._connector.UploadSmallFileAsync(filePath, destinationPath, context.CancellationToken).ConfigureAwait(false);
         }
         catch (IOException ex)
         {
@@ -102,6 +103,6 @@ public class CloudDriveSkill
         const string type = "view"; // TODO expose this as an SK variable
         const string scope = "anonymous"; // TODO expose this as an SK variable
 
-        return await this._connector.CreateShareLinkAsync(filePath, type, scope, context.CancellationToken);
+        return await this._connector.CreateShareLinkAsync(filePath, type, scope, context.CancellationToken).ConfigureAwait(false);
     }
 }

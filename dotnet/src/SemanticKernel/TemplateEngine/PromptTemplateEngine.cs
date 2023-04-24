@@ -64,7 +64,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
             this._log.LogTrace("Rendering string template: {0}", templateText);
         }
         var blocks = this.ExtractBlocks(templateText);
-        return await this.RenderAsync(blocks, context);
+        return await this.RenderAsync(blocks, context).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -84,7 +84,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
                     break;
 
                 case ICodeRendering dynamicBlock:
-                    result.Append(await dynamicBlock.RenderCodeAsync(context));
+                    result.Append(await dynamicBlock.RenderCodeAsync(context).ConfigureAwait(false));
                     break;
 
                 default:
@@ -135,7 +135,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
             }
             else
             {
-                var codeResult = await ((ICodeRendering)block).RenderCodeAsync(executionContext);
+                var codeResult = await ((ICodeRendering)block).RenderCodeAsync(executionContext).ConfigureAwait(false);
                 updatedBlocks.Add(new TextBlock(codeResult, this._log));
             }
         }

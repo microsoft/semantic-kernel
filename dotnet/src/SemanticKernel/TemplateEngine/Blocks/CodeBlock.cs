@@ -99,7 +99,7 @@ internal class CodeBlock : Block, ICodeRendering
                 return ((ITextRendering)this._tokens[0]).Render(context.Variables);
 
             case BlockTypes.FunctionId:
-                return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], context);
+                return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], context).ConfigureAwait(false);
         }
 
         throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType,
@@ -144,7 +144,7 @@ internal class CodeBlock : Block, ICodeRendering
             context.Memory,
             context.Skills,
             this.Log,
-            context.CancellationToken);
+            context.CancellationToken).ConfigureAwait(false);
 
         if (result.ErrorOccurred)
         {

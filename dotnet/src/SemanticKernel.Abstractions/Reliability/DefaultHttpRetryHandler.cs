@@ -153,7 +153,7 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
     {
         public async Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken)
         {
-            await Task.Delay(delay, cancellationToken);
+            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
         }
     }
 

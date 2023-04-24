@@ -72,7 +72,7 @@ public class TextMemorySkill
             context.Log.LogTrace("Recalling memory with key '{0}' from collection '{1}'", key, collection);
         }
 
-        var memory = await context.Memory.GetAsync(collection, key);
+        var memory = await context.Memory.GetAsync(collection, key).ConfigureAwait(false);
 
         return memory?.Metadata.Text ?? string.Empty;
     }
@@ -170,7 +170,7 @@ public class TextMemorySkill
             context.Log.LogTrace("Saving memory to collection '{0}'", collection);
         }
 
-        await context.Memory.SaveInformationAsync(collection, text: text, id: key);
+        await context.Memory.SaveInformationAsync(collection, text: text, id: key).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -199,6 +199,6 @@ public class TextMemorySkill
             context.Log.LogTrace("Removing memory from collection '{0}'", collection);
         }
 
-        await context.Memory.RemoveAsync(collection, key);
+        await context.Memory.RemoveAsync(collection, key).ConfigureAwait(false);
     }
 }
