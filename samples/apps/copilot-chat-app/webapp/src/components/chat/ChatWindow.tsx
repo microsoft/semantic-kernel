@@ -10,6 +10,7 @@ import {
     Persona,
     shorthands,
     tokens,
+    Tooltip,
 } from '@fluentui/react-components';
 import { EditRegular, Save24Regular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
@@ -22,6 +23,7 @@ import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
 import { ChatRoom } from './ChatRoom';
+import { ShareBotMenu } from './ShareBotMenu';
 
 const useClasses = makeStyles({
     root: {
@@ -59,7 +61,7 @@ const useClasses = makeStyles({
     controls: {
         ...shorthands.gridArea('controls'),
         ...shorthands.gap(tokens.spacingHorizontalM),
-        alignItems: 'center',
+        alignItems: 'right',
         display: 'flex',
         flexDirection: 'row',
     },
@@ -87,23 +89,21 @@ export const ChatWindow: React.FC = () => {
     const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const { instance } = useMsal();
-    
+
     const onEdit = async () => {
         if (isEditing) {
             if (chatName !== title) {
                 try {
                     var ask: IAsk = {
                         input: conversations[selectedId].id!,
-                        variables: [
-                            { key: 'title', value: title! },
-                        ],
+                        variables: [{ key: 'title', value: title! }],
                     };
 
                     await sk.invokeAsync(
                         ask,
                         'ChatHistorySkill',
                         'EditChat',
-                        await AuthHelper.getSKaaSAccessToken(instance)
+                        await AuthHelper.getSKaaSAccessToken(instance),
                     );
                     dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));
                 } catch (e: any) {
@@ -143,14 +143,17 @@ export const ChatWindow: React.FC = () => {
                                 {chatName}
                             </Label>
                         )}
-                        {
+                        <Tooltip content="Name the chat" relationship="label">
                             <Button
                                 icon={isEditing ? <Save24Regular /> : <EditRegular />}
                                 appearance="transparent"
                                 onClick={onEdit}
                                 disabled={title === undefined || !title}
                             />
-                        }
+                        </Tooltip>
+                    </div>
+                    <div className={classes.controls}>
+                        <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
                     </div>
                 </div>
             </div>
