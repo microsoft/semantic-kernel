@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.TemplateEngine;
+using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
 
@@ -36,6 +37,7 @@ internal static class FunctionLoadingExtensions
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
         PromptSettings promptSettings,
+        IConfiguration configuration,
         ILogger logger)
     {
         // Hardcode your native function registrations here
@@ -58,7 +60,8 @@ internal static class FunctionLoadingExtensions
         );
         kernel.ImportSkill(chatHistorySkill, nameof(ChatHistorySkill));
 
-        var documentMemorySkill = new DocumentMemorySkill(promptSettings);
+        var documentImportConfig = configuration.GetSection("DocumentImport").Get<DocumentImportConfig>();
+        var documentMemorySkill = new DocumentMemorySkill(promptSettings, documentImportConfig);
         kernel.ImportSkill(documentMemorySkill, nameof(DocumentMemorySkill));
     }
 }
