@@ -38,14 +38,20 @@ public class LocalUserMSALCredentialManager
     /// <summary>
     /// Initializes a new instance of the <see cref="LocalUserMSALCredentialManager"/> class.
     /// </summary>
-    public LocalUserMSALCredentialManager()
+    private LocalUserMSALCredentialManager(StorageCreationProperties storage, MsalCacheHelper cacheHelper)
     {
         this._publicClientApplications = new ConcurrentDictionary<string, IPublicClientApplication>(StringComparer.OrdinalIgnoreCase);
+        this._storageProperties = storage;
+        this._cacheHelper = cacheHelper;
+        this._cacheHelper.VerifyPersistence();
+    }
 
+    public static async Task<LocalUserMSALCredentialManager> CreateAsync()
+    {
         // Initialize persistent storage for the token cache
         const string cacheSchemaName = "com.microsoft.semantickernel.tokencache";
 
-        this._storageProperties = new StorageCreationPropertiesBuilder("sk.msal.cache", MsalCacheHelper.UserRootDirectory)
+        var storage = new StorageCreationPropertiesBuilder("sk.msal.cache", MsalCacheHelper.UserRootDirectory)
             .WithMacKeyChain(
                 serviceName: $"{cacheSchemaName}.service",
                 accountName: $"{cacheSchemaName}.account")
@@ -57,14 +63,9 @@ public class LocalUserMSALCredentialManager
                 attribute2: new KeyValuePair<string, string>("Product", "SemanticKernel"))
             .Build();
 
-        // TODO: remove sync wait, may cause deadlock
-#pragma warning disable VSTHRD002 // Synchronously waiting on tasks or awaiters may cause deadlocks. Use await or JoinableTaskFactory.Run instead.
-        this._cacheHelper = MsalCacheHelper.CreateAsync(this._storageProperties)
-            .GetAwaiter()
-            .GetResult();
-#pragma warning restore VSTHRD002
+        var cacheHelper = await MsalCacheHelper.CreateAsync(storage).ConfigureAwait(false);
 
-        this._cacheHelper.VerifyPersistence();
+        return new LocalUserMSALCredentialManager(storage, cacheHelper);
     }
 
     /// <summary>
@@ -89,20 +90,20 @@ public class LocalUserMSALCredentialManager
                 return newPublicApp;
             });
 
-        IEnumerable<IAccount> accounts = await app.GetAccountsAsync();
+        IEnumerable<IAccount> accounts = await app.GetAccountsAsync().ConfigureAwait(false);
 
         AuthenticationResult result;
         try
         {
             result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
         }
         catch (MsalUiRequiredException)
         {
             // A MsalUiRequiredException happened on AcquireTokenSilent.
             // This indicates you need to call AcquireTokenInteractive to acquire a token
             result = await app.AcquireTokenInteractive(scopes)
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
             // throws MsalException
         }
 

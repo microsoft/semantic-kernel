@@ -108,9 +108,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
             try
             {
-                string prompt = await functionConfig.PromptTemplate.RenderAsync(context);
+                string prompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
 
-                string completion = await client.CompleteAsync(prompt, requestSettings, context.CancellationToken);
+                string completion = await client.CompleteAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
                 context.Variables.Update(completion);
             }
             catch (AIException ex)
@@ -340,7 +340,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         settings ??= this._aiRequestSettings;
 
         var callable = (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>>)this._function;
-        context.Variables.Update((await callable(this._aiService, settings, context)).Variables);
+        context.Variables.Update((await callable(this._aiService, settings, context).ConfigureAwait(false)).Variables);
         return context;
     }
 
@@ -370,7 +370,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             case DelegateTypes.OutTaskString: // 3
             {
                 var callable = (Func<Task<string>>)this._function;
-                context.Variables.Update(await callable());
+                context.Variables.Update(await callable().ConfigureAwait(false));
                 return context;
             }
 
@@ -391,7 +391,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             case DelegateTypes.InSKContextOutTaskString: // 6
             {
                 var callable = (Func<SKContext, Task<string>>)this._function;
-                context.Variables.Update(await callable(context));
+                context.Variables.Update(await callable(context).ConfigureAwait(false));
                 return context;
             }
 
@@ -399,7 +399,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             {
                 var callable = (Func<SKContext, Task<SKContext>>)this._function;
                 // Note: Context Switching: allows the function to replace with a new context, e.g. to branch execution path
-                context = await callable(context);
+                context = await callable(context).ConfigureAwait(false);
                 return context;
             }
 
@@ -420,7 +420,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             case DelegateTypes.InStringOutTaskString: // 10
             {
                 var callable = (Func<string, Task<string>>)this._function;
-                context.Variables.Update(await callable(context.Variables.Input));
+                context.Variables.Update(await callable(context.Variables.Input).ConfigureAwait(false));
                 return context;
             }
 
@@ -441,7 +441,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             case DelegateTypes.InStringAndContextOutTaskString: // 13
             {
                 var callable = (Func<string, SKContext, Task<string>>)this._function;
-                context.Variables.Update(await callable(context.Variables.Input, context));
+                context.Variables.Update(await callable(context.Variables.Input, context).ConfigureAwait(false));
                 return context;
             }
 
@@ -449,35 +449,35 @@ public sealed class SKFunction : ISKFunction, IDisposable
             {
                 var callable = (Func<string, SKContext, Task<SKContext>>)this._function;
                 // Note: Context Switching: allows the function to replace with a new context, e.g. to branch execution path
-                context = await callable(context.Variables.Input, context);
+                context = await callable(context.Variables.Input, context).ConfigureAwait(false);
                 return context;
             }
 
             case DelegateTypes.InStringOutTask: // 15
             {
                 var callable = (Func<string, Task>)this._function;
-                await callable(context.Variables.Input);
+                await callable(context.Variables.Input).ConfigureAwait(false);
                 return context;
             }
 
             case DelegateTypes.InContextOutTask: // 16
             {
                 var callable = (Func<SKContext, Task>)this._function;
-                await callable(context);
+                await callable(context).ConfigureAwait(false);
                 return context;
             }
 
             case DelegateTypes.InStringAndContextOutTask: // 17
             {
                 var callable = (Func<string, SKContext, Task>)this._function;
-                await callable(context.Variables.Input, context);
+                await callable(context.Variables.Input, context).ConfigureAwait(false);
                 return context;
             }
 
             case DelegateTypes.OutTask: // 18
             {
                 var callable = (Func<Task>)this._function;
-                await callable();
+                await callable().ConfigureAwait(false);
                 return context;
             }
 
