@@ -168,5 +168,11 @@ public class DocumentImportController : ControllerBase
                 id: Guid.NewGuid().ToString(),
                 description: $"Document: {documentName}");
         }
+
+        this._logger.LogInformation(
+            "Parsed {0} paragraphs from local file {1}",
+            paragraphs.Count,
+            Path.GetFileName(documentImportForm.FormFile?.FileName)
+        );
     }
 }

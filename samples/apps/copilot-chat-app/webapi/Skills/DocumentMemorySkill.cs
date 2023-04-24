@@ -3,7 +3,6 @@
 using System.Globalization;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Config;
 
@@ -43,55 +42,6 @@ public class DocumentMemorySkill
     {
         this._promptSettings = promptSettings;
         this._documentImportConfig = documentImportConfig;
-    }
-
-    /// <summary>
-    /// Parse a local file into embeddings.
-    /// </summary>
-    /// <param name="localFile">Path to the local file including the file name.</param>
-    /// <param name="context">Contains the 'audience' indicating the name of the user.</param>
-    [SKFunction("Parse a local file on disk into embeddings and save the embeddings to the document memory for querying.")]
-    [SKFunctionName("ParseLocalFile")]
-    [SKFunctionInput(Description = "Path to the local file including the file name.")]
-    [SKFunctionContextParameter(
-        Name = "userId",
-        Description = "ID of the user who owns the documents. This is used to create a unique collection name for the user." +
-                      "If the user ID is not specified or empty, the documents will be stored in a global collection.",
-        DefaultValue = "")]
-    public async Task ParseLocalFileAsync(string localFile, SKContext context)
-    {
-        string collection = context.Variables.ContainsKey("userID")
-            ? string.IsNullOrEmpty(context.Variables["userID"])
-                ? this.GlobalDocumentMemoryCollectionName
-                : this.UserDocumentMemoryCollectionName(context.Variables["userID"])
-            : this.GlobalDocumentMemoryCollectionName;
-
-        string text = string.Empty;
-        try
-        {
-            text = await File.ReadAllTextAsync(localFile, context.CancellationToken);
-        }
-        catch (Exception ex) when (!ex.IsCriticalException())
-        {
-            context.Log.LogError("Unable to read local file: {0}", ex.Message);
-            context.Fail($"Unable to read local file: {ex.Message}", ex);
-            return;
-        }
-
-        var lines = SemanticTextPartitioner.SplitPlainTextLines(
-            text, this._promptSettings.DocumentLineSplitMaxTokens);
-        var paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(
-            lines, this._promptSettings.DocumentParagraphSplitMaxLines);
-        foreach (var paragraph in paragraphs)
-        {
-            await context.Memory.SaveInformationAsync(
-                collection: collection,
-                text: paragraph,
-                id: Guid.NewGuid().ToString(),
-                description: $"Document: {localFile}");
-        }
-
-        context.Log.LogInformation("Parsed {0} paragraphs from local file {1}", paragraphs.Count, localFile);
     }
 
     /// <summary>

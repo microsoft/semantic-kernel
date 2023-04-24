@@ -29,6 +29,11 @@ public sealed class Config
 #pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
+    /// Command path (relative URI) to which the file will be uploaded.
+    /// </summary>
+    public string CommandPath { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets configuration from appsettings.json.
     /// </summary>
     /// <returns>An Config instance</returns>
