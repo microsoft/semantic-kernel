@@ -21,7 +21,8 @@ public static class ChatCompletionServiceExtensions
         this INamedServiceCollection services,
         string serviceId,
         IChatCompletionService instance,
-        bool setAsDefault = false) => services.SetService<IChatCompletionService>(serviceId, instance);
+        bool setAsDefault = false)
+            => services.SetService<IChatCompletionService>(serviceId, instance, setAsDefault);
 
     /// <summary>
     /// Adds a <see cref="IChatCompletionService"/> factory method to the services collection
@@ -34,7 +35,8 @@ public static class ChatCompletionServiceExtensions
         this INamedServiceCollection services,
         string serviceId,
         Func<IChatCompletionService> factory,
-        bool setAsDefault = false) => services.SetServiceFactory<IChatCompletionService>(serviceId, factory, setAsDefault);
+        bool setAsDefault = false)
+            => services.SetServiceFactory<IChatCompletionService>(serviceId, factory, setAsDefault);
 
     /// <summary>
     /// Adds a <see cref="IChatCompletionService"/> factory method to the services collection
@@ -47,7 +49,8 @@ public static class ChatCompletionServiceExtensions
         this INamedServiceCollection services,
         string serviceId,
         Func<INamedServiceProvider, IChatCompletionService> factory,
-        bool setAsDefault = false) => services.SetServiceFactory<IChatCompletionService>(serviceId, factory, setAsDefault);
+        bool setAsDefault = false)
+            => services.SetServiceFactory<IChatCompletionService>(serviceId, factory, setAsDefault);
 
     /// <summary>
     /// Set the <see cref="IChatCompletionService"/> to use for the kernel.
@@ -91,20 +94,23 @@ public static class ChatCompletionServiceExtensions
     /// <returns>True if the service was found and removed. False otherwise</returns>
     public static bool TryRemoveChatCompletionService(
         this INamedServiceCollection services,
-        string serviceId) => services.TryRemove<IChatCompletionService>(serviceId);
+        string serviceId)
+            => services.TryRemove<IChatCompletionService>(serviceId);
 
     /// <summary>
     /// Remove all <see cref="IChatCompletionService"/> services.
     /// </summary>
     public static void RemoveAllChatCompletionServices(
-        this INamedServiceCollection services) => services.Clear<IChatCompletionService>();
+        this INamedServiceCollection services)
+            => services.Clear<IChatCompletionService>();
 
     /// <summary>
     /// Get all <see cref="IChatCompletionService"/> service IDs.
     /// </summary>
     /// <param name="services">The service provider.</param>
     public static IEnumerable<string> GetChatCompletionServiceIds(
-        this INamedServiceProvider services) => services.GetServiceNames<IChatCompletionService>();
+        this INamedServiceProvider services)
+            => services.GetServiceNames<IChatCompletionService>();
 
     /// <summary>
     /// Gets the default <see cref="IChatCompletionService"/> ID, or null none are registered or set as default.
@@ -113,5 +119,6 @@ public static class ChatCompletionServiceExtensions
     /// <returns>The service ID of the default <see cref="IChatCompletionService"/>, or null if none are registered
     /// or set as default.</returns>
     public static string? GetDefaultChatCompletionServiceId(
-        this INamedServiceProvider services) => services.GetDefaultServiceName<IChatCompletionService>();
+        this INamedServiceProvider services)
+            => services.GetDefaultServiceName<IChatCompletionService>();
 }

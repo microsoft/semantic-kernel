@@ -21,7 +21,8 @@ public static class TextEmbeddingServiceExtensions
         this INamedServiceCollection services,
         string serviceId,
         ITextEmbeddingGenerationService instance,
-        bool setAsDefault = false) => services.SetService<ITextEmbeddingGenerationService>(serviceId, instance);
+        bool setAsDefault = false)
+            => services.SetService<ITextEmbeddingGenerationService>(serviceId, instance, setAsDefault);
 
     /// <summary>
     /// Adds a <see cref="ITextEmbeddingGenerationService"/> factory method to the services collection
@@ -34,7 +35,8 @@ public static class TextEmbeddingServiceExtensions
         this INamedServiceCollection services,
         string serviceId,
         Func<ITextEmbeddingGenerationService> factory,
-        bool setAsDefault = false) => services.SetServiceFactory<ITextEmbeddingGenerationService>(serviceId, factory, setAsDefault);
+        bool setAsDefault = false)
+            => services.SetServiceFactory<ITextEmbeddingGenerationService>(serviceId, factory, setAsDefault);
 
     /// <summary>
     /// Adds a <see cref="ITextEmbeddingGenerationService"/> factory method to the services collection
@@ -47,7 +49,8 @@ public static class TextEmbeddingServiceExtensions
         this INamedServiceCollection services,
         string serviceId,
         Func<INamedServiceProvider, ITextEmbeddingGenerationService> factory,
-        bool setAsDefault = false) => services.SetServiceFactory<ITextEmbeddingGenerationService>(serviceId, factory, setAsDefault);
+        bool setAsDefault = false)
+            => services.SetServiceFactory<ITextEmbeddingGenerationService>(serviceId, factory, setAsDefault);
 
     /// <summary>
     /// Set the default <see cref="ITextEmbeddingGenerationService"/> to use for the kernel.
@@ -80,8 +83,9 @@ public static class TextEmbeddingServiceExtensions
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
     public static ITextEmbeddingGenerationService GetTextEmbeddingGenerationServiceOrDefault(
         this INamedServiceProvider services,
-        string? serviceId = null) => services.GetNamedServiceOrDefault<ITextEmbeddingGenerationService>(serviceId)
-            ?? throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text embedding service not available");
+        string? serviceId = null)
+            => services.GetNamedServiceOrDefault<ITextEmbeddingGenerationService>(serviceId)
+                ?? throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text embedding service not available");
 
     /// <summary>
     /// Remove the <see cref="ITextEmbeddingGenerationService"/> with the given <paramref name="serviceId"/>..
@@ -91,22 +95,22 @@ public static class TextEmbeddingServiceExtensions
     /// <returns>True if the service was found and removed. False otherwise</returns>
     public static bool TryRemoveTextEmbeddingGenerationService(
         this INamedServiceCollection services,
-        string serviceId) => services.TryRemove<ITextEmbeddingGenerationService>(serviceId);
+        string serviceId)
+            => services.TryRemove<ITextEmbeddingGenerationService>(serviceId);
 
     /// <summary>
     /// Remove all <see cref="ITextEmbeddingGenerationService"/> services.
     /// </summary>
     public static void RemoveAllTextEmbeddingGenerationServices(this INamedServiceCollection services)
-    {
-        services.Clear<ITextEmbeddingGenerationService>();
-    }
+        => services.Clear<ITextEmbeddingGenerationService>();
 
     /// <summary>
     /// Get all <see cref="ITextEmbeddingGenerationService"/> service IDs.
     /// </summary>
     /// <param name="services">The service provider.</param>
     public static IEnumerable<string> GetTextEmbeddingGenerationServiceIds(
-        this INamedServiceProvider services) => services.GetServiceNames<ITextEmbeddingGenerationService>();
+        this INamedServiceProvider services)
+            => services.GetServiceNames<ITextEmbeddingGenerationService>();
 
     /// <summary>
     /// Gets the default <see cref="ITextEmbeddingGenerationService"/> ID, or null none are registered or set as default.
@@ -115,5 +119,6 @@ public static class TextEmbeddingServiceExtensions
     /// <returns>The service ID of the default <see cref="ITextEmbeddingGenerationService"/>, or null if none are registered
     /// or set as default.</returns>
     public static string? GetDefaultTextEmbeddingGenerationServiceId(
-        this INamedServiceProvider services) => services.GetDefaultServiceName<ITextEmbeddingGenerationService>();
+        this INamedServiceProvider services)
+            => services.GetDefaultServiceName<ITextEmbeddingGenerationService>();
 }
