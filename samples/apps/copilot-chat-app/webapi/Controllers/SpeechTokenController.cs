@@ -14,7 +14,7 @@ public class SpeechTokenResponse
 {
     public string? Token { get; set; }
     public string? Region { get; set; }
-    public bool? StatusCode { get; set; }
+    public bool? isSuccess { get; set; }
 }
 
 public class TokenResult
@@ -52,7 +52,7 @@ public class SpeechTokenController : ControllerBase
 
         var tokenResult = await this.FetchTokenAsync(fetchTokenUri, subscriptionKey);
         var bSuccess = tokenResult.ResponseCode == HttpStatusCode.NotFound ? false : true;
-        return new SpeechTokenResponse { Token = tokenResult.Token, Region = azureSpeech.Region, StatusCode = bSuccess };
+        return new SpeechTokenResponse { Token = tokenResult.Token, Region = azureSpeech.Region, isSuccess = bSuccess };
     }
 
     private async Task<TokenResult> FetchTokenAsync(string fetchUri, string subscriptionKey)

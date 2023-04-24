@@ -62,9 +62,10 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     React.useEffect(() => {
         if (recognizer) return;
         void (async () => {
-            if(await speechService.validSpeechKeyAsync())
+            var response = await speechService.validSpeechKeyAsync();
+            if(response.isSuccess)
             {
-                const newRecognizer = await speechService.getSpeechRecognizerAsync();
+                const newRecognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
                 setRecognizer(newRecognizer);
             }
         })();
