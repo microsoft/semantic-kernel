@@ -60,7 +60,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             yield break;
         }
         //
-        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName);
+        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
         FetchRequest fetchRequest = FetchRequest.FetchVectors(ids)
             .FromNamespace(nameSpace);
@@ -70,7 +70,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         request.Headers.Add("accept", "application/json");
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request,
-            cancellationToken);
+            cancellationToken).ConfigureAwait(false);
 
         Console.WriteLine(responseContent);
 
@@ -141,14 +141,12 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             .WithSparseVector(sparseVector)
             .WithId(id)
             .Build();
-
-        string? requestContent = await request.Content.ReadAsStringAsync();
-        Console.WriteLine(requestContent);
+        
         request.Headers.Add("accept", "application/json");
 
-        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName);
+        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -262,7 +260,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         int totalUpserted = 0;
         int totalBatches = 0;
 
-        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName);
+        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
         IAsyncEnumerable<PineconeDocument> validVectors = PineconeUtils.EnsureValidMetadataAsync(vectors.ToAsyncEnumerable());
 
         await foreach (UpsertRequest? batch in PineconeUtils.GetUpsertBatchesAsync(validVectors, MaxBatchSize).WithCancellation(cancellationToken))
@@ -271,7 +269,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             HttpRequestMessage request = batch.ToNamespace(nameSpace).Build();
             request.Headers.Add("accept", "application/json");
 
-            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken);
+            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -293,7 +291,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
             totalUpserted += data.UpsertedCount;
             this._logger.LogInformation($"Upserted batch {totalBatches} with {data.UpsertedCount} vectors");
-            await Task.Delay(TimeSpan.FromMilliseconds(1000), cancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(1000), cancellationToken).ConfigureAwait(true);
         }
 
         this._logger.LogInformation($"Upserted {totalUpserted} vectors in {totalBatches} batches");
@@ -372,13 +370,13 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             }
         }
 
-        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName);
+        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
         using HttpRequestMessage request = deleteRequest.Build();
 
         request.Headers.Add("accept", "application/json");
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -402,13 +400,13 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         this._logger.LogInformation($"Updating vector: {document.Id}");
 
-        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName);
+        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
         using HttpRequestMessage request = UpdateVectorRequest.FromPineconeDocument(document).Build();
 
         request.Headers.Add("accept", "application/json");
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -428,7 +426,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     {
         this._logger.LogDebug("Getting index stats for index {0}", indexName);
 
-        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName);
+        string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
         using HttpRequestMessage request = DescribeIndexStatsRequest.GetIndexStats()
             .WithFilter(filter)
@@ -436,7 +434,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         request.Headers.Add("accept", "application/json");
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -467,7 +465,9 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     {
         using HttpRequestMessage request = ListIndexesRequest.Create().Build();
         request.Headers.Add("accept", "application/json; charset=utf-8");
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken);
+        
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
+        
         string[]? indices = JsonSerializer.Deserialize<string[]?>(responseContent, this._jsonSerializerOptions);
 
         if (indices == null)
@@ -491,7 +491,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         request.Headers.Add("accept", "text/plain");
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
         switch (response.StatusCode)
         {
@@ -517,7 +517,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
                 break;
         }
 
-        await this.WaitForIndexStateAsync(indexName, IndexState.Ready, cancellationToken);
+        await this.WaitForIndexStateAsync(indexName, IndexState.Ready, cancellationToken).ConfigureAwait(false);
 
         return this._indexDescription?.Configuration.Name;
     }
@@ -531,7 +531,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         request.Headers.Add("accept", "text/plain");
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -555,14 +555,14 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             throw;
         }
 
-        await this.WaitForIndexStateAsync(indexName, IndexState.Terminating, cancellationToken);
+        await this.WaitForIndexStateAsync(indexName, IndexState.Terminating, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancel = default)
     {
         this._logger.LogInformation("Checking for index {0}", indexName);
-        List<string?>? indexNames = await this.ListIndexesAsync(cancel).ToListAsync(cancel);
+        List<string?>? indexNames = await this.ListIndexesAsync(cancel).ToListAsync(cancel).ConfigureAwait(false);
 
         if (indexNames.Count == 0 || indexNames == null)
         {
@@ -580,7 +580,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         request.Headers.Add("accept", "application/json");
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.BadRequest)
         {
@@ -623,7 +623,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         request.Headers.Add("accept", "text/plain");
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
         switch (response.StatusCode)
         {
@@ -658,7 +658,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     internal async Task<bool> ConnectToHostAsync(string indexName, CancellationToken cancel = default)
     {
         this._logger.LogInformation("Connecting to Pinecone Host");
-        PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancel);
+        PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancel).ConfigureAwait(false);
 
         if (pineconeIndex == null)
         {
@@ -691,7 +691,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             return $"https://{this._indexDescription!.Status.Host}";
         }
 
-        if (!await this.ConnectToHostAsync(indexName) == false)
+        if (!await this.ConnectToHostAsync(indexName).ConfigureAwait(false) == false)
         {
             this._logger.LogError("Failed to connect to host");
         }
@@ -717,7 +717,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         {
             try
             {
-                this._indexDescription = await this.DescribeIndexAsync(indexName, cts.Token);
+                this._indexDescription = await this.DescribeIndexAsync(indexName, cts.Token).ConfigureAwait(false);
                 this._logger.LogInformation("Index {0} is in state {1}", indexName, this._indexDescription?.Status.State);
 
                 if (this._indexDescription?.Status.State == targetState)
@@ -732,7 +732,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
                 this._logger.LogError(e, "Error while polling index state for {0}: {1}", indexName, e.Message);
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(PollingInterval), cts.Token);
+            await Task.Delay(TimeSpan.FromSeconds(PollingInterval), cts.Token).ConfigureAwait(true);
         }
 
         if (cts.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
@@ -749,9 +749,9 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         request.Headers.Add(this._authHeader.Key, this._authHeader.Value);
         request.RequestUri = new Uri(baseURL + request.RequestUri);
 
-        using HttpResponseMessage response = await this._httpClient.SendAsync(request, cancel);
+        using HttpResponseMessage response = await this._httpClient.SendAsync(request, cancel).ConfigureAwait(false);
 
-        string responseContent = await response.Content.ReadAsStringAsync();
+        string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         this._logger.LogTrace(response.IsSuccessStatusCode ? "Pinecone responded successfully" : "Pinecone responded with error");
 
