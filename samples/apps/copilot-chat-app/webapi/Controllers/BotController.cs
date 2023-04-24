@@ -138,7 +138,7 @@ public class BotController : ControllerBase
             // The app can define what schema/version it supports before the community comes out with an open schema.
             return externalBotSchema.Name.Equals(
                 botSchema.Name, StringComparison.OrdinalIgnoreCase)
-                && externalBotSchema.Verson == botSchema.Verson
+                && externalBotSchema.Version == botSchema.Version
                 && externalBotEmbeddingConfig.AIService.Equals(
                 embeddingAIServiceConfig.AIService, StringComparison.OrdinalIgnoreCase)
                 && externalBotEmbeddingConfig.DeploymentOrModelId.Equals(

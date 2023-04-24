@@ -15,5 +15,5 @@ public class BotSchemaConfig
     /// <summary>
     /// The version of the schema.
     /// </summary>
-    public int Verson { get; set; } = -1;
+    public int Version { get; set; } = -1;
 }
