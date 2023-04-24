@@ -69,7 +69,7 @@ public class SemanticKernelController : ControllerBase
             kernel.RegisterSemanticSkills(semanticSkillsDirectory, this._logger);
         }
 
-        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, this._logger);
+        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, this._configuration, this._logger);
 
         ISKFunction? function = null;
         try
