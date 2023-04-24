@@ -35,7 +35,7 @@ public class SpeechTokenController : ControllerBase
         }
 
         string fetchTokenUri = $"https://{this._config.Region}.api.cognitive.microsoft.com/sts/v1.0/issueToken";
-        string token = this.FetchTokenAsync(fetchTokenUri, this._config.Key).Result;
+        string token = await this.FetchTokenAsync(fetchTokenUri, this._config.Key).ConfigureAwait(false);
         return new SpeechTokenResponse { Token = token, Region = this._config.Region };
     }
 
