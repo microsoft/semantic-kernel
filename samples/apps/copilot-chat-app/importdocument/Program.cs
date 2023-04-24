@@ -157,6 +157,7 @@ public static class Program
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Error: {response.StatusCode} {response.ReasonPhrase}");
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
                 return;
             }
 

@@ -26,4 +26,9 @@ public class DocumentImportConfig
     /// Gets or sets the maximum number of lines to use when combining lines into paragraphs.
     /// </summary>
     public int DocumentParagraphSplitMaxLines { get; set; } = 100;
+
+    /// <summary>
+    /// Maximum size in bytes of a document to be allowed for importing.
+    /// </summary>
+    public int FileSizeLimit { get; set; } = 512000;
 }

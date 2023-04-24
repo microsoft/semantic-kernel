@@ -67,7 +67,12 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest("File is empty.");
         }
 
-        // TODO: set a max file size limit
+        var fileSizeLimit = this._configuration.GetValue<int>("DocumentImport:FileSizeLimit");
+        if (formFile.Length > fileSizeLimit)
+        {
+            return this.BadRequest("File size exceeds the limit.");
+        }
+
         this._logger.LogInformation("Importing document {0}", formFile.FileName);
 
         try
