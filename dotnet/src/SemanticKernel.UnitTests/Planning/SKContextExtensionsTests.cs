@@ -42,7 +42,7 @@ public class SKContextExtensionsTests
         var semanticQuery = "test";
 
         // Act
-        var result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false);
+        var result = await context.GetAvailableFunctionsAsync(config, semanticQuery);
 
         // Assert
         Assert.NotNull(result);
@@ -95,7 +95,7 @@ public class SKContextExtensionsTests
         var semanticQuery = "test";
 
         // Act
-        var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false)).ToList();
+        var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -106,7 +106,7 @@ public class SKContextExtensionsTests
         config.IncludedFunctions.UnionWith(new List<string> { "nativeFunctionName" });
 
         // Act
-        result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false)).ToList();
+        result = (await context.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -159,7 +159,7 @@ public class SKContextExtensionsTests
         var semanticQuery = "test";
 
         // Act
-        var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false)).ToList();
+        var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -170,7 +170,7 @@ public class SKContextExtensionsTests
         config.IncludedFunctions.UnionWith(new List<string> { "nativeFunctionName" });
 
         // Act
-        result = (await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false)).ToList();
+        result = (await context.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -206,7 +206,7 @@ public class SKContextExtensionsTests
         var semanticQuery = "test";
 
         // Act
-        var result = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false);
+        var result = await context.GetAvailableFunctionsAsync(config, semanticQuery);
 
         // Assert
         Assert.NotNull(result);
