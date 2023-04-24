@@ -41,7 +41,7 @@ public class ChatStoreOptions
     /// Gets or sets the configuration for the file system chat store.
     /// </summary>
     [RequiredOnPropertyValue(nameof(Type), ChatStoreType.Filesystem)]
-    public FileSystemConfig? Filesystem { get; set; }
+    public FileSystemOptions? Filesystem { get; set; }
 
     /// <summary>
     /// Gets or sets the configuration for the Azure CosmosDB chat store.
