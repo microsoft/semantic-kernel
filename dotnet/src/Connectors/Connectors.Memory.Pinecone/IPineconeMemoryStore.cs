@@ -14,13 +14,13 @@ public interface IPineconeMemoryStore : IMemoryStore
     ///     If the record already exists, it will be updated.
     ///     If the record does not exist, it will be created.
     /// </summary>
-    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
+    /// <param name="indexName">The name associated with a collection of embeddings.</param>
     /// <param name="nameSpace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="record">The memory record to upsert.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>The unique identifier for the memory record.</returns>
     Task<string> UpsertToNamespaceAsync(
-        string collectionName,
+        string indexName,
         string nameSpace,
         MemoryRecord record,
         CancellationToken cancel = default);
@@ -30,13 +30,13 @@ public interface IPineconeMemoryStore : IMemoryStore
     ///     If the record already exists, it will be updated.
     ///     If the record does not exist, it will be created.
     /// </summary>
-    /// <param name="collectionName">The name associated with a collection of vectors.</param>
+    /// <param name="indexName">The name associated with a collection of vectors.</param>
     /// <param name="nameSpace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="records">The memory records to upsert.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>The unique identifiers for the memory records.</returns>
     IAsyncEnumerable<string> UpsertBatchToNamespaceAsync(
-        string collectionName,
+        string indexName,
         string nameSpace,
         IEnumerable<MemoryRecord> records,
         CancellationToken cancel = default);
@@ -44,14 +44,14 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <summary>
     /// Gets a memory record from the data store in the given namespace.
     /// </summary>
-    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
+    /// <param name="indexName">The name associated with a collection of embeddings.</param>
     /// <param name="nameSpace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="key">The unique id associated with the memory record to get.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>The memory record if found, otherwise null.</returns>
     Task<MemoryRecord?> GetFromNamespaceAsync(
-        string collectionName,
+        string indexName,
         string nameSpace,
         string key,
         bool withEmbedding = false,
@@ -60,14 +60,14 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <summary>
     /// Gets a batch of memory records from the data store in the given namespace.
     /// </summary>
-    /// <param name="collectionName">The name associated with a collection of embedding.</param>
+    /// <param name="indexName">The name associated with a collection of embedding.</param>
     /// <param name="nameSpace"></param>
     /// <param name="keys">The unique ids associated with the memory record to get.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>The memory records associated with the unique keys provided.</returns>
     IAsyncEnumerable<MemoryRecord> GetBatchFromNamespaceAsync(
-        string collectionName,
+        string indexName,
         string nameSpace,
         IEnumerable<string> keys,
         bool withEmbeddings = false,
@@ -89,12 +89,12 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <summary>
     /// Removes a batch of memory records from the data store in the given namespace.
     /// </summary>
-    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
+    /// <param name="indexName">The name associated with a collection of embeddings.</param>
     /// <param name="nameSpace"></param>
     /// <param name="keys">The unique ids associated with the memory record to remove.</param>
     /// <param name="cancel">Cancellation token.</param>
     Task RemoveBatchFromNamespaceAsync(
-        string collectionName,
+        string indexName,
         string nameSpace,
         IEnumerable<string> keys,
         CancellationToken cancel = default);
@@ -102,7 +102,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <summary>
     ///  Removes memory records from the data store that match the filter.
     /// </summary>
-    /// <param name="collectionName"></param>
+    /// <param name="indexName"></param>
     /// <param name="filter"></param>
     /// <param name="nameSpace"></param>
     /// <param name="cancel"></param>
@@ -110,7 +110,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     ///  In the same way that you can filter your vector search results, you can also filter your vector deletion.
     /// </remarks>
     Task RemoveWithFilterAsync(
-        string collectionName,
+        string indexName,
         Dictionary<string, object> filter,
         string nameSpace = "",
         CancellationToken cancel = default);
@@ -118,7 +118,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <summary>
     /// Gets the nearest filtered matches to the <see cref="Embedding"/> of type <see cref="float"/>
     /// </summary>
-    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
+    /// <param name="indexName">The name associated with a collection of embeddings.</param>
     /// <param name="embedding">The <see cref="Embedding"/> to compare the collection's embeddings with.</param>
     /// <param name="limit">The maximum number of similarity results to return.</param>
     /// <param name="filter"> The filter to apply to the collection.</param>
@@ -134,7 +134,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// nearest-neighbor results that match the filters.For most cases, the search latency will be even lower than unfiltered searches.
     /// </remarks>
     IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesWithFilterAsync(
-        string collectionName,
+        string indexName,
         Embedding<float> embedding,
         int limit,
         Dictionary<string, object> filter,
@@ -146,7 +146,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <summary>
     /// Gets the nearest matches to the <see cref="Embedding"/> of type <see cref="float"/> from the given namespace.
     /// </summary>
-    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
+    /// <param name="indexName">The name associated with a collection of embeddings.</param>
     /// <param name="nameSpace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="embedding">The <see cref="Embedding"/> to compare the collection's embeddings with.</param>
     /// <param name="limit">The maximum number of similarity results to return.</param>
@@ -155,7 +155,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>A group of tuples where item1 is a <see cref="MemoryRecord"/> and item2 is its similarity score as a <see cref="double"/>.</returns>
     IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesFromNamespaceAsync(
-        string collectionName,
+        string indexName,
         string nameSpace,
         Embedding<float> embedding,
         int limit,
@@ -166,7 +166,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <summary>
     /// Gets the nearest match to the <see cref="Embedding"/> of type <see cref="float"/> from the given namespace.
     /// </summary>
-    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
+    /// <param name="indexName">The name associated with a collection of embeddings.</param>
     /// <param name="nameSpace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="embedding">The <see cref="Embedding"/> to compare the collection's embeddings with.</param>
     /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
@@ -174,7 +174,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="cancel">Cancellation token</param>
     /// <returns>A tuple consisting of the <see cref="MemoryRecord"/> and the similarity score as a <see cref="double"/>. Null if no nearest match found.</returns>
     Task<(MemoryRecord, double)?> GetNearestMatchFromNamespaceAsync(
-        string collectionName,
+        string indexName,
         string nameSpace,
         Embedding<float> embedding,
         double minRelevanceScore = 0.0,
