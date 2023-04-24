@@ -42,7 +42,7 @@ internal class Database
 
     public async Task CreateCollectionAsync(SqliteConnection conn, string collectionName, CancellationToken cancel = default)
     {
-        if (await this.DoesCollectionExistsAsync(conn, collectionName, cancel))
+        if (await this.DoesCollectionExistsAsync(conn, collectionName, cancel).ConfigureAwait(false))
         {
             // Collection already exists
             return;
@@ -53,7 +53,7 @@ internal class Database
              INSERT INTO {TableName}(collection)
              VALUES(@collection); ";
         cmd.Parameters.AddWithValue("@collection", collectionName);
-        await cmd.ExecuteNonQueryAsync(cancel);
+        await cmd.ExecuteNonQueryAsync(cancel).ConfigureAwait(false);
     }
 
     public async Task UpdateAsync(SqliteConnection conn,
@@ -70,7 +70,7 @@ internal class Database
         cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
         cmd.Parameters.AddWithValue("@embedding", embedding ?? string.Empty);
         cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
-        await cmd.ExecuteNonQueryAsync(cancel);
+        await cmd.ExecuteNonQueryAsync(cancel).ConfigureAwait(false);
     }
 
     public async Task InsertOrIgnoreAsync(SqliteConnection conn,
@@ -85,14 +85,14 @@ internal class Database
         cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
         cmd.Parameters.AddWithValue("@embedding", embedding ?? string.Empty);
         cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
-        await cmd.ExecuteNonQueryAsync(cancel);
+        await cmd.ExecuteNonQueryAsync(cancel).ConfigureAwait(false);
     }
 
     public async Task<bool> DoesCollectionExistsAsync(SqliteConnection conn,
         string collectionName,
         CancellationToken cancel = default)
     {
-        var collections = await this.GetCollectionsAsync(conn, cancel).ToListAsync(cancel);
+        var collections = await this.GetCollectionsAsync(conn, cancel).ToListAsync(cancel).ConfigureAwait(false);
         return collections.Contains(collectionName);
     }
 
@@ -104,8 +104,8 @@ internal class Database
             SELECT DISTINCT(collection)
             FROM {TableName}";
 
-        using var dataReader = await cmd.ExecuteReaderAsync(cancel);
-        while (await dataReader.ReadAsync(cancel))
+        using var dataReader = await cmd.ExecuteReaderAsync(cancel).ConfigureAwait(false);
+        while (await dataReader.ReadAsync(cancel).ConfigureAwait(false))
         {
             yield return dataReader.GetString("collection");
         }
@@ -121,8 +121,8 @@ internal class Database
             WHERE collection=@collection";
         cmd.Parameters.AddWithValue("@collection", collectionName);
 
-        using var dataReader = await cmd.ExecuteReaderAsync(cancel);
-        while (await dataReader.ReadAsync(cancel))
+        using var dataReader = await cmd.ExecuteReaderAsync(cancel).ConfigureAwait(false);
+        while (await dataReader.ReadAsync(cancel).ConfigureAwait(false))
         {
             string key = dataReader.GetString("key");
             string metadata = dataReader.GetString("metadata");
@@ -145,8 +145,8 @@ internal class Database
         cmd.Parameters.AddWithValue("@collection", collectionName);
         cmd.Parameters.AddWithValue("@key", key);
 
-        using var dataReader = await cmd.ExecuteReaderAsync(cancel);
-        if (await dataReader.ReadAsync(cancel))
+        using var dataReader = await cmd.ExecuteReaderAsync(cancel).ConfigureAwait(false);
+        if (await dataReader.ReadAsync(cancel).ConfigureAwait(false))
         {
             string metadata = dataReader.GetString(dataReader.GetOrdinal("metadata"));
             string embedding = dataReader.GetString(dataReader.GetOrdinal("embedding"));

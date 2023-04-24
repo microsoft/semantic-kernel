@@ -33,7 +33,7 @@ public class BasicAuthenticationProvider
     public async Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
         // Base64 encode
-        string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials()));
+        string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials().ConfigureAwait(false)));
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic", encodedContent);
     }
 }

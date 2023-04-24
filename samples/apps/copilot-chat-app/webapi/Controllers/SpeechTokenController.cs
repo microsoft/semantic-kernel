@@ -27,7 +27,7 @@ public class SpeechTokenController : ControllerBase
     [Route("speechToken")]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<SpeechTokenResponse> Get()
+    public async Task<ActionResult<SpeechTokenResponse>> GetAsync()
     {
         if (string.IsNullOrWhiteSpace(this._config.Region))
         {
