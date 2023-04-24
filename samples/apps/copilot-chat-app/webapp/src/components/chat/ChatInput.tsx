@@ -58,16 +58,17 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
     const speechService = useSKSpeechService(process.env.REACT_APP_BACKEND_URI as string);
-    
-    const bEnableSpeech = (process.env.REACT_APP_ENABLE_SPEECH as string) === 'true' ? true : false;
-    
+        
     React.useEffect(() => {
-        if (!bEnableSpeech || recognizer) return;
+        if (recognizer) return;
         void (async () => {
-            const newRecognizer = await speechService.getSpeechRecognizerAsync();
-            setRecognizer(newRecognizer);
+            if(await speechService.validSpeechKeyAsync())
+            {
+                const newRecognizer = await speechService.getSpeechRecognizerAsync();
+                setRecognizer(newRecognizer);
+            }
         })();
-    }, [recognizer, speechService, bEnableSpeech]);
+    }, [recognizer, speechService]);
 
     const handleSpeech = () => {
         setIsListening(true);

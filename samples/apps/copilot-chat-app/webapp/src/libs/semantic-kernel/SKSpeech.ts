@@ -4,6 +4,7 @@ import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
 interface TokenResponse {
     token: string;
     region: string;
+    statusCode: boolean;
 }
 
 interface SpeechServiceRequest {
@@ -14,9 +15,20 @@ interface SpeechServiceRequest {
 export class SKSpeechService {
     constructor(private readonly serviceUrl: string) {}
 
+    validSpeechKeyAsync = async () => {
+        const response = await this.invokeTokenAsync();
+        return response.statusCode;
+    }
+
     getSpeechRecognizerAsync = async () => {
         const response = await this.invokeTokenAsync();
-        const { token, region } = response;
+        const { token, region, statusCode } = response;
+
+        if(!statusCode)
+        {
+            return;
+        }
+
         const speechConfig = speechSdk.SpeechConfig.fromAuthorizationToken(token, region);
         speechConfig.speechRecognitionLanguage = 'en-US';
         const audioConfig = speechSdk.AudioConfig.fromDefaultMicrophoneInput();

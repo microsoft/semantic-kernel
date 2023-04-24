@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SemanticKernel.Service.Config;
+using System.Net;
 
 namespace SemanticKernel.Service.Controllers;
 
@@ -13,7 +14,15 @@ public class SpeechTokenResponse
 {
     public string? Token { get; set; }
     public string? Region { get; set; }
+    public bool? StatusCode { get; set; }
 }
+
+public class TokenResult
+{
+    public string? Token { get; set; }
+    public HttpStatusCode? ResponseCode { get; set; }
+}
+
 
 [Authorize]
 [ApiController]
@@ -41,12 +50,12 @@ public class SpeechTokenController : ControllerBase
         string fetchTokenUri = "https://" + azureSpeech.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
         string subscriptionKey = azureSpeech.Key;
 
-        var token = await this.FetchTokenAsync(fetchTokenUri, subscriptionKey);
-
-        return new SpeechTokenResponse { Token = token, Region = azureSpeech.Region };
+        var tokenResult = await this.FetchTokenAsync(fetchTokenUri, subscriptionKey);
+        var bSuccess = tokenResult.ResponseCode==HttpStatusCode.NotFound? false:true;
+        return new SpeechTokenResponse { Token = tokenResult.Token, Region = azureSpeech.Region, StatusCode = bSuccess };
     }
 
-    private async Task<string> FetchTokenAsync(string fetchUri, string subscriptionKey)
+    private async Task<TokenResult> FetchTokenAsync(string fetchUri, string subscriptionKey)
     {
         // TODO: get the HttpClient from the DI container
         using (var client = new HttpClient())
@@ -55,9 +64,16 @@ public class SpeechTokenController : ControllerBase
             UriBuilder uriBuilder = new UriBuilder(fetchUri);
 
             var result = await client.PostAsync(uriBuilder.Uri, null);
-            result.EnsureSuccessStatusCode();
-            this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
-            return await result.Content.ReadAsStringAsync();
+            if(result.IsSuccessStatusCode)
+            {
+                var response = result.EnsureSuccessStatusCode();
+                this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
+                string token = await result.Content.ReadAsStringAsync();
+                return new TokenResult { Token = token, ResponseCode = response.StatusCode };
+            }
+            else{
+                return new TokenResult { Token = "", ResponseCode = HttpStatusCode.NotFound };
+            }
         }
     }
 }
