@@ -92,7 +92,6 @@ public static class ImportSemanticSkillFromDirectoryExtension
                 // Load prompt template
                 var template = new PromptTemplate(File.ReadAllText(promptPath), config, kernel.PromptTemplateEngine);
 
-                // Prepare lambda wrapping AI logic
                 var functionConfig = new SemanticFunctionConfig(config, template);
 
                 kernel.Log.LogTrace("Registering function {0}.{1} loaded from {2}", skillDirectoryName, functionName, dir);

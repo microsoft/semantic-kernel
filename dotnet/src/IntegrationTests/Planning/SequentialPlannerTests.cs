@@ -37,7 +37,7 @@ public sealed class SequentialPlannerTests : IDisposable
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
-        TestHelpers.GetSkill("FunSkill", kernel);
+        TestHelpers.GetSkills(kernel, "FunSkill");
 
         var planner = new SequentialPlanner(kernel);
 
