@@ -5,6 +5,7 @@
     <AssemblyName>SemanticKernel.UnitTests</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
+    <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
