@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -229,7 +228,8 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public T GetService<T>(string? name = null)
     {
-        return this._config.GetRequiredService<T>(name);
+        return this._config.GetService<T>(name) ??
+            throw new InvalidOperationException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered."); ;
     }
 
     /// <summary>

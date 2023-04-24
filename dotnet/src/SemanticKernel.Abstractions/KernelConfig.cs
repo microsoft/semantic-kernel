@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// Semantic kernel configuration.
 /// TODO: use .NET ServiceCollection (will require a lot of changes)
 /// </summary>
-public sealed class KernelConfig : NamedServiceCollection
+public sealed class KernelConfig : ServiceRegistry
 {
     /// <summary>
     /// Factory for creating HTTP handlers.

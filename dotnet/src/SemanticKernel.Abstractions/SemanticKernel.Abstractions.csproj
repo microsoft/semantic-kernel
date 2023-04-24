@@ -23,6 +23,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Services/ServiceRegistry.Collection.cs">
+      <DependentUpon>ServiceRegistry.cs</DependentUpon>
+    </None>
+    <None Include="Services/ServiceRegistry.Provider.cs">
+      <DependentUpon>ServiceRegistry.cs</DependentUpon>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Microsoft.SemanticKernel.Core</_Parameter1>
     </AssemblyAttribute>

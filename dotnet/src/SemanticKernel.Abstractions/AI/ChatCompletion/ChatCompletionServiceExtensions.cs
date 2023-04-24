@@ -2,10 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+// Use base namespace for better discoverability and to avoid conflicts with other extensions.
+namespace Microsoft.SemanticKernel;
 
 public static class ChatCompletionServiceExtensions
 {
@@ -20,10 +21,7 @@ public static class ChatCompletionServiceExtensions
         this INamedServiceCollection services,
         string serviceId,
         IChatCompletionService instance,
-        bool setAsDefault = false)
-    {
-        services.SetSingleton<IChatCompletionService>(serviceId, instance);
-    }
+        bool setAsDefault = false) => services.SetService<IChatCompletionService>(serviceId, instance);
 
     /// <summary>
     /// Adds a <see cref="IChatCompletionService"/> factory method to the services collection
@@ -36,11 +34,7 @@ public static class ChatCompletionServiceExtensions
         this INamedServiceCollection services,
         string serviceId,
         Func<IChatCompletionService> factory,
-        bool setAsDefault = false)
-    {
-        services.SetTransient<IChatCompletionService>(serviceId, factory, setAsDefault);
-
-    }
+        bool setAsDefault = false) => services.SetServiceFactory<IChatCompletionService>(serviceId, factory, setAsDefault);
 
     /// <summary>
     /// Adds a <see cref="IChatCompletionService"/> factory method to the services collection
@@ -53,10 +47,7 @@ public static class ChatCompletionServiceExtensions
         this INamedServiceCollection services,
         string serviceId,
         Func<INamedServiceProvider, IChatCompletionService> factory,
-        bool setAsDefault = false)
-    {
-        services.SetTransient<IChatCompletionService>(serviceId, factory, setAsDefault);
-    }
+        bool setAsDefault = false) => services.SetServiceFactory<IChatCompletionService>(serviceId, factory, setAsDefault);
 
     /// <summary>
     /// Set the <see cref="IChatCompletionService"/> to use for the kernel.
@@ -89,13 +80,8 @@ public static class ChatCompletionServiceExtensions
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
     public static IChatCompletionService GetChatCompletionServiceOrDefault(
         this INamedServiceProvider services,
-        string? serviceId = null)
-    {
-        return services.GetNamedServiceOrDefault<IChatCompletionService>(serviceId)
-            ?? throw new KernelException(
-                    KernelException.ErrorCodes.ServiceNotFound,
-                    "Chat completion service not found");
-    }
+        string? serviceId = null) => services.GetNamedServiceOrDefault<IChatCompletionService>(serviceId)
+            ?? throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Chat completion service not found");
 
     /// <summary>
     /// Remove the <see cref="IChatCompletionService"/> with the given <paramref name="serviceId"/>.
@@ -103,27 +89,22 @@ public static class ChatCompletionServiceExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="serviceId">Identifier of service to remove.</param>
     /// <returns>True if the service was found and removed. False otherwise</returns>
-    public static bool TryRemoveChatCompletionService(this INamedServiceCollection services, string serviceId)
-    {
-        return services.TryRemove<IChatCompletionService>(serviceId);
-    }
+    public static bool TryRemoveChatCompletionService(
+        this INamedServiceCollection services,
+        string serviceId) => services.TryRemove<IChatCompletionService>(serviceId);
 
     /// <summary>
     /// Remove all <see cref="IChatCompletionService"/> services.
     /// </summary>
-    public static void RemoveAllChatCompletionServices(this INamedServiceCollection services)
-    {
-        services.Clear<IChatCompletionService>();
-    }
+    public static void RemoveAllChatCompletionServices(
+        this INamedServiceCollection services) => services.Clear<IChatCompletionService>();
 
     /// <summary>
     /// Get all <see cref="IChatCompletionService"/> service IDs.
     /// </summary>
     /// <param name="services">The service provider.</param>
-    public static IEnumerable<string> GetChatCompletionServiceIds(this INamedServiceProvider services)
-    {
-        return services.GetServiceNames<IChatCompletionService>();
-    }
+    public static IEnumerable<string> GetChatCompletionServiceIds(
+        this INamedServiceProvider services) => services.GetServiceNames<IChatCompletionService>();
 
     /// <summary>
     /// Gets the default <see cref="IChatCompletionService"/> ID, or null none are registered or set as default.
@@ -131,8 +112,6 @@ public static class ChatCompletionServiceExtensions
     /// <param name="services">The service provider.</param>
     /// <returns>The service ID of the default <see cref="IChatCompletionService"/>, or null if none are registered
     /// or set as default.</returns>
-    public static string? GetDefaultChatCompletionServiceId(this INamedServiceProvider services)
-    {
-        return services.GetDefaultServiceName<IChatCompletionService>();
-    }
+    public static string? GetDefaultChatCompletionServiceId(
+        this INamedServiceProvider services) => services.GetDefaultServiceName<IChatCompletionService>();
 }

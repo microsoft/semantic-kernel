@@ -2,11 +2,8 @@
 
 using System.Linq;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Moq;
-using Xunit;
 using Microsoft.SemanticKernel.Services;
+using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 
@@ -18,7 +15,7 @@ public class KernelConfigOpenAIExtensionsTests
     [Fact]
     public void ItSucceedsWhenAddingDifferentServiceTypeWithSameId()
     {
-        var target = new NamedServiceCollection();
+        var target = new ServiceRegistry();
         target.AddAzureTextCompletionService("azure", "depl", "https://url", "key");
         target.AddAzureTextEmbeddingGenerationService("azure", "depl2", "https://url", "key");
 
@@ -30,7 +27,7 @@ public class KernelConfigOpenAIExtensionsTests
     public void ItTellsIfAServiceIsAvailable()
     {
         // Arrange
-        var target = new NamedServiceCollection();
+        var target = new ServiceRegistry();
         target.AddAzureTextCompletionService("azure", "depl", "https://url", "key");
         target.AddOpenAITextCompletionService("oai", "model", "apikey");
         target.AddAzureTextEmbeddingGenerationService("azure", "depl2", "https://url2", "key");
@@ -54,7 +51,7 @@ public class KernelConfigOpenAIExtensionsTests
     public void ItCanOverwriteServices()
     {
         // Arrange
-        var target = new NamedServiceCollection();
+        var target = new ServiceRegistry();
 
         // Act - Assert no exception occurs
         target.AddAzureTextCompletionService("one", "dep", "https://localhost", "key");
@@ -71,7 +68,7 @@ public class KernelConfigOpenAIExtensionsTests
     public void ItCanRemoveAllServices()
     {
         // Arrange
-        var target = new NamedServiceCollection();
+        var target = new ServiceRegistry();
         target.AddAzureTextCompletionService("one", "dep", "https://localhost", "key");
         target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.AddOpenAITextCompletionService("3", "model", "key");
@@ -94,7 +91,7 @@ public class KernelConfigOpenAIExtensionsTests
     public void ItCanRemoveAllTextCompletionServices()
     {
         // Arrange
-        var target = new NamedServiceCollection();
+        var target = new ServiceRegistry();
         target.AddAzureTextCompletionService("one", "dep", "https://localhost", "key");
         target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.AddOpenAITextCompletionService("3", "model", "key");
@@ -116,7 +113,7 @@ public class KernelConfigOpenAIExtensionsTests
     public void ItCanRemoveAllTextEmbeddingGenerationServices()
     {
         // Arrange
-        var target = new NamedServiceCollection();
+        var target = new ServiceRegistry();
         target.AddAzureTextCompletionService("one", "dep", "https://localhost", "key");
         target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.AddOpenAITextCompletionService("3", "model", "key");

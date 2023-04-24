@@ -8,7 +8,6 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using static KernelHttpServer.Config.Constants;
 
 namespace KernelHttpServer;

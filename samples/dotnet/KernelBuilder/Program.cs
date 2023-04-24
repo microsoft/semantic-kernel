@@ -4,7 +4,6 @@
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
 // You can access the builder using either Kernel.Builder or KernelBuilder.
 
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
@@ -49,7 +48,7 @@ var templateEngine = new PromptTemplateEngine(logger);
 var config = new KernelConfig();
 var httpHandlerFactory = new DefaultHttpRetryHandlerFactory(new HttpRetryConfig());
 ITextCompletionService Factory() => new AzureTextCompletion("deploymentName", "https://...", "apiKey", httpHandlerFactory, logger);
-config.SetTransient<ITextCompletionService>("foo", Factory);
+config.SetServiceFactory<ITextCompletionService>("foo", Factory);
 
 // Create kernel manually injecting all the dependencies
 var kernel3 = new Kernel(skills, templateEngine, memory, config, logger);

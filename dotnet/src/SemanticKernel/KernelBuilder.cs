@@ -24,7 +24,7 @@ public sealed class KernelBuilder
     private ILogger _log = NullLogger.Instance;
     private IMemoryStore? _memoryStorage = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
-    private readonly INamedServiceCollection _serviceCollection = new NamedServiceCollection();
+    private readonly INamedServiceCollection _serviceCollection = new ServiceRegistry();
 
     /// <summary>
     /// Create a new kernel instance
