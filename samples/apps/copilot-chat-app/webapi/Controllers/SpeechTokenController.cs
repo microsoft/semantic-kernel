@@ -4,30 +4,20 @@ using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Model;
 
 namespace SemanticKernel.Service.Controllers;
-
-/// <summary>
-/// Token Response is a simple wrapper around the token and region
-/// </summary>
-public class SpeechTokenResponse
-{
-    public string? Token { get; set; }
-    public string? Region { get; set; }
-    public bool? isSuccess { get; set; }
-}
-
-public class TokenResult
-{
-    public string? Token { get; set; }
-    public HttpStatusCode? ResponseCode { get; set; }
-}
-
 
 [Authorize]
 [ApiController]
 public class SpeechTokenController : ControllerBase
 {
+    private sealed class TokenResult
+    {
+        public string? Token { get; set; }
+        public HttpStatusCode? ResponseCode { get; set; }
+    }
+
     private readonly IConfiguration _configuration;
     private readonly ILogger<SpeechTokenController> _logger;
 
@@ -50,9 +40,9 @@ public class SpeechTokenController : ControllerBase
         string fetchTokenUri = "https://" + azureSpeech.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
         string subscriptionKey = azureSpeech.Key;
 
-        var tokenResult = await this.FetchTokenAsync(fetchTokenUri, subscriptionKey);
-        var bSuccess = tokenResult.ResponseCode == HttpStatusCode.NotFound ? false : true;
-        return new SpeechTokenResponse { Token = tokenResult.Token, Region = azureSpeech.Region, isSuccess = bSuccess };
+        TokenResult tokenResult = await this.FetchTokenAsync(fetchTokenUri, subscriptionKey);
+        var isSuccess = tokenResult.ResponseCode != HttpStatusCode.NotFound;
+        return new SpeechTokenResponse { Token = tokenResult.Token, Region = azureSpeech.Region, IsSuccess = isSuccess };
     }
 
     private async Task<TokenResult> FetchTokenAsync(string fetchUri, string subscriptionKey)
