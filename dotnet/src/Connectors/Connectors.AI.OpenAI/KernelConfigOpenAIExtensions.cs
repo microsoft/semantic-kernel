@@ -37,7 +37,7 @@ public static class KernelConfigOpenAIExtensions
         ITextCompletionService Factory(INamedServiceProvider sp) => new AzureTextCompletion(
             deploymentName, endpoint, apiKey, sp.GetHttpRetryHandler(), sp.GetLogger<ITextCompletionService>());
 
-        services.AddTransient(serviceId, Factory);
+        services.SetTransient(serviceId, Factory);
 
         return services;
     }
@@ -60,7 +60,7 @@ public static class KernelConfigOpenAIExtensions
         ITextCompletionService Factory(INamedServiceProvider sp) => new AzureTextCompletion(
             deploymentName, endpoint, credentials, sp.GetHttpRetryHandler(), sp.GetLogger<ITextCompletionService>());
 
-        services.AddTransient(serviceId, Factory);
+        services.SetTransient(serviceId, Factory);
 
         return services;
     }
@@ -83,7 +83,7 @@ public static class KernelConfigOpenAIExtensions
         ITextCompletionService Factory(INamedServiceProvider sp) => new OpenAITextCompletion(
             modelId, apiKey, orgId, sp.GetHttpRetryHandler(), sp.GetLogger<ITextCompletionService>());
 
-        services.AddTransient(serviceId, Factory);
+        services.SetTransient(serviceId, Factory);
 
         return services;
     }
@@ -110,7 +110,7 @@ public static class KernelConfigOpenAIExtensions
         ITextEmbeddingGenerationService Factory(INamedServiceProvider sp) => new AzureTextEmbeddingGeneration(
             deploymentName, endpoint, apiKey, sp.GetHttpRetryHandler(), sp.GetLogger<ITextCompletionService>());
 
-        services.AddTransient(serviceId, Factory);
+        services.SetTransient(serviceId, Factory);
 
         return services;
     }
@@ -133,7 +133,7 @@ public static class KernelConfigOpenAIExtensions
         ITextEmbeddingGenerationService Factory(INamedServiceProvider sp) => new AzureTextEmbeddingGeneration(
             deploymentName, endpoint, credentials, sp.GetHttpRetryHandler(), sp.GetLogger<ITextCompletionService>());
 
-        services.AddTransient(serviceId, Factory);
+        services.SetTransient(serviceId, Factory);
 
         return services;
     }
@@ -156,7 +156,7 @@ public static class KernelConfigOpenAIExtensions
         ITextEmbeddingGenerationService Factory(INamedServiceProvider sp) => new OpenAITextEmbeddingGeneration(
             modelId, apiKey, orgId, sp.GetHttpRetryHandler(), sp.GetLogger<OpenAITextEmbeddingGeneration>());
 
-        services.AddTransient(serviceId, Factory);
+        services.SetTransient(serviceId, Factory);
 
         return services;
     }
@@ -184,12 +184,12 @@ public static class KernelConfigOpenAIExtensions
         AzureChatCompletion Factory(INamedServiceProvider sp) => new(
             deploymentName, endpoint, apiKey, sp.GetHttpRetryHandler(), sp.GetLogger<AzureChatCompletion>());
 
-        services.AddTransient<IChatCompletionService>(serviceId, Factory);
+        services.SetTransient<IChatCompletionService>(serviceId, Factory);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
         if (alsoAsTextCompletion && typeof(ITextCompletionService).IsAssignableFrom(typeof(AzureChatCompletion)))
         {
-            services.AddTransient<ITextCompletionService>(serviceId, Factory);
+            services.SetTransient<ITextCompletionService>(serviceId, Factory);
         }
 
         return services;
@@ -214,12 +214,12 @@ public static class KernelConfigOpenAIExtensions
         AzureChatCompletion Factory(INamedServiceProvider sp) => new(
             deploymentName, endpoint, credentials, sp.GetHttpRetryHandler(), sp.GetLogger<AzureChatCompletion>());
 
-        services.AddTransient<IChatCompletionService>(serviceId, Factory);
+        services.SetTransient<IChatCompletionService>(serviceId, Factory);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
         if (alsoAsTextCompletion && typeof(ITextCompletionService).IsAssignableFrom(typeof(AzureChatCompletion)))
         {
-            services.AddTransient<ITextCompletionService>(serviceId, Factory);
+            services.SetTransient<ITextCompletionService>(serviceId, Factory);
         }
 
         return services;
@@ -244,12 +244,12 @@ public static class KernelConfigOpenAIExtensions
         OpenAIChatCompletion Factory(INamedServiceProvider sp) => new(
             modelId, apiKey, orgId, sp.GetHttpRetryHandler(), sp.GetLogger<OpenAIChatCompletion>());
 
-        services.AddTransient<IChatCompletionService>(serviceId, Factory);
+        services.SetTransient<IChatCompletionService>(serviceId, Factory);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
         if (alsoAsTextCompletion && typeof(ITextCompletionService).IsAssignableFrom(typeof(OpenAIChatCompletion)))
         {
-            services.AddTransient<ITextCompletionService>(serviceId, Factory);
+            services.SetTransient<ITextCompletionService>(serviceId, Factory);
         }
 
         return services;
@@ -275,7 +275,7 @@ public static class KernelConfigOpenAIExtensions
         IImageGenerationService Factory(INamedServiceProvider sp) => new OpenAIImageGeneration(
             apiKey, orgId, sp.GetHttpRetryHandler(), sp.GetLogger<OpenAIImageGeneration>());
 
-        services.AddTransient(serviceId, Factory);
+        services.SetTransient(serviceId, Factory);
 
         return services;
     }

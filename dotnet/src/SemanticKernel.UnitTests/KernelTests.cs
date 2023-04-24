@@ -24,7 +24,7 @@ public class KernelTests
         // Arrange
         var kernel = KernelBuilder.Create();
         var factory = new Mock<Func<INamedServiceProvider, ITextCompletionService>>();
-        kernel.Config.AddTransient("x", factory.Object);
+        kernel.Config.SetTransient("x", factory.Object);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -52,7 +52,7 @@ public class KernelTests
         // Arrange
         var kernel = KernelBuilder.Create();
         var factory = new Mock<Func<INamedServiceProvider, ITextCompletionService>>();
-        kernel.Config.AddTransient<ITextCompletionService>("x", factory.Object);
+        kernel.Config.SetTransient<ITextCompletionService>("x", factory.Object);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");

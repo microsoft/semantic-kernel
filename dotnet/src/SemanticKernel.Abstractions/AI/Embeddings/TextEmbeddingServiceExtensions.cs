@@ -9,59 +9,59 @@ namespace Microsoft.SemanticKernel.AI.Embeddings;
 public static class TextEmbeddingServiceExtensions
 {
     /// <summary>
-    /// Adds an text embedding generation service factory to the services collection
+    /// Adds an <see cref="ITextEmbeddingGenerationService"/> instance to the services collection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="serviceId">The service ID</param>
-    /// <param name="instance">The ITextEmbeddingGenerationService instance.</param>
-    /// <param name="setAsDefault">Optional: set as the default ITextEmbeddingGenerationService</param>
+    /// <param name="instance">The <see cref="ITextEmbeddingGenerationService"/> instance.</param>
+    /// <param name="setAsDefault">Optional: set as the default <see cref="ITextEmbeddingGenerationService"/></param>
     public static void AddTextEmbeddingGenerationService(
         this INamedServiceCollection services,
         string serviceId,
         ITextEmbeddingGenerationService instance,
         bool setAsDefault = false)
     {
-        services.AddSingleton<ITextEmbeddingGenerationService>(serviceId, instance);
+        services.SetSingleton<ITextEmbeddingGenerationService>(serviceId, instance);
     }
 
     /// <summary>
-    /// Adds an text embedding generation service factory to the services collection
+    /// Adds a <see cref="ITextEmbeddingGenerationService"/> factory method to the services collection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="serviceId">The service ID</param>
-    /// <param name="factory">The factory method that creates ITextEmbeddingGenerationService instances.</param>
-    /// <param name="setAsDefault">Optional: set as the default ITextEmbeddingGenerationService</param>
+    /// <param name="factory">The factory method that creates <see cref="ITextEmbeddingGenerationService"/> instances.</param>
+    /// <param name="setAsDefault">Optional: set as the default <see cref="ITextEmbeddingGenerationService"/></param>
     public static void AddTextEmbeddingGenerationService(
         this INamedServiceCollection services,
         string serviceId,
         Func<ITextEmbeddingGenerationService> factory,
         bool setAsDefault = false)
     {
-        services.AddTransient<ITextEmbeddingGenerationService>(serviceId, factory, setAsDefault);
+        services.SetTransient<ITextEmbeddingGenerationService>(serviceId, factory, setAsDefault);
 
     }
 
     /// <summary>
-    /// Adds an text embedding generation service factory to the services collection
+    /// Adds a <see cref="ITextEmbeddingGenerationService"/> factory method to the services collection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="serviceId">The service ID</param>
-    /// <param name="factory">The factory method that creates ITextEmbeddingGenerationService instances.</param>
-    /// <param name="setAsDefault">Optional: set as the default ITextEmbeddingGenerationService</param>
+    /// <param name="factory">The factory method that creates <see cref="ITextEmbeddingGenerationService"/> instances.</param>
+    /// <param name="setAsDefault">Optional: set as the default <see cref="ITextEmbeddingGenerationService"/></param>
     public static void AddTextEmbeddingGenerationService(
         this INamedServiceCollection services,
         string serviceId,
         Func<INamedServiceProvider, ITextEmbeddingGenerationService> factory,
         bool setAsDefault = false)
     {
-        services.AddTransient<ITextEmbeddingGenerationService>(serviceId, factory, setAsDefault);
+        services.SetTransient<ITextEmbeddingGenerationService>(serviceId, factory, setAsDefault);
     }
 
     /// <summary>
-    /// Set the default embedding service to use for the kernel.
+    /// Set the default <see cref="ITextEmbeddingGenerationService"/> to use for the kernel.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <param name="serviceId">Identifier of text embedding service to use.</param>
+    /// <param name="serviceId">Identifier of <see cref="ITextEmbeddingGenerationService"/> to use.</param>
     /// <returns>The updated kernel configuration.</returns>
     /// <exception cref="KernelException">Thrown if the requested service doesn't exist.</exception>
     public static INamedServiceCollection SetDefaultTextEmbeddingGenerationService(
@@ -79,7 +79,8 @@ public static class TextEmbeddingServiceExtensions
     }
 
     /// <summary>
-    /// Get the text embedding service matching the given id or the default if an id is not provided or not found.
+    /// Get the <see cref="ITextEmbeddingGenerationService"/> matching the given <paramref name="serviceId"/>, or the default
+    /// if the <paramref name="serviceId"/> is not provided or not found.
     /// </summary>
     /// <param name="services">The service provider.</param>
     /// <param name="serviceId">Optional identifier of the desired service.</param>
@@ -96,7 +97,7 @@ public static class TextEmbeddingServiceExtensions
     }
 
     /// <summary>
-    /// Remove the image generation service with the given id.
+    /// Remove the <see cref="ITextEmbeddingGenerationService"/> with the given <paramref name="serviceId"/>..
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="serviceId">Identifier of service to remove.</param>
@@ -107,7 +108,7 @@ public static class TextEmbeddingServiceExtensions
     }
 
     /// <summary>
-    /// Remove all text embedding generation services.
+    /// Remove all <see cref="ITextEmbeddingGenerationService"/> services.
     /// </summary>
     public static void RemoveAllTextEmbeddingGenerationServices(this INamedServiceCollection services)
     {
@@ -115,11 +116,22 @@ public static class TextEmbeddingServiceExtensions
     }
 
     /// <summary>
-    /// Get all text embedding generation services.
+    /// Get all <see cref="ITextEmbeddingGenerationService"/> service IDs.
     /// </summary>
     /// <param name="services">The service provider.</param>
-    public static IEnumerable<string> GetTextEmbeddingServiceIds(this INamedServiceProvider services)
+    public static IEnumerable<string> GetTextEmbeddingGenerationServiceIds(this INamedServiceProvider services)
     {
         return services.GetServiceNames<ITextEmbeddingGenerationService>();
+    }
+
+    /// <summary>
+    /// Gets the default <see cref="ITextEmbeddingGenerationService"/> ID, or null none are registered or set as default.
+    /// </summary>
+    /// <param name="services">The service provider.</param>
+    /// <returns>The service ID of the default <see cref="ITextEmbeddingGenerationService"/>, or null if none are registered
+    /// or set as default.</returns>
+    public static string? GetDefaultTextEmbeddingGenerationServiceId(this INamedServiceProvider services)
+    {
+        return services.GetDefaultServiceName<ITextEmbeddingGenerationService>();
     }
 }

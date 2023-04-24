@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -9,7 +10,7 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 public static class ChatCompletionServiceExtensions
 {
     /// <summary>
-    /// Adds a chat completion service factory to the services collection
+    /// Adds a <see cref="IChatCompletionService"/> instance to the services collection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="serviceId">The service ID</param>
@@ -21,11 +22,11 @@ public static class ChatCompletionServiceExtensions
         IChatCompletionService instance,
         bool setAsDefault = false)
     {
-        services.AddSingleton<IChatCompletionService>(serviceId, instance);
+        services.SetSingleton<IChatCompletionService>(serviceId, instance);
     }
 
     /// <summary>
-    /// Adds a chat completion service factory to the services collection
+    /// Adds a <see cref="IChatCompletionService"/> factory method to the services collection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="serviceId">The service ID</param>
@@ -37,31 +38,31 @@ public static class ChatCompletionServiceExtensions
         Func<IChatCompletionService> factory,
         bool setAsDefault = false)
     {
-        services.AddTransient<IChatCompletionService>(serviceId, factory, setAsDefault);
+        services.SetTransient<IChatCompletionService>(serviceId, factory, setAsDefault);
 
     }
 
     /// <summary>
-    /// Adds a chat completion service factory to the services collection
+    /// Adds a <see cref="IChatCompletionService"/> factory method to the services collection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="serviceId">The service ID</param>
-    /// <param name="factory">The factory method that creates IChatCompletionService instances.</param>
-    /// <param name="setAsDefault">Optional: set as the default IChatCompletionService</param>
+    /// <param name="factory">The factory method that creates <see cref="IChatCompletionService"/> instances.</param>
+    /// <param name="setAsDefault">Optional: set as the default <see cref="IChatCompletionService"/></param>
     public static void AddChatCompletionService(
         this INamedServiceCollection services,
         string serviceId,
         Func<INamedServiceProvider, IChatCompletionService> factory,
         bool setAsDefault = false)
     {
-        services.AddTransient<IChatCompletionService>(serviceId, factory, setAsDefault);
+        services.SetTransient<IChatCompletionService>(serviceId, factory, setAsDefault);
     }
 
     /// <summary>
-    /// Set the default chat completion service to use for the kernel.
+    /// Set the <see cref="IChatCompletionService"/> to use for the kernel.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <param name="serviceId">Identifier of text embedding service to use.</param>
+    /// <param name="serviceId">Identifier of <see cref="IChatCompletionService"/> to use.</param>
     /// <returns>The updated kernel configuration.</returns>
     /// <exception cref="KernelException">Thrown if the requested service doesn't exist.</exception>
     public static INamedServiceCollection SetDefaultChatCompletionService(
@@ -79,7 +80,8 @@ public static class ChatCompletionServiceExtensions
     }
 
     /// <summary>
-    /// Get the chat completion service matching the given id or the default if an id is not provided or not found.
+    /// Get the <see cref="IChatCompletionService"/> matching the given <paramref name="serviceId"/>, or
+    /// the default if <paramref name="serviceId"/> is not provided or not found.
     /// </summary>
     /// <param name="services">The service provider.</param>
     /// <param name="serviceId">Optional identifier of the desired service.</param>
@@ -96,7 +98,7 @@ public static class ChatCompletionServiceExtensions
     }
 
     /// <summary>
-    /// Remove the chat completion service with the given id.
+    /// Remove the <see cref="IChatCompletionService"/> with the given <paramref name="serviceId"/>.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="serviceId">Identifier of service to remove.</param>
@@ -107,7 +109,7 @@ public static class ChatCompletionServiceExtensions
     }
 
     /// <summary>
-    /// Remove all chat completion services.
+    /// Remove all <see cref="IChatCompletionService"/> services.
     /// </summary>
     public static void RemoveAllChatCompletionServices(this INamedServiceCollection services)
     {
@@ -115,11 +117,22 @@ public static class ChatCompletionServiceExtensions
     }
 
     /// <summary>
-    /// Get all chat completion generation services.
+    /// Get all <see cref="IChatCompletionService"/> service IDs.
     /// </summary>
     /// <param name="services">The service provider.</param>
     public static IEnumerable<string> GetChatCompletionServiceIds(this INamedServiceProvider services)
     {
         return services.GetServiceNames<IChatCompletionService>();
+    }
+
+    /// <summary>
+    /// Gets the default <see cref="IChatCompletionService"/> ID, or null none are registered or set as default.
+    /// </summary>
+    /// <param name="services">The service provider.</param>
+    /// <returns>The service ID of the default <see cref="IChatCompletionService"/>, or null if none are registered
+    /// or set as default.</returns>
+    public static string? GetDefaultChatCompletionServiceId(this INamedServiceProvider services)
+    {
+        return services.GetDefaultServiceName<IChatCompletionService>();
     }
 }

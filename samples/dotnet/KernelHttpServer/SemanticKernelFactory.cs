@@ -8,6 +8,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using static KernelHttpServer.Config.Constants;
 
 namespace KernelHttpServer;
@@ -93,7 +94,7 @@ internal static class SemanticKernelFactory
             kernel.RegisterNativeGraphSkills(graphToken.First());
         }
 
-        if (kernel.Config.DefaultTextEmbeddingGenerationServiceId != null)
+        if (kernel.Config.GetDefaultTextEmbeddingGenerationServiceId() != null)
         {
             kernel.RegisterTextMemory();
         }

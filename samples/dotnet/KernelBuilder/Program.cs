@@ -49,7 +49,7 @@ var templateEngine = new PromptTemplateEngine(logger);
 var config = new KernelConfig();
 var httpHandlerFactory = new DefaultHttpRetryHandlerFactory(new HttpRetryConfig());
 ITextCompletionService Factory() => new AzureTextCompletion("deploymentName", "https://...", "apiKey", httpHandlerFactory, logger);
-config.AddTransient<ITextCompletionService>("foo", Factory);
+config.SetTransient<ITextCompletionService>("foo", Factory);
 
 // Create kernel manually injecting all the dependencies
 var kernel3 = new Kernel(skills, templateEngine, memory, config, logger);

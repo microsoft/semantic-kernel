@@ -23,7 +23,7 @@ public class KernelConfigOpenAIExtensionsTests
         target.AddAzureTextEmbeddingGenerationService("azure", "depl2", "https://url", "key");
 
         Assert.Contains("azure", target.GetTextCompletionServiceIds());
-        Assert.Contains("azure", target.GetTextEmbeddingServiceIds());
+        Assert.Contains("azure", target.GetTextEmbeddingGenerationServiceIds());
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class KernelConfigOpenAIExtensionsTests
         Assert.DoesNotContain("azure2", completionServices);
         Assert.DoesNotContain("oai2", completionServices);
 
-        var embeddingServices = target.GetTextEmbeddingServiceIds();
+        var embeddingServices = target.GetTextEmbeddingGenerationServiceIds();
         Assert.Contains("azure", embeddingServices);
         Assert.Contains("oai2", embeddingServices);
         Assert.DoesNotContain("azure1", embeddingServices);
@@ -86,7 +86,7 @@ public class KernelConfigOpenAIExtensionsTests
         target.RemoveAllTextEmbeddingGenerationServices();
 
         // Assert
-        Assert.Empty(target.GetTextEmbeddingServiceIds());
+        Assert.Empty(target.GetTextEmbeddingGenerationServiceIds());
         Assert.Empty(target.GetTextCompletionServiceIds());
     }
 
@@ -108,7 +108,7 @@ public class KernelConfigOpenAIExtensionsTests
         target.RemoveAllTextCompletionServices();
 
         // Assert
-        Assert.Equal(4, target.GetTextEmbeddingServiceIds().Count());
+        Assert.Equal(4, target.GetTextEmbeddingGenerationServiceIds().Count());
         Assert.Empty(target.GetTextCompletionServiceIds());
     }
 
@@ -131,7 +131,7 @@ public class KernelConfigOpenAIExtensionsTests
 
         // Assert
         Assert.Equal(4, target.GetTextCompletionServiceIds().Count());
-        Assert.Empty(target.GetTextEmbeddingServiceIds());
+        Assert.Empty(target.GetTextEmbeddingGenerationServiceIds());
     }
 
     //[Fact]

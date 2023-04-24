@@ -9,26 +9,27 @@ namespace Microsoft.SemanticKernel.Services;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix",
     Justification = "This is a collection, and is modeled after ServiceCollection")]
-public class NamedServiceCollection : INamedServiceCollection
+public class NamedServiceCollection : INamedServiceCollection, INamedServiceProvider
 {
     // A constant key for the default service
     private const string DefaultKey = "__DEFAULT__";
 
     // A dictionary that maps a service type to a nested dictionary of names and service instances or factories
-    private readonly Dictionary<Type, Dictionary<string, object>> _services;
+    private readonly Dictionary<Type, Dictionary<string, object>> _services = new();
 
-    public NamedServiceCollection()
+    // A dictionary that maps a service type to the name of the default service
+    private readonly Dictionary<Type, string> _defaultIds = new();
+
+    #region INamedServiceCollection implementation
+
+    /// <inheritdoc/>
+    public void SetSingleton<T>(T service)
     {
-        this._services = new Dictionary<Type, Dictionary<string, object>>();
+        this.SetSingleton<T>(DefaultKey, service, true);
     }
 
-    public void AddSingleton<T>(T service)
-    {
-        this.AddSingleton<T>(DefaultKey, service, true);
-    }
-
-    // Registers a singleton service instance with an optional name and default flag
-    public void AddSingleton<T>(string? name, T service, bool isDefault = false)
+    /// <inheritdoc/>
+    public void SetSingleton<T>(string? name, T service, bool isDefault = false)
     {
         // Validate the service instance
         if (service == null)
@@ -53,25 +54,23 @@ public class NamedServiceCollection : INamedServiceCollection
         // Check if the name is null or the default flag is true
         if (name == null || isDefault)
         {
-            // Register the service as the default
-            namedServices[DefaultKey] = service;
+            // Update the default name for the service type
+            this._defaultIds[type] = name ?? DefaultKey;
         }
 
-        // Check if the name is not empty
-        if (name != null)
-        {
-            // Register the service with the given name
-            namedServices[name!] = service;
-        }
+        // Register the service with the given name
+        namedServices[name ?? DefaultKey] = service;
     }
 
-    public void AddTransient<T>(Func<T> factory)
+    /// <inheritdoc/>
+    public void SetTransient<T>(Func<T> factory)
     {
-        this.AddTransient<T>(DefaultKey, factory, true);
+        this.SetTransient<T>(DefaultKey, factory, true);
     }
 
+    /// <inheritdoc/>
     // Registers a transient service factory with an optional name and default flag
-    public void AddTransient<T>(string? name, Func<T> factory, bool isDefault = false)
+    public void SetTransient<T>(string? name, Func<T> factory, bool isDefault = false)
     {
         // Validate the factory function
         if (factory == null)
@@ -96,26 +95,25 @@ public class NamedServiceCollection : INamedServiceCollection
         // Check if the name is empty or the default flag is true
         if (name == null || isDefault)
         {
-            // Register the factory as the default
-            namedServices[DefaultKey] = factory;
+            // Update the default name for the service type
+            this._defaultIds[type] = name ?? DefaultKey;
         }
 
-        // Check if the name is not empty
-        if (name != null)
-        {
-            // Register the factory with the given name
-            namedServices[name!] = factory;
-        }
+        // Register the factory with the given name
+        namedServices[name ?? DefaultKey] = factory;
     }
 
-    public void AddTransient<T>(Func<INamedServiceProvider, T> factory)
+    /// <inheritdoc/>
+    public void SetTransient<T>(Func<INamedServiceProvider, T> factory)
     {
-        this.AddTransient<T>(DefaultKey, factory, true);
+        this.SetTransient<T>(DefaultKey, factory, true);
     }
 
-    // Registers a transient service factory that takes a service provider as a parameter, with an optional name and default flag
-    public void AddTransient<T>(string? name, Func<INamedServiceProvider, T> factory, bool isDefault = false)
+    /// <inheritdoc/>
+    public void SetTransient<T>(string? name, Func<INamedServiceProvider, T> factory, bool isDefault = false)
     {
+        // Registers a transient service factory that takes a service provider as a parameter, with an optional name and default flag
+
         // Validate the factory function
         if (factory == null)
         {
@@ -135,47 +133,54 @@ public class NamedServiceCollection : INamedServiceCollection
         {
             // Register the factory as the default
             namedServices[DefaultKey] = factory;
+            // Update the default name for the service type
+            this._defaultIds[type] = name ?? DefaultKey;
         }
 
-        // Check if the name is not empty
-        if (name != null)
-        {
-            // Register the factory with the given name
-            namedServices[name!] = factory;
-        }
+        // Register the factory with the given name
+        namedServices[name ?? DefaultKey] = factory;
     }
 
+    /// <inheritdoc/>
     public bool TryRemove<T>(string name)
     {
-        return this._services.TryGetValue(typeof(T), out var namedServices)
-            && namedServices.Remove(name);
+        var type = typeof(T);
+        if (this._services.TryGetValue(type, out var namedServices)
+            && namedServices.Remove(name))
+        {
+            // Check if the removed service was the default
+            if (this._defaultIds.TryGetValue(type, out var defaultName)
+                && defaultName == name)
+            {
+                // Remove the default name for the service type
+                this._defaultIds.Remove(type);
+            }
+            return true;
+        }
+
+        return false;
     }
 
+    /// <inheritdoc/>
     public void Clear<T>()
     {
-        this._services.Remove(typeof(T));
+        var type = typeof(T);
+        this._services.Remove(type);
+        this._defaultIds.Remove(type);
     }
 
+    /// <inheritdoc/>
     public void Clear()
     {
         this._services.Clear();
+        this._defaultIds.Clear();
     }
 
-    // Builds an immutable named service provider that can resolve the registered services
-    //public INamedServiceProvider Build()
-    //{
-    //    // Create a shallow copy of the services dictionary and its nested dictionaries
-    //    var servicesCopy = this._services.ToDictionary(
-    //        kvp => kvp.Key, // Use the same service type as the key
-    //        kvp => kvp.Value.ToDictionary( // Create a copy of the nested dictionary
-    //            subKvp => subKvp.Key, // Use the same service name as the key
-    //            subKvp => subKvp.Value // Use the same service instance or factory as the value
-    //        )
-    //    );
+    #endregion INamedServiceCollection
 
-    //    return new NamedServiceProvider(servicesCopy);
-    //}
+    #region INamedServiceProvider implementation
 
+    /// <inheritdoc/>
     public T? GetService<T>(string? name = null)
     {
         // Return the service, casting or invoking the factory if needed
@@ -190,6 +195,7 @@ public class NamedServiceCollection : INamedServiceCollection
         };
     }
 
+    /// <inheritdoc/>
     public bool TryGetService<T>([NotNullWhen(true)] out T? service)
     {
         try
@@ -205,6 +211,7 @@ public class NamedServiceCollection : INamedServiceCollection
         return false;
     }
 
+    /// <inheritdoc/>
     public bool TryGetService<T>(string name, [NotNullWhen(true)] out T? service)
     {
         try
@@ -220,6 +227,7 @@ public class NamedServiceCollection : INamedServiceCollection
         return false;
     }
 
+    /// <inheritdoc/>
     public T GetRequiredService<T>(string? name = null)
     {
         T? service = this.GetService<T>(name);
@@ -227,26 +235,47 @@ public class NamedServiceCollection : INamedServiceCollection
             $"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
     }
 
+    /// <inheritdoc/>
     public bool TrySetDefault<T>(string name)
     {
-        if (this._services.TryGetValue(typeof(T), out var namedServices)
-            && namedServices.TryGetValue(name, out var service))
+        if (this.TryGetService<T>(name, out var service))
         {
-            namedServices[DefaultKey] = service;
+            this._defaultIds[typeof(T)] = name;
             return true;
         }
 
         return false;
     }
 
+    /// <inheritdoc/>
     public IEnumerable<string> GetServiceNames<T>()
     {
         if (this._services.TryGetValue(typeof(T), out var dict))
         {
-            return dict.Keys.Where(s => s != DefaultKey);
+            return dict.Keys;
         }
 
         return Enumerable.Empty<string>();
+    }
+
+    /// <inheritdoc/>
+    public string? GetDefaultServiceName<T>()
+    {
+        // Returns the name of the default service for the given type, or null if none
+        var type = typeof(T);
+        if (this._defaultIds.TryGetValue(type, out var name))
+        {
+            return name;
+        }
+        else if (this._services.TryGetValue(typeof(T), out var services))
+        {
+            if (services.Count == 1)
+            {
+                return services.Keys.First();
+            }
+        }
+
+        return null;
     }
 
     private object? GetServiceRegistration<T>(string? name = null)
@@ -272,4 +301,6 @@ public class NamedServiceCollection : INamedServiceCollection
 
         return null;
     }
+
+    #endregion INamedServiceProvider
 }
