@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 
 namespace Microsoft.SemanticKernel.Services;
 public partial class ServiceRegistry : INamedServiceCollection
@@ -45,8 +46,9 @@ public partial class ServiceRegistry : INamedServiceCollection
             this._services[type] = namedServices;
         }
 
-        // Check if the name is empty or the default flag is true
-        if (name == null || isDefault)
+        // Set as the default if the name is empty, or the default flag is true,
+        // or there is no default name for the service type.
+        if (name == null || isDefault || !this.HasDefault<T>())
         {
             // Update the default name for the service type
             this._defaultIds[type] = name ?? DefaultKey;
@@ -70,8 +72,18 @@ public partial class ServiceRegistry : INamedServiceCollection
             if (this._defaultIds.TryGetValue(type, out var defaultName)
                 && defaultName == name)
             {
-                // Remove the default name for the service type
-                this._defaultIds.Remove(type);
+                // Check for other services of this type
+                var nextService = namedServices.Keys.FirstOrDefault();
+                if (nextService != null)
+                {
+                    // Set the default to the first service in the dictionary
+                    this._defaultIds[type] = nextService;
+                }
+                else
+                {
+                    // Remove the default name for the service type
+                    this._defaultIds.Remove(type);
+                }
             }
             return true;
         }
@@ -95,4 +107,8 @@ public partial class ServiceRegistry : INamedServiceCollection
     }
 
     #endregion INamedServiceCollection
+
+    private bool HasDefault<T>()
+        => this._defaultIds.TryGetValue(typeof(T), out var defaultName)
+            && !string.IsNullOrEmpty(defaultName);  
 }

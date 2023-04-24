@@ -65,11 +65,11 @@ internal static class SemanticKernelFactory
                 switch (config.EmbeddingConfig.AIService)
                 {
                     case AIService.OpenAI:
-                        c.AddOpenAITextEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
+                        c.AddOpenAITextEmbeddingService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
                             config.EmbeddingConfig.Key);
                         break;
                     case AIService.AzureOpenAI:
-                        c.AddAzureTextEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
+                        c.AddAzureTextEmbeddingService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
                             config.EmbeddingConfig.Endpoint, config.EmbeddingConfig.Key);
                         break;
                     default:
@@ -93,7 +93,7 @@ internal static class SemanticKernelFactory
             kernel.RegisterNativeGraphSkills(graphToken.First());
         }
 
-        if (kernel.Config.GetDefaultTextEmbeddingGenerationServiceId() != null)
+        if (kernel.Config.GetDefaultTextEmbeddingServiceId() != null)
         {
             kernel.RegisterTextMemory();
         }

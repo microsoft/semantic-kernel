@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Services;
 
 // Use base namespace for better discoverability and to avoid conflicts with other extensions.
@@ -53,6 +55,27 @@ public static class ImageGenerationServiceExtensions
             => services.SetServiceFactory<IImageGenerationService>(serviceId, factory, setAsDefault);
 
     /// <summary>
+    /// Set the default <see cref="IImageGenerationService"/> service to use for the kernel.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="serviceId">Identifier of completion service to use.</param>
+    /// <returns>The updated kernel configuration.</returns>
+    /// <exception cref="KernelException">Thrown if the requested service doesn't exist.</exception>
+    public static INamedServiceCollection SetDefaultImageGenerationService(
+        this INamedServiceCollection services,
+        string serviceId)
+    {
+        if (!services.TrySetDefault<IImageGenerationService>(serviceId))
+        {
+            throw new KernelException(
+                KernelException.ErrorCodes.ServiceNotFound,
+                $"Image generation service id '{serviceId}' doesn't exist");
+        }
+
+        return services;
+    }
+
+    /// <summary>
     /// Get the <see cref="IImageGenerationService"/> matching the given <paramref name="serviceId"/>, or the default
     /// if the <paramref name="serviceId"/> is not provided or not found.
     /// </summary>
@@ -99,4 +122,15 @@ public static class ImageGenerationServiceExtensions
     public static string? GetDefaultImageGenerationServiceId(
         this INamedServiceProvider services)
             => services.GetDefaultServiceName<IImageGenerationService>();
+
+    /// <summary>
+    /// Returns true if a <see cref="IImageGenerationService"/> exist with the specified ID.
+    /// </summary>
+    /// <param name="services">The service provider.</param>
+    /// <param name="serviceId">The service ID to search for. If null, it will look for a default service.</param>
+    /// <returns>True if the service ID is registered, false otherwise.</returns>
+    public static bool HasImageGenerationService(
+        this INamedServiceProvider services,
+        string? serviceId = null)
+            => services.HasServiceName<IImageGenerationService>(serviceId);
 }

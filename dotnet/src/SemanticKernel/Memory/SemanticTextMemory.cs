@@ -15,12 +15,12 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </summary>
 public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
 {
-    private readonly ITextEmbeddingGenerationService _embeddingGenerator;
+    private readonly ITextEmbeddingService _embeddingGenerator;
     private readonly IMemoryStore _storage;
 
     public SemanticTextMemory(
         IMemoryStore storage,
-        ITextEmbeddingGenerationService embeddingGenerator)
+        ITextEmbeddingService embeddingGenerator)
     {
         this._embeddingGenerator = embeddingGenerator;
         this._storage = storage;

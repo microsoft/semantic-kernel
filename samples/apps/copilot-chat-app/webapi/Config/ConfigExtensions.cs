@@ -78,12 +78,12 @@ internal static class ConfigExtensions
         switch (serviceConfig.AIService.ToUpperInvariant())
         {
             case AIServiceConfig.AzureOpenAI:
-                kernelConfig.AddAzureTextEmbeddingGenerationService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
+                kernelConfig.AddAzureTextEmbeddingService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
                     serviceConfig.Endpoint, serviceConfig.Key);
                 break;
 
             case AIServiceConfig.OpenAI:
-                kernelConfig.AddOpenAITextEmbeddingGenerationService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
+                kernelConfig.AddOpenAITextEmbeddingService(serviceConfig.Label, serviceConfig.DeploymentOrModelId,
                     serviceConfig.Key);
                 break;
 
@@ -92,7 +92,7 @@ internal static class ConfigExtensions
         }
     }
 
-    public static ITextEmbeddingGenerationService ToTextEmbeddingsService(this AIServiceConfig serviceConfig,
+    public static ITextEmbeddingService ToTextEmbeddingsService(this AIServiceConfig serviceConfig,
         ILogger? logger = null,
         IDelegatingHandlerFactory? handlerFactory = null)
     {

@@ -40,6 +40,14 @@ public interface INamedServiceProvider
     IEnumerable<string> GetServiceNames<T>();
 
     /// <summary>
+    /// Returns true if the specified service type and name is registered.
+    /// </summary>
+    /// <typeparam name="T">The type of the service.</typeparam>
+    /// <param name="name">The name of the service, or null for the default service.</param>
+    /// <returns></returns>
+    public bool HasServiceName<T>(string? name = null);
+
+    /// <summary>
     /// Gets the name of the default service for the specified type, or null if none.
     /// </summary>
     /// <typeparam name="T">The type of the service.</typeparam>

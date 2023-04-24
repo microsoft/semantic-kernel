@@ -92,7 +92,7 @@ public class KernelConfigTests
         var target = new KernelConfig();
         var exception = Assert.Throws<KernelException>(() =>
         {
-            target.SetDefaultTextEmbeddingGenerationService("azure");
+            target.SetDefaultTextEmbeddingService("azure");
         });
         Assert.Equal(KernelException.ErrorCodes.ServiceNotFound, exception.ErrorCode);
     }

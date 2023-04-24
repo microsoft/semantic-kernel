@@ -99,6 +99,15 @@ public partial class ServiceRegistry : INamedServiceProvider
         return null;
     }
 
+    /// <inheritdoc/>
+    public bool HasServiceName<T>(string? name = null)
+    {
+        // If a name is specified, check if there is a service registered with the given name
+        // If none is specified, check that there is a default service of this type.
+        return (this.GetServiceFactory<T>(name) != null);
+
+    }
+
     #endregion INamedServiceProvider
 
     private Func<INamedServiceProvider, T>? GetServiceFactory<T>(string? name = null)
@@ -108,17 +117,12 @@ public partial class ServiceRegistry : INamedServiceProvider
         {
             Func<INamedServiceProvider, object>? service = null;
 
-            // If the name is not the default key, check if there is only one named service registered
-            if (name == null && namedServices.Count == 1)
-            {
-                // Return the only named service, casting or invoking the factory if needed
-                service = namedServices.Values.First();
-            }
-            else
+            // If the name is not specified, try to load the default factory
+            name ??= this.GetDefaultServiceName<T>();
+            if (name != null)
             {
                 // Check if there is a service registered with the given name
-                // Use the default key if the name is not specified.
-                namedServices.TryGetValue(name ?? DefaultKey, out service);
+                namedServices.TryGetValue(name, out service);
             }
 
             return service as Func<INamedServiceProvider, T>;

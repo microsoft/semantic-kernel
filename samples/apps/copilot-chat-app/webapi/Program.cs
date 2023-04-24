@@ -196,7 +196,7 @@ public static class Program
                 if (embeddingConfig?.IsValid() == true)
                 {
                     var logger = sp.GetRequiredService<ILogger<AIServiceConfig>>();
-                    ITextEmbeddingGenerationService embeddingGenerator = embeddingConfig.ToTextEmbeddingsService(logger);
+                    ITextEmbeddingService embeddingGenerator = embeddingConfig.ToTextEmbeddingsService(logger);
 
                     return new SemanticTextMemory(memoryStore, embeddingGenerator);
                 }

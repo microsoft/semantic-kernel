@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// <summary>
 /// Azure OpenAI text embedding service.
 /// </summary>
-public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextEmbeddingGenerationService
+public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextEmbeddingService
 {
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using API Key auth

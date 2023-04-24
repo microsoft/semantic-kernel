@@ -83,7 +83,7 @@ var kernel6 = Kernel.Builder
         c.AddAzureTextCompletionService("myName1", "completionDeploymentName", "https://...", "apiKey");
 
         // This will be used when indexing memory records
-        c.AddAzureTextEmbeddingGenerationService("myName2", "embeddingsDeploymentName", "https://...", "apiKey");
+        c.AddAzureTextEmbeddingService("myName2", "embeddingsDeploymentName", "https://...", "apiKey");
     })
     .Build();
 
@@ -95,13 +95,13 @@ var kernel7 = Kernel.Builder
     .WithServices(s =>
     {
         s.AddAzureTextCompletionService("myName1", "completionDeploymentName", "https://...", "apiKey");
-        s.SetDefaultTextEmbeddingGenerationService("myName3");
+        s.SetDefaultTextEmbeddingService("myName3");
     })
     .Build();
 
 kernel7.Config
-    .AddAzureTextEmbeddingGenerationService("myName2", "embeddingsDeploymentName1", "https://...", "apiKey")
-    .AddAzureTextEmbeddingGenerationService("myName3", "embeddingsDeploymentName2", "https://...", "apiKey")
+    .AddAzureTextEmbeddingService("myName2", "embeddingsDeploymentName1", "https://...", "apiKey")
+    .AddAzureTextEmbeddingService("myName3", "embeddingsDeploymentName2", "https://...", "apiKey")
     .AddOpenAITextCompletionService("myName4", "text-davinci-003", "sk-...");
 
 // ==========================================================================================================

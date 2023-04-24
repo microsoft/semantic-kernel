@@ -107,7 +107,7 @@ public sealed class KernelBuilder
     /// <param name="embeddingGenerator">Embedding generator to add.</param>
     /// <returns>Updated kernel builder including the memory storage and embedding generator.</returns>
     public KernelBuilder WithMemoryStorageAndTextEmbeddingGeneration(
-        IMemoryStore storage, ITextEmbeddingGenerationService embeddingGenerator)
+        IMemoryStore storage, ITextEmbeddingService embeddingGenerator)
     {
         Verify.NotNull(storage, "The memory instance provided is NULL");
         Verify.NotNull(embeddingGenerator, "The embedding generator instance provided is NULL");

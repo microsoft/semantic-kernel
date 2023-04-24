@@ -363,7 +363,7 @@ public sealed class PlanTests : IDisposable
 
                 if (useEmbeddings)
                 {
-                    config.AddAzureTextEmbeddingGenerationService(
+                    config.AddAzureTextEmbeddingService(
                         serviceId: azureOpenAIEmbeddingsConfiguration.ServiceId,
                         deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                         endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,

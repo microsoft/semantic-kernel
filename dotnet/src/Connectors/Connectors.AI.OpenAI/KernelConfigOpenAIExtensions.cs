@@ -102,12 +102,12 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <returns>Self instance</returns>
-    public static INamedServiceCollection AddAzureTextEmbeddingGenerationService(this INamedServiceCollection services,
+    public static INamedServiceCollection AddAzureTextEmbeddingService(this INamedServiceCollection services,
         string serviceId, string deploymentName, string endpoint, string apiKey)
     {
         Verify.NotEmpty(serviceId, "The service Id provided is empty");
 
-        ITextEmbeddingGenerationService Factory(INamedServiceProvider sp) => new AzureTextEmbeddingGeneration(
+        ITextEmbeddingService Factory(INamedServiceProvider sp) => new AzureTextEmbeddingGeneration(
             deploymentName, endpoint, apiKey, sp.GetHttpRetryHandler(), sp.GetLogger<ITextCompletionService>());
 
         services.SetServiceFactory(serviceId, Factory);
@@ -125,12 +125,12 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <returns>Self instance</returns>
-    public static INamedServiceCollection AddAzureTextEmbeddingGenerationService(this INamedServiceCollection services,
+    public static INamedServiceCollection AddAzureTextEmbeddingService(this INamedServiceCollection services,
         string serviceId, string deploymentName, string endpoint, TokenCredential credentials)
     {
         Verify.NotEmpty(serviceId, "The service Id provided is empty");
 
-        ITextEmbeddingGenerationService Factory(INamedServiceProvider sp) => new AzureTextEmbeddingGeneration(
+        ITextEmbeddingService Factory(INamedServiceProvider sp) => new AzureTextEmbeddingGeneration(
             deploymentName, endpoint, credentials, sp.GetHttpRetryHandler(), sp.GetLogger<ITextCompletionService>());
 
         services.SetServiceFactory(serviceId, Factory);
@@ -148,12 +148,12 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <returns>Self instance</returns>
-    public static INamedServiceCollection AddOpenAITextEmbeddingGenerationService(this INamedServiceCollection services,
+    public static INamedServiceCollection AddOpenAITextEmbeddingService(this INamedServiceCollection services,
         string serviceId, string modelId, string apiKey, string? orgId = null)
     {
         Verify.NotEmpty(serviceId, "The service Id provided is empty");
 
-        ITextEmbeddingGenerationService Factory(INamedServiceProvider sp) => new OpenAITextEmbeddingGeneration(
+        ITextEmbeddingService Factory(INamedServiceProvider sp) => new OpenAITextEmbeddingGeneration(
             modelId, apiKey, orgId, sp.GetHttpRetryHandler(), sp.GetLogger<OpenAITextEmbeddingGeneration>());
 
         services.SetServiceFactory(serviceId, Factory);

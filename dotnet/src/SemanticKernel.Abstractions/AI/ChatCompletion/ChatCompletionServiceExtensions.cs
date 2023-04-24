@@ -15,7 +15,7 @@ public static class ChatCompletionServiceExtensions
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="serviceId">The service ID</param>
-    /// <param name="instance">The ITextEmbeddingGenerationService instance.</param>
+    /// <param name="instance">The ITextEmbeddingService instance.</param>
     /// <param name="setAsDefault">Optional: set as the default IChatCompletionService</param>
     public static void AddChatCompletionService(
         this INamedServiceCollection services,
@@ -121,4 +121,15 @@ public static class ChatCompletionServiceExtensions
     public static string? GetDefaultChatCompletionServiceId(
         this INamedServiceProvider services)
             => services.GetDefaultServiceName<IChatCompletionService>();
+
+    /// <summary>
+    /// Returns true if a <see cref="IChatCompletionService"/> exist with the specified ID.
+    /// </summary>
+    /// <param name="services">The service provider.</param>
+    /// <param name="serviceId">The service ID to search for. If null, it will look for a default service.</param>
+    /// <returns>True if the service ID is registered, false otherwise.</returns>
+    public static bool HasChatCompletionService(
+        this INamedServiceProvider services,
+        string? serviceId = null)
+            => services.HasServiceName<IChatCompletionService>(serviceId);
 }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Services;
 
@@ -121,4 +122,15 @@ public static class TextCompletionServiceExtensions
     public static string? GetDefaultTextCompletionServiceId(
         this INamedServiceProvider services)
             => services.GetDefaultServiceName<ITextCompletionService>();
+
+    /// <summary>
+    /// Returns true if a <see cref="ITextCompletionService"/> exist with the specified ID.
+    /// </summary>
+    /// <param name="services">The service provider.</param>
+    /// <param name="serviceId">The service ID to search for. If null, it will look for a default service.</param>
+    /// <returns>True if the service ID is registered, false otherwise.</returns>
+    public static bool HasTextCompletionService(
+        this INamedServiceProvider services,
+        string? serviceId = null)
+            => services.HasServiceName<ITextCompletionService>(serviceId);
 }
