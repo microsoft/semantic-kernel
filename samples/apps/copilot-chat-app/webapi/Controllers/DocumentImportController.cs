@@ -87,9 +87,9 @@ public class DocumentImportController : ControllerBase
             }
             await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm);
         }
-        catch (Exception e)
+        catch (Exception ex) when (ex is ArgumentOutOfRangeException)
         {
-            return this.BadRequest(e.Message);
+            return this.BadRequest(ex.Message);
         }
 
         return this.Ok();
@@ -104,15 +104,12 @@ public class DocumentImportController : ControllerBase
     private SupportedFileType GetFileType(string fileName)
     {
         string extension = Path.GetExtension(fileName);
-        switch (extension)
+        return extension switch
         {
-            case ".txt":
-                return SupportedFileType.TXT;
-            case ".pdf":
-                return SupportedFileType.PDF;
-            default:
-                throw new ArgumentOutOfRangeException($"Unsupported file type: {extension}");
-        }
+            ".txt" => SupportedFileType.TXT,
+            ".pdf" => SupportedFileType.PDF,
+            _ => throw new ArgumentOutOfRangeException($"Unsupported file type: {extension}"),
+        };
     }
 
     /// <summary>
@@ -122,7 +119,8 @@ public class DocumentImportController : ControllerBase
     /// <returns>A string of the content of the file.</returns>
     private async Task<string> ReadTxtFileAsync(IFormFile file)
     {
-        return await new StreamReader(file.OpenReadStream()).ReadToEndAsync();
+        using var streamReader = new StreamReader(file.OpenReadStream());
+        return await streamReader.ReadToEndAsync();
     }
 
     /// <summary>

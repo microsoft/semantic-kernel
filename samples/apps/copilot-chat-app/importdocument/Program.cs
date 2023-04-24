@@ -98,8 +98,10 @@ public static class Program
         }
 
         using var fileContent = new StreamContent(file.OpenRead());
-        using var formContent = new MultipartFormDataContent();
-        formContent.Add(fileContent, "formFile", file.Name);
+        using var formContent = new MultipartFormDataContent
+        {
+            { fileContent, "formFile", file.Name }
+        };
         if (toUserCollection)
         {
             Console.WriteLine("Uploading and parsing file to user collection...");
