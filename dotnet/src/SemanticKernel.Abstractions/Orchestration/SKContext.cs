@@ -78,7 +78,7 @@ public sealed class SKContext
     /// <summary>
     /// Semantic memory
     /// </summary>
-    public ISemanticTextMemory Memory { get; internal set; }
+    public ISemanticTextMemory Memory { get; }
 
     /// <summary>
     /// Read only skills collection
