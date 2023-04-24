@@ -19,7 +19,6 @@ public class SpeechTokenController : ControllerBase
         public HttpStatusCode? ResponseCode { get; set; }
     }
 
-    private readonly IConfiguration _configuration;
     private readonly ILogger<SpeechTokenController> _logger;
     private readonly AzureSpeechOptions _config;
 
@@ -42,12 +41,11 @@ public class SpeechTokenController : ControllerBase
             throw new InvalidOperationException($"Missing value for {AzureSpeechOptions.PropertyName}:{nameof(this._config.Region)}");
         }
 
-        string fetchTokenUri = "https://" + azureSpeech.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
-        string subscriptionKey = azureSpeech.Key;
+        string fetchTokenUri = "https://" + this._config.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
 
-        TokenResult tokenResult = await this.FetchTokenAsync(fetchTokenUri, subscriptionKey);
+        TokenResult tokenResult = await this.FetchTokenAsync(fetchTokenUri, this._config.Key);
         var isSuccess = tokenResult.ResponseCode != HttpStatusCode.NotFound;
-        return new SpeechTokenResponse { Token = tokenResult.Token, Region = azureSpeech.Region, IsSuccess = isSuccess };
+        return new SpeechTokenResponse { Token = tokenResult.Token, Region = this._config.Region, IsSuccess = isSuccess };
     }
 
     private async Task<TokenResult> FetchTokenAsync(string fetchUri, string subscriptionKey)
@@ -57,18 +55,17 @@ public class SpeechTokenController : ControllerBase
         client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
         UriBuilder uriBuilder = new(fetchUri);
 
-            var result = await client.PostAsync(uriBuilder.Uri, null);
-            if (result.IsSuccessStatusCode)
-            {
-                var response = result.EnsureSuccessStatusCode();
-                this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
-                string token = await result.Content.ReadAsStringAsync();
-                return new TokenResult { Token = token, ResponseCode = response.StatusCode };
-            }
-            else
-            {
-                return new TokenResult { Token = "", ResponseCode = HttpStatusCode.NotFound };
-            }
+        var result = await client.PostAsync(uriBuilder.Uri, null);
+        if (result.IsSuccessStatusCode)
+        {
+            var response = result.EnsureSuccessStatusCode();
+            this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
+            string token = await result.Content.ReadAsStringAsync();
+            return new TokenResult { Token = token, ResponseCode = response.StatusCode };
+        }
+        else
+        {
+            return new TokenResult { Token = "", ResponseCode = HttpStatusCode.NotFound };
         }
     }
 }
