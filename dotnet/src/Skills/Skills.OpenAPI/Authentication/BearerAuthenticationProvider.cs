@@ -31,7 +31,7 @@ public class BearerAuthenticationProvider
     /// <returns></returns>
     public async Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
-        var token = await this._bearerToken();
+        var token = await this._bearerToken().ConfigureAwait(false);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 }

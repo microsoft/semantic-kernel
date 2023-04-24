@@ -77,7 +77,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
     {
         using var requestMessage = new HttpRequestMessage(method, url);
 
-        await this._authCallback(requestMessage);
+        await this._authCallback(requestMessage).ConfigureAwait(false);
 
         if (payload != null)
         {
