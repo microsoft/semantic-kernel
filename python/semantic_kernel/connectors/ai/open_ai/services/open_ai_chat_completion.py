@@ -8,10 +8,16 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.complete_request_settings import (
+    CompleteRequestSettings,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.utils.null_logger import NullLogger
 
 
-class OpenAIChatCompletion(ChatCompletionClientBase):
+class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     _model_id: str
     _api_key: str
     _org_id: Optional[str] = None
@@ -118,3 +124,27 @@ class OpenAIChatCompletion(ChatCompletionClientBase):
         # TODO: tracking on token counts/etc.
 
         return response.choices[0].message.content
+
+    async def complete_simple_async(
+        self, prompt: str, request_settings: CompleteRequestSettings
+    ) -> str:
+        """
+        Completes the given prompt. Returns a single string completion.
+        Cannot return multiple completions. Cannot return logprobs.
+
+        Arguments:
+            prompt {str} -- The prompt to complete.
+            request_settings {CompleteRequestSettings} -- The request settings.
+
+        Returns:
+            str -- The completed text.
+        """
+        prompt_to_message = [("user", prompt)]
+        chat_settings = ChatRequestSettings(
+            temperature=request_settings.temperature,
+            top_p=request_settings.top_p,
+            presence_penalty=request_settings.presence_penalty,
+            frequency_penalty=request_settings.frequency_penalty,
+            max_tokens=request_settings.max_tokens,
+        )
+        return await self.complete_chat_async(prompt_to_message, chat_settings)

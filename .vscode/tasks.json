@@ -147,7 +147,7 @@
         "XPlat Code Coverage;Format=lcov",
         "--filter",
         "${input:filter}",
-        "SemanticKernel.IntegrationTests.csproj"
+        "IntegrationTests.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",
@@ -156,7 +156,7 @@
         "panel": "shared"
       },
       "options": {
-        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.IntegrationTests/"
+        "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
       }
     },
     {

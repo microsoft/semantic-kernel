@@ -506,4 +506,39 @@ public sealed class PlanTests
         Assert.Equal(goal, plan.Description);
         Assert.Equal(2, plan.Steps.Count);
     }
+
+    [Fact]
+    public async Task CanExecutePlanWithOneStepAndStateAsync()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var log = new Mock<ILogger>();
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+
+        var returnContext = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+
+        var mockFunction = new Mock<ISKFunction>();
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null))
+            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+                returnContext.Variables.Update("Here is a poem about " + c.Variables.Input))
+            .Returns(() => Task.FromResult(returnContext));
+
+
+        var plan = new Plan(mockFunction.Object);
+        plan.State.Set("input", "Cleopatra");
+
+        // Act
+        var result = await plan.InvokeAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a poem about Cleopatra", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null), Times.Once);
+    }
 }
