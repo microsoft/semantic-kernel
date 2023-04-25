@@ -22,6 +22,7 @@ public sealed class KernelBuilder
     private KernelConfig _config = new();
     private ISemanticTextMemory _memory = NullMemory.Instance;
     private ILogger _log = NullLogger.Instance;
+    private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
     private IMemoryStore? _memoryStorage = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private readonly INamedServiceCollection _serviceCollection = new ServiceRegistry();
@@ -45,6 +46,15 @@ public sealed class KernelBuilder
         if (this._httpHandlerFactory != null)
         {
             this._config.SetHttpRetryHandlerFactory(this._httpHandlerFactory);
+        }
+
+        if (this._loggerFactory != null)
+        {
+            this._config.SetService<ILoggerFactory>(this._loggerFactory);
+        }
+        else if (this._log != null)
+        {
+            this._config.SetService<ILogger>(this._log);
         }
 
         var instance = new Kernel(
@@ -73,6 +83,19 @@ public sealed class KernelBuilder
     {
         Verify.NotNull(log, "The logger instance provided is NULL");
         this._log = log;
+        return this;
+    }
+
+    /// <summary>
+    /// Add a ILoggerFactory to the kernel to be built.
+    /// </summary>
+    /// <param name="loggerFactory">LoggerFactory to add.</param>
+    /// <returns>Updated kernel builder including the logger.</returns>
+    public KernelBuilder WithLogFactory(ILoggerFactory loggerFactory)
+    {
+        Verify.NotNull(loggerFactory, "The logger instance provided is NULL");
+        this._loggerFactory = loggerFactory;
+        this._log = loggerFactory.CreateLogger<Kernel>();
         return this;
     }
 

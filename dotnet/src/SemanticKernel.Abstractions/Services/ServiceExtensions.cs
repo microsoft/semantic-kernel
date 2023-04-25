@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Reliability;
 
 namespace Microsoft.SemanticKernel.Services;
@@ -26,9 +27,25 @@ internal static class ServiceExtensions
         return services.GetService<T>();
     }
 
-    public static ILogger<T>? GetLogger<T>(this INamedServiceProvider services)
+    /// <summary>
+    /// Gets a logger for the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type of the class for which to provide logging.</typeparam>
+    /// <param name="services">The service provider.</param>
+    /// <returns></returns>
+    public static ILogger<T> GetLogger<T>(this INamedServiceProvider services)
     {
-        return services.GetService<ILoggerFactory>()?.CreateLogger<T>();
+        if (services.TryGetService<ILoggerFactory>(out var factory))
+        {
+            return factory.CreateLogger<T>();
+        }
+
+        if (services.TryGetService<ILogger>(out var logger))
+        {
+            return (ILogger<T>)logger;
+        }
+
+        return NullLogger<T>.Instance;
     }
 
     public static IDelegatingHandlerFactory? GetHttpRetryHandler(this INamedServiceProvider services)
