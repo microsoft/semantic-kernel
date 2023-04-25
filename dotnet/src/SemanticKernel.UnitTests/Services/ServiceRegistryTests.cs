@@ -480,7 +480,7 @@ public class ServiceRegistryTests
     }
 
     // A test service implementation
-    private class TestService : ITestService
+    private sealed class TestService : ITestService
     {
     }
 }
