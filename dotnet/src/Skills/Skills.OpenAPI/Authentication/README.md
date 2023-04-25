@@ -45,9 +45,11 @@ var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVau
 
 ### [`InteractiveMsalAuthenticationProvider`](./InteractiveMsalAuthenticationProvider.cs)
 
-This class uses the [Microsoft Authentication Library (MSAL)](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-overview)'s .NET library to authenticate the user and acquire an OAuth token via the authorization code flow. It utilizes BearerAuthenticationProvider under the covers to add the token to the HTTP authentication header via the `AuthenticateRequestAsync` method.
+This class uses the [Microsoft Authentication Library (MSAL)](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-overview)'s .NET library to authenticate the user and acquire an OAuth token. It follows the interactive [authorization code flow](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow), requiring the user to sign in with a Microsoft or Azure identity. This is particularly useful for authenticating requests to the Microsoft Graph or Azure APIs.
 
-When constructing this provider, the caller must provide:
+Once the token is acquired, it is added to the HTTP authentication header via the `AuthenticateRequestAsync` method, which is inherited from `BearerAuthenticationProvider`.
+
+To construct this provider, the caller must specify:
 - *Client ID* – identifier of the calling application. This is acquired by [registering your application with the Microsoft Identity platform](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
 - *Tenant ID* – identifier of the target service tenant, or “common”
 - *Scopes* – permissions being requested
