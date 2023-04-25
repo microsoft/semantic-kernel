@@ -65,7 +65,7 @@ internal static class ServicesExtensions
         services.AddOptions<DocumentMemoryOptions>()
             .Bind(configuration.GetSection(DocumentMemoryOptions.PropertyName))
             .ValidateDataAnnotations().ValidateOnStart();
-        
+
         return services;
     }
 

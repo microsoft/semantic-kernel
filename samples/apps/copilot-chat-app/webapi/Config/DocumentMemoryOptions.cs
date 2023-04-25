@@ -10,7 +10,7 @@ namespace SemanticKernel.Service.Config;
 public class DocumentMemoryOptions
 {
     public const string PropertyName = "DocumentMemory";
-    
+
     /// <summary>
     /// Gets or sets the name of the global document collection.
     /// </summary>

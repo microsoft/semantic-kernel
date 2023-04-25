@@ -10,7 +10,7 @@ namespace SemanticKernel.Service.Config;
 public class BotSchemaOptions
 {
     public const string PropertyName = "BotSchema";
-    
+
     /// <summary>
     /// The name of the schema.
     /// </summary>
