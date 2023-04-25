@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Globalization;
+using System.Numerics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning.Planners;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Storage;
 
@@ -33,7 +35,7 @@ public class ChatSkill
     private readonly ChatSessionRepository _chatSessionRepository;
 
     /// <summary>
-    /// Prompt settings.
+    /// Settings containing prompt texts.
     /// </summary>
     private readonly PromptSettings _promptSettings;
 
@@ -121,7 +123,7 @@ public class ChatSkill
         var latestMessage = await this._chatMessageRepository.FindLastByChatIdAsync(chatId);
 
         // Search for relevant memories.
-        List<MemoryQueryResult> relevantMemories = new List<MemoryQueryResult>();
+        List<MemoryQueryResult> relevantMemories = new();
         foreach (var memoryName in this._promptSettings.MemoryMap.Keys)
         {
             var results = context.Memory.SearchAsync(
@@ -269,6 +271,7 @@ public class ChatSkill
             settings: this.CreateChatResponseCompletionSettings()
         );
 
+        // If the completion function failed, return the context containing the error.
         if (chatContext.ErrorOccurred)
         {
             return chatContext;

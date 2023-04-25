@@ -3,9 +3,11 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
+using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
@@ -15,17 +17,18 @@ namespace SemanticKernel.Service.Controllers;
 [ApiController]
 public class SemanticKernelController : ControllerBase
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<SemanticKernelController> _logger;
     private readonly PromptSettings _promptSettings;
+    private readonly ServiceOptions _options;
 
-    public SemanticKernelController(IServiceProvider serviceProvider, IConfiguration configuration, PromptSettings promptSettings, ILogger<SemanticKernelController> logger)
+    public SemanticKernelController(
+        IOptions<ServiceOptions> options,
+        PromptSettings promptSettings,
+        ILogger<SemanticKernelController> logger)
     {
-        this._serviceProvider = serviceProvider;
-        this._configuration = configuration;
-        this._promptSettings = promptSettings;
         this._logger = logger;
+        this._options = options.Value;
+        this._promptSettings = promptSettings;
     }
 
     /// <summary>
@@ -39,6 +42,7 @@ public class SemanticKernelController : ControllerBase
     /// <param name="kernel">Semantic kernel obtained through dependency injection</param>
     /// <param name="chatRepository">Storage repository to store chat sessions</param>
     /// <param name="chatMessageRepository">Storage repository to store chat messages</param>
+    /// <param name="documentMemoryOptions">Options for document memory handline.</param>
     /// <param name="ask">Prompt along with its parameters</param>
     /// <param name="skillName">Skill in which function to invoke resides</param>
     /// <param name="functionName">Name of function to invoke</param>
@@ -50,9 +54,10 @@ public class SemanticKernelController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AskResult>> InvokeFunctionAsync(
-        [FromServices] Kernel kernel,
+        [FromServices] IKernel kernel,
         [FromServices] ChatSessionRepository chatRepository,
         [FromServices] ChatMessageRepository chatMessageRepository,
+        [FromServices] IOptions<DocumentMemoryOptions> documentMemoryOptions,
         [FromBody] Ask ask,
         string skillName, string functionName)
     {
@@ -63,13 +68,12 @@ public class SemanticKernelController : ControllerBase
             return this.BadRequest("Input is required.");
         }
 
-        string semanticSkillsDirectory = this._configuration.GetSection(Constants.SemanticSkillsDirectoryConfigKey).Get<string>();
-        if (!string.IsNullOrWhiteSpace(semanticSkillsDirectory))
+        if (!string.IsNullOrWhiteSpace(this._options.SemanticSkillsDirectory))
         {
-            kernel.RegisterSemanticSkills(semanticSkillsDirectory, this._logger);
+            kernel.RegisterSemanticSkills(this._options.SemanticSkillsDirectory, this._logger);
         }
 
-        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, this._configuration, this._logger);
+        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, documentMemoryOptions.Value, this._logger);
 
         ISKFunction? function = null;
         try

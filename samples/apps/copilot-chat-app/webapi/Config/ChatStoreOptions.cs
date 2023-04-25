@@ -1,12 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using static SemanticKernel.Service.Config.AuthorizationOptions;
+
 namespace SemanticKernel.Service.Config;
 
 /// <summary>
 /// Configuration settings for the chat store.
 /// </summary>
-public class ChatStoreConfig
+public class ChatStoreOptions
 {
+    public const string PropertyName = "ChatStore";
+
     /// <summary>
     /// The type of chat store to use.
     /// </summary>
@@ -36,10 +40,12 @@ public class ChatStoreConfig
     /// <summary>
     /// Gets or sets the configuration for the file system chat store.
     /// </summary>
-    public FileSystemConfig? Filesystem { get; set; }
+    [RequiredOnPropertyValue(nameof(Type), ChatStoreType.Filesystem)]
+    public FileSystemOptions? Filesystem { get; set; }
 
     /// <summary>
     /// Gets or sets the configuration for the Azure CosmosDB chat store.
     /// </summary>
-    public CosmosConfig? Cosmos { get; set; }
+    [RequiredOnPropertyValue(nameof(Type), ChatStoreType.Cosmos)]
+    public CosmosOptions? Cosmos { get; set; }
 }

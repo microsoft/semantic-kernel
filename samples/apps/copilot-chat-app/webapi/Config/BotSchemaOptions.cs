@@ -1,19 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace SemanticKernel.Service.Config;
 
 /// <summary>
-/// Configuration settings for the bot file schema that is supported by this application.
+/// Configuration options for the bot file schema that is supported by this application.
 /// </summary>
-public class BotSchemaConfig
+public class BotSchemaOptions
 {
+    public const string PropertyName = "BotSchema";
+
     /// <summary>
     /// The name of the schema.
     /// </summary>
+    [Required, NotEmptyOrWhitespace]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// The version of the schema.
     /// </summary>
-    public int Version { get; set; } = -1;
+    [Range(0, int.MaxValue)]
+    public int Version { get; set; }
 }
