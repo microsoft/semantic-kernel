@@ -22,7 +22,7 @@ public static class Example22_b_OpenApiSkill_Jira
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         var contextVariables = new ContextVariables();
 
-        string s_serverURL = "https://<jiraProject>.atlassian.net/rest/api/latest/"
+        string s_serverURL = "https://<jiraProject>.atlassian.net/rest/api/latest/";
         contextVariables.Set("server-url", s_serverURL);
 
         IDictionary<string, ISKFunction> jiraSkills;
