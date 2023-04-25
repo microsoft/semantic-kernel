@@ -68,11 +68,9 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         using HttpRequestMessage request = fetchRequest.Build();
 
         request.Headers.Add("accept", "application/json");
-
+        
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request,
             cancellationToken).ConfigureAwait(false);
-
-        Console.WriteLine(responseContent);
 
         try
         {
@@ -114,11 +112,11 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     /// <inheritdoc />
     public async IAsyncEnumerable<PineconeDocument?> QueryAsync(
         string indexName,
-        IEnumerable<float> vector,
-        bool includeValues,
-        bool includeMetadata,
         int topK,
         string nameSpace = "",
+        IEnumerable<float>? vector = default,
+        bool includeValues = false,
+        bool includeMetadata = true,
         Dictionary<string, object>? filter = null,
         SparseVectorData? sparseVector = null,
         string? id = null,
@@ -204,15 +202,12 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         IAsyncEnumerable<PineconeDocument?> matches = this.QueryAsync(
             indexName,
+            topK,
+            nameSpace,
             vector,
             includeValues,
             includeMetadata,
-            topK,
-            nameSpace,
-            filter,
-            null,
-            null,
-            cancellationToken);
+            filter, null, null, cancellationToken);
 
         await foreach (PineconeDocument? match in matches.WithCancellation(cancellationToken))
         {
@@ -389,7 +384,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task UpdateAsync(string indexName, PineconeDocument document, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(string indexName, PineconeDocument document, string nameSpace = "", CancellationToken cancellationToken = default)
     {
 
         if (!this.Ready)
@@ -402,7 +397,10 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
-        using HttpRequestMessage request = UpdateVectorRequest.FromPineconeDocument(document).Build();
+        using HttpRequestMessage request = UpdateVectorRequest
+            .FromPineconeDocument(document)
+            .InNamespace(nameSpace)
+            .Build();
 
         request.Headers.Add("accept", "application/json");
 
