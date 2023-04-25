@@ -98,17 +98,10 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
 
         var content = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        var contentType = responseMessage.Content.Headers.ContentType.MediaType;
-        if (contentType == "application/json")
-        {
-            //Content is already formatted as a json object, just return it
-            return content;
-        }
-
         //First iteration allowing to associate additional metadata with the returned content.
         var result = new JsonObject();
         result.Add("content", content);
-        result.Add("contentType", contentType);
+        result.Add("contentType", responseMessage.Content.Headers.ContentType.ToString());
 
         return result;
     }
