@@ -41,7 +41,7 @@ internal class QueryRequest
     /// </summary>
     /// <value>Vector dense data. This should be the same length as the dimension of the index being queried.</value>
     [JsonPropertyName("vector")]
-    public IEnumerable<float> Vector { get; set; }
+    public IEnumerable<float>? Vector { get; set; }
 
     /// <summary>
     /// The unique ID of a vector
@@ -69,7 +69,7 @@ internal class QueryRequest
     [JsonPropertyName("includeMetadata")]
     public bool IncludeMetadata { get; set; }
 
-    public static QueryRequest QueryIndex(IEnumerable<float> vector)
+    public static QueryRequest QueryIndex(IEnumerable<float>? vector = null)
     {
         return new QueryRequest(vector);
     }
@@ -153,7 +153,7 @@ internal class QueryRequest
     /// Initializes a new instance of the <see cref="QueryRequest" /> class.
     /// </summary>
     [JsonConstructor]
-    private QueryRequest(IEnumerable<float> values)
+    private QueryRequest(IEnumerable<float>? values = null)
     {
         this.Vector = values;
     }
