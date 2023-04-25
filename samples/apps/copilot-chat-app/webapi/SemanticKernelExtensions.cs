@@ -31,7 +31,7 @@ internal static class SemanticKernelExtensions
         {
             string promptsConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "prompts.json");
             PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(File.ReadAllText(promptsConfigPath)) ??
-                                            throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
+                                          throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
             promptsConfig.Validate();
             return promptsConfig;
         });
@@ -49,7 +49,8 @@ internal static class SemanticKernelExtensions
                 case MemoriesStoreOptions.MemoriesStoreType.Qdrant:
                     if (config.Qdrant is null)
                     {
-                        throw new InvalidOperationException($"MemoriesStore:Qdrant is required when MemoriesStore:Type is '{MemoriesStoreOptions.MemoriesStoreType.Qdrant}'");
+                        throw new InvalidOperationException(
+                            $"MemoriesStore:Qdrant is required when MemoriesStore:Type is '{MemoriesStoreOptions.MemoriesStoreType.Qdrant}'");
                     }
 
                     return new QdrantMemoryStore(
@@ -75,8 +76,8 @@ internal static class SemanticKernelExtensions
         services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
         services.AddScoped<ISkillCollection, SkillCollection>();
         services.AddScoped<KernelConfig>(serviceProvider => new KernelConfig()
-                    .AddCompletionBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>())
-                    .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()));
+            .AddCompletionBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>())
+            .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()));
         services.AddScoped<IKernel, Kernel>();
 
         return services;
@@ -153,7 +154,6 @@ internal static class SemanticKernelExtensions
         ILogger? logger = null,
         IDelegatingHandlerFactory? handlerFactory = null)
     {
-
         return serviceConfig.AIService switch
         {
             AIServiceOptions.AIServiceType.AzureOpenAI => new AzureTextEmbeddingGeneration(

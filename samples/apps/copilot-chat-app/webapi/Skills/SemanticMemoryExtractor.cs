@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.Globalization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -15,7 +16,11 @@ internal static class SemanticMemoryExtractor
     /// <param name="memoryName">Name of the memory category</param>
     internal static string MemoryCollectionName(string chatId, string memoryName) => $"{chatId}-{memoryName}";
 
-    internal static async Task<SemanticChatMemory> ExtractCognitiveMemoryAsync(string memoryName, IKernel kernel, SKContext context, PromptSettings promptSettings)
+    internal static async Task<SemanticChatMemory> ExtractCognitiveMemoryAsync(
+        string memoryName,
+        IKernel kernel,
+        SKContext context,
+        PromptSettings promptSettings)
     {
         if (!promptSettings.MemoryMap.TryGetValue(memoryName, out var memoryPrompt))
         {

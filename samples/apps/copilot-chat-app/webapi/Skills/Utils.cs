@@ -1,4 +1,5 @@
 ﻿//Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -36,4 +37,3 @@ internal static class Utils
         return tokens.Count;
     }
 }
-

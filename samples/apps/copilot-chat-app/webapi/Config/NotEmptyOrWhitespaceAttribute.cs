@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel.DataAnnotations;
-using System.Reflection;
 
 namespace SemanticKernel.Service.Config;
 
