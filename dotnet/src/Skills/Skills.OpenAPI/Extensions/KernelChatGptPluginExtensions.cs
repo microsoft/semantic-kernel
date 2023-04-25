@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 
 // ReSharper disable once CheckNamespace
@@ -47,13 +48,11 @@ public static class KernelChatGptPluginExtensions
         {
             if (httpClient == null)
             {
-                // TODO Fix this:  throwing "The inner handler has not been assigned"
-                //using DefaultHttpRetryHandler retryHandler = new DefaultHttpRetryHandler(
-                //  config: new HttpRetryConfig() { MaxRetryCount = 3 },
-                //  log: null);
+                using DefaultHttpRetryHandler retryHandler = new DefaultHttpRetryHandler(
+                  config: new HttpRetryConfig() { MaxRetryCount = 3 },
+                  log: null);
 
-                //using HttpClient client = new HttpClient(retryHandler, false);
-                using HttpClient client = new();
+                using HttpClient client = new HttpClient(retryHandler, false);
 
                 response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
             }

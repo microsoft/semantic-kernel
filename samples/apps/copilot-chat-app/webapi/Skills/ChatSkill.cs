@@ -204,7 +204,7 @@ public class ChatSkill
         await plannerKernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json")); // Klarna 
         //plannerKernel.ImportSkill(new WebSearchEngineSkill(new BingConnector(Environment.GetEnvironmentVariable("Bing__ApiKey")!)));
 
-        PlannerConfig plannerConfig = new PlannerConfig();
+        PlannerConfig plannerConfig = new PlannerConfig(); // RelevancyThreshold is null to avoid using embeddings to create skill fn list
         SequentialPlanner planner = new SequentialPlanner(plannerKernel, plannerConfig);
 
         string planResult = string.Empty;

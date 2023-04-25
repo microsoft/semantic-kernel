@@ -471,7 +471,7 @@ public sealed class Plan : ISKFunction
         }
 
         // BUGBUG
-        if (stepVariables["server_url"].Equals("https://www.example.com", StringComparison.OrdinalIgnoreCase))
+        if (!stepVariables["server_url"].Equals("https://www.klarna.com/us/shopping", StringComparison.OrdinalIgnoreCase))
         {
             Console.Error.WriteLine("BUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUG");
             Console.Error.WriteLine(">>>>> stepVariables[\"server_url\"].Equals(\"https://www.example.com\"");
