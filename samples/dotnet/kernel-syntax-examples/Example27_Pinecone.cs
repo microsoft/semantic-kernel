@@ -16,11 +16,11 @@ public static class Example27_Pinecone
 
     public static async Task RunAsync()
     {
-        var apiKey = Env.Var("PINECONE_API_KEY");
+        string apiKey = Env.Var("PINECONE_API_KEY");
         PineconeEnvironment pineconeEnvironment = PineconeUtils.GetEnvironment(Env.Var("PINECONE_ENVIRONMENT"));
-        var indexDefinition = IndexDefinition.Default(MemoryCollectionName);
+        IndexDefinition indexDefinition = IndexDefinition.Default(MemoryCollectionName);
         PineconeMemoryStore? memoryStore = await PineconeMemoryStore.InitializeAsync(pineconeEnvironment, apiKey, indexDefinition);
-        
+
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .Configure(c =>
@@ -32,47 +32,47 @@ public static class Example27_Pinecone
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");
-        var collections = memoryStore.GetCollectionsAsync();
-        await foreach (var collection in collections)
+        IAsyncEnumerable<string> collections = memoryStore.GetCollectionsAsync();
+        await foreach (string collection in collections)
         {
             Console.WriteLine(collection);
         }
 
         Console.WriteLine("== Adding Memories ==");
-        var metadata = new Dictionary<string, object>()
+        Dictionary<string, object> metadata = new Dictionary<string, object>()
         {
             { "type", "text" },
             { "tags", new List<string>() { "memory", "cats" } }
         };
-        
+
         string additionalMetadata = System.Text.Json.JsonSerializer.Serialize(metadata);
-        var key1 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName,   "british short hair", "cat1",null, additionalMetadata);
-        var key2 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName,  "orange tabby", "cat2",null, additionalMetadata);
-        var key3 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName,   "norwegian forest cat","cat3", null, additionalMetadata);
+        string key1 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, "british short hair", "cat1", null, additionalMetadata);
+        string key2 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, "orange tabby", "cat2", null, additionalMetadata);
+        string key3 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, "norwegian forest cat", "cat3", null, additionalMetadata);
 
         Console.WriteLine("== Printing Collections in DB ==");
         collections = memoryStore.GetCollectionsAsync();
-        await foreach (var collection in collections)
+        await foreach (string collection in collections)
         {
-             Console.WriteLine(collection);
+            Console.WriteLine(collection);
         }
-        
+
         Console.WriteLine("== Retrieving Memories Through the Kernel ==");
         MemoryQueryResult? lookup = await kernel.Memory.GetAsync(MemoryCollectionName, "cat1");
         Console.WriteLine(lookup != null ? lookup.Metadata.Text : "ERROR: memory not found");
-        
+
         Console.WriteLine("== Retrieving Memories Directly From the Store ==");
-        var memory1 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key1);
-        var memory2 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key2);
-        var memory3 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key3);
+        var memory1 = await memoryStore.GetAsync(MemoryCollectionName, key1);
+        var memory2 = await memoryStore.GetAsync(MemoryCollectionName, key2);
+        var memory3 = await memoryStore.GetAsync(MemoryCollectionName, key3);
         Console.WriteLine(memory1 != null ? memory1.Metadata.Text : "ERROR: memory not found");
         Console.WriteLine(memory2 != null ? memory2.Metadata.Text : "ERROR: memory not found");
         Console.WriteLine(memory3 != null ? memory3.Metadata.Text : "ERROR: memory not found");
-        
+
         Console.WriteLine("== Similarity Searching Memories: My favorite color is orange ==");
-        var searchResults = kernel.Memory.SearchAsync(MemoryCollectionName, "My favorite color is orange", limit: 1, minRelevanceScore: 0.8);
-        
-        await foreach (var item in searchResults)
+        IAsyncEnumerable<MemoryQueryResult> searchResults = kernel.Memory.SearchAsync(MemoryCollectionName, "My favorite color is orange", 1, 0.8);
+
+        await foreach (MemoryQueryResult item in searchResults)
         {
             Console.WriteLine(item.Metadata.Text + " : " + item.Relevance);
         }
@@ -81,7 +81,7 @@ public static class Example27_Pinecone
         await memoryStore.DeleteCollectionAsync(MemoryCollectionName);
         //
         Console.WriteLine("== Printing Collections in DB ==");
-        await foreach (var collection in collections)
+        await foreach (string collection in collections)
         {
             Console.WriteLine(collection);
         }
