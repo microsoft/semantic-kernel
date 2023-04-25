@@ -15,14 +15,15 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RepoUtils;
 
-public static class Example22_OpenApiSkill_Jira
+public static class Example22_b_OpenApiSkill_Jira
 {
     public static async Task RunAsync()
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         var contextVariables = new ContextVariables();
 
-        string s_serverURL = "https://skjiratest.atlassian.net/rest/api/latest/"; // "https://<jiraProject>.atlassian.net/rest/api/latest/"
+        string s_serverURL = "https://skjiratest.atlassian.net/rest/api/latest/";
+        //string s_serverURL = "https://<jiraProject>.atlassian.net/rest/api/latest/"
         contextVariables.Set("server-url", s_serverURL);
 
         IDictionary<string, ISKFunction> jiraSkills;
@@ -31,7 +32,7 @@ public static class Example22_OpenApiSkill_Jira
         bool bUseLocalFile = true;
         if (bUseLocalFile)
         {
-            var apiSkillFile = "./../../../Jira/apiDefinitionSimplified.json";
+            var apiSkillFile = "./../../../Skills/JiraSkill/openapi.json";
             jiraSkills = await kernel.ImportOpenApiSkillFromFileAsync("jiraSkills", apiSkillFile, tokenProvider.AuthenticateRequestAsync);
         }
         else
@@ -75,7 +76,7 @@ public static class Example22_OpenApiSkill_Jira
     private static Task<string> AuthenticateWithBasicAPITokenAsync()
     {
         string s = "aman.sachan@microsoft.com" + ":" + Env.Var("JiraAPIToken");
-        //string s = {email} + ":" + Env.Var("JiraAPIToken");
+        // string s = Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("JIRA_API_KEY");
         return Task.FromResult(s);
     }
 }
