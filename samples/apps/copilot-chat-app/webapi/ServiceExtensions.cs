@@ -62,6 +62,10 @@ internal static class ServicesExtensions
             .Bind(configuration.GetSection(BotSchemaOptions.PropertyName))
             .ValidateDataAnnotations().ValidateOnStart();
 
+        services.AddOptions<DocumentMemoryOptions>()
+            .Bind(configuration.GetSection(DocumentMemoryOptions.PropertyName))
+            .ValidateDataAnnotations().ValidateOnStart();
+        
         return services;
     }
 

@@ -57,7 +57,7 @@ public class DocumentImportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ImportDocumentAsync(
-        [FromServices] Kernel kernel,
+        [FromServices] IKernel kernel,
         [FromForm] DocumentImportForm documentImportForm)
     {
         var formFile = documentImportForm.FormFile;
@@ -135,7 +135,7 @@ public class DocumentImportController : ControllerBase
     /// <param name="content">The file content read from the uploaded document</param>
     /// <param name="documentImportForm">The document upload form that contains additional necessary info</param>
     /// <returns></returns>
-    private async Task ParseDocumentContentToMemoryAsync(Kernel kernel, string content, DocumentImportForm documentImportForm)
+    private async Task ParseDocumentContentToMemoryAsync(IKernel kernel, string content, DocumentImportForm documentImportForm)
     {
         var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
         var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global

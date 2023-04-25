@@ -56,7 +56,7 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UploadAsync(
-        [FromServices] Kernel kernel,
+        [FromServices] IKernel kernel,
         [FromServices] IOptionsSnapshot<AIServiceOptions> aiServiceOptions,
         [FromServices] IOptions<BotSchemaOptions> botSchemaOptions,
         [FromQuery] string userId,
@@ -124,7 +124,7 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<string>> DownloadAsync(
-        [FromServices] Kernel kernel,
+        [FromServices] IKernel kernel,
         [FromServices] IOptionsSnapshot<AIServiceOptions> aiServiceOptions,
         [FromServices] IOptions<BotSchemaOptions> botSchemaOptions,
         Guid chatId)
@@ -175,7 +175,7 @@ public class BotController : ControllerBase
     /// <param name="botSchemaOptions">The bot schema options.</param>
     /// <param name="chatId">The chat id of the bot</param>
     private async Task<Bot> CreateBotAsync(
-        Kernel kernel,
+        IKernel kernel,
         ChatSessionRepository chatRepository,
         ChatMessageRepository chatMessageRepository,
         BotSchemaOptions botSchemaOptions,
