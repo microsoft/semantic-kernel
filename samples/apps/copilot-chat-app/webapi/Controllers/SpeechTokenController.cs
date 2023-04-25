@@ -42,7 +42,7 @@ public class SpeechTokenController : ControllerBase
         {
             return new SpeechTokenResponse { IsSuccess = false };
         }
-            
+
         string fetchTokenUri = "https://" + this._options.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
 
         TokenResult tokenResult = await this.FetchTokenAsync(fetchTokenUri, this._options.Key);
