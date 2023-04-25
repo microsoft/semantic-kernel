@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel.DataAnnotations;
-using Microsoft.Identity.Web;
 
 namespace SemanticKernel.Service.Config;
 

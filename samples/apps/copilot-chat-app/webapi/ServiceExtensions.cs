@@ -1,19 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Reflection;
-using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Reliability;
-using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Skills;
@@ -26,7 +16,7 @@ internal static class ServicesExtensions
     /// <summary>
     /// Parse configuration into options.
     /// </summary>
-    internal static IServiceCollection AddOptions(this IServiceCollection services, Microsoft.Extensions.Configuration.ConfigurationManager configuration)
+    internal static IServiceCollection AddOptions(this IServiceCollection services, ConfigurationManager configuration)
     {
         // General  configuration
         services.AddOptions<ServiceOptions>()
@@ -102,21 +92,21 @@ internal static class ServicesExtensions
         {
             case AuthorizationOptions.AuthorizationType.AzureAd:
                 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                        .AddMicrosoftIdentityWebApi(configuration.GetSection($"{AuthorizationOptions.PropertyName}:AzureAd"));
+                    .AddMicrosoftIdentityWebApi(configuration.GetSection($"{AuthorizationOptions.PropertyName}:AzureAd"));
                 break;
 
             case AuthorizationOptions.AuthorizationType.ApiKey:
                 services.AddAuthentication(ApiKeyAuthenticationHandler.AuthenticationScheme)
-                        .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
-                            ApiKeyAuthenticationHandler.AuthenticationScheme,
-                            options => options.ApiKey = config.ApiKey);
+                    .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+                        ApiKeyAuthenticationHandler.AuthenticationScheme,
+                        options => options.ApiKey = config.ApiKey);
                 break;
 
             case AuthorizationOptions.AuthorizationType.None:
                 services.AddAuthentication(PassThroughAuthenticationHandler.AuthenticationScheme)
-                        .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>(
-                            authenticationScheme: PassThroughAuthenticationHandler.AuthenticationScheme,
-                            configureOptions: null);
+                    .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>(
+                        authenticationScheme: PassThroughAuthenticationHandler.AuthenticationScheme,
+                        configureOptions: null);
                 break;
 
             default:
