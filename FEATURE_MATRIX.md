@@ -13,8 +13,8 @@
 |---|---|---|---|
 | OpenAI                            | ✅ | ✅ | |
 | AzureOpenAI                       | ✅ | ✅ | |
-| Hugging Face                      | ✅ | ❌ | Coming soon to Python - both native and web endpoint support |
-| Custom                            | ✅ | ❌ | Requires the user to define the service schema in their application |
+| Hugging Face                      | ✅ | ✅ | |
+| Custom                            | ✅ | 🔄 | Requires the user to define the service schema in their application |
 
 ## Tokenizers
 | | C# | Python | Notes |
