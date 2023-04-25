@@ -18,10 +18,10 @@ class KernelException(Exception):
         FunctionTypeNotSupported = 3
         # Invalid function type.
         InvalidFunctionType = 4
-        # Invalid backend configuration.
-        InvalidBackendConfiguration = 5
-        # Backend not found.
-        BackendNotFound = 6
+        # Invalid service configuration.
+        InvalidServiceConfiguration = 5
+        # Service not found.
+        ServiceNotFound = 6
         # Skill collection not set.
         SkillCollectionNotSet = 7
         # Ambiguous implementation.
