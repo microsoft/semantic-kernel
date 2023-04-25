@@ -12,6 +12,9 @@ namespace SemanticKernel.Service;
 
 internal static class FunctionLoadingExtensions
 {
+    /// <summary>
+    /// Register local semantic skills with the kernel.
+    /// </summary>
     internal static void RegisterSemanticSkills(
         this IKernel kernel,
         string skillsDirectory,
@@ -32,12 +35,15 @@ internal static class FunctionLoadingExtensions
         }
     }
 
+    /// <summary>
+    /// Register native skills with the kernel.
+    /// </summary>
     internal static void RegisterNativeSkills(
         this IKernel kernel,
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
         PromptSettings promptSettings,
-        IConfiguration configuration,
+        DocumentMemoryOptions documentMemoryOptions,
         ILogger logger)
     {
         // Hardcode your native function registrations here
@@ -60,8 +66,7 @@ internal static class FunctionLoadingExtensions
         );
         kernel.ImportSkill(chatHistorySkill, nameof(ChatHistorySkill));
 
-        var documentImportConfig = configuration.GetSection("DocumentImport").Get<DocumentImportConfig>();
-        var documentMemorySkill = new DocumentMemorySkill(promptSettings, documentImportConfig);
+        var documentMemorySkill = new DocumentMemorySkill(promptSettings, documentMemoryOptions);
         kernel.ImportSkill(documentMemorySkill, nameof(DocumentMemorySkill));
     }
 }

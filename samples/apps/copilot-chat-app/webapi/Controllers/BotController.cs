@@ -3,6 +3,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using SemanticKernel.Service.Config;
@@ -15,7 +16,6 @@ namespace SemanticKernel.Service.Controllers;
 [ApiController]
 public class BotController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
     private readonly ILogger<SemanticKernelController> _logger;
     private readonly IMemoryStore _memoryStore;
     private readonly ChatSessionRepository _chatRepository;
@@ -24,14 +24,16 @@ public class BotController : ControllerBase
     /// <summary>
     /// The constructor of BotController.
     /// </summary>
-    /// <param name="configuration">The application configuration.</param>
     /// <param name="memoryStore">The memory store.</param>
     /// <param name="chatRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
     /// <param name="logger">The logger.</param>
-    public BotController(IConfiguration configuration, IMemoryStore memoryStore, ChatSessionRepository chatRepository, ChatMessageRepository chatMessageRepository, ILogger<SemanticKernelController> logger)
+    public BotController(
+        IMemoryStore memoryStore,
+        ChatSessionRepository chatRepository,
+        ChatMessageRepository chatMessageRepository,
+        ILogger<SemanticKernelController> logger)
     {
-        this._configuration = configuration;
         this._logger = logger;
         this._memoryStore = memoryStore;
         this._chatRepository = chatRepository;
@@ -44,6 +46,8 @@ public class BotController : ControllerBase
     /// <param name="kernel">The Semantic Kernel instance.</param>
     /// <param name="userId">The user id.</param>
     /// <param name="bot">The bot object from the message body</param>
+    /// <param name="aiServiceOptions">The AI service options.</param>
+    /// <param name="botSchemaOptions">The bot schema options.</param>
     /// <returns>The HTTP action result.</returns>
     [Authorize]
     [HttpPost]
@@ -52,14 +56,20 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UploadAsync(
-        [FromServices] Kernel kernel,
+        [FromServices] IKernel kernel,
+        [FromServices] IOptionsSnapshot<AIServiceOptions> aiServiceOptions,
+        [FromServices] IOptions<BotSchemaOptions> botSchemaOptions,
         [FromQuery] string userId,
         [FromBody] Bot bot)
     {
-        // TODO: We should get userId from server context instead of from request for privacy/security reasons when support multipe users.
+        // TODO: We should get userId from server context instead of from request for privacy/security reasons when support multiple users.
         this._logger.LogDebug("Received call to upload a bot");
 
-        if (!this.IsBotCompatible(bot.Schema, bot.EmbeddingConfigurations))
+        if (!this.IsBotCompatible(
+            externalBotSchema: bot.Schema,
+            externalBotEmbeddingConfig: bot.EmbeddingConfigurations,
+            embeddingOptions: aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName),
+            botSchemaOptions: botSchemaOptions.Value))
         {
             return this.BadRequest("Incompatible schema");
         }
@@ -80,8 +90,10 @@ public class BotController : ControllerBase
             // 2. Update the app's chat storage.
             foreach (var message in bot.ChatHistory)
             {
-                var chatMessage = new ChatMessage(message.UserId, message.UserName, chatId, message.Content, ChatMessage.AuthorRoles.Participant);
-                chatMessage.Timestamp = message.Timestamp;
+                var chatMessage = new ChatMessage(message.UserId, message.UserName, chatId, message.Content, ChatMessage.AuthorRoles.Participant)
+                {
+                    Timestamp = message.Timestamp
+                };
                 await this._chatMessageRepository.CreateAsync(chatMessage);
             }
 
@@ -102,6 +114,8 @@ public class BotController : ControllerBase
     /// </summary>
     /// <param name="kernel">The Semantic Kernel instance.</param>
     /// <param name="chatId">The chat id to be downloaded.</param>
+    /// <param name="aiServiceOptions">The AI service options.</param>
+    /// <param name="botSchemaOptions">The bot schema options.</param>
     /// <returns>The serialized Bot object of the chat id.</returns>
     [Authorize]
     [HttpGet]
@@ -110,11 +124,19 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<string>> DownloadAsync(
-        [FromServices] Kernel kernel,
+        [FromServices] IKernel kernel,
+        [FromServices] IOptionsSnapshot<AIServiceOptions> aiServiceOptions,
+        [FromServices] IOptions<BotSchemaOptions> botSchemaOptions,
         Guid chatId)
     {
         this._logger.LogDebug("Received call to download a bot");
-        var memory = await this.CreateBotAsync(kernel, this._chatRepository, this._chatMessageRepository, chatId);
+        var memory = await this.CreateBotAsync(
+            kernel: kernel,
+            chatRepository: this._chatRepository,
+            chatMessageRepository: this._chatMessageRepository,
+            botSchemaOptions: botSchemaOptions.Value,
+            embeddingOptions: aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName),
+            chatId: chatId);
 
         return JsonSerializer.Serialize(memory);
     }
@@ -125,26 +147,22 @@ public class BotController : ControllerBase
     /// <remarks>
     /// If the embeddings are not generated from the same model, the bot file is not compatible.
     /// </remarks>
-    /// <param name="externalBotSchema">The external bot schemal.</param>
+    /// <param name="externalBotSchema">The external bot schema.</param>
     /// <param name="externalBotEmbeddingConfig">The external bot embedding configuration.</param>
+    /// <param name="embeddingOptions">The embedding options.</param>
+    /// <param name="botSchemaOptions">The bot schema options.</param>
     /// <returns></returns>
-    private bool IsBotCompatible(BotSchemaConfig externalBotSchema, BotEmbeddingConfig externalBotEmbeddingConfig)
+    private bool IsBotCompatible(
+        BotSchemaOptions externalBotSchema,
+        BotEmbeddingConfig externalBotEmbeddingConfig,
+        AIServiceOptions embeddingOptions,
+        BotSchemaOptions botSchemaOptions)
     {
-        var embeddingAIServiceConfig = this._configuration.GetSection("Embedding").Get<AIServiceConfig>();
-        var botSchema = this._configuration.GetSection("BotFileSchema").Get<BotSchemaConfig>();
-
-        if (embeddingAIServiceConfig != null && botSchema != null)
-        {
-            // The app can define what schema/version it supports before the community comes out with an open schema.
-            return externalBotSchema.Name.Equals(botSchema.Name, StringComparison.OrdinalIgnoreCase)
-                && externalBotSchema.Version == botSchema.Version
-                && externalBotEmbeddingConfig.AIService.Equals(embeddingAIServiceConfig.AIService, StringComparison.OrdinalIgnoreCase)
-                && externalBotEmbeddingConfig.DeploymentOrModelId.Equals(embeddingAIServiceConfig.DeploymentOrModelId, StringComparison.OrdinalIgnoreCase);
-        }
-        else
-        {
-            return false;
-        }
+        // The app can define what schema/version it supports before the community comes out with an open schema.
+        return externalBotSchema.Name.Equals(botSchemaOptions.Name, StringComparison.OrdinalIgnoreCase)
+            && externalBotSchema.Version == botSchemaOptions.Version
+            && externalBotEmbeddingConfig.AIService == embeddingOptions.AIService
+            && externalBotEmbeddingConfig.DeploymentOrModelId.Equals(embeddingOptions.DeploymentOrModelId, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -153,25 +171,29 @@ public class BotController : ControllerBase
     /// <param name="kernel">The semantic kernel object.</param>
     /// <param name="chatRepository">The chat session repository object.</param>
     /// <param name="chatMessageRepository">The chat message repository object.</param>
+    /// <param name="embeddingOptions">The embedding options.</param>
+    /// <param name="botSchemaOptions">The bot schema options.</param>
     /// <param name="chatId">The chat id of the bot</param>
     private async Task<Bot> CreateBotAsync(
-        Kernel kernel,
+        IKernel kernel,
         ChatSessionRepository chatRepository,
         ChatMessageRepository chatMessageRepository,
+        BotSchemaOptions botSchemaOptions,
+        AIServiceOptions embeddingOptions,
         Guid chatId)
     {
         var chatIdString = chatId.ToString();
-        var bot = new Bot();
-
-        // get the bot schema version
-        bot.Schema = this._configuration.GetSection("BotFileSchema").Get<BotSchemaConfig>();
-
-        // get the embedding configuration
-        var embeddingAIServiceConfig = this._configuration.GetSection("Embedding").Get<AIServiceConfig>();
-        bot.EmbeddingConfigurations = new BotEmbeddingConfig
+        var bot = new Bot
         {
-            AIService = embeddingAIServiceConfig?.AIService ?? string.Empty,
-            DeploymentOrModelId = embeddingAIServiceConfig?.DeploymentOrModelId ?? string.Empty
+            // get the bot schema version
+            Schema = botSchemaOptions,
+
+            // get the embedding configuration
+            EmbeddingConfigurations = new BotEmbeddingConfig
+            {
+                AIService = embeddingOptions.AIService,
+                DeploymentOrModelId = embeddingOptions.DeploymentOrModelId
+            }
         };
 
         // get the chat title
@@ -182,7 +204,7 @@ public class BotController : ControllerBase
         bot.ChatHistory = await this.GetAllChatMessagesAsync(chatIdString);
 
         // get the memory collections associated with this chat
-        // TODO: filtering memory collections by name might be fragiled.
+        // TODO: filtering memory collections by name might be fragile.
         var allCollections = (await kernel.Memory.GetCollectionsAsync())
             .Where(collection => collection.StartsWith(chatIdString, StringComparison.OrdinalIgnoreCase));
 

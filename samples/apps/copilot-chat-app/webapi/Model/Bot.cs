@@ -14,7 +14,7 @@ public class Bot
     /// <summary>
     /// The schema information of the bot data model.
     /// </summary>
-    public BotSchemaConfig Schema { get; set; } = new BotSchemaConfig();
+    public BotSchemaOptions Schema { get; set; } = new BotSchemaOptions();
 
     /// <summary>
     /// The embedding configurations.

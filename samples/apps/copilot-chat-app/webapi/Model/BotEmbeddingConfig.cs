@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel.DataAnnotations;
+using SemanticKernel.Service.Config;
+
 namespace SemanticKernel.Service.Model;
 
 /// <summary>
@@ -10,7 +13,8 @@ public class BotEmbeddingConfig
     /// <summary>
     /// The AI service.
     /// </summary>
-    public string AIService { get; set; } = string.Empty;
+    [Required]
+    public AIServiceOptions.AIServiceType AIService { get; set; } = AIServiceOptions.AIServiceType.AzureOpenAI;
 
     /// <summary>
     /// The deployment or the model id.
