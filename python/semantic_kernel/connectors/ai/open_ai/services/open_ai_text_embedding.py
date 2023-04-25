@@ -5,8 +5,8 @@ from typing import Any, List, Optional
 
 from numpy import array, ndarray
 
-from semantic_kernel.ai.ai_exception import AIException
-from semantic_kernel.ai.embeddings.embedding_generator_base import (
+from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
 from semantic_kernel.utils.null_logger import NullLogger

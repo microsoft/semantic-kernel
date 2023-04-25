@@ -4,7 +4,7 @@
 from logging import Logger
 from typing import Any, Optional
 
-from semantic_kernel.ai.open_ai.services.open_ai_text_completion import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
     OpenAITextCompletion,
 )
 
@@ -24,7 +24,7 @@ class AzureTextCompletion(OpenAITextCompletion):
         ad_auth=False,
     ) -> None:
         """
-        Initialize an AzureTextCompletion backend.
+        Initialize an AzureTextCompletion service.
 
         You must provide:
         - A deployment_name, endpoint, and api_key (plus, optionally: ad_auth)
