@@ -223,7 +223,7 @@ class DelegateInference:
 
     @staticmethod
     @_infers(DelegateTypes.Unknown)
-    def infer_unknown(signature: Signature) -> NoReturn:
+    def infer_unknown(signature: Signature, awaitable: bool) -> NoReturn:
         raise KernelException(
             KernelException.ErrorCodes.FunctionTypeNotSupported,
             "Invalid function type detected, unable to infer DelegateType.",
