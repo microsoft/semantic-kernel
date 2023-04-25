@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using static SemanticKernel.Service.Config.AuthorizationOptions;
-
 namespace SemanticKernel.Service.Config;
 
 /// <summary>
