@@ -90,7 +90,6 @@ internal static class SequentialPlanParser
                         var skillFunctionName = o2.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
                         GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
 
-                        // TODO I think we can remove this.
                         if (!string.IsNullOrEmpty(functionName) && context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
                         {
                             Verify.NotNull(functionName, nameof(functionName));
