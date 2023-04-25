@@ -117,6 +117,11 @@ class KernelConfig:
         if self._default_chat_service is None:
             self._default_chat_service = service_id
 
+        if isinstance(service, TextCompletionClientBase):
+            self.add_text_service(service_id, service)
+            if self._default_text_service is None:
+                self._default_text_service = service_id
+
         return self
 
     def add_embedding_service(
