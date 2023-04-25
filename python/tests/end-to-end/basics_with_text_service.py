@@ -26,7 +26,7 @@ sk_prompt = """
 {{$input}}
 {{$input2}}
 
-Give me the TLDR in 5 words:
+Give me the TLDR in exactly 5 words:
 """
 
 # Create the semantic function
@@ -55,6 +55,7 @@ summary = asyncio.run(kernel.run_async(tldr_function, input_str=text_to_summariz
 
 output = str(summary).strip()
 print(f"Summary using input string: '{output}'")
+assert len(output.split(' ')) == 5
 
 # Summarize input as context variable and print
 context_vars = sk.ContextVariables(text_to_summarize)
@@ -62,6 +63,7 @@ summary = asyncio.run(kernel.run_async(tldr_function, input_vars=context_vars))
 
 output = str(summary).strip()
 print(f"Summary using context variables: '{output}'")
+assert len(output.split(' ')) == 5
 
 # Summarize input context and print
 context = kernel.create_new_context()
@@ -70,6 +72,7 @@ summary = asyncio.run(kernel.run_async(tldr_function, input_context=context))
 
 output = str(summary).strip()
 print(f"Summary using input context: '{output}'")
+assert len(output.split(' ')) == 5
 
 # Summarize input context with additional variables and print
 context = kernel.create_new_context()
@@ -81,6 +84,7 @@ summary = asyncio.run(
 
 output = str(summary).strip()
 print(f"Summary using context and additional variables: '{output}'")
+assert len(output.split(' ')) == 5
 
 # Summarize input context with additional input string and print
 context = kernel.create_new_context()
@@ -93,6 +97,7 @@ summary = asyncio.run(
 
 output = str(summary).strip()
 print(f"Summary using context and additional string: '{output}'")
+assert len(output.split(' ')) == 5
 
 # Summarize input context with additional variables and string and print
 context = kernel.create_new_context()
@@ -109,3 +114,4 @@ summary = asyncio.run(
 
 output = str(summary).strip()
 print(f"Summary using context, additional variables, and additional string: '{output}'")
+assert len(output.split(' ')) == 5
