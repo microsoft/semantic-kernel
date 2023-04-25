@@ -6,10 +6,16 @@ from enum import Enum
 from logging import Logger
 from typing import Any, Callable, List, Optional, cast
 
-from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
+from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.complete_request_settings import (
+    CompleteRequestSettings,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
@@ -41,9 +47,9 @@ class SKFunction(SKFunctionBase):
     _function: Callable[..., Any]
     _skill_collection: Optional[ReadOnlySkillCollectionBase]
     _log: Logger
-    _ai_backend: Optional[TextCompletionClientBase]
+    _ai_service: Optional[TextCompletionClientBase]
     _ai_request_settings: CompleteRequestSettings
-    _chat_backend: Optional[ChatCompletionClientBase]
+    _chat_service: Optional[ChatCompletionClientBase]
     _chat_request_settings: ChatRequestSettings
 
     @staticmethod
@@ -99,7 +105,7 @@ class SKFunction(SKFunctionBase):
 
         async def _local_func(client, request_settings, context):
             if client is None:
-                raise ValueError("AI LLM backend cannot be `None`")
+                raise ValueError("AI LLM service cannot be `None`")
 
             try:
                 if function_config.has_chat_prompt:
@@ -194,9 +200,9 @@ class SKFunction(SKFunctionBase):
         self._is_semantic = is_semantic
         self._log = log if log is not None else NullLogger()
         self._skill_collection = None
-        self._ai_backend = None
+        self._ai_service = None
         self._ai_request_settings = CompleteRequestSettings()
-        self._chat_backend = None
+        self._chat_service = None
         self._chat_request_settings = ChatRequestSettings()
 
     def set_default_skill_collection(
@@ -205,22 +211,22 @@ class SKFunction(SKFunctionBase):
         self._skill_collection = skills
         return self
 
-    def set_ai_backend(
-        self, ai_backend: Callable[[], TextCompletionClientBase]
+    def set_ai_service(
+        self, ai_service: Callable[[], TextCompletionClientBase]
     ) -> "SKFunction":
-        if ai_backend is None:
-            raise ValueError("AI LLM backend factory cannot be `None`")
+        if ai_service is None:
+            raise ValueError("AI LLM service factory cannot be `None`")
         self._verify_is_semantic()
-        self._ai_backend = ai_backend()
+        self._ai_service = ai_service()
         return self
 
-    def set_chat_backend(
-        self, chat_backend: Callable[[], ChatCompletionClientBase]
+    def set_chat_service(
+        self, chat_service: Callable[[], ChatCompletionClientBase]
     ) -> "SKFunction":
-        if chat_backend is None:
-            raise ValueError("Chat LLM backend factory cannot be `None`")
+        if chat_service is None:
+            raise ValueError("Chat LLM service factory cannot be `None`")
         self._verify_is_semantic()
-        self._chat_backend = chat_backend()
+        self._chat_service = chat_service()
         return self
 
     def set_ai_configuration(self, settings: CompleteRequestSettings) -> "SKFunction":
@@ -355,20 +361,20 @@ class SKFunction(SKFunctionBase):
         self._ensure_context_has_skills(context)
 
         if settings is None:
-            if self._ai_backend is not None:
+            if self._ai_service is not None:
                 settings = self._ai_request_settings
-            elif self._chat_backend is not None:
+            elif self._chat_service is not None:
                 settings = self._chat_request_settings
             else:
                 raise KernelException(
                     KernelException.ErrorCodes.UnknownError,
-                    "Semantic functions must have either an AI backend or Chat backend",
+                    "Semantic functions must have either an AI service or Chat service",
                 )
 
-        backend = (
-            self._ai_backend if self._ai_backend is not None else self._chat_backend
+        service = (
+            self._ai_service if self._ai_service is not None else self._chat_service
         )
-        new_context = await self._function(backend, settings, context)
+        new_context = await self._function(service, settings, context)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 
