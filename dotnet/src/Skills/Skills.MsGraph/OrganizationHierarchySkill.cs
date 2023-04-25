@@ -12,13 +12,13 @@ namespace Microsoft.SemanticKernel.Skills.MsGraph;
 /// </summary>
 public class OrganizationHierarchySkill
 {
-    private readonly IOrganizationHierarchyConnector _connector;
+    private readonly IOrganizationHierarchyAdapter _adapter;
 
-    public OrganizationHierarchySkill(IOrganizationHierarchyConnector connector)
+    public OrganizationHierarchySkill(IOrganizationHierarchyAdapter adapter)
     {
-        Ensure.NotNull(connector, nameof(connector));
+        Ensure.NotNull(adapter, nameof(adapter));
 
-        this._connector = connector;
+        this._adapter = adapter;
     }
 
     /// <summary>
@@ -26,12 +26,12 @@ public class OrganizationHierarchySkill
     /// </summary>
     [SKFunction("Get my manager's email address.")]
     public async Task<string> GetMyManagerEmailAsync(SKContext context)
-        => await this._connector.GetManagerEmailAsync(context.CancellationToken).ConfigureAwait(false);
+        => await this._adapter.GetManagerEmailAsync(context.CancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Get the name of the manager of the current user.
     /// </summary>
     [SKFunction("Get my manager's name.")]
     public async Task<string> GetMyManagerNameAsync(SKContext context)
-        => await this._connector.GetManagerNameAsync(context.CancellationToken).ConfigureAwait(false);
+        => await this._adapter.GetManagerNameAsync(context.CancellationToken).ConfigureAwait(false);
 }

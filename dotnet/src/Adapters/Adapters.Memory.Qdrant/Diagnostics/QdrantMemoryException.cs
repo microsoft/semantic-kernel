@@ -3,15 +3,15 @@
 using System;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+namespace Microsoft.SemanticKernel.Adapters.Memory.Qdrant.Diagnostics;
 
 /// <summary>
-/// Custom exceptions for the Qdrant connector.
+/// Custom exceptions for the Qdrant adapter.
 /// </summary>
 public class QdrantMemoryException : Exception<QdrantMemoryException.ErrorCodes>
 {
     /// <summary>
-    /// Error codes for the Qdrant connector exceptions.
+    /// Error codes for the Qdrant adapter exceptions.
     /// </summary>
     public enum ErrorCodes
     {

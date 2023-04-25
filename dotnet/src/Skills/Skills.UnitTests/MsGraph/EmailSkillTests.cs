@@ -21,11 +21,11 @@ public class EmailSkillTests
     public async Task SendEmailAsyncSucceedsAsync()
     {
         // Arrange
-        Mock<IEmailConnector> connectorMock = new();
-        connectorMock.Setup(c => c.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
+        Mock<IEmailAdapter> adapterMock = new();
+        adapterMock.Setup(c => c.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        EmailSkill target = new(connectorMock.Object);
+        EmailSkill target = new(adapterMock.Object);
 
         string anyContent = Guid.NewGuid().ToString();
         string anySubject = Guid.NewGuid().ToString();
@@ -39,15 +39,15 @@ public class EmailSkillTests
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
     public async Task SendEmailAsyncNoRecipientFailsAsync()
     {
         // Arrange
-        Mock<IEmailConnector> connectorMock = new();
-        EmailSkill target = new(connectorMock.Object);
+        Mock<IEmailAdapter> adapterMock = new();
+        EmailSkill target = new(adapterMock.Object);
 
         string anyContent = Guid.NewGuid().ToString();
         string anySubject = Guid.NewGuid().ToString();
@@ -60,15 +60,15 @@ public class EmailSkillTests
 
         // Assert
         Assert.True(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
     public async Task SendEmailAsyncNoSubjectFailsAsync()
     {
         // Arrange
-        Mock<IEmailConnector> connectorMock = new();
-        EmailSkill target = new(connectorMock.Object);
+        Mock<IEmailAdapter> adapterMock = new();
+        EmailSkill target = new(adapterMock.Object);
 
         string anyContent = Guid.NewGuid().ToString();
         string anyRecipient = Guid.NewGuid().ToString();
@@ -81,7 +81,7 @@ public class EmailSkillTests
 
         // Assert
         Assert.True(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
@@ -89,11 +89,11 @@ public class EmailSkillTests
     {
         // Arrange
         string anyEmailAddress = Guid.NewGuid().ToString();
-        Mock<IEmailConnector> connectorMock = new();
-        connectorMock.Setup(c => c.GetMyEmailAddressAsync(It.IsAny<CancellationToken>()))
+        Mock<IEmailAdapter> adapterMock = new();
+        adapterMock.Setup(c => c.GetMyEmailAddressAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(anyEmailAddress);
 
-        EmailSkill target = new(connectorMock.Object);
+        EmailSkill target = new(adapterMock.Object);
 
         // Act
         string actual = await target.GetMyEmailAddressAsync();
@@ -101,6 +101,6 @@ public class EmailSkillTests
         // Assert
         Assert.Equal(anyEmailAddress, actual);
         Assert.False(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 }

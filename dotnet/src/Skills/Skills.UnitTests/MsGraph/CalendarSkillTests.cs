@@ -44,11 +44,11 @@ public class CalendarSkillTests : IDisposable
             Attendees = anyAttendees
         };
 
-        Mock<ICalendarConnector> connectorMock = new();
-        connectorMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
+        Mock<ICalendarAdapter> adapterMock = new();
+        adapterMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarSkill target = new(adapterMock.Object);
 
         this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
         this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
@@ -61,7 +61,7 @@ public class CalendarSkillTests : IDisposable
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
@@ -80,11 +80,11 @@ public class CalendarSkillTests : IDisposable
             Attendees = anyAttendees
         };
 
-        Mock<ICalendarConnector> connectorMock = new();
-        connectorMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
+        Mock<ICalendarAdapter> adapterMock = new();
+        adapterMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarSkill target = new(adapterMock.Object);
 
         this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
         this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
@@ -96,7 +96,7 @@ public class CalendarSkillTests : IDisposable
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
@@ -115,11 +115,11 @@ public class CalendarSkillTests : IDisposable
             Attendees = anyAttendees
         };
 
-        Mock<ICalendarConnector> connectorMock = new();
-        connectorMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
+        Mock<ICalendarAdapter> adapterMock = new();
+        adapterMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarSkill target = new(adapterMock.Object);
 
         this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
         this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
@@ -131,7 +131,7 @@ public class CalendarSkillTests : IDisposable
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
@@ -150,11 +150,11 @@ public class CalendarSkillTests : IDisposable
             Location = anyLocation
         };
 
-        Mock<ICalendarConnector> connectorMock = new();
-        connectorMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
+        Mock<ICalendarAdapter> adapterMock = new();
+        adapterMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarSkill target = new(adapterMock.Object);
 
         this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
         this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
@@ -166,7 +166,7 @@ public class CalendarSkillTests : IDisposable
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
@@ -179,9 +179,9 @@ public class CalendarSkillTests : IDisposable
         DateTimeOffset anyEndTime = DateTimeOffset.Now + TimeSpan.FromDays(1.1);
         string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
 
-        Mock<ICalendarConnector> connectorMock = new();
+        Mock<ICalendarAdapter> adapterMock = new();
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarSkill target = new(adapterMock.Object);
 
         this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
         this._context.Variables.Set(Parameters.Location, anyLocation);
@@ -205,9 +205,9 @@ public class CalendarSkillTests : IDisposable
         DateTimeOffset anyStartTime = DateTimeOffset.Now + TimeSpan.FromDays(1);
         string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
 
-        Mock<ICalendarConnector> connectorMock = new();
+        Mock<ICalendarAdapter> adapterMock = new();
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarSkill target = new(adapterMock.Object);
 
         this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
         this._context.Variables.Set(Parameters.Location, anyLocation);
@@ -231,9 +231,9 @@ public class CalendarSkillTests : IDisposable
         DateTimeOffset anyEndTime = DateTimeOffset.Now + TimeSpan.FromDays(1.1);
         string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
 
-        Mock<ICalendarConnector> connectorMock = new();
+        Mock<ICalendarAdapter> adapterMock = new();
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarSkill target = new(adapterMock.Object);
 
         this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
         this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));

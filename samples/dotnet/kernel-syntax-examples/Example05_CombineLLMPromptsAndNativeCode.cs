@@ -23,9 +23,9 @@ public static class Example05_CombineLLMPromptsAndNativeCode
         kernel.Config.SetDefaultTextCompletionService("text-davinci-003");
 
         // Load native skill
-        using var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
-        var bing = new WebSearchEngineSkill(bingConnector);
-        var search = kernel.ImportSkill(bing, "bing");
+        using var bingAdapter = new BingAdapter(Env.Var("BING_API_KEY"));
+        var bingWebSearch = new WebSearchEngineSkill(bingAdapter);
+        var bingSkill = kernel.ImportSkill(bingWebSearch, "bing");
 
         // Load semantic skill defined with prompt templates
         string folder = RepoFiles.SampleSkillsPath();
@@ -39,18 +39,18 @@ public static class Example05_CombineLLMPromptsAndNativeCode
 
         var result1 = await kernel.RunAsync(
             ask,
-            search["SearchAsync"]
+            bingSkill["SearchAsync"]
         );
 
         var result2 = await kernel.RunAsync(
             ask,
-            search["SearchAsync"],
+            bingSkill["SearchAsync"],
             sumSkill["Summarize"]
         );
 
         var result3 = await kernel.RunAsync(
             ask,
-            search["SearchAsync"],
+            bingSkill["SearchAsync"],
             sumSkill["Notegen"]
         );
 

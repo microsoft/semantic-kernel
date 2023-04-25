@@ -3,12 +3,12 @@
 using System.IO;
 using System.Reflection;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers.Settings;
+namespace Microsoft.SemanticKernel.Adapters.AI.OpenAI.Tokenizers.Settings;
 
 internal static class EmbeddedResource
 {
     // This is usually the assembly name, if the project follows the naming conventions about namespaces and assembly names
-    private const string PrefixToIgnore = "Microsoft.SemanticKernel.Connectors.AI.OpenAI";
+    private const string PrefixToIgnore = "Microsoft.SemanticKernel.Adapters.AI.OpenAI";
 
     private static readonly string s_namespace = typeof(EmbeddedResource).Namespace;
 

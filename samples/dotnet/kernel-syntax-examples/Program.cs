@@ -17,7 +17,7 @@ public static class Program
         await Example03_Variables.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example04_BingSkillAndConnector.RunAsync();
+        await Example04_BingSkill.RunAsync();
         Console.WriteLine("== DONE ==");
 
         await Example05_CombineLLMPromptsAndNativeCode.RunAsync();

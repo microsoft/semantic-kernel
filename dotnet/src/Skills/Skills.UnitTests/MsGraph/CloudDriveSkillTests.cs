@@ -33,18 +33,18 @@ public class CloudDriveSkillTests : IDisposable
         // Arrange
         string anyFilePath = Guid.NewGuid().ToString();
 
-        Mock<ICloudDriveConnector> connectorMock = new Mock<ICloudDriveConnector>();
-        connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        Mock<ICloudDriveAdapter> adapterMock = new Mock<ICloudDriveAdapter>();
+        adapterMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         this._context.Variables.Set(Parameters.DestinationPath, Guid.NewGuid().ToString());
-        CloudDriveSkill target = new CloudDriveSkill(connectorMock.Object);
+        CloudDriveSkill target = new CloudDriveSkill(adapterMock.Object);
 
         // Act
         await target.UploadFileAsync(anyFilePath, this._context);
 
         // Assert
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
@@ -54,18 +54,18 @@ public class CloudDriveSkillTests : IDisposable
         string anyFilePath = Guid.NewGuid().ToString();
         string anyLink = Guid.NewGuid().ToString();
 
-        Mock<ICloudDriveConnector> connectorMock = new Mock<ICloudDriveConnector>();
-        connectorMock.Setup(c => c.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        Mock<ICloudDriveAdapter> adapterMock = new Mock<ICloudDriveAdapter>();
+        adapterMock.Setup(c => c.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(anyLink);
 
-        CloudDriveSkill target = new CloudDriveSkill(connectorMock.Object);
+        CloudDriveSkill target = new CloudDriveSkill(adapterMock.Object);
 
         // Act
         string actual = await target.CreateLinkAsync(anyFilePath, this._context);
 
         // Assert
         Assert.Equal(anyLink, actual);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
@@ -76,18 +76,18 @@ public class CloudDriveSkillTests : IDisposable
         using MemoryStream expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(expectedContent));
 
         // Arrange
-        Mock<ICloudDriveConnector> connectorMock = new Mock<ICloudDriveConnector>();
-        connectorMock.Setup(c => c.GetFileContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        Mock<ICloudDriveAdapter> adapterMock = new Mock<ICloudDriveAdapter>();
+        adapterMock.Setup(c => c.GetFileContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStream);
 
-        CloudDriveSkill target = new CloudDriveSkill(connectorMock.Object);
+        CloudDriveSkill target = new CloudDriveSkill(adapterMock.Object);
 
         // Act
         string actual = await target.GetFileContentAsync(anyFilePath, this._context);
 
         // Assert
         Assert.Equal(expectedContent, actual);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     protected virtual void Dispose(bool disposing)

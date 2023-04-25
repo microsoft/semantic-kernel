@@ -6,10 +6,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
+using Microsoft.SemanticKernel.Adapters.HuggingFace.TextEmbedding;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextEmbedding;
+namespace SemanticKernel.Adapters.UnitTests.HuggingFace.TextEmbedding;
 
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextEmbeddingGeneration"/> class.

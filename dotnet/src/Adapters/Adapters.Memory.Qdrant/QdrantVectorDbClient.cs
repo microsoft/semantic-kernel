@@ -11,11 +11,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+using Microsoft.SemanticKernel.Adapters.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Adapters.Memory.Qdrant.Http;
+using Microsoft.SemanticKernel.Adapters.Memory.Qdrant.Http.ApiSchema;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+namespace Microsoft.SemanticKernel.Adapters.Memory.Qdrant;
 
 /// <summary>
 /// An implementation of a client for the Qdrant VectorDB. This class is used to

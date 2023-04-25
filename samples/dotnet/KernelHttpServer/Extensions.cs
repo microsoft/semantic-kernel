@@ -22,7 +22,7 @@ using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Document.FileSystem;
 using Microsoft.SemanticKernel.Skills.Document.OpenXml;
 using Microsoft.SemanticKernel.Skills.MsGraph;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
+using Microsoft.SemanticKernel.Skills.MsGraph.Adapters;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.TemplateEngine;
 using static KernelHttpServer.Config.Constants;
@@ -111,25 +111,25 @@ internal static class Extensions
 
         if (ShouldLoad(nameof(CloudDriveSkill), skillsToLoad))
         {
-            CloudDriveSkill cloudDriveSkill = new(new OneDriveConnector(graphServiceClient));
+            CloudDriveSkill cloudDriveSkill = new(new OneDriveAdapter(graphServiceClient));
             _ = kernel.ImportSkill(cloudDriveSkill, nameof(cloudDriveSkill));
         }
 
         if (ShouldLoad(nameof(TaskListSkill), skillsToLoad))
         {
-            TaskListSkill taskListSkill = new(new MicrosoftToDoConnector(graphServiceClient));
+            TaskListSkill taskListSkill = new(new MicrosoftToDoAdapter(graphServiceClient));
             _ = kernel.ImportSkill(taskListSkill, nameof(taskListSkill));
         }
 
         if (ShouldLoad(nameof(EmailSkill), skillsToLoad))
         {
-            EmailSkill emailSkill = new(new OutlookMailConnector(graphServiceClient));
+            EmailSkill emailSkill = new(new OutlookMailAdapter(graphServiceClient));
             _ = kernel.ImportSkill(emailSkill, nameof(emailSkill));
         }
 
         if (ShouldLoad(nameof(CalendarSkill), skillsToLoad))
         {
-            CalendarSkill calendarSkill = new(new OutlookCalendarConnector(graphServiceClient));
+            CalendarSkill calendarSkill = new(new OutlookCalendarAdapter(graphServiceClient));
             _ = kernel.ImportSkill(calendarSkill, nameof(calendarSkill));
         }
     }
@@ -145,7 +145,7 @@ internal static class Extensions
     {
         if (ShouldLoad(nameof(DocumentSkill), skillsToLoad))
         {
-            DocumentSkill documentSkill = new(new WordDocumentConnector(), new LocalFileSystemConnector());
+            DocumentSkill documentSkill = new(new WordDocumentAdapter(), new LocalFileSystemAdapter());
             _ = kernel.ImportSkill(documentSkill, nameof(DocumentSkill));
         }
 

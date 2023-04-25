@@ -3,7 +3,7 @@
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Adapters.Memory.Qdrant.Http.ApiSchema;
 
 internal sealed class GetCollectionsRequest
 {

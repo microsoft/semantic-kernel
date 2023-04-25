@@ -3,12 +3,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Adapters.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Reliability;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+namespace Microsoft.SemanticKernel.Adapters.AI.OpenAI.ChatCompletion;
 
 /// <summary>
 /// OpenAI chat completion client.

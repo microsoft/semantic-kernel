@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.Core;
+using Microsoft.SemanticKernel.Adapters.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Adapters.AI.OpenAI.ImageGeneration;
+using Microsoft.SemanticKernel.Adapters.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Adapters.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
 
 // ReSharper disable once CheckNamespace // Extension methods

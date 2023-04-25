@@ -31,19 +31,19 @@ public class EmailSkill
         public const string Subject = "subject";
     }
 
-    private readonly IEmailConnector _connector;
+    private readonly IEmailAdapter _adapter;
     private readonly ILogger<EmailSkill> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmailSkill"/> class.
     /// </summary>
-    /// <param name="connector">Email connector.</param>
+    /// <param name="adapter">Email adapter.</param>
     /// <param name="logger">Logger.</param>
-    public EmailSkill(IEmailConnector connector, ILogger<EmailSkill>? logger = null)
+    public EmailSkill(IEmailAdapter adapter, ILogger<EmailSkill>? logger = null)
     {
-        Ensure.NotNull(connector, nameof(connector));
+        Ensure.NotNull(adapter, nameof(adapter));
 
-        this._connector = connector;
+        this._adapter = adapter;
         this._logger = logger ?? new NullLogger<EmailSkill>();
     }
 
@@ -52,7 +52,7 @@ public class EmailSkill
     /// </summary>
     [SKFunction("Gets the email address for me.")]
     public async Task<string> GetMyEmailAddressAsync()
-        => await this._connector.GetMyEmailAddressAsync().ConfigureAwait(false);
+        => await this._adapter.GetMyEmailAddressAsync().ConfigureAwait(false);
 
     /// <summary>
     /// Send an email using <see cref="ContextVariables.Input"/> as the body.
@@ -77,6 +77,6 @@ public class EmailSkill
 
         this._logger.LogInformation("Sending email to '{0}' with subject '{1}'", recipients, subject);
         string[] recipientList = recipients.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
-        await this._connector.SendEmailAsync(subject, content, recipientList).ConfigureAwait(false);
+        await this._adapter.SendEmailAsync(subject, content, recipientList).ConfigureAwait(false);
     }
 }

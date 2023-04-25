@@ -27,19 +27,19 @@ public class TaskListSkill
         public const string Reminder = "reminder";
     }
 
-    private readonly ITaskManagementConnector _connector;
+    private readonly ITaskManagementAdapter _adapter;
     private readonly ILogger<TaskListSkill> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TaskListSkill"/> class.
     /// </summary>
-    /// <param name="connector">Task list connector.</param>
+    /// <param name="adapter">Task list adapter.</param>
     /// <param name="logger">Logger.</param>
-    public TaskListSkill(ITaskManagementConnector connector, ILogger<TaskListSkill>? logger = null)
+    public TaskListSkill(ITaskManagementAdapter adapter, ILogger<TaskListSkill>? logger = null)
     {
-        Ensure.NotNull(connector, nameof(connector));
+        Ensure.NotNull(adapter, nameof(adapter));
 
-        this._connector = connector;
+        this._adapter = adapter;
         this._logger = logger ?? new NullLogger<TaskListSkill>();
     }
 
@@ -69,7 +69,7 @@ public class TaskListSkill
     [SKFunctionContextParameter(Name = Parameters.Reminder, Description = "Reminder for the task in DateTimeOffset (optional)")]
     public async Task AddTaskAsync(string title, SKContext context)
     {
-        TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(context.CancellationToken).ConfigureAwait(false);
+        TaskManagementTaskList? defaultTaskList = await this._adapter.GetDefaultTaskListAsync(context.CancellationToken).ConfigureAwait(false);
         if (defaultTaskList == null)
         {
             context.Fail("No default task list found.");
@@ -86,6 +86,6 @@ public class TaskListSkill
         }
 
         this._logger.LogInformation("Adding task '{0}' to task list '{1}'", task.Title, defaultTaskList.Name);
-        await this._connector.AddTaskAsync(defaultTaskList.Id, task, context.CancellationToken).ConfigureAwait(false);
+        await this._adapter.AddTaskAsync(defaultTaskList.Id, task, context.CancellationToken).ConfigureAwait(false);
     }
 }

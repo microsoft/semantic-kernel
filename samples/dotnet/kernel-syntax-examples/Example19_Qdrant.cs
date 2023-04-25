@@ -4,7 +4,7 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using Microsoft.SemanticKernel.Adapters.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 

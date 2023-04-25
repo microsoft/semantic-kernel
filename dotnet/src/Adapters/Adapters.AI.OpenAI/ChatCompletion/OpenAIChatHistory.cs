@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+namespace Microsoft.SemanticKernel.Adapters.AI.OpenAI.ChatCompletion;
 
 /// <summary>
 /// OpenAI Chat content

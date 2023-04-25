@@ -35,14 +35,14 @@ public class TaskListSkillTests
         // Arrange
         string anyTitle = Guid.NewGuid().ToString();
 
-        Mock<ITaskManagementConnector> connectorMock = new Mock<ITaskManagementConnector>();
-        connectorMock.Setup(c => c.GetDefaultTaskListAsync(It.IsAny<CancellationToken>()))
+        Mock<ITaskManagementAdapter> adapterMock = new Mock<ITaskManagementAdapter>();
+        adapterMock.Setup(c => c.GetDefaultTaskListAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(this._anyTaskList);
 
-        connectorMock.Setup(c => c.AddTaskAsync(It.IsAny<string>(), It.IsAny<TaskManagementTask>(), It.IsAny<CancellationToken>()))
+        adapterMock.Setup(c => c.AddTaskAsync(It.IsAny<string>(), It.IsAny<TaskManagementTask>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(this._anyTask);
 
-        TaskListSkill target = new TaskListSkill(connectorMock.Object);
+        TaskListSkill target = new TaskListSkill(adapterMock.Object);
 
         // Verify no reminder is set
         Assert.False(this._context.Variables.Get(Parameters.Reminder, out _));
@@ -52,7 +52,7 @@ public class TaskListSkillTests
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
@@ -61,16 +61,16 @@ public class TaskListSkillTests
         // Arrange
         string anyTitle = Guid.NewGuid().ToString();
 
-        Mock<ITaskManagementConnector> connectorMock = new Mock<ITaskManagementConnector>();
-        connectorMock.Setup(c => c.GetDefaultTaskListAsync(It.IsAny<CancellationToken>()))
+        Mock<ITaskManagementAdapter> adapterMock = new Mock<ITaskManagementAdapter>();
+        adapterMock.Setup(c => c.GetDefaultTaskListAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(this._anyTaskList);
 
-        connectorMock.Setup(c => c.AddTaskAsync(It.IsAny<string>(), It.IsAny<TaskManagementTask>(), It.IsAny<CancellationToken>()))
+        adapterMock.Setup(c => c.AddTaskAsync(It.IsAny<string>(), It.IsAny<TaskManagementTask>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(this._anyTask);
 
         string anyReminder = (DateTimeOffset.Now + TimeSpan.FromHours(1)).ToString("o");
 
-        TaskListSkill target = new TaskListSkill(connectorMock.Object);
+        TaskListSkill target = new TaskListSkill(adapterMock.Object);
         this._context.Variables.Set(Parameters.Reminder, anyReminder);
 
         // Act
@@ -78,7 +78,7 @@ public class TaskListSkillTests
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
@@ -87,15 +87,15 @@ public class TaskListSkillTests
         // Arrange
         string anyTitle = Guid.NewGuid().ToString();
 
-        Mock<ITaskManagementConnector> connectorMock = new Mock<ITaskManagementConnector>();
+        Mock<ITaskManagementAdapter> adapterMock = new Mock<ITaskManagementAdapter>();
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-        connectorMock.Setup(c => c.GetDefaultTaskListAsync(It.IsAny<CancellationToken>()))
+        adapterMock.Setup(c => c.GetDefaultTaskListAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync((TaskManagementTaskList)null);
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
         string anyReminder = (DateTimeOffset.Now + TimeSpan.FromHours(1)).ToString("o");
 
-        TaskListSkill target = new TaskListSkill(connectorMock.Object);
+        TaskListSkill target = new TaskListSkill(adapterMock.Object);
         this._context.Variables.Set(Parameters.Reminder, anyReminder);
 
         // Act
@@ -103,7 +103,7 @@ public class TaskListSkillTests
 
         // Assert
         Assert.True(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Theory]

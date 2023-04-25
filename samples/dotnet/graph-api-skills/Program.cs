@@ -15,9 +15,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
+using Microsoft.SemanticKernel.Skills.MsGraph.Adapters;
+using Microsoft.SemanticKernel.Skills.MsGraph.Adapters.Client;
+using Microsoft.SemanticKernel.Skills.MsGraph.Adapters.CredentialManagers;
 using DayOfWeek = System.DayOfWeek;
 
 /// <summary>
@@ -88,9 +88,9 @@ public sealed class Program
         GraphServiceClient graphServiceClient = new(httpClient);
 
         // Initialize SK Graph API Skills we'll be using in the plan.
-        CloudDriveSkill oneDriveSkill = new(new OneDriveConnector(graphServiceClient), loggerFactory.CreateLogger<CloudDriveSkill>());
-        TaskListSkill todoSkill = new(new MicrosoftToDoConnector(graphServiceClient), loggerFactory.CreateLogger<TaskListSkill>());
-        EmailSkill outlookSkill = new(new OutlookMailConnector(graphServiceClient), loggerFactory.CreateLogger<EmailSkill>());
+        CloudDriveSkill oneDriveSkill = new(new OneDriveAdapter(graphServiceClient), loggerFactory.CreateLogger<CloudDriveSkill>());
+        TaskListSkill todoSkill = new(new MicrosoftToDoAdapter(graphServiceClient), loggerFactory.CreateLogger<TaskListSkill>());
+        EmailSkill outlookSkill = new(new OutlookMailAdapter(graphServiceClient), loggerFactory.CreateLogger<EmailSkill>());
 
         // Initialize the Semantic Kernel and and register connections with OpenAI/Azure OpenAI instances.
         IKernel sk = Kernel.Builder.WithLogger(loggerFactory.CreateLogger<IKernel>()).Build();

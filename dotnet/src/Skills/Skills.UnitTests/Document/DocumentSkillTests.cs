@@ -26,18 +26,18 @@ public class DocumentSkillTests
         var expectedText = Guid.NewGuid().ToString();
         var anyFilePath = Guid.NewGuid().ToString();
 
-        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
-        fileSystemConnectorMock
+        var fileSystemAdapterMock = new Mock<IFileSystemAdapter>();
+        fileSystemAdapterMock
             .Setup(mock => mock.GetFileContentStreamAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Stream.Null);
 
-        var documentConnectorMock = new Mock<IDocumentConnector>();
-        documentConnectorMock
+        var documentAdapterMock = new Mock<IDocumentAdapter>();
+        documentAdapterMock
             .Setup(mock => mock.ReadText(It.IsAny<Stream>()))
             .Returns(expectedText);
 
-        var target = new DocumentSkill(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+        var target = new DocumentSkill(documentAdapterMock.Object, fileSystemAdapterMock.Object);
 
         // Act
         string actual = await target.ReadTextAsync(anyFilePath, this._context);
@@ -45,8 +45,8 @@ public class DocumentSkillTests
         // Assert
         Assert.Equal(expectedText, actual);
         Assert.False(this._context.ErrorOccurred);
-        fileSystemConnectorMock.VerifyAll();
-        documentConnectorMock.VerifyAll();
+        fileSystemAdapterMock.VerifyAll();
+        documentAdapterMock.VerifyAll();
     }
 
     [Fact]
@@ -56,21 +56,21 @@ public class DocumentSkillTests
         var anyText = Guid.NewGuid().ToString();
         var anyFilePath = Guid.NewGuid().ToString();
 
-        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
-        fileSystemConnectorMock
+        var fileSystemAdapterMock = new Mock<IFileSystemAdapter>();
+        fileSystemAdapterMock
             .Setup(mock => mock.FileExistsAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
-        fileSystemConnectorMock
+        fileSystemAdapterMock
             .Setup(mock => mock.GetWriteableFileStreamAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Stream.Null);
 
-        var documentConnectorMock = new Mock<IDocumentConnector>();
-        documentConnectorMock
+        var documentAdapterMock = new Mock<IDocumentAdapter>();
+        documentAdapterMock
             .Setup(mock => mock.AppendText(It.IsAny<Stream>(), It.Is<string>(text => text.Equals(anyText, StringComparison.Ordinal))));
 
-        var target = new DocumentSkill(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+        var target = new DocumentSkill(documentAdapterMock.Object, fileSystemAdapterMock.Object);
 
         this._context.Variables.Set(Parameters.FilePath, anyFilePath);
 
@@ -79,8 +79,8 @@ public class DocumentSkillTests
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
-        fileSystemConnectorMock.VerifyAll();
-        documentConnectorMock.VerifyAll();
+        fileSystemAdapterMock.VerifyAll();
+        documentAdapterMock.VerifyAll();
     }
 
     [Fact]
@@ -90,23 +90,23 @@ public class DocumentSkillTests
         var anyText = Guid.NewGuid().ToString();
         var anyFilePath = Guid.NewGuid().ToString();
 
-        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
-        fileSystemConnectorMock
+        var fileSystemAdapterMock = new Mock<IFileSystemAdapter>();
+        fileSystemAdapterMock
             .Setup(mock => mock.FileExistsAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
-        fileSystemConnectorMock
+        fileSystemAdapterMock
             .Setup(mock => mock.CreateFileAsync(It.Is<string>(filePath => filePath.Equals(anyFilePath, StringComparison.Ordinal)),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Stream.Null);
 
-        var documentConnectorMock = new Mock<IDocumentConnector>();
-        documentConnectorMock
+        var documentAdapterMock = new Mock<IDocumentAdapter>();
+        documentAdapterMock
             .Setup(mock => mock.Initialize(It.IsAny<Stream>()));
-        documentConnectorMock
+        documentAdapterMock
             .Setup(mock => mock.AppendText(It.IsAny<Stream>(), It.Is<string>(text => text.Equals(anyText, StringComparison.Ordinal))));
 
-        var target = new DocumentSkill(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+        var target = new DocumentSkill(documentAdapterMock.Object, fileSystemAdapterMock.Object);
 
         this._context.Variables.Set(Parameters.FilePath, anyFilePath);
 
@@ -115,8 +115,8 @@ public class DocumentSkillTests
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
-        fileSystemConnectorMock.VerifyAll();
-        documentConnectorMock.VerifyAll();
+        fileSystemAdapterMock.VerifyAll();
+        documentAdapterMock.VerifyAll();
     }
 
     [Fact]
@@ -125,17 +125,17 @@ public class DocumentSkillTests
         // Arrange
         var anyText = Guid.NewGuid().ToString();
 
-        var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
-        var documentConnectorMock = new Mock<IDocumentConnector>();
+        var fileSystemAdapterMock = new Mock<IFileSystemAdapter>();
+        var documentAdapterMock = new Mock<IDocumentAdapter>();
 
-        var target = new DocumentSkill(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+        var target = new DocumentSkill(documentAdapterMock.Object, fileSystemAdapterMock.Object);
 
         // Act
         await target.AppendTextAsync(anyText, this._context);
 
         // Assert
         Assert.True(this._context.ErrorOccurred);
-        fileSystemConnectorMock.Verify(mock => mock.GetWriteableFileStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
-        documentConnectorMock.Verify(mock => mock.AppendText(It.IsAny<Stream>(), It.IsAny<string>()), Times.Never());
+        fileSystemAdapterMock.Verify(mock => mock.GetWriteableFileStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
+        documentAdapterMock.Verify(mock => mock.AppendText(It.IsAny<Stream>(), It.IsAny<string>()), Times.Never());
     }
 }

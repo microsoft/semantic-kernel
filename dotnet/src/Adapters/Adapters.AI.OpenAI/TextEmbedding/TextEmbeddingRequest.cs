@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+namespace Microsoft.SemanticKernel.Adapters.AI.OpenAI.TextEmbedding;
 
 /// <summary>
 /// A request to create embedding vector representing input text

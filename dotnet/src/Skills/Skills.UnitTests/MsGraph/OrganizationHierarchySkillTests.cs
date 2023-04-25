@@ -29,16 +29,16 @@ public class OrganizationHierarchySkillTests : IDisposable
     {
         // Arrange
         string anyManagerEmail = Guid.NewGuid().ToString();
-        Mock<IOrganizationHierarchyConnector> connectorMock = new Mock<IOrganizationHierarchyConnector>();
-        connectorMock.Setup(c => c.GetManagerEmailAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyManagerEmail);
-        OrganizationHierarchySkill target = new OrganizationHierarchySkill(connectorMock.Object);
+        Mock<IOrganizationHierarchyAdapter> adapterMock = new Mock<IOrganizationHierarchyAdapter>();
+        adapterMock.Setup(c => c.GetManagerEmailAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyManagerEmail);
+        OrganizationHierarchySkill target = new OrganizationHierarchySkill(adapterMock.Object);
 
         // Act
         string actual = await target.GetMyManagerEmailAsync(this._context);
 
         // Assert
         Assert.Equal(anyManagerEmail, actual);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     [Fact]
@@ -46,16 +46,16 @@ public class OrganizationHierarchySkillTests : IDisposable
     {
         // Arrange
         string anyManagerName = Guid.NewGuid().ToString();
-        Mock<IOrganizationHierarchyConnector> connectorMock = new Mock<IOrganizationHierarchyConnector>();
-        connectorMock.Setup(c => c.GetManagerNameAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyManagerName);
-        OrganizationHierarchySkill target = new OrganizationHierarchySkill(connectorMock.Object);
+        Mock<IOrganizationHierarchyAdapter> adapterMock = new Mock<IOrganizationHierarchyAdapter>();
+        adapterMock.Setup(c => c.GetManagerNameAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyManagerName);
+        OrganizationHierarchySkill target = new OrganizationHierarchySkill(adapterMock.Object);
 
         // Act
         string actual = await target.GetMyManagerNameAsync(this._context);
 
         // Assert
         Assert.Equal(anyManagerName, actual);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     protected virtual void Dispose(bool disposing)

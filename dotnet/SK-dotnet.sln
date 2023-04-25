@@ -63,9 +63,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CopilotChatApi", "..\sample
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Adapters.Memory.Qdrant", "src\Adapters\Adapters.Memory.Qdrant\Adapters.Memory.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Adapters.Memory.Sqlite", "src\Adapters\Adapters.Memory.Sqlite\Adapters.Memory.Sqlite.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Adapters.Storage.Sqlite", "src\Adapters\Adapters.Storage.Sqlite\Adapters.Storage.Sqlite.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Adapters.Memory.CosmosDB", "src\Adapters\Adapters.Memory.CosmosDB\Adapters.Memory.CosmosDB.csproj", "{EA61C289-7928-4B78-A9C1-7AAD61F907CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Adapters.Storage.AzureCosmosDb", "src\Adapters\Adapters.Storage.AzureCosmosDb\Adapters.Storage.AzureCosmosDb.csproj", "{EA61C289-7928-4B78-A9C1-7AAD61F907CD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Adapters.AI.OpenAI", "src\Adapters\Adapters.AI.OpenAI\Adapters.AI.OpenAI.csproj", "{AFA81EB7-F869-467D-8A90-744305D80AAC}"
 EndProject

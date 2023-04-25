@@ -12,15 +12,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Adapters.AI.OpenAI.ImageGeneration;
+using Microsoft.SemanticKernel.Adapters.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
+namespace Microsoft.SemanticKernel.Adapters.AI.OpenAI.CustomClient;
 
 /// <summary>
 /// An abstract OpenAI Client.

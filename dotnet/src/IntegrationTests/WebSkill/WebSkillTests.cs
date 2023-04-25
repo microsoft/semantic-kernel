@@ -45,11 +45,11 @@ public sealed class WebSkillTests : IDisposable
         // Arrange
         IKernel kernel = Kernel.Builder.WithLogger(this._logger).Build();
 
-        using XunitLogger<BingConnector> connectorLogger = new(this._output);
-        using BingConnector connector = new(this._bingApiKey, connectorLogger);
+        using XunitLogger<BingAdapter> logger = new(this._output);
+        using BingAdapter bingAdapter = new(this._bingApiKey, logger);
         Assert.NotEmpty(this._bingApiKey);
 
-        WebSearchEngineSkill skill = new(connector);
+        WebSearchEngineSkill skill = new(bingAdapter);
         var search = kernel.ImportSkill(skill, "WebSearchEngine");
 
         // Act

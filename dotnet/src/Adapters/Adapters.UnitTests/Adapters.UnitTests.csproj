@@ -24,7 +24,7 @@
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
     <ProjectReference Include="..\Adapters.AI.OpenAI\Adapters.AI.OpenAI.csproj" />
     <ProjectReference Include="..\Adapters.Memory.Qdrant\Adapters.Memory.Qdrant.csproj" />
-    <ProjectReference Include="..\Adapters.Memory.Sqlite\Adapters.Memory.Sqlite.csproj" />
+    <ProjectReference Include="..\Adapters.Storage.Sqlite\Adapters.Storage.Sqlite.csproj" />
   </ItemGroup>
 
   <ItemGroup>

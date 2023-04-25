@@ -26,14 +26,14 @@ public class CloudDriveSkill
         public const string DestinationPath = "destinationPath";
     }
 
-    private readonly ICloudDriveConnector _connector;
+    private readonly ICloudDriveAdapter _adapter;
     private readonly ILogger<CloudDriveSkill> _logger;
 
-    public CloudDriveSkill(ICloudDriveConnector connector, ILogger<CloudDriveSkill>? logger = null)
+    public CloudDriveSkill(ICloudDriveAdapter adapter, ILogger<CloudDriveSkill>? logger = null)
     {
-        Ensure.NotNull(connector, nameof(connector));
+        Ensure.NotNull(adapter, nameof(adapter));
 
-        this._connector = connector;
+        this._adapter = adapter;
         this._logger = logger ?? new NullLogger<CloudDriveSkill>();
     }
 
@@ -45,7 +45,7 @@ public class CloudDriveSkill
     public async Task<string> GetFileContentAsync(string filePath, SKContext context)
     {
         this._logger.LogDebug("Getting file content for '{0}'", filePath);
-        Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
+        Stream fileContentStream = await this._adapter.GetFileContentStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
 
         using StreamReader sr = new StreamReader(fileContentStream);
         string content = await sr.ReadToEndAsync().ConfigureAwait(false);
@@ -71,7 +71,7 @@ public class CloudDriveSkill
 
         try
         {
-            await this._connector.UploadSmallFileAsync(filePath, destinationPath, context.CancellationToken).ConfigureAwait(false);
+            await this._adapter.UploadSmallFileAsync(filePath, destinationPath, context.CancellationToken).ConfigureAwait(false);
         }
         catch (IOException ex)
         {
@@ -90,6 +90,6 @@ public class CloudDriveSkill
         const string type = "view"; // TODO expose this as an SK variable
         const string scope = "anonymous"; // TODO expose this as an SK variable
 
-        return await this._connector.CreateShareLinkAsync(filePath, type, scope, context.CancellationToken).ConfigureAwait(false);
+        return await this._adapter.CreateShareLinkAsync(filePath, type, scope, context.CancellationToken).ConfigureAwait(false);
     }
 }

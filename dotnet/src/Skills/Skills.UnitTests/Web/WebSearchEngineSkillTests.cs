@@ -29,11 +29,11 @@ public sealed class WebSearchEngineSkillTests : IDisposable
         // Arrange
         string expected = Guid.NewGuid().ToString();
 
-        Mock<IWebSearchEngineConnector> connectorMock = new();
-        connectorMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        Mock<IWebSearchEngineAdapter> adapterMock = new();
+        adapterMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
-        WebSearchEngineSkill target = new(connectorMock.Object);
+        WebSearchEngineSkill target = new(adapterMock.Object);
 
         string anyQuery = Guid.NewGuid().ToString();
 
@@ -42,7 +42,7 @@ public sealed class WebSearchEngineSkillTests : IDisposable
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
-        connectorMock.VerifyAll();
+        adapterMock.VerifyAll();
     }
 
     public void Dispose()

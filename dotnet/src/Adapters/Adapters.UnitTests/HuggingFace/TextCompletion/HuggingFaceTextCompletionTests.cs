@@ -5,11 +5,11 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Adapters.HuggingFace.TextCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextCompletion;
+namespace SemanticKernel.Adapters.UnitTests.HuggingFace.TextCompletion;
 
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextCompletion"/> class.

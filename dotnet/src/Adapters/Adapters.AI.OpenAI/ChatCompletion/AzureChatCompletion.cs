@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Adapters.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Reliability;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+namespace Microsoft.SemanticKernel.Adapters.AI.OpenAI.ChatCompletion;
 
 /// <summary>
 /// Azure OpenAI chat completion client.
@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion, ITextCompletion
 {
     /// <summary>
-    /// Create an instance of the Azure OpenAI chat completion connector with API key auth
+    /// Create an instance of the Azure OpenAI chat completion with API key auth
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -35,7 +35,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     }
 
     /// <summary>
-    /// Create an instance of the Azure OpenAI chat completion connector with AAD auth
+    /// Create an instance of the Azure OpenAI chat completion with AAD auth
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>

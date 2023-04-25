@@ -232,7 +232,7 @@ public sealed class Kernel : IKernel, IDisposable
     public T GetService<T>(string? name = "")
     {
         // TODO: use .NET ServiceCollection (will require a lot of changes)
-        // TODO: support Connectors, IHttpFactory and IDelegatingHandlerFactory
+        // TODO: support Adapters, IHttpFactory and IDelegatingHandlerFactory
 
         if (typeof(T) == typeof(ITextCompletion))
         {

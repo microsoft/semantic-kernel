@@ -8,9 +8,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers.Settings;
+using Microsoft.SemanticKernel.Adapters.AI.OpenAI.Tokenizers.Settings;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
+namespace Microsoft.SemanticKernel.Adapters.AI.OpenAI.Tokenizers;
 
 /// <summary>
 /// Port of GPT3 Javascript tokenizer recommended by OpenAI.

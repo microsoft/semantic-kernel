@@ -48,19 +48,19 @@ public class CalendarSkill
         public const string Attendees = "attendees";
     }
 
-    private readonly ICalendarConnector _connector;
+    private readonly ICalendarAdapter _adapter;
     private readonly ILogger<CalendarSkill> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CalendarSkill"/> class.
     /// </summary>
-    /// <param name="connector">Calendar connector.</param>
+    /// <param name="adapter">Calendar adapter.</param>
     /// <param name="logger">Logger.</param>
-    public CalendarSkill(ICalendarConnector connector, ILogger<CalendarSkill>? logger = null)
+    public CalendarSkill(ICalendarAdapter adapter, ILogger<CalendarSkill>? logger = null)
     {
-        Ensure.NotNull(connector, nameof(connector));
+        Ensure.NotNull(adapter, nameof(adapter));
 
-        this._connector = connector;
+        this._adapter = adapter;
         this._logger = logger ?? new NullLogger<CalendarSkill>();
     }
 
@@ -117,6 +117,6 @@ public class CalendarSkill
         }
 
         this._logger.LogInformation("Adding calendar event '{0}'", calendarEvent.Subject);
-        await this._connector.AddEventAsync(calendarEvent).ConfigureAwait(false);
+        await this._adapter.AddEventAsync(calendarEvent).ConfigureAwait(false);
     }
 }

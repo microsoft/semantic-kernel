@@ -3,11 +3,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Adapters.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Reliability;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+namespace Microsoft.SemanticKernel.Adapters.AI.OpenAI.TextCompletion;
 
 /// <summary>
 /// OpenAI text completion service.

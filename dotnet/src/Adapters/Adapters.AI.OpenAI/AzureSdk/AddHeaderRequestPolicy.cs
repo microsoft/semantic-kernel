@@ -3,7 +3,7 @@
 using Azure.Core;
 using Azure.Core.Pipeline;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Adapters.AI.OpenAI.AzureSdk;
 
 /// <summary>
 /// Helper class to inject headers into Azure SDK HTTP pipeline

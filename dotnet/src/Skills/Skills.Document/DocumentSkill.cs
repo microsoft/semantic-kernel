@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Skills.Document;
 // EXAMPLE USAGE
 // Option #1: as a standalone C# function
 //
-// DocumentSkill documentSkill = new(new WordDocumentConnector(), new LocalDriveConnector());
+// DocumentSkill documentSkill = new(new WordDocumentAdapter(), new LocalDriveAdapter());
 // string filePath = "PATH_TO_DOCX_FILE.docx";
 // string text = await documentSkill.ReadTextAsync(filePath);
 // Console.WriteLine(text);
@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Skills.Document;
 //
 // Option #2: with the Semantic Kernel
 //
-// DocumentSkill documentSkill = new(new WordDocumentConnector(), new LocalDriveConnector());
+// DocumentSkill documentSkill = new(new WordDocumentAdapter(), new LocalDriveAdapter());
 // string filePath = "PATH_TO_DOCX_FILE.docx";
 // ISemanticKernel kernel = SemanticKernel.Build();
 // var result = await kernel.RunAsync(
@@ -48,20 +48,20 @@ public class DocumentSkill
         public const string FilePath = "filePath";
     }
 
-    private readonly IDocumentConnector _documentConnector;
-    private readonly IFileSystemConnector _fileSystemConnector;
+    private readonly IDocumentAdapter _documentAdapter;
+    private readonly IFileSystemAdapter _fileSystemAdapter;
     private readonly ILogger<DocumentSkill> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentSkill"/> class.
     /// </summary>
-    /// <param name="documentConnector">Document connector</param>
-    /// <param name="fileSystemConnector">File system connector</param>
+    /// <param name="documentAdapter">Document adapter</param>
+    /// <param name="fileSystemAdapter">File system adapter</param>
     /// <param name="logger">Optional logger</param>
-    public DocumentSkill(IDocumentConnector documentConnector, IFileSystemConnector fileSystemConnector, ILogger<DocumentSkill>? logger = null)
+    public DocumentSkill(IDocumentAdapter documentAdapter, IFileSystemAdapter fileSystemAdapter, ILogger<DocumentSkill>? logger = null)
     {
-        this._documentConnector = documentConnector ?? throw new ArgumentNullException(nameof(documentConnector));
-        this._fileSystemConnector = fileSystemConnector ?? throw new ArgumentNullException(nameof(fileSystemConnector));
+        this._documentAdapter = documentAdapter ?? throw new ArgumentNullException(nameof(documentAdapter));
+        this._fileSystemAdapter = fileSystemAdapter ?? throw new ArgumentNullException(nameof(fileSystemAdapter));
         this._logger = logger ?? new NullLogger<DocumentSkill>();
     }
 
@@ -73,8 +73,8 @@ public class DocumentSkill
     public async Task<string> ReadTextAsync(string filePath, SKContext context)
     {
         this._logger.LogInformation("Reading text from {0}", filePath);
-        using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
-        return this._documentConnector.ReadText(stream);
+        using var stream = await this._fileSystemAdapter.GetFileContentStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
+        return this._documentAdapter.ReadText(stream);
     }
 
     /// <summary>
@@ -92,20 +92,20 @@ public class DocumentSkill
         }
 
         // If the document already exists, open it. If not, create it.
-        if (await this._fileSystemConnector.FileExistsAsync(filePath).ConfigureAwait(false))
+        if (await this._fileSystemAdapter.FileExistsAsync(filePath).ConfigureAwait(false))
         {
             this._logger.LogInformation("Writing text to file {0}", filePath);
-            using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
-            this._documentConnector.AppendText(stream, text);
+            using Stream stream = await this._fileSystemAdapter.GetWriteableFileStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
+            this._documentAdapter.AppendText(stream, text);
         }
         else
         {
             this._logger.LogInformation("File does not exist. Creating file at {0}", filePath);
-            using Stream stream = await this._fileSystemConnector.CreateFileAsync(filePath).ConfigureAwait(false);
-            this._documentConnector.Initialize(stream);
+            using Stream stream = await this._fileSystemAdapter.CreateFileAsync(filePath).ConfigureAwait(false);
+            this._documentAdapter.Initialize(stream);
 
             this._logger.LogInformation("Writing text to {0}", filePath);
-            this._documentConnector.AppendText(stream, text);
+            this._documentAdapter.AppendText(stream, text);
         }
     }
 }
