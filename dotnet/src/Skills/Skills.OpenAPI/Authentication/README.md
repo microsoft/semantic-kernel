@@ -17,7 +17,7 @@ This pattern was designed to be flexible enough to support a wide variety of aut
 ## Reference Authentication Providers
 
 ### [`BasicAuthenticationProvider`](./BasicAuthenticationProvider.cs)
-This class implements the HTTP "basic" authentication scheme. The constructor accepts a `Func` which defines how to retrieve the user's credentials. When the `AuthenticateRequestAsync` method is called, it retrieves the credentials, encodes them with Base64, and adds them to the `HttpRequestMessage`'s authorization header. 
+This class implements the HTTP "basic" authentication scheme. The constructor accepts a `Func` which defines how to retrieve the user's credentials. When the `AuthenticateRequestAsync` method is called, it retrieves the credentials, encodes them as a UTF-8 encoded Base64 string, and adds them to the `HttpRequestMessage`'s authorization header.
 
 The following code demonstrates how to use this provider:
 ```csharp
