@@ -27,7 +27,7 @@ public static class FunctionExtensions
         foreach (var partition in partitionedInput)
         {
             context.Variables.Update(partition);
-            context = await func.InvokeAsync(context);
+            context = await func.InvokeAsync(context).ConfigureAwait(false);
 
             results.Add(context.Variables.ToString());
         }

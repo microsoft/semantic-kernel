@@ -5,10 +5,10 @@ from unittest.mock import Mock
 
 from pytest import raises
 
-from semantic_kernel.ai.open_ai.services.azure_chat_completion import (
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
     AzureChatCompletion,
 )
-from semantic_kernel.ai.open_ai.services.open_ai_chat_completion import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
     OpenAIChatCompletion,
 )
 

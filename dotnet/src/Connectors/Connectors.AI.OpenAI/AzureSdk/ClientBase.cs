@@ -73,7 +73,7 @@ public abstract class ClientBase
         }
 
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
-            async () => await this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken));
+            () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
         if (response == null || response.Value.Choices.Count < 1)
         {
@@ -99,7 +99,7 @@ public abstract class ClientBase
             var options = new EmbeddingsOptions(text);
 
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
-                async () => await this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken));
+                () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
             if (response == null || response.Value.Data.Count < 1)
             {
@@ -168,7 +168,7 @@ public abstract class ClientBase
         }
 
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
-            async () => await this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken));
+            () => this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
         if (response == null || response.Value.Choices.Count < 1)
         {
@@ -212,14 +212,14 @@ public abstract class ClientBase
             StopSequences = requestSettings.StopSequences,
         };
 
-        return await this.InternalGenerateChatMessageAsync(chat, settings, cancellationToken);
+        return await this.InternalGenerateChatMessageAsync(chat, settings, cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
     {
         try
         {
-            return await request.Invoke();
+            return await request.Invoke().ConfigureAwait(false);
         }
         catch (RequestFailedException e)
         {
