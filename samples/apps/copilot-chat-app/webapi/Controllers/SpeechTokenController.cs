@@ -29,7 +29,7 @@ public class SpeechTokenController : ControllerBase
     }
 
     /// <summary>
-    /// Get an authorization token and region`
+    /// Get an authorization token and region
     /// </summary>
     [Route("speechToken")]
     [HttpGet]
