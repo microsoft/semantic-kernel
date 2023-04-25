@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+import { AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
 import { IAsk } from './model/Ask';
 import { IAskResult } from './model/AskResult';
 
@@ -18,7 +19,10 @@ export class SemanticKernel {
         skillName: string,
         functionName: string,
         accessToken: string,
-        connectorAccessToken?: string,
+        pluginAuth?: {
+            headerTag: AuthHeaderTags;
+            authData: string;
+        },
     ): Promise<IAskResult> => {
         const result = await this.getResponseAsync<IAskResult>(
             {
@@ -27,7 +31,7 @@ export class SemanticKernel {
                 body: ask,
             },
             accessToken,
-            connectorAccessToken,
+            pluginAuth,
         );
         return result;
     };
@@ -35,16 +39,19 @@ export class SemanticKernel {
     private readonly getResponseAsync = async <T>(
         request: ServiceRequest,
         accessToken: string,
-        connectorAccessToken?: string,
+        pluginAuth?: {
+            headerTag: AuthHeaderTags;
+            authData: string;
+        },
     ): Promise<T> => {
-        const { commandPath, method, body } = request;      
+        const { commandPath, method, body } = request;
         const headers = new Headers({
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
         });
 
-        //TODO: not sure what scenario this helps with?
-        if (connectorAccessToken) headers.append(`sk-copilot-connector-access-token`, connectorAccessToken);
+        // TODO: add all plug in tokens / auth data?
+        if (pluginAuth) headers.append(`x-sk-copilot-${pluginAuth.headerTag}-authorization`, pluginAuth.authData);
 
         try {
             const requestUrl = new URL(commandPath, this.serviceUrl);

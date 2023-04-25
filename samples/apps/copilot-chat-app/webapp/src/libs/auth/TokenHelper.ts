@@ -13,7 +13,7 @@ enum TokenErrors {
  * This implementation follows incremental consent, and token acquisition is limited to one
  * resource at a time (scopes), but user can consent to many resources upfront (extraScopesToConsent)
  */
-export const getAccessToken = async (
+export const getAccessTokenUsingMsal = async (
     inProgress: InteractionStatus,
     msalInstance: IPublicClientApplication,
     scopes: Array<string>,
@@ -98,5 +98,5 @@ const waitFor = (hasInteractionCompleted: () => boolean) => {
 };
 
 export const TokenHelper = {
-    getAccessToken,
+    getAccessTokenUsingMsal,
 };

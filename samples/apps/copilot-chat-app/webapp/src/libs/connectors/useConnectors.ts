@@ -1,7 +1,10 @@
 import { useMsal } from '@azure/msal-react';
 import { Constants } from '../../Constants';
-import { useAppDispatch } from '../../redux/app/hooks';
+import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
+import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
+import { AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
+import { AuthHelper } from '../auth/AuthHelper';
 import { TokenHelper } from '../auth/TokenHelper';
 import { AlertType } from '../models/AlertType';
 import { IAsk } from '../semantic-kernel/model/Ask';
@@ -11,9 +14,10 @@ export const useConnectors = () => {
     const { instance, inProgress } = useMsal();
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const dispatch = useAppDispatch();
+    const { GitHub } = useAppSelector((state: RootState) => state.plugins);
 
     const makeGraphRequest = async (api: string, scopes: Array<string>, method: string, apiHeaders?: {}) => {
-        return await TokenHelper.getAccessToken(inProgress, instance, scopes)
+        return await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, scopes)
             .then(async (token) => {
                 const request = new URL('/v1.0' + api, 'https://graph.microsoft.com');
                 return fetch(request, {
@@ -45,14 +49,18 @@ export const useConnectors = () => {
      * access token for downstream connector.
      * scopes should be limited to only permissions needed for the skill
      */
-    const invokeSkillWithConnectorToken = async (
+    const invokeSkillWithMsalToken = async (
         ask: IAsk,
         skillName: string,
         functionName: string,
         scopes: Array<string>,
+        pluginHeaderTag: AuthHeaderTags,
     ) => {
-        return await TokenHelper.getAccessToken(inProgress, instance, scopes).then(async (token: string) => {
-            return await sk.invokeAsync(ask, skillName, functionName, token);
+        return await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, scopes).then(async (token: string) => {
+            return await sk.invokeAsync(ask, skillName, functionName, await AuthHelper.getSKaaSAccessToken(instance), {
+                headerTag: pluginHeaderTag,
+                authData: token,
+            });
         });
     };
 
@@ -61,7 +69,13 @@ export const useConnectors = () => {
      * using MS Graph API token
      */
     const invokeSkillWithGraphToken = async (ask: IAsk, skillName: string, functionName: string) => {
-        return await invokeSkillWithConnectorToken(ask, skillName, functionName, Constants.msGraphScopes);
+        return await invokeSkillWithMsalToken(
+            ask,
+            skillName,
+            functionName,
+            Constants.msGraphScopes,
+            AuthHeaderTags.MsGraph,
+        );
     };
 
     /**
@@ -69,13 +83,39 @@ export const useConnectors = () => {
      * using ADO token
      */
     const invokeSkillWithAdoToken = async (ask: IAsk, skillName: string, functionName: string) => {
-        return await invokeSkillWithConnectorToken(ask, skillName, functionName, Constants.adoScopes);
+        return await invokeSkillWithMsalToken(ask, skillName, functionName, Constants.adoScopes, AuthHeaderTags.Ado);
+    };
+
+    /**
+     * Helper function to invoke SK skills
+     * with GitHub token.
+     */
+    const invokeSkillWithGitHubToken = async (_ask: IAsk, _skillName: string, _functionName: string) => {
+        // TODO: For testing, change to use parameters
+        const listPullRequestsAsk = {
+            input: 'input',
+            variables: [
+                { key: 'owner', value: 'microsoft' },
+                { key: 'repo', value: 'semantic-kernel' },
+            ],
+        };
+        return await sk.invokeAsync(
+            listPullRequestsAsk,
+            'GitHubSkill',
+            'ListPulls',
+            await AuthHelper.getSKaaSAccessToken(instance),
+            {
+                headerTag: GitHub.headerTag,
+                authData: GitHub.authData!,
+            },
+        );
     };
 
     return {
         makeGraphRequest,
-        invokeSkillWithConnectorToken,
+        invokeSkillWithMsalToken,
         invokeSkillWithGraphToken,
         invokeSkillWithAdoToken,
+        invokeSkillWithGitHubToken,
     };
 };

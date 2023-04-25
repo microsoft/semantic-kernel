@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AuthenticatedTemplate, UnauthenticatedTemplate, useAccount, useIsAuthenticated, useMsal } from '@azure/msal-react';
+import {
+    AuthenticatedTemplate,
+    UnauthenticatedTemplate,
+    useAccount,
+    useIsAuthenticated,
+    useMsal,
+} from '@azure/msal-react';
 import { Avatar, Spinner, Subtitle1, makeStyles } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
@@ -50,15 +56,16 @@ const App: FC = () => {
     const classes = useClasses();
     const { alerts } = useAppSelector((state: RootState) => state.app);
     const dispatch = useAppDispatch();
-        
+
     const { instance, accounts, inProgress } = useMsal();
-    const account = useAccount(accounts[0] || {});    
+    const account = useAccount(accounts[0] || {});
     const isAuthenticated = useIsAuthenticated();
 
     const chat = useChat();
 
     useEffect(() => {
-        if (isAuthenticated && account && appState === AppState.LoadingChats) {            
+        if (isAuthenticated && account && appState === AppState.LoadingChats) {
+            instance.setActiveAccount(account);
             // Load all chats from memory
             async function loadChats() {
                 if (await chat.loadChats()) {
@@ -81,7 +88,7 @@ const App: FC = () => {
             <UnauthenticatedTemplate>
                 <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
                     <div className={classes.header}>
-                        <Subtitle1 as="h1">Copilot Chat</Subtitle1>                        
+                        <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                     </div>
                     <Login />
                 </div>

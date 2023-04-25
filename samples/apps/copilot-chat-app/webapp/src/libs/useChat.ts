@@ -13,13 +13,13 @@ import {
     updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from './auth/AuthHelper';
+// import { useConnectors } from './connectors/useConnectors'; // ConnectorTokenExample
 import { AlertType } from './models/AlertType';
 import { AuthorRoles, ChatMessage } from './models/ChatMessage';
 import { ChatUser } from './models/ChatUser';
 import { IAsk } from './semantic-kernel/model/Ask';
 import { IAskResult, Variables } from './semantic-kernel/model/AskResult';
 import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
-// import { useConnectors } from './connectors/useConnectors'; // ConnectorTokenExample
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
@@ -27,7 +27,7 @@ export const useChat = () => {
     const account = useAccount(accounts[0] || {});
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const { botProfilePictureIndex } = useAppSelector((state: RootState) => state.conversations);
-    
+
     // const connectors = useConnectors(); // ConnectorTokenExample
 
     const botProfilePictures: string[] = [
@@ -73,29 +73,27 @@ export const useChat = () => {
                 ],
             };
 
-            await sk.invokeAsync(
-                ask,
-                'ChatHistorySkill',
-                'CreateChat',
-                await AuthHelper.getSKaaSAccessToken(instance)).then(async (result: IAskResult) => {
-                const newChatId = result.value;
-                const initialBotMessage = getVariableValue(result.variables, 'initialBotMessage');
+            await sk
+                .invokeAsync(ask, 'ChatHistorySkill', 'CreateChat', await AuthHelper.getSKaaSAccessToken(instance))
+                .then(async (result: IAskResult) => {
+                    const newChatId = result.value;
+                    const initialBotMessage = getVariableValue(result.variables, 'initialBotMessage');
 
-                const newChat: ChatState = {
-                    id: newChatId,
-                    title: chatTitle,
-                    messages: [JSON.parse(initialBotMessage!)],
-                    audience: [loggedInUser],
-                    botTypingTimestamp: 0,
-                    botProfilePicture: botProfilePictures.at(botProfilePictureIndex) ?? '/assets/bot-icon-1.png',
-                };
+                    const newChat: ChatState = {
+                        id: newChatId,
+                        title: chatTitle,
+                        messages: [JSON.parse(initialBotMessage!)],
+                        audience: [loggedInUser],
+                        botTypingTimestamp: 0,
+                        botProfilePicture: botProfilePictures.at(botProfilePictureIndex) ?? '/assets/bot-icon-1.png',
+                    };
 
-                dispatch(incrementBotProfilePictureIndex());
-                dispatch(addConversation(newChat));
-                dispatch(setSelectedConversation(newChatId));
+                    dispatch(incrementBotProfilePictureIndex());
+                    dispatch(addConversation(newChat));
+                    dispatch(setSelectedConversation(newChatId));
 
-                return newChatId;
-            });
+                    return newChatId;
+                });
         } catch (e: any) {
             const errorMessage = `Unable to create new chat. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -108,21 +106,21 @@ export const useChat = () => {
             variables: [
                 {
                     key: 'userId',
-                    value: account?.homeAccountId!
+                    value: account?.homeAccountId!,
                 },
                 {
                     key: 'userName',
-                    value: account?.name!
+                    value: account?.name!,
                 },
                 {
                     key: 'chatId',
-                    value: chatId
-                }
-            ]
+                    value: chatId,
+                },
+            ],
         };
         try {
             var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat', await AuthHelper.getSKaaSAccessToken(instance));
-            // var result = await connectors.invokeSkillWithGraphToken(ask, {ConnectorSkill}, {ConnectorFunction}); // ConnectorTokenExample
+            // var result = await connectors.invokeSkillWithGitHubToken(ask, 'ChatSkill', 'Chat'); // ConnectorTokenExample
 
             const messageResult = {
                 timestamp: new Date().getTime(),
@@ -145,7 +143,7 @@ export const useChat = () => {
                 ask,
                 'ChatHistorySkill',
                 'GetAllChats',
-                await AuthHelper.getSKaaSAccessToken(instance)
+                await AuthHelper.getSKaaSAccessToken(instance),
             );
 
             const chats = JSON.parse(result.value);
@@ -164,7 +162,7 @@ export const useChat = () => {
                         loadMessagesAsk,
                         'ChatHistorySkill',
                         'GetAllChatMessages',
-                        await AuthHelper.getSKaaSAccessToken(instance)
+                        await AuthHelper.getSKaaSAccessToken(instance),
                     );
 
                     const messages = JSON.parse(messageResult.value);

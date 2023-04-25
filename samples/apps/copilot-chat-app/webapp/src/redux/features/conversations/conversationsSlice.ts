@@ -6,7 +6,7 @@ import { ChatState } from './ChatState';
 import { Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
 export const conversationsSlice = createSlice({
-    name: 'hub',
+    name: 'conversations',
     initialState,
     reducers: {
         incrementBotProfilePictureIndex: (state: ConversationsState) => {
@@ -46,7 +46,7 @@ export const {
     editConversationTitle,
     setSelectedConversation,
     addConversation,
-    updateConversation
+    updateConversation,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

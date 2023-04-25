@@ -89,7 +89,7 @@ public static class Example27_OpenApiGitHubSkill
         contextVariables.Set("pull_number", pullNumber);
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, skill["GetPulls"]);
+        var result = await kernel.RunAsync(contextVariables, skill["GetPull"]);
 
         Console.WriteLine("Successful GitHub Get Pull Request skill response: {0}", result);
     }

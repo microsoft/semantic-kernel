@@ -21,6 +21,7 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
+import { PluginsList } from '../open-api-plugins/PluginsList';
 import { ChatRoom } from './ChatRoom';
 
 const useClasses = makeStyles({
@@ -87,23 +88,21 @@ export const ChatWindow: React.FC = () => {
     const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const { instance } = useMsal();
-    
+
     const onEdit = async () => {
         if (isEditing) {
             if (chatName !== title) {
                 try {
                     var ask: IAsk = {
                         input: conversations[selectedId].id!,
-                        variables: [
-                            { key: 'title', value: title! },
-                        ],
+                        variables: [{ key: 'title', value: title! }],
                     };
 
                     await sk.invokeAsync(
                         ask,
                         'ChatHistorySkill',
                         'EditChat',
-                        await AuthHelper.getSKaaSAccessToken(instance)
+                        await AuthHelper.getSKaaSAccessToken(instance),
                     );
                     dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));
                 } catch (e: any) {
@@ -152,6 +151,7 @@ export const ChatWindow: React.FC = () => {
                             />
                         }
                     </div>
+                    <PluginsList />
                 </div>
             </div>
             <div className={classes.content}>
