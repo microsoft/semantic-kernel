@@ -57,17 +57,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileCompression", "..\sampl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adapters", "adapters", "{0247C2C9-86C3-45BA-8873-28B0948EDC0C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.UnitTests", "src\Adapters\Connectors.UnitTests\Connectors.UnitTests.csproj", "{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Adapters.UnitTests", "src\Adapters\Adapters.UnitTests\Adapters.UnitTests.csproj", "{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CopilotChatApi", "..\samples\apps\copilot-chat-app\webapi\CopilotChatApi.csproj", "{CCABF515-2C79-453E-A5A2-69C69B8D172E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Qdrant", "src\Adapters\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Adapters.Memory.Qdrant", "src\Adapters\Adapters.Memory.Qdrant\Adapters.Memory.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Sqlite", "src\Adapters\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Adapters.Memory.Sqlite", "src\Adapters\Adapters.Memory.Sqlite\Adapters.Memory.Sqlite.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.CosmosDB", "src\Adapters\Connectors.Memory.CosmosDB\Connectors.Memory.CosmosDB.csproj", "{EA61C289-7928-4B78-A9C1-7AAD61F907CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Adapters.Memory.CosmosDB", "src\Adapters\Adapters.Memory.CosmosDB\Adapters.Memory.CosmosDB.csproj", "{EA61C289-7928-4B78-A9C1-7AAD61F907CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AI.OpenAI", "src\Adapters\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj", "{AFA81EB7-F869-467D-8A90-744305D80AAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Adapters.AI.OpenAI", "src\Adapters\Adapters.AI.OpenAI\Adapters.AI.OpenAI.csproj", "{AFA81EB7-F869-467D-8A90-744305D80AAC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.Abstractions", "src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj", "{627742DB-1E52-468A-99BD-6FF1A542D25B}"
 EndProject

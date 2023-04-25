@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\dotnet\src\Adapters\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\Adapters\Adapters.AI.OpenAI\Adapters.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Skills\Skills.MsGraph\Skills.MsGraph.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
