@@ -22,8 +22,7 @@ public static class Example22_b_OpenApiSkill_Jira
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         var contextVariables = new ContextVariables();
 
-        string s_serverURL = "https://skjiratest.atlassian.net/rest/api/latest/";
-        //string s_serverURL = "https://<jiraProject>.atlassian.net/rest/api/latest/"
+        string s_serverURL = "https://<jiraProject>.atlassian.net/rest/api/latest/"
         contextVariables.Set("server-url", s_serverURL);
 
         IDictionary<string, ISKFunction> jiraSkills;
@@ -75,8 +74,7 @@ public static class Example22_b_OpenApiSkill_Jira
 
     private static Task<string> AuthenticateWithBasicAPITokenAsync()
     {
-        string s = "aman.sachan@microsoft.com" + ":" + Env.Var("JiraAPIToken");
-        // string s = Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("JIRA_API_KEY");
+        string s = Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("JIRA_API_KEY");
         return Task.FromResult(s);
     }
 }
