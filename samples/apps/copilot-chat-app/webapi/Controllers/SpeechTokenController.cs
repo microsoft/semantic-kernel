@@ -36,7 +36,7 @@ public class SpeechTokenController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<SpeechTokenResponse>> GetAsync()
     {
-        // Azure Speech token support is optional. If the configuration is missing or incomplete, return a 404.
+        // Azure Speech token support is optional. If the configuration is missing or incomplete, return an unsuccessful token response.
         if (string.IsNullOrWhiteSpace(this._options.Region) ||
             string.IsNullOrWhiteSpace(this._options.Key))
         {
