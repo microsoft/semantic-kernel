@@ -26,8 +26,9 @@ public static class Example22_b_OpenApiSkill_Jira
         contextVariables.Set("server-url", s_serverURL);
 
         IDictionary<string, ISKFunction> jiraSkills;
-        var tokenProvider = new BasicAuthenticationProvider(AuthenticateWithBasicAPITokenAsync);
+        var tokenProvider = new BasicAuthenticationProvider(AuthenticateWithBasicApiTokenAsync);
 
+        // The bool bUseLocalFile can be used to toggle the ingestion method for the openapi schema between a file path and a URL
         bool bUseLocalFile = true;
         if (bUseLocalFile)
         {
@@ -72,7 +73,7 @@ public static class Example22_b_OpenApiSkill_Jira
         Console.WriteLine("AddComment jiraSkills response: \n{0}", formattedContent);
     }
 
-    private static Task<string> AuthenticateWithBasicAPITokenAsync()
+    private static Task<string> AuthenticateWithBasicApiTokenAsync()
     {
         string s = Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("JIRA_API_KEY");
         return Task.FromResult(s);
