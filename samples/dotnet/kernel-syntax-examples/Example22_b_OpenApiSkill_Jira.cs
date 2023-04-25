@@ -22,11 +22,15 @@ public static class Example22_b_OpenApiSkill_Jira
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         var contextVariables = new ContextVariables();
 
-        string s_serverURL = "https://<jiraProject>.atlassian.net/rest/api/latest/";
-        contextVariables.Set("server-url", s_serverURL);
+        string serverUrl = "https://<jiraProject>.atlassian.net/rest/api/latest/";
+        contextVariables.Set("server-url", serverUrl);
 
         IDictionary<string, ISKFunction> jiraSkills;
-        var tokenProvider = new BasicAuthenticationProvider(AuthenticateWithBasicApiTokenAsync);
+        var tokenProvider = new BasicAuthenticationProvider(() =>
+        {
+            string s = Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("JIRA_API_KEY");
+            return Task.FromResult(s);
+        });
 
         // The bool bUseLocalFile can be used to toggle the ingestion method for the openapi schema between a file path and a URL
         bool bUseLocalFile = true;
@@ -41,41 +45,31 @@ public static class Example22_b_OpenApiSkill_Jira
             jiraSkills = await kernel.ImportOpenApiSkillFromUrlAsync("jiraSkills", apiSkillRawFileURL, null, tokenProvider.AuthenticateRequestAsync);
         }
 
+        // GetIssue Skill
+        {
+            //Set Properties for the Get Issue operation in the openAPI.swagger.json 
+            contextVariables.Set("issueKey", "SKTES-2");
 
-        await GetIssueSkillAsync(kernel, jiraSkills, contextVariables);
-        await AddCommentSkillAsync(kernel, jiraSkills, contextVariables);
-    }
+            //Run operation via the semantic kernel
+            var result = await kernel.RunAsync(contextVariables, jiraSkills["GetIssue"]);
 
-    private static async Task GetIssueSkillAsync(IKernel kernel, IDictionary<string, ISKFunction> jiraSkills, ContextVariables contextVariables)
-    {
-        //Set Properties for the Get Issue operation in the openAPI.swagger.json 
-        contextVariables.Set("issueKey", "SKTES-2");
+            Console.WriteLine("\n\n\n");
+            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.Result), Formatting.Indented);
+            Console.WriteLine("GetIssue jiraSkills response: \n{0}", formattedContent);
+        }
 
-        //Run operation via the semantic kernel
-        var result = await kernel.RunAsync(contextVariables, jiraSkills["GetIssue"]);
+        // AddComment Skill
+        {
+            //Set Properties for the AddComment operation in the openAPI.swagger.json 
+            contextVariables.Set("issueKey", "SKTES-1");
+            contextVariables.Set("body", "Here is a rad comment");
 
-        Console.WriteLine("\n\n\n");
-        var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.Result), Formatting.Indented);
-        Console.WriteLine("GetIssue jiraSkills response: \n{0}", formattedContent);
-    }
+            //Run operation via the semantic kernel
+            var result = await kernel.RunAsync(contextVariables, jiraSkills["AddComment"]);
 
-    private static async Task AddCommentSkillAsync(IKernel kernel, IDictionary<string, ISKFunction> jiraSkills, ContextVariables contextVariables)
-    {
-        //Set Properties for the AddComment operation in the openAPI.swagger.json 
-        contextVariables.Set("issueKey", "SKTES-1");
-        contextVariables.Set("body", "Here is a rad comment");
-
-        //Run operation via the semantic kernel
-        var result = await kernel.RunAsync(contextVariables, jiraSkills["AddComment"]);
-
-        Console.WriteLine("\n\n\n");
-        var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.Result), Formatting.Indented);
-        Console.WriteLine("AddComment jiraSkills response: \n{0}", formattedContent);
-    }
-
-    private static Task<string> AuthenticateWithBasicApiTokenAsync()
-    {
-        string s = Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("JIRA_API_KEY");
-        return Task.FromResult(s);
+            Console.WriteLine("\n\n\n");
+            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.Result), Formatting.Indented);
+            Console.WriteLine("AddComment jiraSkills response: \n{0}", formattedContent);
+        }
     }
 }
