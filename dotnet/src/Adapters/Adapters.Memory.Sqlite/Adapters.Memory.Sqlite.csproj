@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Sqlite</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Adapters.Memory.Sqlite</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
@@ -12,8 +12,8 @@
   
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - SQLite Connector</Title>
-    <Description>SQLite connector for Semantic Kernel skills and semantic memory</Description>
+    <Title>Semantic Kernel - SQLite adapter</Title>
+    <Description>SQLite adapter for Semantic Kernel skills and semantic memory</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,12 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernelConnectorsSqliteTests</_Parameter1>
-    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

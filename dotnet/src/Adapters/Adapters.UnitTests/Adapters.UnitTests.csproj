@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>SemanticKernel.Connectors.UnitTests</AssemblyName>
-    <RootNamespace>SemanticKernel.Connectors.UnitTests</RootNamespace>
+    <AssemblyName>SemanticKernel.Adapters.UnitTests</AssemblyName>
+    <RootNamespace>SemanticKernel.Adapters.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>

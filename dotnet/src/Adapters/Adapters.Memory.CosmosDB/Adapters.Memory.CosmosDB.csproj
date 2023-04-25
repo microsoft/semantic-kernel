@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Adapters.Memory.AzureCosmosDb</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
@@ -12,8 +12,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Azure Cosmos Db Connector</Title>
-    <Description>Azure Cosmos Db connector for Semantic Kernel skills and semantic memory</Description>
+    <Title>Semantic Kernel - Azure Cosmos Db adapter</Title>
+    <Description>Azure Cosmos Db adapter for Semantic Kernel skills and semantic memory</Description>
   </PropertyGroup>
 
   <ItemGroup>

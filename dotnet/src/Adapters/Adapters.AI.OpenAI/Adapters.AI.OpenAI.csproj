@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.AI.OpenAI</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Adapters.AI.OpenAI</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -14,8 +14,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - OpenAI and Azure OpenAI connectors</Title>
-    <Description>Semantic Kernel connectors for OpenAI and Azure OpenAI. Contains clients for text completion, chat completion, embedding and DALL-E image generation.</Description>
+    <Title>Semantic Kernel - OpenAI and Azure OpenAI adapters</Title>
+    <Description>Semantic Kernel adapters for OpenAI and Azure OpenAI. Contains clients for text completion, chat completion, embedding and DALL-E image generation.</Description>
   </PropertyGroup>
 
   <ItemGroup>
