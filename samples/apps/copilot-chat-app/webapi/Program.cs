@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.Extensions.Options;
 
 namespace SemanticKernel.Service;
 
@@ -17,6 +14,7 @@ public sealed class Program
     /// Entry point
     /// </summary>
     /// <param name="args">Web application command-line arguments.</param>
+    // ReSharper disable once InconsistentNaming
     public static async Task Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -27,7 +25,7 @@ public sealed class Program
 
         // Add in configuration options and Semantic Kernel services.
         builder.Services
-            .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Program>>()) // some services require an untemplated ILogger
+            .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Program>>()) // some services require an un-templated ILogger
             .AddOptions(builder.Configuration)
             .AddSemanticKernelServices()
             .AddPersistentChatStore();

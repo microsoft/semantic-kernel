@@ -66,10 +66,10 @@ public class BotController : ControllerBase
         this._logger.LogDebug("Received call to upload a bot");
 
         if (!this.IsBotCompatible(
-            externalBotSchema: bot.Schema,
-            externalBotEmbeddingConfig: bot.EmbeddingConfigurations,
-            embeddingOptions: aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName),
-            botSchemaOptions: botSchemaOptions.Value))
+                externalBotSchema: bot.Schema,
+                externalBotEmbeddingConfig: bot.EmbeddingConfigurations,
+                embeddingOptions: aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName),
+                botSchemaOptions: botSchemaOptions.Value))
         {
             return this.BadRequest("Incompatible schema");
         }
@@ -160,9 +160,9 @@ public class BotController : ControllerBase
     {
         // The app can define what schema/version it supports before the community comes out with an open schema.
         return externalBotSchema.Name.Equals(botSchemaOptions.Name, StringComparison.OrdinalIgnoreCase)
-            && externalBotSchema.Version == botSchemaOptions.Version
-            && externalBotEmbeddingConfig.AIService == embeddingOptions.AIService
-            && externalBotEmbeddingConfig.DeploymentOrModelId.Equals(embeddingOptions.DeploymentOrModelId, StringComparison.OrdinalIgnoreCase);
+               && externalBotSchema.Version == botSchemaOptions.Version
+               && externalBotEmbeddingConfig.AIService == embeddingOptions.AIService
+               && externalBotEmbeddingConfig.DeploymentOrModelId.Equals(embeddingOptions.DeploymentOrModelId, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
