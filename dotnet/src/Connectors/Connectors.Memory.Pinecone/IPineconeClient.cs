@@ -39,7 +39,7 @@ public interface IPineconeClient
     /// <summary>
     ///  Get vectors by id
     /// </summary>
-    /// <param name="indexName"></param>
+    /// <param name="indexName"> the name of the index </param>
     /// <param name="ids"> A list of ids</param>
     /// <param name="nameSpace"> The namespace to use</param>
     /// <param name="includeValues"></param>
@@ -56,10 +56,10 @@ public interface IPineconeClient
     /// <summary>
     ///  Gets the most relevant vectors to a list of queries
     /// </summary>
-    /// <param name="indexName"></param>
-    /// <param name="vector"></param>
+    /// <param name="indexName"> the name of the index </param>
     /// <param name="topK"> the number of results to return</param>
     /// <param name="nameSpace"> the namespace to use</param>
+    /// <param name="vector"></param>
     /// <param name="includeValues"> whether to include the vector values</param>
     /// <param name="includeMetadata"> whether to include the metadata</param>
     /// <param name="filter"></param>
@@ -69,11 +69,11 @@ public interface IPineconeClient
     /// <returns> a list of query matches</returns>
     public IAsyncEnumerable<PineconeDocument?> QueryAsync(
         string indexName,
-        IEnumerable<float> vector,
-        bool includeValues,
-        bool includeMetadata,
         int topK,
         string nameSpace = "",
+        IEnumerable<float>? vector = default,
+        bool includeValues = false,
+        bool includeMetadata = true,
         Dictionary<string, object>? filter = default,
         SparseVectorData? sparseVector = default,
         string? id = default,
@@ -82,7 +82,7 @@ public interface IPineconeClient
     /// <summary>
     /// Find the nearest vectors in a collection using vector similarity search.
     /// </summary>
-    /// <param name="indexName"></param>
+    /// <param name="indexName"> the name of the index </param>
     /// <param name="vector">The vector to compare the collection's vectors with.</param>
     /// <param name="threshold">The minimum relevance threshold for returned results.</param>
     /// <param name="topK">The maximum number of similarity results to return.</param>
@@ -105,7 +105,7 @@ public interface IPineconeClient
     /// <summary>
     ///  Upserts a list of documents
     /// </summary>
-    /// <param name="indexName"></param>
+    /// <param name="indexName"> the name of the index</param>
     /// <param name="vectors"> the list of documents</param>
     /// <param name="nameSpace"> the namespace to use</param>
     /// <param name="cancellationToken"></param>
@@ -121,16 +121,16 @@ public interface IPineconeClient
     /// <remarks>
     /// The Delete operation deletes vectors, by id, from a single namespace. You can delete items by their id, from a single namespace.
     /// </remarks>
-    /// <param name="indexName"></param>
-    /// <param name="ids"></param>
-    /// <param name="deleteAll"></param>
-    /// <param name="nameSpace"></param>
-    /// <param name="filter"></param>
+    /// <param name="indexName"> The name of the index</param>
+    /// <param name="ids"> The ids to delete</param>
+    /// <param name="deleteAll"> Whether to delete all vectors</param>
+    /// <param name="nameSpace"> The namespace to use</param>
+    /// <param name="filter"> The filter to use</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of Object</returns>
     Task DeleteAsync(
         string indexName,
-        IEnumerable<string>? ids,
+        IEnumerable<string>? ids = null,
         string nameSpace = "",
         Dictionary<string, object>? filter = null,
         bool deleteAll = false,
@@ -142,13 +142,15 @@ public interface IPineconeClient
     /// <remarks>
     /// The Update operation updates vector in a namespace. If a value is included, it will overwrite the previous value. If a set_metadata is included, the values of the fields specified in it will be added or overwrite the previous value.
     /// </remarks>
-    /// <param name="indexName"></param>
-    /// <param name="document"></param>
+    /// <param name="indexName"> The name of the index</param>
+    /// <param name="document"> The document to update</param>
+    /// <param name="nameSpace"> The namespace to use</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of Object</returns>
     Task UpdateAsync(
         string indexName,
         PineconeDocument document,
+        string nameSpace = "",
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -160,7 +162,7 @@ public interface IPineconeClient
     /// <param name="indexName"></param>
     /// <param name="filter"></param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
-    /// <returns>Task of DescribeIndexStatsResponse</returns>
+    /// <returns> the index stats</returns>
     Task<IndexStats?> DescribeIndexStatsAsync(
         string indexName,
         Dictionary<string, object>? filter = default,
@@ -182,7 +184,7 @@ public interface IPineconeClient
     /// <remarks>
     /// This operation deletes an existing index.
     /// </remarks>
-    /// <param name="indexName"></param>
+    /// <param name="indexName"> the name of the index.</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of void</returns>
     Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default);

@@ -61,7 +61,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// Gets a batch of memory records from the data store in the given namespace.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embedding.</param>
-    /// <param name="nameSpace"></param>
+    /// <param name="nameSpace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="keys">The unique ids associated with the memory record to get.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel">Cancellation token.</param>
@@ -70,6 +70,60 @@ public interface IPineconeMemoryStore : IMemoryStore
         string indexName,
         string nameSpace,
         IEnumerable<string> keys,
+        bool withEmbeddings = false,
+        CancellationToken cancel = default);
+
+    /// <summary>
+    ///  Gets the memory records associated with the given document id.
+    /// </summary>
+    /// <param name="indexName"> the name of the index to search.</param>
+    /// <param name="documentId"> the document id to search for.</param>
+    /// <param name="limit"> the number of results to return.</param>
+    /// <param name="nameSpace"> the namespace to search.</param>
+    /// <param name="withEmbedding"> if true, the embedding will be returned in the memory record.</param>
+    /// <param name="cancel"></param>
+    /// <returns> the memory records associated with the document id provided.</returns>
+    IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdAsync(
+        string indexName,
+        string documentId,
+        int limit = 3,
+        string nameSpace = "",
+        bool withEmbedding = false,
+        CancellationToken cancel = default);
+
+    /// <summary>
+    /// Gets the memory records associated with the given document ids.
+    /// </summary>
+    /// <param name="indexName">  the name of the index to search.</param>
+    /// <param name="documentIds"> the document ids to search for.</param>
+    /// <param name="limit"> the number of results to return.</param>
+    /// <param name="nameSpace"> the namespace to search.</param>
+    /// <param name="withEmbeddings"> if true, the embeddings will be returned in the memory records.</param>
+    /// <param name="cancel"></param>
+    /// <returns> the memory records associated with the document ids provided.</returns>
+    IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdBatchAsync(
+        string indexName,
+        IEnumerable<string> documentIds,
+        int limit = 3,
+        string nameSpace = "",
+        bool withEmbeddings = false,
+        CancellationToken cancel = default);
+
+    /// <summary>
+    ///  Gets a memory record from the data store that matches the filter.
+    /// </summary>
+    /// <param name="indexName"> the name of the index to search.</param>
+    /// <param name="filter"> the filter to apply to the search.</param>
+    /// <param name="limit"> the number of results to return.</param>
+    /// <param name="nameSpace"> the namespace to search.</param>
+    /// <param name="withEmbeddings"> if true, the embedding will be returned in the memory record.</param>
+    /// <param name="cancel"></param>
+    /// <returns> the memory records that match the filter.</returns>
+    public IAsyncEnumerable<MemoryRecord?> GetBatchWithFilterAsync(
+        string indexName,
+        Dictionary<string, object> filter,
+        int limit = 10,
+        string nameSpace = "",
         bool withEmbeddings = false,
         CancellationToken cancel = default);
 
@@ -90,7 +144,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// Removes a batch of memory records from the data store in the given namespace.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embeddings.</param>
-    /// <param name="nameSpace"></param>
+    /// <param name="nameSpace"> The namespace to remove the memory records from.</param>
     /// <param name="keys">The unique ids associated with the memory record to remove.</param>
     /// <param name="cancel">Cancellation token.</param>
     Task RemoveBatchFromNamespaceAsync(
@@ -100,11 +154,39 @@ public interface IPineconeMemoryStore : IMemoryStore
         CancellationToken cancel = default);
 
     /// <summary>
+    ///  Removes memory records from the data store associated with the document id.
+    /// </summary>
+    /// <param name="indexName"> the name of the index to remove from.</param>
+    /// <param name="documentId">  the document id to remove.</param>
+    /// <param name="nameSpace"> the namespace to remove from.</param>
+    /// <param name="cancel"></param>
+    /// <returns></returns>
+    Task RemoveWithDocumentIdAsync(
+        string indexName,
+        string documentId,
+        string nameSpace = "",
+        CancellationToken cancel = default);
+
+    /// <summary>
+    ///  Removes memory records from the data store that match the document ids.
+    /// </summary>
+    /// <param name="indexName"> the name of the index to remove from.</param>
+    /// <param name="documentIds"> the document ids to remove.</param>
+    /// <param name="nameSpace"> the namespace to remove from.</param>
+    /// <param name="cancel"></param>
+    /// <returns></returns>
+    public Task RemoveWithDocumentIdBatchAsync(
+        string indexName,
+        IEnumerable<string> documentIds,
+        string nameSpace = "",
+        CancellationToken cancel = default);
+
+    /// <summary>
     ///  Removes memory records from the data store that match the filter.
     /// </summary>
-    /// <param name="indexName"></param>
-    /// <param name="filter"></param>
-    /// <param name="nameSpace"></param>
+    /// <param name="indexName"> the name of the index to remove from.</param>
+    /// <param name="filter"> the filter to apply to the search.</param>
+    /// <param name="nameSpace"> the namespace to remove from.</param>
     /// <param name="cancel"></param>
     /// <remarks>
     ///  In the same way that you can filter your vector search results, you can also filter your vector deletion.
