@@ -145,6 +145,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             top_p=request_settings.top_p,
             presence_penalty=request_settings.presence_penalty,
             frequency_penalty=request_settings.frequency_penalty,
-            max_tokens=request_settings.max_tokens
+            max_tokens=request_settings.max_tokens,
         )
         return await self.complete_chat_async(faux_messages, chat_settings)
