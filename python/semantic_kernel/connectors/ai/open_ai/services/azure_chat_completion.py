@@ -4,7 +4,7 @@
 from logging import Logger
 from typing import Any, Optional
 
-from semantic_kernel.ai.open_ai.services.open_ai_chat_completion import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
     OpenAIChatCompletion,
 )
 
@@ -24,7 +24,7 @@ class AzureChatCompletion(OpenAIChatCompletion):
         ad_auth=False,
     ) -> None:
         """
-        Initialize an AzureChatCompletion backend.
+        Initialize an AzureChatCompletion service.
 
         You must provide:
         - A deployment_name, endpoint, and api_key (plus, optionally: ad_auth)

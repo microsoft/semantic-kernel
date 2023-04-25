@@ -5,8 +5,10 @@ namespace SemanticKernel.Service.Config;
 /// <summary>
 /// Configuration settings for the memories store.
 /// </summary>
-public class MemoriesStoreConfig
+public class MemoriesStoreOptions
 {
+    public const string PropertyName = "MemoriesStore";
+
     /// <summary>
     /// The type of memories store to use.
     /// </summary>
@@ -31,5 +33,6 @@ public class MemoriesStoreConfig
     /// <summary>
     /// Gets or sets the configuration for the Qdrant memories store.
     /// </summary>
-    public QdrantConfig? Qdrant { get; set; }
+    [RequiredOnPropertyValue(nameof(Type), MemoriesStoreType.Qdrant)]
+    public QdrantOptions? Qdrant { get; set; }
 }

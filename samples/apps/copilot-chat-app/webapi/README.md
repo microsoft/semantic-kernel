@@ -55,7 +55,7 @@ You can start the WebApi service using the command-line, Visual Studio Code, or 
 1. Start debugging by pressing `F5` or selecting the menu item `Debug`->`Start Debugging`.
 
 # (Optional) Enabling the Qdrant Memory Store
-By default, teh service uses an in-memory volatile memory store that, when the service stops or restarts, forgets all memories.
+By default, the service uses an in-memory volatile memory store that, when the service stops or restarts, forgets all memories.
 [Qdrant](https://github.com/qdrant/qdrant) is a persistent scalable vector search engine that can be deployed locally in a container or [at-scale in the cloud](https://github.com/Azure-Samples/qdrant-azure).
 
 To enable the Qdrant memory store, you must first deploy Qdrant locally and then configure the Copilot Chat API service to use it.

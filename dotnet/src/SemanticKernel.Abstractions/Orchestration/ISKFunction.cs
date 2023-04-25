@@ -34,12 +34,12 @@ public interface ISKFunction
     /// IMPORTANT: native functions might use semantic functions internally,
     /// so when this property is False, executing the function might still involve AI calls.
     /// </summary>
-    public bool IsSemantic { get; }
+    bool IsSemantic { get; }
 
     /// <summary>
     /// AI service settings
     /// </summary>
-    public CompleteRequestSettings RequestSettings { get; }
+    CompleteRequestSettings RequestSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.

@@ -1,63 +1,71 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Model;
 
 namespace SemanticKernel.Service.Controllers;
-
-/// <summary>
-/// Token Response is a simple wrapper around the token and region
-/// </summary>
-public class SpeechTokenResponse
-{
-    public string? Token { get; set; }
-    public string? Region { get; set; }
-}
 
 [Authorize]
 [ApiController]
 public class SpeechTokenController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<SpeechTokenController> _logger;
-
-    public SpeechTokenController(IConfiguration configuration, ILogger<SpeechTokenController> logger)
+    private sealed class TokenResult
     {
-        this._configuration = configuration;
+        public string? Token { get; set; }
+        public HttpStatusCode? ResponseCode { get; set; }
+    }
+
+    private readonly ILogger<SpeechTokenController> _logger;
+    private readonly AzureSpeechOptions _options;
+
+    public SpeechTokenController(IOptions<AzureSpeechOptions> options, ILogger<SpeechTokenController> logger)
+    {
         this._logger = logger;
+        this._options = options.Value;
     }
 
     /// <summary>
-    /// Use the Azure Speech Config key to return an authorization token and region as a Token Response.
+    /// Get an authorization token and region
     /// </summary>
     [Route("speechToken")]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<SpeechTokenResponse>> GetAsync()
     {
-        AzureSpeechConfig azureSpeech = this._configuration.GetSection("AzureSpeech").Get<AzureSpeechConfig>();
+        if (string.IsNullOrWhiteSpace(this._options.Region))
+        {
+            throw new InvalidOperationException($"Missing value for {AzureSpeechOptions.PropertyName}:{nameof(this._options.Region)}");
+        }
 
-        string fetchTokenUri = "https://" + azureSpeech.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
-        string subscriptionKey = azureSpeech.Key;
+        string fetchTokenUri = "https://" + this._options.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
 
-        var token = await this.FetchTokenAsync(fetchTokenUri, subscriptionKey);
-
-        return new SpeechTokenResponse { Token = token, Region = azureSpeech.Region };
+        TokenResult tokenResult = await this.FetchTokenAsync(fetchTokenUri, this._options.Key);
+        var isSuccess = tokenResult.ResponseCode != HttpStatusCode.NotFound;
+        return new SpeechTokenResponse { Token = tokenResult.Token, Region = this._options.Region, IsSuccess = isSuccess };
     }
 
-    private async Task<string> FetchTokenAsync(string fetchUri, string subscriptionKey)
+    private async Task<TokenResult> FetchTokenAsync(string fetchUri, string subscriptionKey)
     {
         // TODO: get the HttpClient from the DI container
-        using (var client = new HttpClient())
-        {
-            client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
-            UriBuilder uriBuilder = new UriBuilder(fetchUri);
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
+        UriBuilder uriBuilder = new(fetchUri);
 
-            var result = await client.PostAsync(uriBuilder.Uri, null);
-            result.EnsureSuccessStatusCode();
+        var result = await client.PostAsync(uriBuilder.Uri, null);
+        if (result.IsSuccessStatusCode)
+        {
+            var response = result.EnsureSuccessStatusCode();
             this._logger.LogDebug("Token Uri: {0}", uriBuilder.Uri.AbsoluteUri);
-            return await result.Content.ReadAsStringAsync();
+            string token = await result.Content.ReadAsStringAsync();
+            return new TokenResult { Token = token, ResponseCode = response.StatusCode };
+        }
+        else
+        {
+            return new TokenResult { Token = "", ResponseCode = HttpStatusCode.NotFound };
         }
     }
 }

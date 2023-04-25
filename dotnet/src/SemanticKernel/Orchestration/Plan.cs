@@ -59,7 +59,7 @@ public sealed class Plan : ISKFunction
     /// Gets the next step index.
     /// </summary>
     [JsonPropertyName("next_step_index")]
-    public int NextStepIndex { get; internal set; } = 0;
+    public int NextStepIndex { get; private set; }
 
     #region ISKFunction implementation
 
@@ -77,11 +77,11 @@ public sealed class Plan : ISKFunction
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public bool IsSemantic { get; internal set; } = false;
+    public bool IsSemantic { get; private set; }
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public CompleteRequestSettings RequestSettings { get; internal set; } = new();
+    public CompleteRequestSettings RequestSettings { get; private set; } = new();
 
     #endregion ISKFunction implementation
 
