@@ -5,8 +5,10 @@ from unittest.mock import Mock
 
 from pytest import raises
 
-from semantic_kernel.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
-from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import (
+    AzureTextEmbedding,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
 )
 
