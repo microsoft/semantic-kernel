@@ -5,7 +5,7 @@
 |---|---|---|---|
 | TextGeneration                    | ✅ | ✅ | Example: Text-Davinci-003 |
 | TextEmbeddings                    | ✅ | ✅ | Example: Text-Embeddings-Ada-002 |
-| ChatCompletion                    | ✅ | ❌ | Example: GPT4, Chat-GPT |
+| ChatCompletion                    | ✅ | ✅ | Example: GPT4, Chat-GPT |
 | Image Generation                  | ✅ | ❌ | Example: Dall-E |
 
 ## AI Service Endpoints

@@ -36,7 +36,7 @@ public ref struct EmbeddingSpan<TEmbedding>
     /// <summary>
     /// Gets the underlying <see cref="Span{T}"/> of unmanaged data.
     /// </summary>
-    public Span<TEmbedding> Span { get; internal set; }
+    public Span<TEmbedding> Span { get; }
 
     /// <summary>
     /// Normalizes the underlying vector in-place, such that the Euclidean length is 1.
