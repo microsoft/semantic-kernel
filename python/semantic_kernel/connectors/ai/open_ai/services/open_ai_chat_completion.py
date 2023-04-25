@@ -139,7 +139,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         Returns:
             str -- The completed text.
         """
-        faux_messages = [("user", prompt)]
+        prompt_to_message = [("user", prompt)]
         chat_settings = ChatRequestSettings(
             temperature=request_settings.temperature,
             top_p=request_settings.top_p,
@@ -147,4 +147,4 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             frequency_penalty=request_settings.frequency_penalty,
             max_tokens=request_settings.max_tokens,
         )
-        return await self.complete_chat_async(faux_messages, chat_settings)
+        return await self.complete_chat_async(prompt_to_message, chat_settings)
