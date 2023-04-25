@@ -13,6 +13,13 @@ using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
+internal enum OperationType
+{
+    Upsert,
+    Update,
+    Skip
+}
+
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Pinecone Vector database.
 /// </summary>
@@ -36,7 +43,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         this._pineconeClient = pineconeClient;
         this._logger = logger ?? NullLogger.Instance;
     }
-    
+
     /// <summary>
     ///   Initializes a new instance of the <see cref="PineconeMemoryStore"/> class and ensures that the index exists and is ready.
     /// </summary>
@@ -139,20 +146,26 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             return string.Empty;
         }
 
-        PineconeDocument? vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, "", cancel).ConfigureAwait(false);
-        
+        (PineconeDocument? vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(collectionName, record, "", cancel).ConfigureAwait(false);
+
         if (vectorData == null)
         {
             throw new PineconeMemoryException(PineconeMemoryException.ErrorCodes.FailedToConvertMemoryRecordToPineconeDocument,
                 $"Failed to convert MemoryRecord to PineconeDocument");
         }
 
+        Task request = operationType switch
+        {
+            OperationType.Upsert => this._pineconeClient.UpsertAsync(collectionName, new[] { vectorData }, "", cancel),
+            OperationType.Update => this._pineconeClient.UpdateAsync(collectionName, vectorData, "", cancel),
+            OperationType.Skip => Task.CompletedTask,
+            _ => Task.CompletedTask
+        };
+
         try
         {
-            await this._pineconeClient.UpsertAsync(collectionName,
-                new[] { vectorData },
-                "",
-                cancel).ConfigureAwait(false);
+            await request.ConfigureAwait(false);
+
         }
         catch (HttpRequestException ex)
         {
@@ -174,7 +187,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             return string.Empty;
         }
 
-        PineconeDocument? vectorData = await this.ConvertFromMemoryRecordAsync(indexName, record, nameSpace, cancel).ConfigureAwait(false);
+        (PineconeDocument? vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(indexName, record, "", cancel).ConfigureAwait(false);
 
         if (vectorData == null)
         {
@@ -182,12 +195,18 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 $"Failed to convert MemoryRecord to PineconeDocument");
         }
 
+        Task request = operationType switch
+        {
+            OperationType.Upsert => this._pineconeClient.UpsertAsync(indexName, new[] { vectorData }, nameSpace, cancel),
+            OperationType.Update => this._pineconeClient.UpdateAsync(indexName, vectorData, nameSpace, cancel),
+            OperationType.Skip => Task.CompletedTask,
+            _ => Task.CompletedTask
+        };
+
         try
         {
-            await this._pineconeClient.UpsertAsync(indexName,
-                new[] { vectorData },
-                nameSpace,
-                cancel).ConfigureAwait(false);
+            await request.ConfigureAwait(false);
+
         }
         catch (HttpRequestException ex)
         {
@@ -215,17 +234,57 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             yield break;
         }
 
-        Task<PineconeDocument[]>? tasks = Task.WhenAll(records.Select(async r
-            => await this.ConvertFromMemoryRecordAsync(collectionName, r, "", cancel).ConfigureAwait(false)));
+        List<PineconeDocument> upsertDocuments = new();
+        List<PineconeDocument> updateDocuments = new();
 
-        PineconeDocument[] vectorData = await tasks.ConfigureAwait(false);
+        foreach (MemoryRecord? record in records)
+        {
+            (PineconeDocument document, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(
+                collectionName,
+                record,
+                "",
+                cancel).ConfigureAwait(false);
+
+            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+            switch (operationType)
+            {
+                case OperationType.Upsert:
+                    upsertDocuments.Add(document);
+                    break;
+
+                case OperationType.Update:
+                    updateDocuments.Add(document);
+                    break;
+
+                case OperationType.Skip:
+                    yield return document.Id;
+                    break;
+
+            }
+        }
+
+        List<Task> tasks = new();
+
+        if (upsertDocuments.Count > 0)
+        {
+            tasks.Add(this._pineconeClient.UpsertAsync(collectionName, upsertDocuments, "", cancel));
+        }
+
+        if (updateDocuments.Count > 0)
+        {
+            IEnumerable<Task> updates = updateDocuments.Select(async d
+                => await this._pineconeClient.UpdateAsync(collectionName, d, "", cancel).ConfigureAwait(false));
+
+            tasks.AddRange(updates);
+        }
+
+        Console.WriteLine($"UpsertBatchAsync: {upsertDocuments.Count} upserts, {updateDocuments.Count} updates");
+
+        PineconeDocument[] vectorData = upsertDocuments.Concat(updateDocuments).ToArray();
 
         try
         {
-            await this._pineconeClient.UpsertAsync(collectionName,
-                vectorData,
-                "",
-                cancel).ConfigureAwait(false);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -248,23 +307,64 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        Task<PineconeDocument[]>? tasks = Task.WhenAll(records.Select(async r
-            => await this.ConvertFromMemoryRecordAsync(indexName, r, nameSpace, cancel).ConfigureAwait(false)));
-
-        PineconeDocument[] vectorData = await tasks.ConfigureAwait(false);
-
         if (!this._pineconeClient.Ready)
         {
             this._logger.LogError("Pinecone client is not ready.");
             yield break;
         }
 
-        try
+        List<PineconeDocument> upsertDocuments = new();
+        List<PineconeDocument> updateDocuments = new();
+
+        foreach (MemoryRecord? record in records)
         {
-            await this._pineconeClient.UpsertAsync(indexName,
-                vectorData,
+            (PineconeDocument document, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(
+                indexName,
+                record,
                 nameSpace,
                 cancel).ConfigureAwait(false);
+
+            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+            switch (operationType)
+            {
+                case OperationType.Upsert:
+                    upsertDocuments.Add(document);
+                    break;
+
+                case OperationType.Update:
+
+                    updateDocuments.Add(document);
+                    break;
+
+                case OperationType.Skip:
+                    yield return document.Id;
+                    break;
+
+            }
+        }
+
+        List<Task> tasks = new();
+
+        if (upsertDocuments.Count > 0)
+        {
+            tasks.Add(this._pineconeClient.UpsertAsync(indexName, upsertDocuments, nameSpace, cancel));
+        }
+
+        if (updateDocuments.Count > 0)
+        {
+            IEnumerable<Task> updates = updateDocuments.Select(async d
+                => await this._pineconeClient.UpdateAsync(indexName, d, nameSpace, cancel).ConfigureAwait(false));
+
+            tasks.AddRange(updates);
+        }
+
+        Console.WriteLine($"UpsertBatchAsync: {upsertDocuments.Count} upserts, {updateDocuments.Count} updates");
+
+        PineconeDocument[] vectorData = upsertDocuments.Concat(updateDocuments).ToArray();
+
+        try
+        {
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -423,67 +523,71 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <summary>
     /// Get a MemoryRecord from the Pinecone Vector database by pointId.
     /// </summary>
-    /// <param name="collectionName">The name associated with the index to get the Pinecone vector record from.</param>
-    /// <param name="pointId">The unique indexed ID associated with the Pinecone vector record to get.</param>
+    /// <param name="indexName">The name associated with the index to get the Pinecone vector record from.</param>
+    /// <param name="documentId">The unique indexed ID associated with the Pinecone vector record to get.</param>
+    /// <param name="limit"></param>
     /// <param name="nameSpace"> The namespace associated with the Pinecone vector record to get.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="PineconeMemoryException"></exception>
-    public async Task<MemoryRecord?> GetWithPointIdAsync(
-        string collectionName,
-        string pointId,
+    public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdAsync(string indexName,
+        string documentId,
+        int limit = 3,
         string nameSpace = "",
         bool withEmbedding = false,
-        CancellationToken cancel = default)
+        [EnumeratorCancellation] CancellationToken cancel = default)
     {
         if (!this._pineconeClient.Ready)
         {
             this._logger.LogError("Pinecone client is not ready.");
-            return null;
+            yield return null;
         }
+
+        IEnumerable<PineconeDocument?> vectorDataList;
 
         try
         {
-            IAsyncEnumerable<PineconeDocument?> vectorDataList = this._pineconeClient
-                .FetchVectorsAsync(collectionName,
-                    new[] { pointId },
+            vectorDataList = await this._pineconeClient
+                .QueryAsync(indexName,
+                    limit,
                     nameSpace,
+                    null,
                     withEmbedding,
-                    cancel);
+                    true,
+                    new Dictionary<string, object>()
+                    {
+                        { "document_Id", documentId }
+                    },
+                    cancellationToken: cancel).Take(limit).ToListAsync(cancellationToken: cancel).ConfigureAwait(false);
+        }
 
-            PineconeDocument? vectorData = await vectorDataList.FirstOrDefaultAsync(cancel).ConfigureAwait(false);
+        catch (HttpRequestException e)
+        {
+            this._logger.LogError(e, "Error getting batch with filter from Pinecone.");
+            yield break;
+        }
 
-            return vectorData?.ToMemoryRecord();
-        }
-        catch (HttpRequestException ex)
+        foreach (PineconeDocument? record in vectorDataList)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToGetVectorData,
-                $"Failed to get vector data from Pinecone: {ex.Message}",
-                ex);
+            yield return record?.ToMemoryRecord();
         }
-        catch (MemoryException ex)
-        {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToConvertPineconeDocumentToMemoryRecord,
-                $"Failed deserialize Pinecone response to Memory Record: {ex.Message}",
-                ex);
-        }
+
     }
 
     /// <summary>
     /// Get a MemoryRecord from the Pinecone Vector database by a group of pointIds.
     /// </summary>
-    /// <param name="collectionName">The name associated with the index to get the Pinecone vector records from.</param>
-    /// <param name="pointIds">The unique indexed IDs associated with Pinecone vector records to get.</param>
+    /// <param name="indexName">The name associated with the index to get the Pinecone vector records from.</param>
+    /// <param name="documentIds">The unique indexed IDs associated with Pinecone vector records to get.</param>
+    /// <param name="limit"></param>
     /// <param name="nameSpace"> The namespace associated with the Pinecone vector records to get.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
-    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(
-        string collectionName,
-        IEnumerable<string> pointIds,
+    public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdBatchAsync(string indexName,
+        IEnumerable<string> documentIds,
+        int limit = 3,
         string nameSpace = "",
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
@@ -494,19 +598,53 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             yield break;
         }
 
-        IAsyncEnumerable<PineconeDocument?> vectorDataList = this._pineconeClient
-            .FetchVectorsAsync(collectionName,
-                pointIds,
-                nameSpace,
-                withEmbeddings,
-                cancel);
-
-        await foreach (PineconeDocument? vectorData in vectorDataList.WithCancellation(cancel))
+        foreach (IAsyncEnumerable<MemoryRecord?>? records in documentIds.Select(documentId =>
+            this.GetWithDocumentIdAsync(indexName, documentId, limit, nameSpace, withEmbeddings, cancel)))
         {
+            await foreach (MemoryRecord? record in records.WithCancellation(cancel))
+            {
+                yield return record;
+            }
+        }
+    }
 
-            yield return (vectorData ?? throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToGetVectorData,
-                $"Failed to get vector data from Pinecone: {vectorData}")).ToMemoryRecord();
+    public async IAsyncEnumerable<MemoryRecord?> GetBatchWithFilterAsync(string indexName,
+        Dictionary<string, object> filter,
+        int limit = 10,
+        string nameSpace = "",
+        bool withEmbeddings = false,
+        [EnumeratorCancellation] CancellationToken cancel = default)
+    {
+        if (!this._pineconeClient.Ready)
+        {
+            this._logger.LogError("Pinecone client is not ready.");
+            yield break;
+        }
+
+        IEnumerable<PineconeDocument?> vectorDataList;
+
+        try
+        {
+            vectorDataList = await this._pineconeClient
+                .QueryAsync(indexName,
+                    limit,
+                    nameSpace,
+                    null,
+                    withEmbeddings,
+                    true,
+                    filter,
+                    cancellationToken: cancel).Take(limit).ToListAsync(cancellationToken: cancel).ConfigureAwait(false);
+        }
+
+        catch (HttpRequestException e)
+        {
+            this._logger.LogError(e, "Error getting batch with filter from Pinecone.");
+            yield break;
+        }
+
+        foreach (PineconeDocument? record in vectorDataList)
+        {
+            yield return record?.ToMemoryRecord();
         }
     }
 
@@ -603,12 +741,23 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             return;
         }
 
-        await this._pineconeClient.DeleteAsync(
-            indexName,
-            default,
-            nameSpace,
-            filter,
-            cancellationToken: cancel).ConfigureAwait(false);
+        try
+        {
+            await this._pineconeClient.DeleteAsync(
+                indexName,
+                default,
+                nameSpace,
+                filter,
+                cancellationToken: cancel).ConfigureAwait(false);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new PineconeMemoryException(
+                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
+                $"Failed to remove vector data from Pinecone {ex.Message}",
+                ex);
+        }
+
     }
 
     /// <summary>
@@ -616,11 +765,11 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// </summary>
     /// <param name="indexName"> The name associated with the index to remove the Pinecone vector record from.</param>
     /// <param name="nameSpace">The name associated with a collection of embeddings.</param>
-    /// <param name="pointId">The unique indexed ID associated with the Pinecone vector record to remove.</param>
+    /// <param name="documentId">The unique indexed ID associated with the Pinecone vector record to remove.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="PineconeMemoryException"></exception>
-    public async Task RemoveWithPointIdAsync(string indexName, string pointId, string nameSpace, CancellationToken cancel = default)
+    public async Task RemoveWithDocumentIdAsync(string indexName, string documentId, string nameSpace, CancellationToken cancel = default)
     {
         if (!this._pineconeClient.Ready)
         {
@@ -630,7 +779,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         try
         {
-            await this._pineconeClient.DeleteAsync(indexName, new[] { pointId }, nameSpace, cancellationToken: cancel).ConfigureAwait(false);
+            await this._pineconeClient.DeleteAsync(indexName, null, nameSpace, new Dictionary<string, object>()
+            {
+                { "document_Id", documentId }
+            }, cancellationToken: cancel).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -646,11 +798,15 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// </summary>
     /// <param name="indexName"> The name associated with the index to remove the Pinecone vector record from.</param>
     /// <param name="nameSpace">The name associated with a collection of embeddings.</param>
-    /// <param name="pointIds">The unique indexed IDs associated with the Pinecone vector records to remove.</param>
+    /// <param name="documentIds">The unique indexed IDs associated with the Pinecone vector records to remove.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="PineconeMemoryException"></exception>
-    public async Task RemoveWithPointIdBatchAsync(string indexName, IEnumerable<string> pointIds, string nameSpace, CancellationToken cancel = default)
+    public async Task RemoveWithDocumentIdBatchAsync(
+        string indexName,
+        IEnumerable<string> documentIds,
+        string nameSpace,
+        CancellationToken cancel = default)
     {
         if (!this._pineconeClient.Ready)
         {
@@ -660,7 +816,11 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         try
         {
-            await this._pineconeClient.DeleteAsync(indexName, pointIds, nameSpace, cancellationToken: cancel).ConfigureAwait(false);
+            IEnumerable<Task> tasks = documentIds.Select(async id
+                => await this.RemoveWithDocumentIdAsync(indexName, id, nameSpace, cancel)
+                    .ConfigureAwait(false));
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -864,44 +1024,15 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     private readonly IPineconeClient _pineconeClient;
     private readonly ILogger _logger;
 
-    private async Task<PineconeDocument> ConvertFromMemoryRecordAsync(
+    private async Task<(PineconeDocument, OperationType)> EvaluateAndUpdateMemoryRecordAsync(
         string indexName,
         MemoryRecord record,
         string nameSpace = "",
         CancellationToken cancel = default)
     {
-        string pointId;
-
-        // Check if a database key has been provided for update
-        if (!string.IsNullOrEmpty(record.Key))
-        {
-            pointId = record.Key;
-        }
-        // Check if the data store contains a record with the provided metadata ID
-        else
-        {
-            PineconeDocument? existingRecord = await this._pineconeClient
-                .FetchVectorsAsync(indexName, new[] { record.Key }, nameSpace, cancellationToken: cancel)
-                .FirstOrDefaultAsync(cancel).ConfigureAwait(false);
-
-            if (existingRecord != null)
-            {
-                Console.WriteLine("Found existing record with ID: " + record.Key);
-                pointId = existingRecord.Id;
-            }
-            else
-            {
-                do // Generate a new ID until a unique one is found (more than one pass should be exceedingly rare)
-                {
-                    // If no matching record can be found, generate an ID for the new record
-                    pointId = Guid.NewGuid().ToString();
-                    existingRecord = await this._pineconeClient
-                        .FetchVectorsAsync(indexName, new[] { pointId }, nameSpace, cancellationToken: cancel)
-                        .FirstOrDefaultAsync(cancel).ConfigureAwait(false);
-                }
-                while (existingRecord != null);
-            }
-        }
+        string key = !string.IsNullOrEmpty(record.Key)
+            ? record.Key
+            : record.Metadata.Id;
 
         PineconeDocument? vectorData = record.ToPineconeDocument();
 
@@ -911,7 +1042,26 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 $"Failed to convert MemoryRecord to PineconeDocument");
         }
 
-        return vectorData;
+        PineconeDocument? existingRecord = await this._pineconeClient.FetchVectorsAsync(indexName, new[] { key }, nameSpace, false, cancel)
+            .FirstOrDefaultAsync(cancel).ConfigureAwait(false);
+
+        if (existingRecord is null)
+        {
+            Console.WriteLine("No existing record found with ID: " + key);
+            return (vectorData, OperationType.Upsert);
+        }
+
+        // compare metadata dictionaries
+        if (existingRecord.Metadata != null && vectorData.Metadata != null)
+        {
+            if (existingRecord.Metadata.SequenceEqual(vectorData.Metadata))
+            {
+                Console.WriteLine("Existing record found with matching metadata, skipping: " + key);
+                return (vectorData, OperationType.Skip);
+            }
+        }
+        Console.WriteLine("Existing record found with ID: " + key + ", updating");
+        return (vectorData, OperationType.Update);
     }
 
     #endregion
