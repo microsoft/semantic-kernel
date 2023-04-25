@@ -5,7 +5,7 @@ from logging import Logger
 from typing import TYPE_CHECKING, List, Tuple
 
 if TYPE_CHECKING:
-    from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
+    from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 
 
 class ChatCompletionClientBase(ABC):

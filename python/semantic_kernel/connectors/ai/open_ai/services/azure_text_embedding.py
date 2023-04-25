@@ -4,7 +4,7 @@
 from logging import Logger
 from typing import Any, Optional
 
-from semantic_kernel.ai.open_ai.services.open_ai_text_embedding import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
 )
 
@@ -24,7 +24,7 @@ class AzureTextEmbedding(OpenAITextEmbedding):
         ad_auth=False,
     ) -> None:
         """
-        Initialize an AzureTextEmbedding backend.
+        Initialize an AzureTextEmbedding service.
 
         You must provide:
         - A deployment_name, endpoint, and api_key (plus, optionally: ad_auth)
