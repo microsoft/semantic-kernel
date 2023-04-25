@@ -20,12 +20,12 @@ public class SpeechTokenController : ControllerBase
     }
 
     private readonly ILogger<SpeechTokenController> _logger;
-    private readonly AzureSpeechOptions _config;
+    private readonly AzureSpeechOptions _options;
 
-    public SpeechTokenController(IOptions<AzureSpeechOptions> config, ILogger<SpeechTokenController> logger)
+    public SpeechTokenController(IOptions<AzureSpeechOptions> options, ILogger<SpeechTokenController> logger)
     {
         this._logger = logger;
-        this._config = config.Value;
+        this._options = options.Value;
     }
 
     /// <summary>
@@ -36,16 +36,16 @@ public class SpeechTokenController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<SpeechTokenResponse>> GetAsync()
     {
-        if (string.IsNullOrWhiteSpace(this._config.Region))
+        if (string.IsNullOrWhiteSpace(this._options.Region))
         {
-            throw new InvalidOperationException($"Missing value for {AzureSpeechOptions.PropertyName}:{nameof(this._config.Region)}");
+            throw new InvalidOperationException($"Missing value for {AzureSpeechOptions.PropertyName}:{nameof(this._options.Region)}");
         }
 
-        string fetchTokenUri = "https://" + this._config.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
+        string fetchTokenUri = "https://" + this._options.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
 
-        TokenResult tokenResult = await this.FetchTokenAsync(fetchTokenUri, this._config.Key);
+        TokenResult tokenResult = await this.FetchTokenAsync(fetchTokenUri, this._options.Key);
         var isSuccess = tokenResult.ResponseCode != HttpStatusCode.NotFound;
-        return new SpeechTokenResponse { Token = tokenResult.Token, Region = this._config.Region, IsSuccess = isSuccess };
+        return new SpeechTokenResponse { Token = tokenResult.Token, Region = this._options.Region, IsSuccess = isSuccess };
     }
 
     private async Task<TokenResult> FetchTokenAsync(string fetchUri, string subscriptionKey)

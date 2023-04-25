@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using SemanticKernel.Service.Config;
@@ -28,21 +29,21 @@ public class DocumentImportController : ControllerBase
     };
 
     private readonly IServiceProvider _serviceProvider;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<DocumentImportController> _logger;
     private readonly PromptSettings _promptSettings;
+    private readonly DocumentMemoryOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
     /// </summary>
     public DocumentImportController(
         IServiceProvider serviceProvider,
-        IConfiguration configuration,
         PromptSettings promptSettings,
+        IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<DocumentImportController> logger)
     {
         this._serviceProvider = serviceProvider;
-        this._configuration = configuration;
+        this._options = documentMemoryOptions.Value;
         this._promptSettings = promptSettings;
         this._logger = logger;
     }
@@ -70,8 +71,7 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest("File is empty.");
         }
 
-        var fileSizeLimit = this._configuration.GetValue<int>("DocumentImport:FileSizeLimit");
-        if (formFile.Length > fileSizeLimit)
+        if (formFile.Length > this._options.FileSizeLimit)
         {
             return this.BadRequest("File size exceeds the limit.");
         }
@@ -137,23 +137,17 @@ public class DocumentImportController : ControllerBase
     /// <returns></returns>
     private async Task ParseDocumentContentToMemoryAsync(Kernel kernel, string content, DocumentImportForm documentImportForm)
     {
-        var config = this._configuration.GetSection("DocumentImport").Get<DocumentMemoryOptions>();
-        var globalDocumentCollectionName = config.GlobalDocumentCollectionName;
-        var userDocumentCollectionNamePrefix = config.UserDocumentCollectionNamePrefix;
-        var documentLineSplitMaxTokens = config.DocumentLineSplitMaxTokens;
-        var documentParagraphSplitMaxLines = config.DocumentParagraphSplitMaxLines;
-
         var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
         var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global
-            ? globalDocumentCollectionName
+            ? this._options.GlobalDocumentCollectionName
             : string.IsNullOrEmpty(documentImportForm.UserId)
-                ? globalDocumentCollectionName
-                : userDocumentCollectionNamePrefix + documentImportForm.UserId;
+                ? this._options.GlobalDocumentCollectionName
+                : this._options.UserDocumentCollectionNamePrefix + documentImportForm.UserId;
 
         // Split the document into lines of text and then combine them into paragraphs.
         // NOTE that this is only one of the strategies to chunk documents. Feel free to experiment with other strategies.
-        var lines = SemanticTextPartitioner.SplitPlainTextLines(content, documentLineSplitMaxTokens);
-        var paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, documentParagraphSplitMaxLines);
+        var lines = SemanticTextPartitioner.SplitPlainTextLines(content, this._options.DocumentLineSplitMaxTokens);
+        var paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, this._options.DocumentParagraphSplitMaxLines);
 
         foreach (var paragraph in paragraphs)
         {

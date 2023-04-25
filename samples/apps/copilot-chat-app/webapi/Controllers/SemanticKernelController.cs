@@ -19,15 +19,15 @@ public class SemanticKernelController : ControllerBase
 {
     private readonly ILogger<SemanticKernelController> _logger;
     private readonly PromptSettings _promptSettings;
-    private readonly ServiceOptions _config;
+    private readonly ServiceOptions _options;
 
     public SemanticKernelController(
-        IOptions<ServiceOptions> config,
+        IOptions<ServiceOptions> options,
         PromptSettings promptSettings,
         ILogger<SemanticKernelController> logger)
     {
         this._logger = logger;
-        this._config = config.Value;
+        this._options = options.Value;
         this._promptSettings = promptSettings;
     }
 
@@ -68,9 +68,9 @@ public class SemanticKernelController : ControllerBase
             return this.BadRequest("Input is required.");
         }
 
-        if (!string.IsNullOrWhiteSpace(this._config.SemanticSkillsDirectory))
+        if (!string.IsNullOrWhiteSpace(this._options.SemanticSkillsDirectory))
         {
-            kernel.RegisterSemanticSkills(this._config.SemanticSkillsDirectory, this._logger);
+            kernel.RegisterSemanticSkills(this._options.SemanticSkillsDirectory, this._logger);
         }
 
         kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, documentMemoryOptions.Value, this._logger);
