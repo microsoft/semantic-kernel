@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning.Planners;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
@@ -43,6 +44,7 @@ public class SemanticKernelController : ControllerBase
     /// <param name="chatRepository">Storage repository to store chat sessions</param>
     /// <param name="chatMessageRepository">Storage repository to store chat messages</param>
     /// <param name="documentMemoryOptions">Options for document memory handline.</param>
+    /// <param name="planner">Planner to use for formulated function sequences.</param>
     /// <param name="ask">Prompt along with its parameters</param>
     /// <param name="skillName">Skill in which function to invoke resides</param>
     /// <param name="functionName">Name of function to invoke</param>
@@ -58,6 +60,7 @@ public class SemanticKernelController : ControllerBase
         [FromServices] ChatSessionRepository chatRepository,
         [FromServices] ChatMessageRepository chatMessageRepository,
         [FromServices] IOptions<DocumentMemoryOptions> documentMemoryOptions,
+        [FromServices] SequentialPlanner planner,
         [FromBody] Ask ask,
         string skillName, string functionName)
     {
@@ -73,7 +76,13 @@ public class SemanticKernelController : ControllerBase
             kernel.RegisterSemanticSkills(this._options.SemanticSkillsDirectory, this._logger);
         }
 
-        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, documentMemoryOptions.Value, this._logger);
+        kernel.RegisterNativeSkills(
+            chatSessionRepository: chatRepository,
+            chatMessageRepository: chatMessageRepository,
+            promptSettings: this._promptSettings,
+            planner: planner,
+            documentMemoryOptions: documentMemoryOptions.Value,
+            logger: this._logger);
 
         ISKFunction? function = null;
         try

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Globalization;
-using System.Numerics;
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
@@ -12,12 +12,21 @@ using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Skills;
 
+
+
 /// <summary>
 /// ChatSkill offers a more coherent chat experience by using memories
 /// to extract conversation history and user intentions.
 /// </summary>
 public class ChatSkill
 {
+    // TODO do better, RestApiOperation
+    private class TempOpenApiResponse
+    {
+        public string content { get; set; } = string.Empty;
+        public string contentType { get; set; } = string.Empty;
+    }
+    
     /// <summary>
     /// A kernel instance to create a completion function since each invocation
     /// of the <see cref="ChatAsync"/> function will generate a new prompt dynamically.
@@ -39,6 +48,10 @@ public class ChatSkill
     /// </summary>
     private readonly PromptSettings _promptSettings;
 
+    private readonly SequentialPlanner _planner;
+
+    private readonly ILogger _logger;
+
     /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
     /// </summary>
@@ -46,12 +59,16 @@ public class ChatSkill
         IKernel kernel,
         ChatMessageRepository chatMessageRepository,
         ChatSessionRepository chatSessionRepository,
-        PromptSettings promptSettings)
+        SequentialPlanner planner,
+        PromptSettings promptSettings,
+        ILogger logger)
     {
+        this._logger = logger;
         this._kernel = kernel;
         this._chatMessageRepository = chatMessageRepository;
         this._chatSessionRepository = chatSessionRepository;
         this._promptSettings = promptSettings;
+        this._planner = planner;
     }
 
     /// <summary>
@@ -163,6 +180,81 @@ public class ChatSkill
     }
 
     /// <summary>
+    /// TODO need a better name for this function.
+    /// </summary>
+    [SKFunction("Execute a plan")]
+    [SKFunctionName("ExecutePlan")]
+    [SKFunctionContextParameter(Name = "userIntent", Description = "The intent of the user.")]
+    [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
+    public async Task<string> ExecutePlanAsync(SKContext context)
+    {
+        var chatId = context["chatId"];
+        var tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
+        var userIntent = context["userIntent"];
+
+        // Create a new kernel with only skills we want the planner to use.
+        using Kernel plannerKernel = new Kernel(
+            new SkillCollection(),
+            this._kernel.PromptTemplateEngine,
+            this._kernel.Memory,
+            this._kernel.Config,
+            this._kernel.Log);
+
+        // BUGBUG: When running normally, the planner intermittently overrides the server-url with https://www.example.com. It doesn't seem to do it when stepping through. 
+        await plannerKernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json")); // Klarna 
+        //plannerKernel.ImportSkill(new WebSearchEngineSkill(new BingConnector(Environment.GetEnvironmentVariable("Bing__ApiKey")!)));
+
+        PlannerConfig plannerConfig = new PlannerConfig();
+        SequentialPlanner planner = new SequentialPlanner(plannerKernel, plannerConfig);
+
+        string planResult = string.Empty;
+        try
+        {
+            Plan plan = await planner.CreatePlanAsync(userIntent);
+            while (plan.HasNextStep)
+            {
+                var nextStep = plan.Steps[plan.NextStepIndex];
+                if (nextStep.SkillName.Contains(".Plan", StringComparison.InvariantCultureIgnoreCase) && nextStep.Steps.Count == 0)
+                {
+                    this._logger.LogError("[C] BUGBUGBUG we hit an empty plan step. This should not happen.");
+                    break;
+                }
+                else
+                {
+                    await plannerKernel.StepAsync(context.Variables, plan);
+                }
+            }
+
+            planResult = plan.State.Input;
+            try
+            {
+                TempOpenApiResponse? openApiResult = JsonSerializer.Deserialize<TempOpenApiResponse>(planResult);
+                if (openApiResult != null &&
+                    !string.IsNullOrWhiteSpace(openApiResult.contentType) &&
+                    openApiResult.contentType.Contains("application/json", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    planResult = openApiResult.content;
+                }
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogError("[A] BUGBUGBUG {0}: {1}\r\n{2}", ex.GetType().Name, ex.Message, ex.StackTrace);
+            }
+        }
+        catch (Exception ex)
+        {
+            this._logger.LogError("[B] BUGBUGBUG {0}: {1}\r\n{2}", ex.GetType().Name, ex.Message, ex.StackTrace);
+        }
+
+        // TODO add source/citations
+        string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
+        tokenLimit -= Utils.TokenCount(informationText);
+        context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
+
+        return informationText;
+    }
+
+    /// <summary>
     /// Extract chat history.
     /// </summary>
     /// <param name="context">Contains the 'tokenLimit' controlling the length of the prompt.</param>
@@ -244,7 +336,7 @@ public class ChatSkill
         }
 
         // Clone the context to avoid modifying the original context variables.
-        var chatContext = Utils.CopyContextWithVariablesClone(context);
+        SKContext chatContext = Utils.CopyContextWithVariablesClone(context);
         chatContext.Variables.Set("knowledgeCutoff", this._promptSettings.KnowledgeCutoffDate);
         chatContext.Variables.Set("audience", userName);
 

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -109,8 +110,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
             try
             {
                 string prompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
+                Debug.WriteLine($"== START PROMPTPROMPTPROMPTPROMPTPROMPTPROMPTPROMPTPROMPT ==\r\n{prompt}\r\n== END PROMPTPROMPTPROMPTPROMPTPROMPTPROMPTPROMPTPROMPT ==\r\n");
 
                 string completion = await client.CompleteAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
+                Debug.WriteLine($"== START COMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETION ==\r\n{completion}\r\n== END COMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETION ==\r\n");
                 context.Variables.Update(completion);
             }
             catch (AIException ex)

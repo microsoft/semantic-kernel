@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -49,6 +50,7 @@ public class SequentialPlanner
 
         var planResult = await this._functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
 
+        // TODO XML Encoding of goal and plan parameters
         string fullPlan = $"<{SequentialPlanParser.GoalTag}>\n{goal}\n</{SequentialPlanParser.GoalTag}>\n{planResult.Result.Trim()}";
 
         var plan = fullPlan.ToPlanFromXml(this._context);

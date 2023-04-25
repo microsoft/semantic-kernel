@@ -8,8 +8,11 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Planning.Planners;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.Web;
+using Microsoft.SemanticKernel.Skills.Web.Bing;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Skills;
@@ -65,6 +68,8 @@ internal static class SemanticKernelExtensions
                 serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
                     .ToTextEmbeddingsService(serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>())));
 
+        services.AddSingleton<PlannerConfig>(sp => sp.GetRequiredService<IOptions<PlannerOptions>>().Value.ToPlannerConfig());
+        services.AddScoped<SequentialPlanner>();
 
         // Add the Semantic Kernel
         services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();

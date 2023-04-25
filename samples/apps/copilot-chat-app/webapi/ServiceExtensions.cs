@@ -57,13 +57,19 @@ internal static class ServicesExtensions
             .Bind(configuration.GetSection(AzureSpeechOptions.PropertyName))
             .ValidateDataAnnotations().ValidateOnStart();
 
-        // Azure speech token configuration
+        // Bot schema configuration
         services.AddOptions<BotSchemaOptions>()
             .Bind(configuration.GetSection(BotSchemaOptions.PropertyName))
             .ValidateDataAnnotations().ValidateOnStart();
 
+        // Document memory options
         services.AddOptions<DocumentMemoryOptions>()
             .Bind(configuration.GetSection(DocumentMemoryOptions.PropertyName))
+            .ValidateDataAnnotations().ValidateOnStart();
+
+        // Planner options
+        services.AddOptions<PlannerOptions>()
+            .Bind(configuration.GetSection(PlannerOptions.PropertyName))
             .ValidateDataAnnotations().ValidateOnStart();
 
         return services;

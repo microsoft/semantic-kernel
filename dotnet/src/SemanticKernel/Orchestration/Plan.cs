@@ -470,6 +470,15 @@ public sealed class Plan : ISKFunction
             }
         }
 
+        // BUGBUG
+        if (stepVariables["server_url"].Equals("https://www.example.com", StringComparison.OrdinalIgnoreCase))
+        {
+            Console.Error.WriteLine("BUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUGBUG");
+            Console.Error.WriteLine(">>>>> stepVariables[\"server_url\"].Equals(\"https://www.example.com\"");
+            Console.Error.WriteLine(">>>>> OVERRIDING server_url TO https://www.klarna.com/us/shopping");
+            stepVariables["server_url"] = "https://www.klarna.com/us/shopping";
+        }
+
         return stepVariables;
     }
 

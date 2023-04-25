@@ -3,6 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
+using Microsoft.SemanticKernel.Planning.Planners;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Skills;
@@ -43,6 +44,7 @@ internal static class FunctionLoadingExtensions
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
         PromptSettings promptSettings,
+        SequentialPlanner planner,
         DocumentMemoryOptions documentMemoryOptions,
         ILogger logger)
     {
@@ -55,7 +57,9 @@ internal static class FunctionLoadingExtensions
             kernel,
             chatMessageRepository,
             chatSessionRepository,
-            promptSettings
+            planner,
+            promptSettings,
+            logger
         );
         kernel.ImportSkill(chatSkill, nameof(ChatSkill));
 
