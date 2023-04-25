@@ -4,7 +4,6 @@ import glob
 import importlib
 import inspect
 import os
-import sys
 from typing import Dict
 
 from semantic_kernel.kernel_extensions.extends_kernel import ExtendsKernel
@@ -23,8 +22,7 @@ class ImportSkills(ExtendsKernel):
     def import_native_skill_from_directory(
         self, parent_directory: str, skill_directory_name: str
     ) -> Dict[str, SKFunctionBase]:
-        PYTHON_FILE = "native_function.py"
-
+        MODULE_NAME = "native_function"
         kernel = self.kernel()
 
         validate_skill_name(skill_directory_name)
@@ -32,7 +30,7 @@ class ImportSkills(ExtendsKernel):
         skill_directory = os.path.abspath(
             os.path.join(parent_directory, skill_directory_name)
         )
-        native_py_file_path = os.path.join(skill_directory, PYTHON_FILE)
+        native_py_file_path = os.path.join(skill_directory, f"{MODULE_NAME}.py")
 
         if not os.path.exists(native_py_file_path):
             raise ValueError(
@@ -41,25 +39,27 @@ class ImportSkills(ExtendsKernel):
 
         skill_name = os.path.basename(skill_directory)
         try:
-            sys.path.append(skill_directory)
-            module_name = os.path.splitext(os.path.basename(native_py_file_path))[0]
-            module = importlib.import_module(module_name)
+            spec = importlib.util.spec_from_file_location(
+                MODULE_NAME, native_py_file_path
+            )
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            class_name = next(
+                (
+                    name
+                    for name, cls in inspect.getmembers(module, inspect.isclass)
+                    if cls.__module__ == MODULE_NAME
+                ),
+                None,
+            )
+            if class_name:
+                skill_obj = getattr(module, class_name)()
+                return kernel.import_skill(skill_obj, skill_name)
         except Exception:
-            return {}
-        finally:
-            sys.path.remove(skill_directory)
+            pass
 
-        # Find the class in the module
-        classes = inspect.getmembers(module, inspect.isclass)
-        class_name = next(
-            (name for name, cls in classes if inspect.getmodule(cls) == module), None
-        )
-
-        if class_name:
-            skill_obj = getattr(module, class_name)()
-            return kernel.import_skill(skill_obj, skill_name)
-        else:
-            return {}
+        return {}
 
     def import_semantic_skill_from_directory(
         self, parent_directory: str, skill_directory_name: str
