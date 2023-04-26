@@ -25,6 +25,7 @@ export class SemanticKernel extends BaseService {
             accessToken,
             enabledPlugins,
         );
+
         return result;
     };
 }

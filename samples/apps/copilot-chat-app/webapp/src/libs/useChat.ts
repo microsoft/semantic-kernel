@@ -61,6 +61,7 @@ export const useChat = () => {
                 return variables[idx].value;
             }
         }
+
         // End of array, did not find expected variable.
         throw new Error(`Could not find valid ${key} variable in context.`);
     };
@@ -121,6 +122,7 @@ export const useChat = () => {
                 },
             ],
         };
+
         try {
             var result = await sk.invokeAsync(
                 ask,
@@ -137,6 +139,7 @@ export const useChat = () => {
                 content: result.value,
                 authorRole: AuthorRoles.Bot,
             };
+
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));
         } catch (e: any) {
             const errorMessage = `Unable to generate bot response. Details: ${e.message ?? e}`;
@@ -147,6 +150,7 @@ export const useChat = () => {
     const loadChats = async () => {
         try {
             const ask = { input: account!.homeAccountId! };
+
             var result = await sk.invokeAsync(
                 ask,
                 'ChatHistorySkill',
@@ -155,10 +159,13 @@ export const useChat = () => {
             );
 
             const chats = JSON.parse(result.value);
+
             if (Object.keys(chats).length > 0) {
                 const conversations: Conversations = {};
+
                 for (const index in chats) {
                     const chat = chats[index];
+
                     const loadMessagesAsk = {
                         input: chat.id,
                         variables: [
@@ -166,6 +173,7 @@ export const useChat = () => {
                             { key: 'count', value: '100' },
                         ],
                     };
+
                     const messageResult = await sk.invokeAsync(
                         loadMessagesAsk,
                         'ChatHistorySkill',
@@ -178,6 +186,7 @@ export const useChat = () => {
                     // Messages are returned with most recent message at index 0 and oldest messge at the last index,
                     // so we need to reverse the order for render
                     const orderedMessages: ChatMessage[] = [];
+
                     Object.keys(messages)
                         .reverse()
                         .map((key) => {
@@ -194,6 +203,7 @@ export const useChat = () => {
                         botTypingTimestamp: 0,
                         botProfilePicture: botProfilePictures[botProfilePictureIndex],
                     };
+
                     dispatch(incrementBotProfilePictureIndex());
                 }
 
@@ -203,10 +213,12 @@ export const useChat = () => {
                 // No chats exist, create first chat window
                 await createChat();
             }
+
             return true;
         } catch (e: any) {
             const errorMessage = `Unable to load chats. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+
             return false;
         }
     };

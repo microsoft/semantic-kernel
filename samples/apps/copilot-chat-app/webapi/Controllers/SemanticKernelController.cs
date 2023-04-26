@@ -72,7 +72,7 @@ public class SemanticKernelController : ControllerBase
             return this.BadRequest("Input is required.");
         }
 
-        await this.RegisterOpenApiSkills(openApiSkillsAuthHeaders, kernel);
+        await this.RegisterOpenApiSkillsAsync(openApiSkillsAuthHeaders, kernel);
 
         if (!string.IsNullOrWhiteSpace(this._options.SemanticSkillsDirectory))
         {
@@ -112,7 +112,7 @@ public class SemanticKernelController : ControllerBase
 
         return this.Ok(new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) });
     }
-    private async Task RegisterOpenApiSkills(OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders, IKernel kernel)
+    private async Task RegisterOpenApiSkillsAsync(OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders, IKernel kernel)
     {
         // If the caller includes an auth header for an OpenAPI skill, register the skill with the kernel
         // Else, don't register the skill as it'll fail on auth

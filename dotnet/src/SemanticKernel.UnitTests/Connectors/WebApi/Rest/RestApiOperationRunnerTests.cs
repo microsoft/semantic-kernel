@@ -202,9 +202,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
-        Assert.Single(this._httpMessageHandlerStub.RequestHeaders);
+        Assert.Equal(2, this._httpMessageHandlerStub.RequestHeaders.Count());
 
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "fake-header" && h.Value.Contains("fake-header-value"));
+        Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "User-Agent" && h.Value.Contains("Microsoft-Semantic-Kernel"));
     }
 
     /// <summary>

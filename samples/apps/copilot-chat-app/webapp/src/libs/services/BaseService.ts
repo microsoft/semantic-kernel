@@ -28,10 +28,10 @@ export class BaseService {
         // For each enabled plugin, pass its auth information as a customer header
         // to the backend so the server can authenticate to the plugin
         if (enabledPlugins && enabledPlugins.length > 0) {
-            // eslint-disable-next-line
-            enabledPlugins.map((plugin) => {
+            for (var idx in enabledPlugins) {
+                var plugin = enabledPlugins[idx];
                 headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData);
-            });
+            }
         }
 
         try {

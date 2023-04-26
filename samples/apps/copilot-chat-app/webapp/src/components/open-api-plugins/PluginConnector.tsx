@@ -51,6 +51,8 @@ interface PluginConnectorProps {
 }
 
 export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, publisher, authRequirements }) => {
+    const classes = useClasses();
+
     const usernameRequired = authRequirements.username;
     const passwordRequired = authRequirements.password;
     const accessTokenRequired = authRequirements.personalAccessToken;
@@ -64,7 +66,6 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, pu
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
-    const classes = useClasses();
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
 
@@ -92,6 +93,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, pu
                     }),
                 );
             }
+
             setOpen(false);
         } catch (_e) {
             setErrorMessage(`Could not authenticate to ${name}. Check your permissions and try again.`);

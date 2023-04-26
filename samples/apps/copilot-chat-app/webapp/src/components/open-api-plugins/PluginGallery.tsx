@@ -41,8 +41,9 @@ const useClasses = makeStyles({
 });
 
 export const PluginGallery: React.FC = () => {
-    const plugins = useAppSelector((state: RootState) => state.plugins);
     const classes = useClasses();
+
+    const plugins = useAppSelector((state: RootState) => state.plugins);
     const [open, setOpen] = useState(false);
 
     return (

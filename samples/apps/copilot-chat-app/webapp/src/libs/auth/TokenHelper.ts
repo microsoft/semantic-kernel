@@ -31,6 +31,7 @@ export const getAccessTokenUsingMsal = async (
         if (e.message === TokenErrors.InteractionInProgress) {
             return interactionInProgressHandler(inProgress, msalInstance, accessTokenRequest);
         }
+
         throw e;
     });
 };

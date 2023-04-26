@@ -12,6 +12,7 @@ export class BotService extends BaseService {
             },
             accessToken,
         );
+
         return result;
     };
 
@@ -25,6 +26,7 @@ export class BotService extends BaseService {
             },
             accessToken,
         );
+
         return result;
     };
 }

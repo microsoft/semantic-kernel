@@ -63,6 +63,7 @@ export const useConnectors = () => {
                 { key: 'repo', value: 'semantic-kernel' },
             ],
         };
+
         return await sk.invokeAsync(
             listPullRequestsAsk,
             'GitHubSkill',
@@ -84,16 +85,20 @@ export const useConnectors = () => {
      */
     const getEnabledPlugins = () => {
         const enabledPlugins: { headerTag: any; authData: any }[] = [];
+
         Object.entries(plugins).map((entry) => {
             const plugin = entry[1];
+
             if (plugin.enabled) {
                 enabledPlugins.push({
                     headerTag: plugin.headerTag,
                     authData: plugin.authData!,
                 });
             }
+
             return entry;
         });
+
         return enabledPlugins;
     };
 

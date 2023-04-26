@@ -57,8 +57,9 @@ enum AppState {
 }
 
 const App: FC = () => {
-    const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const classes = useClasses();
+
+    const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const { alerts } = useAppSelector((state: RootState) => state.app);
     const dispatch = useAppDispatch();
 
@@ -71,6 +72,7 @@ const App: FC = () => {
     useEffect(() => {
         if (isAuthenticated && account && appState === AppState.LoadingChats) {
             instance.setActiveAccount(account);
+
             // Load all chats from memory
             async function loadChats() {
                 if (await chat.loadChats()) {
