@@ -66,7 +66,7 @@ public partial class ServiceRegistry : INamedServiceCollection
     {
         var type = typeof(T);
         if (this._services.TryGetValue(type, out var namedServices)
-            && namedServices.Remove(name))
+            && namedServices.TryRemove(name, out _))
         {
             // Check if the removed service was the default
             if (this._defaultIds.TryGetValue(type, out var defaultName)
@@ -82,7 +82,7 @@ public partial class ServiceRegistry : INamedServiceCollection
                 else
                 {
                     // Remove the default name for the service type
-                    this._defaultIds.Remove(type);
+                    this._defaultIds.TryRemove(type, out _);
                 }
             }
             return true;
@@ -95,8 +95,8 @@ public partial class ServiceRegistry : INamedServiceCollection
     public void Clear<T>()
     {
         var type = typeof(T);
-        this._services.Remove(type);
-        this._defaultIds.Remove(type);
+        this._services.TryRemove(type, out _);
+        this._defaultIds.TryRemove(type, out _);
     }
 
     /// <inheritdoc/>
