@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,9 +14,14 @@ namespace Microsoft.SemanticKernel.Skills.Grpc.Protobuf;
 /// <summary>
 /// Parser for .proto definition documents.
 /// </summary>
-internal class ProtoDocumentParser : IProtoDocumentParser
+internal class ProtoDocumentParser
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// Parses .proto document.
+    /// </summary>
+    /// <param name="document">The .proto document.</param>
+    /// <param name="name">The .proto file logical name.</param>
+    /// <returns>List of gRPC operations.</returns>
     public IList<GrpcOperation> Parse(Stream document, string name)
     {
         Verify.NotNull(document, $"The {nameof(document)} parameter is not set to an instance of an object.");

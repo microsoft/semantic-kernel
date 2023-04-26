@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,14 +14,13 @@ using Grpc.Net.Client;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.Grpc.Model;
 using ProtoBuf;
-using Skills.Grpc;
 
 namespace Microsoft.SemanticKernel.Skills.Grpc;
 
 /// <summary>
 /// Runs gRPC operation runner.
 /// </summary>
-internal class GrpcOperationRunner : IGrpcOperationRunner
+internal class GrpcOperationRunner
 {
     /// <summary>
     /// Name of 'address' argument used as override for the address provided by gRPC operation.
@@ -40,11 +41,17 @@ internal class GrpcOperationRunner : IGrpcOperationRunner
         this._httpClient = httpClient;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Runs a gRPC operation.
+    /// </summary>
+    /// <param name="operation">The operation to run.</param>
+    /// <param name="arguments">The operation arguments.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The result of the operation run.</returns>
     public async Task<object> RunAsync(GrpcOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(operation, $"The {nameof(operation)} parameter is not set to an instance of an object.");
-        Verify.NotNull(arguments, $"The {nameof(arguments)} parameter is not set to an instance of an object.");
+        Verify.NotNull(operation, $"No operation was provided for {nameof(GrpcOperationRunner)} to run.");
+        Verify.NotNull(arguments, $"No arguments were provided for {nameof(GrpcOperationRunner)} to run.");
 
         var address = this.GetAddress(operation, arguments);
 
@@ -81,7 +88,7 @@ internal class GrpcOperationRunner : IGrpcOperationRunner
     /// <returns>The channel address.</returns>
     private string GetAddress(GrpcOperation operation, IDictionary<string, string> arguments)
     {
-        var address = default(string);
+        string? address = null;
 
         if (!arguments.TryGetValue(AddressArgumentName, out address))
         {
@@ -163,6 +170,7 @@ internal class GrpcOperationRunner : IGrpcOperationRunner
 
         var typeBuilder = moduleBuilder.DefineType(dataContractMetadata.Name, TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class);
 
+        //Creating and adding a .NET property for each data contract filed
         foreach (var field in dataContractMetadata.Fields)
         {
             var fieldName = field.Name;
@@ -170,15 +178,18 @@ internal class GrpcOperationRunner : IGrpcOperationRunner
 
             var propertyType = GetNetType(field.TypeName);
 
+            //Creating a private backing field for the property
             var fieldBuilder = typeBuilder.DefineField(fieldName + "_", propertyType, FieldAttributes.Private);
             var propertyBuilder = typeBuilder.DefineProperty(propertyName, PropertyAttributes.None, propertyType, null);
 
+            //Creating the property get method and binding it to the private filed
             var getterBuilder = typeBuilder.DefineMethod("get_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, propertyType, Type.EmptyTypes);
             var getterIl = getterBuilder.GetILGenerator();
             getterIl.Emit(OpCodes.Ldarg_0);
             getterIl.Emit(OpCodes.Ldfld, fieldBuilder);
             getterIl.Emit(OpCodes.Ret);
 
+            //Creating the property set method and binding it to the private filed
             var setterBuilder = typeBuilder.DefineMethod("set_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, null, new[] { propertyType });
             var setterIl = setterBuilder.GetILGenerator();
             setterIl.Emit(OpCodes.Ldarg_0);
@@ -186,10 +197,11 @@ internal class GrpcOperationRunner : IGrpcOperationRunner
             setterIl.Emit(OpCodes.Stfld, fieldBuilder);
             setterIl.Emit(OpCodes.Ret);
 
+            //Registering the property get and set methods. 
             propertyBuilder.SetGetMethod(getterBuilder);
             propertyBuilder.SetSetMethod(setterBuilder);
 
-            //Add ProtoMember attribute to the data contract with tag/number.
+            //Add ProtoMember attribute to the data contract with tag/number
             var dataMemberAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoMemberAttribute).GetConstructor(new[] { typeof(int) }), new object[] { field.Number });
             propertyBuilder.SetCustomAttribute(dataMemberAttributeBuilder);
         }

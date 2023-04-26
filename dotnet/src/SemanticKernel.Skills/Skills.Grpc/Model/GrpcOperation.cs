@@ -1,4 +1,6 @@
-﻿namespace Microsoft.SemanticKernel.Skills.Grpc.Model;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+namespace Microsoft.SemanticKernel.Skills.Grpc.Model;
 
 /// <summary>
 /// The gRPC operation.
