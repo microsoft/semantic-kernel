@@ -9,9 +9,10 @@ import semantic_kernel.connectors.ai.hugging_face as sk_hf
 
 kernel = sk.Kernel()
 
-# Configure LLM service 
+# Configure LLM service
 kernel.config.add_embedding_service(
-    "sentence-transformers/all-MiniLM-L6-v2", sk_hf.HuggingFaceTextEmbedding("sentence-transformers/all-MiniLM-L6-v2")
+    "sentence-transformers/all-MiniLM-L6-v2",
+    sk_hf.HuggingFaceTextEmbedding("sentence-transformers/all-MiniLM-L6-v2"),
 )
 kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 
