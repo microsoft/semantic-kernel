@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 export class DocumentImportService {
     constructor(private readonly serviceUrl: string) { }
