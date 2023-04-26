@@ -42,8 +42,7 @@ public class SequentialPlanParserTests
             })
             .Build();
         kernel.ImportSkill(new EmailSkillFake(), "email");
-        var summarizeSkill = TestHelpers.GetSkill("SummarizeSkill", kernel);
-        var writerSkill = TestHelpers.GetSkill("WriterSkill", kernel);
+        TestHelpers.GetSkills(kernel, "SummarizeSkill", "WriterSkill");
 
         var planString =
             @"<plan>
