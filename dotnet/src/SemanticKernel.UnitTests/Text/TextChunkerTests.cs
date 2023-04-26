@@ -2,12 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
+using Microsoft.SemanticKernel.Text;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.SemanticFunctions.Partitioning;
+namespace SemanticKernel.UnitTests.Text;
 
-public sealed class SemanticTextPartitionerTests
+public sealed class TextChunkerTests
 {
     [Fact]
     public void CanSplitPlainTextLines()
@@ -19,7 +19,7 @@ public sealed class SemanticTextPartitionerTests
             "This is only a test."
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextLines(input, 15);
+        var result = TextChunker.SplitPlainTextLines(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -39,7 +39,7 @@ public sealed class SemanticTextPartitionerTests
             "We repeat, this is only a test. A unit test."
         };
 
-        var result = SemanticTextPartitioner.SplitMarkdownParagraphs(input, 13);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 13);
 
         Assert.Equal(expected, result);
     }
@@ -60,7 +60,7 @@ public sealed class SemanticTextPartitionerTests
             "We repeat, this is only a test. A unit test."
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 13);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 13);
 
         Assert.Equal(expected, result);
     }
@@ -75,7 +75,7 @@ public sealed class SemanticTextPartitionerTests
             "This is only a test."
         };
 
-        var result = SemanticTextPartitioner.SplitMarkDownLines(input, 15);
+        var result = TextChunker.SplitMarkDownLines(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -87,7 +87,7 @@ public sealed class SemanticTextPartitionerTests
 
         var expected = new List<string>();
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 13);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 13);
 
         Assert.Equal(expected, result);
     }
@@ -99,7 +99,7 @@ public sealed class SemanticTextPartitionerTests
 
         var expected = new List<string>();
 
-        var result = SemanticTextPartitioner.SplitMarkdownParagraphs(input, 13);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 13);
 
         Assert.Equal(expected, result);
     }
@@ -124,7 +124,7 @@ public sealed class SemanticTextPartitionerTests
             "Seriously, this is the end. We're finished. All set. Bye. Done."
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -150,7 +150,7 @@ public sealed class SemanticTextPartitionerTests
             "Seriously this is the end\nWe're finished\nAll set\nBye Done",
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -177,7 +177,7 @@ public sealed class SemanticTextPartitionerTests
             $"We're finished. All set. Bye.{Environment.NewLine}Done.",
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -203,7 +203,7 @@ public sealed class SemanticTextPartitionerTests
             "Seriously, this is the end; We're finished; All set; Bye. Done.",
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -229,7 +229,7 @@ public sealed class SemanticTextPartitionerTests
             "Seriously, this is the end: We're finished: All set: Bye. Done.",
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -255,7 +255,7 @@ public sealed class SemanticTextPartitionerTests
             $"this is the end, We're finished, All set, Bye.{Environment.NewLine}Done.",
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -281,7 +281,7 @@ public sealed class SemanticTextPartitionerTests
             "Seriously this is the end} We're finished} All set} Bye. Done.",
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -307,7 +307,7 @@ public sealed class SemanticTextPartitionerTests
             $"this is the end We're finished All set Bye.{Environment.NewLine}Done.",
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -333,7 +333,7 @@ public sealed class SemanticTextPartitionerTests
             $"this is the end-We're finished-All set-Bye.{Environment.NewLine}Done.",
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -360,7 +360,7 @@ public sealed class SemanticTextPartitionerTests
             "tByeDoneThisOneWillBeSplitToMeetTheLimit",
         };
 
-        var result = SemanticTextPartitioner.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -402,7 +402,7 @@ public sealed class SemanticTextPartitionerTests
             "Seriously_this_is_the_end\nWe're_finished\nAll_set\nBye Done",
         };
 
-        var result = SemanticTextPartitioner.SplitMarkdownParagraphs(input, 15);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 15);
 
         Assert.Equal(expected, result);
     }
