@@ -53,48 +53,50 @@ public static class ImportSemanticSkillFromDirectoryExtension
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="parentDirectory">Directory containing the skill directory, e.g. "d:\myAppSkills"</param>
-    /// <param name="skillDirectoryName">Name of the directory containing the selected skill, e.g. "StrategySkill"</param>
+    /// <param name="skillDirectoryNames">Name of the directories containing the selected skills, e.g. "StrategySkill"</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
     public static IDictionary<string, ISKFunction> ImportSemanticSkillFromDirectory(
-        this IKernel kernel, string parentDirectory, string skillDirectoryName)
+        this IKernel kernel, string parentDirectory, params string[] skillDirectoryNames)
     {
         const string CONFIG_FILE = "config.json";
         const string PROMPT_FILE = "skprompt.txt";
 
-        Verify.ValidSkillName(skillDirectoryName);
-        var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
-        Verify.DirectoryExists(skillDir);
-
         var skill = new Dictionary<string, ISKFunction>();
 
-        string[] directories = Directory.GetDirectories(skillDir);
-        foreach (string dir in directories)
+        foreach (string skillDirectoryName in skillDirectoryNames)
         {
-            var functionName = Path.GetFileName(dir);
+            Verify.ValidSkillName(skillDirectoryName);
+            var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
+            Verify.DirectoryExists(skillDir);
 
-            // Continue only if prompt template exists
-            var promptPath = Path.Combine(dir, PROMPT_FILE);
-            if (!File.Exists(promptPath)) { continue; }
-
-            // Load prompt configuration. Note: the configuration is optional.
-            var config = new PromptTemplateConfig();
-            var configPath = Path.Combine(dir, CONFIG_FILE);
-            if (File.Exists(configPath))
+            string[] directories = Directory.GetDirectories(skillDir);
+            foreach (string dir in directories)
             {
-                config = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
-                Verify.NotNull(config, $"Invalid prompt template configuration, unable to parse {configPath}");
+                var functionName = Path.GetFileName(dir);
+
+                // Continue only if prompt template exists
+                var promptPath = Path.Combine(dir, PROMPT_FILE);
+                if (!File.Exists(promptPath)) { continue; }
+
+                // Load prompt configuration. Note: the configuration is optional.
+                var config = new PromptTemplateConfig();
+                var configPath = Path.Combine(dir, CONFIG_FILE);
+                if (File.Exists(configPath))
+                {
+                    config = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
+                    Verify.NotNull(config, $"Invalid prompt template configuration, unable to parse {configPath}");
+                }
+
+                kernel.Log.LogTrace("Config {0}: {1}", functionName, config.ToJson());
+
+                // Load prompt template
+                var template = new PromptTemplate(File.ReadAllText(promptPath), config, kernel.PromptTemplateEngine);
+
+                var functionConfig = new SemanticFunctionConfig(config, template);
+
+                kernel.Log.LogTrace("Registering function {0}.{1} loaded from {2}", skillDirectoryName, functionName, dir);
+                skill[functionName] = kernel.RegisterSemanticFunction(skillDirectoryName, functionName, functionConfig);
             }
-
-            kernel.Log.LogTrace("Config {0}: {1}", functionName, config.ToJson());
-
-            // Load prompt template
-            var template = new PromptTemplate(File.ReadAllText(promptPath), config, kernel.PromptTemplateEngine);
-
-            // Prepare lambda wrapping AI logic
-            var functionConfig = new SemanticFunctionConfig(config, template);
-
-            kernel.Log.LogTrace("Registering function {0}.{1} loaded from {2}", skillDirectoryName, functionName, dir);
-            skill[functionName] = kernel.RegisterSemanticFunction(skillDirectoryName, functionName, functionConfig);
         }
 
         return skill;
