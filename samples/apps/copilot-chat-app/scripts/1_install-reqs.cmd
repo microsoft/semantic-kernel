@@ -3,6 +3,3 @@
 
 :: Install prereqs
 choco install dotnet-6.0-sdk nodejs yarn
-
-:: Generate and trust a localhost developer certificate
-:: dotnet dev-certs https --trust
