@@ -8,7 +8,7 @@ namespace SemanticKernel.Skills.UnitTests.Grpc.Protobuf.TestSkills;
 internal static class ResourceSkillsProvider
 {
     /// <summary>
-    /// Loads OpenApi document from assembly resource.
+    /// Loads .proto file from assembly resource.
     /// </summary>
     /// <param name="resourceName">The resource name.</param>
     /// <returns>The OpenApi document resource stream.</returns>
