@@ -78,7 +78,7 @@ public abstract class OpenAIClientBase : IDisposable
                     "Embeddings not found");
             }
 
-            return result.Embeddings.Select(e => new Embedding<float>(e.Values.ToArray())).ToList();
+            return result.Embeddings.Select(e => new Embedding<float>(e.Values)).ToList();
         }
         catch (Exception e) when (e is not AIException)
         {
