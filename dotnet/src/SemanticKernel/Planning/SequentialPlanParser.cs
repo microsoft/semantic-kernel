@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Text;
 using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -43,10 +42,11 @@ internal static class SequentialPlanParser
     /// Convert a plan xml string to a plan.
     /// </summary>
     /// <param name="xmlString">The plan xml string.</param>
+    /// <param name="goal">The goal for the plan.</param>
     /// <param name="context">The semantic kernel context.</param>
     /// <returns>The plan.</returns>
     /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
-    internal static Plan ToPlanFromXml(this string xmlString, SKContext context)
+    internal static Plan ToPlanFromXml(this string xmlString, string goal, SKContext context)
     {
         try
         {
@@ -60,13 +60,10 @@ internal static class SequentialPlanParser
                 throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Failed to parse plan xml.", e);
             }
 
-            // Get the Goal
-            var (goalTxt, goalXmlString) = GatherGoal(xmlDoc);
-
             // Get the Solution
             XmlNodeList solution = xmlDoc.GetElementsByTagName(SolutionTag);
 
-            var plan = new Plan(goalTxt);
+            var plan = new Plan(goal);
 
             // loop through solution node and add to Steps
             foreach (XmlNode o in solution)
@@ -90,7 +87,6 @@ internal static class SequentialPlanParser
                         var skillFunctionName = o2.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
                         GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
 
-                        // TODO I think we can remove this.
                         if (!string.IsNullOrEmpty(functionName) && context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
                         {
                             Verify.NotNull(functionName, nameof(functionName));
@@ -148,22 +144,6 @@ internal static class SequentialPlanParser
             context.Log.LogError(e, "Plan parsing failed: {0}", e.Message);
             throw;
         }
-    }
-
-    private static (string goalTxt, string goalXmlString) GatherGoal(XmlDocument xmlDoc)
-    {
-        XmlNodeList goal = xmlDoc.GetElementsByTagName(GoalTag);
-        if (goal.Count == 0)
-        {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "No goal found.");
-        }
-
-        string goalTxt = goal[0]!.FirstChild!.Value ?? string.Empty;
-        var goalContent = new StringBuilder();
-        _ = goalContent.Append($"<{GoalTag}>")
-            .Append(goalTxt)
-            .AppendLine($"</{GoalTag}>");
-        return (goalTxt.Trim(), goalContent.Replace("\r\n", "\n").ToString().Trim());
     }
 
     private static void GetSkillFunctionNames(string skillFunctionName, out string skillName, out string functionName)
