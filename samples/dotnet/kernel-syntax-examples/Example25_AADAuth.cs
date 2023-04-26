@@ -48,7 +48,7 @@ public static class Example25_AADAuth
             "https://....openai.azure.com/",
             new DefaultAzureCredential(authOptions));
 
-        IChatCompletionService chatGPT = kernel.GetService<IChatCompletionService>();
+        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
         var chat = (OpenAIChatHistory)chatGPT.CreateNewChat();
 
         // User message

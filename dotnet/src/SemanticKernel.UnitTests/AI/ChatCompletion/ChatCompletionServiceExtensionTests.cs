@@ -20,7 +20,7 @@ public class ChatCompletionServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<IChatCompletionService>();
+        var instance = Mock.Of<IChatCompletion>();
 
         // Act
         services.AddChatCompletionService(serviceId, instance);
@@ -36,8 +36,8 @@ public class ChatCompletionServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<IChatCompletionService>();
-        var factory = new Func<IChatCompletionService>(() => instance);
+        var instance = Mock.Of<IChatCompletion>();
+        var factory = new Func<IChatCompletion>(() => instance);
 
         // Act
         services.AddChatCompletionService(serviceId, factory);
@@ -53,8 +53,8 @@ public class ChatCompletionServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<IChatCompletionService>();
-        var factory = new Func<INamedServiceProvider, IChatCompletionService>(sp => instance);
+        var instance = Mock.Of<IChatCompletion>();
+        var factory = new Func<INamedServiceProvider, IChatCompletion>(sp => instance);
 
         // Act
         services.AddChatCompletionService(serviceId, factory);
@@ -71,8 +71,8 @@ public class ChatCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<IChatCompletionService>();
-        var instance2 = Mock.Of<IChatCompletionService>();
+        var instance1 = Mock.Of<IChatCompletion>();
+        var instance2 = Mock.Of<IChatCompletion>();
         services.AddChatCompletionService(serviceId1, instance1);
         services.AddChatCompletionService(serviceId2, instance2);
 
@@ -91,7 +91,7 @@ public class ChatCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<IChatCompletionService>();
+        var instance1 = Mock.Of<IChatCompletion>();
         services.AddChatCompletionService(serviceId1, instance1);
 
         // Act - Assert
@@ -105,8 +105,8 @@ public class ChatCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<IChatCompletionService>();
-        var instance2 = Mock.Of<IChatCompletionService>();
+        var instance1 = Mock.Of<IChatCompletion>();
+        var instance2 = Mock.Of<IChatCompletion>();
         services.AddChatCompletionService(serviceId1, instance1);
         services.AddChatCompletionService(serviceId2, instance2);
 
@@ -126,7 +126,7 @@ public class ChatCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<IChatCompletionService>();
+        var instance1 = Mock.Of<IChatCompletion>();
         services.AddChatCompletionService(serviceId1, instance1);
 
         // Act
@@ -144,8 +144,8 @@ public class ChatCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<IChatCompletionService>();
-        var instance2 = Mock.Of<IChatCompletionService>();
+        var instance1 = Mock.Of<IChatCompletion>();
+        var instance2 = Mock.Of<IChatCompletion>();
         services.AddChatCompletionService(serviceId1, instance1);
         services.AddChatCompletionService(serviceId2, instance2);
 
@@ -175,7 +175,7 @@ public class ChatCompletionServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<IChatCompletionService>();
+        var instance = Mock.Of<IChatCompletion>();
         services.AddChatCompletionService(serviceId, instance);
 
         // Act
@@ -192,7 +192,7 @@ public class ChatCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance = Mock.Of<IChatCompletionService>();
+        var instance = Mock.Of<IChatCompletion>();
         services.AddChatCompletionService(serviceId1, instance);
 
         // Act
@@ -208,7 +208,7 @@ public class ChatCompletionServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<IChatCompletionService>();
+        var instance = Mock.Of<IChatCompletion>();
         services.AddChatCompletionService(serviceId, instance, setAsDefault: true);
 
         // Act
