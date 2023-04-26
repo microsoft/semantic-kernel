@@ -1,4 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// TODO move memory items to different directory
+
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -43,11 +45,6 @@ public class SemanticChatMemory
     public static SemanticChatMemory FromJson(string json)
     {
         var result = JsonSerializer.Deserialize<SemanticChatMemory>(json);
-        if (result == null)
-        {
-            throw new ArgumentException("Failed to deserialize chat memory to json.");
-        }
-
-        return result;
+        return result ?? throw new ArgumentException("Failed to deserialize chat memory to json.");
     }
 }
