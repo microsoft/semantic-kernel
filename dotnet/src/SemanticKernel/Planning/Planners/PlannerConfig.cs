@@ -43,7 +43,7 @@ public sealed class PlannerConfig
     /// <summary>
     /// A list of functions to include in the plan creation request.
     /// </summary>
-    public HashSet<string> IncludedFunctions { get; } = new() { "BucketOutputs" };
+    public HashSet<string> IncludedFunctions { get; } = new() { };
 
     /// <summary>
     /// The maximum number of tokens to allow in a plan.

@@ -11,7 +11,7 @@ To create a plan, follow these steps:
 1. From a <goal> create a <plan> as a series of <functions>.
 2. Before using any function in a plan, check that it is present in the most recent [AVAILABLE FUNCTIONS] list. If it is not, do not use it. Do not assume that any function that was previously defined or used in another plan or in [EXAMPLES] is automatically available or compatible with the current plan.
 3. Only use functions that are required for the given goal.
-4. A function has an 'input' and an 'output'.
+4. A function has a single 'input' and a single 'output' which are both strings and not objects.
 5. The 'output' from each function is automatically passed as 'input' to the subsequent <function>.
 6. 'input' does not need to be specified if it consumes the 'output' of the previous function.
 7. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: ""<UNIQUE_VARIABLE_KEY>""/>
@@ -20,13 +20,6 @@ To create a plan, follow these steps:
 
 [EXAMPLES]
 [AVAILABLE FUNCTIONS]
-
-  _GLOBAL_FUNCTIONS_.BucketOutputs:
-    description: When the output of a function is too big, parse the output into a number of buckets.
-    inputs:
-    - input: The output from a function that needs to be parse into buckets.
-    - bucketCount: The number of buckets.
-    - bucketLabelPrefix: The target label prefix for the resulting buckets. Result will have index appended e.g. bucketLabelPrefix='Result' => Result_1, Result_2, Result_3
 
   EmailConnector.LookupContactEmail:
     description: looks up the a contact and retrieves their email address
@@ -62,13 +55,6 @@ To create a plan, follow these steps:
 
 [AVAILABLE FUNCTIONS]
 
-  _GLOBAL_FUNCTIONS_.BucketOutputs:
-    description: When the output of a function is too big, parse the output into a number of buckets.
-    inputs:
-    - input: The output from a function that needs to be parse into buckets.
-    - bucketCount: The number of buckets.
-    - bucketLabelPrefix: The target label prefix for the resulting buckets. Result will have index appended e.g. bucketLabelPrefix='Result' => Result_1, Result_2, Result_3
-
   _GLOBAL_FUNCTIONS_.GetEmailAddress:
     description: Gets email address for given contact
     inputs:
@@ -102,13 +88,6 @@ To create a plan, follow these steps:
 </plan><!-- END -->
 
 [AVAILABLE FUNCTIONS]
-
-  _GLOBAL_FUNCTIONS_.BucketOutputs:
-    description: When the output of a function is too big, parse the output into a number of buckets.
-    inputs:
-    - input: The output from a function that needs to be parse into buckets.
-    - bucketCount: The number of buckets.
-    - bucketLabelPrefix: The target label prefix for the resulting buckets. Result will have index appended e.g. bucketLabelPrefix='Result' => Result_1, Result_2, Result_3
 
   _GLOBAL_FUNCTIONS_.NovelOutline :
     description: Outlines the input text as if it were a novel
