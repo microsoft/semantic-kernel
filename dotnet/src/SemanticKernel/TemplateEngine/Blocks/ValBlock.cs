@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-internal class ValBlock : Block, ITextRendering
+internal sealed class ValBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.Value;
 

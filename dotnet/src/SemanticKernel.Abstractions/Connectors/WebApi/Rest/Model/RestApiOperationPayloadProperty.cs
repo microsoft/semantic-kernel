@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 /// <summary>
 /// The REST API operation payload property.
 /// </summary>
-internal class RestApiOperationPayloadProperty
+internal sealed class RestApiOperationPayloadProperty
 {
     /// <summary>
     /// The property name.
