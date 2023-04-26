@@ -17,6 +17,9 @@ public class PlannerOptions
     /// </summary>
     public bool Enabled { get; set; } = false;
 
+    /// <summary>
+    /// The directory containing semantic skills to include in the planner's list of available functions.
+    /// </summary>
     public string? SemanticSkillsDirectory { get; set; }
 
     /// <summary>
@@ -48,7 +51,7 @@ public class PlannerOptions
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
     /// </summary>
-    [Range(1,int.MaxValue)]
+    [Range(1, int.MaxValue)]
     public int MaxTokens { get; set; } = 1024;
 
     /// <summary>

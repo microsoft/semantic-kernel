@@ -3,7 +3,6 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
@@ -14,8 +13,6 @@ using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Skills;
-
-
 
 /// <summary>
 /// ChatSkill offers a more coherent chat experience by using memories
@@ -219,7 +216,7 @@ public class ChatSkill
                 continue;
             }
 
-            plan = await planner.Kernel.StepAsync(context.Variables, plan);
+            plan = await planner.Kernel.StepAsync(plan);
         }
 
         // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.

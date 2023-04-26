@@ -43,7 +43,7 @@ public class SemanticKernelController : ControllerBase
     /// <param name="kernel">Semantic kernel obtained through dependency injection</param>
     /// <param name="chatRepository">Storage repository to store chat sessions</param>
     /// <param name="chatMessageRepository">Storage repository to store chat messages</param>
-    /// <param name="documentMemoryOptions">Options for document memory handline.</param>
+    /// <param name="documentMemoryOptions">Options for document memory handling.</param>
     /// <param name="plannerFactory">Factory for planners to use to create function sequences.</param>
     /// <param name="plannerOptions">Options for the planner.</param>
     /// <param name="ask">Prompt along with its parameters</param>

@@ -14,20 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="PlannerSkills\Notegen\config.json" />
-    <Content Remove="PlannerSkills\Summarize\config.json" />
-    <Content Remove="PlannerSkills\Topics\config.json" />
-    <Content Remove="PlannerSkills\Translate\config.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="PlannerSkills\Notegen\config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="PlannerSkills\Summarize\config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="PlannerSkills\Topics\config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="PlannerSkills\Translate\config.json">
@@ -53,21 +40,6 @@
     <ProjectReference Include="..\..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
     <ProjectReference Include="..\..\..\..\dotnet\src\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj" />
     <ProjectReference Include="..\..\..\..\dotnet\src\Skills\Skills.Web\Skills.Web.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="PlannerSkills\Notegen\skprompt.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="PlannerSkills\Summarize\skprompt.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="PlannerSkills\Topics\skprompt.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="PlannerSkills\Translate\skprompt.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
