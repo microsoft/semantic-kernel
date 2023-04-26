@@ -9,7 +9,6 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 async def populate_memory(kernel: sk.Kernel) -> None:
     # Add some documents to the semantic memory
-    await kernel.memory.save_information_async("aboutMe", id="info", text="test")
     await kernel.memory.save_information_async(
         "aboutMe", id="info1", text="My name is Andrea"
     )
