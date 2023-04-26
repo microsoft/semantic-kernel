@@ -176,7 +176,8 @@ public class PineconeMemoryStoreTests
             this._description3,
             this._embedding3);
 
-        List<MemoryRecord> records = new List<MemoryRecord> { memoryRecord, memoryRecord2, memoryRecord3 };
+        List<MemoryRecord> records = new()
+            { memoryRecord, memoryRecord2, memoryRecord3 };
 
         this._mockPineconeClient
             .Setup<IAsyncEnumerable<PineconeDocument?>>(x =>
@@ -219,52 +220,53 @@ public class PineconeMemoryStoreTests
     public async Task TestGetNearestMatchesAsync()
     {
         // Arrange
-        string collectionName = "testCollection";
         Embedding<float> embedding = new(new float[] { 0.1f, 0.2f });
 
-        PineconeDocument mostRelevantResult = new()
+        List<(PineconeDocument, double)> queryResults = new List<(PineconeDocument, double)>
         {
-            Id = this._id,
-            Metadata = new Dictionary<string, object> { { "key1", "value1" } },
-            Values = new float[] { 0.1f, 0.2f },
-            Score = (float?)0.9
+            new(new()
+            {
+                Id = this._id,
+                Metadata = new Dictionary<string, object>
+                {
+                    { "document_Id", "value1" },
+                },
+                Values = this._embedding.Vector
+            }, 0.9),
+            new(new()
+            {
+                Id = this._id2,
+                Metadata = new Dictionary<string, object> { { "document_Id", "value2" } },
+                Values = this._embedding2.Vector,
+            }, 0.5)
         };
-
-        PineconeDocument lessRelevantResult = new()
-        {
-            Id = this._id2,
-            Metadata = new Dictionary<string, object> { { "key1", "value1" } },
-            Values = new float[] { 0.1f, 0.2f },
-            Score = (float?)0.5
-        };
-
-        List<(PineconeDocument, double)> documents = new()
-            { (mostRelevantResult, 0.9) };
-
+        
         this._mockPineconeClient.Setup(x => x.Ready).Returns(true);
+
+        // Setup 
+
         this._mockPineconeClient
             .Setup<IAsyncEnumerable<(PineconeDocument, double)>>(x => x.GetMostRelevantAsync(
-                collectionName,
-                embedding.Vector,
-                0.8,
-                10,
-                false,
-                true,
-                "",
-                null,
-                CancellationToken.None))
-            .Returns(documents.ToAsyncEnumerable());
+                It.IsAny<string>(),
+                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<double>(),
+                It.IsAny<int>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<string>(),
+                It.IsAny<Dictionary<string, object>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(queryResults.ToAsyncEnumerable());
 
-        // Act
-        List<(MemoryRecord, double)> results = new();
-        await foreach ((MemoryRecord, double) result in this._pineconeMemoryStore.GetNearestMatchesAsync(collectionName, embedding, 10))
-        {
-            results.Add(result);
-        }
+        List<(MemoryRecord, double)> results = await this._pineconeMemoryStore.GetNearestMatchesAsync(
+            "indexName",
+            new Embedding<float>(new[] { 0.1f, 0.2f, 0.3f }),
+            2,
+            0.5,
+            true).ToListAsync();
 
-        // Assert
-        Assert.Single(results);
-        Assert.Equal(mostRelevantResult.Id, results[0].Item1.Key);
+        Assert.Equal(2, results.Count);
+        Assert.Equal("Id", results[0].Item1.Key);
         Assert.Equal(0.9, results[0].Item2);
     }
 
