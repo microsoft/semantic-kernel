@@ -16,8 +16,16 @@ internal static class FunctionViewExtensions
     /// <returns>A manual-friendly string for a function.</returns>
     internal static string ToManualString(this FunctionView function)
     {
-        var inputs = string.Join("\n", function.Parameters.Select(p => $"    - {p.Name}: {p.Description} (default value: {p.DefaultValue}))"));
-        return $"  {function.ToFullyQualifiedName()}:\n    description: {function.Description}\n    inputs:\n{inputs}";
+        var inputs = string.Join("\n", function.Parameters.Select(parameter =>
+        {
+            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $" (default value: {parameter.DefaultValue})";
+            return $"  - {parameter.Name}: {parameter.Description}{defaultValueString}";
+        }));
+
+        return $@"{function.ToFullyQualifiedName()}:
+  description: {function.Description}
+  inputs:
+  {inputs}";
     }
 
     /// <summary>

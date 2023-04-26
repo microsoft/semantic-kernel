@@ -8,8 +8,12 @@ import { useChat } from '../../../libs/useChat';
 import { FileUploader } from '../../FileUploader';
 import { useFile } from '../../../libs/useFile';
 import { Bot } from '../../../libs/models/Bot';
+import { useAppDispatch } from '../../../redux/app/hooks';
+import { addAlert } from '../../../redux/features/app/appSlice';
+import { AlertType } from '../../../libs/models/AlertType';
 
 export const NewBotMenu: FC = () => {
+    const dispatch = useAppDispatch();
     const chat = useChat();
     const fileHandler = useFile();
     const [isNewBotMenuOpen, setIsNewBotMenuOpen] = useState(false);
@@ -23,10 +27,16 @@ export const NewBotMenu: FC = () => {
 
     const onUpload = useCallback(
         (file: File) => {
-            fileHandler.loadFile<Bot>(file, chat.uploadBot);
+            fileHandler
+                .loadFile<Bot>(file, chat.uploadBot)
+                .catch((error) =>
+                    dispatch(
+                        addAlert({ message: `Failed to parse uploaded file. ${error.message}`, type: AlertType.Error }),
+                    ),
+                );
             setIsNewBotMenuOpen(false);
         },
-        [fileHandler, chat],
+        [fileHandler, chat, dispatch],
     );
 
     return (
