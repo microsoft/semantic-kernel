@@ -87,7 +87,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             else:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    "Unsupported hugging face pipeline task: only text-generation, text2text-generation, and summarization are supported.",
+                    "Unsupported hugging face pipeline task: only \
+                        text-generation, text2text-generation, and summarization are supported.",
                 )
 
         except Exception as e:
