@@ -37,7 +37,7 @@ public sealed class SequentialPlannerTests : IDisposable
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
-        TestHelpers.GetSkill("FunSkill", kernel);
+        TestHelpers.GetSkills(kernel, "FunSkill");
 
         var planner = new SequentialPlanner(kernel);
 
@@ -58,7 +58,7 @@ public sealed class SequentialPlannerTests : IDisposable
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
-        TestHelpers.GetSkill("WriterSkill", kernel);
+        TestHelpers.GetSkills(kernel, "WriterSkill");
 
         var planner = new SequentialPlanner(kernel);
 
@@ -69,9 +69,9 @@ public sealed class SequentialPlannerTests : IDisposable
         Assert.Contains(
             plan.Steps,
             step =>
-                    step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                    step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase) &&
-                    step.NamedParameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
+                step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
+                step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase) &&
+                step.NamedParameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]

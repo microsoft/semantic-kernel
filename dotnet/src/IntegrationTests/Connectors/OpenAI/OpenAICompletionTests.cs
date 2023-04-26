@@ -47,7 +47,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         this.ConfigureOpenAI(target);
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
 
         // Act
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -65,7 +65,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         this.ConfigureAzureOpenAI(target);
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
 
         // Act
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -95,7 +95,7 @@ public sealed class OpenAICompletionTests : IDisposable
             modelId: openAIConfiguration.ModelId,
             apiKey: "INVALID_KEY");
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
         // Act
         var context = await target.RunAsync(prompt, skill["Summarize"]);
@@ -119,7 +119,7 @@ public sealed class OpenAICompletionTests : IDisposable
             modelId: openAIConfiguration.ModelId,
             apiKey: "INVALID_KEY");
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
         // Act
         var context = await target.RunAsync("Any", skill["Summarize"]);
@@ -146,7 +146,7 @@ public sealed class OpenAICompletionTests : IDisposable
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
         // Act
         var context = await target.RunAsync("Any", skill["Summarize"]);
@@ -173,7 +173,7 @@ public sealed class OpenAICompletionTests : IDisposable
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey);
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("SummarizeSkill", target);
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
         // Act
         var context = await skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)));
@@ -203,7 +203,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         this._serviceConfiguration[service](target);
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkill("ChatSkill", target);
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
 
         // Act
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
