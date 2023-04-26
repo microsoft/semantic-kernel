@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace SemanticKernel.Service.Plugins;
+namespace SemanticKernel.Service.Skills.OpenAPI.Authentication;
 
 /// /// <summary>
 /// Represents the authentication headers for imported Open API Plugin Skills.
 /// </summary>
-public class PluginAuthHeaders
+public class OpenApiSkillsAuthHeaders
 {
     /// <summary>
     /// Gets or sets the MS Graph authentication header value.
