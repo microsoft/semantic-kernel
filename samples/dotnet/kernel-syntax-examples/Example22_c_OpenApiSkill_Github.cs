@@ -11,17 +11,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RepoUtils;
 
-public class PullRequest
-{
-    public string? number { get; set; }
-
-}
-
-public class PullRequests
-{
-    public List<PullRequests>? content { get; set; }
-}
-
 /// <summary>
 /// Import and run GitHub Functions using OpenAPI Skill.
 /// To use this example, run:
@@ -29,27 +18,23 @@ public class PullRequests
 /// Make sure your GitHub PAT has read permissions set for Pull Requests.
 /// Creating a PAT: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 /// </summary>
-/// <returns></returns>
-public static class Example27_OpenApiGitHubSkill
+public static class Example22_c_OpenApiSkill_GitHub
 {
     public static async Task RunAsync()
     {
-        var authenticationProvider = new BearerAuthenticationProvider(() => getToken());
-        Console.WriteLine("Example27_OpenApiGitHubSkill");
+        var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(Env.Var("GITHUB_PERSONAL_ACCESS_TOKEN")); });
+        Console.WriteLine("== Example22_c_OpenApiSkill_GitHub ==");
         var firstPRNumber = await ListPullRequestsFromGitHubAsync(authenticationProvider);
         await GetPullRequestFromGitHubAsync(authenticationProvider, firstPRNumber);
-    }
-
-    private static Task<string> getToken()
-    {
-        return Task.FromResult(Env.Var("GITHUB_PERSONAL_ACCESS_TOKEN"));
     }
 
     public static async Task<string> ListPullRequestsFromGitHubAsync(BearerAuthenticationProvider authenticationProvider)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.GitHub,
+        var skill = await kernel.ImportOpenApiSkillFromFileAsync(
+            "GitHubSkill",
+            "../../../samples/apps/copilot-chat-app/webapi/Skills/GitHubOpenApiSkill/openapi.json",
             authenticationProvider.AuthenticateRequestAsync);
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
@@ -67,11 +52,12 @@ public static class Example27_OpenApiGitHubSkill
         if (pullRequests != null && pullRequests.First != null)
         {
             var number = pullRequests.First["number"];
-            return number?.ToString() ?? "-1";
+            return number?.ToString() ?? string.Empty;
         }
         else
         {
-            return "-1";
+            Console.WriteLine("No pull requests found.");
+            return string.Empty;
         }
     }
 
@@ -79,7 +65,9 @@ public static class Example27_OpenApiGitHubSkill
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.GitHub,
+        var skill = await kernel.ImportOpenApiSkillFromFileAsync(
+            "GitHubSkill",
+            "../../../samples/apps/copilot-chat-app/webapi/Skills/GitHubOpenApiSkill/openapi.json",
             authenticationProvider.AuthenticateRequestAsync);
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.

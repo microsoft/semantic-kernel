@@ -13,7 +13,7 @@ import {
     updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from './auth/AuthHelper';
-// import { useConnectors } from './connectors/useConnectors'; // ConnectorTokenExample
+import { useConnectors } from './connectors/useConnectors'; // ConnectorTokenExample
 import { AlertType } from './models/AlertType';
 import { AuthorRoles, ChatMessage } from './models/ChatMessage';
 import { ChatUser } from './models/ChatUser';
@@ -28,7 +28,7 @@ export const useChat = () => {
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const { botProfilePictureIndex } = useAppSelector((state: RootState) => state.conversations);
 
-    // const connectors = useConnectors(); // ConnectorTokenExample
+    const connectors = useConnectors();
 
     const botProfilePictures: string[] = [
         '/assets/bot-icon-1.png',
@@ -119,8 +119,13 @@ export const useChat = () => {
             ],
         };
         try {
-            var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat', await AuthHelper.getSKaaSAccessToken(instance));
-            // var result = await connectors.invokeSkillWithGitHubToken(ask, 'ChatSkill', 'Chat'); // ConnectorTokenExample
+            var result = await sk.invokeAsync(
+                ask,
+                'ChatSkill',
+                'Chat',
+                await AuthHelper.getSKaaSAccessToken(instance),
+                connectors.getEnabledPlugins(),
+            );
 
             const messageResult = {
                 timestamp: new Date().getTime(),

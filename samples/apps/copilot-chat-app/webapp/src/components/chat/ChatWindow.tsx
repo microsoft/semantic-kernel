@@ -21,7 +21,6 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
-import { PluginsList } from '../open-api-plugins/PluginsList';
 import { ChatRoom } from './ChatRoom';
 
 const useClasses = makeStyles({
@@ -151,7 +150,6 @@ export const ChatWindow: React.FC = () => {
                             />
                         }
                     </div>
-                    <PluginsList />
                 </div>
             </div>
             <div className={classes.content}>

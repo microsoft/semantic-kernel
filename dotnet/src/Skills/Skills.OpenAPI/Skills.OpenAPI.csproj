@@ -17,9 +17,7 @@
 
   <ItemGroup>
     <None Remove="Skills\AzureKeyVaultSkill\openapi.json" />
-    <None Remove="Skills\GitHubSkill\openapi.json" />
     <EmbeddedResource Include="Skills\AzureKeyVaultSkill\openapi.json" />
-    <EmbeddedResource Include="Skills\GitHubSkill\openapi.json" />
   </ItemGroup>
 
   <ItemGroup>

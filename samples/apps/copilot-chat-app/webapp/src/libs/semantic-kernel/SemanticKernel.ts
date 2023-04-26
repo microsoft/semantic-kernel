@@ -19,10 +19,10 @@ export class SemanticKernel {
         skillName: string,
         functionName: string,
         accessToken: string,
-        pluginAuth?: {
+        enabledPlugins?: {
             headerTag: AuthHeaderTags;
             authData: string;
-        },
+        }[],
     ): Promise<IAskResult> => {
         const result = await this.getResponseAsync<IAskResult>(
             {
@@ -31,7 +31,7 @@ export class SemanticKernel {
                 body: ask,
             },
             accessToken,
-            pluginAuth,
+            enabledPlugins,
         );
         return result;
     };
@@ -39,10 +39,10 @@ export class SemanticKernel {
     private readonly getResponseAsync = async <T>(
         request: ServiceRequest,
         accessToken: string,
-        pluginAuth?: {
+        enabledPlugins?: {
             headerTag: AuthHeaderTags;
             authData: string;
-        },
+        }[],
     ): Promise<T> => {
         const { commandPath, method, body } = request;
         const headers = new Headers({
@@ -50,8 +50,11 @@ export class SemanticKernel {
             'Content-Type': 'application/json',
         });
 
-        // TODO: add all plug in tokens / auth data?
-        if (pluginAuth) headers.append(`x-sk-copilot-${pluginAuth.headerTag}-authorization`, pluginAuth.authData);
+        if (enabledPlugins && enabledPlugins.length > 0) {
+            enabledPlugins.map((plugin) => {
+                headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData);
+            });
+        }
 
         try {
             const requestUrl = new URL(commandPath, this.serviceUrl);

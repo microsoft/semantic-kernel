@@ -84,7 +84,7 @@ internal class RestApiOperationRunner : IRestApiOperationRunner
             requestMessage.Content = payload;
         }
 
-        requestMessage.Headers.Add("User-Agent", "semantic-kernel");
+        requestMessage.Headers.Add("User-Agent", "Semantic-Kernel");
 
         if (headers != null)
         {

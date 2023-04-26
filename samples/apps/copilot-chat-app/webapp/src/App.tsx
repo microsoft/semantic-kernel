@@ -7,11 +7,12 @@ import {
     useIsAuthenticated,
     useMsal,
 } from '@azure/msal-react';
-import { Avatar, Spinner, Subtitle1, makeStyles } from '@fluentui/react-components';
+import { Avatar, Spinner, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
+import { PluginGallery } from './components/open-api-plugins/PluginGallery';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
 import { Login } from './components/views/Login';
@@ -42,6 +43,10 @@ const useClasses = makeStyles({
     },
     persona: {
         marginRight: '20px',
+    },
+    cornerItems: {
+        display: 'flex',
+        ...shorthands.gap(tokens.spacingHorizontalXS),
     },
 });
 
@@ -97,13 +102,16 @@ const App: FC = () => {
                 <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
                     <div className={classes.header}>
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
-                        <Avatar
-                            className={classes.persona}
-                            key={account?.name}
-                            name={account?.name}
-                            size={28}
-                            badge={{ status: 'available' }}
-                        />
+                        <div className={classes.cornerItems}>
+                            <PluginGallery />
+                            <Avatar
+                                className={classes.persona}
+                                key={account?.name}
+                                name={account?.name}
+                                size={28}
+                                badge={{ status: 'available' }}
+                            />
+                        </div>
                     </div>
                     {alerts &&
                         Object.keys(alerts).map((key) => {

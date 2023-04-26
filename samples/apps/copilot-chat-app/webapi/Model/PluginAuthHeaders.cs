@@ -2,14 +2,26 @@
 
 namespace SemanticKernel.Service.Plugins;
 
+/// /// <summary>
+/// Represents the authentication headers imported Open API Plugin Skills.
+/// </summary>
 public class PluginAuthHeaders
 {
-    [FromHeader(Name = "x-sk-copilot-graph-authorization")]
+    /// <summary>
+    /// Gets or sets the MS Graph authentication header value.
+    /// </summary>
+    [FromHeader(Name = "x-sk-copilot-graph-auth")]
     public string? GraphAuthentication { get; set; }
 
-    [FromHeader(Name = "x-sk-copilot-jira-authorization")]
+    /// <summary>
+    /// Gets or sets the Jira authentication header value.
+    /// </summary>
+    [FromHeader(Name = "x-sk-copilot-jira-auth")]
     public string? JiraAuthentication { get; set; }
 
-    [FromHeader(Name = "x-sk-copilot-github-authorization")]
+    /// <summary>
+    /// Gets or sets the GitHub authentication header value.
+    /// </summary>
+    [FromHeader(Name = "x-sk-copilot-github-auth")]
     public string? GithubAuthentication { get; set; }
 }
