@@ -1,0 +1,313 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.16.2.56959",
+      "templateHash": "17284946455957737390"
+    }
+  },
+  "parameters": {
+    "name": {
+      "type": "string",
+      "defaultValue": "SKaaS",
+      "metadata": {
+        "description": "Name for the deployment"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Region for the resources"
+      }
+    },
+    "appServiceSku": {
+      "type": "string",
+      "defaultValue": "B1",
+      "allowedValues": [
+        "B1",
+        "S1"
+      ],
+      "metadata": {
+        "description": "SKU for the Azure App Service plan"
+      }
+    },
+    "packageUri": {
+      "type": "string",
+      "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/skaas.zip",
+      "metadata": {
+        "description": "Location of package to deploy as the web service"
+      }
+    },
+    "endpoint": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Endpoint for the OpenAI API"
+      }
+    },
+    "apiKey": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "OpenAI API key"
+      }
+    }
+  },
+  "variables": {
+    "uniqueName": "[format('{0}-{1}', parameters('name'), uniqueString(resourceGroup().id))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-03-01",
+      "name": "[format('{0}-plan', variables('uniqueName'))]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('appServiceSku')]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-03-01",
+      "name": "[format('{0}-web', variables('uniqueName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', format('{0}-plan', variables('uniqueName')))]",
+        "httpsOnly": true,
+        "siteConfig": {
+          "alwaysOn": true,
+          "detailedErrorLoggingEnabled": true,
+          "minTlsVersion": "1.2",
+          "netFrameworkVersion": "v6.0",
+          "use32BitWorkerProcess": false,
+          "appSettings": [
+            {
+              "name": "Service:SemanticSkillsDirectory",
+              "value": ""
+            },
+            {
+              "name": "Service:KeyVaultUri",
+              "value": ""
+            },
+            {
+              "name": "KeyVaultUri",
+              "value": ""
+            },
+            {
+              "name": "Completion:Label",
+              "value": "Completion"
+            },
+            {
+              "name": "Completion:AIService",
+              "value": "AzureOpenAI"
+            },
+            {
+              "name": "Completion:DeploymentOrModelId",
+              "value": "gpt-35-turbo"
+            },
+            {
+              "name": "Completion:Endpoint",
+              "value": "[parameters('endpoint')]"
+            },
+            {
+              "name": "Completion:Key",
+              "value": "[parameters('apiKey')]"
+            },
+            {
+              "name": "Embedding:Label",
+              "value": "Embedding"
+            },
+            {
+              "name": "Embedding:AIService",
+              "value": "AzureOpenAI"
+            },
+            {
+              "name": "Embedding:DeploymentOrModelId",
+              "value": "gpt-35-turbo"
+            },
+            {
+              "name": "Embedding:Endpoint",
+              "value": "[parameters('endpoint')]"
+            },
+            {
+              "name": "Embedding:Key",
+              "value": "[parameters('apiKey')]"
+            },
+            {
+              "name": "AzureSpeech:Region",
+              "value": ""
+            },
+            {
+              "name": "AzureSpeech:Key",
+              "value": ""
+            },
+            {
+              "name": "Authorization:Type",
+              "value": "None"
+            },
+            {
+              "name": "Authorization:ApiKey",
+              "value": ""
+            },
+            {
+              "name": "Authorization:AzureAd:Instance",
+              "value": "https://login.microsoftonline.com/"
+            },
+            {
+              "name": "Authorization:AzureAd:TenantId",
+              "value": ""
+            },
+            {
+              "name": "Authorization:AzureAd:ClientId",
+              "value": ""
+            },
+            {
+              "name": "Authorization:AzureAd:Scopes",
+              "value": "access_as_user"
+            },
+            {
+              "name": "ChatStore:Type",
+              "value": "volatile"
+            },
+            {
+              "name": "ChatStore:Filesystem",
+              "value": "./data/chatstore.json"
+            },
+            {
+              "name": "MemoriesStore:Type",
+              "value": "volatile"
+            },
+            {
+              "name": "DocumentMemory:GlobalDocumentCollectionName",
+              "value": "global-documents"
+            },
+            {
+              "name": "DocumentMemory:UserDocumentCollectionNamePrefix",
+              "value": "user-documents-"
+            },
+            {
+              "name": "DocumentMemory:DocumentLineSplitMaxTokens",
+              "value": "30"
+            },
+            {
+              "name": "DocumentMemory:DocumentParagraphSplitMaxLines",
+              "value": "100"
+            },
+            {
+              "name": "DocumentMemory:FileSizeLimit",
+              "value": "1000000"
+            },
+            {
+              "name": "Planner:MaxTokens",
+              "value": "1024"
+            },
+            {
+              "name": "Planner:RelevancyThreshold",
+              "value": "0.78"
+            },
+            {
+              "name": "AllowedHosts",
+              "value": "*"
+            },
+            {
+              "name": "BotSchema:Name",
+              "value": "CopilotChat"
+            },
+            {
+              "name": "BotSchema:Version",
+              "value": "1"
+            },
+            {
+              "name": "Kestrel:Endpoints:Https:Url",
+              "value": "https://localhost:443"
+            },
+            {
+              "name": "Logging:LogLevel:Default",
+              "value": "Warning"
+            },
+            {
+              "name": "Logging:LogLevel:Microsoft.SemanticKernel",
+              "value": "Warning"
+            },
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-appi', variables('uniqueName'))), '2020-02-02').InstrumentationKey]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', format('{0}-appi', variables('uniqueName')))]",
+        "[resourceId('Microsoft.Web/serverfarms', format('{0}-plan', variables('uniqueName')))]",
+        "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-la', variables('uniqueName')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites/extensions",
+      "apiVersion": "2021-03-01",
+      "name": "[format('{0}/{1}', format('{0}-web', variables('uniqueName')), 'MSDeploy')]",
+      "kind": "string",
+      "properties": {
+        "packageUri": "[parameters('packageUri')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', format('{0}-web', variables('uniqueName')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[format('{0}-appi', variables('uniqueName'))]",
+      "location": "[parameters('location')]",
+      "kind": "string",
+      "tags": {
+        "displayName": "AppInsight"
+      },
+      "properties": {
+        "Application_Type": "web",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-la', variables('uniqueName')))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-la', variables('uniqueName')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites/siteextensions",
+      "apiVersion": "2020-06-01",
+      "name": "[format('{0}/{1}', format('{0}-web', variables('uniqueName')), 'Microsoft.ApplicationInsights.AzureWebSites')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', format('{0}-appi', variables('uniqueName')))]",
+        "[resourceId('Microsoft.Web/sites', format('{0}-web', variables('uniqueName')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2020-08-01",
+      "name": "[format('{0}-la', variables('uniqueName'))]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "displayName": "Log Analytics"
+      },
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 90,
+        "features": {
+          "searchVersion": 1,
+          "legacy": 0,
+          "enableLogAccessUsingOnlyResourcePermissions": true
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "deployedUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/sites', format('{0}-web', variables('uniqueName'))), '2022-03-01').defaultHostName]"
+    }
+  }
+}
