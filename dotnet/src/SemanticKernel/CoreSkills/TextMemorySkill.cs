@@ -90,7 +90,7 @@ public class TextMemorySkill
     [SKFunctionContextParameter(Name = RelevanceParam, Description = "The relevance score, from 0.0 to 1.0, where 1.0 means perfect match",
         DefaultValue = DefaultRelevance)]
     [SKFunctionContextParameter(Name = LimitParam, Description = "The maximum number of relevant memories to recall", DefaultValue = DefaultLimit)]
-    public string Recall(string text, SKContext context)
+    public async Task<string> RecallAsync(string text, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
         Verify.NotEmpty(collection, "Memories collection not defined");
@@ -106,8 +106,7 @@ public class TextMemorySkill
         // TODO: support locales, e.g. "0.7" and "0,7" must both work
         int limitInt = int.Parse(limit, CultureInfo.InvariantCulture);
         var memories = context.Memory
-            .SearchAsync(collection, text, limitInt, minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture))
-            .ToEnumerable();
+            .SearchAsync(collection, text, limitInt, minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture));
 
         context.Log.LogTrace("Done looking for memories in collection '{0}')", collection);
 
@@ -115,12 +114,12 @@ public class TextMemorySkill
 
         if (limitInt == 1)
         {
-            var memory = memories.FirstOrDefault();
+            var memory = await memories.FirstOrDefaultAsync().ConfigureAwait(false);
             resultString = (memory != null) ? memory.Metadata.Text : string.Empty;
         }
         else
         {
-            resultString = JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
+            resultString = JsonSerializer.Serialize(await memories.Select(x => x.Metadata.Text).ToListAsync().ConfigureAwait(false));
         }
 
         if (resultString.Length == 0)
