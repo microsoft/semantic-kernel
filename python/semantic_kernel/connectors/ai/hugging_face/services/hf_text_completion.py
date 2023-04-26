@@ -55,7 +55,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             task=self._task, model=self._model_id, device=self.device
         )
 
-    async def complete_simple_async(
+    async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> str:
         """
@@ -86,7 +86,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
             else:
                 raise AIException(
-                    AIException.ErrorCodes.UnsupportedHFTask,
+                    AIException.ErrorCodes.ServiceError,
                     "Unsupported hugging face pipeline task",
                 )
 

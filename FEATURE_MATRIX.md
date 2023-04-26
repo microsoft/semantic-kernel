@@ -20,7 +20,7 @@
 ## Tokenizers
 | | C# | Python | Notes |
 |---|---|---|---|
-| GPT2                              | ✅ | 🔄 | Can be manually added to Python via `pip install transformers` |
+| GPT2                              | ✅ | ✅ | |
 | GPT3                              | ✅ | ❌ | |
 | tiktoken                          | 🔄 | ❌ | Coming soon to Python and C#. Can be manually added to Python via `pip install tiktoken` |
 
