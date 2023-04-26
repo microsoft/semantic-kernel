@@ -159,12 +159,15 @@ public sealed class Plan : ISKFunction
     /// <param name="json">JSON string representation of a Plan</param>
     /// <param name="context">The context to use for function registrations.</param>
     /// <returns>An instance of a Plan object.</returns>
-    public static Plan FromJson(string json, SKContext context)
+    /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
+    public static Plan FromJson(string json, SKContext? context = null)
     {
-        // Needs Test
         var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions() { IncludeFields = true }) ?? new Plan(string.Empty);
 
-        plan = SetRegisteredFunctions(plan, context);
+        if (context != null)
+        {
+            plan = SetRegisteredFunctions(plan, context);
+        }
 
         return plan;
     }
@@ -174,7 +177,6 @@ public sealed class Plan : ISKFunction
     /// </summary>
     public string ToJson()
     {
-        // Needs Test
         return JsonSerializer.Serialize(this);
     }
 
@@ -449,7 +451,6 @@ public sealed class Plan : ISKFunction
             }
             else if (this.State.Get(param.Name, out value) && !string.IsNullOrEmpty(value))
             {
-                // Needs test
                 stepVariables.Set(param.Name, value);
             }
         }
