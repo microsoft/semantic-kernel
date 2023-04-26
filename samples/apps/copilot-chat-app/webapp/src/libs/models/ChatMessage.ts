@@ -14,7 +14,7 @@ export enum AuthorRoles {
     Participant,
 }
 
-export interface ChatMessage {
+export interface IChatMessage {
     timestamp: number;
     userName: 'bot' | string;
     userId: string;
@@ -23,3 +23,5 @@ export interface ChatMessage {
     authorRole: AuthorRoles;
     debug?: string;
 }
+
+export type ChatMessages = IChatMessage[];

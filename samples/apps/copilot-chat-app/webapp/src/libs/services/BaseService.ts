@@ -32,7 +32,11 @@ export class BaseService {
             });
 
             if (!response.ok) {
-                throw Object.assign(new Error(response.statusText + ' => ' + (await response.text())));
+                const responseText = await response.text();
+                let errorMessage = response.status + ': ' + response.statusText;
+                errorMessage += responseText ? ' => ' + responseText : '';
+
+                throw Object.assign(new Error(errorMessage));
             }
 
             return noResponseBodyStatusCodes.includes(response.status) ? ({} as T) : ((await response.json()) as T);
