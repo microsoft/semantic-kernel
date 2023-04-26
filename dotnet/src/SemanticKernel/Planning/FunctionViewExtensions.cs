@@ -22,10 +22,7 @@ internal static class FunctionViewExtensions
             return $"  - {parameter.Name}: {parameter.Description}{defaultValueString}";
         }));
 
-        return $@"{function.ToFullyQualifiedName()}:
-          description: {function.Description}
-          inputs:
-          {inputs}";
+        return $@"{function.ToFullyQualifiedName()}:description: {function.Description}inputs:{inputs}";
     }
 
     /// <summary>
