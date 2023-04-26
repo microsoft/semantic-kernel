@@ -1,15 +1,22 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 export const useFile = () => {
-    function loadFile<T>(file: File, loadCallBack: (bot: T) => Promise<void>) {
-        const fileReader = new FileReader();
-        fileReader.onload = async (event: ProgressEvent<FileReader>) => {
-            const content = event?.target?.result as string;
-            const parsedData = JSON.parse(content) as T;
-
-            return await loadCallBack(parsedData);
-        };
-        fileReader.readAsText(file);
+    function loadFile<T>(file: File, loadCallBack: (data: T) => Promise<void>): Promise<T> {
+        return new Promise((resolve, reject) => {
+            const fileReader = new FileReader();
+            fileReader.onload = async (event: ProgressEvent<FileReader>) => {
+                const content = event?.target?.result as string;
+                try {
+                    const parsedData = JSON.parse(content) as T;
+                    await loadCallBack(parsedData);
+                    resolve(parsedData);
+                } catch (e) {
+                    reject(e);
+                }
+            };
+            fileReader.onerror = reject;
+            fileReader.readAsText(file);
+        });
     }
 
     function downloadFile(filename: string, content: string, type: string) {

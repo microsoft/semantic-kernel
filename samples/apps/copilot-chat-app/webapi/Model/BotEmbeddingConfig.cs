@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using SemanticKernel.Service.Config;
 
 namespace SemanticKernel.Service.Model;
@@ -14,6 +15,7 @@ public class BotEmbeddingConfig
     /// The AI service.
     /// </summary>
     [Required]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public AIServiceOptions.AIServiceType AIService { get; set; } = AIServiceOptions.AIServiceType.AzureOpenAI;
 
     /// <summary>
