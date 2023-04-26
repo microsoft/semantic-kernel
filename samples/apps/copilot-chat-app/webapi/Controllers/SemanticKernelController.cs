@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Authorization;
@@ -7,8 +7,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
