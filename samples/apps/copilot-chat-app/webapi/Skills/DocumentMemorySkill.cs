@@ -3,88 +3,33 @@
 using System.Globalization;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
+using SemanticKernel.Service.Config;
 
 namespace SemanticKernel.Service.Skills;
 
 /// <summary>
-/// This skill provides the ability to parse a file into embeddings and query the document memory.
+/// This skill provides the functions to query the document memory.
 /// </summary>
 public class DocumentMemorySkill
 {
-    /// <summary>
-    /// Returns the name of the semantic document memory collection that stores document semantic memory.
-    /// </summary>
-    /// <param name="userId">ID of the user who owns the documents.</param>
-    internal string UserDocumentMemoryCollectionName(string userId) => $"{userId}-documents";
-
-    /// <summary>
-    /// Name of the semantic document memory collection that stores document semantic memory globally
-    /// available to users accessing the service.
-    /// </summary>
-    internal string GlobalDocumentMemoryCollectionName = "global-documents";
-
     /// <summary>
     /// Prompt settings.
     /// </summary>
     private readonly PromptSettings _promptSettings;
 
     /// <summary>
-    /// Create a new instance of DocumentMemorySkill.
+    /// Configuration settings for importing documents to memory.
     /// </summary>
-    public DocumentMemorySkill(PromptSettings promptSettings)
-    {
-        this._promptSettings = promptSettings;
-    }
+    private readonly DocumentMemoryOptions _documentImportConfig;
 
     /// <summary>
-    /// Parse a local file into embeddings.
+    /// Create a new instance of DocumentMemorySkill.
     /// </summary>
-    /// <param name="localFile">Path to the local file including the file name.</param>
-    /// <param name="context">Contains the 'audience' indicating the name of the user.</param>
-    [SKFunction("Parse a local file on disk into embeddings and save the embeddings to the document memory for querying.")]
-    [SKFunctionName("ParseLocalFile")]
-    [SKFunctionInput(Description = "Path to the local file including the file name.")]
-    [SKFunctionContextParameter(
-        Name = "userId",
-        Description = "ID of the user who owns the documents. This is used to create a unique collection name for the user." +
-                      "If the user ID is not specified or empty, the documents will be stored in a global collection.",
-        DefaultValue = "")]
-    public async Task ParseLocalFileAsync(string localFile, SKContext context)
+    public DocumentMemorySkill(PromptSettings promptSettings, DocumentMemoryOptions documentImportConfig)
     {
-        string collection = context.Variables.ContainsKey("userID")
-            ? string.IsNullOrEmpty(context.Variables["userID"])
-                ? this.GlobalDocumentMemoryCollectionName
-                : this.UserDocumentMemoryCollectionName(context.Variables["userID"])
-            : this.GlobalDocumentMemoryCollectionName;
-
-        string text = string.Empty;
-        try
-        {
-            text = await File.ReadAllTextAsync(localFile, context.CancellationToken);
-        }
-        catch (Exception ex) when (!ex.IsCriticalException())
-        {
-            context.Log.LogError("Unable to read local file: {0}", ex.Message);
-            context.Fail($"Unable to read local file: {ex.Message}", ex);
-            return;
-        }
-
-        var lines = SemanticTextPartitioner.SplitPlainTextLines(
-            text, this._promptSettings.DocumentLineSplitMaxTokens);
-        var paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(
-            lines, this._promptSettings.DocumentParagraphSplitMaxLines);
-        foreach (var paragraph in paragraphs)
-        {
-            await context.Memory.SaveInformationAsync(
-                collection: collection,
-                text: paragraph,
-                id: Guid.NewGuid().ToString(),
-                description: $"Document: {localFile}");
-        }
-
-        context.Log.LogInformation("Parsed {0} paragraphs from local file {1}", paragraphs.Count, localFile);
+        this._promptSettings = promptSettings;
+        this._documentImportConfig = documentImportConfig;
     }
 
     /// <summary>
@@ -111,8 +56,8 @@ public class DocumentMemorySkill
         // Search for relevant document snippets.
         string[] documentCollections = new string[]
         {
-            this.UserDocumentMemoryCollectionName(userId),
-            this.GlobalDocumentMemoryCollectionName
+            this._documentImportConfig.UserDocumentCollectionNamePrefix + userId,
+            this._documentImportConfig.GlobalDocumentCollectionName
         };
 
         List<MemoryQueryResult> relevantMemories = new List<MemoryQueryResult>();

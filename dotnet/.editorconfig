@@ -1,4 +1,4 @@
 # Setting errors for SDK projects under dotnet folder
 [*.cs]
 dotnet_diagnostic.CA2007.severity = error # Do not directly await a Task
-dotnet_diagnostic.VSTHRD111.severity = error # Use .ConfigureAwait(bool) is hidden by default, set to none to prevent IDE from changing on autosave
+dotnet_diagnostic.VSTHRD111.severity = error # Use .ConfigureAwait(bool)

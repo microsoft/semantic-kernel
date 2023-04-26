@@ -3,7 +3,7 @@
 import asyncio
 
 import semantic_kernel as sk
-import semantic_kernel.ai.open_ai as sk_oai
+import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -17,7 +17,7 @@ flowery prose.
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.config.add_chat_backend(
+kernel.config.add_chat_service(
     "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
 )
 
