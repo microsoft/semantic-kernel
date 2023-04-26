@@ -358,6 +358,7 @@ public sealed class Kernel : IKernel, IDisposable
                 result.Add(function.Name, function);
             }
         }
+
         log.LogTrace("Methods imported {0}", result.Count);
 
         return result;
