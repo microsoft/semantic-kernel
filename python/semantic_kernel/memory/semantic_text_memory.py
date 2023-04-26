@@ -28,10 +28,15 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         id: str,
         description: Optional[str] = None,
     ) -> None:
-        embedding = await self._embeddings_generator.generate_embeddings_async([text])
-        data = MemoryRecord.local_record(id, text, description, embedding)
+        
+        #TODO: not the best place to create collection, but will address this behavior together with .NET SK
+        if not await self._storage.does_collection_exist_async(collection_name=collection):
+            await self._storage.create_collection_async(collection_name=collection)
 
-        await self._storage.put_value_async(collection, id, data)
+        embedding = await self._embeddings_generator.generate_embeddings_async([text])
+        data = MemoryRecord.local_record(id=id, text=text, description=description, embedding=embedding)
+
+        await self._storage.upsert_async(collection_name=collection, record=data)
 
     async def save_reference_async(
         self,
@@ -41,19 +46,25 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         external_source_name: str,
         description: Optional[str] = None,
     ) -> None:
+        
+        #TODO: not the best place to create collection, but will address this behavior together with .NET SK
+        if not await self._storage.does_collection_exist_async(collection_name=collection):
+            await self._storage.create_collection_async(collection_name=collection)
+
         embedding = await self._embeddings_generator.generate_embeddings_async([text])
         data = MemoryRecord.reference_record(
-            external_id, external_source_name, description, embedding
+            id=external_id, source_name=external_source_name, description=description, embedding=embedding
         )
 
-        await self._storage.put_value_async(collection, external_id, data)
+        await self._storage.upsert_async(collection_name=collection, record=data)
 
     async def get_async(
         self,
         collection: str,
-        query: str,
+        key: str,
     ) -> Optional[MemoryQueryResult]:
-        raise NotImplementedError()
+        record = await self._storage.get_async(collection_name=collection, key=key)
+        return MemoryQueryResult.from_memory_record(record) if record else None
 
     async def search_async(
         self,
@@ -61,15 +72,20 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         query: str,
         limit: int = 1,
         min_relevance_score: float = 0.7,
+        with_embeddings: bool = False,
     ) -> List[MemoryQueryResult]:
         query_embedding = await self._embeddings_generator.generate_embeddings_async(
             [query]
         )
         results = await self._storage.get_nearest_matches_async(
-            collection, query_embedding, limit, min_relevance_score
+            collection_name=collection,
+            embedding=query_embedding, 
+            limit=limit, 
+            min_relevance_score=min_relevance_score,
+            with_embeddings=with_embeddings
         )
 
         return [MemoryQueryResult.from_memory_record(r[0], r[1]) for r in results]
 
     async def get_collections_async(self) -> List[str]:
-        raise NotImplementedError()
+        return await self._storage.get_collections_async()

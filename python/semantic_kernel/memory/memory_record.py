@@ -6,11 +6,13 @@ from numpy import ndarray
 
 
 class MemoryRecord:
-    is_reference: bool
-    external_source_name: Optional[str]
-    id: str
-    description: Optional[str]
-    text: Optional[str]
+    _key: str
+    _timestamp: str
+    _is_reference: bool
+    _external_source_name: Optional[str]
+    _id: str
+    _description: Optional[str]
+    _text: Optional[str]
     _embedding: ndarray
 
     def __init__(
@@ -21,17 +23,21 @@ class MemoryRecord:
         description: Optional[str],
         text: Optional[str],
         embedding: ndarray,
+        key: Optional[str] = None,
+        timestamp: Optional[str] = None,
     ) -> None:
-        self.is_reference = is_reference
-        self.external_source_name = external_source_name
-        self.id = id
-        self.description = description
-        self.text = text
+        self._key = key
+        self._timestamp = timestamp
+        self._is_reference = is_reference
+        self._external_source_name = external_source_name
+        self._id = id
+        self._description = description
+        self._text = text
         self._embedding = embedding
 
     @property
     def embedding(self) -> ndarray:
-        return self._embedding
+        return self.embedding
 
     @staticmethod
     def reference_record(
