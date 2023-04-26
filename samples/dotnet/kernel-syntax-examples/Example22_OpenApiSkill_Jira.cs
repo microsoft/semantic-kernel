@@ -22,8 +22,8 @@ public static class Example22_OpenApiSkill_Jira
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         var contextVariables = new ContextVariables();
 
-        // Change <jiraProject> to a jira-project you have access to with your authentication credentials
-        string serverUrl = "https://<jira-project>.atlassian.net/rest/api/latest/";
+        // Change <your-domain> to a jira instance you have access to with your authentication credentials
+        string serverUrl = "https://<your-domain>.atlassian.net/rest/api/latest/";
         contextVariables.Set("server-url", serverUrl);
 
         IDictionary<string, ISKFunction> jiraSkills;
