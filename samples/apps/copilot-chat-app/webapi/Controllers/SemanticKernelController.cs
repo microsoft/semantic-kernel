@@ -62,7 +62,7 @@ public class SemanticKernelController : ControllerBase
         [FromServices] ChatMessageRepository chatMessageRepository,
         [FromServices] IOptions<DocumentMemoryOptions> documentMemoryOptions,
         [FromServices] PlannerFactoryAsync plannerFactory,
-        [FromServices] IOptions<PlannerOptions> plannerOptions,
+        [FromServices] IOptions<SequentialPlannerOptions> plannerOptions,
         [FromBody] Ask ask,
         string skillName, string functionName)
     {

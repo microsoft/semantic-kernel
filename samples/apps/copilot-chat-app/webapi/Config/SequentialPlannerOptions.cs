@@ -8,7 +8,7 @@ namespace SemanticKernel.Service.Config;
 /// <summary>
 /// Configuration options for the planner.
 /// </summary>
-public class PlannerOptions
+public class SequentialPlannerOptions
 {
     public const string PropertyName = "Planner";
 
@@ -56,7 +56,7 @@ public class PlannerOptions
     /// <summary>
     /// Convert to a <see cref="SequentialPlannerConfig"/> instance.
     /// </summary>
-    public SequentialPlannerConfig ToPlannerConfig()
+    public SequentialPlannerConfig ToSequentialPlannerConfig()
     {
         SequentialPlannerConfig config = new()
         {

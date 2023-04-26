@@ -53,7 +53,7 @@ public class ChatSkill
     /// <summary>
     /// Options for the planner.
     /// </summary>
-    private readonly PlannerOptions _plannerOptions;
+    private readonly SequentialPlannerOptions _plannerOptions;
 
     /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
@@ -64,7 +64,7 @@ public class ChatSkill
         ChatSessionRepository chatSessionRepository,
         PromptSettings promptSettings,
         PlannerFactoryAsync plannerFactory,
-        PlannerOptions plannerOptions,
+        SequentialPlannerOptions plannerOptions,
         ILogger logger)
     {
         this._logger = logger;

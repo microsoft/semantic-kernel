@@ -58,8 +58,8 @@ internal static class ServicesExtensions
             .ValidateDataAnnotations().ValidateOnStart();
 
         // Planner options
-        services.AddOptions<PlannerOptions>()
-            .Bind(configuration.GetSection(PlannerOptions.PropertyName))
+        services.AddOptions<SequentialPlannerOptions>()
+            .Bind(configuration.GetSection(SequentialPlannerOptions.PropertyName))
             .ValidateDataAnnotations().ValidateOnStart();
 
         return services;

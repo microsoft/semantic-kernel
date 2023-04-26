@@ -90,7 +90,7 @@ internal static class SemanticKernelExtensions
     {
         // TODO Replace sequential planner with a custom CopilotChat planner tuned to chat scenarios.
 
-        services.AddSingleton<SequentialPlannerConfig>(sp => sp.GetRequiredService<IOptions<PlannerOptions>>().Value.ToPlannerConfig());
+        services.AddSingleton<SequentialPlannerConfig>(sp => sp.GetRequiredService<IOptions<SequentialPlannerOptions>>().Value.ToSequentialPlannerConfig());
         services.AddScoped<PlannerFactoryAsync>(sp => async (IKernel kernel) =>
         {
             // Create a kernel for the planner with the same contexts as the chat's kernel but with only skills we want available to the planner.
@@ -104,13 +104,13 @@ internal static class SemanticKernelExtensions
             plannerKernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TimeSkill(), "time");
             plannerKernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.MathSkill(), "math");
 
-            PlannerOptions plannerOptions = sp.GetRequiredService<IOptions<PlannerOptions>>().Value;
+            SequentialPlannerOptions plannerOptions = sp.GetRequiredService<IOptions<SequentialPlannerOptions>>().Value;
             if (!string.IsNullOrWhiteSpace(plannerOptions.SemanticSkillsDirectory))
             {
                 plannerKernel.RegisterSemanticSkills(plannerOptions.SemanticSkillsDirectory, sp.GetRequiredService<ILogger>());
             }
 
-            return new SequentialPlanner(plannerKernel, plannerOptions.ToPlannerConfig());
+            return new SequentialPlanner(plannerKernel, plannerOptions.ToSequentialPlannerConfig());
         });
 
         return services;
