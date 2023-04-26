@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning.Planners;
+using Microsoft.SemanticKernel.Planning;
 
 namespace KernelHttpServer;
 
