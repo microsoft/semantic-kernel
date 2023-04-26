@@ -161,6 +161,40 @@ public sealed class PlanTests : IDisposable
     [InlineData(null, "Write a poem or joke and send it in an e-mail to Kai.", null)]
     [InlineData("", "Write a poem or joke and send it in an e-mail to Kai.", "")]
     [InlineData("Hello World!", "Write a poem or joke and send it in an e-mail to Kai.", "some_email@email.com")]
+    public async Task CanExecuteRunPlanSimpleManualStateNoVariableAsync(string input, string goal, string email)
+    {
+        // Arrange
+        IKernel target = this.InitializeKernel();
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
+
+        // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
+        var cv = new ContextVariables();
+        cv.Set("email_address", string.Empty);
+        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        {
+            NamedParameters = cv,
+        };
+
+        var plan = new Plan(goal);
+        plan.AddSteps(sendEmailPlan);
+        plan.State.Set("email_address", email); // manually prepare the state
+
+        // Act
+        var result = await target.StepAsync(input, plan);
+
+        // Assert
+        var expectedBody = string.IsNullOrEmpty(input) ? goal : input;
+        Assert.Single(result.Steps);
+        Assert.Equal(1, result.NextStepIndex);
+        Assert.False(result.HasNextStep);
+        Assert.Equal(goal, plan.Description);
+        Assert.Equal($"Sent email to: {email}. Body: {expectedBody}".Trim(), plan.State.ToString());
+    }
+
+    [Theory]
+    [InlineData(null, "Write a poem or joke and send it in an e-mail to Kai.", null)]
+    [InlineData("", "Write a poem or joke and send it in an e-mail to Kai.", "")]
+    [InlineData("Hello World!", "Write a poem or joke and send it in an e-mail to Kai.", "some_email@email.com")]
     public async Task CanExecuteRunPlanManualStateAsync(string input, string goal, string email)
     {
         // Arrange
@@ -308,6 +342,63 @@ public sealed class PlanTests : IDisposable
 
         // Act
         var result = await target.RunAsync(inputToSummarize, plan);
+
+        // Assert
+        Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.True(expectedBody.Length < result.Result.Length);
+    }
+
+    [Theory]
+    [InlineData("Summarize an input, translate to french, and e-mail to Kai", "This is a story about a dog.", "French", "Kai", "Kai@example.com")]
+    public async Task CanExecuteRunSequentialOnDeserializedPlanAsync(string goal, string inputToSummarize, string inputLanguage, string inputName,
+        string expectedEmail)
+    {
+        // Arrange
+        IKernel target = this.InitializeKernel();
+        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
+
+        var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
+
+        var summarizePlan = new Plan(summarizeSkill["Summarize"]);
+
+        var cv = new ContextVariables();
+        cv.Set("language", inputLanguage);
+        var outputs = new ContextVariables();
+        outputs.Set("TRANSLATED_SUMMARY", string.Empty);
+
+        var translatePlan = new Plan(writerSkill["Translate"])
+        {
+            NamedParameters = cv,
+            NamedOutputs = outputs,
+        };
+
+        cv = new ContextVariables();
+        cv.Update(inputName);
+        outputs = new ContextVariables();
+        outputs.Set("TheEmailFromState", string.Empty);
+        var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
+        {
+            NamedParameters = cv,
+            NamedOutputs = outputs,
+        };
+
+        cv = new ContextVariables();
+        cv.Set("email_address", "$TheEmailFromState");
+        cv.Set("input", "$TRANSLATED_SUMMARY");
+        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        {
+            NamedParameters = cv
+        };
+
+        var plan = new Plan(goal);
+        plan.AddSteps(summarizePlan, translatePlan, getEmailPlan, sendEmailPlan);
+
+        // Act
+        var serializedPlan = plan.ToJson();
+        var deserializedPlan = Plan.FromJson(serializedPlan, target.CreateNewContext());
+        var result = await target.RunAsync(inputToSummarize, deserializedPlan);
 
         // Assert
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
