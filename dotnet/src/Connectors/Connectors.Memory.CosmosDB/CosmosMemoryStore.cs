@@ -397,7 +397,7 @@ public class CosmosMemoryStore : IMemoryStore
             limit: 1,
             minRelevanceScore: minRelevanceScore,
             withEmbeddings: withEmbedding,
-            cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
+            cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel).ConfigureAwait(false);
     }
 
     private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
