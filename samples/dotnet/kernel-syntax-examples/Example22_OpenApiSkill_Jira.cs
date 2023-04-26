@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RepoUtils;
 
-public static class Example22_b_OpenApiSkill_Jira
+public static class Example22_OpenApiSkill_Jira
 {
     public static async Task RunAsync()
     {

@@ -71,10 +71,10 @@ public static class Program
         await Example21_ChatGptPlugins.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example22_a_OpenApiSkill_AzureKeyVault.RunAsync();
+        await Example22_OpenApiSkill_AzureKeyVault.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example22_b_OpenApiSkill_Jira.RunAsync();
+        await Example22_OpenApiSkill_Jira.RunAsync();
         Console.WriteLine("== DONE ==");
 
         await Example23_ReadOnlyMemoryStore.RunAsync();
