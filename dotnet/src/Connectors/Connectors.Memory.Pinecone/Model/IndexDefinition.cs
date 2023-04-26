@@ -16,7 +16,6 @@ public class IndexDefinition
     /// </summary>
     /// <value>The unique name of an index.</value>
     [JsonPropertyName("name")]
-    [JsonRequired]
     public string Name { get; set; }
 
     /// <summary>
@@ -36,7 +35,6 @@ public class IndexDefinition
     /// </summary>
     /// <value>The number of dimensions in the vector representation</value>
     [JsonPropertyName("dimension")]
-    [JsonRequired]
     public int Dimension { get; set; }
 
     /// <summary>

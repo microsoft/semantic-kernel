@@ -15,7 +15,6 @@ public class SparseVectorData
     /// </summary>
     /// <value>The indices of the sparse data.</value>
     [JsonPropertyName("indices")]
-    [JsonRequired]
     public IEnumerable<long> Indices { get; set; }
 
     /// <summary>
@@ -23,7 +22,6 @@ public class SparseVectorData
     /// </summary>
     /// <value>The corresponding values of the sparse data, which must be the same length as the indices.</value>
     [JsonPropertyName("values")]
-    [JsonRequired]
     public IEnumerable<float> Values { get; set; }
 
     /// <summary>

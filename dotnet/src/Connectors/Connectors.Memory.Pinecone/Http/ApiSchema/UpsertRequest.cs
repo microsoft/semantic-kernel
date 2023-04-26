@@ -11,7 +11,6 @@ internal class UpsertRequest
 {
 
     [JsonPropertyName("vectors")]
-    [JsonRequired]
     public List<PineconeDocument> Vectors { get; set; }
 
     /// <summary>

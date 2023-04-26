@@ -26,7 +26,6 @@ internal class QueryRequest
     /// </summary>
     /// <value>The number of results to return for each query.</value>
     [JsonPropertyName("topK")]
-    [JsonRequired]
     public long TopK { get; set; }
 
     /// <summary>
