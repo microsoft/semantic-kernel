@@ -49,9 +49,9 @@ public class SequentialPlanner
 
         var planResult = await this._functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
 
-        string fullPlan = $"<{SequentialPlanParser.GoalTag}>\n{goal}\n</{SequentialPlanParser.GoalTag}>\n{planResult.Result.Trim()}";
+        string planResultString = planResult.Result.Trim();
 
-        var plan = fullPlan.ToPlanFromXml(this._context);
+        var plan = planResultString.ToPlanFromXml(goal, this._context);
 
         return plan;
     }
