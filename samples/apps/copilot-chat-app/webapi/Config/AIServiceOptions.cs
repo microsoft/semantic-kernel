@@ -40,7 +40,6 @@ public sealed class AIServiceOptions
     /// (Azure OpenAI only) Azure OpenAI endpoint.
     /// </summary>
     [RequiredOnPropertyValue(nameof(AIService), AIServiceType.AzureOpenAI)]
-    [NotEmptyOrWhitespace]
     public string Endpoint { get; set; } = string.Empty;
 
     /// <summary>
