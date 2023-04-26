@@ -5,14 +5,14 @@ import asyncio
 from utils import e2e_summarization
 
 import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
+import semantic_kernel.ai.open_ai as sk_oai
 
 kernel = sk.Kernel()
 
 # Load credentials from .env file
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.config.add_chat_service(
+kernel.config.add_chat_backend(
     "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
 )
 

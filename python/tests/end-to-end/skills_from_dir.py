@@ -4,7 +4,7 @@ import asyncio
 import os
 
 import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
+import semantic_kernel.ai.open_ai as sk_oai
 
 kernel = sk.Kernel()
 
@@ -15,12 +15,12 @@ service_id = model
 # Configure AI service used by the kernel
 if useAzureOpenAI:
     api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-    kernel.config.add_text_service(
+    kernel.config.add_text_backend(
         service_id, sk_oai.AzureTextCompletion(model, api_key, endpoint)
     )
 else:
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.config.add_text_service(
+    kernel.config.add_text_backend(
         service_id, sk_oai.OpenAITextCompletion(model, api_key, org_id)
     )
 

@@ -5,14 +5,14 @@ import asyncio
 from utils import e2e_summarization
 
 import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
+import semantic_kernel.ai.open_ai as sk_oai
 
 kernel = sk.Kernel()
 
 # Load credentials from .env file
 deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
-kernel.config.add_chat_service(
+kernel.config.add_chat_backend(
     "chat-gpt", sk_oai.AzureChatCompletion("gpt-35-turbo", endpoint, api_key)
 )
 
