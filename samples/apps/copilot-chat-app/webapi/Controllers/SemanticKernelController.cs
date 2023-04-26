@@ -110,10 +110,12 @@ public class SemanticKernelController : ControllerBase
     }
     private async Task RegisterOpenApiSkills(PluginAuthHeaders pluginAuthHeaders, Kernel kernel)
     {
+        // If the caller includes an auth header for an OpenAPI skill, register the skill with the kernel
+        // Else, don't register the skill as it'll fail on auth
         if (pluginAuthHeaders.GithubAuthentication != null)
         {
             var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(pluginAuthHeaders.GithubAuthentication); });
-            this._logger.LogInformation("Registering GitHub Skill, token {0}", pluginAuthHeaders.GithubAuthentication);
+            this._logger.LogInformation("Registering GitHub Skill");
 
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"Skills\GitHubOpenApiSkill\openapi.json");
             var skill = await kernel.ImportOpenApiSkillFromFileAsync("GitHubSkill", filePath, authenticationProvider.AuthenticateRequestAsync);
