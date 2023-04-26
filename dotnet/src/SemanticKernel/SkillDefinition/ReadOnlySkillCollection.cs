@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// <summary>
 /// Access the collection in read-only mode, e.g. allow templates to search and execute functions.
 /// </summary>
-internal class ReadOnlySkillCollection : IReadOnlySkillCollection
+internal sealed class ReadOnlySkillCollection : IReadOnlySkillCollection
 {
     private readonly ISkillCollection _skillCollection;
 
