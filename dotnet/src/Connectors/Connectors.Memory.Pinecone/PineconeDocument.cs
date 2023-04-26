@@ -53,7 +53,7 @@ public class PineconeDocument
     ///  The text of the document, if the document was created from text.
     /// </summary>
     [JsonIgnore]
-    public string? Text => this.Metadata?["text"].ToString();
+    public string? Text => this.Metadata?.TryGetValue("text", out var text) == true ? text.ToString() : null;
 
     /// <summary>
     /// The document ID, used to identify the source text this document was created from
@@ -64,7 +64,7 @@ public class PineconeDocument
     ///  to identify the document itself.
     /// </remarks>
     [JsonIgnore]
-    public string? DocumentId => this.Metadata?["document_Id"].ToString();
+    public string? DocumentId => this.Metadata?.TryGetValue("document_Id", out var docId) == true ? docId.ToString() : null;
 
     /// <summary>
     ///  The source ID, used to identify the source text this document was created from.
@@ -74,10 +74,10 @@ public class PineconeDocument
     ///  may be Medium, Twitter, etc. while the source ID would be the ID of the Medium post, Twitter tweet, etc.
     /// </remarks>
     [JsonIgnore]
-    public string? SourceId => this.Metadata?["source_Id"].ToString();
+    public string? SourceId => this.Metadata?.TryGetValue("source_Id", out var sourceId) == true ? sourceId.ToString() : null;
 
     [JsonIgnore]
-    public string? CreatedAt => this.Metadata?["created_at"].ToString();
+    public string? CreatedAt => this.Metadata?.TryGetValue("created_at", out var createdAt) == true ? createdAt.ToString() : null;
 
     public static PineconeDocument Create(string? id = default, IEnumerable<float>? values = default)
     {
