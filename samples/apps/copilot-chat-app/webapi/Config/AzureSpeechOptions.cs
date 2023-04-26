@@ -14,12 +14,10 @@ public sealed class AzureSpeechOptions
     /// <summary>
     /// Location of the Azure speech service to use (e.g. "South Central US")
     /// </summary>
-    [Required, NotEmptyOrWhitespace]
     public string? Region { get; set; } = string.Empty;
 
     /// <summary>
     /// Key to access the Azure speech service.
     /// </summary>
-    [Required, NotEmptyOrWhitespace]
-    public string Key { get; set; } = string.Empty;
+    public string? Key { get; set; } = string.Empty;
 }
