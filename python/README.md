@@ -27,13 +27,16 @@ AZURE_OPENAI_API_KEY=""
 
 ```python
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import OpenAITextCompletion, AzureTextCompletion
+from semantic_kernel.ai.open_ai import OpenAITextCompletion, AzureTextCompletion
 
 kernel = sk.Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
 api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.config.add_text_backend("dv", OpenAITextCompletion("text-davinci-003", api_key, org_id))
+
+# `org_id` is not required
+# kernel.config.add_text_backend("dv", OpenAITextCompletion("text-davinci-003", api_key))
 
 # Alternative using Azure:
 # deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
