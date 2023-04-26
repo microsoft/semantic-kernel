@@ -75,6 +75,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.MetaPackage"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImportDocument", "..\samples\apps\copilot-chat-app\importdocument\ImportDocument.csproj", "{94E14913-D600-4448-A5C5-A268C23B2C3B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Memory.Pinecone", "src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj", "{0E8DD96A-8F9B-48CD-9FFD-8E8D7DD00F70}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -177,6 +179,10 @@ Global
 		{94E14913-D600-4448-A5C5-A268C23B2C3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94E14913-D600-4448-A5C5-A268C23B2C3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94E14913-D600-4448-A5C5-A268C23B2C3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E8DD96A-8F9B-48CD-9FFD-8E8D7DD00F70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E8DD96A-8F9B-48CD-9FFD-8E8D7DD00F70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E8DD96A-8F9B-48CD-9FFD-8E8D7DD00F70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E8DD96A-8F9B-48CD-9FFD-8E8D7DD00F70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -209,6 +215,7 @@ Global
 		{627742DB-1E52-468A-99BD-6FF1A542D25B} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{E3299033-EB81-4C4C-BCD9-E8DC40937969} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{94E14913-D600-4448-A5C5-A268C23B2C3B} = {FA3720F1-C99A-49B2-9577-A940257098BF}
+		{0E8DD96A-8F9B-48CD-9FFD-8E8D7DD00F70} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
