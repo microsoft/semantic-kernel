@@ -22,7 +22,8 @@ public static class Example22_b_OpenApiSkill_Jira
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         var contextVariables = new ContextVariables();
 
-        string serverUrl = "https://<jiraProject>.atlassian.net/rest/api/latest/";
+        // Change <jiraProject> to a jira-project you have access to with your authentication credentials
+        string serverUrl = "https://<jira-project>.atlassian.net/rest/api/latest/";
         contextVariables.Set("server-url", serverUrl);
 
         IDictionary<string, ISKFunction> jiraSkills;
@@ -33,8 +34,8 @@ public static class Example22_b_OpenApiSkill_Jira
         });
 
         // The bool bUseLocalFile can be used to toggle the ingestion method for the openapi schema between a file path and a URL
-        bool bUseLocalFile = true;
-        if (bUseLocalFile)
+        bool useLocalFile = true;
+        if (useLocalFile)
         {
             var apiSkillFile = "./../../../Skills/JiraSkill/openapi.json";
             jiraSkills = await kernel.ImportOpenApiSkillFromFileAsync("jiraSkills", apiSkillFile, tokenProvider.AuthenticateRequestAsync);
