@@ -2,8 +2,6 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.KernelExtensions;
-using Microsoft.SemanticKernel.Planning.Planners;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Skills;

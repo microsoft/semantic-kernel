@@ -8,7 +8,8 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planning.Planners;
+using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -89,7 +90,7 @@ internal static class SemanticKernelExtensions
     {
         // TODO Replace sequential planner with a custom CopilotChat planner tuned to chat scenarios.
 
-        services.AddSingleton<PlannerConfig>(sp => sp.GetRequiredService<IOptions<PlannerOptions>>().Value.ToPlannerConfig());
+        services.AddSingleton<SequentialPlannerConfig>(sp => sp.GetRequiredService<IOptions<PlannerOptions>>().Value.ToPlannerConfig());
         services.AddScoped<PlannerFactoryAsync>(sp => async (IKernel kernel) =>
         {
             // Create a kernel for the planner with the same contexts as the chat's kernel but with only skills we want available to the planner.

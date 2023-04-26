@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning.Planners;
+using Microsoft.SemanticKernel.Planning;
 
 namespace SemanticKernel.Service.Skills;
 

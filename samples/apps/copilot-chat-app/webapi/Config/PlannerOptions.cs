@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel.DataAnnotations;
-using Microsoft.SemanticKernel.Planning.Planners;
+using Microsoft.SemanticKernel.Planning.Sequential;
 
 namespace SemanticKernel.Service.Config;
 
@@ -54,11 +54,11 @@ public class PlannerOptions
     public int MaxTokens { get; set; } = 1024;
 
     /// <summary>
-    /// Convert to a <see cref="PlannerConfig"/> instance.
+    /// Convert to a <see cref="SequentialPlannerConfig"/> instance.
     /// </summary>
-    public PlannerConfig ToPlannerConfig()
+    public SequentialPlannerConfig ToPlannerConfig()
     {
-        PlannerConfig config = new()
+        SequentialPlannerConfig config = new()
         {
             RelevancyThreshold = RelevancyThreshold,
             MaxRelevantFunctions = MaxRelevantFunctions,
