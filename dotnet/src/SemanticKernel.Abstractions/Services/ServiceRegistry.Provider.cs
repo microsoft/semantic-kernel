@@ -16,7 +16,7 @@ public partial class ServiceRegistry : INamedServiceProvider
     {
         // Return the service, casting or invoking the factory if needed
         var factory = this.GetServiceFactory<T>(name);
-        if (factory != null)
+        if (factory is Func<INamedServiceProvider, T>)
         {
             return factory.Invoke(this);
         }
@@ -125,7 +125,8 @@ public partial class ServiceRegistry : INamedServiceProvider
                 namedServices.TryGetValue(name, out service);
             }
 
-            return service as Func<INamedServiceProvider, T>;
+            var foo =  service as Func<INamedServiceProvider, T>;
+            return foo;
         }
 
         return null;

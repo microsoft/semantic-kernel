@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
 /// <summary>
 /// HuggingFace text completion service.
 /// </summary>
-public sealed class HuggingFaceTextCompletion : ITextCompletionService, IDisposable
+public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
 {
     private const string HttpUserAgent = "Microsoft Semantic Kernel";
     private const string HuggingFaceApiEndpoint = "https://api-inference.huggingface.co/models";

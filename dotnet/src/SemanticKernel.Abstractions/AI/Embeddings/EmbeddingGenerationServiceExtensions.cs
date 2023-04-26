@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 namespace Microsoft.SemanticKernel.AI.Embeddings;
 
 /// <summary>
-/// Provides a collection of static methods for operating on <see cref="IEmbeddingGenerationService{TValue,TEmbedding}"/> objects.
+/// Provides a collection of static methods for operating on <see cref="IEmbeddingGeneration{TValue,TEmbedding}"/> objects.
 /// </summary>
 public static class EmbeddingGenerationServiceExtensions
 {
@@ -22,7 +22,7 @@ public static class EmbeddingGenerationServiceExtensions
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of <see cref="Embedding{TEmbedding}"/> structs representing the input <paramref name="value"/>.</returns>
     public static async Task<Embedding<TEmbedding>> GenerateEmbeddingAsync<TValue, TEmbedding>
-        (this IEmbeddingGenerationService<TValue, TEmbedding> generator, TValue value, CancellationToken cancellationToken = default)
+        (this IEmbeddingGeneration<TValue, TEmbedding> generator, TValue value, CancellationToken cancellationToken = default)
         where TEmbedding : unmanaged
     {
         Verify.NotNull(generator, "Embeddings generator cannot be NULL");

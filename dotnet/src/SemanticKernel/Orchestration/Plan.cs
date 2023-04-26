@@ -336,7 +336,7 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletionService> serviceFactory)
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
         return this.Function is null
             ? throw new NotImplementedException()

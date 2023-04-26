@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 
-public class OpenAIImageGeneration : OpenAIClientBase, IImageGenerationService
+public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
     // 3P OpenAI REST API endpoint
     private const string OpenaiEndpoint = "https://api.openai.com/v1/images/generations";

@@ -24,7 +24,7 @@ public static class Example18_DallE
         // Add your image generation service
         kernel.Config.AddOpenAIImageGenerationService("dallE", Env.Var("OPENAI_API_KEY"));
 
-        IImageGenerationService dallE = kernel.GetService<IImageGenerationService>();
+        IImageGeneration dallE = kernel.GetService<IImageGeneration>();
 
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);

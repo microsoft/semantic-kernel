@@ -51,6 +51,7 @@ public sealed class KernelBuilder
         if (this._loggerFactory != null)
         {
             this._config.SetService<ILoggerFactory>(this._loggerFactory);
+            this._log = this._loggerFactory.CreateLogger<Kernel>();
         }
         else if (this._log != null)
         {
@@ -62,7 +63,7 @@ public sealed class KernelBuilder
             new PromptTemplateEngine(this._log),
             this._memory,
             this._config,
-            this._log
+            this._log ?? NullLogger<Kernel>.Instance
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -130,7 +131,7 @@ public sealed class KernelBuilder
     /// <param name="embeddingGenerator">Embedding generator to add.</param>
     /// <returns>Updated kernel builder including the memory storage and embedding generator.</returns>
     public KernelBuilder WithMemoryStorageAndTextEmbeddingGeneration(
-        IMemoryStore storage, ITextEmbeddingService embeddingGenerator)
+        IMemoryStore storage, ITextEmbeddingGeneration embeddingGenerator)
     {
         Verify.NotNull(storage, "The memory instance provided is NULL");
         Verify.NotNull(embeddingGenerator, "The embedding generator instance provided is NULL");

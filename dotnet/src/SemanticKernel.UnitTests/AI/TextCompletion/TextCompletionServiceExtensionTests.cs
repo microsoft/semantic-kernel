@@ -20,7 +20,7 @@ public class TextCompletionServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<ITextCompletionService>();
+        var instance = Mock.Of<ITextCompletion>();
 
         // Act
         services.AddTextCompletionService(serviceId, instance);
@@ -36,8 +36,8 @@ public class TextCompletionServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<ITextCompletionService>();
-        var factory = new Func<ITextCompletionService>(() => instance);
+        var instance = Mock.Of<ITextCompletion>();
+        var factory = new Func<ITextCompletion>(() => instance);
 
         // Act
         services.AddTextCompletionService(serviceId, factory);
@@ -53,8 +53,8 @@ public class TextCompletionServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<ITextCompletionService>();
-        var factory = new Func<INamedServiceProvider, ITextCompletionService>(sp => instance);
+        var instance = Mock.Of<ITextCompletion>();
+        var factory = new Func<INamedServiceProvider, ITextCompletion>(sp => instance);
 
         // Act
         services.AddTextCompletionService(serviceId, factory);
@@ -71,8 +71,8 @@ public class TextCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<ITextCompletionService>();
-        var instance2 = Mock.Of<ITextCompletionService>();
+        var instance1 = Mock.Of<ITextCompletion>();
+        var instance2 = Mock.Of<ITextCompletion>();
         services.AddTextCompletionService(serviceId1, instance1);
         services.AddTextCompletionService(serviceId2, instance2);
 
@@ -91,7 +91,7 @@ public class TextCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<ITextCompletionService>();
+        var instance1 = Mock.Of<ITextCompletion>();
         services.AddTextCompletionService(serviceId1, instance1);
 
         // Act - Assert
@@ -105,8 +105,8 @@ public class TextCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<ITextCompletionService>();
-        var instance2 = Mock.Of<ITextCompletionService>();
+        var instance1 = Mock.Of<ITextCompletion>();
+        var instance2 = Mock.Of<ITextCompletion>();
         services.AddTextCompletionService(serviceId1, instance1);
         services.AddTextCompletionService(serviceId2, instance2);
 
@@ -126,7 +126,7 @@ public class TextCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<ITextCompletionService>();
+        var instance1 = Mock.Of<ITextCompletion>();
         services.AddTextCompletionService(serviceId1, instance1);
 
         // Act
@@ -144,8 +144,8 @@ public class TextCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<ITextCompletionService>();
-        var instance2 = Mock.Of<ITextCompletionService>();
+        var instance1 = Mock.Of<ITextCompletion>();
+        var instance2 = Mock.Of<ITextCompletion>();
         services.AddTextCompletionService(serviceId1, instance1);
         services.AddTextCompletionService(serviceId2, instance2);
 
@@ -175,7 +175,7 @@ public class TextCompletionServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<ITextCompletionService>();
+        var instance = Mock.Of<ITextCompletion>();
         services.AddTextCompletionService(serviceId, instance);
 
         // Act
@@ -192,7 +192,7 @@ public class TextCompletionServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance = Mock.Of<ITextCompletionService>();
+        var instance = Mock.Of<ITextCompletion>();
         services.AddTextCompletionService(serviceId1, instance);
 
         // Act
@@ -208,7 +208,7 @@ public class TextCompletionServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<ITextCompletionService>();
+        var instance = Mock.Of<ITextCompletion>();
         services.AddTextCompletionService(serviceId, instance, setAsDefault: true);
 
         // Act

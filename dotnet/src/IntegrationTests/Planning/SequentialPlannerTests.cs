@@ -94,7 +94,7 @@ public sealed class SequentialPlannerTests : IDisposable
 
                 if (useEmbeddings)
                 {
-                    config.AddAzureTextEmbeddingService(
+                    config.AddAzureTextEmbeddingGenerationService(
                         serviceId: azureOpenAIEmbeddingsConfiguration.ServiceId,
                         deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                         endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,

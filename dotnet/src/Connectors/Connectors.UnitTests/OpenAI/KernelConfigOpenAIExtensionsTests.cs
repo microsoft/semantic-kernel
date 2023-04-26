@@ -16,7 +16,7 @@ public class KernelConfigOpenAIExtensionsTests
     {
         var target = new KernelConfig();
         target.AddAzureTextCompletionService("azure", "depl", "https://url", "key");
-        target.AddAzureTextEmbeddingService("azure", "depl2", "https://url", "key");
+        target.AddAzureTextEmbeddingGenerationService("azure", "depl2", "https://url", "key");
 
         Assert.Contains("azure", target.GetTextCompletionServiceIds());
         Assert.Contains("azure", target.GetTextEmbeddingServiceIds());
@@ -29,8 +29,8 @@ public class KernelConfigOpenAIExtensionsTests
         var target = new KernelConfig();
         target.AddAzureTextCompletionService("azure", "depl", "https://url", "key");
         target.AddOpenAITextCompletionService("oai", "model", "apikey");
-        target.AddAzureTextEmbeddingService("azure", "depl2", "https://url2", "key");
-        target.AddOpenAITextEmbeddingService("oai2", "model2", "apikey2");
+        target.AddAzureTextEmbeddingGenerationService("azure", "depl2", "https://url2", "key");
+        target.AddOpenAITextEmbeddingGenerationService("oai2", "model2", "apikey2");
 
         // Assert
         var completionServices = target.GetTextCompletionServiceIds();
@@ -57,10 +57,10 @@ public class KernelConfigOpenAIExtensionsTests
         target.AddAzureTextCompletionService("one", "dep", "https://localhost", "key");
         target.AddOpenAITextCompletionService("one", "model", "key");
         target.AddOpenAITextCompletionService("one", "model", "key");
-        target.AddAzureTextEmbeddingService("one", "dep", "https://localhost", "key");
-        target.AddAzureTextEmbeddingService("one", "dep", "https://localhost", "key");
-        target.AddOpenAITextEmbeddingService("one", "model", "key");
-        target.AddOpenAITextEmbeddingService("one", "model", "key");
+        target.AddAzureTextEmbeddingGenerationService("one", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("one", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("one", "model", "key");
+        target.AddOpenAITextEmbeddingGenerationService("one", "model", "key");
     }
 
     [Fact]
@@ -72,10 +72,10 @@ public class KernelConfigOpenAIExtensionsTests
         target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.AddOpenAITextCompletionService("3", "model", "key");
         target.AddOpenAITextCompletionService("4", "model", "key");
-        target.AddAzureTextEmbeddingService("5", "dep", "https://localhost", "key");
-        target.AddAzureTextEmbeddingService("6", "dep", "https://localhost", "key");
-        target.AddOpenAITextEmbeddingService("7", "model", "key");
-        target.AddOpenAITextEmbeddingService("8", "model", "key");
+        target.AddAzureTextEmbeddingGenerationService("5", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("6", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("7", "model", "key");
+        target.AddOpenAITextEmbeddingGenerationService("8", "model", "key");
 
         // Act
         target.RemoveAllTextCompletionServices();
@@ -95,10 +95,10 @@ public class KernelConfigOpenAIExtensionsTests
         target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.AddOpenAITextCompletionService("3", "model", "key");
         target.AddOpenAITextCompletionService("4", "model", "key");
-        target.AddAzureTextEmbeddingService("5", "dep", "https://localhost", "key");
-        target.AddAzureTextEmbeddingService("6", "dep", "https://localhost", "key");
-        target.AddOpenAITextEmbeddingService("7", "model", "key");
-        target.AddOpenAITextEmbeddingService("8", "model", "key");
+        target.AddAzureTextEmbeddingGenerationService("5", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("6", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("7", "model", "key");
+        target.AddOpenAITextEmbeddingGenerationService("8", "model", "key");
 
         // Act
         target.RemoveAllTextCompletionServices();
@@ -117,10 +117,10 @@ public class KernelConfigOpenAIExtensionsTests
         target.AddAzureTextCompletionService("2", "dep", "https://localhost", "key");
         target.AddOpenAITextCompletionService("3", "model", "key");
         target.AddOpenAITextCompletionService("4", "model", "key");
-        target.AddAzureTextEmbeddingService("5", "dep", "https://localhost", "key");
-        target.AddAzureTextEmbeddingService("6", "dep", "https://localhost", "key");
-        target.AddOpenAITextEmbeddingService("7", "model", "key");
-        target.AddOpenAITextEmbeddingService("8", "model", "key");
+        target.AddAzureTextEmbeddingGenerationService("5", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("6", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("7", "model", "key");
+        target.AddOpenAITextEmbeddingGenerationService("8", "model", "key");
 
         // Act
         target.RemoveAllTextEmbeddingServices();
@@ -154,17 +154,17 @@ public class KernelConfigOpenAIExtensionsTests
     {
         // Arrange
         var target = new KernelConfig();
-        target.AddAzureTextEmbeddingService("1", "dep", "https://localhost", "key");
-        target.AddAzureTextEmbeddingService("2", "dep", "https://localhost", "key");
-        target.AddOpenAITextEmbeddingService("3", "model", "key");
-        Assert.Equal("1", target.GetDefaultTextCompletionServiceId());
+        target.AddAzureTextEmbeddingGenerationService("1", "dep", "https://localhost", "key");
+        target.AddAzureTextEmbeddingGenerationService("2", "dep", "https://localhost", "key");
+        target.AddOpenAITextEmbeddingGenerationService("3", "model", "key");
+        Assert.Equal("1", target.GetDefaultTextEmbeddingServiceId());
 
         // Act - Assert
         Assert.True(target.TryRemoveTextEmbeddingService("1"));
-        Assert.Equal("2", target.GetDefaultTextCompletionServiceId());
+        Assert.Equal("2", target.GetDefaultTextEmbeddingServiceId());
         Assert.True(target.TryRemoveTextEmbeddingService("2"));
-        Assert.Equal("3", target.GetDefaultTextCompletionServiceId());
+        Assert.Equal("3", target.GetDefaultTextEmbeddingServiceId());
         Assert.True(target.TryRemoveTextEmbeddingService("3"));
-        Assert.Null(target.GetDefaultTextCompletionServiceId());
+        Assert.Null(target.GetDefaultTextEmbeddingServiceId());
     }
 }

@@ -135,7 +135,7 @@ internal static class Example12_Planning
                         Env.Var("AZURE_OPENAI_ENDPOINT"),
                         Env.Var("AZURE_OPENAI_KEY"));
 
-                    config.AddAzureTextEmbeddingService(
+                    config.AddAzureTextEmbeddingGenerationService(
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_SERVICE_ID"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),

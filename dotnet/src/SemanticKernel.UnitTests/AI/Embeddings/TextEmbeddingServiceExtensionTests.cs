@@ -20,7 +20,7 @@ public class TextEmbeddingServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<ITextEmbeddingService>();
+        var instance = Mock.Of<ITextEmbeddingGeneration>();
 
         // Act
         services.AddTextEmbeddingService(serviceId, instance);
@@ -36,8 +36,8 @@ public class TextEmbeddingServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<ITextEmbeddingService>();
-        var factory = new Func<ITextEmbeddingService>(() => instance);
+        var instance = Mock.Of<ITextEmbeddingGeneration>();
+        var factory = new Func<ITextEmbeddingGeneration>(() => instance);
 
         // Act
         services.AddTextEmbeddingService(serviceId, factory);
@@ -53,8 +53,8 @@ public class TextEmbeddingServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<ITextEmbeddingService>();
-        var factory = new Func<INamedServiceProvider, ITextEmbeddingService>(sp => instance);
+        var instance = Mock.Of<ITextEmbeddingGeneration>();
+        var factory = new Func<INamedServiceProvider, ITextEmbeddingGeneration>(sp => instance);
 
         // Act
         services.AddTextEmbeddingService(serviceId, factory);
@@ -71,8 +71,8 @@ public class TextEmbeddingServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<ITextEmbeddingService>();
-        var instance2 = Mock.Of<ITextEmbeddingService>();
+        var instance1 = Mock.Of<ITextEmbeddingGeneration>();
+        var instance2 = Mock.Of<ITextEmbeddingGeneration>();
         services.AddTextEmbeddingService(serviceId1, instance1);
         services.AddTextEmbeddingService(serviceId2, instance2);
 
@@ -91,7 +91,7 @@ public class TextEmbeddingServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<ITextEmbeddingService>();
+        var instance1 = Mock.Of<ITextEmbeddingGeneration>();
         services.AddTextEmbeddingService(serviceId1, instance1);
 
         // Act - Assert
@@ -105,8 +105,8 @@ public class TextEmbeddingServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<ITextEmbeddingService>();
-        var instance2 = Mock.Of<ITextEmbeddingService>();
+        var instance1 = Mock.Of<ITextEmbeddingGeneration>();
+        var instance2 = Mock.Of<ITextEmbeddingGeneration>();
         services.AddTextEmbeddingService(serviceId1, instance1);
         services.AddTextEmbeddingService(serviceId2, instance2);
 
@@ -126,7 +126,7 @@ public class TextEmbeddingServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<ITextEmbeddingService>();
+        var instance1 = Mock.Of<ITextEmbeddingGeneration>();
         services.AddTextEmbeddingService(serviceId1, instance1);
 
         // Act
@@ -144,8 +144,8 @@ public class TextEmbeddingServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<ITextEmbeddingService>();
-        var instance2 = Mock.Of<ITextEmbeddingService>();
+        var instance1 = Mock.Of<ITextEmbeddingGeneration>();
+        var instance2 = Mock.Of<ITextEmbeddingGeneration>();
         services.AddTextEmbeddingService(serviceId1, instance1);
         services.AddTextEmbeddingService(serviceId2, instance2);
 
@@ -175,7 +175,7 @@ public class TextEmbeddingServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<ITextEmbeddingService>();
+        var instance = Mock.Of<ITextEmbeddingGeneration>();
         services.AddTextEmbeddingService(serviceId, instance);
 
         // Act
@@ -192,7 +192,7 @@ public class TextEmbeddingServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance = Mock.Of<ITextEmbeddingService>();
+        var instance = Mock.Of<ITextEmbeddingGeneration>();
         services.AddTextEmbeddingService(serviceId1, instance);
 
         // Act
@@ -208,7 +208,7 @@ public class TextEmbeddingServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<ITextEmbeddingService>();
+        var instance = Mock.Of<ITextEmbeddingGeneration>();
         services.AddTextEmbeddingService(serviceId, instance, setAsDefault: true);
 
         // Act

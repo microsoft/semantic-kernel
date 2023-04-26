@@ -229,7 +229,8 @@ public sealed class Kernel : IKernel, IDisposable
     public T GetService<T>(string? name = null)
     {
         return this._config.GetService<T>(name) ??
-            throw new InvalidOperationException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered."); ;
+            throw new KernelException(KernelException.ErrorCodes.ServiceNotFound,
+            $"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
     }
 
     /// <summary>
@@ -273,7 +274,7 @@ public sealed class Kernel : IKernel, IDisposable
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletionService>());
+        func.SetAIService(() => this.GetService<ITextCompletion>());
 
         return func;
     }

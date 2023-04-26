@@ -20,7 +20,7 @@ public class ImageGenerationServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<IImageGenerationService>();
+        var instance = Mock.Of<IImageGeneration>();
 
         // Act
         services.AddImageGenerationService(serviceId, instance);
@@ -36,8 +36,8 @@ public class ImageGenerationServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<IImageGenerationService>();
-        var factory = new Func<IImageGenerationService>(() => instance);
+        var instance = Mock.Of<IImageGeneration>();
+        var factory = new Func<IImageGeneration>(() => instance);
 
         // Act
         services.AddImageGenerationService(serviceId, factory);
@@ -53,8 +53,8 @@ public class ImageGenerationServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<IImageGenerationService>();
-        var factory = new Func<INamedServiceProvider, IImageGenerationService>(sp => instance);
+        var instance = Mock.Of<IImageGeneration>();
+        var factory = new Func<INamedServiceProvider, IImageGeneration>(sp => instance);
 
         // Act
         services.AddImageGenerationService(serviceId, factory);
@@ -71,8 +71,8 @@ public class ImageGenerationServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<IImageGenerationService>();
-        var instance2 = Mock.Of<IImageGenerationService>();
+        var instance1 = Mock.Of<IImageGeneration>();
+        var instance2 = Mock.Of<IImageGeneration>();
         services.AddImageGenerationService(serviceId1, instance1);
         services.AddImageGenerationService(serviceId2, instance2);
 
@@ -91,7 +91,7 @@ public class ImageGenerationServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<IImageGenerationService>();
+        var instance1 = Mock.Of<IImageGeneration>();
         services.AddImageGenerationService(serviceId1, instance1);
 
         // Act - Assert
@@ -105,8 +105,8 @@ public class ImageGenerationServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<IImageGenerationService>();
-        var instance2 = Mock.Of<IImageGenerationService>();
+        var instance1 = Mock.Of<IImageGeneration>();
+        var instance2 = Mock.Of<IImageGeneration>();
         services.AddImageGenerationService(serviceId1, instance1);
         services.AddImageGenerationService(serviceId2, instance2);
 
@@ -126,7 +126,7 @@ public class ImageGenerationServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<IImageGenerationService>();
+        var instance1 = Mock.Of<IImageGeneration>();
         services.AddImageGenerationService(serviceId1, instance1);
 
         // Act
@@ -144,8 +144,8 @@ public class ImageGenerationServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance1 = Mock.Of<IImageGenerationService>();
-        var instance2 = Mock.Of<IImageGenerationService>();
+        var instance1 = Mock.Of<IImageGeneration>();
+        var instance2 = Mock.Of<IImageGeneration>();
         services.AddImageGenerationService(serviceId1, instance1);
         services.AddImageGenerationService(serviceId2, instance2);
 
@@ -175,7 +175,7 @@ public class ImageGenerationServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<IImageGenerationService>();
+        var instance = Mock.Of<IImageGeneration>();
         services.AddImageGenerationService(serviceId, instance);
 
         // Act
@@ -192,7 +192,7 @@ public class ImageGenerationServiceExtensionsTests
         var services = new ServiceRegistry();
         var serviceId1 = "test1";
         var serviceId2 = "test2";
-        var instance = Mock.Of<IImageGenerationService>();
+        var instance = Mock.Of<IImageGeneration>();
         services.AddImageGenerationService(serviceId1, instance);
 
         // Act
@@ -208,7 +208,7 @@ public class ImageGenerationServiceExtensionsTests
         // Arrange
         var services = new ServiceRegistry();
         var serviceId = "test";
-        var instance = Mock.Of<IImageGenerationService>();
+        var instance = Mock.Of<IImageGeneration>();
         services.AddImageGenerationService(serviceId, instance, setAsDefault: true);
 
         // Act

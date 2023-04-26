@@ -65,11 +65,11 @@ internal static class SemanticKernelFactory
                 switch (config.EmbeddingConfig.AIService)
                 {
                     case AIService.OpenAI:
-                        c.AddOpenAITextEmbeddingService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
+                        c.AddOpenAITextEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
                             config.EmbeddingConfig.Key);
                         break;
                     case AIService.AzureOpenAI:
-                        c.AddAzureTextEmbeddingService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
+                        c.AddAzureTextEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
                             config.EmbeddingConfig.Endpoint, config.EmbeddingConfig.Key);
                         break;
                     default:

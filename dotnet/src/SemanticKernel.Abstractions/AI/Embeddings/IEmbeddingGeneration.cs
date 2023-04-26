@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.AI.Embeddings;
 /// </summary>
 /// <typeparam name="TValue">The type from which embeddings will be generated.</typeparam>
 /// <typeparam name="TEmbedding">The numeric type of the embedding data.</typeparam>
-public interface IEmbeddingGenerationService<TValue, TEmbedding>
+public interface IEmbeddingGeneration<TValue, TEmbedding>
     where TEmbedding : unmanaged
 {
     /// <summary>

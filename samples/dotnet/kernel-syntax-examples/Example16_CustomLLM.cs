@@ -15,7 +15,7 @@ using RepoUtils;
  * - You are using OpenAI/Azure OpenAI models but the models are behind a web service with a different API schema
  * - You want to use a local model
  */
-public class MyTextCompletionService : ITextCompletionService
+public class MyTextCompletionService : ITextCompletion
 {
     public async Task<string> CompleteAsync(
         string text,

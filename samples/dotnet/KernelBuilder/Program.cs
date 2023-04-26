@@ -47,8 +47,8 @@ var skills = new SkillCollection();
 var templateEngine = new PromptTemplateEngine(logger);
 var config = new KernelConfig();
 var httpHandlerFactory = new DefaultHttpRetryHandlerFactory(new HttpRetryConfig());
-ITextCompletionService Factory() => new AzureTextCompletion("deploymentName", "https://...", "apiKey", httpHandlerFactory, logger);
-config.SetServiceFactory<ITextCompletionService>("foo", Factory);
+ITextCompletion Factory() => new AzureTextCompletion("deploymentName", "https://...", "apiKey", httpHandlerFactory, logger);
+config.SetServiceFactory<ITextCompletion>("foo", Factory);
 
 // Create kernel manually injecting all the dependencies
 var kernel3 = new Kernel(skills, templateEngine, memory, config, logger);
@@ -83,7 +83,7 @@ var kernel6 = Kernel.Builder
         c.AddAzureTextCompletionService("myName1", "completionDeploymentName", "https://...", "apiKey");
 
         // This will be used when indexing memory records
-        c.AddAzureTextEmbeddingService("myName2", "embeddingsDeploymentName", "https://...", "apiKey");
+        c.AddAzureTextEmbeddingGenerationService("myName2", "embeddingsDeploymentName", "https://...", "apiKey");
     })
     .Build();
 
@@ -100,8 +100,8 @@ var kernel7 = Kernel.Builder
     .Build();
 
 kernel7.Config
-    .AddAzureTextEmbeddingService("myName2", "embeddingsDeploymentName1", "https://...", "apiKey")
-    .AddAzureTextEmbeddingService("myName3", "embeddingsDeploymentName2", "https://...", "apiKey")
+    .AddAzureTextEmbeddingGenerationService("myName2", "embeddingsDeploymentName1", "https://...", "apiKey")
+    .AddAzureTextEmbeddingGenerationService("myName3", "embeddingsDeploymentName2", "https://...", "apiKey")
     .AddOpenAITextCompletionService("myName4", "text-davinci-003", "sk-...");
 
 // ==========================================================================================================

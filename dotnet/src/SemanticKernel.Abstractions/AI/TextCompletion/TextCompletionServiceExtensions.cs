@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Services;
 
@@ -12,49 +11,49 @@ namespace Microsoft.SemanticKernel;
 public static class TextCompletionServiceExtensions
 {
     /// <summary>
-    /// Adds a <see cref="ITextCompletionService"/> instance to the services collection
+    /// Adds a <see cref="ITextCompletion"/> instance to the services collection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="serviceId">The service ID</param>
-    /// <param name="instance">The <see cref="ITextCompletionService"/> instance.</param>
-    /// <param name="setAsDefault">Optional: set as the default <see cref="ITextCompletionService"/></param>
+    /// <param name="instance">The <see cref="ITextCompletion"/> instance.</param>
+    /// <param name="setAsDefault">Optional: set as the default <see cref="ITextCompletion"/></param>
     public static void AddTextCompletionService(
         this INamedServiceCollection services,
         string serviceId,
-        ITextCompletionService instance,
+        ITextCompletion instance,
         bool setAsDefault = false)
-            => services.SetService<ITextCompletionService>(serviceId, instance, setAsDefault);
+            => services.SetService<ITextCompletion>(serviceId, instance, setAsDefault);
 
     /// <summary>
-    /// Adds a <see cref="ITextCompletionService"/> factory method to the services collection
+    /// Adds a <see cref="ITextCompletion"/> factory method to the services collection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="serviceId">The service ID</param>
-    /// <param name="factory">The factory method that creates <see cref="ITextCompletionService"/> instances.</param>
-    /// <param name="setAsDefault">Optional: set as the default <see cref="ITextCompletionService"/></param>
+    /// <param name="factory">The factory method that creates <see cref="ITextCompletion"/> instances.</param>
+    /// <param name="setAsDefault">Optional: set as the default <see cref="ITextCompletion"/></param>
     public static void AddTextCompletionService(
         this INamedServiceCollection services,
         string serviceId,
-        Func<ITextCompletionService> factory,
+        Func<ITextCompletion> factory,
         bool setAsDefault = false)
-            => services.SetServiceFactory<ITextCompletionService>(serviceId, factory, setAsDefault);
+            => services.SetServiceFactory<ITextCompletion>(serviceId, factory, setAsDefault);
 
     /// <summary>
-    /// Adds a <see cref="ITextCompletionService"/> factory method to the services collection
+    /// Adds a <see cref="ITextCompletion"/> factory method to the services collection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="serviceId">The service ID</param>
-    /// <param name="factory">The factory method that creates <see cref="ITextCompletionService"/> instances.</param>
-    /// <param name="setAsDefault">Optional: set as the default <see cref="ITextCompletionService"/></param>
+    /// <param name="factory">The factory method that creates <see cref="ITextCompletion"/> instances.</param>
+    /// <param name="setAsDefault">Optional: set as the default <see cref="ITextCompletion"/></param>
     public static void AddTextCompletionService(
         this INamedServiceCollection services,
         string serviceId,
-        Func<INamedServiceProvider, ITextCompletionService> factory,
+        Func<INamedServiceProvider, ITextCompletion> factory,
         bool setAsDefault = false)
-            => services.SetServiceFactory<ITextCompletionService>(serviceId, factory, setAsDefault);
+            => services.SetServiceFactory<ITextCompletion>(serviceId, factory, setAsDefault);
 
     /// <summary>
-    /// Set the default <see cref="ITextCompletionService"/> service to use for the kernel.
+    /// Set the default <see cref="ITextCompletion"/> service to use for the kernel.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="serviceId">Identifier of completion service to use.</param>
@@ -64,7 +63,7 @@ public static class TextCompletionServiceExtensions
         this INamedServiceCollection services,
         string serviceId)
     {
-        if (!services.TrySetDefault<ITextCompletionService>(serviceId))
+        if (!services.TrySetDefault<ITextCompletion>(serviceId))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.ServiceNotFound,
@@ -75,56 +74,56 @@ public static class TextCompletionServiceExtensions
     }
 
     /// <summary>
-    /// Get the <see cref="ITextCompletionService"/> matching the given <paramref name="serviceId"/>, or the default
+    /// Get the <see cref="ITextCompletion"/> matching the given <paramref name="serviceId"/>, or the default
     /// if the <paramref name="serviceId"/> is not provided or not found.
     /// </summary>
     /// <param name="services">The service provider.</param>
     /// <param name="serviceId">Optional identifier of the desired service.</param>
     /// <returns>The text completion service id matching the given ID or the default.</returns>
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
-    public static ITextCompletionService GetTextCompletionServiceOrDefault(
+    public static ITextCompletion GetTextCompletionServiceOrDefault(
         this INamedServiceProvider services,
-        string? serviceId = null) => services.GetService<ITextCompletionService>()
+        string? serviceId = null) => services.GetService<ITextCompletion>()
             ?? throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text completion service not found");
 
     /// <summary>
-    /// Remove the <see cref="ITextCompletionService"/> with the given <paramref name="serviceId"/>.
+    /// Remove the <see cref="ITextCompletion"/> with the given <paramref name="serviceId"/>.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="serviceId">Identifier of service to remove.</param>
     /// <returns>True if the service was found and removed. False otherwise</returns>
     public static bool TryRemoveTextCompletionService(
         this INamedServiceCollection services, string serviceId)
-            => services.TryRemove<ITextCompletionService>(serviceId);
+            => services.TryRemove<ITextCompletion>(serviceId);
 
     /// <summary>
-    /// Unregisters all <see cref="ITextCompletionService"/> services.
+    /// Unregisters all <see cref="ITextCompletion"/> services.
     /// </summary>
     /// <param name="services">The service collection.</param>
     public static void RemoveAllTextCompletionServices(
         this INamedServiceCollection services)
-            => services.Clear<ITextCompletionService>();
+            => services.Clear<ITextCompletion>();
 
     /// <summary>
-    /// Get all registered <see cref="ITextCompletionService"/> service IDs.
+    /// Get all registered <see cref="ITextCompletion"/> service IDs.
     /// </summary>
     /// <param name="services">The service provider.</param>
     public static IEnumerable<string> GetTextCompletionServiceIds(
         this INamedServiceProvider services)
-            => services.GetServiceNames<ITextCompletionService>();
+            => services.GetServiceNames<ITextCompletion>();
 
     /// <summary>
-    /// Gets the default <see cref="ITextCompletionService"/> ID, or null none are registered or set as default.
+    /// Gets the default <see cref="ITextCompletion"/> ID, or null none are registered or set as default.
     /// </summary>
     /// <param name="services">The service provider.</param>
-    /// <returns>The service ID of the default <see cref="ITextCompletionService"/>, or null if none are registered
+    /// <returns>The service ID of the default <see cref="ITextCompletion"/>, or null if none are registered
     /// or set as default.</returns>
     public static string? GetDefaultTextCompletionServiceId(
         this INamedServiceProvider services)
-            => services.GetDefaultServiceName<ITextCompletionService>();
+            => services.GetDefaultServiceName<ITextCompletion>();
 
     /// <summary>
-    /// Returns true if a <see cref="ITextCompletionService"/> exist with the specified ID.
+    /// Returns true if a <see cref="ITextCompletion"/> exist with the specified ID.
     /// </summary>
     /// <param name="services">The service provider.</param>
     /// <param name="serviceId">The service ID to search for. If null, it will look for a default service.</param>
@@ -132,5 +131,5 @@ public static class TextCompletionServiceExtensions
     public static bool HasTextCompletionService(
         this INamedServiceProvider services,
         string? serviceId = null)
-            => services.HasServiceName<ITextCompletionService>(serviceId);
+            => services.HasServiceName<ITextCompletion>(serviceId);
 }

@@ -144,7 +144,7 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Construct IEmbeddingGeneration from <see cref="AIServiceOptions"/>
     /// </summary>
-    internal static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
+    internal static ITextEmbeddingGeneration ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
         ILogger? logger = null,
         IDelegatingHandlerFactory? handlerFactory = null)
     {
