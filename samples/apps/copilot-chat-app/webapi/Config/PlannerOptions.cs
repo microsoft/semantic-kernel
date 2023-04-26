@@ -4,6 +4,9 @@ using Microsoft.SemanticKernel.Planning.Planners;
 
 namespace SemanticKernel.Service.Config;
 
+/// <summary>
+/// Configuration options for the planner.
+/// </summary>
 public class PlannerOptions
 {
     public const string PropertyName = "Planner";
@@ -38,6 +41,9 @@ public class PlannerOptions
     /// </summary>
     public int MaxTokens { get; set; } = 1024;
 
+    /// <summary>
+    /// Convert to a <see cref="PlannerConfig"/> instance.
+    /// </summary>
     public PlannerConfig ToPlannerConfig()
     {
         PlannerConfig config = new()

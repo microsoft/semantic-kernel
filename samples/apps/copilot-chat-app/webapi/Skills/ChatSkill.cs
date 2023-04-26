@@ -25,7 +25,7 @@ public class ChatSkill
     /// Logger
     /// </summary>
     private readonly ILogger _logger;
-    
+
     /// <summary>
     /// A kernel instance to create a completion function since each invocation
     /// of the <see cref="ChatAsync"/> function will generate a new prompt dynamically.
@@ -268,7 +268,7 @@ public class ChatSkill
         json = string.Empty;
         return false;
     }
-   
+
     /// <summary>
     /// Extract chat history.
     /// </summary>
@@ -351,7 +351,7 @@ public class ChatSkill
         }
 
         // Clone the context to avoid modifying the original context variables.
-        SKContext chatContext = Utils.CopyContextWithVariablesClone(context);
+        var chatContext = Utils.CopyContextWithVariablesClone(context);
         chatContext.Variables.Set("knowledgeCutoff", this._promptSettings.KnowledgeCutoffDate);
         chatContext.Variables.Set("audience", userName);
 
