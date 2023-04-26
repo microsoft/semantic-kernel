@@ -48,11 +48,13 @@ public static class KernelChatGptPluginExtensions
         {
             if (httpClient == null)
             {
-                using DefaultHttpRetryHandler retryHandler = new DefaultHttpRetryHandler(
-                  config: new HttpRetryConfig() { MaxRetryCount = 3 },
-                  log: null);
+                // TODO Fix this:  throwing "The inner handler has not been assigned"
+                //using DefaultHttpRetryHandler retryHandler = new DefaultHttpRetryHandler(
+                //  config: new HttpRetryConfig() { MaxRetryCount = 3 },
+                //  log: null);
 
-                using HttpClient client = new HttpClient(retryHandler, false);
+                //using HttpClient client = new HttpClient(retryHandler, false);
+                using HttpClient client = new HttpClient();
 
                 response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
             }

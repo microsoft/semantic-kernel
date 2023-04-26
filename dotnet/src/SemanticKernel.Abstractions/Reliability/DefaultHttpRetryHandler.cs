@@ -27,7 +27,6 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         ILogger? log = null,
         IDelayProvider? delayProvider = null,
         ITimeProvider? timeProvider = null)
-        : base(new HttpClientHandler())
     {
         this._config = config;
         this._log = log ?? NullLogger.Instance;

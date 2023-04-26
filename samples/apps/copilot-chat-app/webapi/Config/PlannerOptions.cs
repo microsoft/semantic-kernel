@@ -31,7 +31,7 @@ public class PlannerOptions
     /// <summary>
     /// A list of functions to include in the plan creation request.
     /// </summary>
-    public HashSet<string> IncludedFunctions { get; } = new() { "BucketOutputs" };
+    public HashSet<string> IncludedFunctions { get; } = new() { };
 
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
@@ -47,16 +47,19 @@ public class PlannerOptions
             MaxTokens = MaxTokens,
         };
 
+        this.ExcludedSkills.Clear();
         foreach (var excludedSkill in this.ExcludedSkills)
         {
             config.ExcludedSkills.Add(excludedSkill);
         }
 
+        this.ExcludedFunctions.Clear();
         foreach (var excludedFunction in this.ExcludedFunctions)
         {
             config.ExcludedFunctions.Add(excludedFunction);
         }
 
+        this.IncludedFunctions.Clear();
         foreach (var includedFunction in this.IncludedFunctions)
         {
             config.IncludedFunctions.Add(includedFunction);

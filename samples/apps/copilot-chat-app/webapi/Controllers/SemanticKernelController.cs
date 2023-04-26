@@ -45,6 +45,7 @@ public class SemanticKernelController : ControllerBase
     /// <param name="chatMessageRepository">Storage repository to store chat messages</param>
     /// <param name="documentMemoryOptions">Options for document memory handline.</param>
     /// <param name="planner">Planner to use for formulated function sequences.</param>
+    /// <param name="plannerOptions">Options for the planner.</param>
     /// <param name="ask">Prompt along with its parameters</param>
     /// <param name="skillName">Skill in which function to invoke resides</param>
     /// <param name="functionName">Name of function to invoke</param>
@@ -61,6 +62,7 @@ public class SemanticKernelController : ControllerBase
         [FromServices] ChatMessageRepository chatMessageRepository,
         [FromServices] IOptions<DocumentMemoryOptions> documentMemoryOptions,
         [FromServices] SequentialPlanner planner,
+        [FromServices] IOptions<PlannerOptions> plannerOptions,
         [FromBody] Ask ask,
         string skillName, string functionName)
     {
@@ -81,6 +83,7 @@ public class SemanticKernelController : ControllerBase
             chatMessageRepository: chatMessageRepository,
             promptSettings: this._promptSettings,
             planner: planner,
+            plannerOptions: plannerOptions.Value,
             documentMemoryOptions: documentMemoryOptions.Value,
             logger: this._logger);
 
