@@ -43,12 +43,35 @@ public sealed class SequentialPlannerTests : IDisposable
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
+
         // Assert
         Assert.Contains(
             plan.Steps,
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
                 step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterSkill", "<!--===ENDPART===-->")]
+    public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedSkill, string expectedDefault)
+    {
+        // Arrange
+        IKernel kernel = this.InitializeKernel();
+        TestHelpers.GetSkill("WriterSkill", kernel);
+
+        var planner = new SequentialPlanner(kernel);
+
+        // Act
+        var plan = await planner.CreatePlanAsync(prompt);
+
+        // Assert
+        Assert.Contains(
+            plan.Steps,
+            step =>
+                    step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
+                    step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase) &&
+                    step.NamedParameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]

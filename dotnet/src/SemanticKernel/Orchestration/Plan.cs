@@ -293,7 +293,7 @@ public sealed class Plan : ISKFunction
     public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
         CancellationToken? cancel = null)
     {
-        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
+        context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
 
         if (this.Function is not null)
         {
