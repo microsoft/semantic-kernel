@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -21,16 +20,17 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     /// An empty <see cref="Embedding{TEmbedding}"/> instance.
     /// </summary>
     [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Static empty struct instance.")]
-    public static Embedding<TEmbedding> Empty { get; } = new Embedding<TEmbedding>(Array.Empty<TEmbedding>());
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Embedding{TEmbedding}"/> class that contains numeric elements copied from the specified collection.
-    /// </summary>
-    /// <exception cref="ArgumentException">Type <typeparamref name="TEmbedding"/> is unsupported.</exception>
-    /// <exception cref="ArgumentNullException">A <c>null</c> vector is passed in.</exception>
-    public Embedding()
-        : this(Array.Empty<TEmbedding>())
+    public static Embedding<TEmbedding> Empty
     {
+        get
+        {
+            if (!IsSupported)
+            {
+                ThrowNotSupportedEmbedding();
+            }
+
+            return default;
+        }
     }
 
     /// <summary>
@@ -46,38 +46,47 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
 
         if (!IsSupported)
         {
-            throw new NotSupportedException($"Embeddings do not support type '{typeof(TEmbedding).Name}'. "
-                                            + $"Supported types include: [ {string.Join(", ", Embedding.SupportedTypes.Select(t => t.Name).ToList())} ]");
+            ThrowNotSupportedEmbedding();
         }
 
         // Create a local, protected copy
         this._vector = vector.ToArray();
     }
 
+    private static void ThrowNotSupportedEmbedding() =>
+        throw new NotSupportedException($"Embeddings do not support type '{typeof(TEmbedding).Name}'. Supported types include: [ Single, Double ]");
+
     /// <summary>
-    /// Gets the vector as a <see cref="ReadOnlyCollection{T}"/>
+    /// Gets the vector as an <see cref="IEnumerable{TEmbedding}"/>
     /// </summary>
     [JsonPropertyName("vector")]
-    public IEnumerable<TEmbedding> Vector => this._vector.AsEnumerable();
+    public IEnumerable<TEmbedding> Vector => this._vector ?? Array.Empty<TEmbedding>();
 
     /// <summary>
     /// Gets a value that indicates whether <typeparamref name="TEmbedding"/> is supported.
     /// </summary>
     [JsonIgnore]
     [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Following 'IsSupported' pattern of System.Numerics.")]
-    public static bool IsSupported => Embedding.SupportedTypes.Contains(typeof(TEmbedding));
+    public static bool IsSupported => typeof(TEmbedding) == typeof(float) || typeof(TEmbedding) == typeof(double);
 
     /// <summary>
     /// <c>true</c> if the vector is empty.
     /// </summary>
     [JsonIgnore]
-    public bool IsEmpty => this._vector.Length == 0;
+    public bool IsEmpty
+    {
+        get
+        {
+            TEmbedding[]? vector = this._vector;
+            return vector is null || vector.Length == 0;
+        }
+    }
 
     /// <summary>
     /// The number of elements in the vector.
     /// </summary>
     [JsonIgnore]
-    public int Count => this._vector.Length;
+    public int Count => this._vector?.Length ?? 0;
 
     /// <summary>
     /// Gets the vector as a read-only span.
@@ -93,7 +102,7 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     /// <returns>A hash code for the current object.</returns>
     public override int GetHashCode()
     {
-        return this._vector.GetHashCode();
+        return this._vector?.GetHashCode() ?? 0;
     }
 
     /// <summary>
@@ -103,7 +112,7 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, <c>false</c>.</returns>
     public override bool Equals(object obj)
     {
-        return (obj is Embedding<TEmbedding> other) && this.Equals(other);
+        return obj is Embedding<TEmbedding> other && this.Equals(other);
     }
 
     /// <summary>
@@ -113,7 +122,8 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     /// <returns>><c>true</c> if the specified object is equal to the current object; otherwise, <c>false</c>.</returns>
     public bool Equals(Embedding<TEmbedding> other)
     {
-        return this._vector.Equals(other._vector);
+        TEmbedding[]? vector = this._vector;
+        return vector is null ? other._vector is null : vector.Equals(other._vector);
     }
 
     /// <summary>
@@ -154,7 +164,7 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     /// <remarks>A clone of the underlying data.</remarks>
     public static explicit operator TEmbedding[](Embedding<TEmbedding> embedding)
     {
-        return (TEmbedding[])embedding._vector.Clone();
+        return embedding._vector is null ? Array.Empty<TEmbedding>() : (TEmbedding[])embedding._vector.Clone();
     }
 
     /// <summary>
@@ -164,12 +174,12 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     /// <remarks>A clone of the underlying data.</remarks>
     public static explicit operator ReadOnlySpan<TEmbedding>(Embedding<TEmbedding> embedding)
     {
-        return (TEmbedding[])embedding._vector.Clone();
+        return embedding.AsReadOnlySpan();
     }
 
     #region private ================================================================================
 
-    private readonly TEmbedding[] _vector;
+    private readonly TEmbedding[]? _vector;
 
     #endregion
 }
