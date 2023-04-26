@@ -99,7 +99,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         ILogger? log = null)
     {
         Verify.NotNull(functionConfig, "Function configuration is empty");
-
+        
         async Task<SKContext> LocalFunc(
             ITextCompletion client,
             CompleteRequestSettings requestSettings,
@@ -110,10 +110,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
             try
             {
                 string prompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
-                Debug.WriteLine($"== START PROMPTPROMPTPROMPTPROMPTPROMPTPROMPTPROMPTPROMPT ==\r\n{prompt}\r\n== END PROMPTPROMPTPROMPTPROMPTPROMPTPROMPTPROMPTPROMPT ==\r\n");
+                log?.LogDebug("Prompt: {0}", prompt);
 
                 string completion = await client.CompleteAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
-                Debug.WriteLine($"== START COMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETION ==\r\n{completion}\r\n== END COMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETIONCOMPLETION ==\r\n");
+                log?.LogDebug("Completion: {0}", completion);
                 context.Variables.Update(completion);
             }
             catch (AIException ex)
