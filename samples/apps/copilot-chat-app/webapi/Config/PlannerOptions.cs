@@ -45,7 +45,6 @@ public class PlannerOptions
     /// <summary>
     /// A list of functions to include in the plan creation request.
     /// </summary>
-    /// 
     public HashSet<string> IncludedFunctions { get; set; } = new() { };
 
     /// <summary>
