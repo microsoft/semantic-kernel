@@ -12,6 +12,11 @@ namespace Microsoft.SemanticKernel.Planning.Planners;
 public class SequentialPlanner
 {
     /// <summary>
+    /// Kernel associated with this planner.
+    /// </summary>
+    public IKernel Kernel { get; }
+    
+    /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
@@ -20,10 +25,11 @@ public class SequentialPlanner
     {
         Verify.NotNull(kernel, $"{this.GetType().FullName} requires a kernel instance.");
         this.Config = config ?? new();
+        this.Kernel = kernel;
 
         this.Config.ExcludedSkills.Add(RestrictedSkillName);
 
-        this._functionFlowFunction = kernel.CreateSemanticFunction(
+        this._functionFlowFunction = this.Kernel.CreateSemanticFunction(
             promptTemplate: SemanticFunctionConstants.FunctionFlowFunctionDefinition,
             skillName: RestrictedSkillName,
             description: "Given a request or command or goal generate a step by step plan to " +
@@ -32,7 +38,7 @@ public class SequentialPlanner
             temperature: 0.0,
             stopSequences: new[] { "<!--" });
 
-        this._context = kernel.CreateNewContext();
+        this._context = this.Kernel.CreateNewContext();
     }
 
     /// <summary>

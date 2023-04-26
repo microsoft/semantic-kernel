@@ -44,7 +44,7 @@ public class SemanticKernelController : ControllerBase
     /// <param name="chatRepository">Storage repository to store chat sessions</param>
     /// <param name="chatMessageRepository">Storage repository to store chat messages</param>
     /// <param name="documentMemoryOptions">Options for document memory handline.</param>
-    /// <param name="planner">Planner to use for formulated function sequences.</param>
+    /// <param name="plannerFactory">Factory for planners to use to create function sequences.</param>
     /// <param name="plannerOptions">Options for the planner.</param>
     /// <param name="ask">Prompt along with its parameters</param>
     /// <param name="skillName">Skill in which function to invoke resides</param>
@@ -61,7 +61,7 @@ public class SemanticKernelController : ControllerBase
         [FromServices] ChatSessionRepository chatRepository,
         [FromServices] ChatMessageRepository chatMessageRepository,
         [FromServices] IOptions<DocumentMemoryOptions> documentMemoryOptions,
-        [FromServices] SequentialPlanner planner,
+        [FromServices] PlannerFactory plannerFactory,
         [FromServices] IOptions<PlannerOptions> plannerOptions,
         [FromBody] Ask ask,
         string skillName, string functionName)
@@ -73,6 +73,7 @@ public class SemanticKernelController : ControllerBase
             return this.BadRequest("Input is required.");
         }
 
+        // Not required for Copilot Chat, but this is how to register additional skills for the service to provide.
         if (!string.IsNullOrWhiteSpace(this._options.SemanticSkillsDirectory))
         {
             kernel.RegisterSemanticSkills(this._options.SemanticSkillsDirectory, this._logger);
@@ -82,7 +83,7 @@ public class SemanticKernelController : ControllerBase
             chatSessionRepository: chatRepository,
             chatMessageRepository: chatMessageRepository,
             promptSettings: this._promptSettings,
-            planner: planner,
+            plannerFactory: plannerFactory,
             plannerOptions: plannerOptions.Value,
             documentMemoryOptions: documentMemoryOptions.Value,
             logger: this._logger);

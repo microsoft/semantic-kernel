@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Globalization;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
@@ -48,9 +50,9 @@ public class ChatSkill
     private readonly PromptSettings _promptSettings;
 
     /// <summary>
-    /// A planner to gather additional information for the user.
+    /// A factory for planners that gather additional information for the user.
     /// </summary>
-    private readonly SequentialPlanner _planner;
+    private readonly PlannerFactory _plannerFactory;
 
     /// <summary>
     /// Options for the planner.
@@ -65,7 +67,7 @@ public class ChatSkill
         ChatMessageRepository chatMessageRepository,
         ChatSessionRepository chatSessionRepository,
         PromptSettings promptSettings,
-        SequentialPlanner planner,
+        PlannerFactory plannerFactory,
         PlannerOptions plannerOptions,
         ILogger logger)
     {
@@ -74,7 +76,7 @@ public class ChatSkill
         this._chatMessageRepository = chatMessageRepository;
         this._chatSessionRepository = chatSessionRepository;
         this._promptSettings = promptSettings;
-        this._planner = planner;
+        this._plannerFactory = plannerFactory;
         this._plannerOptions = plannerOptions;
     }
 
@@ -92,7 +94,7 @@ public class ChatSkill
         var historyTokenBudget =
             tokenLimit -
             this._promptSettings.ResponseTokenLimit -
-            Utils.TokenCount(string.Join("\n", new string[]
+            Utilities.TokenCount(string.Join("\n", new string[]
                 {
                     this._promptSettings.SystemDescriptionPrompt,
                     this._promptSettings.SystemIntentPrompt,
@@ -101,7 +103,7 @@ public class ChatSkill
             );
 
         // Clone the context to avoid modifying the original context variables.
-        var intentExtractionContext = Utils.CopyContextWithVariablesClone(context);
+        var intentExtractionContext = Utilities.CopyContextWithVariablesClone(context);
         intentExtractionContext.Variables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
         intentExtractionContext.Variables.Set("knowledgeCutoff", this._promptSettings.KnowledgeCutoffDate);
 
@@ -166,7 +168,7 @@ public class ChatSkill
         string memoryText = "";
         foreach (var memory in relevantMemories)
         {
-            var tokenCount = Utils.TokenCount(memory.Metadata.Text);
+            var tokenCount = Utilities.TokenCount(memory.Metadata.Text);
             if (remainingToken - tokenCount > 0)
             {
                 memoryText += $"\n[{memory.Metadata.Description}] {memory.Metadata.Text}";
@@ -180,14 +182,14 @@ public class ChatSkill
 
         // Update the token limit.
         memoryText = $"Past memories (format: [memory type] <label>: <details>):\n{memoryText.Trim()}";
-        tokenLimit -= Utils.TokenCount(memoryText);
+        tokenLimit -= Utilities.TokenCount(memoryText);
         context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
 
         return memoryText;
     }
 
     /// <summary>
-    /// Extract relevant additional knowledge.
+    /// Extract relevant additional knowledge using a Semantic Kernel planner.
     /// </summary>
     [SKFunction("Acquire external information")]
     [SKFunctionName("AcquireExternalInformation")]
@@ -199,60 +201,44 @@ public class ChatSkill
         {
             return string.Empty;
         }
-        
-        int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
-        string userIntent = context["userIntent"];
 
-        // Create a new kernel with only skills we want the planner to use and keep the rest of the current context.
-        using Kernel plannerKernel = new(
-            new SkillCollection(),
-            this._kernel.PromptTemplateEngine,
-            this._kernel.Memory,
-            this._kernel.Config,
-            this._kernel.Log);
-
-        // Import skills into the planner's kernel.
-        await plannerKernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json")); // Klarna
-
-        // Create the planner
-        SequentialPlanner planner = new(
-            kernel: plannerKernel,
-            config: this._plannerOptions.ToPlannerConfig());
+        SequentialPlanner planner = await this._plannerFactory(this._kernel);
 
         // Create a plan and run it.
-        Plan plan = await planner.CreatePlanAsync(userIntent);
+        Plan plan = await planner.CreatePlanAsync(context["userIntent"]);
         while (plan.HasNextStep)
         {
+            // WORKAROUND for an issue when the planner returns a plan containing a step that is a plan with no steps.
+            // Running these invalid step resets the plan result (plan.State.Input) to the original input/goal statement.
             var nextStep = plan.Steps[plan.NextStepIndex];
-            if (nextStep.SkillName.Contains(".Plan", StringComparison.InvariantCultureIgnoreCase) && nextStep.Steps.Count == 0)
+            if (nextStep.SkillName.Equals("Microsoft.SemanticKernel.Orchestration.Plan", StringComparison.OrdinalIgnoreCase) &&
+                nextStep.Steps.Count == 0)
             {
-                this._logger.LogWarning("Planner created step that is a plan with no steps. This should not happen.");
-                break;
+                // Reflect into the plan and bump the next step index - do not try this at home.
+                plan.GetType().GetProperty("NextStepIndex")!.SetValue(plan, plan.NextStepIndex + 1);
+                continue;
             }
-            else
-            {
-                await plannerKernel.StepAsync(context.Variables, plan);
-            }
+
+            plan = await planner.Kernel.StepAsync(context.Variables, plan);
         }
 
-        // The result of the plan is likely from an OpenAPI-based skill - extract the JSON from the response.
-        // Otherwise, just use result of the plan execution directly.
-        if (!this.TryExtractJsonFromOpenApiResponse(plan.State.Input, out string planResult))
+        // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
+        if (!this.TryExtractJsonFromPlanResult(plan.State.Input, out string planResult))
         {
+            // If not, use result of the plan execution result directly.
             planResult = plan.State.Input;
         }
 
-        // TODO add source/citations
-
         string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
 
-        tokenLimit -= Utils.TokenCount(informationText);
-
+        // Adjust the token limit using the number of tokens in the information text.
+        int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
+        tokenLimit -= Utilities.TokenCount(informationText);
         context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
 
         return informationText;
     }
-    
+
     /// <summary>
     /// Extract chat history.
     /// </summary>
@@ -274,7 +260,7 @@ public class ChatSkill
         foreach (var chatMessage in sortedMessages)
         {
             var formattedMessage = chatMessage.ToFormattedString();
-            var tokenCount = Utils.TokenCount(formattedMessage);
+            var tokenCount = Utilities.TokenCount(formattedMessage);
             if (remainingToken - tokenCount > 0)
             {
                 historyText = $"{formattedMessage}\n{historyText}";
@@ -308,7 +294,7 @@ public class ChatSkill
         var remainingToken =
             tokenLimit -
             this._promptSettings.ResponseTokenLimit -
-            Utils.TokenCount(string.Join("\n", new string[]
+            Utilities.TokenCount(string.Join("\n", new string[]
                 {
                     this._promptSettings.SystemDescriptionPrompt,
                     this._promptSettings.SystemResponsePrompt,
@@ -335,7 +321,7 @@ public class ChatSkill
         }
 
         // Clone the context to avoid modifying the original context variables.
-        var chatContext = Utils.CopyContextWithVariablesClone(context);
+        var chatContext = Utilities.CopyContextWithVariablesClone(context);
         chatContext.Variables.Set("knowledgeCutoff", this._promptSettings.KnowledgeCutoffDate);
         chatContext.Variables.Set("audience", userName);
 
@@ -348,7 +334,7 @@ public class ChatSkill
 
         chatContext.Variables.Set("userIntent", userIntent);
         // Update remaining token count
-        remainingToken -= Utils.TokenCount(userIntent);
+        remainingToken -= Utilities.TokenCount(userIntent);
         chatContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
         chatContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
 
@@ -391,20 +377,28 @@ public class ChatSkill
     #region Private
 
     /// <summary>
-    /// Extract JSON from an OpenAPI skill response.
+    /// Try to extract json from the planner response as if it were from an OpenAPI skill.
     /// </summary>
-    private bool TryExtractJsonFromOpenApiResponse(string openApiSkillResponse, out string json)
+    private bool TryExtractJsonFromPlanResult(string openApiSkillResponse, out string json)
     {
-        JsonNode? jsonNode = JsonNode.Parse(openApiSkillResponse);
-        string contentType = jsonNode?["contentType"]?.ToString() ?? string.Empty;
-        if (contentType.StartsWith("application/json", StringComparison.InvariantCultureIgnoreCase))
+        try
         {
-            var content = jsonNode?["content"]?.ToString() ?? string.Empty;
-            if (!string.IsNullOrWhiteSpace(content))
+            JsonNode? jsonNode = JsonNode.Parse(openApiSkillResponse);
+            string contentType = jsonNode?["contentType"]?.ToString() ?? string.Empty;
+            if (contentType.StartsWith("application/json", StringComparison.InvariantCultureIgnoreCase))
             {
-                json = content;
-                return true;
+                var content = jsonNode?["content"]?.ToString() ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(content))
+                {
+                    json = content;
+                    return true;
+                }
             }
+        }
+        catch (JsonException)
+        {
+            // Expected if not valid JSON.
+            this._logger.LogDebug("Unable to extract JSON from planner response. It is likely not JSON formatted.");
         }
 
         json = string.Empty;

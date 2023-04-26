@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel.DataAnnotations;
 using Microsoft.SemanticKernel.Planning.Planners;
 
 namespace SemanticKernel.Service.Config;
@@ -16,6 +17,8 @@ public class PlannerOptions
     /// </summary>
     public bool Enabled { get; set; } = false;
 
+    public string? SemanticSkillsDirectory { get; set; }
+
     /// <summary>
     /// The minimum relevancy score for a function to be considered
     /// </summary>
@@ -29,21 +32,23 @@ public class PlannerOptions
     /// <summary>
     /// A list of skills to exclude from the plan creation request.
     /// </summary>
-    public HashSet<string> ExcludedSkills { get; } = new() { };
+    public HashSet<string> ExcludedSkills { get; set; } = new() { };
 
     /// <summary>
     /// A list of functions to exclude from the plan creation request.
     /// </summary>
-    public HashSet<string> ExcludedFunctions { get; } = new() { };
+    public HashSet<string> ExcludedFunctions { get; set; } = new() { };
 
     /// <summary>
     /// A list of functions to include in the plan creation request.
     /// </summary>
-    public HashSet<string> IncludedFunctions { get; } = new() { };
+    /// 
+    public HashSet<string> IncludedFunctions { get; set; } = new() { };
 
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
     /// </summary>
+    [Range(1,int.MaxValue)]
     public int MaxTokens { get; set; } = 1024;
 
     /// <summary>
