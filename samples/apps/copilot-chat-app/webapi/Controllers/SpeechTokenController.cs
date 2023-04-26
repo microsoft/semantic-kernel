@@ -36,9 +36,11 @@ public class SpeechTokenController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<SpeechTokenResponse>> GetAsync()
     {
-        if (string.IsNullOrWhiteSpace(this._options.Region))
+        // Azure Speech token support is optional. If the configuration is missing or incomplete, return an unsuccessful token response.
+        if (string.IsNullOrWhiteSpace(this._options.Region) ||
+            string.IsNullOrWhiteSpace(this._options.Key))
         {
-            throw new InvalidOperationException($"Missing value for {AzureSpeechOptions.PropertyName}:{nameof(this._options.Region)}");
+            return new SpeechTokenResponse { IsSuccess = false };
         }
 
         string fetchTokenUri = "https://" + this._options.Region + ".api.cognitive.microsoft.com/sts/v1.0/issueToken";
