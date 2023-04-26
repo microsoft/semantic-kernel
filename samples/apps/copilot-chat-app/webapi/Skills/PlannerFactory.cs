@@ -10,4 +10,4 @@ namespace SemanticKernel.Service.Skills;
 /// </summary>
 /// <param name="chatKernel">The current semantic kernel used for the chat.</param>
 /// <returns>The planner</returns>
-public delegate Task<SequentialPlanner> PlannerFactory(IKernel chatKernel);
+public delegate Task<SequentialPlanner> PlannerFactoryAsync(IKernel chatKernel);

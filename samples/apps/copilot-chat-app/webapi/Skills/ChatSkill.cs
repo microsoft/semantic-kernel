@@ -49,7 +49,7 @@ public class ChatSkill
     /// <summary>
     /// A factory for planners that gather additional information for the user.
     /// </summary>
-    private readonly PlannerFactory _plannerFactory;
+    private readonly PlannerFactoryAsync _plannerFactoryAsync;
 
     /// <summary>
     /// Options for the planner.
@@ -64,7 +64,7 @@ public class ChatSkill
         ChatMessageRepository chatMessageRepository,
         ChatSessionRepository chatSessionRepository,
         PromptSettings promptSettings,
-        PlannerFactory plannerFactory,
+        PlannerFactoryAsync plannerFactory,
         PlannerOptions plannerOptions,
         ILogger logger)
     {
@@ -73,7 +73,7 @@ public class ChatSkill
         this._chatMessageRepository = chatMessageRepository;
         this._chatSessionRepository = chatSessionRepository;
         this._promptSettings = promptSettings;
-        this._plannerFactory = plannerFactory;
+        this._plannerFactoryAsync = plannerFactory;
         this._plannerOptions = plannerOptions;
     }
 
@@ -199,31 +199,16 @@ public class ChatSkill
             return string.Empty;
         }
 
-        SequentialPlanner planner = await this._plannerFactory(this._kernel);
-
         // Create a plan and run it.
-        Plan plan = await planner.CreatePlanAsync(context["userIntent"]);
-        while (plan.HasNextStep)
-        {
-            // TODO: Remove this workaround for an issue when the planner returns a plan containing a step that is a plan with no steps.
-            // Running these invalid step resets the plan result (plan.State.Input) to the original input/goal statement.
-            var nextStep = plan.Steps[plan.NextStepIndex];
-            if (nextStep.SkillName.Equals("Microsoft.SemanticKernel.Orchestration.Plan", StringComparison.OrdinalIgnoreCase) &&
-                nextStep.Steps.Count == 0)
-            {
-                // Reflect into the plan and bump the next step index - do not try this at home.
-                plan.GetType().GetProperty("NextStepIndex")!.SetValue(plan, plan.NextStepIndex + 1);
-                continue;
-            }
-
-            plan = await planner.Kernel.StepAsync(plan);
-        }
+        SKContext planContext = await (await (await this._plannerFactoryAsync(this._kernel))
+            .CreatePlanAsync(context["userIntent"]))
+            .InvokeAsync(context);
 
         // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
-        if (!this.TryExtractJsonFromPlanResult(plan.State.Input, out string planResult))
+        if (!this.TryExtractJsonFromPlanResult(planContext.Variables.Input, out string planResult))
         {
             // If not, use result of the plan execution result directly.
-            planResult = plan.State.Input;
+            planResult = planContext.Variables.Input;
         }
 
         string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";

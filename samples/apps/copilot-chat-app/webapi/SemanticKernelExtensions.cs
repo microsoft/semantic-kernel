@@ -90,7 +90,7 @@ internal static class SemanticKernelExtensions
         // TODO Replace sequential planner with a custom CopilotChat planner tuned to chat scenarios.
 
         services.AddSingleton<PlannerConfig>(sp => sp.GetRequiredService<IOptions<PlannerOptions>>().Value.ToPlannerConfig());
-        services.AddScoped<PlannerFactory>(sp => async (IKernel kernel) =>
+        services.AddScoped<PlannerFactoryAsync>(sp => async (IKernel kernel) =>
         {
             // Create a kernel for the planner with the same contexts as the chat's kernel but with only skills we want available to the planner.
             IKernel plannerKernel = new Kernel(new SkillCollection(), kernel.PromptTemplateEngine, kernel.Memory, kernel.Config, kernel.Log);

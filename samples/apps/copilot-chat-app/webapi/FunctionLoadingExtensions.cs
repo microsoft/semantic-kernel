@@ -44,7 +44,7 @@ internal static class FunctionLoadingExtensions
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
         PromptSettings promptSettings,
-        PlannerFactory plannerFactory,
+        PlannerFactoryAsync plannerFactory,
         PlannerOptions plannerOptions,
         DocumentMemoryOptions documentMemoryOptions,
         ILogger logger)

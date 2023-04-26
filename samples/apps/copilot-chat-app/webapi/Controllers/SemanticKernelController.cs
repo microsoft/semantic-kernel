@@ -61,7 +61,7 @@ public class SemanticKernelController : ControllerBase
         [FromServices] ChatSessionRepository chatRepository,
         [FromServices] ChatMessageRepository chatMessageRepository,
         [FromServices] IOptions<DocumentMemoryOptions> documentMemoryOptions,
-        [FromServices] PlannerFactory plannerFactory,
+        [FromServices] PlannerFactoryAsync plannerFactory,
         [FromServices] IOptions<PlannerOptions> plannerOptions,
         [FromBody] Ask ask,
         string skillName, string functionName)
