@@ -212,7 +212,7 @@ public class ChatSkill
             this._kernel.Log);
 
         // Import skills into the planner's kernel.
-        await plannerKernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json")); // Klarna 
+        await plannerKernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json")); // Klarna
 
         // Create the planner
         SequentialPlanner planner = new(
@@ -252,28 +252,7 @@ public class ChatSkill
 
         return informationText;
     }
-
-    /// <summary>
-    /// Extract JSON from an OpenAPI skill response.
-    /// </summary>
-    private bool TryExtractJsonFromOpenApiResponse(string openApiSkillResponse, out string json)
-    {
-        JsonNode? jsonNode = JsonNode.Parse(openApiSkillResponse);
-        string contentType = jsonNode?["contentType"]?.ToString() ?? string.Empty;
-        if (contentType.StartsWith("application/json", StringComparison.InvariantCultureIgnoreCase))
-        {
-            var content = jsonNode?["content"]?.ToString() ?? string.Empty;
-            if (!string.IsNullOrWhiteSpace(content))
-            {
-                json = content;
-                return true;
-            }
-        }
-
-        json = string.Empty;
-        return false;
-    }
-
+    
     /// <summary>
     /// Extract chat history.
     /// </summary>
@@ -410,6 +389,27 @@ public class ChatSkill
     }
 
     #region Private
+
+    /// <summary>
+    /// Extract JSON from an OpenAPI skill response.
+    /// </summary>
+    private bool TryExtractJsonFromOpenApiResponse(string openApiSkillResponse, out string json)
+    {
+        JsonNode? jsonNode = JsonNode.Parse(openApiSkillResponse);
+        string contentType = jsonNode?["contentType"]?.ToString() ?? string.Empty;
+        if (contentType.StartsWith("application/json", StringComparison.InvariantCultureIgnoreCase))
+        {
+            var content = jsonNode?["content"]?.ToString() ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(content))
+            {
+                json = content;
+                return true;
+            }
+        }
+
+        json = string.Empty;
+        return false;
+    }
 
     /// <summary>
     /// Save a new message to the chat history.
