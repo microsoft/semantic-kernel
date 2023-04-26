@@ -21,20 +21,17 @@ param name string = 'SKaaS'
 param location string = resourceGroup().location
 
 @description('SKU for the Azure App Service plan')
-@allowed([
-  'B1'
-  'S1'
-])
 param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
 param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip'
 
-@description('Endpoint for the OpenAI API')
+@description('Azure OpenAI endpoint to use (ignored when using non-Azure instance)')
 param endpoint string = ''
 
-@description('OpenAI API key')
+@secure()
+@description('Azure OpenAI / OpenAI API key')
 param apiKey string = ''
 
 
@@ -105,7 +102,7 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'Embedding:DeploymentOrModelId'
-          value: 'gpt-35-turbo'
+          value: 'text-embedding-ada-002'
         }
         {
           name: 'Embedding:Endpoint'

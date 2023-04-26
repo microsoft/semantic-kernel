@@ -21,10 +21,6 @@ param name string = 'SKaaS'
 param location string = resourceGroup().location
 
 @description('SKU for the Azure App Service plan')
-@allowed([
-  'B1'
-  'S1'
-])
 param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
@@ -144,7 +140,7 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'Embedding:DeploymentOrModelId'
-          value: 'gpt-35-turbo'
+          value: 'text-embedding-ada-002'
         }
         {
           name: 'Embedding:Endpoint'
