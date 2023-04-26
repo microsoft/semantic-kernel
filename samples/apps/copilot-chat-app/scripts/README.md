@@ -1,5 +1,7 @@
 # Copilot Chat Dev Setup Scripts
 
+> **NOTE:**  These scripts are currently for Windows only.
+
 The first script ensures all requirements are installed using the Chocolatey package manager:
 ```
 .\1_install-reqs.cmd
