@@ -529,7 +529,6 @@ public sealed class PlanTests
                 returnContext.Variables.Update("Here is a poem about " + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
-
         var plan = new Plan(mockFunction.Object);
         plan.State.Set("input", "Cleopatra");
 
