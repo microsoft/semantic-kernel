@@ -110,5 +110,5 @@ public partial class ServiceRegistry : INamedServiceCollection
 
     private bool HasDefault<T>()
         => this._defaultIds.TryGetValue(typeof(T), out var defaultName)
-            && !string.IsNullOrEmpty(defaultName);  
+            && !string.IsNullOrEmpty(defaultName);
 }

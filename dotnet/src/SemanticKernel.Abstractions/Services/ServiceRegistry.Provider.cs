@@ -125,7 +125,7 @@ public partial class ServiceRegistry : INamedServiceProvider
                 namedServices.TryGetValue(name, out service);
             }
 
-            var foo =  service as Func<INamedServiceProvider, T>;
+            var foo = service as Func<INamedServiceProvider, T>;
             return foo;
         }
 
