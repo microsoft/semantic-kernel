@@ -45,12 +45,12 @@ const useClasses = makeStyles({
 interface PluginConnectorProps {
     name: Plugins;
     icon: string;
-    company: string;
+    publisher: string;
     authRequirements: PluginAuthRequirements;
     userConsentCallback?: () => {};
 }
 
-export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, company, authRequirements }) => {
+export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, publisher, authRequirements }) => {
     const usernameRequired = authRequirements.username;
     const passwordRequired = authRequirements.password;
     const accessTokenRequired = authRequirements.personalAccessToken;
@@ -130,7 +130,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, co
                                         src: icon,
                                     },
                                 }}
-                                secondaryText={`${company} | Semantic Kernel Skills`}
+                                secondaryText={`${publisher} | Semantic Kernel Skills`}
                             />
                         </DialogTitle>
                         <DialogContent className={classes.content}>
@@ -138,7 +138,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, co
                             You are about to connect to {name}. To continue, you will authorize the following:{' '}
                             <div className={classes.scopes}>
                                 {authRequirements.scopes?.map((scope) => {
-                                    return <Text>{scope}</Text>;
+                                    return <Text key={scope}>{scope}</Text>;
                                 })}
                             </div>
                             {(usernameRequired || accessTokenRequired) && (
@@ -147,7 +147,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, co
                             {(msalRequired || oauthRequired) && (
                                 <Body1>
                                     {' '}
-                                    You will be prompted into sign in with {company} on the next screen if you haven't
+                                    You will be prompted into sign in with {publisher} on the next screen if you haven't
                                     already provided prior consent.
                                 </Body1>
                             )}

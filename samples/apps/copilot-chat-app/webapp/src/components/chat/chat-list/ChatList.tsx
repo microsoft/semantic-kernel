@@ -1,12 +1,12 @@
-import { Button, Label, makeStyles, shorthands, Text } from '@fluentui/react-components';
-import { Tree, TreeItem } from '@fluentui/react-components/unstable';
+// Copyright (c) Microsoft. All rights reserved.
 
-import { BotAdd20Regular } from '@fluentui/react-icons';
+import { Label, makeStyles, shorthands, Text } from '@fluentui/react-components';
+import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 import { FC } from 'react';
-import { useChat } from '../../../libs/useChat';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { ChatListItem } from './ChatListItem';
+import { NewBotMenu } from './NewBotMenu';
 
 const useClasses = makeStyles({
     root: {
@@ -38,11 +38,6 @@ const useClasses = makeStyles({
 export const ChatList: FC = () => {
     const classes = useClasses();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const chat = useChat();
-
-    const onAddChat = () => {
-        chat.createChat();
-    };
 
     return (
         <>
@@ -51,13 +46,7 @@ export const ChatList: FC = () => {
                     <Text weight="bold" size={500}>
                         Conversations
                     </Text>
-                    <div>
-                        {/* TODO: Allow users to filter conversations by name
-                        <Button
-                        icon={<Filter20Regular />}
-                        appearance="transparent" /> */}
-                        <Button icon={<BotAdd20Regular />} appearance="transparent" onClick={onAddChat} />
-                    </div>
+                    <NewBotMenu />
                 </div>
                 <Label className={classes.label}>Your Bot</Label>
                 <Tree aria-label={'chat list'}>

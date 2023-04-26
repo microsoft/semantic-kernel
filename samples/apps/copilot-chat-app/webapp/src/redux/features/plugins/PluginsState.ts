@@ -3,6 +3,10 @@ import GithubIcon from '../../../assets/github-icon.png';
 import GraphIcon from '../../../assets/graph-api-icon.png';
 import JiraIcon from '../../../assets/jira-icon.png';
 
+/*
+ * For each Open API Spec you're supporting in the Kernel,
+ * add all the relevant information here.
+ */
 export const enum Plugins {
     MsGraph = 'Microsoft Graph',
     Jira = 'Jira',
@@ -27,13 +31,13 @@ export type PluginAuthRequirements = {
 
 export type Plugin = {
     name: Plugins;
-    company: string;
+    publisher: string;
     description: string;
     enabled: boolean;
-    authRequirements: PluginAuthRequirements; // token or encoded auth header value
+    authRequirements: PluginAuthRequirements;
     headerTag: AuthHeaderTags;
-    icon: string;
-    authData?: string;
+    icon: string; // Can be imported as shown above or direct URL
+    authData?: string; // token or encoded auth header value
 };
 
 export interface PluginsState {
@@ -45,7 +49,7 @@ export interface PluginsState {
 export const initialState: PluginsState = {
     MsGraph: {
         name: Plugins.MsGraph,
-        company: 'Microsoft',
+        publisher: 'Microsoft',
         description: 'Use your Microsoft Account to access your personal Graph information and Microsoft services.',
         enabled: false,
         authRequirements: {
@@ -57,7 +61,7 @@ export const initialState: PluginsState = {
     },
     Jira: {
         name: Plugins.Jira,
-        company: 'Atlassian',
+        publisher: 'Atlassian',
         description: 'Authorize Copilot Chat to post and link with Jira when there are issues.',
         enabled: false,
         authRequirements: {
@@ -70,7 +74,7 @@ export const initialState: PluginsState = {
     },
     GitHub: {
         name: Plugins.GitHub,
-        company: 'Microsoft',
+        publisher: 'Microsoft',
         description:
             'Integrate Github with Copilot Chat, i.e., allow Copilot ChatBot to list active Pull Requests for you.',
         enabled: false,

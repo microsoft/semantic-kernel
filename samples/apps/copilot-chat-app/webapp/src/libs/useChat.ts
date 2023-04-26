@@ -15,11 +15,13 @@ import {
 import { AuthHelper } from './auth/AuthHelper';
 import { useConnectors } from './connectors/useConnectors'; // ConnectorTokenExample
 import { AlertType } from './models/AlertType';
+import { Bot } from './models/Bot';
 import { AuthorRoles, ChatMessage } from './models/ChatMessage';
 import { ChatUser } from './models/ChatUser';
 import { IAsk } from './semantic-kernel/model/Ask';
 import { IAskResult, Variables } from './semantic-kernel/model/AskResult';
 import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
+import { BotService } from './services/BotService';
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
@@ -29,6 +31,7 @@ export const useChat = () => {
     const { botProfilePictureIndex } = useAppSelector((state: RootState) => state.conversations);
 
     const connectors = useConnectors();
+    const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
 
     const botProfilePictures: string[] = [
         '/assets/bot-icon-1.png',
@@ -63,7 +66,7 @@ export const useChat = () => {
     };
 
     const createChat = async () => {
-        const chatTitle = `SK Chatbot @ ${new Date().toLocaleString()}`;
+        const chatTitle = `Copilot @ ${new Date().toLocaleString()}`;
         try {
             var ask: IAsk = {
                 input: chatTitle,
@@ -208,10 +211,31 @@ export const useChat = () => {
         }
     };
 
+    const downloadBot = async (chatId: string) => {
+        try {
+            return botService.downloadAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance));
+        } catch (e: any) {
+            const errorMessage = `Unable to download the bot. Details: ${e.message ?? e}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+    };
+
+    const uploadBot = async (bot: Bot) => {
+        botService
+            .uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
+            .then(() => loadChats())
+            .catch((e: any) => {
+                const errorMessage = `Unable to upload the bot. Details: ${e.message ?? e}`;
+                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            });
+    };
+
     return {
         getAudienceMemberForId,
         createChat,
         loadChats,
         getResponse,
+        downloadBot,
+        uploadBot,
     };
 };

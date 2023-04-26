@@ -1,13 +1,13 @@
 export const Constants = {
     app: {
-        name: 'SK Chatbot',
+        name: 'Copilot',
         updateCheckIntervalSeconds: 60 * 5,
     },
     msal: {
         method: 'redirect', // 'redirect' | 'popup'
         auth: {
             clientId: process.env.REACT_APP_AAD_CLIENT_ID as string,
-            authority: `https://login.microsoftonline.com/common`,
+            authority: process.env.REACT_APP_AAD_AUTHORITY as string,
         },
         cache: {
             cacheLocation: 'localStorage',
@@ -18,7 +18,7 @@ export const Constants = {
     bot: {
         profile: {
             id: 'bot',
-            fullName: 'SK Chatbot',
+            fullName: 'Copilot',
             emailAddress: '',
             photo: '/assets/bot-icon-1.png',
         },

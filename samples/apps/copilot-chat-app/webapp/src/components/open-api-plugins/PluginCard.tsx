@@ -47,7 +47,7 @@ interface PluginCardProps {
 }
 
 export const PluginCard: React.FC<PluginCardProps> = ({ plugin }) => {
-    const { name, company, enabled, authRequirements, icon, description } = plugin;
+    const { name, publisher, enabled, authRequirements, icon, description } = plugin;
 
     const styles = useStyles();
     const dispatch = useAppDispatch();
@@ -62,7 +62,7 @@ export const PluginCard: React.FC<PluginCardProps> = ({ plugin }) => {
             <CardHeader
                 image={<img className={styles.logo} src={icon} alt={`Plugin ${name} logo`} />}
                 header={<Text weight="semibold">{name}</Text>}
-                description={<Caption1 className={styles.caption}>{company}</Caption1>}
+                description={<Caption1 className={styles.caption}>{publisher}</Caption1>}
                 action={
                     enabled ? (
                         <Button aria-label="Disconnect plugin" appearance="secondary" onClick={onDisconnectClick}>
@@ -72,7 +72,7 @@ export const PluginCard: React.FC<PluginCardProps> = ({ plugin }) => {
                         <PluginConnector
                             name={name}
                             icon={icon}
-                            company={company}
+                            publisher={publisher}
                             authRequirements={authRequirements}
                         />
                     )

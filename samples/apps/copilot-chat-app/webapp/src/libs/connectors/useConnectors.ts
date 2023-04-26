@@ -54,8 +54,8 @@ export const useConnectors = () => {
      * Helper function to invoke SK skills
      * with GitHub token.
      */
-    const invokeSkillWithGitHubToken = async (_ask: IAsk, _skillName: string, _functionName: string) => {
-        // TODO: For testing, change to use parameters
+    const invokeSkillWithGitHubToken = async () => {
+        // TODO: For testing, change as needed
         const listPullRequestsAsk = {
             input: 'input',
             variables: [
@@ -77,6 +77,11 @@ export const useConnectors = () => {
         );
     };
 
+    /*
+     * Once enabled, each plugin will have a custom dedicated header in every SK request
+     * containing respective auth information (i.e., token, encoded client info, etc.)
+     * that the server can use to authenticate to the downstream APIs
+     */
     const getEnabledPlugins = () => {
         const enabledPlugins: { headerTag: any; authData: any }[] = [];
         Object.entries(plugins).map((entry) => {

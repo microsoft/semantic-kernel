@@ -59,7 +59,7 @@ export const PluginGallery: React.FC = () => {
                             </DialogTrigger>
                         }
                     >
-                        <Subtitle1 as="h4" block className={classes.title}>
+                        <Subtitle1 block className={classes.title}>
                             Connect with Copilot Chat Plugins
                         </Subtitle1>
                         <Body1 as="p" block className={classes.description}>
@@ -67,13 +67,13 @@ export const PluginGallery: React.FC = () => {
                         </Body1>
                     </DialogTitle>
                     <DialogContent>
-                        <Subtitle2 as="h4" block className={classes.title}>
+                        <Subtitle2 block className={classes.title}>
                             Available Plugins
                         </Subtitle2>{' '}
                         <div className={classes.content}>
                             {Object.entries(plugins).map((entry) => {
                                 const plugin = entry[1];
-                                return <PluginCard plugin={plugin} />;
+                                return <PluginCard key={plugin.name} plugin={plugin} />;
                             })}
                         </div>
                     </DialogContent>
