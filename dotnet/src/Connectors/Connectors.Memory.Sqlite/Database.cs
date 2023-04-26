@@ -20,7 +20,7 @@ internal struct DatabaseEntry
     public string? Timestamp { get; set; }
 }
 
-internal class Database
+internal sealed class Database
 {
     private const string TableName = "SKMemoryTable";
 
