@@ -121,18 +121,17 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         var planString =
-            @"<goal>
-Summarize an input, translate to french, and e-mail to John Doe
-</goal>
+            @"
 <plan>
     <function.SummarizeSkill.Summarize/>
     <function.WriterSkill.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
     <function.email.GetEmailAddressAsync input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
     <function.email.SendEmailAsync input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
 </plan>";
+        var goal = "Summarize an input, translate to french, and e-mail to John Doe";
 
         // Act
-        var plan = planString.ToPlanFromXml(kernel.CreateNewContext());
+        var plan = planString.ToPlanFromXml(goal, kernel.CreateNewContext());
 
         // Assert
         Assert.NotNull(plan);
@@ -176,10 +175,10 @@ Summarize an input, translate to french, and e-mail to John Doe
     {
         // Arrange
         this.CreateKernelAndFunctionCreateMocks(new(), out var kernel);
-        var planString = "<someTag>" + GoalText;
+        var planString = "<someTag>";
 
         // Act
-        Assert.Throws<PlanningException>(() => planString.ToPlanFromXml(kernel.CreateNewContext()));
+        Assert.Throws<PlanningException>(() => planString.ToPlanFromXml(GoalText, kernel.CreateNewContext()));
     }
 
     // Test that contains a #text node in the plan
@@ -199,7 +198,7 @@ Summarize an input, translate to french, and e-mail to John Doe
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(kernel.CreateNewContext());
+        var plan = planText.ToPlanFromXml(goalText, kernel.CreateNewContext());
 
         // Assert
         Assert.NotNull(plan);
@@ -213,8 +212,7 @@ Summarize an input, translate to french, and e-mail to John Doe
 
     // test that a <tag> that is not <function> will just get skipped
     [Theory]
-    [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
-    <plan>
+    [InlineData("Test the functionFlowRunner", @"<plan>
     <function.MockSkill.Echo input=""Hello World"" />
     <tag>Some other tag</tag>
     <function.MockSkill.Echo />
@@ -229,7 +227,7 @@ Summarize an input, translate to french, and e-mail to John Doe
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(kernel.CreateNewContext());
+        var plan = planText.ToPlanFromXml(goalText, kernel.CreateNewContext());
 
         // Assert
         Assert.NotNull(plan);
