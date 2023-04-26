@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.16.2.56959",
-      "templateHash": "17284946455957737390"
+      "templateHash": "14657782453799287305"
     }
   },
   "parameters": {
@@ -26,10 +26,6 @@
     "appServiceSku": {
       "type": "string",
       "defaultValue": "B1",
-      "allowedValues": [
-        "B1",
-        "S1"
-      ],
       "metadata": {
         "description": "SKU for the Azure App Service plan"
       }
@@ -45,14 +41,14 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Endpoint for the OpenAI API"
+        "description": "Azure OpenAI endpoint to use (ignored when using non-Azure instance)"
       }
     },
     "apiKey": {
-      "type": "string",
+      "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "OpenAI API key"
+        "description": "Azure OpenAI / OpenAI API key"
       }
     }
   },
@@ -126,7 +122,7 @@
             },
             {
               "name": "Embedding:DeploymentOrModelId",
-              "value": "gpt-35-turbo"
+              "value": "text-embedding-ada-002"
             },
             {
               "name": "Embedding:Endpoint",

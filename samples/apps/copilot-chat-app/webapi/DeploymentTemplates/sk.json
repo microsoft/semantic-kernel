@@ -162,7 +162,7 @@
             },
             {
               "name": "Embedding:DeploymentOrModelId",
-              "value": "gpt-35-turbo"
+              "value": "text-embedding-ada-002"
             },
             {
               "name": "Embedding:Endpoint",

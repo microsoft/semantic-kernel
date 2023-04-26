@@ -6,6 +6,10 @@ Azure currently limits the number of OpenAI resources per region per subscriptio
 
 To do so, or to use an OpenAI instance from [openai.com](https://openai.com), use the version of the deployment template that uses existing OpenAI resources.
 
+Either way, you also need to have the necessary permissions to create resources in the target subscription.
+
+Also note that the F1 and D1 App Service SKU's (the Free and Shared ones) are not supported for this deployment.
+
 ## Deploying with a new Azure OpenAI instance
 
 Use the [DeploySKaaS.ps1](DeploySKaaS.ps1) file found in this folder:
@@ -25,10 +29,10 @@ Alternatively, you can deploy by clicking on the following button:
 
 Use the [DeploySKaaS-ReUse-AI.ps1](DeploySKaaS-ReUse-AI.ps1) file found in this folder:
 ```powershell
-.\DeploySKaaS-ReUse-AI.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -Endpoint "YOUR_AZURE_OPENAI_ENDPOINT"
+.\DeploySKaaS-Existing-AI.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -Endpoint "YOUR_AZURE_OPENAI_ENDPOINT"
 ```
 
-Note: don't provide the Azure OpenAI endpoint if you are using an OpenAI instance from [openai.com](https://openai.com).
+Note: the Azure OpenAI endpoint is ignored when you are using an OpenAI instance from [openai.com](https://openai.com).
 
 Alternatively, you can deploy by clicking on the following button:
 
@@ -42,3 +46,10 @@ https://YOUR_INSTANCES_NAME.azurewebsites.net/probe
 ## Using web front ends to access your deployment
 
 Make sure to include your front end's URL as an allowed origin in your deployment's CORS settings. Otherwise, web browsers will refuse to let JavaScript make calls to your deployment.
+
+## Cleaning up
+
+Once you are done with your resources, you can delete them from the Azure portal. You can also simply delete the resource group in which they are from the portal or through the following [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/) command:
+```powershell
+az group delete --name YOUR_RESOURCE_GROUP
+```
