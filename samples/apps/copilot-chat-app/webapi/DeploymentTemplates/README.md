@@ -19,7 +19,7 @@ For more options, see the deployment script.
 
 Alternatively, you can deploy by clicking on the following button:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2Fglahaye%2Fsemantic-kernel%2Ftree%2Fdeploy%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fwebapi%2FDeploymentTemplates%2Fsk.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fglahaye%2Fsemantic-kernel%2Ftree%2Fdeploy%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fwebapi%2FDeploymentTemplates%2Fsk.json)
 
 ## Deploying with an existing OpenAI instance
 
@@ -32,4 +32,13 @@ Note: don't provide the Azure OpenAI endpoint if you are using an OpenAI instanc
 
 Alternatively, you can deploy by clicking on the following button:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2Fglahaye%2Fsemantic-kernel%2Ftree%2Fdeploy%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fwebapi%2FDeploymentTemplates%2Fsk-existing-ai.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fglahaye%2Fsemantic-kernel%2Ftree%2Fdeploy%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fwebapi%2FDeploymentTemplates%2Fsk-existing-ai.json)
+
+## Verifying the deployment
+
+To make sure your instance of Semantic Kernel as a Service is running, go to
+https://YOUR_INSTANCES_NAME.azurewebsites.net/probe
+
+## Using web front ends to access your deployment
+
+Make sure to include your front end's URL as an allowed origin in your deployment's CORS settings. Otherwise, web browsers will refuse to let JavaScript make call to your deployment.
