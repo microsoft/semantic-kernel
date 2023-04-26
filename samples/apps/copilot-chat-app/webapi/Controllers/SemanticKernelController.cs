@@ -46,6 +46,8 @@ public class SemanticKernelController : ControllerBase
     /// <param name="chatRepository">Storage repository to store chat sessions</param>
     /// <param name="chatMessageRepository">Storage repository to store chat messages</param>
     /// <param name="documentMemoryOptions">Options for document memory handling.</param>
+    /// <param name="plannerFactory">Factory for planners to use to create function sequences.</param>
+    /// <param name="plannerOptions">Options for the planner.</param>
     /// <param name="ask">Prompt along with its parameters</param>
     /// <param name="openApiSkillsAuthHeaders">Authentication headers to connect to Open API Skills</param>
     /// <param name="skillName">Skill in which function to invoke resides</param>
@@ -62,6 +64,8 @@ public class SemanticKernelController : ControllerBase
         [FromServices] ChatSessionRepository chatRepository,
         [FromServices] ChatMessageRepository chatMessageRepository,
         [FromServices] IOptions<DocumentMemoryOptions> documentMemoryOptions,
+        [FromServices] PlannerFactoryAsync plannerFactory,
+        [FromServices] IOptions<SequentialPlannerOptions> plannerOptions,
         [FromBody] Ask ask,
         [FromHeader] OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders,
         string skillName, string functionName)
@@ -75,12 +79,20 @@ public class SemanticKernelController : ControllerBase
 
         await this.RegisterOpenApiSkillsAsync(openApiSkillsAuthHeaders, kernel);
 
+        // Not required for Copilot Chat, but this is how to register additional skills for the service to provide.
         if (!string.IsNullOrWhiteSpace(this._options.SemanticSkillsDirectory))
         {
             kernel.RegisterSemanticSkills(this._options.SemanticSkillsDirectory, this._logger);
         }
 
-        kernel.RegisterNativeSkills(chatRepository, chatMessageRepository, this._promptSettings, documentMemoryOptions.Value, this._logger);
+        kernel.RegisterNativeSkills(
+            chatSessionRepository: chatRepository,
+            chatMessageRepository: chatMessageRepository,
+            promptSettings: this._promptSettings,
+            plannerFactory: plannerFactory,
+            plannerOptions: plannerOptions.Value,
+            documentMemoryOptions: documentMemoryOptions.Value,
+            logger: this._logger);
 
         ISKFunction? function = null;
         try
