@@ -32,7 +32,7 @@ public class FileIOSkill
     public async Task<string> ReadAsync(string path)
     {
         using var reader = File.OpenText(path);
-        return await reader.ReadToEndAsync();
+        return await reader.ReadToEndAsync().ConfigureAwait(false);
     }
 
     /// <summary>
@@ -52,6 +52,6 @@ public class FileIOSkill
     {
         byte[] text = Encoding.UTF8.GetBytes(context["content"]);
         using var writer = File.OpenWrite(context["path"]);
-        await writer.WriteAsync(text, 0, text.Length);
+        await writer.WriteAsync(text, 0, text.Length).ConfigureAwait(false);
     }
 }

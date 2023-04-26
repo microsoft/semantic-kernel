@@ -59,7 +59,7 @@ public sealed class Plan : ISKFunction
     /// Gets the next step index.
     /// </summary>
     [JsonPropertyName("next_step_index")]
-    public int NextStepIndex { get; internal set; } = 0;
+    public int NextStepIndex { get; private set; }
 
     #region ISKFunction implementation
 
@@ -77,11 +77,11 @@ public sealed class Plan : ISKFunction
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public bool IsSemantic { get; internal set; } = false;
+    public bool IsSemantic { get; private set; }
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public CompleteRequestSettings RequestSettings { get; internal set; } = new();
+    public CompleteRequestSettings RequestSettings { get; private set; } = new();
 
     #endregion ISKFunction implementation
 
@@ -239,7 +239,7 @@ public sealed class Plan : ISKFunction
 
             // Execute the step
             var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
-            var result = await step.InvokeAsync(functionContext);
+            var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -293,11 +293,11 @@ public sealed class Plan : ISKFunction
     public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
         CancellationToken? cancel = null)
     {
-        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
+        context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
 
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings, log, cancel);
+            var result = await this.Function.InvokeAsync(context, settings, log, cancel).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -318,7 +318,7 @@ public sealed class Plan : ISKFunction
 
                 AddVariablesToContext(this.State, functionContext);
 
-                await this.InvokeNextStepAsync(functionContext);
+                await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
 
                 context.Variables.Update(this.State.ToString());
             }

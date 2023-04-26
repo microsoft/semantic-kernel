@@ -5,10 +5,10 @@ from unittest.mock import Mock
 
 from pytest import raises
 
-from semantic_kernel.ai.open_ai.services.azure_text_completion import (
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
     AzureTextCompletion,
 )
-from semantic_kernel.ai.open_ai.services.open_ai_text_completion import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
     OpenAITextCompletion,
 )
 

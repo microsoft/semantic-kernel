@@ -42,16 +42,16 @@ public class SequentialPlanner
     /// <returns>The plan.</returns>
     public async Task<Plan> CreatePlanAsync(string goal)
     {
-        string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config);
+        string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config).ConfigureAwait(false);
         this._context.Variables.Set("available_functions", relevantFunctionsManual);
 
         this._context.Variables.Update(goal);
 
-        var planResult = await this._functionFlowFunction.InvokeAsync(this._context);
+        var planResult = await this._functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
 
-        string fullPlan = $"<{SequentialPlanParser.GoalTag}>\n{goal}\n</{SequentialPlanParser.GoalTag}>\n{planResult.Result.Trim()}";
+        string planResultString = planResult.Result.Trim();
 
-        var plan = fullPlan.ToPlanFromXml(this._context);
+        var plan = planResultString.ToPlanFromXml(goal, this._context);
 
         return plan;
     }
