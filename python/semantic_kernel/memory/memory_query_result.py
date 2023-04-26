@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from typing import Optional
+
 from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -23,7 +24,7 @@ class MemoryQueryResult:
         description: Optional[str],
         text: Optional[str],
         embedding: Optional[ndarray],
-        relevance: float
+        relevance: float,
     ) -> None:
         """Initialize a new instance of MemoryQueryResult.
 

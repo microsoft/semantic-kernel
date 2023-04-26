@@ -2,10 +2,13 @@
 
 from abc import abstractmethod
 from typing import List, Tuple
+
 from numpy import ndarray
+
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-class MemoryStoreBase():
+
+class MemoryStoreBase:
     @abstractmethod
     async def create_collection_async(
         self,
@@ -16,7 +19,7 @@ class MemoryStoreBase():
 
     @abstractmethod
     async def get_collections_async(
-        self        
+        self,
         # TODO: cancel token
     ) -> List[str]:
         pass
@@ -104,7 +107,7 @@ class MemoryStoreBase():
         # TODO: cancel token
     ) -> List[Tuple[MemoryRecord, float]]:
         pass
-    
+
     @abstractmethod
     async def get_nearest_matche_async(
         self,

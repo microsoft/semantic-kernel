@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import List, Optional, Tuple, Dict
 from copy import deepcopy
+from logging import Logger
+from typing import Dict, List, Optional, Tuple
 
 from numpy import array, linalg, ndarray
 
@@ -23,7 +23,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         Arguments:
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
-        
+
     async def create_collection_async(
         self,
         collection_name: str
@@ -43,7 +43,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             self._store[collection_name] = {}
 
     async def get_collections_async(
-        self        
+        self,
         # TODO: cancel token
     ) -> List[str]:
         """Gets the list of collections.
@@ -78,7 +78,7 @@ class VolatileMemoryStore(MemoryStoreBase):
 
         Arguments:
             collection_name {str} -- The name of the collection to check.
-        
+
         Returns:
             bool -- True if the collection exists; otherwise, False.
         """
@@ -91,7 +91,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         # TODO: cancel token
     ) -> str:
         """Upserts a record.
-        
+
         Arguments:
             collection_name {str} -- The name of the collection to upsert the record into.
             record {MemoryRecord} -- The record to upsert.
@@ -101,7 +101,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
-        
+
         record._key = record._id
         self._store[collection_name][record._key] = record
         return record._key
@@ -117,13 +117,13 @@ class VolatileMemoryStore(MemoryStoreBase):
         Arguments:
             collection_name {str} -- The name of the collection to upsert the records into.
             records {List[MemoryRecord]} -- The records to upsert.
-        
+
         Returns:
             List[str] -- The unqiue database keys of the records.
         """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
-        
+
         for record in records:
             record._key = record._id
             self._store[collection_name][record._key] = record
@@ -148,7 +148,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
-        
+
         if key not in self._store[collection_name]:
             raise Exception(f"Key '{key}' not found in collection '{collection_name}'")
 
@@ -179,8 +179,12 @@ class VolatileMemoryStore(MemoryStoreBase):
         """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
-        
-        results = [self._store[collection_name][key] for key in keys if key in self._store[collection_name]]
+
+        results = [
+            self._store[collection_name][key]
+            for key in keys
+            if key in self._store[collection_name]
+        ]
 
         if not with_embeddings:
             # create copy of results without embeddings
@@ -206,7 +210,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
-        
+
         if key not in self._store[collection_name]:
             raise Exception(f"Key '{key}' not found in collection '{collection_name}'")
 
@@ -229,11 +233,11 @@ class VolatileMemoryStore(MemoryStoreBase):
         """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
-        
+
         for key in keys:
             if key in self._store[collection_name]:
                 del self._store[collection_name][key]
-    
+
     async def get_nearest_match_async(
         self,
         collection_name: str,
@@ -253,7 +257,13 @@ class VolatileMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        return self.get_nearest_matches_async(collection_name=collection_name, embedding=embedding, limit=1, min_relevance_score=min_relevance_score, with_embeddings=with_embedding)
+        return self.get_nearest_matches_async(
+            collection_name=collection_name,
+            embedding=embedding,
+            limit=1,
+            min_relevance_score=min_relevance_score,
+            with_embeddings=with_embedding,
+        )
 
     async def get_nearest_matches_async(
         self,
@@ -278,7 +288,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         """
         if collection_name not in self._store:
             return []
-        
+
         # Get all the records in the collection
         memory_records = list(self._store[collection_name].values())
 
@@ -327,7 +337,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             embedding_array {ndarray} -- The group of embeddings.
 
         Returns:
-            ndarray -- The cosine similarity scores.    
+            ndarray -- The cosine similarity scores.
         """
         query_norm = linalg.norm(embedding)
         collection_norm = linalg.norm(embedding_array, axis=1)

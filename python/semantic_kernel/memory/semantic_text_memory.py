@@ -19,10 +19,11 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         self, storage: MemoryStoreBase, embeddings_generator: EmbeddingGeneratorBase
     ) -> None:
         """Initialize a new instance of SemanticTextMemory.
-        
+
         Arguments:
             storage {MemoryStoreBase} -- The MemoryStoreBase to use for storage.
-            embeddings_generator {EmbeddingGeneratorBase} -- The EmbeddingGeneratorBase to use for generating embeddings.
+            embeddings_generator {EmbeddingGeneratorBase} -- The EmbeddingGeneratorBase
+                to use for generating embeddings.
 
         Returns:
             None -- None.
@@ -38,7 +39,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         description: Optional[str] = None,
     ) -> None:
         """Save information to the memory (calls the memory store's upsert method).
-        
+
         Arguments:
             collection {str} -- The collection to save the information to.
             text {str} -- The text to save.
@@ -47,13 +48,17 @@ class SemanticTextMemory(SemanticTextMemoryBase):
 
         Returns:
             None -- None.
-        """        
-        #TODO: not the best place to create collection, but will address this behavior together with .NET SK
-        if not await self._storage.does_collection_exist_async(collection_name=collection):
+        """
+        # TODO: not the best place to create collection, but will address this behavior together with .NET SK
+        if not await self._storage.does_collection_exist_async(
+            collection_name=collection
+        ):
             await self._storage.create_collection_async(collection_name=collection)
 
         embedding = await self._embeddings_generator.generate_embeddings_async([text])
-        data = MemoryRecord.local_record(id=id, text=text, description=description, embedding=embedding)
+        data = MemoryRecord.local_record(
+            id=id, text=text, description=description, embedding=embedding
+        )
 
         await self._storage.upsert_async(collection_name=collection, record=data)
 
@@ -76,14 +81,19 @@ class SemanticTextMemory(SemanticTextMemoryBase):
 
         Returns:
             None -- None.
-        """        
-        #TODO: not the best place to create collection, but will address this behavior together with .NET SK
-        if not await self._storage.does_collection_exist_async(collection_name=collection):
+        """
+        # TODO: not the best place to create collection, but will address this behavior together with .NET SK
+        if not await self._storage.does_collection_exist_async(
+            collection_name=collection
+        ):
             await self._storage.create_collection_async(collection_name=collection)
 
         embedding = await self._embeddings_generator.generate_embeddings_async([text])
         data = MemoryRecord.reference_record(
-            id=external_id, source_name=external_source_name, description=description, embedding=embedding
+            id=external_id,
+            source_name=external_source_name,
+            description=description,
+            embedding=embedding,
         )
 
         await self._storage.upsert_async(collection_name=collection, record=data)
@@ -130,10 +140,10 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         )
         results = await self._storage.get_nearest_matches_async(
             collection_name=collection,
-            embedding=query_embedding, 
-            limit=limit, 
+            embedding=query_embedding,
+            limit=limit,
             min_relevance_score=min_relevance_score,
-            with_embeddings=with_embeddings
+            with_embeddings=with_embeddings,
         )
 
         return [MemoryQueryResult.from_memory_record(r[0], r[1]) for r in results]
