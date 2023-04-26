@@ -23,9 +23,9 @@ internal static class FunctionViewExtensions
         }));
 
         return $@"{function.ToFullyQualifiedName()}:
-description: {function.Description}
-inputs:
-{inputs}";
+  description: {function.Description}
+  inputs:
+  {inputs}";
     }
 
     /// <summary>
