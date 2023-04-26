@@ -61,7 +61,7 @@ public class ChatHistoryController : ControllerBase
         var initialBotMessage = this._promptSettings.InitialBotMessage;
         await this.SaveResponseAsync(initialBotMessage, newChat.Id);
 
-        this._logger.LogDebug($"Created chat session with id {newChat.Id} for user {userId}.");
+        this._logger.LogDebug("Created chat session with id {0} for user {1}.", newChat.Id, userId);
         return this.CreatedAtAction(nameof(this.GetChatByIdAsync), new { chatId = newChat.Id }, newChat);
     }
 
