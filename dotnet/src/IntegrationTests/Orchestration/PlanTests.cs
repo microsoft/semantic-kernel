@@ -75,7 +75,7 @@ public sealed class PlanTests : IDisposable
         // Arrange
         IKernel target = this.InitializeKernel();
         var emailSkill = target.ImportSkill(new EmailSkillFake());
-        var writerSkill = TestHelpers.GetSkill("WriterSkill", target);
+        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
         var plan = new Plan(goal);
@@ -195,8 +195,8 @@ public sealed class PlanTests : IDisposable
         // Arrange
         IKernel target = this.InitializeKernel();
 
-        var summarizeSkill = TestHelpers.GetSkill("SummarizeSkill", target);
-        var writerSkill = TestHelpers.GetSkill("WriterSkill", target);
+        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
         var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
@@ -264,8 +264,8 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var summarizeSkill = TestHelpers.GetSkill("SummarizeSkill", target);
-        var writerSkill = TestHelpers.GetSkill("WriterSkill", target);
+        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
         var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
@@ -319,8 +319,8 @@ public sealed class PlanTests : IDisposable
         // Arrange
         IKernel target = this.InitializeKernel();
 
-        var summarizeSkill = TestHelpers.GetSkill("SummarizeSkill", target);
-        var writerSkill = TestHelpers.GetSkill("WriterSkill", target);
+        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
         var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();

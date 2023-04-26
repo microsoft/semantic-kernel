@@ -35,8 +35,9 @@ internal static class Example12_Planning
             Env.Var("AZURE_OPENAI_KEY"));
 
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder,
+            "SummarizeSkill",
+            "WriterSkill");
 
         var planner = new SequentialPlanner(kernel);
 
@@ -66,8 +67,9 @@ internal static class Example12_Planning
 
         // Load additional skills to enable planner to do non-trivial asks.
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder,
+            "SummarizeSkill",
+            "WriterSkill");
 
         var plan = await planner.CreatePlanAsync("Summarize an input, translate to french, and e-mail to John Doe");
 
@@ -163,17 +165,18 @@ internal static class Example12_Planning
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "CalendarSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "ChatSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "ChildrensBookSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "ClassificationSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "CodingSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "IntentDetectionSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "MiscSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "QASkill");
+        kernel.ImportSemanticSkillFromDirectory(folder,
+            "SummarizeSkill",
+            "WriterSkill",
+            "CalendarSkill",
+            "ChatSkill",
+            "ChildrensBookSkill",
+            "ClassificationSkill",
+            "CodingSkill",
+            "FunSkill",
+            "IntentDetectionSkill",
+            "MiscSkill",
+            "QASkill");
 
         kernel.ImportSkill(new EmailSkill(), "email");
         kernel.ImportSkill(new StaticTextSkill(), "statictext");
