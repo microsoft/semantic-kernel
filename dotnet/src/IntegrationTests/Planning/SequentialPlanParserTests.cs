@@ -46,18 +46,16 @@ public class SequentialPlanParserTests
         var writerSkill = TestHelpers.GetSkill("WriterSkill", kernel);
 
         var planString =
-            @"<goal>
-Summarize an input, translate to french, and e-mail to John Doe
-</goal>
-<plan>
+            @"<plan>
     <function.SummarizeSkill.Summarize/>
     <function.WriterSkill.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
     <function.email.GetEmailAddressAsync input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
     <function.email.SendEmailAsync input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
 </plan>";
+        var goal = "Summarize an input, translate to french, and e-mail to John Doe";
 
         // Act
-        var plan = planString.ToPlanFromXml(kernel.CreateNewContext());
+        var plan = planString.ToPlanFromXml(goal, kernel.CreateNewContext());
 
         // Assert
         Assert.NotNull(plan);
