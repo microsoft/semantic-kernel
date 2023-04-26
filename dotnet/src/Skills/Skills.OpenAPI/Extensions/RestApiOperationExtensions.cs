@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
+#pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.
