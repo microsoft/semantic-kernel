@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Cosmos {
+namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Cosmos {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.SemanticKernel.Connectors.Memory.Cosmos.ScriptResources", typeof(ScriptResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb.ScriptResources", typeof(ScriptResources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

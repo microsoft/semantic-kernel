@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
-using Microsoft.SemanticKernel.Connectors.Memory.Cosmos;
+using Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb;
 using Microsoft.SemanticKernel.Memory;
 
 namespace SemanticKernel.Connectors.UnitTests.Memory.CosmosDB;
