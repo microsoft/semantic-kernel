@@ -22,9 +22,23 @@ class MemoryQueryResult:
         id: str,
         description: Optional[str],
         text: Optional[str],
-        relevance: float,
-        embedding: Optional[ndarray]
+        embedding: Optional[ndarray],
+        relevance: float
     ) -> None:
+        """Initialize a new instance of MemoryQueryResult.
+
+        Arguments:
+            is_reference {bool} -- Whether the record is a reference record.
+            external_source_name {Optional[str]} -- The name of the external source.
+            id {str} -- A unique for the record.
+            description {Optional[str]} -- The description of the record.
+            text {Optional[str]} -- The text of the record.
+            embedding {ndarray} -- The embedding of the record.
+            relevance {float} -- The relevance of the record to a known query.
+
+        Returns:
+            None -- None.
+        """
         self.is_reference = is_reference
         self.external_source_name = external_source_name
         self.id = id
@@ -38,6 +52,15 @@ class MemoryQueryResult:
         record: MemoryRecord,
         relevance: float,
     ) -> "MemoryQueryResult":
+        """Create a new instance of MemoryQueryResult from a MemoryRecord.
+
+        Arguments:
+            record {MemoryRecord} -- The MemoryRecord to create the MemoryQueryResult from.
+            relevance {float} -- The relevance of the record to a known query.
+
+        Returns:
+            MemoryQueryResult -- The created MemoryQueryResult.
+        """
         return MemoryQueryResult(
             is_reference=record._is_reference,
             external_source_name=record._external_source_name,

@@ -26,6 +26,19 @@ class MemoryRecord:
         key: Optional[str] = None,
         timestamp: Optional[str] = None,
     ) -> None:
+        """Initialize a new instance of MemoryRecord.
+
+        Arguments:
+            is_reference {bool} -- Whether the record is a reference record.
+            external_source_name {Optional[str]} -- The name of the external source.
+            id {str} -- A unique for the record.
+            description {Optional[str]} -- The description of the record.
+            text {Optional[str]} -- The text of the record.
+            embedding {ndarray} -- The embedding of the record.
+
+        Returns:
+            None -- None.
+        """
         self._key = key
         self._timestamp = timestamp
         self._is_reference = is_reference
@@ -46,6 +59,17 @@ class MemoryRecord:
         description: Optional[str],
         embedding: ndarray,
     ) -> "MemoryRecord":
+        """Create a reference record.
+
+        Arguments:
+            external_id {str} -- The external id of the record.
+            source_name {str} -- The name of the external source.
+            description {Optional[str]} -- The description of the record.
+            embedding {ndarray} -- The embedding of the record.
+
+        Returns:
+            MemoryRecord -- The reference record.
+        """
         return MemoryRecord(
             is_reference=True,
             external_source_name=source_name,
@@ -59,6 +83,17 @@ class MemoryRecord:
     def local_record(
         id: str, text: str, description: Optional[str], embedding: ndarray
     ) -> "MemoryRecord":
+        """Create a local record.
+
+        Arguments:
+            id {str} -- A unique for the record.
+            text {str} -- The text of the record.
+            description {Optional[str]} -- The description of the record.
+            embedding {ndarray} -- The embedding of the record.
+
+        Returns:
+            MemoryRecord -- The local record.
+        """
         return MemoryRecord(
             is_reference=False,
             external_source_name=None,
