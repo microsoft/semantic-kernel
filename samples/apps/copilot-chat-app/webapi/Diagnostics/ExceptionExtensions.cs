@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once CheckNamespace // Extension methods
-
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Exception
 namespace System;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Exception extension methods.
