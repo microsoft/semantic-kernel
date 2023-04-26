@@ -205,7 +205,7 @@ public class ChatSkill
         Plan plan = await planner.CreatePlanAsync(context["userIntent"]);
         while (plan.HasNextStep)
         {
-            // WORKAROUND for an issue when the planner returns a plan containing a step that is a plan with no steps.
+            // TODO: Remove this workaround for an issue when the planner returns a plan containing a step that is a plan with no steps.
             // Running these invalid step resets the plan result (plan.State.Input) to the original input/goal statement.
             var nextStep = plan.Steps[plan.NextStepIndex];
             if (nextStep.SkillName.Equals("Microsoft.SemanticKernel.Orchestration.Plan", StringComparison.OrdinalIgnoreCase) &&
