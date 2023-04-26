@@ -172,8 +172,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         foreach (PineconeDocument? match in queryResponse.Matches)
         {
-            //
-            Console.WriteLine(JsonSerializer.Serialize(match.Metadata, PineconeUtils.DefaultSerializerOptions));
             yield return match;
         }
     }
@@ -273,7 +271,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             catch (HttpRequestException e)
             {
                 this._logger.LogDebug("Failed to upsert vectors {0}", e.Message);
-                continue;
+                throw;
             }
 
             UpsertResponse? data = JsonSerializer.Deserialize<UpsertResponse>(responseContent, this._jsonSerializerOptions);

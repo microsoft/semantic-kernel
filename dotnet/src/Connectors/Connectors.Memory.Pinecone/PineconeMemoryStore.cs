@@ -146,13 +146,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             return string.Empty;
         }
 
-        (PineconeDocument? vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(collectionName, record, "", cancel).ConfigureAwait(false);
-
-        if (vectorData == null)
-        {
-            throw new PineconeMemoryException(PineconeMemoryException.ErrorCodes.FailedToConvertMemoryRecordToPineconeDocument,
-                $"Failed to convert MemoryRecord to PineconeDocument");
-        }
+        (PineconeDocument vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(collectionName, record, "", cancel).ConfigureAwait(false);
 
         Task request = operationType switch
         {
@@ -187,13 +181,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             return string.Empty;
         }
 
-        (PineconeDocument? vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(indexName, record, "", cancel).ConfigureAwait(false);
-
-        if (vectorData == null)
-        {
-            throw new PineconeMemoryException(PineconeMemoryException.ErrorCodes.FailedToConvertMemoryRecordToPineconeDocument,
-                $"Failed to convert MemoryRecord to PineconeDocument");
-        }
+        (PineconeDocument vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(indexName, record, "", cancel).ConfigureAwait(false);
 
         Task request = operationType switch
         {
@@ -1034,13 +1022,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             ? record.Key
             : record.Metadata.Id;
 
-        PineconeDocument? vectorData = record.ToPineconeDocument();
-
-        if (vectorData == null)
-        {
-            throw new PineconeMemoryException(PineconeMemoryException.ErrorCodes.FailedToConvertMemoryRecordToPineconeDocument,
-                $"Failed to convert MemoryRecord to PineconeDocument");
-        }
+        PineconeDocument vectorData = record.ToPineconeDocument();
 
         PineconeDocument? existingRecord = await this._pineconeClient.FetchVectorsAsync(indexName, new[] { key }, nameSpace, false, cancel)
             .FirstOrDefaultAsync(cancel).ConfigureAwait(false);
