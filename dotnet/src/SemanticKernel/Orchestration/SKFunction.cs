@@ -109,10 +109,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
             try
             {
                 string prompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
-                log?.LogDebug("Prompt: {0}", prompt);
 
                 string completion = await client.CompleteAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
-                log?.LogDebug("Completion: {0}", completion);
                 context.Variables.Update(completion);
             }
             catch (AIException ex)
