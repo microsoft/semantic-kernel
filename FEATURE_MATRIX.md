@@ -13,7 +13,8 @@
 |---|---|---|---|
 | OpenAI                            | ✅ | ✅ | |
 | AzureOpenAI                       | ✅ | ✅ | |
-| Hugging Face                      | ✅ | ✅ | |
+| Hugging Face Inference API        | 🔄 | ❌ | Coming soon to Python, not all scenarios are covered for .NET |
+| Hugging Face Local                | ❌ | ✅ | |
 | Custom                            | ✅ | 🔄 | Requires the user to define the service schema in their application |
 
 ## Tokenizers
