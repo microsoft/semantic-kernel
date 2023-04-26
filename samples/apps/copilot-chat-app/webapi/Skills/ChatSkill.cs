@@ -201,7 +201,7 @@ public class ChatSkill
         // Create a plan and run it.
         SKContext planContext = await (await (await this._plannerFactoryAsync(this._kernel))
             .CreatePlanAsync(context["userIntent"]))
-            .InvokeAsync(context);
+            .InvokeAsync(input: context["userIntent"], context: context);
 
         // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
         if (!this.TryExtractJsonFromPlanResult(planContext.Variables.Input, out string planResult))
