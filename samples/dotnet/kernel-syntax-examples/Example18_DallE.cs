@@ -44,7 +44,7 @@ public static class Example18_DallE
         // Add your chat completion service
         kernel.Config.AddOpenAIChatCompletionService("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
-        IChatCompletionService chatGPT = kernel.GetService<IChatCompletionService>();
+        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
         var chat = (OpenAIChatHistory)chatGPT.CreateNewChat(
             "You're chatting with a user. Instead of replying directly to the user" +
             " provide the description of an image that expresses what you want to say." +

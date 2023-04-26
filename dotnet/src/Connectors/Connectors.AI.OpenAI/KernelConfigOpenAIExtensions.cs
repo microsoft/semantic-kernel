@@ -184,7 +184,7 @@ public static class KernelConfigOpenAIExtensions
         AzureChatCompletion Factory(INamedServiceProvider sp) => new(
             deploymentName, endpoint, apiKey, sp.GetHttpRetryHandler(), sp.GetLogger<AzureChatCompletion>());
 
-        services.SetServiceFactory<IChatCompletionService>(serviceId, Factory);
+        services.SetServiceFactory<IChatCompletion>(serviceId, Factory);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
         if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
@@ -214,7 +214,7 @@ public static class KernelConfigOpenAIExtensions
         AzureChatCompletion Factory(INamedServiceProvider sp) => new(
             deploymentName, endpoint, credentials, sp.GetHttpRetryHandler(), sp.GetLogger<AzureChatCompletion>());
 
-        services.SetServiceFactory<IChatCompletionService>(serviceId, Factory);
+        services.SetServiceFactory<IChatCompletion>(serviceId, Factory);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
         if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
@@ -244,7 +244,7 @@ public static class KernelConfigOpenAIExtensions
         OpenAIChatCompletion Factory(INamedServiceProvider sp) => new(
             modelId, apiKey, orgId, sp.GetHttpRetryHandler(), sp.GetLogger<OpenAIChatCompletion>());
 
-        services.SetServiceFactory<IChatCompletionService>(serviceId, Factory);
+        services.SetServiceFactory<IChatCompletion>(serviceId, Factory);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
         if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(OpenAIChatCompletion)))
