@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -99,7 +98,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         ILogger? log = null)
     {
         Verify.NotNull(functionConfig, "Function configuration is empty");
-        
+
         async Task<SKContext> LocalFunc(
             ITextCompletion client,
             CompleteRequestSettings requestSettings,
