@@ -33,7 +33,7 @@ public static class Example22_b_OpenApiSkill_Jira
             return Task.FromResult(s);
         });
 
-        // The bool bUseLocalFile can be used to toggle the ingestion method for the openapi schema between a file path and a URL
+        // The bool useLocalFile can be used to toggle the ingestion method for the openapi schema between a file path and a URL
         bool useLocalFile = true;
         if (useLocalFile)
         {
