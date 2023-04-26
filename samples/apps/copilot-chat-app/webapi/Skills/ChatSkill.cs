@@ -195,6 +195,11 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
     public async Task<string> AcquireExternalInformationAsync(SKContext context)
     {
+        if (!this._plannerOptions.Enabled)
+        {
+            return string.Empty;
+        }
+        
         int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
         string userIntent = context["userIntent"];
 

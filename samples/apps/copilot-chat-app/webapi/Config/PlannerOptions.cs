@@ -12,6 +12,11 @@ public class PlannerOptions
     public const string PropertyName = "Planner";
 
     /// <summary>
+    /// Whether to enable the planner.
+    /// </summary>
+    public bool Enabled { get; set; } = false;
+
+    /// <summary>
     /// The minimum relevancy score for a function to be considered
     /// </summary>
     public double? RelevancyThreshold { get; set; }
