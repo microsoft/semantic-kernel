@@ -138,9 +138,9 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
 
     internal class TaskDelayProvider : IDelayProvider
     {
-        public async Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken)
+        public Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken)
         {
-            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+            return Task.Delay(delay, cancellationToken);
         }
     }
 
