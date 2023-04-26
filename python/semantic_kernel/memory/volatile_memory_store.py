@@ -18,12 +18,25 @@ class VolatileMemoryStore(MemoryStoreBase):
     def __init__(self, logger: Optional[Logger] = None) -> None:
         self._store = {}
         self._logger = logger or NullLogger()
+        """Initializes a new instance of the VolatileMemoryStore class.
+
+        Arguments:
+            logger {Optional[Logger]} -- The logger to use. (default: {None})
+        """
         
     async def create_collection_async(
         self,
         collection_name: str
         # TODO: cancel token
     ) -> None:
+        """Creates a new collection if it does not exist.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to create.
+
+        Returns:
+            None
+        """
         if collection_name in self._store:
             pass
         else:
@@ -33,6 +46,11 @@ class VolatileMemoryStore(MemoryStoreBase):
         self        
         # TODO: cancel token
     ) -> List[str]:
+        """Gets the list of collections.
+
+        Returns:
+            List[str] -- The list of collections.
+        """
         return list(self._store.keys())
 
     async def delete_collection_async(
@@ -40,6 +58,14 @@ class VolatileMemoryStore(MemoryStoreBase):
         collection_name: str
         # TODO: cancel token
     ) -> None:
+        """Deletes a collection.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to delete.
+
+        Returns:
+            None
+        """
         if collection_name in self._store:
             del self._store[collection_name]
 
@@ -48,6 +74,14 @@ class VolatileMemoryStore(MemoryStoreBase):
         collection_name: str
         # TODO: cancel token
     ) -> bool:
+        """Checks if a collection exists.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to check.
+        
+        Returns:
+            bool -- True if the collection exists; otherwise, False.
+        """
         return collection_name in self._store
 
     async def upsert_async(
@@ -56,6 +90,15 @@ class VolatileMemoryStore(MemoryStoreBase):
         record: MemoryRecord
         # TODO: cancel token
     ) -> str:
+        """Upserts a record.
+        
+        Arguments:
+            collection_name {str} -- The name of the collection to upsert the record into.
+            record {MemoryRecord} -- The record to upsert.
+
+        Returns:
+            str -- The unqiue database key of the record.
+        """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
         
@@ -69,6 +112,15 @@ class VolatileMemoryStore(MemoryStoreBase):
         records: List[MemoryRecord]
         # TODO: cancel token
     ) -> List[str]:
+        """Upserts a batch of records.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to upsert the records into.
+            records {List[MemoryRecord]} -- The records to upsert.
+        
+        Returns:
+            List[str] -- The unqiue database keys of the records.
+        """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
         
@@ -84,6 +136,16 @@ class VolatileMemoryStore(MemoryStoreBase):
         with_embedding: bool = False
         # TODO: cancel token
     ) -> MemoryRecord:
+        """Gets a record.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the record from.
+            key {str} -- The unique database key of the record.
+            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+
+        Returns:
+            MemoryRecord -- The record.
+        """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
         
@@ -105,6 +167,16 @@ class VolatileMemoryStore(MemoryStoreBase):
         with_embeddings: bool = False
         # TODO: cancel token
     ) -> List[MemoryRecord]:
+        """Gets a batch of records.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the records from.
+            keys {List[str]} -- The unique database keys of the records.
+            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+
+        Returns:
+            List[MemoryRecord] -- The records.
+        """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
         
@@ -123,6 +195,15 @@ class VolatileMemoryStore(MemoryStoreBase):
         key: str
         # TODO: cancel token
     ) -> None:
+        """Removes a record.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to remove the record from.
+            key {str} -- The unique database key of the record to remove.
+
+        Returns:
+            None
+        """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
         
@@ -137,6 +218,15 @@ class VolatileMemoryStore(MemoryStoreBase):
         keys: List[str]
         # TODO: cancel token
     ) -> None:
+        """Removes a batch of records.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to remove the records from.
+            keys {List[str]} -- The unique database keys of the records to remove.
+
+        Returns:
+            None
+        """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
         
@@ -152,6 +242,17 @@ class VolatileMemoryStore(MemoryStoreBase):
         with_embedding: bool = False
         # TODO: cancel token
     ) -> Tuple[MemoryRecord, float]:
+        """Gets the nearest match to an embedding using cosine similarity.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the nearest match from.
+            embedding {ndarray} -- The embedding to find the nearest match to.
+            min_relevance_score {float} -- The minimum relevance score of the match. (default: {0.0})
+            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+
+        Returns:
+            Tuple[MemoryRecord, float] -- The record and the relevance score.
+        """
         return self.get_nearest_matches_async(collection_name=collection_name, embedding=embedding, limit=1, min_relevance_score=min_relevance_score, with_embeddings=with_embedding)
 
     async def get_nearest_matches_async(
@@ -163,6 +264,18 @@ class VolatileMemoryStore(MemoryStoreBase):
         with_embeddings: bool = False,
         # TODO: cancel token
     ) -> List[Tuple[MemoryRecord, float]]:
+        """Gets the nearest matches to an embedding using cosine similarity.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the nearest matches from.
+            embedding {ndarray} -- The embedding to find the nearest matches to.
+            limit {int} -- The maximum number of matches to return.
+            min_relevance_score {float} -- The minimum relevance score of the matches. (default: {0.0})
+            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+
+        Returns:
+            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+        """
         if collection_name not in self._store:
             return []
         
@@ -207,17 +320,15 @@ class VolatileMemoryStore(MemoryStoreBase):
     def compute_similarity_scores(
         self, embedding: ndarray, embedding_array: ndarray
     ) -> ndarray:
-        """Compute the similarity scores between the
-        query embedding and all the embeddings in the collection.
-        Ignore the corresponding operation if zero vectors
-        are involved (in query embedding or the embedding collection)
+        """Computes the cosine similarity scores between a query embedding and a group of embeddings.
 
-        :param embedding: The query embedding.
-        :param embedding_array: The collection of embeddings.
-        :return: similarity_scores: The similarity scores between the query embedding
-            and all the embeddings in the collection.
+        Arguments:
+            embedding {ndarray} -- The query embedding.
+            embedding_array {ndarray} -- The group of embeddings.
+
+        Returns:
+            ndarray -- The cosine similarity scores.    
         """
-
         query_norm = linalg.norm(embedding)
         collection_norm = linalg.norm(embedding_array, axis=1)
 
