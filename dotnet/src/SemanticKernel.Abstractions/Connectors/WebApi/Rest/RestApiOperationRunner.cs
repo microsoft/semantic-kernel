@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 /// <summary>
 /// Runs REST API operation represented by RestApiOperation model class.
 /// </summary>
-internal class RestApiOperationRunner : IRestApiOperationRunner
+internal sealed class RestApiOperationRunner : IRestApiOperationRunner
 {
     private const string MediaTypeApplicationJson = "application/json";
     private const string MediaTypeTextPlain = "text/plain";

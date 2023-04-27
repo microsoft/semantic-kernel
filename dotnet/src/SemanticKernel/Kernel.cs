@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -109,13 +108,11 @@ public sealed class Kernel : IKernel, IDisposable
             this._log.LogTrace("Importing skill {0}", skillName);
         }
 
-        var skill = new Dictionary<string, ISKFunction>(StringComparer.OrdinalIgnoreCase);
-        IEnumerable<ISKFunction> functions = ImportSkill(skillInstance, skillName, this._log);
-        foreach (ISKFunction f in functions)
+        Dictionary<string, ISKFunction> skill = ImportSkill(skillInstance, skillName, this._log);
+        foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
-            f.SetDefaultSkillCollection(this.Skills);
-            this._skillCollection.AddNativeFunction(f);
-            skill.Add(f.Name, f);
+            f.Value.SetDefaultSkillCollection(this.Skills);
+            this._skillCollection.AddNativeFunction(f.Value);
         }
 
         return skill;
@@ -337,27 +334,32 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="skillInstance">Skill class instance</param>
     /// <param name="skillName">Skill name, used to group functions under a shared namespace</param>
     /// <param name="log">Application logger</param>
-    /// <returns>List of functions imported from the given class instance</returns>
-    private static List<ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log)
+    /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
+    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log)
     {
         log.LogTrace("Importing skill name: {0}", skillName);
         MethodInfo[] methods = skillInstance.GetType()
-            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod);
+            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
         log.LogTrace("Methods found {0}", methods.Length);
 
-        // Filter out null functions
-        IEnumerable<ISKFunction> functions = from method in methods select SKFunction.FromNativeMethod(method, skillInstance, skillName, log);
-        List<ISKFunction> result = (from function in functions where function != null select function).ToList();
-        log.LogTrace("Methods imported {0}", result.Count);
-
-        // Fail if two functions have the same name
-        var uniquenessCheck = new HashSet<string>(from x in result select x.Name, StringComparer.OrdinalIgnoreCase);
-        if (result.Count > uniquenessCheck.Count)
+        // Filter out null functions and fail if two functions have the same name
+        Dictionary<string, ISKFunction> result = new Dictionary<string, ISKFunction>(StringComparer.OrdinalIgnoreCase);
+        foreach (MethodInfo method in methods)
         {
-            throw new KernelException(
-                KernelException.ErrorCodes.FunctionOverloadNotSupported,
-                "Function overloads are not supported, please differentiate function names");
+            if (SKFunction.FromNativeMethod(method, skillInstance, skillName, log) is ISKFunction function)
+            {
+                if (result.ContainsKey(function.Name))
+                {
+                    throw new KernelException(
+                        KernelException.ErrorCodes.FunctionOverloadNotSupported,
+                        "Function overloads are not supported, please differentiate function names");
+                }
+
+                result.Add(function.Name, function);
+            }
         }
+
+        log.LogTrace("Methods imported {0}", result.Count);
 
         return result;
     }

@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.Web;
 using Moq;
+using SemanticKernel.Skills.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
 

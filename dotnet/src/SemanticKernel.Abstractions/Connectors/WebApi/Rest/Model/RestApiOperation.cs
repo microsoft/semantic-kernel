@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 /// <summary>
 /// The REST API operation.
 /// </summary>
-internal class RestApiOperation
+internal sealed class RestApiOperation
 {
     /// <summary>
     /// An artificial parameter that is added to be able to override RESP API operation server url.

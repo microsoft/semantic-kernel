@@ -3,8 +3,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
 
@@ -69,8 +69,8 @@ public class ConversationSummarySkill
     [SKFunctionInput(Description = "A long conversation transcript.")]
     public Task<SKContext> SummarizeConversationAsync(string input, SKContext context)
     {
-        List<string> lines = SemanticTextPartitioner.SplitPlainTextLines(input, MaxTokens);
-        List<string> paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, MaxTokens);
+        List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
+        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
 
         return this._summarizeConversationFunction
             .AggregatePartitionedResultsAsync(paragraphs, context);
@@ -86,8 +86,8 @@ public class ConversationSummarySkill
     [SKFunctionInput(Description = "A long conversation transcript.")]
     public Task<SKContext> GetConversationActionItemsAsync(string input, SKContext context)
     {
-        List<string> lines = SemanticTextPartitioner.SplitPlainTextLines(input, MaxTokens);
-        List<string> paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, MaxTokens);
+        List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
+        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
 
         return this._conversationActionItemsFunction
             .AggregatePartitionedResultsAsync(paragraphs, context);
@@ -103,8 +103,8 @@ public class ConversationSummarySkill
     [SKFunctionInput(Description = "A long conversation transcript.")]
     public Task<SKContext> GetConversationTopicsAsync(string input, SKContext context)
     {
-        List<string> lines = SemanticTextPartitioner.SplitPlainTextLines(input, MaxTokens);
-        List<string> paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, MaxTokens);
+        List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
+        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
 
         return this._conversationTopicsFunction
             .AggregatePartitionedResultsAsync(paragraphs, context);

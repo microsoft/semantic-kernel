@@ -117,6 +117,11 @@ class KernelConfig:
         if self._default_chat_service is None:
             self._default_chat_service = service_id
 
+        if isinstance(service, TextCompletionClientBase):
+            self.add_text_service(service_id, service)
+            if self._default_text_service is None:
+                self._default_text_service = service_id
+
         return self
 
     def add_embedding_service(
@@ -187,7 +192,7 @@ class KernelConfig:
 
         return service_id
 
-    def get_embedding_service_service_id(self, service_id: Optional[str] = None) -> str:
+    def get_embedding_service_id(self, service_id: Optional[str] = None) -> str:
         if service_id is None or service_id not in self._embedding_services:
             if self._default_embedding_service is None:
                 raise ValueError("No default embedding service is set")
