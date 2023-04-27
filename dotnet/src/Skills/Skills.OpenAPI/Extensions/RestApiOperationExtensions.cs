@@ -41,14 +41,15 @@ internal static class RestApiOperationExtensions
                 true,
                 RestApiOperationParameterLocation.Body,
                 RestApiOperationParameterStyle.Simple,
-                description: operation.Payload?.Description));
+                description: operation.Payload?.Description ?? "REST API request body."));
 
             parameters.Add(new RestApiOperationParameter(
                 RestApiOperation.ContentTypeArgumentName,
                 "string",
                 false,
                 RestApiOperationParameterLocation.Body,
-                RestApiOperationParameterStyle.Simple));
+                RestApiOperationParameterStyle.Simple,
+                description: "Content type of REST API request body."));
         }
 
         //Create a property alternative name without special symbols that are not supported by SK template language.
