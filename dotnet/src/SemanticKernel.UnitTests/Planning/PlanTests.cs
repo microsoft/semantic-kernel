@@ -47,6 +47,42 @@ public sealed class PlanTests
         Assert.Equal("Some input", result.Result);
     }
 
+
+    [Fact]
+    public async Task CanExecutePlanWithContextAsync()
+    {
+        // Arrange
+        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
+        var plan = new Plan(goal);
+        var kernel = new Mock<IKernel>();
+        var log = new Mock<ILogger>();
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+
+        var context = new SKContext(
+            new ContextVariables("Some input"),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+
+        // Act
+        var result = await plan.InvokeAsync(context);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Some input", result.Result);
+
+        plan = new Plan(goal);
+
+        // Act
+        result = await plan.InvokeAsync("other input", context);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("other input", result.Result);
+    }
+
     [Fact]
     public async Task CanExecutePlanWithPlanStepAsync()
     {
