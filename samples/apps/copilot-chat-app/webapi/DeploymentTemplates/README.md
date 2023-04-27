@@ -1,10 +1,10 @@
-# Deploying Semantic Kernel as a Service
+# Deploying Semantic Kernel to Azure in a web app service
 
 ## Things to know
 
 Azure currently limits the number of OpenAI resources per region per subscription to 3. Also, OpenAI is not available in every region.
 (Refer to this [availability map](https://azure.microsoft.com/en-us/explore/global-infrastructure/products-by-region/?products=cognitive-services))
-Bearing this in mind, you might want to use the same Azure OpenAI instance for multiple deployments of Semantic Kernel as a Service.
+Bearing this in mind, you might want to use the same Azure OpenAI instance for multiple deployments of Semantic Kernel to Azure.
 
 To do so, or to use an OpenAI instance from [openai.com](https://openai.com), use the version of the deployment template that uses existing OpenAI resources.
 
@@ -19,7 +19,7 @@ Use the [DeploySK.ps1](DeploySK.ps1) file found in this folder:
 .\DeploySK.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID
 ```
 
-This will deploy an instance of Semantic Kernel as a Service in a resource group that will bear the name YOUR_DEPLOYMENT_NAME followed by the "-rg" suffix in the specified subscription.
+This will deploy an instance of Semantic Kernel in a web app service in a resource group that will bear the name YOUR_DEPLOYMENT_NAME followed by the "-rg" suffix in the specified subscription.
 
 For more options, see the deployment script.
 
@@ -34,7 +34,7 @@ Use the [DeploySK-Existing-AI.ps1](DeploySK-Existing-AI.ps1) file found in this 
 .\DeploySK-Existing-AI.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -Endpoint "YOUR_AZURE_OPENAI_ENDPOINT"
 ```
 
-After entering the command above, you will be prompted to enter your OpenAI or Azure OpenAI API key. (You can also pass in the API key using the -ApiKey paramater followed by a SecureString)
+After entering the command above, you will be prompted to enter your OpenAI or Azure OpenAI API key. (You can also pass in the API key using the -ApiKey parameter followed by a SecureString)
 
 Note: the Azure OpenAI endpoint is ignored and can be omitted when you are using an OpenAI instance from [openai.com](https://openai.com).
 
@@ -44,10 +44,10 @@ Alternatively, you can deploy by clicking on the following button:
 
 ## Verifying the deployment
 
-To make sure your instance of Semantic Kernel as a Service is running, go to
-https://YOUR_INSTANCE_NAME.azurewebsites.net/probe
+To make sure your web app service is running, go to https://YOUR_INSTANCE_NAME.azurewebsites.net/probe
 
-To get your instance's URL, click on the "Go to resource group" button you see at the end of your deployment. Then click on the resource whose name ends with "-web". This will bring you to the Overview page on your web service. Your instance's URL is the value that appears next to the "Default domain" field.
+To get your instance's URL, click on the "Go to resource group" button you see at the end of your deployment. Then click on the resource whose name ends with "-web".
+This will bring you to the Overview page on your web service. Your instance's URL is the value that appears next to the "Default domain" field.
 
 ## Changing your configuration, monitoring your deployment and troubleshooting
 
@@ -57,7 +57,8 @@ Scrolling down in that same pane to the "Monitoring" section gives you access to
 
 In addition to this, the "Diagnose and "solve problems" item near the top of the pane can yield crucial insight into some problems your deployment may be experiencing.
 
-If the service itself if functionning properly but you keep getting errors (perhaps reported as 400 HTTP errors) when making calls to the Semantic Kernel, check that you have correctly entered the values for the following settings:
+If the service itself if functioning properly but you keep getting errors (perhaps reported as 400 HTTP errors) when making calls to the Semantic Kernel,
+check that you have correctly entered the values for the following settings:
 - Completion:AzureOpenAI
 - Completion:DeploymentOrModelId
 - Completion:Endpoint
@@ -73,9 +74,30 @@ Both Completion:Endpoint and Embedding:Endpoint are ignored for OpenAI instances
 
 Make sure to include your frontend's URL as an allowed origin in your deployment's CORS settings. Otherwise, web browsers will refuse to let JavaScript make calls to your deployment.
 
+# Deploying your custom version of Semantic Kernel
+
+You can build and upload a customized version of the Semantic Kernel service.
+
+To do so, clone the code from this repo then modify it to your needs (for example, by adding your own skills). Once that is done, go into the ../semantic-kernel/samples/apps/copilot-chat-app/webapi
+directory and enter the following command:
+```powershell
+dotnet publish CopilotChatApi.csproj --configuration Release --arch x64 --os win
+```
+
+This will create the following directory, which will contain all the files needed for a deployment:
+../semantic-kernel/samples/apps/copilot-chat-app/webapi/bin/Release/net6.0/win-x64/publish
+
+Zip the contents of that directory then put the resulting zip file on the web.
+
+Put its URI in the "Package Uri" field in the web deployment page you access through the "Deploy to Azure" buttons above, or use its URI as the value for the PackageUri parameter of the Powershell scripts above.
+
+Your deployment will then use your customized deployment package.
+
+
 ## Cleaning up
 
-Once you are done with your resources, you can delete them from the Azure portal. You can also simply delete the resource group in which they are from the portal or through the following [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/) command:
+Once you are done with your resources, you can delete them from the Azure portal. You can also simply delete the resource group in which they are from the portal or through the
+following [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/) command:
 ```powershell
 az group delete --name YOUR_RESOURCE_GROUP
 ```
