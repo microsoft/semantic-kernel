@@ -2,11 +2,15 @@
 
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Type, TypeVar, Union
 
-from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.ai.embeddings.embedding_generator_base import (
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
-from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
@@ -21,231 +25,236 @@ T = TypeVar("T")
 
 class KernelConfig:
     def __init__(self) -> None:
-        self._text_backends: Dict[
+        self._text_services: Dict[
             str, Callable[["KernelBase"], TextCompletionClientBase]
         ] = {}
-        self._chat_backends: Dict[
+        self._chat_services: Dict[
             str, Callable[["KernelBase"], ChatCompletionClientBase]
         ] = {}
-        self._embedding_backends: Dict[
+        self._embedding_services: Dict[
             str, Callable[["KernelBase"], EmbeddingGeneratorBase]
         ] = {}
 
-        self._default_text_backend: Optional[str] = None
-        self._default_chat_backend: Optional[str] = None
-        self._default_embedding_backend: Optional[str] = None
+        self._default_text_service: Optional[str] = None
+        self._default_chat_service: Optional[str] = None
+        self._default_embedding_service: Optional[str] = None
 
         self._retry_mechanism: RetryMechanism = PassThroughWithoutRetry()
 
-    def get_ai_backend(
+    def get_ai_service(
         self, type: Type[T], service_id: Optional[str] = None
     ) -> Callable[["KernelBase"], T]:
         matching_type = {}
         if type == TextCompletionClientBase:
-            service_id = service_id or self._default_text_backend
-            matching_type = self._text_backends
+            service_id = service_id or self._default_text_service
+            matching_type = self._text_services
         elif type == ChatCompletionClientBase:
-            service_id = service_id or self._default_chat_backend
-            matching_type = self._chat_backends
+            service_id = service_id or self._default_chat_service
+            matching_type = self._chat_services
         elif type == EmbeddingGeneratorBase:
-            service_id = service_id or self._default_embedding_backend
-            matching_type = self._embedding_backends
+            service_id = service_id or self._default_embedding_service
+            matching_type = self._embedding_services
         else:
-            raise ValueError(f"Unknown backend type: {type.__name__}")
+            raise ValueError(f"Unknown AI service type: {type.__name__}")
 
         if service_id not in matching_type:
             raise ValueError(
-                f"{type.__name__} backend with service_id '{service_id}' not found"
+                f"{type.__name__} service with service_id '{service_id}' not found"
             )
 
         return matching_type[service_id]
 
-    def all_text_backends(self) -> List[str]:
-        return list(self._text_backends.keys())
+    def all_text_services(self) -> List[str]:
+        return list(self._text_services.keys())
 
-    def all_chat_backends(self) -> List[str]:
-        return list(self._chat_backends.keys())
+    def all_chat_services(self) -> List[str]:
+        return list(self._chat_services.keys())
 
-    def all_embedding_backends(self) -> List[str]:
-        return list(self._embedding_backends.keys())
+    def all_embedding_services(self) -> List[str]:
+        return list(self._embedding_services.keys())
 
-    def add_text_backend(
+    def add_text_service(
         self,
         service_id: str,
-        backend: Union[
+        service: Union[
             TextCompletionClientBase, Callable[["KernelBase"], TextCompletionClientBase]
         ],
         overwrite: bool = True,
     ) -> "KernelConfig":
         if not service_id:
             raise ValueError("service_id must be a non-empty string")
-        if not overwrite and service_id in self._text_backends:
+        if not overwrite and service_id in self._text_services:
             raise ValueError(
-                f"Text backend with service_id '{service_id}' already exists"
+                f"Text service with service_id '{service_id}' already exists"
             )
 
-        self._text_backends[service_id] = (
-            backend if isinstance(backend, Callable) else lambda _: backend
+        self._text_services[service_id] = (
+            service if isinstance(service, Callable) else lambda _: service
         )
-        if self._default_text_backend is None:
-            self._default_text_backend = service_id
+        if self._default_text_service is None:
+            self._default_text_service = service_id
 
         return self
 
-    def add_chat_backend(
+    def add_chat_service(
         self,
         service_id: str,
-        backend: Union[
+        service: Union[
             ChatCompletionClientBase, Callable[["KernelBase"], ChatCompletionClientBase]
         ],
         overwrite: bool = True,
     ) -> "KernelConfig":
         if not service_id:
             raise ValueError("service_id must be a non-empty string")
-        if not overwrite and service_id in self._chat_backends:
+        if not overwrite and service_id in self._chat_services:
             raise ValueError(
-                f"Chat backend with service_id '{service_id}' already exists"
+                f"Chat service with service_id '{service_id}' already exists"
             )
 
-        self._chat_backends[service_id] = (
-            backend if isinstance(backend, Callable) else lambda _: backend
+        self._chat_services[service_id] = (
+            service if isinstance(service, Callable) else lambda _: service
         )
-        if self._default_chat_backend is None:
-            self._default_chat_backend = service_id
+        if self._default_chat_service is None:
+            self._default_chat_service = service_id
+
+        if isinstance(service, TextCompletionClientBase):
+            self.add_text_service(service_id, service)
+            if self._default_text_service is None:
+                self._default_text_service = service_id
 
         return self
 
-    def add_embedding_backend(
+    def add_embedding_service(
         self,
         service_id: str,
-        backend: Union[
+        service: Union[
             EmbeddingGeneratorBase, Callable[["KernelBase"], EmbeddingGeneratorBase]
         ],
         overwrite: bool = False,
     ) -> "KernelConfig":
         if not service_id:
             raise ValueError("service_id must be a non-empty string")
-        if not overwrite and service_id in self._embedding_backends:
+        if not overwrite and service_id in self._embedding_services:
             raise ValueError(
-                f"Embedding backend with service_id '{service_id}' already exists"
+                f"Embedding service with service_id '{service_id}' already exists"
             )
 
-        self._embedding_backends[service_id] = (
-            backend if isinstance(backend, Callable) else lambda _: backend
+        self._embedding_services[service_id] = (
+            service if isinstance(service, Callable) else lambda _: service
         )
-        if self._default_embedding_backend is None:
-            self._default_embedding_backend = service_id
+        if self._default_embedding_service is None:
+            self._default_embedding_service = service_id
 
         return self
 
     # TODO: look harder at retry stuff
 
-    def set_default_text_backend(self, service_id: str) -> "KernelConfig":
-        if service_id not in self._text_backends:
+    def set_default_text_service(self, service_id: str) -> "KernelConfig":
+        if service_id not in self._text_services:
             raise ValueError(
-                f"AI backend with service_id '{service_id}' does not exist"
+                f"AI service with service_id '{service_id}' does not exist"
             )
 
-        self._default_text_backend = service_id
+        self._default_text_service = service_id
         return self
 
-    def set_default_chat_backend(self, service_id: str) -> "KernelConfig":
-        if service_id not in self._chat_backends:
+    def set_default_chat_service(self, service_id: str) -> "KernelConfig":
+        if service_id not in self._chat_services:
             raise ValueError(
-                f"AI backend with service_id '{service_id}' does not exist"
+                f"AI service with service_id '{service_id}' does not exist"
             )
 
-        self._default_chat_backend = service_id
+        self._default_chat_service = service_id
         return self
 
-    def set_default_embedding_backend(self, service_id: str) -> "KernelConfig":
-        if service_id not in self._embedding_backends:
+    def set_default_embedding_service(self, service_id: str) -> "KernelConfig":
+        if service_id not in self._embedding_services:
             raise ValueError(
-                f"AI backend with service_id '{service_id}' does not exist"
+                f"AI service with service_id '{service_id}' does not exist"
             )
 
-        self._default_embedding_backend = service_id
+        self._default_embedding_service = service_id
         return self
 
-    def get_text_backend_service_id(self, service_id: Optional[str] = None) -> str:
-        if service_id is None or service_id not in self._text_backends:
-            if self._default_text_backend is None:
-                raise ValueError("No default text backend is set")
-            return self._default_text_backend
+    def get_text_service_service_id(self, service_id: Optional[str] = None) -> str:
+        if service_id is None or service_id not in self._text_services:
+            if self._default_text_service is None:
+                raise ValueError("No default text service is set")
+            return self._default_text_service
 
         return service_id
 
-    def get_chat_backend_service_id(self, service_id: Optional[str] = None) -> str:
-        if service_id is None or service_id not in self._chat_backends:
-            if self._default_chat_backend is None:
-                raise ValueError("No default chat backend is set")
-            return self._default_chat_backend
+    def get_chat_service_service_id(self, service_id: Optional[str] = None) -> str:
+        if service_id is None or service_id not in self._chat_services:
+            if self._default_chat_service is None:
+                raise ValueError("No default chat service is set")
+            return self._default_chat_service
 
         return service_id
 
-    def get_embedding_backend_service_id(self, service_id: Optional[str] = None) -> str:
-        if service_id is None or service_id not in self._embedding_backends:
-            if self._default_embedding_backend is None:
-                raise ValueError("No default embedding backend is set")
-            return self._default_embedding_backend
+    def get_embedding_service_id(self, service_id: Optional[str] = None) -> str:
+        if service_id is None or service_id not in self._embedding_services:
+            if self._default_embedding_service is None:
+                raise ValueError("No default embedding service is set")
+            return self._default_embedding_service
 
         return service_id
 
-    def remove_text_backend(self, service_id: str) -> "KernelConfig":
-        if service_id not in self._text_backends:
+    def remove_text_service(self, service_id: str) -> "KernelConfig":
+        if service_id not in self._text_services:
             raise ValueError(
-                f"AI backend with service_id '{service_id}' does not exist"
+                f"AI service with service_id '{service_id}' does not exist"
             )
 
-        del self._text_backends[service_id]
-        if self._default_text_backend == service_id:
-            self._default_text_backend = next(iter(self._text_backends), None)
+        del self._text_services[service_id]
+        if self._default_text_service == service_id:
+            self._default_text_service = next(iter(self._text_services), None)
         return self
 
-    def remove_chat_backend(self, service_id: str) -> "KernelConfig":
-        if service_id not in self._chat_backends:
+    def remove_chat_service(self, service_id: str) -> "KernelConfig":
+        if service_id not in self._chat_services:
             raise ValueError(
-                f"AI backend with service_id '{service_id}' does not exist"
+                f"AI service with service_id '{service_id}' does not exist"
             )
 
-        del self._chat_backends[service_id]
-        if self._default_chat_backend == service_id:
-            self._default_chat_backend = next(iter(self._chat_backends), None)
+        del self._chat_services[service_id]
+        if self._default_chat_service == service_id:
+            self._default_chat_service = next(iter(self._chat_services), None)
         return self
 
-    def remove_embedding_backend(self, service_id: str) -> "KernelConfig":
-        if service_id not in self._embedding_backends:
+    def remove_embedding_service(self, service_id: str) -> "KernelConfig":
+        if service_id not in self._embedding_services:
             raise ValueError(
-                f"AI backend with service_id '{service_id}' does not exist"
+                f"AI service with service_id '{service_id}' does not exist"
             )
 
-        del self._embedding_backends[service_id]
-        if self._default_embedding_backend == service_id:
-            self._default_embedding_backend = next(iter(self._embedding_backends), None)
+        del self._embedding_services[service_id]
+        if self._default_embedding_service == service_id:
+            self._default_embedding_service = next(iter(self._embedding_services), None)
         return self
 
-    def clear_all_text_backends(self) -> "KernelConfig":
-        self._text_backends = {}
-        self._default_text_backend = None
+    def clear_all_text_services(self) -> "KernelConfig":
+        self._text_services = {}
+        self._default_text_service = None
         return self
 
-    def clear_all_chat_backends(self) -> "KernelConfig":
-        self._chat_backends = {}
-        self._default_chat_backend = None
+    def clear_all_chat_services(self) -> "KernelConfig":
+        self._chat_services = {}
+        self._default_chat_service = None
         return self
 
-    def clear_all_embedding_backends(self) -> "KernelConfig":
-        self._embedding_backends = {}
-        self._default_embedding_backend = None
+    def clear_all_embedding_services(self) -> "KernelConfig":
+        self._embedding_services = {}
+        self._default_embedding_service = None
         return self
 
-    def clear_all_backends(self) -> "KernelConfig":
-        self._text_backends = {}
-        self._chat_backends = {}
-        self._embedding_backends = {}
+    def clear_all_services(self) -> "KernelConfig":
+        self._text_services = {}
+        self._chat_services = {}
+        self._embedding_services = {}
 
-        self._default_text_backend = None
-        self._default_chat_backend = None
-        self._default_embedding_backend = None
+        self._default_text_service = None
+        self._default_chat_service = None
+        self._default_embedding_service = None
 
         return self

@@ -11,8 +11,10 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
 
-// ReSharper disable once CheckNamespace // Extension methods
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of KernelConfig
 namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 public static class KernelConfigOpenAIExtensions
 {

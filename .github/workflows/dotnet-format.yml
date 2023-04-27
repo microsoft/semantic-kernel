@@ -23,7 +23,7 @@ jobs:
         run: dotnet tool install -g dotnet-format
 
       - name: Check out code
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
