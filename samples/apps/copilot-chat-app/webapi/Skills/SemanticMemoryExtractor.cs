@@ -31,7 +31,7 @@ internal static class SemanticMemoryExtractor
         var remainingToken = tokenLimit - promptSettings.ResponseTokenLimit;
         var contextTokenLimit = remainingToken;
 
-        var memoryExtractionContext = Utils.CopyContextWithVariablesClone(context);
+        var memoryExtractionContext = Utilities.CopyContextWithVariablesClone(context);
         memoryExtractionContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
         memoryExtractionContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
         memoryExtractionContext.Variables.Set("memoryName", memoryName);

@@ -80,7 +80,7 @@ public class DocumentMemorySkill
         string documentsText = string.Empty;
         foreach (var memory in relevantMemories)
         {
-            var tokenCount = Utils.TokenCount(memory.Metadata.Text);
+            var tokenCount = Utilities.TokenCount(memory.Metadata.Text);
             if (remainingToken - tokenCount > 0)
             {
                 documentsText += $"\n\nSnippet from {memory.Metadata.Description}: {memory.Metadata.Text}";
@@ -100,7 +100,7 @@ public class DocumentMemorySkill
 
         // Update the token limit.
         documentsText = $"User has also shared some document snippets:\n{documentsText}";
-        tokenLimit -= Utils.TokenCount(documentsText);
+        tokenLimit -= Utilities.TokenCount(documentsText);
         context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
 
         return documentsText;
