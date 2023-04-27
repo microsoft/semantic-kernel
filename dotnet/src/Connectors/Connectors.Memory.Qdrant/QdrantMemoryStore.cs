@@ -23,6 +23,11 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 public class QdrantMemoryStore : IMemoryStore
 {
     /// <summary>
+    /// The Qdrant Vector database memory store logger.
+    /// </summary>
+    private readonly ILogger? _logger;
+
+    /// <summary>
     /// Constructor for a memory store backed by a Qdrant Vector database instance.
     /// </summary>
     /// <param name="host"></param>
@@ -31,6 +36,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="logger"></param>
     public QdrantMemoryStore(string host, int port, int vectorSize, ILogger? logger = null)
     {
+        this._logger = logger;
         this._qdrantClient = new QdrantVectorDbClient(endpoint: host, port: port, vectorSize: vectorSize, log: logger);
     }
 
@@ -322,22 +328,47 @@ public class QdrantMemoryStore : IMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        var results = this._qdrantClient.FindNearestInCollectionAsync(
+        IAsyncEnumerator<(QdrantVectorRecord, double)> enumerator = this._qdrantClient.FindNearestInCollectionAsync(
             collectionName: collectionName,
             target: embedding.Vector,
             threshold: minRelevanceScore,
             top: limit,
             withVectors: withEmbeddings,
-            cancel: cancel);
+            cancel: cancel)
+            .GetAsyncEnumerator(cancel);
 
-        await foreach ((QdrantVectorRecord, double) result in results)
+        // Workaround for https://github.com/dotnet/csharplang/issues/2949: Yielding in catch blocks not supported in async iterators
+        (QdrantVectorRecord, double)? result = null;
+        bool hasResult = true;
+        do
         {
-            yield return (
-                MemoryRecord.FromJsonMetadata(
-                    json: result.Item1.GetSerializedPayload(),
-                    embedding: new Embedding<float>(result.Item1.Embedding)),
-                result.Item2);
-        }
+            try
+            {
+                hasResult = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                if (hasResult)
+                {
+                    result = enumerator.Current;
+                }
+                else
+                {
+                    result = null;
+                }
+            }
+            catch (HttpRequestException ex) when (ex.Message.Contains("404"))
+            {
+                this._logger?.LogWarning("NotFound when calling {0}::FindNearestInCollectionAsync - the collection '{1}' may not exist yet.", nameof(QdrantMemoryStore), collectionName);
+                hasResult = false;
+            }
+
+            if (result != null)
+            {
+                yield return (
+                    MemoryRecord.FromJsonMetadata(
+                        json: result.Value.Item1.GetSerializedPayload(),
+                        embedding: new Embedding<float>(result.Value.Item1.Embedding)),
+                    result.Value.Item2);
+            }
+        } while (hasResult);
     }
 
     /// <inheritdoc/>

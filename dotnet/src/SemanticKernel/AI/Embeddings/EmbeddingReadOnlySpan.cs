@@ -64,12 +64,12 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// <summary>
     /// Gets the underlying <see cref="ReadOnlySpan{T}"/> of unmanaged data.
     /// </summary>
-    public ReadOnlySpan<TEmbedding> ReadOnlySpan { get; internal set; }
+    public ReadOnlySpan<TEmbedding> ReadOnlySpan { get; }
 
     /// <summary>
     /// True if the data was specified to be normalized at construction.
     /// </summary>
-    public bool IsNormalized { get; internal set; }
+    public bool IsNormalized { get; }
 
     /// <summary>
     /// Calculates the dot product of this vector with another.

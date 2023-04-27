@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Models;
 using Moq;
+using SemanticKernel.Skills.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
 using static Microsoft.SemanticKernel.Skills.MsGraph.CalendarSkill;

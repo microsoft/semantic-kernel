@@ -138,6 +138,28 @@
       }
     },
     {
+      "label": "Test - Extensions (Code Coverage)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "--collect",
+        "XPlat Code Coverage;Format=lcov",
+        "--filter",
+        "${input:filter}",
+        "Extensions.UnitTests.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/src/Extensions/Extensions.UnitTests/"
+      }
+    },
+    {
       "label": "Test - Semantic-Kernel Integration (Code Coverage)",
       "command": "dotnet",
       "type": "process",
@@ -147,7 +169,7 @@
         "XPlat Code Coverage;Format=lcov",
         "--filter",
         "${input:filter}",
-        "SemanticKernel.IntegrationTests.csproj"
+        "IntegrationTests.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",
@@ -156,7 +178,7 @@
         "panel": "shared"
       },
       "options": {
-        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.IntegrationTests/"
+        "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
       }
     },
     {

@@ -3,7 +3,7 @@
 import asyncio
 
 import semantic_kernel as sk
-import semantic_kernel.ai.open_ai as sk_oai
+import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 sk_prompt = """
 ChatBot can have a conversation with you about any topic.
@@ -18,7 +18,7 @@ ChatBot:>
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.config.add_text_backend(
+kernel.config.add_text_service(
     "davinci-003", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
 )
 

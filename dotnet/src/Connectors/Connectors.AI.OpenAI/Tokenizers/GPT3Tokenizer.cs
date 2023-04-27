@@ -4,8 +4,6 @@ using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -100,9 +98,9 @@ public static class GPT3Tokenizer
             // for every 1 UTF8 byte. If we can reasonably stack-allocate the space, we do, otherwise
             // we temporarily rent a pooled array.
             char[]? arrayPoolArray = null;
-            Span<char> chars = maxUtf8Length <= 256 ?
-                stackalloc char[maxUtf8Length] :
-                (arrayPoolArray = ArrayPool<char>.Shared.Rent(maxUtf8Length));
+            Span<char> chars = maxUtf8Length <= 256
+                ? stackalloc char[maxUtf8Length]
+                : (arrayPoolArray = ArrayPool<char>.Shared.Rent(maxUtf8Length));
 
             // Rather than using separate space for the UTF8 bytes, we just reinterpret the Span<char>
             // as a Span<byte>.  Since our mapping is 1:1, the space required for the bytes will always
@@ -156,24 +154,29 @@ public static class GPT3Tokenizer
         static unsafe int EncodingUtf8GetBytes(ReadOnlySpan<char> chars, Span<byte> bytes)
         {
             fixed (char* charPtr = chars)
-            fixed (byte* bytesPtr = bytes)
             {
-                return Encoding.UTF8.GetBytes(charPtr, chars.Length, bytesPtr, bytes.Length);
+                fixed (byte* bytesPtr = bytes)
+                {
+                    return Encoding.UTF8.GetBytes(charPtr, chars.Length, bytesPtr, bytes.Length);
+                }
             }
         }
     }
 
     public static List<int> Encode(StringBuilder? stringBuilder) =>
-        stringBuilder is not null ? Encode(stringBuilder.ToString()) :
-        new List<int>();
+        stringBuilder is not null
+            ? Encode(stringBuilder.ToString())
+            : new List<int>();
 
     public static List<int> Encode(char[]? chars) =>
-        chars is not null ? Encode(new string(chars)) :
-        new List<int>();
+        chars is not null
+            ? Encode(new string(chars))
+            : new List<int>();
 
     public static List<int> Encode(IEnumerable<char>? chars) =>
-        chars is not null ? Encode(string.Concat(chars)) :
-        new List<int>();
+        chars is not null
+            ? Encode(string.Concat(chars))
+            : new List<int>();
 
     private static List<string> BytePairEncoding(string token)
     {
@@ -195,7 +198,8 @@ public static class GPT3Tokenizer
             word.Add(c.ToString());
         }
 
-        var minPairs = new SortedDictionary<long, (string, string)>();
+        long smallestRank = long.MaxValue;
+        (string, string) smallestPair = ("", "");
         List<string>? newWord = null;
 
         while (word.Count >= 2)
@@ -204,23 +208,22 @@ public static class GPT3Tokenizer
             {
                 (string, string) pair = (word[pairIndex], word[pairIndex + 1]);
 
-                long minPairsRank = 100000000000;
-                if (GPT3Settings.BpeRanks.TryGetValue(pair, out int rank))
-                {
-                    minPairsRank = rank;
-                }
+                long pairRank = GPT3Settings.BpeRanks.TryGetValue(pair, out int rank) ? rank : 100_000_000_000;
 
-                minPairs[minPairsRank] = pair;
+                if (pairRank <= smallestRank)
+                {
+                    smallestRank = pairRank;
+                    smallestPair = pair;
+                }
             }
 
-            (string, string) biGram = minPairs[minPairs.Keys.Min()];
-            if (!GPT3Settings.BpeRanks.ContainsKey(biGram))
+            if (!GPT3Settings.BpeRanks.ContainsKey(smallestPair))
             {
                 break;
             }
 
-            string first = biGram.Item1;
-            string second = biGram.Item2;
+            string first = smallestPair.Item1;
+            string second = smallestPair.Item2;
 
             newWord ??= new List<string>(word.Count);
             for (int i = 0; i < word.Count; i++)
@@ -237,6 +240,7 @@ public static class GPT3Tokenizer
                 {
                     break;
                 }
+
                 i = j;
 
                 if (i < (word.Count - 1) &&
@@ -257,7 +261,7 @@ public static class GPT3Tokenizer
 
             // And reset state for the next go-around
             newWord.Clear();
-            minPairs.Clear();
+            smallestRank = long.MaxValue;
         }
 
         s_bpeCache.TryAdd(token, word);

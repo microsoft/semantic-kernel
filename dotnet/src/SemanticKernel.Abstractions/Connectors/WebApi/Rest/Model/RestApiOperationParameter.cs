@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 /// <summary>
 /// The REST API operation parameter.
 /// </summary>
-internal class RestApiOperationParameter
+internal sealed class RestApiOperationParameter
 {
     /// <summary>
     /// The parameter name.
