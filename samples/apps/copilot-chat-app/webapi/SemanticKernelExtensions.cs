@@ -94,7 +94,7 @@ internal static class SemanticKernelExtensions
         services.AddScoped<PlannerFactoryAsync>(sp => async (IKernel kernel) =>
         {
             // Create a kernel for the planner with the same contexts as the chat's kernel but with only skills we want available to the planner.
-            IKernel plannerKernel = new Kernel(new SkillCollection(), kernel.PromptTemplateEngine, kernel.Memory, kernel.Config, kernel.Log);
+            var plannerKernel = new Kernel(new SkillCollection(), kernel.PromptTemplateEngine, kernel.Memory, kernel.Config, kernel.Log);
 
             //
             // Add skills to the planner here.
