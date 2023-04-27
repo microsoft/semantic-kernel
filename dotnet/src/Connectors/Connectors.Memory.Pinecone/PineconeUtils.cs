@@ -16,6 +16,11 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 public static class PineconeUtils
 {
     private const int MaxMetadataSize = 40 * 1024;
+    
+    public const int DefaultDimension = 1536;
+    public const string DefaultIndexName = "sk-index";
+    public const IndexMetric DefaultIndexMetric = IndexMetric.Cosine;
+    public const PodType DefaultPodType = PodType.P1X1;
 
     internal static JsonSerializerOptions DefaultSerializerOptions => new()
     {

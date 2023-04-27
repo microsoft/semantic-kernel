@@ -127,13 +127,13 @@ public class IndexDefinition
 
     public static IndexDefinition Default(string? name = default)
     {
-        string? indexName = name ?? "sk-index";
+        string? indexName = name ?? PineconeUtils.DefaultIndexName;
         return Create(indexName)
-            .WithDimension(1536)
-            .WithMetric(IndexMetric.Cosine)
+            .WithDimension(PineconeUtils.DefaultDimension)
+            .WithMetric(PineconeUtils.DefaultIndexMetric)
             .NumberOfPods(1)
             .NumberOfReplicas(1)
-            .WithPodType(PodType.P1X1)
+            .WithPodType(PineconeUtils.DefaultPodType)
             .WithMetadataIndex(MetadataIndexConfig.Default);
     }
 
