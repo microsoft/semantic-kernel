@@ -159,12 +159,15 @@ public sealed class Plan : ISKFunction
     /// <param name="json">JSON string representation of a Plan</param>
     /// <param name="context">The context to use for function registrations.</param>
     /// <returns>An instance of a Plan object.</returns>
-    public static Plan FromJson(string json, SKContext context)
+    /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
+    public static Plan FromJson(string json, SKContext? context = null)
     {
-        // Needs Test
         var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions() { IncludeFields = true }) ?? new Plan(string.Empty);
 
-        plan = SetRegisteredFunctions(plan, context);
+        if (context != null)
+        {
+            plan = SetRegisteredFunctions(plan, context);
+        }
 
         return plan;
     }
@@ -174,7 +177,6 @@ public sealed class Plan : ISKFunction
     /// </summary>
     public string ToJson()
     {
-        // Needs Test
         return JsonSerializer.Serialize(this);
     }
 
@@ -286,7 +288,10 @@ public sealed class Plan : ISKFunction
     public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
         CancellationToken? cancel = null)
     {
-        context ??= new SKContext(new ContextVariables(input), null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
+        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
+
+        context.Variables.Update(input);
+
         return this.InvokeAsync(context, settings, log, cancel);
     }
 
@@ -449,7 +454,6 @@ public sealed class Plan : ISKFunction
             }
             else if (this.State.Get(param.Name, out value) && !string.IsNullOrEmpty(value))
             {
-                // Needs test
                 stepVariables.Set(param.Name, value);
             }
         }

@@ -16,12 +16,11 @@ public class ContextVariablesConverter : JsonConverter<ContextVariables>
     /// Read the JSON and convert to ContextVariables
     /// </summary>
     /// <param name="reader">The JSON reader.</param>
-    /// <param name="typeToConvert">The type to convert from.</param>
+    /// <param name="typeToConvert">The type to convert.</param>
     /// <param name="options">The JSON serializer options.</param>
     /// <returns>The deserialized <see cref="ContextVariables"/>.</returns>
     public override ContextVariables Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        // Needs Test
         var keyValuePairs = JsonSerializer.Deserialize<IEnumerable<KeyValuePair<string, string>>>(ref reader, options);
         var context = new ContextVariables();
 
@@ -35,7 +34,16 @@ public class ContextVariablesConverter : JsonConverter<ContextVariables>
 
     public override void Write(Utf8JsonWriter writer, ContextVariables value, JsonSerializerOptions options)
     {
-        // Needs Test
-        JsonSerializer.Serialize(writer, value, options);
+        writer.WriteStartArray();
+
+        foreach (var kvp in value)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("Key", kvp.Key);
+            writer.WriteString("Value", kvp.Value);
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
     }
 }
