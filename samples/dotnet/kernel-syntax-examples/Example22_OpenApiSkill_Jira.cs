@@ -10,6 +10,11 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Newtonsoft.Json;
 using RepoUtils;
 
+/// <summary>
+/// This sample shows how to connect the Semantic Kernel to Jira as an Open Api plugin based on the Open Api schema.
+/// This format of registering the skill and its operations, and subsequently executing those operations can be applied
+/// to an Open Api plugin that follows the Open Api Schema.
+/// </summary>
 public static class Example22_OpenApiSkill_Jira
 {
     public static async Task RunAsync()
@@ -43,10 +48,10 @@ public static class Example22_OpenApiSkill_Jira
 
         // GetIssue Skill
         {
-            //Set Properties for the Get Issue operation in the openAPI.swagger.json 
+            // Set Properties for the Get Issue operation in the openAPI.swagger.json 
             contextVariables.Set("issueKey", "SKTES-2");
 
-            //Run operation via the semantic kernel
+            // Run operation via the semantic kernel
             var result = await kernel.RunAsync(contextVariables, jiraSkills["GetIssue"]);
 
             Console.WriteLine("\n\n\n");
@@ -56,11 +61,11 @@ public static class Example22_OpenApiSkill_Jira
 
         // AddComment Skill
         {
-            //Set Properties for the AddComment operation in the openAPI.swagger.json 
+            // Set Properties for the AddComment operation in the openAPI.swagger.json 
             contextVariables.Set("issueKey", "SKTES-1");
             contextVariables.Set("body", "Here is a rad comment");
 
-            //Run operation via the semantic kernel
+            // Run operation via the semantic kernel
             var result = await kernel.RunAsync(contextVariables, jiraSkills["AddComment"]);
 
             Console.WriteLine("\n\n\n");
