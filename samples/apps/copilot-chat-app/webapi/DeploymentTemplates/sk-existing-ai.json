@@ -11,7 +11,7 @@
   "parameters": {
     "name": {
       "type": "string",
-      "defaultValue": "SKaaS",
+      "defaultValue": "sk",
       "metadata": {
         "description": "Name for the deployment"
       }
