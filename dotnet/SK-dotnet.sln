@@ -75,6 +75,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.MetaPackage"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImportDocument", "..\samples\apps\copilot-chat-app\importdocument\ImportDocument.csproj", "{94E14913-D600-4448-A5C5-A268C23B2C3B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planning.ActionPlanner", "src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj", "{994BEF0B-E277-4D10-BB13-FE670D26620D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extensions", "extensions", "{078F96B4-09E1-4E0E-B214-F71A4F4BF633}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Extensions.UnitTests", "src\Extensions\Extensions.UnitTests\Extensions.UnitTests.csproj", "{F51017A9-15C8-472D-893C-080046D710A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planning.SequentialPlanner", "src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj", "{A350933D-F9D5-4AD3-8C4F-B856B5020297}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -177,6 +185,18 @@ Global
 		{94E14913-D600-4448-A5C5-A268C23B2C3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94E14913-D600-4448-A5C5-A268C23B2C3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94E14913-D600-4448-A5C5-A268C23B2C3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{994BEF0B-E277-4D10-BB13-FE670D26620D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{994BEF0B-E277-4D10-BB13-FE670D26620D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{994BEF0B-E277-4D10-BB13-FE670D26620D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{994BEF0B-E277-4D10-BB13-FE670D26620D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F51017A9-15C8-472D-893C-080046D710A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F51017A9-15C8-472D-893C-080046D710A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F51017A9-15C8-472D-893C-080046D710A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F51017A9-15C8-472D-893C-080046D710A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A350933D-F9D5-4AD3-8C4F-B856B5020297}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A350933D-F9D5-4AD3-8C4F-B856B5020297}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A350933D-F9D5-4AD3-8C4F-B856B5020297}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A350933D-F9D5-4AD3-8C4F-B856B5020297}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -209,6 +229,10 @@ Global
 		{627742DB-1E52-468A-99BD-6FF1A542D25B} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{E3299033-EB81-4C4C-BCD9-E8DC40937969} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{94E14913-D600-4448-A5C5-A268C23B2C3B} = {FA3720F1-C99A-49B2-9577-A940257098BF}
+		{078F96B4-09E1-4E0E-B214-F71A4F4BF633} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
+		{994BEF0B-E277-4D10-BB13-FE670D26620D} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+		{F51017A9-15C8-472D-893C-080046D710A6} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+		{A350933D-F9D5-4AD3-8C4F-B856B5020297} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

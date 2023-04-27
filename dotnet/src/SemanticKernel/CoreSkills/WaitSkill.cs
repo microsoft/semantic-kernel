@@ -24,7 +24,7 @@ public class WaitSkill
         Task DelayAsync(int milliSeconds);
     }
 
-    private class WaitProvider : IWaitProvider
+    private sealed class WaitProvider : IWaitProvider
     {
         public Task DelayAsync(int milliSeconds)
         {
