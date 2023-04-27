@@ -22,14 +22,21 @@ internal sealed class RequiredOnPropertyValueAttribute : ValidationAttribute
     public object? OtherPropertyValue { get; }
 
     /// <summary>
+    /// True to make sure that the value is not empty or whitespace when required.
+    /// </summary>
+    public bool NotEmptyOrWhitespace { get; }
+
+    /// <summary>
     /// If the other property is set to the expected value, then this property is required.
     /// </summary>
     /// <param name="otherPropertyName">Name of the other property.</param>
     /// <param name="otherPropertyValue">Value of the other property when this property is required.</param>
-    public RequiredOnPropertyValueAttribute(string otherPropertyName, object? otherPropertyValue)
+    /// <param name="notEmptyOrWhitespace">True to make sure that the value is not empty or whitespace when required.</param>
+    public RequiredOnPropertyValueAttribute(string otherPropertyName, object? otherPropertyValue, bool notEmptyOrWhitespace = true)
     {
         this.OtherPropertyName = otherPropertyName;
         this.OtherPropertyValue = otherPropertyValue;
+        this.NotEmptyOrWhitespace = notEmptyOrWhitespace;
     }
 
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
@@ -56,6 +63,10 @@ internal sealed class RequiredOnPropertyValueAttribute : ValidationAttribute
             if (value == null)
             {
                 return new ValidationResult($"Property '{validationContext.DisplayName}' is required when '{this.OtherPropertyName}' is {this.OtherPropertyValue}.");
+            }
+            else if (this.NotEmptyOrWhitespace && string.IsNullOrWhiteSpace(value.ToString()))
+            {
+                return new ValidationResult($"Property '{validationContext.DisplayName}' cannot be empty or whitespace when '{this.OtherPropertyName}' is {this.OtherPropertyValue}.");
             }
             else
             {
