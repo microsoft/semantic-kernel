@@ -11,24 +11,28 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Skills.Web.Google;
 
+/// <summary>
+/// Bing API connector.
+/// </summary>
 public class GoogleConnector : IWebSearchEngineConnector, IDisposable
 {
-    private readonly ILogger             _logger;
+    private readonly ILogger _logger;
     private readonly CustomsearchService _search;
-    private readonly string              _searchEngineId;
+    private readonly string _searchEngineId;
 
     public GoogleConnector(string apiKey, string searchEngineId, ILogger<GoogleConnector>? logger = null)
     {
-        this._logger         = logger ?? NullLogger<GoogleConnector>.Instance;
-        this._search         = new CustomsearchService(new BaseClientService.Initializer { ApiKey = apiKey });
+        this._logger = logger ?? NullLogger<GoogleConnector>.Instance;
+        this._search = new CustomsearchService(new BaseClientService.Initializer { ApiKey = apiKey });
         this._searchEngineId = searchEngineId;
     }
 
+    /// <inheritdoc/>
     public async Task<string> SearchAsync(string query, CancellationToken cancellationToken = default)
     {
         var search = this._search.Cse.List();
         search.Cx = this._searchEngineId;
-        search.Q  = query;
+        search.Q = query;
 
         var results = await search.ExecuteAsync(cancellationToken);
 
