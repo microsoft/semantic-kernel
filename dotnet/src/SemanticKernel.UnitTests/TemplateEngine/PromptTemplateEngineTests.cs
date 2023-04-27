@@ -28,7 +28,7 @@ public sealed class PromptTemplateEngineTests
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
         this._logger = testOutputHelper;
-        this._target = new PromptTemplateEngine(ConsoleLogger.Log);
+        this._target = new PromptTemplateEngine(TestConsoleLogger.Log);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._skills = new Mock<IReadOnlySkillCollection>();
     }
@@ -219,7 +219,7 @@ public sealed class PromptTemplateEngineTests
             this._variables,
             NullMemory.Instance,
             this._skills.Object,
-            ConsoleLogger.Log);
+            TestConsoleLogger.Log);
     }
 }
 #pragma warning restore VSTHRD103

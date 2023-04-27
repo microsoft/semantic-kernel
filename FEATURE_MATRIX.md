@@ -13,13 +13,14 @@
 |---|---|---|---|
 | OpenAI                            | ✅ | ✅ | |
 | AzureOpenAI                       | ✅ | ✅ | |
-| Hugging Face                      | ✅ | ❌ | Coming soon to Python - both native and web endpoint support |
-| Custom                            | ✅ | ❌ | Requires the user to define the service schema in their application |
+| Hugging Face Inference API        | 🔄 | ❌ | Coming soon to Python, not all scenarios are covered for .NET |
+| Hugging Face Local                | ❌ | ✅ | |
+| Custom                            | ✅ | 🔄 | Requires the user to define the service schema in their application |
 
 ## Tokenizers
 | | C# | Python | Notes |
 |---|---|---|---|
-| GPT2                              | ✅ | 🔄 | Can be manually added to Python via `pip install transformers` |
+| GPT2                              | ✅ | ✅ | |
 | GPT3                              | ✅ | ❌ | |
 | tiktoken                          | 🔄 | ❌ | Coming soon to Python and C#. Can be manually added to Python via `pip install tiktoken` |
 

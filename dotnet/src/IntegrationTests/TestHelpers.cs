@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.KernelExtensions;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SemanticKernel.IntegrationTests;
 
