@@ -19,13 +19,13 @@ public class IndexDefinition
     public string Name { get; set; }
 
     /// <summary>
-    /// Gets or Sets Metric
+    /// The index metric to use for similarity search.
     /// </summary>
     [JsonPropertyName("metric")]
     public IndexMetric Metric { get; set; } = IndexMetric.Cosine;
 
     /// <summary>
-    /// Gets or Sets PodType
+    /// The type of pod to use for the index.
     /// </summary>
     [JsonPropertyName("pod_type")]
     public PodType PodType { get; set; } = PodType.P1X1;
@@ -33,34 +33,32 @@ public class IndexDefinition
     /// <summary>
     /// The number of dimensions in the vector representation
     /// </summary>
-    /// <value>The number of dimensions in the vector representation</value>
     [JsonPropertyName("dimension")]
     public int Dimension { get; set; }
 
     /// <summary>
     /// The number of pods for the index to use,including replicas.
     /// </summary>
-    /// <value>The number of pods for the index to use,including replicas.</value>
     [JsonPropertyName("pods")]
     public int Pods { get; set; }
 
     /// <summary>
     /// The number of replicas. Replicas duplicate your index. They provide higher availability and throughput.
     /// </summary>
-    /// <value>The number of replicas. Replicas duplicate your index. They provide higher availability and throughput.</value>
     [JsonPropertyName("replicas")]
     public int Replicas { get; set; }
 
     /// <summary>
-    /// Gets or Sets Shards
+    /// The numbers of shards for the index to use.
     /// </summary>
     [JsonPropertyName("shards")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int? Shards { get; set; }
 
     /// <summary>
-    /// Gets or Sets MetadataConfig
+    /// The metadata index configuration.
     /// </summary>
+    /// <see cref="MetadataIndexConfig.Default"/>
     [JsonPropertyName("metadata_config")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public MetadataIndexConfig? MetadataConfig { get; set; }
@@ -68,8 +66,6 @@ public class IndexDefinition
     /// <summary>
     /// The unique name of a collection.
     /// </summary>
-    /// <value>The unique name of a collection.</value>
-    /// <example>&quot;example&quot;</example>
     [JsonPropertyName("source_collection")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? SourceCollection { get; set; }
@@ -137,27 +133,6 @@ public class IndexDefinition
             .NumberOfReplicas(1)
             .WithPodType(PodType.P1X1)
             .WithMetadataIndex(MetadataIndexConfig.Default);
-    }
-
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.Append("IndexDefinition {\n");
-        sb.Append("  Name: ").Append(this.Name).Append('\n');
-        sb.Append("  Dimension: ").Append(this.Dimension).Append('\n');
-        sb.Append("  Metric: ").Append(this.Metric).Append('\n');
-        sb.Append("  Pods: ").Append(this.Pods).Append('\n');
-        sb.Append("  Shards: ").Append(this.Shards).Append('\n');
-        sb.Append("  Replicas: ").Append(this.Replicas).Append('\n');
-        sb.Append("  PodType: ").Append(this.PodType).Append('\n');
-        sb.Append("  MetadataConfig: ").Append(this.MetadataConfig).Append('\n');
-        sb.Append("  SourceCollection: ").Append(this.SourceCollection).Append('\n');
-        sb.Append("}\n");
-        return sb.ToString();
     }
 
     /// <summary>

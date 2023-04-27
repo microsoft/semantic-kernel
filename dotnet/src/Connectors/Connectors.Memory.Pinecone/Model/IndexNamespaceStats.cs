@@ -18,7 +18,7 @@ public class IndexNamespaceStats
     }
 
     /// <summary>
-    /// Gets or Sets VectorCount
+    /// The number of vectors in the namespace
     /// </summary>
     [JsonPropertyName("vectorCount")]
     public long VectorCount { get; }

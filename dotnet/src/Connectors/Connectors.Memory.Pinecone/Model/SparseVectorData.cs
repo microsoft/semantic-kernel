@@ -24,20 +24,6 @@ public class SparseVectorData
     [JsonPropertyName("values")]
     public IEnumerable<float> Values { get; set; }
 
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.Append("class SparseVectorData {\n");
-        sb.Append("  Indices: ").Append(this.Indices).Append('\n');
-        sb.Append("  Values: ").Append(this.Values).Append('\n');
-        sb.Append("}\n");
-        return sb.ToString();
-    }
-
     public static SparseVectorData CreateSparseVectorData(List<long> indices, List<float> values)
     {
         return new SparseVectorData(indices, values);

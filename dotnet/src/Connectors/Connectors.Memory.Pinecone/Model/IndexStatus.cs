@@ -49,20 +49,4 @@ public class IndexStatus
     [JsonPropertyName("ready")]
     public bool Ready { get; set; }
 
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.Append("class IndexStatus {\n");
-        sb.Append("  Host: ").Append(this.Host).Append('\n');
-        sb.Append("  Port: ").Append(this.Port).Append('\n');
-        sb.Append("  State: ").Append(this.State).Append('\n');
-        sb.Append("  Ready: ").Append(this.Ready).Append('\n');
-        sb.Append("}\n");
-        return sb.ToString();
-    }
-
 }

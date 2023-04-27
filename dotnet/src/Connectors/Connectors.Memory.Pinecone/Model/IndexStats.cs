@@ -38,14 +38,12 @@ public class IndexStats
     /// <summary>
     /// The number of dimensions in the vector representation
     /// </summary>
-    /// <value>The number of dimensions in the vector representation</value>
     [JsonPropertyName("dimension")]
     public int Dimension { get; set; }
 
     /// <summary>
     /// The fullness of the index, regardless of whether a metadata filter expression was passed. The granularity of this metric is 10%.
     /// </summary>
-    /// <value>The fullness of the index, regardless of whether a metadata filter expression was passed. The granularity of this metric is 10%.</value>
     [JsonPropertyName("indexFullness")]
     public float IndexFullness { get; set; }
 
@@ -54,26 +52,5 @@ public class IndexStats
     /// </summary>
     [JsonPropertyName("totalVectorCount")]
     public long TotalVectorCount { get; set; }
-
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.Append("DescribeIndexStatsResponse {\n");
-        sb.Append("  Namespaces: ").Append('\n');
-
-        foreach (KeyValuePair<string, IndexNamespaceStats> item in this.Namespaces)
-        {
-            sb.Append("    ").Append(item.Key).Append(": ").Append(item.Value.VectorCount).Append('\n');
-        }
-        sb.Append("  Dimension: ").Append(this.Dimension).Append('\n');
-        sb.Append("  IndexFullness: ").Append(this.IndexFullness).Append('\n');
-        sb.Append("  TotalVectorCount: ").Append(this.TotalVectorCount).Append('\n');
-        sb.Append("}\n");
-        return sb.ToString();
-    }
 
 }
