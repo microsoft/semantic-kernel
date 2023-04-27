@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
+using Microsoft.SemanticKernel.Text;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
@@ -146,8 +146,8 @@ public class DocumentImportController : ControllerBase
 
         // Split the document into lines of text and then combine them into paragraphs.
         // NOTE that this is only one of the strategies to chunk documents. Feel free to experiment with other strategies.
-        var lines = SemanticTextPartitioner.SplitPlainTextLines(content, this._options.DocumentLineSplitMaxTokens);
-        var paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, this._options.DocumentParagraphSplitMaxLines);
+        var lines = TextChunker.SplitPlainTextLines(content, this._options.DocumentLineSplitMaxTokens);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, this._options.DocumentParagraphSplitMaxLines);
 
         foreach (var paragraph in paragraphs)
         {
