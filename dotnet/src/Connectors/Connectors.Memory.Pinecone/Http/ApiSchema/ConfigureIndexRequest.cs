@@ -5,7 +5,8 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
 /// <summary>
-/// IndexConfiguration
+/// This operation specifies the pod type and number of replicas for an index.
+/// See https://docs.pinecone.io/reference/configure_index
 /// </summary>
 internal class ConfigureIndexRequest
 {

@@ -6,7 +6,10 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
 /// <summary>
-/// UpdateRequest
+/// The Update operation updates vector in a namespace.
+/// If a value is included, it will overwrite the previous value.
+/// If a set_metadata is included, the values of the fields specified in it will be added or overwrite the previous value.
+/// See https://docs.pinecone.io/reference/update
 /// </summary>
 internal class UpdateVectorRequest
 {

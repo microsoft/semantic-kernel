@@ -6,6 +6,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
 /// <summary>
 /// DeleteRequest
+/// See https://docs.pinecone.io/reference/delete_post
 /// </summary>
 internal class DeleteRequest
 {

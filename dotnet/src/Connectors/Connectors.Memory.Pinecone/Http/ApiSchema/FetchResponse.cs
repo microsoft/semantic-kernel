@@ -6,6 +6,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
 /// <summary>
 /// FetchResponse
+/// See https://docs.pinecone.io/reference/fetch
 /// </summary>
 internal class FetchResponse
 {

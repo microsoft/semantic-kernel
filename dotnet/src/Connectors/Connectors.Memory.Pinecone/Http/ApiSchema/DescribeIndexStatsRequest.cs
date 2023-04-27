@@ -6,6 +6,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
 /// <summary>
 /// DescribeIndexStatsRequest
+/// See https://docs.pinecone.io/reference/describe_index_stats_post
 /// </summary>
 internal class DescribeIndexStatsRequest
 {

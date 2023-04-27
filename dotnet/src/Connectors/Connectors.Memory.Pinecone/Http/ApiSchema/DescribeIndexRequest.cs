@@ -2,6 +2,10 @@ using System.Net.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
+/// <summary>
+/// Get information about an index.
+/// See https://docs.pinecone.io/reference/describe_index
+/// </summary>
 internal class DescribeIndexRequest
 {
     /// <summary>
@@ -9,7 +13,7 @@ internal class DescribeIndexRequest
     /// </summary>
     public string IndexName { get; }
 
-    public static DescribeIndexRequest DescribeIndex(string indexName)
+    public static DescribeIndexRequest Create(string indexName)
     {
         return new DescribeIndexRequest(indexName);
     }
