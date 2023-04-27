@@ -85,8 +85,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord,
-                $"Failed to convert MemoryRecord to QdrantVectorRecord");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord);
         }
 
         try
@@ -100,7 +99,6 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
                 ex);
         }
 
@@ -125,7 +123,6 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
                 ex);
         }
 
@@ -157,14 +154,12 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToGetVectorData,
-                $"Failed to get vector data from Qdrant: {ex.Message}",
                 ex);
         }
         catch (MemoryException ex)
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToConvertQdrantVectorRecordToMemoryRecord,
-                $"Failed deserialize Qdrant response to Memory Record: {ex.Message}",
                 ex);
         }
     }
@@ -216,14 +211,12 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToGetVectorData,
-                $"Failed to get vector data from Qdrant: {ex.Message}",
                 ex);
         }
         catch (MemoryException ex)
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToConvertQdrantVectorRecordToMemoryRecord,
-                $"Failed deserialize Qdrant response to Memory Record: {ex.Message}",
                 ex);
         }
     }
@@ -262,7 +255,6 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Qdrant {ex.Message}",
                 ex);
         }
     }
@@ -291,7 +283,6 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Qdrant {ex.Message}",
                 ex);
         }
     }
@@ -314,7 +305,6 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Error in batch removing data from Qdrant {ex.Message}",
                 ex);
         }
     }
@@ -433,8 +423,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord,
-                $"Failed to convert MemoryRecord to QdrantVectorRecord");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord);
         }
 
         return vectorData;

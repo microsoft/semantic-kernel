@@ -31,7 +31,7 @@ public class MinHeapTests
 
         // Assert
         Assert.Equal(ValidationException.ErrorCodes.OutOfRange, exception.ErrorCode);
-        Assert.Equal("OutOfRange: MinHeap capacity must be greater than 0.", exception.Message);
+        Assert.Equal("Out of range: MinHeap capacity must be greater than 0.", exception.Message);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class MinHeapTests
 
         // Assert
         Assert.Equal(ValidationException.ErrorCodes.OutOfRange, exception.ErrorCode);
-        Assert.Equal("OutOfRange: startAt value must be less than items count.", exception.Message);
+        Assert.Equal("Out of range: startAt value must be less than items count.", exception.Message);
     }
 
     [Fact]
