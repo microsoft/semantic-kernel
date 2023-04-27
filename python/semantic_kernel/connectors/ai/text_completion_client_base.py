@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 class TextCompletionClientBase(ABC):
     @abstractmethod
-    async def complete_simple_async(
+    async def complete_async(
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
