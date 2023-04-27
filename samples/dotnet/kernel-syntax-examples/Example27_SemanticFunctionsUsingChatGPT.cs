@@ -10,7 +10,7 @@ using RepoUtils;
  */
 
 // ReSharper disable once InconsistentNaming
-public static class Example26_SemanticFunctionsUsingChatGPT
+public static class Example27_SemanticFunctionsUsingChatGPT
 {
     public static async Task RunAsync()
     {
