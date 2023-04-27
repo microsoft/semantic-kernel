@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;

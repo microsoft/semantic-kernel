@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 

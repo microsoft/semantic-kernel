@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,15 +16,15 @@ public static class PineconeDocumentExtensions
         string key = !string.IsNullOrEmpty(memoryRecord.Key)
             ? memoryRecord.Key
             : memoryRecord.Metadata.Id;
-        
+
         Dictionary<string, object> metadata = new()
         {
             ["document_Id"] = memoryRecord.Metadata.Id,
             ["text"] = memoryRecord.Metadata.Text,
             ["source_Id"] = memoryRecord.Metadata.ExternalSourceName,
-            ["created_at"] = memoryRecord.HasTimestamp 
-                ? memoryRecord.Timestamp?.ToString("o") ?? DateTimeOffset.UtcNow.ToString("o") 
-                : DateTimeOffset.UtcNow.ToString("o") 
+            ["created_at"] = memoryRecord.HasTimestamp
+                ? memoryRecord.Timestamp?.ToString("o") ?? DateTimeOffset.UtcNow.ToString("o")
+                : DateTimeOffset.UtcNow.ToString("o")
         };
 
         if (!string.IsNullOrEmpty(memoryRecord.Metadata.AdditionalMetadata))
@@ -37,7 +39,7 @@ public static class PineconeDocumentExtensions
                 }
             }
         }
-        
+
         return PineconeDocument.Create(key, memoryRecord.Embedding.Vector)
             .WithMetadata(metadata);
     }

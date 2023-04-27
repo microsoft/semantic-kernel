@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +14,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
-
-// ReSharper disable UnusedVariable
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
@@ -68,7 +68,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         using HttpRequestMessage request = fetchRequest.Build();
 
         request.Headers.Add("accept", "application/json");
-        
+
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request,
             cancellationToken).ConfigureAwait(false);
 
@@ -324,7 +324,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
                 break;
             case true:
                 this._logger.LogInformation("Deleting all vectors in index {0}", indexName);
-                deleteRequest = DeleteRequest.DeleteAllVectors();
+                deleteRequest = DeleteRequest.GetDeleteAllVectorsRequest();
                 break;
             default:
             {
@@ -572,7 +572,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     {
         this._logger.LogDebug("Getting Description for Index: {0}", indexName);
 
-        using HttpRequestMessage request = DescribeIndexRequest.DescribeIndex(indexName).Build();
+        using HttpRequestMessage request = DescribeIndexRequest.Create(indexName).Build();
 
         request.Headers.Add("accept", "application/json");
 

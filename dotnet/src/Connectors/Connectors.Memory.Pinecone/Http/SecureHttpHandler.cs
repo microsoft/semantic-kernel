@@ -1,4 +1,6 @@
-﻿using System.Net.Http;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Net.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http;
 

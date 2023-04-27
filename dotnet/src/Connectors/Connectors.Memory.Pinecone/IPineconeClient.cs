@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -5,6 +7,9 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
+/// <summary>
+///  Interface for a Pinecone client
+/// </summary>
 public interface IPineconeClient
 {
     /// <summary>
@@ -137,7 +142,7 @@ public interface IPineconeClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Fetch
+    /// Updates a vector
     /// </summary>
     /// <remarks>
     /// The Update operation updates vector in a namespace. If a value is included, it will overwrite the previous value. If a set_metadata is included, the values of the fields specified in it will be added or overwrite the previous value.
@@ -157,7 +162,7 @@ public interface IPineconeClient
     /// Describe Index Stats
     /// </summary>
     /// <remarks>
-    /// The DescribeIndexStats operation returns statistics about the index&#39;s contents, including the vector count per namespace and the number of dimensions.
+    /// The DescribeIndexStats operation returns statistics about the index's contents, including the vector count per namespace and the number of dimensions.
     /// </remarks>
     /// <param name="indexName"></param>
     /// <param name="filter"></param>

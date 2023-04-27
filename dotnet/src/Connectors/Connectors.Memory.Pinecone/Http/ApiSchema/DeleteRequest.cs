@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
@@ -88,7 +90,7 @@ internal class DeleteRequest
 
         return request;
     }
-    
+
     #region private ================================================================================
 
     private DeleteRequest(IEnumerable<string> ids)

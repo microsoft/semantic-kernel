@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;

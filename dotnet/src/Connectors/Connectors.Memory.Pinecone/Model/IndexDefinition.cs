@@ -1,12 +1,14 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using System.Net.Http;
-using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 /// <summary>
-/// IndexDefinition
+/// Used to create a new index.
+/// See https://docs.pinecone.io/reference/create_index
 /// </summary>
 public class IndexDefinition
 {
