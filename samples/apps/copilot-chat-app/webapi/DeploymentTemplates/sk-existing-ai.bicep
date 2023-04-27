@@ -24,7 +24,20 @@ param appServiceSku string = 'B1'
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
 param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip'
 
-@description('Azure OpenAI endpoint to use (ignored when using non-Azure instance)')
+@description('Underlying AI service')
+@allowed([
+  'AzureOpenAI'
+  'OpenAI'
+])
+param aiService string = 'AzureOpenAI'
+
+@description('Model to use for chat completions')
+param completionModel string = 'gpt-35-turbo'
+
+@description('Model to use for text embeddings')
+param embeddingModel string = 'text-embedding-ada-002'
+
+@description('Azure OpenAI endpoint to use (ignored when AI service is not AzureOpenAI)')
 param endpoint string = ''
 
 @secure()
@@ -79,11 +92,11 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'Completion:AIService'
-          value: 'AzureOpenAI'
+          value: aiService
         }
         {
           name: 'Completion:DeploymentOrModelId'
-          value: 'gpt-35-turbo'
+          value: completionModel
         }
         {
           name: 'Completion:Endpoint'
@@ -99,11 +112,11 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'Embedding:AIService'
-          value: 'AzureOpenAI'
+          value: aiService
         }
         {
           name: 'Embedding:DeploymentOrModelId'
-          value: 'text-embedding-ada-002'
+          value: embeddingModel
         }
         {
           name: 'Embedding:Endpoint'

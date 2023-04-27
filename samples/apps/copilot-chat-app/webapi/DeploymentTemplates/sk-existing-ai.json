@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.16.2.56959",
-      "templateHash": "6511950003518518503"
+      "templateHash": "9446230726171713086"
     }
   },
   "parameters": {
@@ -30,11 +30,36 @@
         "description": "Location of package to deploy as the web service"
       }
     },
+    "aiService": {
+      "type": "string",
+      "defaultValue": "AzureOpenAI",
+      "allowedValues": [
+        "AzureOpenAI",
+        "OpenAI"
+      ],
+      "metadata": {
+        "description": "Underlying AI service"
+      }
+    },
+    "completionModel": {
+      "type": "string",
+      "defaultValue": "gpt-35-turbo",
+      "metadata": {
+        "description": "Model to use for chat completions"
+      }
+    },
+    "embeddingModel": {
+      "type": "string",
+      "defaultValue": "text-embedding-ada-002",
+      "metadata": {
+        "description": "Model to use for text embeddings"
+      }
+    },
     "endpoint": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Azure OpenAI endpoint to use (ignored when using non-Azure instance)"
+        "description": "Azure OpenAI endpoint to use (ignored when AI service is not AzureOpenAI)"
       }
     },
     "apiKey": {
@@ -92,11 +117,11 @@
             },
             {
               "name": "Completion:AIService",
-              "value": "AzureOpenAI"
+              "value": "[parameters('aiService')]"
             },
             {
               "name": "Completion:DeploymentOrModelId",
-              "value": "gpt-35-turbo"
+              "value": "[parameters('completionModel')]"
             },
             {
               "name": "Completion:Endpoint",
@@ -112,11 +137,11 @@
             },
             {
               "name": "Embedding:AIService",
-              "value": "AzureOpenAI"
+              "value": "[parameters('aiService')]"
             },
             {
               "name": "Embedding:DeploymentOrModelId",
-              "value": "text-embedding-ada-002"
+              "value": "[parameters('embeddingModel')]"
             },
             {
               "name": "Embedding:Endpoint",
