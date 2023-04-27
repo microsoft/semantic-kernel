@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
@@ -64,6 +65,98 @@ public class SKContextTests
         Assert.Equal("ciao", result.Result);
     }
 
+    [Fact]
+    public void ItCanUntrustAll()
+    {
+        // Arrange
+        var variables = new ContextVariables();
+        var target = new SKContext(variables);
+
+        // Assert
+        Assert.True(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, true);
+
+        // Act
+        target.UntrustAll();
+
+        // Assert
+        Assert.False(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, false);
+    }
+
+    [Fact]
+    public void UpdateResultWithUntrustedContentMakesTheContextUntrusted()
+    {
+        // Arrange
+        string newResult = Guid.NewGuid().ToString();
+        string someOtherResult = Guid.NewGuid().ToString();
+        var variables = new ContextVariables();
+        var target = new SKContext(variables);
+
+        // Assert
+        Assert.Empty(target.Result);
+        Assert.True(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, true);
+
+        // Act
+        // Update with new result as untrusted
+        target.UpdateResult(newResult, false);
+
+        // Assert
+        Assert.Equal(newResult, target.Result);
+        Assert.False(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, false);
+    }
+
+    [Fact]
+    public void UpdateResultInAlreadyUntrustedContextKeepsTheContextUntrusted()
+    {
+        // Arrange
+        string originalResult = Guid.NewGuid().ToString();
+        string newResult = Guid.NewGuid().ToString();
+        var variables = new ContextVariables(TrustAwareString.Untrusted(originalResult));
+        var target = new SKContext(variables);
+
+        // Assert
+        Assert.Equal(originalResult, target.Result);
+        Assert.False(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, false);
+
+        // Act
+        // Update with new result as trusted, although
+        // the context should be kept untrusted because of the previous result
+        target.UpdateResult(newResult, true);
+
+        // Assert
+        Assert.Equal(newResult, target.Result);
+        // Should be kept false because the previous result it already false
+        Assert.False(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, false);
+    }
+
+    [Fact]
+    public void UpdateResultWithNullContentKeepsPreviousResult()
+    {
+        // Arrange
+        string originalResult = Guid.NewGuid().ToString();
+        var variables = new ContextVariables(TrustAwareString.Trusted(originalResult));
+        var target = new SKContext(variables);
+
+        // Assert
+        Assert.Equal(originalResult, target.Result);
+        Assert.True(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, true);
+
+        // Act
+        // Update with null result should keep previous value
+        target.UpdateResult(null, false);
+
+        // Assert
+        Assert.Equal(originalResult, target.Result);
+        Assert.False(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, false);
+    }
+
     private sealed class Parrot
     {
         [SKFunction("say something")]
@@ -72,5 +165,11 @@ public class SKContextTests
         {
             return text;
         }
+    }
+
+    private static void AssertIsInputTrusted(ContextVariables variables, bool expectedIsTrusted)
+    {
+        // Assert isTrusted matches
+        Assert.Equal(expectedIsTrusted, variables.Input.IsTrusted);
     }
 }

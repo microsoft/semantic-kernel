@@ -6,6 +6,7 @@ using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Orchestration;
@@ -21,6 +22,11 @@ public sealed class SKContext
     /// </summary>
     /// <returns>Processed input, aka result</returns>
     public string Result => this.Variables.ToString();
+
+    /// <summary>
+    /// Whether all the context variables are trusted or not.
+    /// </summary>
+    public bool IsTrusted => this.Variables.IsAllTrusted();
 
     /// <summary>
     /// Whether an error occurred while executing functions in the pipeline.
@@ -129,6 +135,14 @@ public sealed class SKContext
     }
 
     /// <summary>
+    /// Make all the variables stored in the context untrusted.
+    /// </summary>
+    public void UntrustAll()
+    {
+        this.Variables.UntrustAll();
+    }
+
+    /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// If an error occurred, prints the last exception message instead.
     /// </summary>
@@ -184,4 +198,33 @@ public sealed class SKContext
             return display;
         }
     }
+
+    #region internal
+
+    /// <summary>
+    /// Update the current result with a new string result and trust information.
+    /// - If the current result is already untrusted, it will be kept untrusted.
+    /// - If the provided stringResult is null, the previous result will be kept and
+    /// only trust information will be updated.
+    /// </summary>
+    /// <param name="stringResult">New result value</param>
+    /// <param name="isResultTrusted">Whether the new result is trusted or not</param>
+    internal void UpdateResult(string? stringResult, bool isResultTrusted)
+    {
+        // Keep previous result if one is not provided
+        string newResult = stringResult ?? this.Result;
+
+        if (isResultTrusted)
+        {
+            // Keeps previous trust state
+            this.Variables.Update(new TrustAwareString(newResult, this.Variables.Input.IsTrusted));
+        }
+        else
+        {
+            // Force the result to be untrusted
+            this.Variables.Update(TrustAwareString.Untrusted(newResult));
+        }
+    }
+
+    #endregion
 }
