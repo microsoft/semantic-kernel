@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.16.2.56959",
-      "templateHash": "2240042197340903108"
+      "templateHash": "7150362650645979153"
     }
   },
   "parameters": {
@@ -16,20 +16,9 @@
         "description": "Name for the deployment"
       }
     },
-    "location": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().location]",
-      "metadata": {
-        "description": "Region for the resources"
-      }
-    },
     "appServiceSku": {
       "type": "string",
       "defaultValue": "B1",
-      "allowedValues": [
-        "B1",
-        "S1"
-      ],
       "metadata": {
         "description": "SKU for the Azure App Service plan"
       }
@@ -43,6 +32,7 @@
     }
   },
   "variables": {
+    "location": "[resourceGroup().location]",
     "uniqueName": "[format('{0}-{1}', parameters('name'), uniqueString(resourceGroup().id))]"
   },
   "resources": [
@@ -50,7 +40,7 @@
       "type": "Microsoft.CognitiveServices/accounts",
       "apiVersion": "2022-03-01",
       "name": "[format('{0}-ai', variables('uniqueName'))]",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "kind": "OpenAI",
       "sku": {
         "name": "S0"
@@ -100,7 +90,7 @@
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2022-03-01",
       "name": "[format('{0}-plan', variables('uniqueName'))]",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "sku": {
         "name": "[parameters('appServiceSku')]"
       }
@@ -109,7 +99,7 @@
       "type": "Microsoft.Web/sites",
       "apiVersion": "2022-03-01",
       "name": "[format('{0}-web', variables('uniqueName'))]",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', format('{0}-plan', variables('uniqueName')))]",
         "httpsOnly": true,
@@ -298,7 +288,7 @@
       "type": "Microsoft.Insights/components",
       "apiVersion": "2020-02-02",
       "name": "[format('{0}-appi', variables('uniqueName'))]",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "kind": "string",
       "tags": {
         "displayName": "AppInsight"
@@ -324,7 +314,7 @@
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2020-08-01",
       "name": "[format('{0}-la', variables('uniqueName'))]",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "tags": {
         "displayName": "Log Analytics"
       },
