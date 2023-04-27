@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.16.2.56959",
-      "templateHash": "7150362650645979153"
+      "templateHash": "3979366470922744868"
     }
   },
   "parameters": {
@@ -259,8 +259,8 @@
               "value": "Warning"
             },
             {
-              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-appi', variables('uniqueName'))), '2020-02-02').InstrumentationKey]"
+              "name": "ApplicationInsights:ConnectionString",
+              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-appi', variables('uniqueName'))), '2020-02-02').ConnectionString]"
             }
           ]
         }
