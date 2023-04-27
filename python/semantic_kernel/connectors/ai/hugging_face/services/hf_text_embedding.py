@@ -4,6 +4,7 @@ from logging import Logger
 from typing import List, Optional
 
 from numpy import array, ndarray
+
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
@@ -47,7 +48,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
                 "Could not import sentence_transformers python package."
                 "Please install it with `pip install sentence_transformers`."
             )
-        
+
         self._model_id = model_id
         self._log = log if log is not None else NullLogger()
         self.device = (
