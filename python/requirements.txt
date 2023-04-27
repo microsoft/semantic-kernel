@@ -4,3 +4,4 @@ aiofiles>=23.1.0
 transformers>=4.28.0
 sentence-transformers>=2.2.2
 torch>=2.0.0
+chromadb>=0.3.21
