@@ -2,7 +2,9 @@
 
 ## Things to know
 
-Azure currently limits the number of OpenAI resources per region per subscription to 3. Bearing this in mind, you might want to use the same Azure OpenAI instance for multiple deployments of Semantic Kernel as a Service.
+Azure currently limits the number of OpenAI resources per region per subscription to 3. Also, OpenAI is not available in every region.
+(Refer to this [availability map](https://azure.microsoft.com/en-us/explore/global-infrastructure/products-by-region/?products=cognitive-services))
+Bearing this in mind, you might want to use the same Azure OpenAI instance for multiple deployments of Semantic Kernel as a Service.
 
 To do so, or to use an OpenAI instance from [openai.com](https://openai.com), use the version of the deployment template that uses existing OpenAI resources.
 
@@ -12,9 +14,9 @@ Also note that the F1 and D1 App Service SKU's (the Free and Shared ones) are no
 
 ## Deploying with a new Azure OpenAI instance
 
-Use the [DeploySKaaS.ps1](DeploySKaaS.ps1) file found in this folder:
+Use the [DeploySK.ps1](DeploySK.ps1) file found in this folder:
 ```powershell
-.\DeploySKaaS.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID
+.\DeploySK.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID
 ```
 
 This will deploy an instance of Semantic Kernel as a Service in a resource group that will bear the name YOUR_DEPLOYMENT_NAME followed by the "-rg" suffix in the specified subscription.
@@ -27,9 +29,9 @@ Alternatively, you can deploy by clicking on the following button:
 
 ## Deploying with an existing OpenAI / Azure OpenAI instance
 
-Use the [DeploySKaaS-ReUse-AI.ps1](DeploySKaaS-ReUse-AI.ps1) file found in this folder:
+Use the [DeploySK-Existing-AI.ps1](DeploySK-Existing-AI.ps1) file found in this folder:
 ```powershell
-.\DeploySKaaS-Existing-AI.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -Endpoint "YOUR_AZURE_OPENAI_ENDPOINT"
+.\DeploySK-Existing-AI.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -Endpoint "YOUR_AZURE_OPENAI_ENDPOINT"
 ```
 
 After entering the command above, you will be prompted to enter your OpenAI or Azure OpenAI API key. (You can also pass in the API key using the -ApiKey paramater followed by a SecureString)

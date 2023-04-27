@@ -4,7 +4,7 @@
 param(
     [Parameter(Mandatory)]
     [string]
-    $DeploymentName = "SKaaS",
+    $DeploymentName,
 
     [Parameter(Mandatory)]
     [string]

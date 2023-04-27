@@ -2,7 +2,7 @@
 Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-Bicep template for deploying the SKaaS service.
+Bicep template for deploying Semantic Kernel to Azure as a web app service.
 
 TODO: pass in completion and embedding models as parameters.
 
@@ -15,7 +15,7 @@ Resources to add:
 */
 
 @description('Name for the deployment')
-param name string = 'SKaaS'
+param name string = 'sk'
 
 @description('SKU for the Azure App Service plan')
 param appServiceSku string = 'B1'
