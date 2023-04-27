@@ -199,7 +199,7 @@ public static class GPT3Tokenizer
         }
 
         long smallestRank = long.MaxValue;
-        (string, string) smallestPair = ("","");
+        (string, string) smallestPair = ("", "");
         List<string>? newWord = null;
 
         while (word.Count >= 2)
