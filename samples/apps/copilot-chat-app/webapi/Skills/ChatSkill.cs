@@ -205,11 +205,11 @@ public class ChatSkill
 
         // Use the user intent message as the input to the plan.
         plannerContext.Variables.Update(plannerContext["userIntent"]);
-        
+
         // Create a plan and run it.
         Plan plan = await (await this._plannerFactoryAsync(this._kernel))
             .CreatePlanAsync(plannerContext.Variables.Input);
-        
+
         SKContext planContext = await plan.InvokeAsync(context: plannerContext);
 
         // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
