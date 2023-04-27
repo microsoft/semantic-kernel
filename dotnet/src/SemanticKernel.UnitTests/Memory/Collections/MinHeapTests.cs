@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory.Collections;
 using Xunit;
 
@@ -27,11 +27,10 @@ public class MinHeapTests
         };
 
         // Act
-        var exception = Assert.Throws<ValidationException>(() => action());
+        var exception = Assert.Throws<ArgumentOutOfRangeException>("capacity", () => action());
 
         // Assert
-        Assert.Equal(ValidationException.ErrorCodes.OutOfRange, exception.ErrorCode);
-        Assert.Equal("Out of range: MinHeap capacity must be greater than 0.", exception.Message);
+        Assert.Equal(-1, exception.ActualValue);
     }
 
     [Fact]
@@ -91,11 +90,10 @@ public class MinHeapTests
         var action = () => { minHeap.Add(items, startIndex); };
 
         // Act
-        var exception = Assert.Throws<ValidationException>(() => action());
+        var exception = Assert.Throws<ArgumentOutOfRangeException>("startAt", () => action());
 
         // Assert
-        Assert.Equal(ValidationException.ErrorCodes.OutOfRange, exception.ErrorCode);
-        Assert.Equal("Out of range: startAt value must be less than items count.", exception.Message);
+        Assert.Equal(startIndex, exception.ActualValue);
     }
 
     [Fact]
