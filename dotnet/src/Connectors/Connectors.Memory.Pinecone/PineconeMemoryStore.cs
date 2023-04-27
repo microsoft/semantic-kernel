@@ -175,7 +175,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     }
 
     /// <inheritdoc />
-    public async Task<string> UpsertToNamespaceAsync(string indexName, string nameSpace, MemoryRecord record, CancellationToken cancel = default)
+    public async Task<string> UpsertToNamespaceAsync(string indexName, string @namespace, MemoryRecord record, CancellationToken cancel = default)
     {
         if (!this._pineconeClient.Ready)
         {
@@ -187,8 +187,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         Task request = operationType switch
         {
-            OperationType.Upsert => this._pineconeClient.UpsertAsync(indexName, new[] { vectorData }, nameSpace, cancel),
-            OperationType.Update => this._pineconeClient.UpdateAsync(indexName, vectorData, nameSpace, cancel),
+            OperationType.Upsert => this._pineconeClient.UpsertAsync(indexName, new[] { vectorData }, @namespace, cancel),
+            OperationType.Update => this._pineconeClient.UpdateAsync(indexName, vectorData, @namespace, cancel),
             OperationType.Skip => Task.CompletedTask,
             _ => Task.CompletedTask
         };
@@ -293,7 +293,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async IAsyncEnumerable<string> UpsertBatchToNamespaceAsync(
         string indexName,
-        string nameSpace,
+        string @namespace,
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
@@ -311,7 +311,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             (PineconeDocument document, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(
                 indexName,
                 record,
-                nameSpace,
+                @namespace,
                 cancel).ConfigureAwait(false);
 
             // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
@@ -337,13 +337,13 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         if (upsertDocuments.Count > 0)
         {
-            tasks.Add(this._pineconeClient.UpsertAsync(indexName, upsertDocuments, nameSpace, cancel));
+            tasks.Add(this._pineconeClient.UpsertAsync(indexName, upsertDocuments, @namespace, cancel));
         }
 
         if (updateDocuments.Count > 0)
         {
             IEnumerable<Task> updates = updateDocuments.Select(async d
-                => await this._pineconeClient.UpdateAsync(indexName, d, nameSpace, cancel).ConfigureAwait(false));
+                => await this._pineconeClient.UpdateAsync(indexName, d, @namespace, cancel).ConfigureAwait(false));
 
             tasks.AddRange(updates);
         }
@@ -418,7 +418,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async Task<MemoryRecord?> GetFromNamespaceAsync(
         string indexName,
-        string nameSpace,
+        string @namespace,
         string key,
         bool withEmbedding = false,
         CancellationToken cancel = default)
@@ -433,7 +433,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             await foreach (PineconeDocument? record in this._pineconeClient.FetchVectorsAsync(indexName,
                 new[] { key },
-                nameSpace,
+                @namespace,
                 withEmbedding, cancel))
             {
                 return record?.ToMemoryRecord();
@@ -488,7 +488,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetBatchFromNamespaceAsync(
         string indexName,
-        string nameSpace,
+        string @namespace,
         IEnumerable<string> keys,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
@@ -501,7 +501,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         foreach (string? key in keys)
         {
-            MemoryRecord? record = await this.GetFromNamespaceAsync(indexName, nameSpace, key, withEmbeddings, cancel).ConfigureAwait(false);
+            MemoryRecord? record = await this.GetFromNamespaceAsync(indexName, @namespace, key, withEmbeddings, cancel).ConfigureAwait(false);
 
             if (record != null)
             {
@@ -516,7 +516,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="indexName">The name associated with the index to get the Pinecone vector record from.</param>
     /// <param name="documentId">The unique indexed ID associated with the Pinecone vector record to get.</param>
     /// <param name="limit"></param>
-    /// <param name="nameSpace"> The namespace associated with the Pinecone vector record to get.</param>
+    /// <param name="namespace"> The namespace associated with the Pinecone vector record to get.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
@@ -524,7 +524,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdAsync(string indexName,
         string documentId,
         int limit = 3,
-        string nameSpace = "",
+        string @namespace = "",
         bool withEmbedding = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
@@ -541,7 +541,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             vectorDataList = await this._pineconeClient
                 .QueryAsync(indexName,
                     limit,
-                    nameSpace,
+                    @namespace,
                     null,
                     withEmbedding,
                     true,
@@ -571,14 +571,14 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="indexName">The name associated with the index to get the Pinecone vector records from.</param>
     /// <param name="documentIds">The unique indexed IDs associated with Pinecone vector records to get.</param>
     /// <param name="limit"></param>
-    /// <param name="nameSpace"> The namespace associated with the Pinecone vector records to get.</param>
+    /// <param name="namespace"> The namespace associated with the Pinecone vector records to get.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdBatchAsync(string indexName,
         IEnumerable<string> documentIds,
         int limit = 3,
-        string nameSpace = "",
+        string @namespace = "",
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
@@ -589,7 +589,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
 
         foreach (IAsyncEnumerable<MemoryRecord?>? records in documentIds.Select(documentId =>
-            this.GetWithDocumentIdAsync(indexName, documentId, limit, nameSpace, withEmbeddings, cancel)))
+            this.GetWithDocumentIdAsync(indexName, documentId, limit, @namespace, withEmbeddings, cancel)))
         {
             await foreach (MemoryRecord? record in records.WithCancellation(cancel))
             {
@@ -601,7 +601,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     public async IAsyncEnumerable<MemoryRecord?> GetBatchWithFilterAsync(string indexName,
         Dictionary<string, object> filter,
         int limit = 10,
-        string nameSpace = "",
+        string @namespace = "",
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
@@ -618,7 +618,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             vectorDataList = await this._pineconeClient
                 .QueryAsync(indexName,
                     limit,
-                    nameSpace,
+                    @namespace,
                     null,
                     withEmbeddings,
                     true,
@@ -668,7 +668,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     }
 
     /// <inheritdoc />
-    public async Task RemoveFromNamespaceAsync(string indexName, string nameSpace, string key, CancellationToken cancel = default)
+    public async Task RemoveFromNamespaceAsync(string indexName, string @namespace, string key, CancellationToken cancel = default)
     {
         if (!this._pineconeClient.Ready)
         {
@@ -682,7 +682,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 {
                     key
                 },
-                nameSpace,
+                @namespace,
                 cancellationToken: cancel).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
@@ -708,21 +708,21 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     }
 
     /// <inheritdoc />
-    public async Task RemoveBatchFromNamespaceAsync(string indexName, string nameSpace, IEnumerable<string> keys, CancellationToken cancel = default)
+    public async Task RemoveBatchFromNamespaceAsync(string indexName, string @namespace, IEnumerable<string> keys, CancellationToken cancel = default)
     {
         if (!this._pineconeClient.Ready)
         {
             this._logger.LogError("Pinecone client is not ready.");
             return;
         }
-        await Task.WhenAll(keys.Select(async k => await this.RemoveFromNamespaceAsync(indexName, nameSpace, k, cancel).ConfigureAwait(false))).ConfigureAwait(false);
+        await Task.WhenAll(keys.Select(async k => await this.RemoveFromNamespaceAsync(indexName, @namespace, k, cancel).ConfigureAwait(false))).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task RemoveWithFilterAsync(
         string indexName,
         Dictionary<string, object> filter,
-        string nameSpace = "",
+        string @namespace = "",
         CancellationToken cancel = default)
     {
         if (!this._pineconeClient.Ready)
@@ -736,7 +736,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             await this._pineconeClient.DeleteAsync(
                 indexName,
                 default,
-                nameSpace,
+                @namespace,
                 filter,
                 cancellationToken: cancel).ConfigureAwait(false);
         }
@@ -754,12 +754,12 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// Remove a MemoryRecord from the Pinecone Vector database by pointId.
     /// </summary>
     /// <param name="indexName"> The name associated with the index to remove the Pinecone vector record from.</param>
-    /// <param name="nameSpace">The name associated with a collection of embeddings.</param>
+    /// <param name="namespace">The name associated with a collection of embeddings.</param>
     /// <param name="documentId">The unique indexed ID associated with the Pinecone vector record to remove.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="PineconeMemoryException"></exception>
-    public async Task RemoveWithDocumentIdAsync(string indexName, string documentId, string nameSpace, CancellationToken cancel = default)
+    public async Task RemoveWithDocumentIdAsync(string indexName, string documentId, string @namespace, CancellationToken cancel = default)
     {
         if (!this._pineconeClient.Ready)
         {
@@ -769,7 +769,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         try
         {
-            await this._pineconeClient.DeleteAsync(indexName, null, nameSpace, new Dictionary<string, object>()
+            await this._pineconeClient.DeleteAsync(indexName, null, @namespace, new Dictionary<string, object>()
             {
                 { "document_Id", documentId }
             }, cancellationToken: cancel).ConfigureAwait(false);
@@ -787,7 +787,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// Remove a MemoryRecord from the Pinecone Vector database by a group of pointIds.
     /// </summary>
     /// <param name="indexName"> The name associated with the index to remove the Pinecone vector record from.</param>
-    /// <param name="nameSpace">The name associated with a collection of embeddings.</param>
+    /// <param name="namespace">The name associated with a collection of embeddings.</param>
     /// <param name="documentIds">The unique indexed IDs associated with the Pinecone vector records to remove.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
@@ -795,7 +795,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     public async Task RemoveWithDocumentIdBatchAsync(
         string indexName,
         IEnumerable<string> documentIds,
-        string nameSpace,
+        string @namespace,
         CancellationToken cancel = default)
     {
         if (!this._pineconeClient.Ready)
@@ -807,7 +807,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         try
         {
             IEnumerable<Task> tasks = documentIds.Select(async id
-                => await this.RemoveWithDocumentIdAsync(indexName, id, nameSpace, cancel)
+                => await this.RemoveWithDocumentIdAsync(indexName, id, @namespace, cancel)
                     .ConfigureAwait(false));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -862,7 +862,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesFromNamespaceAsync(
         string indexName,
-        string nameSpace,
+        string @namespace,
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
@@ -882,7 +882,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             limit,
             withEmbeddings,
             true,
-            nameSpace,
+            @namespace,
             default,
             cancel);
 
@@ -927,7 +927,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async Task<(MemoryRecord, double)?> GetNearestMatchFromNamespaceAsync(
         string indexName,
-        string nameSpace,
+        string @namespace,
         Embedding<float> embedding,
         double minRelevanceScore = 0,
         bool withEmbedding = false,
@@ -941,7 +941,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         IAsyncEnumerable<(MemoryRecord, double)> results = this.GetNearestMatchesFromNamespaceAsync(
             indexName,
-            nameSpace,
+            @namespace,
             embedding,
             minRelevanceScore: minRelevanceScore,
             limit: 1,
@@ -960,7 +960,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         int limit,
         Dictionary<string, object> filter,
         double minRelevanceScore = 0D,
-        string nameSpace = "",
+        string @namespace = "",
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
@@ -977,7 +977,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             limit,
             withEmbeddings,
             true,
-            nameSpace,
+            @namespace,
             filter,
             cancel);
 
@@ -988,9 +988,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     }
 
     /// <inheritdoc />
-    public async Task ClearNamespaceAsync(string indexName, string nameSpace, CancellationToken cancellationToken = default)
+    public async Task ClearNamespaceAsync(string indexName, string @namespace, CancellationToken cancellationToken = default)
     {
-        await this._pineconeClient.DeleteAsync(indexName, default, nameSpace, null, true, cancellationToken).ConfigureAwait(false);
+        await this._pineconeClient.DeleteAsync(indexName, default, @namespace, null, true, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

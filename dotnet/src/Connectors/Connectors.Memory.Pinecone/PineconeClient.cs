@@ -48,7 +48,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     public async IAsyncEnumerable<PineconeDocument?> FetchVectorsAsync(
         string indexName,
         IEnumerable<string> ids,
-        string nameSpace = "",
+        string @namespace = "",
         bool includeValues = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -63,7 +63,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
         FetchRequest fetchRequest = FetchRequest.FetchVectors(ids)
-            .FromNamespace(nameSpace);
+            .FromNamespace(@namespace);
 
         using HttpRequestMessage request = fetchRequest.Build();
 
@@ -113,7 +113,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     public async IAsyncEnumerable<PineconeDocument?> QueryAsync(
         string indexName,
         int topK,
-        string nameSpace = "",
+        string @namespace = "",
         IEnumerable<float>? vector = default,
         bool includeValues = false,
         bool includeMetadata = true,
@@ -132,7 +132,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         using HttpRequestMessage request = QueryRequest.QueryIndex(vector)
             .WithTopK(topK)
-            .InNamespace(nameSpace)
+            .InNamespace(@namespace)
             .WithFilter(filter)
             .WithMetadata(includeMetadata)
             .WithVectors(includeValues)
@@ -184,7 +184,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         int topK,
         bool includeValues,
         bool includeMetadata,
-        string? nameSpace = default,
+        string? @namespace = default,
         Dictionary<string, object>? filter = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -201,7 +201,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         IAsyncEnumerable<PineconeDocument?> matches = this.QueryAsync(
             indexName,
             topK,
-            nameSpace,
+            @namespace,
             vector,
             includeValues,
             includeMetadata,
@@ -239,7 +239,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     public async Task<int> UpsertAsync(
         string indexName,
         IEnumerable<PineconeDocument> vectors,
-        string nameSpace = "",
+        string @namespace = "",
         CancellationToken cancellationToken = default)
     {
         this._logger.LogInformation("Upserting vectors");
@@ -259,7 +259,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         await foreach (UpsertRequest? batch in PineconeUtils.GetUpsertBatchesAsync(validVectors, MaxBatchSize).WithCancellation(cancellationToken))
         {
             totalBatches++;
-            HttpRequestMessage request = batch.ToNamespace(nameSpace).Build();
+            HttpRequestMessage request = batch.ToNamespace(@namespace).Build();
             request.Headers.Add("accept", "application/json");
 
             (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
@@ -295,7 +295,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     public async Task DeleteAsync(
         string indexName,
         IEnumerable<string>? ids = null,
-        string nameSpace = "",
+        string @namespace = "",
         Dictionary<string, object>? filter = null,
         bool deleteAll = false,
         CancellationToken cancellationToken = default)
@@ -307,7 +307,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             return;
         }
 
-        if (ids == null && string.IsNullOrEmpty(nameSpace) && filter == null && !deleteAll)
+        if (ids == null && string.IsNullOrEmpty(@namespace) && filter == null && !deleteAll)
         {
             throw new ArgumentException("Must provide at least one of ids, filter, or deleteAll");
         }
@@ -318,9 +318,9 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         switch (deleteAll)
         {
-            case true when !string.IsNullOrEmpty(nameSpace):
-                this._logger.LogInformation("Deleting all vectors in namespace {0}", nameSpace);
-                deleteRequest = DeleteRequest.ClearNamespace(nameSpace);
+            case true when !string.IsNullOrEmpty(@namespace):
+                this._logger.LogInformation("Deleting all vectors in namespace {0}", @namespace);
+                deleteRequest = DeleteRequest.ClearNamespace(@namespace);
                 break;
             case true:
                 this._logger.LogInformation("Deleting all vectors in index {0}", indexName);
@@ -328,20 +328,20 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
                 break;
             default:
             {
-                if (ids != null && !string.IsNullOrEmpty(nameSpace))
+                if (ids != null && !string.IsNullOrEmpty(@namespace))
                 {
                     if (filter != null)
                     {
-                        this._logger.LogInformation("Deleting vectors {0} in namespace {1} with filter {2}", string.Join(",", ids), nameSpace, filter);
+                        this._logger.LogInformation("Deleting vectors {0} in namespace {1} with filter {2}", string.Join(",", ids), @namespace, filter);
                         deleteRequest = DeleteRequest.DeleteVectors(ids)
-                            .FromNamespace(nameSpace)
+                            .FromNamespace(@namespace)
                             .FilterBy(filter);
                     }
                     else
                     {
-                        this._logger.LogInformation("Deleting vectors {0} in namespace {1}", string.Join(",", ids), nameSpace);
+                        this._logger.LogInformation("Deleting vectors {0} in namespace {1}", string.Join(",", ids), @namespace);
                         deleteRequest = DeleteRequest.DeleteVectors(ids)
-                            .FromNamespace(nameSpace);
+                            .FromNamespace(@namespace);
                     }
                 }
 
@@ -382,7 +382,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task UpdateAsync(string indexName, PineconeDocument document, string nameSpace = "", CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(string indexName, PineconeDocument document, string @namespace = "", CancellationToken cancellationToken = default)
     {
 
         if (!this.Ready)
@@ -397,7 +397,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         using HttpRequestMessage request = UpdateVectorRequest
             .FromPineconeDocument(document)
-            .InNamespace(nameSpace)
+            .InNamespace(@namespace)
             .Build();
 
         request.Headers.Add("accept", "application/json");

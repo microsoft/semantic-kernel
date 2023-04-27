@@ -46,14 +46,14 @@ public interface IPineconeClient
     /// </summary>
     /// <param name="indexName"> the name of the index </param>
     /// <param name="ids"> A list of ids</param>
-    /// <param name="nameSpace"> The namespace to use</param>
+    /// <param name="namespace"> The namespace to use</param>
     /// <param name="includeValues"></param>
     /// <param name="cancellationToken"> The cancellation token</param>
     /// <returns> A list of vector records</returns>
     public IAsyncEnumerable<PineconeDocument?> FetchVectorsAsync(
         string indexName,
         IEnumerable<string> ids,
-        string nameSpace = "",
+        string @namespace = "",
         bool includeValues = false,
         CancellationToken cancellationToken = default
     );
@@ -63,7 +63,7 @@ public interface IPineconeClient
     /// </summary>
     /// <param name="indexName"> the name of the index </param>
     /// <param name="topK"> the number of results to return</param>
-    /// <param name="nameSpace"> the namespace to use</param>
+    /// <param name="namespace"> the namespace to use</param>
     /// <param name="vector"></param>
     /// <param name="includeValues"> whether to include the vector values</param>
     /// <param name="includeMetadata"> whether to include the metadata</param>
@@ -75,7 +75,7 @@ public interface IPineconeClient
     public IAsyncEnumerable<PineconeDocument?> QueryAsync(
         string indexName,
         int topK,
-        string nameSpace = "",
+        string @namespace = "",
         IEnumerable<float>? vector = default,
         bool includeValues = false,
         bool includeMetadata = true,
@@ -91,7 +91,7 @@ public interface IPineconeClient
     /// <param name="vector">The vector to compare the collection's vectors with.</param>
     /// <param name="threshold">The minimum relevance threshold for returned results.</param>
     /// <param name="topK">The maximum number of similarity results to return.</param>
-    /// <param name="nameSpace">The name assigned to a collection of vectors.</param>
+    /// <param name="namespace">The name assigned to a collection of vectors.</param>
     /// <param name="includeValues"></param>
     /// <param name="includeMetadata"></param>
     /// <param name="filter"></param>
@@ -103,7 +103,7 @@ public interface IPineconeClient
         int topK,
         bool includeValues,
         bool includeMetadata,
-        string? nameSpace = "",
+        string? @namespace = "",
         Dictionary<string, object>? filter = default,
         CancellationToken cancellationToken = default);
 
@@ -112,12 +112,12 @@ public interface IPineconeClient
     /// </summary>
     /// <param name="indexName"> the name of the index</param>
     /// <param name="vectors"> the list of documents</param>
-    /// <param name="nameSpace"> the namespace to use</param>
+    /// <param name="namespace"> the namespace to use</param>
     /// <param name="cancellationToken"></param>
     Task<int> UpsertAsync(
         string indexName,
         IEnumerable<PineconeDocument> vectors,
-        string nameSpace = "",
+        string @namespace = "",
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -129,14 +129,14 @@ public interface IPineconeClient
     /// <param name="indexName"> The name of the index</param>
     /// <param name="ids"> The ids to delete</param>
     /// <param name="deleteAll"> Whether to delete all vectors</param>
-    /// <param name="nameSpace"> The namespace to use</param>
+    /// <param name="namespace"> The namespace to use</param>
     /// <param name="filter"> The filter to use</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of Object</returns>
     Task DeleteAsync(
         string indexName,
         IEnumerable<string>? ids = null,
-        string nameSpace = "",
+        string @namespace = "",
         Dictionary<string, object>? filter = null,
         bool deleteAll = false,
         CancellationToken cancellationToken = default);
@@ -149,13 +149,13 @@ public interface IPineconeClient
     /// </remarks>
     /// <param name="indexName"> The name of the index</param>
     /// <param name="document"> The document to update</param>
-    /// <param name="nameSpace"> The namespace to use</param>
+    /// <param name="namespace"> The namespace to use</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of Object</returns>
     Task UpdateAsync(
         string indexName,
         PineconeDocument document,
-        string nameSpace = "",
+        string @namespace = "",
         CancellationToken cancellationToken = default);
 
     /// <summary>
