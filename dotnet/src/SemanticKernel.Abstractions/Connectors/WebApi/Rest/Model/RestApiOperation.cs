@@ -20,9 +20,14 @@ internal sealed class RestApiOperation
     internal const string ServerUrlArgumentName = "server-url";
 
     /// <summary>
-    /// An artificial parameter to be advertised and used for operation having "text/plain" payload media type.
+    /// An artificial parameter to be used for operation having "text/plain" payload media type.
     /// </summary>
-    internal const string InputArgumentName = "input";
+    internal const string PayloadArgumentName = "payload";
+
+    /// <summary>
+    /// An artificial parameter to be used for indicate payload media-type if it's missing in payload metadata.
+    /// </summary>
+    internal const string ContentTypeArgumentName = "content-type";
 
     /// <summary>
     /// The operation identifier.
