@@ -32,6 +32,7 @@ public sealed class Program
 
         // Add in the rest of the services.
         builder.Services
+            .AddApplicationInsightsTelemetry()
             .AddAuthorization(builder.Configuration)
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()
