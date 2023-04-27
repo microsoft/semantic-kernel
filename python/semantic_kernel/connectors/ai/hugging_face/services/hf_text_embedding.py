@@ -3,10 +3,7 @@
 from logging import Logger
 from typing import List, Optional
 
-import torch
 from numpy import array, ndarray
-from sentence_transformers import SentenceTransformer
-
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
@@ -36,6 +33,21 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
+        try:
+            import torch
+        except ImportError:
+            raise ValueError(
+                "Could not import torch python package."
+                "Please install it with `pip install torch`."
+            )
+        try:
+            from sentence_transformers import SentenceTransformer
+        except ImportError:
+            raise ValueError(
+                "Could not import sentence_transformers python package."
+                "Please install it with `pip install sentence_transformers`."
+            )
+        
         self._model_id = model_id
         self._log = log if log is not None else NullLogger()
         self.device = (

@@ -3,9 +3,6 @@
 from logging import Logger
 from typing import Optional
 
-import torch
-from transformers import pipeline
-
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
@@ -45,6 +42,21 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
+        try:
+            import torch
+        except ImportError:
+            raise ValueError(
+                "Could not import torch python package."
+                "Please install it with `pip install torch`."
+            )
+        try:
+            from transformers import pipeline
+        except ImportError:
+            raise ValueError(
+                "Could not import transformers python package."
+                "Please install it with `pip install transformers`."
+            )
+
         self._model_id = model_id
         self._task = "text2text-generation" if task is None else task
         self._log = log if log is not None else NullLogger()
