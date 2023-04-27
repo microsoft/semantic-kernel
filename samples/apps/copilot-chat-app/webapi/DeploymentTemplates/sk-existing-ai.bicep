@@ -222,8 +222,8 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
           value: 'Warning'
         }
         {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsights.properties.InstrumentationKey
+          name: 'ApplicationInsights:ConnectionString'
+          value: appInsights.properties.ConnectionString
         }
       ]
     }
