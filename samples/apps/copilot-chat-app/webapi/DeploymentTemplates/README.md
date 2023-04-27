@@ -44,7 +44,7 @@ Alternatively, you can deploy by clicking on the following button:
 
 ## Verifying the deployment
 
-To make sure your web app service is running, go to https://YOUR_INSTANCE_NAME.azurewebsites.net/probe
+To make sure your web app service is running, go to `https://YOUR_INSTANCE_NAME.azurewebsites.net/probe`
 
 To get your instance's URL, click on the "Go to resource group" button you see at the end of your deployment. Then click on the resource whose name ends with "-web".
 This will bring you to the Overview page on your web service. Your instance's URL is the value that appears next to the "Default domain" field.
