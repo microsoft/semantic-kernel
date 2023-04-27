@@ -156,7 +156,6 @@ public class ChatHistoryController : ControllerBase
     public async Task<IActionResult> EditChatAsync([FromBody] ChatSession chatParameters)
     {
         var chatId = chatParameters.Id;
-        Console.WriteLine(chatId);
 
         var chat = await this._chatSessionRepository.FindByIdAsync(chatId.ToString());
         if (chat == null)

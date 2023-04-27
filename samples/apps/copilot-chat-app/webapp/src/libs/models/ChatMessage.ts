@@ -23,5 +23,3 @@ export interface IChatMessage {
     authorRole: AuthorRoles;
     debug?: string;
 }
-
-export type ChatMessages = IChatMessage[];

@@ -5,5 +5,3 @@ export interface IChatSession {
     userId: string;
     title: string;
 }
-
-export type ChatSessions = IChatSession[];

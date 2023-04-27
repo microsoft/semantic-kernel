@@ -33,8 +33,7 @@ export class BaseService {
 
             if (!response.ok) {
                 const responseText = await response.text();
-                let errorMessage = response.status + ': ' + response.statusText;
-                errorMessage += responseText ? ' => ' + responseText : '';
+                const errorMessage = `${response.status}: ${response.statusText}` + (responseText ? ` => ${responseText}` : '');
 
                 throw Object.assign(new Error(errorMessage));
             }

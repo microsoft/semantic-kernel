@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { ChatMessages } from '../models/ChatMessage';
-import { ChatSessions, IChatSession } from '../models/ChatSession';
+import { IChatMessage } from '../models/ChatMessage';
+import { IChatSession } from '../models/ChatSession';
 import { BaseService } from './BaseService';
 
 export class ChatService extends BaseService {
@@ -52,8 +52,8 @@ export class ChatService extends BaseService {
         userId: string,
         accessToken: string,
         connectorAccessToken?: string
-    ): Promise<ChatSessions> => {
-        const result = await this.getResponseAsync<ChatSessions>(
+    ): Promise<IChatSession[]> => {
+        const result = await this.getResponseAsync<IChatSession[]>(
             {
                 commandPath: `chat/getAllChats/${userId}`,
                 method: 'GET',
@@ -70,8 +70,8 @@ export class ChatService extends BaseService {
         count: number,
         accessToken: string,
         connectorAccessToken?: string
-    ): Promise<ChatMessages> => {
-        const result = await this.getResponseAsync<ChatMessages>(
+    ): Promise<IChatMessage[]> => {
+        const result = await this.getResponseAsync<IChatMessage[]>(
             {
                 commandPath: `chat/getChatMessages/${chatId}?startIdx=${startIdx}&count=${count}`,
                 method: 'GET',
