@@ -17,9 +17,6 @@ Resources to add:
 @description('Name for the deployment')
 param name string = 'SKaaS'
 
-@description('Region for the resources')
-param location string = resourceGroup().location
-
 @description('SKU for the Azure App Service plan')
 param appServiceSku string = 'B1'
 
@@ -31,9 +28,13 @@ param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.z
 param endpoint string = ''
 
 @secure()
-@description('Azure OpenAI / OpenAI API key')
+@description('Azure OpenAI or OpenAI API key')
 param apiKey string = ''
 
+
+@description('Region for the resources')
+#disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
+var location = resourceGroup().location       // more intelligible deployment experience at the cost of some flexibility
 
 @description('Name for the deployment - Made unique')
 var uniqueName = '${name}-${uniqueString(resourceGroup().id)}'

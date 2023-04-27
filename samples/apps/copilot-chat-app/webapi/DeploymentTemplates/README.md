@@ -32,7 +32,9 @@ Use the [DeploySKaaS-ReUse-AI.ps1](DeploySKaaS-ReUse-AI.ps1) file found in this 
 .\DeploySKaaS-Existing-AI.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -Endpoint "YOUR_AZURE_OPENAI_ENDPOINT"
 ```
 
-Note: the Azure OpenAI endpoint is ignored when you are using an OpenAI instance from [openai.com](https://openai.com).
+After entering the command above, you will be prompted to enter your OpenAI or Azure OpenAI API key. (You can also pass in the API key using the -ApiKey paramater followed by a SecureString)
+
+Note: the Azure OpenAI endpoint is ignored and can be omitted when you are using an OpenAI instance from [openai.com](https://openai.com).
 
 Alternatively, you can deploy by clicking on the following button:
 
@@ -41,11 +43,33 @@ Alternatively, you can deploy by clicking on the following button:
 ## Verifying the deployment
 
 To make sure your instance of Semantic Kernel as a Service is running, go to
-https://YOUR_INSTANCES_NAME.azurewebsites.net/probe
+https://YOUR_INSTANCE_NAME.azurewebsites.net/probe
 
-## Using web front ends to access your deployment
+To get your instance's URL, click on the "Go to resource group" button you see at the end of your deployment. Then click on the resource whose name ends with "-web". This will bring you to the Overview page on your web service. Your instance's URL is the value that appears next to the "Default domain" field.
 
-Make sure to include your front end's URL as an allowed origin in your deployment's CORS settings. Otherwise, web browsers will refuse to let JavaScript make calls to your deployment.
+## Changing your configuration, monitoring your deployment and troubleshooting
+
+From the page just mentioned in the section above, you can change your configuration by clicking on the "Configuration" item in the "Settings" section of the left pane.
+
+Scrolling down in that same pane to the "Monitoring" section gives you access to a multitude of ways to monitor your deployment.
+
+In addition to this, the "Diagnose and "solve problems" item near the top of the pane can yield crucial insight into some problems your deployment may be experiencing.
+
+If the service itself if functionning properly but you keep getting errors (perhaps reported as 400 HTTP errors) when making calls to the Semantic Kernel, check that you have correctly entered the values for the following settings:
+- Completion:AzureOpenAI
+- Completion:DeploymentOrModelId
+- Completion:Endpoint
+- Completion:Label
+- Embedding:AzureOpenAI
+- Embedding:DeploymentOrModelId
+- Embedding:Endpoint
+- Embedding:Label
+
+Both Completion:Endpoint and Embedding:Endpoint are ignored for OpenAI instances from [openai.com](https://openai.com) but MUST be properly populated when using Azure OpenAI instances.
+
+## Using web frontends to access your deployment
+
+Make sure to include your frontend's URL as an allowed origin in your deployment's CORS settings. Otherwise, web browsers will refuse to let JavaScript make calls to your deployment.
 
 ## Cleaning up
 
