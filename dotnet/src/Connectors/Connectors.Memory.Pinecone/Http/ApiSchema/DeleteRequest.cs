@@ -39,7 +39,7 @@ internal class DeleteRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Dictionary<string, object>? Filter { get; set; }
 
-    public static DeleteRequest DeleteAllVectors()
+    public static DeleteRequest GetDeleteAllVectorsRequest()
     {
         return new DeleteRequest(true);
     }
