@@ -43,11 +43,18 @@ public sealed class Plan : ISKFunction
     public ContextVariables NamedParameters { get; set; } = new();
 
     /// <summary>
-    /// Named outputs for the function
+    /// Named outputs for the function -- these are used within a plan.
     /// </summary>
     [JsonPropertyName("named_outputs")]
     [JsonConverter(typeof(ContextVariablesConverter))]
     public ContextVariables NamedOutputs { get; set; } = new();
+
+    /// <summary>
+    /// Named results for the function -- these are used to return results from a plan.
+    /// </summary>
+    [JsonPropertyName("named_results")]
+    [JsonConverter(typeof(ContextVariablesConverter))]
+    public ContextVariables NamedResults { get; set; } = new();
 
     /// <summary>
     /// Gets whether the plan has a next step.
@@ -251,13 +258,13 @@ public sealed class Plan : ISKFunction
             #region Update State
 
             // Update state with result
-            if (this.NextStepIndex == 0 || step.NamedOutputs.Count() <= 1)
+            this.State.Update(result.Result.Trim());
+
+            // TODO Assuming there is one today -- multiple results may not be ordered correctly.
+            foreach (var item in step.NamedResults)
             {
-                this.State.Update(result.Result.Trim());
-            }
-            else
-            {
-                this.State.Update(this.State.Input + Environment.NewLine + result.Result.Trim());
+                this.State.Get(DefaultResultKey, out var currentPlanResult);
+                this.State.Set(DefaultResultKey, currentPlanResult.Trim() + "\n" + result.Result.Trim());
             }
 
             // Update state with named outputs (if any)
@@ -331,7 +338,7 @@ public sealed class Plan : ISKFunction
 
                 await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
 
-                context.Variables.Update(this.State.ToString());
+                context.Variables.Update(this.State.Get(DefaultResultKey, out var result) ? result : this.State.ToString());
             }
         }
 
@@ -497,4 +504,6 @@ public sealed class Plan : ISKFunction
     private readonly List<Plan> _steps = new();
 
     private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
+
+    private const string DefaultResultKey = "PLAN.RESULT";
 }

@@ -92,6 +92,7 @@ internal static class SequentialPlanParser
 
                             var functionVariables = new ContextVariables();
                             var functionOutputs = new ContextVariables();
+                            var functionResults = new ContextVariables();
 
                             var view = skillFunction.Describe();
                             foreach (var p in view.Parameters)
@@ -104,11 +105,14 @@ internal static class SequentialPlanParser
                                 foreach (XmlAttribute attr in o2.Attributes)
                                 {
                                     context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
-                                    if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase)
-                                        || attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
+                                    if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
                                     {
                                         functionOutputs.Set(attr.InnerText, string.Empty);
                                         continue;
+                                    }
+                                    else if (attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        functionResults.Set(attr.InnerText, string.Empty);
                                     }
 
                                     functionVariables.Set(attr.Name, attr.InnerText);
@@ -118,6 +122,7 @@ internal static class SequentialPlanParser
                             // Plan properties
                             planStep.NamedOutputs = functionOutputs;
                             planStep.NamedParameters = functionVariables;
+                            planStep.NamedResults = functionResults;
                             plan.AddSteps(planStep);
                         }
                         else
