@@ -47,7 +47,7 @@ public sealed class ActionPlanner
         IKernel kernel,
         string? prompt = null)
     {
-        Verify.NotNull(kernel, "The planner requires a non-null kernel instance");
+        Verify.NotNull(kernel);
 
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 
@@ -140,7 +140,7 @@ public sealed class ActionPlanner
     [SKFunctionInput(Description = "The current goal processed by the planner", DefaultValue = "")]
     public string ListOfFunctions(string goal, SKContext context)
     {
-        Verify.NotNull(context.Skills, "The planner requires a non-null skill collection");
+        Verify.NotNull(context.Skills);
         var functionsAvailable = context.Skills.GetFunctionsView();
 
         // Prepare list using the format used by skprompt.txt
