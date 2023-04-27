@@ -109,7 +109,7 @@ class MemoryStoreBase:
         pass
 
     @abstractmethod
-    async def get_nearest_matche_async(
+    async def get_nearest_match_async(
         self,
         collection_name: str,
         embedding: ndarray,
