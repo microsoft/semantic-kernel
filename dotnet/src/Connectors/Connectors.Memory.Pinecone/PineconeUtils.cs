@@ -15,11 +15,27 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
 public static class PineconeUtils
 {
+    /// <summary>
+    ///  The maximum size of the metadata associated with each vector.
+    ///  See https://docs.pinecone.io/docs/metadata-filtering#supported-metadata-size
+    /// </summary>
     private const int MaxMetadataSize = 40 * 1024;
     
+    /// <summary>
+    ///  The default dimension for Pinecone vectors. Equivalent to text-embeddings-ada-002 dimension.
+    /// </summary>
     public const int DefaultDimension = 1536;
+    
     public const string DefaultIndexName = "sk-index";
+    
+    /// <summary>
+    /// Defaults to cosine similarity.
+    /// </summary>
     public const IndexMetric DefaultIndexMetric = IndexMetric.Cosine;
+    
+    /// <summary>
+    ///  The standard index type for Pinecone vectors.
+    /// </summary>
     public const PodType DefaultPodType = PodType.P1X1;
 
     internal static JsonSerializerOptions DefaultSerializerOptions => new()
