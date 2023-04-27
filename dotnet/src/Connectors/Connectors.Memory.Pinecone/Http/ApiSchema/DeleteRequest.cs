@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
@@ -12,22 +11,21 @@ internal class DeleteRequest
 {
 
     /// <summary>
-    /// Gets or Sets Ids
+    /// The ids of the vectors to delete
     /// </summary>
     [JsonPropertyName("ids")]
     public IEnumerable<string> Ids { get; set; }
 
     /// <summary>
-    /// Gets or Sets DeleteAll
+    /// Whether to delete all vectors
     /// </summary>
     [JsonPropertyName("deleteAll")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? DeleteAll { get; set; }
 
     /// <summary>
-    /// An index namespace name
+    /// The namespace to delete vectors from
     /// </summary>
-    /// <value>An index namespace name</value>
     /// <example>&quot;namespace-0&quot;</example>
     [JsonPropertyName("namespace")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -36,7 +34,6 @@ internal class DeleteRequest
     /// <summary>
     /// If this parameter is present, the operation only affects vectors that satisfy the filter. See https://www.pinecone.io/docs/metadata-filtering/.
     /// </summary>
-    /// <value>If this parameter is present, the operation only affects vectors that satisfy the filter. See https://www.pinecone.io/docs/metadata-filtering/.</value>
     [JsonPropertyName("filter")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Dictionary<string, object>? Filter { get; set; }
@@ -90,23 +87,7 @@ internal class DeleteRequest
 
         return request;
     }
-
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.Append("DeleteRequest {\n");
-        sb.Append("  Ids: ").Append(this.Ids).Append('\n');
-        sb.Append("  DeleteAll: ").Append(this.Clear).Append('\n');
-        sb.Append("  Namespace: ").Append(this.Namespace).Append('\n');
-        sb.Append("  Filter: ").Append(this.Filter).Append('\n');
-        sb.Append("}\n");
-        return sb.ToString();
-    }
-
+    
     #region private ================================================================================
 
     private DeleteRequest(IEnumerable<string> ids)

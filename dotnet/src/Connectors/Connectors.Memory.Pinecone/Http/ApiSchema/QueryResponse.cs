@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
@@ -34,19 +33,5 @@ internal class QueryResponse
     /// <example>&quot;namespace-0&quot;</example>
     [JsonPropertyName("namespace")]
     public string? Namespace { get; set; }
-
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.Append("QueryResponse {\n");
-        sb.Append("  Matches: ").Append(this.Matches).Append('\n');
-        sb.Append("  Namespace: ").Append(this.Namespace).Append('\n');
-        sb.Append("}\n");
-        return sb.ToString();
-    }
 
 }

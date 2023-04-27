@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
@@ -15,8 +14,6 @@ internal class QueryRequest
     /// <summary>
     /// An index namespace name
     /// </summary>
-    /// <value>An index namespace name</value>
-    /// <example>&quot;namespace-0&quot;</example>
     [JsonPropertyName("namespace")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Namespace { get; set; }
@@ -24,29 +21,24 @@ internal class QueryRequest
     /// <summary>
     /// The number of results to return for each query.
     /// </summary>
-    /// <value>The number of results to return for each query.</value>
     [JsonPropertyName("topK")]
     public long TopK { get; set; }
 
     /// <summary>
     /// If this parameter is present, the operation only affects vectors that satisfy the filter. See https://www.pinecone.io/docs/metadata-filtering/.
     /// </summary>
-    /// <value>If this parameter is present, the operation only affects vectors that satisfy the filter. See https://www.pinecone.io/docs/metadata-filtering/.</value>
     [JsonPropertyName("filter")]
     public Dictionary<string, object>? Filter { get; set; }
 
     /// <summary>
     /// Vector dense data. This should be the same length as the dimension of the index being queried.
     /// </summary>
-    /// <value>Vector dense data. This should be the same length as the dimension of the index being queried.</value>
     [JsonPropertyName("vector")]
     public IEnumerable<float>? Vector { get; set; }
 
     /// <summary>
     /// The unique ID of a vector
     /// </summary>
-    /// <value>The unique ID of a vector</value>
-    /// <example>&quot;vector-0&quot;</example>
     [JsonPropertyName("id")]
     public string? Id { get; set; }
 
@@ -127,25 +119,6 @@ internal class QueryRequest
             this);
 
         return request;
-    }
-
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.Append("QueryRequest {\n");
-        sb.Append("  Vector: ").Append(this.Vector).Append('\n');
-        sb.Append("  TopK: ").Append(this.TopK).Append('\n');
-        sb.Append("  Namespace: ").Append(this.Namespace).Append('\n');
-        sb.Append("  IncludeValues: ").Append(this.IncludeValues).Append('\n');
-        sb.Append("  IncludeMetadata: ").Append(this.IncludeMetadata).Append('\n');
-        sb.Append("  SparseVector: ").Append(this.SparseVector).Append('\n');
-        sb.Append("  Id: ").Append(this.Id).Append('\n');
-        sb.Append("}\n");
-        return sb.ToString();
     }
 
     /// <summary>

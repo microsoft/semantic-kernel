@@ -10,14 +10,15 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 internal class UpsertRequest
 {
 
+    /// <summary>
+    /// The vectors to upsert
+    /// </summary>
     [JsonPropertyName("vectors")]
     public List<PineconeDocument> Vectors { get; set; }
 
     /// <summary>
     /// An index namespace name
     /// </summary>
-    /// <value>An index namespace name</value>
-    /// <example>&quot;namespace-0&quot;</example>
     [JsonPropertyName("namespace")]
     public string? Namespace { get; set; }
 

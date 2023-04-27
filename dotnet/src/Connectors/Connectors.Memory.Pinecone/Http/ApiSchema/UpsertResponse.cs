@@ -23,13 +23,4 @@ internal class UpsertResponse
     [JsonPropertyName("upsertedCount")]
     public int UpsertedCount { get; set; }
 
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        return "UpsertedCount: " + this.UpsertedCount;
-    }
-
 }

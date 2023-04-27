@@ -1,5 +1,4 @@
 using System.Net.Http;
-using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
@@ -45,20 +44,6 @@ internal class ConfigureIndexRequest
     public HttpRequestMessage Build()
     {
         return HttpRequest.CreatePatchRequest($"/database/{this.IndexName}", this);
-    }
-
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.Append("IndexConfiguration {\n");
-        sb.Append("  Replicas: ").Append(this.Replicas).Append('\n');
-        sb.Append("  PodType: ").Append(this.PodType).Append('\n');
-        sb.Append("}\n");
-        return sb.ToString();
     }
 
     #region private ================================================================================

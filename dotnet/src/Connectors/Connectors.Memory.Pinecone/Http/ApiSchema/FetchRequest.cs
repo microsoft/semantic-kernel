@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
@@ -21,8 +20,6 @@ internal class FetchRequest
     /// <summary>
     /// An index namespace name
     /// </summary>
-    /// <value>An index namespace name</value>
-    /// <example>&quot;namespace-0&quot;</example>
     [JsonPropertyName("namespace")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Namespace { get; set; }
@@ -53,20 +50,6 @@ internal class FetchRequest
         }
 
         return HttpRequest.CreateGetRequest(path);
-    }
-
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.Append("class FetchRequest {\n");
-        sb.Append("  Ids: ").Append(string.Join(",", this.Ids)).Append('\n');
-        sb.Append("  Namespace: ").Append(this.Namespace).Append('\n');
-        sb.Append("}\n");
-        return sb.ToString();
     }
 
     #region private ================================================================================
