@@ -13,6 +13,15 @@ param(
     [string]
     $Endpoint = "",
 
+    [string]
+    $AIService = "AzureOpenAI",
+
+    [string]
+    $CompletionModel = "gpt-35-turbo",
+
+    [string]
+    $EmbeddingModel = "text-embedding-ada-002",
+
     [Parameter(Mandatory)]
     [string]
     $Subscription,
@@ -32,7 +41,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$templateFile = "$($PSScriptRoot)/sk-reuse-ai.bicep"
+$templateFile = "$($PSScriptRoot)/sk-existing-ai.bicep"
 
 if (!$ResourceGroup)
 {
@@ -51,15 +60,15 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Validating template file..."
-az deployment group validate --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri endpoint=$Endpoint apiKey=$ApiKey
+az deployment group validate --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel endpoint=$Endpoint apiKey=$ApiKey
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
 Write-Host "Deploying..."
 if ($DebugDeployment) {
-    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --debug --parameters name=$DeploymentName packageUri=$PackageUri endpoint=$Endpoint apiKey=$ApiKey
+    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --debug --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel endpoint=$Endpoint apiKey=$ApiKey
 }
 else {
-    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri endpoint=$Endpoint apiKey=$ApiKey
+    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel endpoint=$Endpoint apiKey=$ApiKey
 }
