@@ -60,8 +60,11 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 }
 
 resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
-  name: '${uniqueName}-web'
+  name: '${uniqueName}sk-web'
   location: location
+  tags: {
+    skweb: '1'
+  }
   properties: {
     serverFarmId: appServicePlan.id
     httpsOnly: true
