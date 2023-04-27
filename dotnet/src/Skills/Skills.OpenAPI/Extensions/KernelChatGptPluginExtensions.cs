@@ -11,11 +11,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 
+#pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Class for extensions methods for IKernel interface.

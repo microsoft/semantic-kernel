@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-internal class VarBlock : Block, ITextRendering
+internal sealed class VarBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.Variable;
 

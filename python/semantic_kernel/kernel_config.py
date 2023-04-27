@@ -192,7 +192,7 @@ class KernelConfig:
 
         return service_id
 
-    def get_embedding_service_service_id(self, service_id: Optional[str] = None) -> str:
+    def get_embedding_service_id(self, service_id: Optional[str] = None) -> str:
         if service_id is None or service_id not in self._embedding_services:
             if self._default_embedding_service is None:
                 raise ValueError("No default embedding service is set")
