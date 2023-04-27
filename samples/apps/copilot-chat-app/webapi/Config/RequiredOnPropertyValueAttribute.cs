@@ -64,7 +64,7 @@ internal sealed class RequiredOnPropertyValueAttribute : ValidationAttribute
             {
                 return new ValidationResult($"Property '{validationContext.DisplayName}' is required when '{this.OtherPropertyName}' is {this.OtherPropertyValue}.");
             }
-            if (this.NotEmptyOrWhitespace && string.IsNullOrWhiteSpace(value.ToString()))
+            else if (this.NotEmptyOrWhitespace && string.IsNullOrWhiteSpace(value.ToString()))
             {
                 return new ValidationResult($"Property '{validationContext.DisplayName}' cannot be empty or whitespace when '{this.OtherPropertyName}' is {this.OtherPropertyValue}.");
             }
