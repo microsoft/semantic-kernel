@@ -12,9 +12,10 @@ namespace SemanticKernel.Service.Controllers;
 /// Controller for chat history.
 /// </summary>
 [ApiController]
+[Authorize]
 public class ChatHistoryController : ControllerBase
 {
-    private readonly ILogger<SemanticKernelController> _logger;
+    private readonly ILogger<ChatHistoryController> _logger;
     private readonly ChatSessionRepository _chatSessionRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
     private readonly PromptSettings _promptSettings;
@@ -27,7 +28,7 @@ public class ChatHistoryController : ControllerBase
     /// <param name="chatMessageRepository">The chat message repository.</param>
     /// <param name="promptSettings">The prompt settings.</param>
     public ChatHistoryController(
-        ILogger<SemanticKernelController> logger,
+        ILogger<ChatHistoryController> logger,
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
         PromptSettings promptSettings)
@@ -43,7 +44,6 @@ public class ChatHistoryController : ControllerBase
     /// </summary>
     /// <param name="chatParameters">Object that contains the parameters to create a new chat.</param>
     /// <returns>The HTTP action result.</returns>
-    [Authorize]
     [HttpPost]
     [Route("chat/create")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -69,7 +69,6 @@ public class ChatHistoryController : ControllerBase
     /// Get a chat session by id.
     /// </summary>
     /// <param name="chatId">The chat id.</param>
-    [Authorize]
     [HttpGet]
     [ActionName("GetChatByIdAsync")]
     [Route("chat/getChat/{chatId:guid}")]
@@ -91,7 +90,6 @@ public class ChatHistoryController : ControllerBase
     /// Get all chat sessions associated with a user. Return an empty list if no chats are found.
     /// </summary>
     /// <param name="userId">The user id.</param>
-    [Authorize]
     [HttpGet]
     [Route("chat/getAllChats/{userId:regex([[0-9]]+\\.[[0-9]]+)}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -150,7 +148,6 @@ public class ChatHistoryController : ControllerBase
     /// Edit a chat session.
     /// </summary>
     /// <param name="chatParameters">Object that contains the parameters to edit the chat.</param>
-    [Authorize]
     [HttpPost]
     [Route("chat/edit")]
     [ProducesResponseType(StatusCodes.Status200OK)]
