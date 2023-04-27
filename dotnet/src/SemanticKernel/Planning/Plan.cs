@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -395,7 +396,6 @@ public sealed class Plan : ISKFunction
         {
             if (context.IsFunctionRegistered(plan.SkillName, plan.Name, out var skillFunction))
             {
-                Verify.NotNull(skillFunction, nameof(skillFunction));
                 plan.SetFunction(skillFunction);
             }
         }

@@ -80,7 +80,7 @@ public class QdrantVectorRecord
         }
         else
         {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.UnableToDeserializeRecordPayload, "Failed to deserialize payload");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.UnableToDeserializeRecordPayload);
         }
     }
 }
