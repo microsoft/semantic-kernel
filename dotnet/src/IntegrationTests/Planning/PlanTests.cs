@@ -43,9 +43,8 @@ public sealed class PlanTests : IDisposable
 
         // Assert
         Assert.Equal(prompt, plan.Description);
-        Assert.Equal(prompt, plan.Name);
-        // TODO: avoid hardcoded names, tests shouldn't fail when refactoring code
-        Assert.Equal("Microsoft.SemanticKernel.Planning.Plan", plan.SkillName);
+        Assert.Equal(string.Empty, plan.Name);
+        Assert.Equal(typeof(Plan).FullName, plan.SkillName);
         Assert.Empty(plan.Steps);
     }
 
