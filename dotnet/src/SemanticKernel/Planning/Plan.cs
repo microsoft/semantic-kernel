@@ -263,6 +263,12 @@ public sealed class Plan : ISKFunction
             // TODO Assuming there is one today -- multiple results may not be ordered correctly.
             foreach (var item in step.NamedResults)
             {
+                // ignore the input key
+                if (item.Key.ToUpperInvariant() == "INPUT")
+                {
+                    continue;
+                }
+
                 this.State.Get(DefaultResultKey, out var currentPlanResult);
                 this.State.Set(DefaultResultKey, currentPlanResult.Trim() + "\n" + result.Result.Trim());
             }
