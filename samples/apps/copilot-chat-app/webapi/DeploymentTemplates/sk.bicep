@@ -4,8 +4,6 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 Bicep template for deploying Semantic Kernel to Azure as a web app service.
 
-TODO: pass in completion and embedding models as parameters.
-
 Resources to add:
 - Qdrant
 - CosmosDB
