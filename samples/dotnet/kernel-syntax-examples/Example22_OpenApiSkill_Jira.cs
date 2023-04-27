@@ -2,17 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
+using Microsoft.SemanticKernel.SkillDefinition;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RepoUtils;
 
 public static class Example22_OpenApiSkill_Jira
