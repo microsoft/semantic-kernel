@@ -3,12 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
@@ -22,12 +20,12 @@ public abstract class MemoryStorageTestBase
     }
 
     protected abstract Task WithStorageAsync(Func<IMemoryStore, Task> factAsync);
-    
+
 
     [Fact]
     public virtual Task ItCanCreateAndGetCollectionAsync()
     {
-        
+
         return this.WithStorageAsync(async db =>
         {
             // Arrange
@@ -41,7 +39,7 @@ public abstract class MemoryStorageTestBase
             Assert.NotEmpty(collections.ToEnumerable());
             Assert.True(await collections.ContainsAsync(collection));
         });
-        
+
     }
 
     [Fact]
@@ -59,7 +57,7 @@ public abstract class MemoryStorageTestBase
             Assert.True(await db.DoesCollectionExistAsync(collection));
             Assert.False(await db.DoesCollectionExistAsync(this.CreateRandomCollectionName()));
         });
-        
+
     }
 
     [Fact]
@@ -167,7 +165,7 @@ public abstract class MemoryStorageTestBase
             Assert.Empty(actualDefault.Embedding.Vector);
             Assert.NotEmpty(actualWithEmbedding.Embedding.Vector);
         });
-        
+
     }
 
 
@@ -185,7 +183,7 @@ public abstract class MemoryStorageTestBase
                 embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
                 key: null,
                 timestamp: null);
-            string collection =this.CreateRandomCollectionName();
+            string collection = this.CreateRandomCollectionName();
 
             // Act
             await db.CreateCollectionAsync(collection);
@@ -202,7 +200,7 @@ public abstract class MemoryStorageTestBase
             Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
             Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
         });
-        
+
     }
 
 
@@ -238,7 +236,7 @@ public abstract class MemoryStorageTestBase
             Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
             Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
         });
-        
+
     }
 
     [Fact]
@@ -275,7 +273,7 @@ public abstract class MemoryStorageTestBase
             Assert.NotEqual(testRecord.Metadata.Text, actual.Metadata.Text);
             Assert.Equal(testRecord2.Metadata.Description, actual.Metadata.Description);
         });
-        
+
     }
 
     [Fact]
@@ -298,7 +296,7 @@ public abstract class MemoryStorageTestBase
 
             // Assert
             Assert.Null(await db.GetAsync(collection, key));
-            
+
         });
     }
 
@@ -318,7 +316,7 @@ public abstract class MemoryStorageTestBase
             // Assert
             Assert.Null(actual);
         });
-        
+
     }
 
     [Fact]
@@ -353,7 +351,7 @@ public abstract class MemoryStorageTestBase
                 $"Collections does not contain the newly-created collection {testCollections[2]}");
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         });
- 
+
     }
 
 
@@ -419,7 +417,7 @@ public abstract class MemoryStorageTestBase
                 Assert.True(compare >= 0);
             }
         });
-        
+
     }
 
     [Fact]
@@ -482,7 +480,7 @@ public abstract class MemoryStorageTestBase
             Assert.Empty(topNResultDefault.Value.Item1.Embedding.Vector);
             Assert.NotEmpty(topNResultWithEmbedding.Value.Item1.Embedding.Vector);
         });
-        
+
     }
 
     [Fact]
@@ -543,7 +541,7 @@ public abstract class MemoryStorageTestBase
             Assert.Equal("test0", topNResult.Value.Item1.Metadata.Id);
             Assert.True(topNResult.Value.Item2 >= threshold);
         });
-        
+
     }
 
     [Fact]
@@ -581,7 +579,7 @@ public abstract class MemoryStorageTestBase
                 Assert.True(compare >= 0);
             }
         });
-        
+
     }
 
     [Fact]
@@ -604,7 +602,7 @@ public abstract class MemoryStorageTestBase
             Assert.Equal(numRecords, keys.ToEnumerable().Count());
             Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
         });
-        
+
     }
 
     [Fact]
@@ -657,7 +655,7 @@ public abstract class MemoryStorageTestBase
                 Assert.Null(result);
             }
         });
-        
+
     }
 
     [Fact]
@@ -671,7 +669,7 @@ public abstract class MemoryStorageTestBase
             // Act
             await db.DeleteCollectionAsync(collection);
         });
-        
+
     }
 
     protected virtual IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
