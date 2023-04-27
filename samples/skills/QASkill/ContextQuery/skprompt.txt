@@ -20,7 +20,7 @@ LAST NAME: {{$lastname}}
 CITY: {{$city}}
 STATE: {{$state}}
 COUNTRY: {{$country}}
-{{recall $input}}
+{{memory.recall $input}}
 [END CONTEXT]
 
 EMIT WELL FORMED XML ALWAYS. Any code you write should be CDATA.
