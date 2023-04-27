@@ -159,7 +159,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
-        Assert.True(messageContent.Any());
+        Assert.True(messageContent.Length != 0);
 
         var payloadText = System.Text.Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
         Assert.Equal("fake-input-value", payloadText);
