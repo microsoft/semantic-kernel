@@ -93,7 +93,6 @@ public sealed class Plan : ISKFunction
     {
         this.Description = goal;
         this.SkillName = this.GetType().FullName;
-        this.Name = goal;
     }
 
     /// <summary>
@@ -252,7 +251,14 @@ public sealed class Plan : ISKFunction
             #region Update State
 
             // Update state with result
-            this.State.Update(result.Result.Trim());
+            if (this.NextStepIndex == 0 || step.NamedOutputs.Count() <= 1)
+            {
+                this.State.Update(result.Result.Trim());
+            }
+            else
+            {
+                this.State.Update(this.State.Input + Environment.NewLine + result.Result.Trim());
+            }
 
             // Update state with named outputs (if any)
             foreach (var item in step.NamedOutputs)
