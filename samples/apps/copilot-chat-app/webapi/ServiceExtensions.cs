@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.Config;
-using SemanticKernel.Service.Skills;
+using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service;
