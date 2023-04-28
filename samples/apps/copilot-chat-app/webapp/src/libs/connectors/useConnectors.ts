@@ -67,7 +67,7 @@ export const useConnectors = () => {
         return await sk.invokeAsync(
             listPullRequestsAsk,
             'GitHubSkill',
-            'ListPulls',
+            'PullsList',
             await AuthHelper.getSKaaSAccessToken(instance),
             [
                 {

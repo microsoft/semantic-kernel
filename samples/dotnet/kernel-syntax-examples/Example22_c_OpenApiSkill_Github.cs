@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RepoUtils;
@@ -43,7 +42,7 @@ public static class Example22_c_OpenApiSkill_GitHub
         contextVariables.Set("repo", "semantic-kernel");
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, skill["ListPulls"]);
+        var result = await kernel.RunAsync(contextVariables, skill["PullsList"]);
 
         Console.WriteLine("Successful GitHub List Pull Requests skill response.");
         var resultJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.Result);
@@ -67,7 +66,7 @@ public static class Example22_c_OpenApiSkill_GitHub
 
         var skill = await kernel.ImportOpenApiSkillFromFileAsync(
             "GitHubSkill",
-            "../../../samples/apps/copilot-chat-app/webapi/Skills/GitHubOpenApiSkill/openapi.json",
+            "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
             authenticationProvider.AuthenticateRequestAsync);
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
@@ -77,7 +76,7 @@ public static class Example22_c_OpenApiSkill_GitHub
         contextVariables.Set("pull_number", pullNumber);
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, skill["GetPull"]);
+        var result = await kernel.RunAsync(contextVariables, skill["PullsGet"]);
 
         Console.WriteLine("Successful GitHub Get Pull Request skill response: {0}", result);
     }

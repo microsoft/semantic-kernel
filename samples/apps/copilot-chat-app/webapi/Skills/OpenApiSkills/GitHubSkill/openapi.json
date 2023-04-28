@@ -38,7 +38,7 @@
         "tags": [
           "meta"
         ],
-        "operationId": "root",
+        "operationId": "meta/root",
         "responses": {
           "200": {
             "description": "Response",
@@ -74,7 +74,7 @@
         "tags": [
           "pulls"
         ],
-        "operationId": "ListPulls",
+        "operationId": "pulls/list",
         "externalDocs": {
           "description": "API method documentation",
           "url": "https://docs.github.com/enterprise-cloud@latest//rest/reference/pulls#list-pull-requests"
@@ -201,7 +201,7 @@
         "tags": [
           "pulls"
         ],
-        "operationId": "GetPull",
+        "operationId": "pulls/get",
         "externalDocs": {
           "description": "API method documentation",
           "url": "https://docs.github.com/enterprise-cloud@latest//rest/reference/pulls#get-a-pull-request"
