@@ -38,7 +38,7 @@ public static class Example17_ChatGPT
         chat.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
 
         // Second bot message
-        reply = await chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings());
+        reply = await chatGPT.GenerateMessageAsync(chat);
         chat.AddAssistantMessage(reply);
 
         Console.WriteLine("Chat content:");
