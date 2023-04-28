@@ -209,7 +209,11 @@ export const useChat = () => {
 
     const downloadBot = async (chatId: string) => {
         try {
-            return botService.downloadAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance));
+            return botService.downloadAsync(
+                chatId,
+                account?.homeAccountId || '',
+                await AuthHelper.getSKaaSAccessToken(instance),
+            );
         } catch (e: any) {
             const errorMessage = `Unable to download the bot. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -217,7 +221,8 @@ export const useChat = () => {
     };
 
     const uploadBot = async (bot: Bot) => {
-        botService.uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
+        botService
+            .uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
             .then(() => loadChats())
             .catch((e: any) => {
                 const errorMessage = `Unable to upload the bot. Details: ${e.message ?? e}`;
