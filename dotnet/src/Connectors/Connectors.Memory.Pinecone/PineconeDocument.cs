@@ -12,8 +12,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
 public class PineconeDocument
 {
-    private static int s_idCounter;
-    private static string DefaultId => $"item-{s_idCounter++}";
 
     /// <summary>
     /// The unique ID of a Document
@@ -122,16 +120,6 @@ public class PineconeDocument
     }
 
     /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    /// <inheritdoc />
-    public override string ToString()
-    {
-        return string.Join(Environment.NewLine, this.GetType().GetProperties().Select(p => $"{p.Name}: {p.GetValue(this)}"));
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="PineconeDocument" /> class.
     /// </summary>
     /// <param name="id">The unique ID of a vector.</param>
@@ -147,7 +135,7 @@ public class PineconeDocument
         SparseVectorData? sparseValues = null,
         float? score = null)
     {
-        this.Id = id ?? DefaultId;
+        this.Id = id ?? Guid.NewGuid().ToString();
         this.Values = values ?? Array.Empty<float>();
         this.Metadata = metadata ?? new Dictionary<string, object>();
         this.SparseValues = sparseValues;
