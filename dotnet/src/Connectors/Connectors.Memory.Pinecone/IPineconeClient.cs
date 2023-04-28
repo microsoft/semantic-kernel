@@ -55,7 +55,7 @@ public interface IPineconeClient
     public IAsyncEnumerable<PineconeDocument?> FetchVectorsAsync(
         string indexName,
         IEnumerable<string> ids,
-        string @namespace = "",
+        string indexNamespace = "",
         bool includeValues = false,
         CancellationToken cancellationToken = default
     );
@@ -77,7 +77,7 @@ public interface IPineconeClient
     public IAsyncEnumerable<PineconeDocument?> QueryAsync(
         string indexName,
         int topK,
-        string @namespace = "",
+        string indexNamespace = "",
         IEnumerable<float>? vector = default,
         bool includeValues = false,
         bool includeMetadata = true,
@@ -105,7 +105,7 @@ public interface IPineconeClient
         int topK,
         bool includeValues,
         bool includeMetadata,
-        string? @namespace = "",
+        string? indexNamespace = "",
         Dictionary<string, object>? filter = default,
         CancellationToken cancellationToken = default);
 
@@ -119,7 +119,7 @@ public interface IPineconeClient
     Task<int> UpsertAsync(
         string indexName,
         IEnumerable<PineconeDocument> vectors,
-        string @namespace = "",
+        string indexNamespace = "",
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -138,7 +138,7 @@ public interface IPineconeClient
     Task DeleteAsync(
         string indexName,
         IEnumerable<string>? ids = null,
-        string @namespace = "",
+        string indexNamespace = "",
         Dictionary<string, object>? filter = null,
         bool deleteAll = false,
         CancellationToken cancellationToken = default);
@@ -157,7 +157,7 @@ public interface IPineconeClient
     Task UpdateAsync(
         string indexName,
         PineconeDocument document,
-        string @namespace = "",
+        string indexNamespace = "",
         CancellationToken cancellationToken = default);
 
     /// <summary>

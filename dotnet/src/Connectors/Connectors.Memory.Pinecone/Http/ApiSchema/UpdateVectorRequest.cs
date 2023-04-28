@@ -60,9 +60,9 @@ internal sealed class UpdateVectorRequest
         };
     }
 
-    public UpdateVectorRequest InNamespace(string? nameSpace)
+    public UpdateVectorRequest InNamespace(string? indexNamespace)
     {
-        this.Namespace = nameSpace;
+        this.Namespace = indexNamespace;
         return this;
     }
 

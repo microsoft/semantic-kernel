@@ -18,11 +18,11 @@ internal sealed class QueryResponse
     /// Initializes a new instance of the <see cref="QueryResponse" /> class.
     /// </summary>
     /// <param name="matches">matches.</param>
-    /// <param name="nameSpace">An index namespace name.</param>
-    public QueryResponse(List<PineconeDocument> matches, string? nameSpace = default)
+    /// <param name="indexNamespace">An index namespace name.</param>
+    public QueryResponse(List<PineconeDocument> matches, string? indexNamespace = default)
     {
         this.Matches = matches;
-        this.Namespace = nameSpace;
+        this.Namespace = indexNamespace;
     }
 
     /// <summary>

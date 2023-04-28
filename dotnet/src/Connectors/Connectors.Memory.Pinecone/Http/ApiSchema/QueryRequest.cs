@@ -92,9 +92,9 @@ internal sealed class QueryRequest
         return this;
     }
 
-    public QueryRequest InNamespace(string? nameSpace)
+    public QueryRequest InNamespace(string? indexNamespace)
     {
-        this.Namespace = nameSpace;
+        this.Namespace = indexNamespace;
         return this;
     }
 

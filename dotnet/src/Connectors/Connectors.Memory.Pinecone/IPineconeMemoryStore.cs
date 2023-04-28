@@ -29,7 +29,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <returns>The unique identifier for the memory record.</returns>
     Task<string> UpsertToNamespaceAsync(
         string indexName,
-        string @namespace,
+        string indexNamespace,
         MemoryRecord record,
         CancellationToken cancel = default);
 
@@ -45,7 +45,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <returns>The unique identifiers for the memory records.</returns>
     IAsyncEnumerable<string> UpsertBatchToNamespaceAsync(
         string indexName,
-        string @namespace,
+        string indexNamespace,
         IEnumerable<MemoryRecord> records,
         CancellationToken cancel = default);
 
@@ -60,7 +60,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <returns>The memory record if found, otherwise null.</returns>
     Task<MemoryRecord?> GetFromNamespaceAsync(
         string indexName,
-        string @namespace,
+        string indexNamespace,
         string key,
         bool withEmbedding = false,
         CancellationToken cancel = default);
@@ -76,7 +76,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <returns>The memory records associated with the unique keys provided.</returns>
     IAsyncEnumerable<MemoryRecord> GetBatchFromNamespaceAsync(
         string indexName,
-        string @namespace,
+        string indexNamespace,
         IEnumerable<string> keys,
         bool withEmbeddings = false,
         CancellationToken cancel = default);
@@ -95,7 +95,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         string indexName,
         string documentId,
         int limit = 3,
-        string @namespace = "",
+        string indexNamespace = "",
         bool withEmbedding = false,
         CancellationToken cancel = default);
 
@@ -113,7 +113,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         string indexName,
         IEnumerable<string> documentIds,
         int limit = 3,
-        string @namespace = "",
+        string indexNamespace = "",
         bool withEmbeddings = false,
         CancellationToken cancel = default);
 
@@ -131,7 +131,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         string indexName,
         Dictionary<string, object> filter,
         int limit = 10,
-        string @namespace = "",
+        string indexNamespace = "",
         bool withEmbeddings = false,
         CancellationToken cancel = default);
 
@@ -144,7 +144,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="cancel">Cancellation token.</param>
     Task RemoveFromNamespaceAsync(
         string indexName,
-        string @namespace,
+        string indexNamespace,
         string key,
         CancellationToken cancel = default);
 
@@ -157,7 +157,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="cancel">Cancellation token.</param>
     Task RemoveBatchFromNamespaceAsync(
         string indexName,
-        string @namespace,
+        string indexNamespace,
         IEnumerable<string> keys,
         CancellationToken cancel = default);
 
@@ -172,7 +172,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     Task RemoveWithDocumentIdAsync(
         string indexName,
         string documentId,
-        string @namespace = "",
+        string indexNamespace = "",
         CancellationToken cancel = default);
 
     /// <summary>
@@ -186,7 +186,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     public Task RemoveWithDocumentIdBatchAsync(
         string indexName,
         IEnumerable<string> documentIds,
-        string @namespace = "",
+        string indexNamespace = "",
         CancellationToken cancel = default);
 
     /// <summary>
@@ -202,7 +202,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     Task RemoveWithFilterAsync(
         string indexName,
         Dictionary<string, object> filter,
-        string @namespace = "",
+        string indexNamespace = "",
         CancellationToken cancel = default);
 
     /// <summary>
@@ -229,7 +229,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         int limit,
         Dictionary<string, object> filter,
         double minRelevanceScore = 0.0,
-        string @namespace = "",
+        string indexNamespace = "",
         bool withEmbeddings = false,
         CancellationToken cancel = default);
 
@@ -246,7 +246,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <returns>A group of tuples where item1 is a <see cref="MemoryRecord"/> and item2 is its similarity score as a <see cref="double"/>.</returns>
     IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesFromNamespaceAsync(
         string indexName,
-        string @namespace,
+        string indexNamespace,
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0.0,
@@ -265,7 +265,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <returns>A tuple consisting of the <see cref="MemoryRecord"/> and the similarity score as a <see cref="double"/>. Null if no nearest match found.</returns>
     Task<(MemoryRecord, double)?> GetNearestMatchFromNamespaceAsync(
         string indexName,
-        string @namespace,
+        string indexNamespace,
         Embedding<float> embedding,
         double minRelevanceScore = 0.0,
         bool withEmbedding = false,
@@ -277,7 +277,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="indexName"></param>
     /// <param name="namespace"></param>
     /// <param name="cancellationToken"></param>
-    Task ClearNamespaceAsync(string indexName, string @namespace, CancellationToken cancellationToken = default);
+    Task ClearNamespaceAsync(string indexName, string indexNamespace, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// List Namespaces

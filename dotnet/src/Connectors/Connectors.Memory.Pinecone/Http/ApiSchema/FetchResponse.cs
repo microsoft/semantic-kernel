@@ -19,12 +19,12 @@ internal sealed class FetchResponse
     /// Initializes a new instance of the <see cref="FetchResponse" /> class.
     /// </summary>
     /// <param name="vectors">vectors.</param>
-    /// <param name="nameSpace">An index namespace name.</param>
+    /// <param name="indexNamespace">An index namespace name.</param>
     [JsonConstructor]
-    public FetchResponse(Dictionary<string, PineconeDocument> vectors, string? nameSpace = default)
+    public FetchResponse(Dictionary<string, PineconeDocument> vectors, string? indexNamespace = default)
     {
         this.Vectors = vectors;
-        this.Namespace = nameSpace;
+        this.Namespace = indexNamespace;
     }
 
     /// <summary>

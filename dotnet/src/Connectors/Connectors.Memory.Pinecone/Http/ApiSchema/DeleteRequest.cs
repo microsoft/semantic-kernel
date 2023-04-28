@@ -46,11 +46,11 @@ internal sealed class DeleteRequest
         return new DeleteRequest(true);
     }
 
-    public static DeleteRequest ClearNamespace(string nameSpace)
+    public static DeleteRequest ClearNamespace(string indexNamespace)
     {
         return new DeleteRequest(true)
         {
-            Namespace = nameSpace
+            Namespace = indexNamespace
         };
     }
 
@@ -65,9 +65,9 @@ internal sealed class DeleteRequest
         return this;
     }
 
-    public DeleteRequest FromNamespace(string? nameSpace)
+    public DeleteRequest FromNamespace(string? indexNamespace)
     {
-        this.Namespace = nameSpace;
+        this.Namespace = indexNamespace;
         return this;
     }
 

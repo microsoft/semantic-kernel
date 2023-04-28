@@ -37,9 +37,9 @@ internal sealed class UpsertRequest
         return request;
     }
 
-    public UpsertRequest ToNamespace(string? nameSpace)
+    public UpsertRequest ToNamespace(string? indexNamespace)
     {
-        this.Namespace = nameSpace;
+        this.Namespace = indexNamespace;
         return this;
     }
 

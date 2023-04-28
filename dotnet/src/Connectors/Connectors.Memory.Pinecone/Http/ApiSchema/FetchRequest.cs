@@ -32,9 +32,9 @@ internal sealed class FetchRequest
         return new FetchRequest(ids);
     }
 
-    public FetchRequest FromNamespace(string nameSpace)
+    public FetchRequest FromNamespace(string indexNamespace)
     {
-        this.Namespace = nameSpace;
+        this.Namespace = indexNamespace;
         return this;
     }
 
