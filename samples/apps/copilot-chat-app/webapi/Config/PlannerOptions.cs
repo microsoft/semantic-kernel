@@ -8,7 +8,7 @@ namespace SemanticKernel.Service.Config;
 /// <summary>
 /// Configuration options for the planner.
 /// </summary>
-public class SequentialPlannerOptions
+public class PlannerOptions
 {
     public const string PropertyName = "Planner";
 
@@ -60,9 +60,9 @@ public class SequentialPlannerOptions
     {
         SequentialPlannerConfig config = new()
         {
-            RelevancyThreshold = RelevancyThreshold,
-            MaxRelevantFunctions = MaxRelevantFunctions,
-            MaxTokens = MaxTokens,
+            RelevancyThreshold = this.RelevancyThreshold,
+            MaxRelevantFunctions = this.MaxRelevantFunctions,
+            MaxTokens = this.MaxTokens,
         };
 
         this.ExcludedSkills.Clear();
