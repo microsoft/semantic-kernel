@@ -103,7 +103,7 @@ public interface IPineconeClient
         int topK,
         bool includeValues,
         bool includeMetadata,
-        string? indexNamespace = "",
+        string indexNamespace = "",
         Dictionary<string, object>? filter = default,
         CancellationToken cancellationToken = default);
 

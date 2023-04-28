@@ -69,8 +69,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         using HttpRequestMessage request = fetchRequest.Build();
 
-        request.Headers.Add("accept", "application/json");
-
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request,
             cancellationToken).ConfigureAwait(false);
 
@@ -101,11 +99,9 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         IEnumerable<PineconeDocument> records = includeValues
             ? data.Vectors.Values
             : data.WithoutEmbeddings();
-
-#pragma warning disable CS8604 // The request specifically asked for a payload to be in the response
+        
         foreach (PineconeDocument? record in records)
         {
-
             yield return record;
         }
 
@@ -141,8 +137,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             .WithSparseVector(sparseVector)
             .WithId(id)
             .Build();
-
-        request.Headers.Add("accept", "application/json");
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
@@ -186,7 +180,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         int topK,
         bool includeValues,
         bool includeMetadata,
-        string? indexNamespace = default,
+        string indexNamespace = "",
         Dictionary<string, object>? filter = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -228,7 +222,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             yield break;
         }
 
-        // sort documents by score, and order by ascending
+        // sort documents by score, and order by descending
         documents = documents.OrderByDescending(x => x.score).ToList();
 
         foreach ((PineconeDocument document, float score) in documents)
@@ -262,7 +256,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         {
             totalBatches++;
             HttpRequestMessage request = batch.ToNamespace(indexNamespace).Build();
-            request.Headers.Add("accept", "application/json");
 
             (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
@@ -369,8 +362,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         using HttpRequestMessage request = deleteRequest.Build();
 
-        request.Headers.Add("accept", "application/json");
-
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
         try
@@ -402,8 +393,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             .InNamespace(indexNamespace)
             .Build();
 
-        request.Headers.Add("accept", "application/json");
-
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
         try
@@ -429,8 +418,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         using HttpRequestMessage request = DescribeIndexStatsRequest.GetIndexStats()
             .WithFilter(filter)
             .Build();
-
-        request.Headers.Add("accept", "application/json");
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
@@ -462,7 +449,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     public async IAsyncEnumerable<string?> ListIndexesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using HttpRequestMessage request = ListIndexesRequest.Create().Build();
-        request.Headers.Add("accept", "application/json; charset=utf-8");
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
@@ -486,8 +472,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         string indexName = indexDefinition.Name;
         using HttpRequestMessage request = indexDefinition.Build();
-
-        request.Headers.Add("accept", "text/plain");
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
@@ -526,8 +510,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         this._logger.LogInformation("Deleting index {0}", indexName);
 
         using HttpRequestMessage request = DeleteIndexRequest.Create(indexName).Build();
-
-        request.Headers.Add("accept", "text/plain");
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
@@ -576,8 +558,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         using HttpRequestMessage request = DescribeIndexRequest.Create(indexName).Build();
 
-        request.Headers.Add("accept", "application/json");
-
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.BadRequest)
@@ -618,8 +598,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             .WithPodType(podType)
             .NumberOfReplicas(replicas)
             .Build();
-
-        request.Headers.Add("accept", "text/plain");
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
