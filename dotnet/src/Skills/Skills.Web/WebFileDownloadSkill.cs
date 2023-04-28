@@ -59,7 +59,7 @@ public class WebFileDownloadSkill : IDisposable
             this._httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
         }
 
-        await this.DownloadToFileAsync(source, context);
+        await this.DownloadToFileAsync(source, context).ConfigureAwait(false);
         this._httpClient.DefaultRequestHeaders.Clear();
     }
 
