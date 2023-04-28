@@ -5,8 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
-#pragma warning disable CA1716 // rename parameters so that it no longer conflicts with the reserved language keyword namespace
-
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
 /// <summary>
@@ -48,8 +46,8 @@ public interface IPineconeClient
     /// </summary>
     /// <param name="indexName"> the name of the index </param>
     /// <param name="ids"> A list of ids</param>
-    /// <param name="namespace"> The namespace to use</param>
-    /// <param name="includeValues"></param>
+    /// <param name="indexNamespace"> The namespace to use</param>
+    /// <param name="includeValues"> Whether to include the vector values</param>
     /// <param name="cancellationToken"> The cancellation token</param>
     /// <returns> A list of vector records</returns>
     public IAsyncEnumerable<PineconeDocument?> FetchVectorsAsync(
@@ -65,13 +63,13 @@ public interface IPineconeClient
     /// </summary>
     /// <param name="indexName"> the name of the index </param>
     /// <param name="topK"> the number of results to return</param>
-    /// <param name="namespace"> the namespace to use</param>
-    /// <param name="vector"></param>
+    /// <param name="indexNamespace"> the namespace to use</param>
+    /// <param name="vector"> the vector to compare the collection's vectors with</param>
     /// <param name="includeValues"> whether to include the vector values</param>
     /// <param name="includeMetadata"> whether to include the metadata</param>
-    /// <param name="filter"></param>
-    /// <param name="sparseVector"></param>
-    /// <param name="id"></param>
+    /// <param name="filter"> a filter to apply to the results</param>
+    /// <param name="sparseVector"> a sparse vector to use</param>
+    /// <param name="id"> an id to use</param>
     /// <param name="cancellationToken"></param>
     /// <returns> a list of query matches</returns>
     public IAsyncEnumerable<PineconeDocument?> QueryAsync(
@@ -93,10 +91,10 @@ public interface IPineconeClient
     /// <param name="vector">The vector to compare the collection's vectors with.</param>
     /// <param name="threshold">The minimum relevance threshold for returned results.</param>
     /// <param name="topK">The maximum number of similarity results to return.</param>
-    /// <param name="namespace">The name assigned to a collection of vectors.</param>
-    /// <param name="includeValues"></param>
-    /// <param name="includeMetadata"></param>
-    /// <param name="filter"></param>
+    /// <param name="indexNamespace">The name assigned to a collection of vectors.</param>
+    /// <param name="includeValues"> Whether to include the vector values</param>
+    /// <param name="includeMetadata"> Whether to include the metadata</param>
+    /// <param name="filter"> A filter to apply to the results</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
         string indexName,
@@ -114,7 +112,7 @@ public interface IPineconeClient
     /// </summary>
     /// <param name="indexName"> the name of the index</param>
     /// <param name="vectors"> the list of documents</param>
-    /// <param name="namespace"> the namespace to use</param>
+    /// <param name="indexNamespace"> the namespace to use</param>
     /// <param name="cancellationToken"></param>
     Task<int> UpsertAsync(
         string indexName,
@@ -131,7 +129,7 @@ public interface IPineconeClient
     /// <param name="indexName"> The name of the index</param>
     /// <param name="ids"> The ids to delete</param>
     /// <param name="deleteAll"> Whether to delete all vectors</param>
-    /// <param name="namespace"> The namespace to use</param>
+    /// <param name="indexNamespace"> The namespace to use</param>
     /// <param name="filter"> The filter to use</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of Object</returns>
@@ -151,7 +149,7 @@ public interface IPineconeClient
     /// </remarks>
     /// <param name="indexName"> The name of the index</param>
     /// <param name="document"> The document to update</param>
-    /// <param name="namespace"> The namespace to use</param>
+    /// <param name="indexNamespace"> The namespace to use</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of Object</returns>
     Task UpdateAsync(
@@ -166,8 +164,8 @@ public interface IPineconeClient
     /// <remarks>
     /// The DescribeIndexStats operation returns statistics about the index's contents, including the vector count per namespace and the number of dimensions.
     /// </remarks>
-    /// <param name="indexName"></param>
-    /// <param name="filter"></param>
+    /// <param name="indexName"> the name of the index</param>
+    /// <param name="filter"> a filter to use </param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns> the index stats</returns>
     Task<IndexStats?> DescribeIndexStatsAsync(
@@ -231,9 +229,9 @@ public interface IPineconeClient
     /// <remarks>
     /// This operation specifies the pod type and number of replicas for an index.
     /// </remarks>
-    /// <param name="indexName"></param>
-    /// <param name="replicas"></param>
-    /// <param name="podType"></param>
+    /// <param name="indexName"> the name of the index.</param>
+    /// <param name="replicas"> the number of replicas to use.</param>
+    /// <param name="podType"> the pod type to use.</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of void</returns>
     Task ConfigureIndexAsync(string indexName, int replicas = 1, PodType podType = PodType.P1X1, CancellationToken cancellationToken = default);

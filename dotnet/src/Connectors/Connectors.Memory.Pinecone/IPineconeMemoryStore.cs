@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 
-#pragma warning disable CA1716 // rename parameters so that it no longer conflicts with the reserved language keyword namespace
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
@@ -23,7 +22,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     ///     If the record does not exist, it will be created.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embeddings.</param>
-    /// <param name="namespace"> The namespace associated with a collection of embeddings.</param>
+    /// <param name="indexNamespace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="record">The memory record to upsert.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>The unique identifier for the memory record.</returns>
@@ -39,7 +38,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     ///     If the record does not exist, it will be created.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of vectors.</param>
-    /// <param name="namespace"> The namespace associated with a collection of embeddings.</param>
+    /// <param name="indexNamespace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="records">The memory records to upsert.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>The unique identifiers for the memory records.</returns>
@@ -53,7 +52,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// Gets a memory record from the data store in the given namespace.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embeddings.</param>
-    /// <param name="namespace"> The namespace associated with a collection of embeddings.</param>
+    /// <param name="indexNamespace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="key">The unique id associated with the memory record to get.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancel">Cancellation token.</param>
@@ -69,7 +68,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// Gets a batch of memory records from the data store in the given namespace.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embedding.</param>
-    /// <param name="namespace"> The namespace associated with a collection of embeddings.</param>
+    /// <param name="indexNamespace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="keys">The unique ids associated with the memory record to get.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel">Cancellation token.</param>
@@ -87,7 +86,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="indexName"> the name of the index to search.</param>
     /// <param name="documentId"> the document id to search for.</param>
     /// <param name="limit"> the number of results to return.</param>
-    /// <param name="namespace"> the namespace to search.</param>
+    /// <param name="indexNamespace"> the namespace to search.</param>
     /// <param name="withEmbedding"> if true, the embedding will be returned in the memory record.</param>
     /// <param name="cancel"></param>
     /// <returns> the memory records associated with the document id provided.</returns>
@@ -105,7 +104,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="indexName">  the name of the index to search.</param>
     /// <param name="documentIds"> the document ids to search for.</param>
     /// <param name="limit"> the number of results to return.</param>
-    /// <param name="namespace"> the namespace to search.</param>
+    /// <param name="indexNamespace"> the namespace to search.</param>
     /// <param name="withEmbeddings"> if true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel"></param>
     /// <returns> the memory records associated with the document ids provided.</returns>
@@ -123,7 +122,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="indexName"> the name of the index to search.</param>
     /// <param name="filter"> the filter to apply to the search.</param>
     /// <param name="limit"> the number of results to return.</param>
-    /// <param name="namespace"> the namespace to search.</param>
+    /// <param name="indexNamespace"> the namespace to search.</param>
     /// <param name="withEmbeddings"> if true, the embedding will be returned in the memory record.</param>
     /// <param name="cancel"></param>
     /// <returns> the memory records that match the filter.</returns>
@@ -139,7 +138,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// Removes a memory record from the data store in the given namespace.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embeddings.</param>
-    /// <param name="namespace"> The namespace associated with a collection of embeddings.</param>
+    /// <param name="indexNamespace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="key">The unique id associated with the memory record to remove.</param>
     /// <param name="cancel">Cancellation token.</param>
     Task RemoveFromNamespaceAsync(
@@ -152,7 +151,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// Removes a batch of memory records from the data store in the given namespace.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embeddings.</param>
-    /// <param name="namespace"> The namespace to remove the memory records from.</param>
+    /// <param name="indexNamespace"> The namespace to remove the memory records from.</param>
     /// <param name="keys">The unique ids associated with the memory record to remove.</param>
     /// <param name="cancel">Cancellation token.</param>
     Task RemoveBatchFromNamespaceAsync(
@@ -166,7 +165,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// </summary>
     /// <param name="indexName"> the name of the index to remove from.</param>
     /// <param name="documentId">  the document id to remove.</param>
-    /// <param name="namespace"> the namespace to remove from.</param>
+    /// <param name="indexNamespace"> the namespace to remove from.</param>
     /// <param name="cancel"></param>
     /// <returns></returns>
     Task RemoveWithDocumentIdAsync(
@@ -180,7 +179,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// </summary>
     /// <param name="indexName"> the name of the index to remove from.</param>
     /// <param name="documentIds"> the document ids to remove.</param>
-    /// <param name="namespace"> the namespace to remove from.</param>
+    /// <param name="indexNamespace"> the namespace to remove from.</param>
     /// <param name="cancel"></param>
     /// <returns></returns>
     public Task RemoveWithDocumentIdBatchAsync(
@@ -194,7 +193,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// </summary>
     /// <param name="indexName"> the name of the index to remove from.</param>
     /// <param name="filter"> the filter to apply to the search.</param>
-    /// <param name="namespace"> the namespace to remove from.</param>
+    /// <param name="indexNamespace"> the namespace to remove from.</param>
     /// <param name="cancel"></param>
     /// <remarks>
     ///  In the same way that you can filter your vector search results, you can also filter your vector deletion.
@@ -213,7 +212,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="limit">The maximum number of similarity results to return.</param>
     /// <param name="filter"> The filter to apply to the collection.</param>
     /// <param name="minRelevanceScore"></param>
-    /// <param name="namespace"></param>
+    /// <param name="indexNamespace"></param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns>A group of tuples where item1 is a <see cref="MemoryRecord"/> and item2 is its similarity score as a <see cref="double"/>.</returns>
@@ -237,7 +236,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// Gets the nearest matches to the <see cref="Embedding"/> of type <see cref="float"/> from the given namespace.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embeddings.</param>
-    /// <param name="namespace"> The namespace associated with a collection of embeddings.</param>
+    /// <param name="indexNamespace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="embedding">The <see cref="Embedding"/> to compare the collection's embeddings with.</param>
     /// <param name="limit">The maximum number of similarity results to return.</param>
     /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
@@ -257,7 +256,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// Gets the nearest match to the <see cref="Embedding"/> of type <see cref="float"/> from the given namespace.
     /// </summary>
     /// <param name="indexName">The name associated with a collection of embeddings.</param>
-    /// <param name="namespace"> The namespace associated with a collection of embeddings.</param>
+    /// <param name="indexNamespace"> The namespace associated with a collection of embeddings.</param>
     /// <param name="embedding">The <see cref="Embedding"/> to compare the collection's embeddings with.</param>
     /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
@@ -274,8 +273,8 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <summary>
     ///  Clears all vectors in the given namespace.
     /// </summary>
-    /// <param name="indexName"></param>
-    /// <param name="namespace"></param>
+    /// <param name="indexName"> The name of the index.</param>
+    /// <param name="indexNamespace"> The namespace to clear.</param>
     /// <param name="cancellationToken"></param>
     Task ClearNamespaceAsync(string indexName, string indexNamespace, CancellationToken cancellationToken = default);
 

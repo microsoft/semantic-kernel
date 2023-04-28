@@ -518,7 +518,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="indexName">The name associated with the index to get the Pinecone vector record from.</param>
     /// <param name="documentId">The unique indexed ID associated with the Pinecone vector record to get.</param>
     /// <param name="limit"></param>
-    /// <param name="namespace"> The namespace associated with the Pinecone vector record to get.</param>
+    /// <param name="indexNamespace"> The namespace associated with the Pinecone vector record to get.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
@@ -573,7 +573,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="indexName">The name associated with the index to get the Pinecone vector records from.</param>
     /// <param name="documentIds">The unique indexed IDs associated with Pinecone vector records to get.</param>
     /// <param name="limit"></param>
-    /// <param name="namespace"> The namespace associated with the Pinecone vector records to get.</param>
+    /// <param name="indexNamespace"> The namespace associated with the Pinecone vector records to get.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
@@ -758,7 +758,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// Remove a MemoryRecord from the Pinecone Vector database by pointId.
     /// </summary>
     /// <param name="indexName"> The name associated with the index to remove the Pinecone vector record from.</param>
-    /// <param name="namespace">The name associated with a collection of embeddings.</param>
+    /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="documentId">The unique indexed ID associated with the Pinecone vector record to remove.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
@@ -791,7 +791,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// Remove a MemoryRecord from the Pinecone Vector database by a group of pointIds.
     /// </summary>
     /// <param name="indexName"> The name associated with the index to remove the Pinecone vector record from.</param>
-    /// <param name="namespace">The name associated with a collection of embeddings.</param>
+    /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="documentIds">The unique indexed IDs associated with the Pinecone vector records to remove.</param>
     /// <param name="cancel">Cancellation token.</param>
     /// <returns></returns>
