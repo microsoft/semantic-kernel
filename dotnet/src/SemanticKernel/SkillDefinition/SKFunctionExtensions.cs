@@ -107,7 +107,9 @@ public static class SKFunctionExtensions
         var tmpContext = new SKContext(input, memory, skills, log, cancellationToken);
         try
         {
-            await function.InvokeAsync(tmpContext, cancellationToken: cancellationToken).ConfigureAwait(false);
+#pragma warning disable CA2016 // the token is passed in via the context
+            await function.InvokeAsync(tmpContext).ConfigureAwait(false);
+#pragma warning restore CA2016
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {

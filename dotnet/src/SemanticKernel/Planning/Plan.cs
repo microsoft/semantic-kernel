@@ -241,7 +241,7 @@ public sealed class Plan : ISKFunction
 
             // Execute the step
             var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
-            var result = await step.InvokeAsync(functionContext, cancellationToken: context.CancellationToken).ConfigureAwait(false);
+            var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {

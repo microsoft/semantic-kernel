@@ -560,7 +560,7 @@ public sealed class PlanTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null))
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
             .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
                 returnContext.Variables.Update("Here is a poem about " + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
@@ -574,6 +574,6 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal($"Here is a poem about Cleopatra", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null), Times.Once);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Once);
     }
 }

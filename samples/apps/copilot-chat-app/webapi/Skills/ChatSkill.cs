@@ -111,8 +111,7 @@ public class ChatSkill
 
         var result = await completionFunction.InvokeAsync(
             intentExtractionContext,
-            settings: this.CreateIntentCompletionSettings(),
-            cancellationToken: context.CancellationToken
+            settings: this.CreateIntentCompletionSettings()
         );
 
         if (result.ErrorOccurred)
@@ -334,8 +333,7 @@ public class ChatSkill
 
         chatContext = await completionFunction.InvokeAsync(
             context: chatContext,
-            settings: this.CreateChatResponseCompletionSettings(),
-            cancellationToken: context.CancellationToken
+            settings: this.CreateChatResponseCompletionSettings()
         );
 
         // If the completion function failed, return the context containing the error.

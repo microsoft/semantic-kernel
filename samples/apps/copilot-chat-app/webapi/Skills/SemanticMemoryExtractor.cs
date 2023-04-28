@@ -41,8 +41,7 @@ internal static class SemanticMemoryExtractor
         var completionFunction = kernel.CreateSemanticFunction(memoryPrompt);
         var result = await completionFunction.InvokeAsync(
             context: memoryExtractionContext,
-            settings: CreateMemoryExtractionSettings(promptSettings),
-            cancellationToken: context.CancellationToken
+            settings: CreateMemoryExtractionSettings(promptSettings)
         );
 
         SemanticChatMemory memory = SemanticChatMemory.FromJson(result.ToString());
