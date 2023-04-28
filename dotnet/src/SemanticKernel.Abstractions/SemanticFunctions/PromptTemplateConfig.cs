@@ -183,6 +183,7 @@ public class PromptTemplateConfig
         {
             Verify.ThrowValidationException(ValidationException.ErrorCodes.NullValue, "Unable to deserialize prompt template config. The deserialized returned NULL.");
         }
+
         return result;
     }
 }

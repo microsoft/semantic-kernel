@@ -45,6 +45,7 @@ internal static class GPT3Settings
             {
                 result.Add((span.Slice(0, pos).ToString(), span.Slice(pos + 1).ToString()), result.Count);
             }
+
             pos = nextPos + 1;
         }
 
