@@ -40,7 +40,7 @@ public abstract class ClientBase
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(requestSettings, "Completion settings cannot be empty");
+        Verify.NotNull(requestSettings);
 
         if (requestSettings.MaxTokens < 1)
         {
@@ -126,8 +126,8 @@ public abstract class ClientBase
         ChatRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chat, "The chat history cannot be null");
-        Verify.NotNull(requestSettings, "Completion settings cannot be empty");
+        Verify.NotNull(chat);
+        Verify.NotNull(requestSettings);
 
         if (requestSettings.MaxTokens < 1)
         {

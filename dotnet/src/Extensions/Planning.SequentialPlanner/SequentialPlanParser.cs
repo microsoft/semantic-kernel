@@ -89,9 +89,6 @@ internal static class SequentialPlanParser
 
                         if (!string.IsNullOrEmpty(functionName) && context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
                         {
-                            Verify.NotNull(functionName, nameof(functionName));
-                            Verify.NotNull(skillFunction, nameof(skillFunction));
-
                             var planStep = new Plan(skillFunction);
 
                             var functionVariables = new ContextVariables();
