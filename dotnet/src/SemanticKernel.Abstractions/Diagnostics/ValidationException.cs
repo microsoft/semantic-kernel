@@ -4,11 +4,65 @@ using System;
 
 namespace Microsoft.SemanticKernel.Diagnostics;
 
+#pragma warning disable CA1032 // Implement standard exception constructors
+
 /// <summary>
-/// Generic validation exception
+/// Exception thrown for errors related to validation.
 /// </summary>
-public class ValidationException : Exception<ValidationException.ErrorCodes>
+public class ValidationException : SKException
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ValidationException"/> class with a provided error code.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    public ValidationException(ErrorCodes errorCode)
+        : this(errorCode, message: null, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ValidationException"/> class with a provided error code and message.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">The exception message.</param>
+    public ValidationException(ErrorCodes errorCode, string? message)
+        : this(errorCode, message, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ValidationException"/> class with a provided error code, message, and inner exception.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">A string that describes the error.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception.</param>
+    public ValidationException(ErrorCodes errorCode, string? message, Exception? innerException)
+        : base(GetDefaultMessage(errorCode, message), innerException)
+    {
+        this.ErrorCode = errorCode;
+    }
+
+    /// <summary>
+    /// Gets the error code for this exception.
+    /// </summary>
+    public ErrorCodes ErrorCode { get; }
+
+    /// <summary>Translate the error code into a default message.</summary>
+    private static string GetDefaultMessage(ErrorCodes errorCode, string? message)
+    {
+        string description = errorCode switch
+        {
+            ErrorCodes.NullValue => "Null value",
+            ErrorCodes.EmptyValue => "Empty value",
+            ErrorCodes.OutOfRange => "Out of range",
+            ErrorCodes.MissingPrefix => "Missing prefix",
+            ErrorCodes.DirectoryNotFound => "Directory not found",
+            _ => $"Unknown error ({errorCode:G})",
+        };
+
+        return message is not null ? $"{description}: {message}" : description;
+    }
+
     /// <summary>
     /// Error codes for <see cref="ValidationException"/>.
     /// </summary>
@@ -44,49 +98,4 @@ public class ValidationException : Exception<ValidationException.ErrorCodes>
         /// </summary>
         DirectoryNotFound,
     }
-
-    /// <summary>
-    /// Gets the error code of the exception.
-    /// </summary>
-    public ErrorCodes ErrorCode { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ValidationException"/> class.
-    /// </summary>
-    /// <param name="errCode">The error code.</param>
-    /// <param name="message">The message.</param>
-    public ValidationException(ErrorCodes errCode, string? message = null) : base(errCode, message)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ValidationException"/> class.
-    /// </summary>
-    /// <param name="errCode">The error code.</param>
-    /// <param name="message">The message.</param>
-    /// <param name="e">The inner exception.</param>
-    public ValidationException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    #region private ================================================================================
-
-    private ValidationException()
-    {
-        // Not allowed, error code is required
-    }
-
-    private ValidationException(string message) : base(message)
-    {
-        // Not allowed, error code is required
-    }
-
-    private ValidationException(string message, Exception innerException) : base(message, innerException)
-    {
-        // Not allowed, error code is required
-    }
-
-    #endregion
 }

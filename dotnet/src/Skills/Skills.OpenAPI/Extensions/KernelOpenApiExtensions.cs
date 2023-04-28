@@ -18,8 +18,10 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 
+#pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Class for extensions methods for <see cref="IKernel"/> interface.
@@ -197,7 +199,7 @@ public static class KernelOpenApiExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(kernel, nameof(kernel));
+        Verify.NotNull(kernel);
         Verify.ValidSkillName(skillName);
 
         // Parse

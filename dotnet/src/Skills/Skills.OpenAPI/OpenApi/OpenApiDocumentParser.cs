@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 /// <summary>
 /// Parser for OpenAPI documents.
 /// </summary>
-internal class OpenApiDocumentParser : IOpenApiDocumentParser
+internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 {
     /// <inheritdoc/>
     public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, CancellationToken cancellationToken = default)

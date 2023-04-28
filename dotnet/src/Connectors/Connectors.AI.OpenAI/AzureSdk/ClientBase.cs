@@ -40,7 +40,7 @@ public abstract class ClientBase
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(requestSettings, "Completion settings cannot be empty");
+        Verify.NotNull(requestSettings);
 
         if (requestSettings.MaxTokens < 1)
         {
@@ -72,9 +72,8 @@ public abstract class ClientBase
             }
         }
 
-        Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(() =>
-                this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)
-            ).ConfigureAwait(false);
+        Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
+            () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
         if (response == null || response.Value.Choices.Count < 1)
         {
@@ -99,9 +98,8 @@ public abstract class ClientBase
         {
             var options = new EmbeddingsOptions(text);
 
-            Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(() =>
-                    this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)
-                ).ConfigureAwait(false);
+            Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
+                () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
             if (response == null || response.Value.Data.Count < 1)
             {
@@ -128,8 +126,8 @@ public abstract class ClientBase
         ChatRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chat, "The chat history cannot be null");
-        Verify.NotNull(requestSettings, "Completion settings cannot be empty");
+        Verify.NotNull(chat);
+        Verify.NotNull(requestSettings);
 
         if (requestSettings.MaxTokens < 1)
         {
@@ -169,9 +167,8 @@ public abstract class ClientBase
             options.Messages.Add(new ChatMessage(role, message.Content));
         }
 
-        Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(() =>
-                this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken)
-            ).ConfigureAwait(false);
+        Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
+            () => this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
         if (response == null || response.Value.Choices.Count < 1)
         {

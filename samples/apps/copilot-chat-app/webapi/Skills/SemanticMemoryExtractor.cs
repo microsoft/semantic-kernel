@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Globalization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
@@ -14,7 +16,11 @@ internal static class SemanticMemoryExtractor
     /// <param name="memoryName">Name of the memory category</param>
     internal static string MemoryCollectionName(string chatId, string memoryName) => $"{chatId}-{memoryName}";
 
-    internal static async Task<SemanticChatMemory> ExtractCognitiveMemoryAsync(string memoryName, IKernel kernel, SKContext context, PromptSettings promptSettings)
+    internal static async Task<SemanticChatMemory> ExtractCognitiveMemoryAsync(
+        string memoryName,
+        IKernel kernel,
+        SKContext context,
+        PromptSettings promptSettings)
     {
         if (!promptSettings.MemoryMap.TryGetValue(memoryName, out var memoryPrompt))
         {
@@ -25,7 +31,7 @@ internal static class SemanticMemoryExtractor
         var remainingToken = tokenLimit - promptSettings.ResponseTokenLimit;
         var contextTokenLimit = remainingToken;
 
-        var memoryExtractionContext = Utils.CopyContextWithVariablesClone(context);
+        var memoryExtractionContext = Utilities.CopyContextWithVariablesClone(context);
         memoryExtractionContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
         memoryExtractionContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
         memoryExtractionContext.Variables.Set("memoryName", memoryName);

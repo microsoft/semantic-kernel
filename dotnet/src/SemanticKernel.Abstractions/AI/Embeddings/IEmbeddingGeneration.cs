@@ -43,7 +43,7 @@ public static class EmbeddingGenerationExtensions
         (this IEmbeddingGeneration<TValue, TEmbedding> generator, TValue value, CancellationToken cancellationToken = default)
         where TEmbedding : unmanaged
     {
-        Verify.NotNull(generator, "Embeddings generator cannot be NULL");
+        Verify.NotNull(generator);
         return (await generator.GenerateEmbeddingsAsync(new[] { value }, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
     }
 }

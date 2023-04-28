@@ -17,8 +17,20 @@ public class ChatMessage : IStorageEntity
     /// </summary>
     public enum AuthorRoles
     {
+        /// <summary>
+        /// The current user of the chat.
+        /// </summary>
         User = 0,
+
+        /// <summary>
+        /// The bot.
+        /// </summary>
         Bot,
+
+        /// <summary>
+        /// The participant who is not the current user nor the bot of the chat.
+        /// </summary>
+        Participant
     }
 
     /// <summary>

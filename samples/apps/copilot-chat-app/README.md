@@ -83,6 +83,7 @@ First, let’s set up and verify the back-end API server is running.
       ```bash
       REACT_APP_BACKEND_URI=https://localhost:40443/
       REACT_APP_AAD_CLIENT_ID=00000000-0000-0000-0000-000000000000
+      REACT_APP_AAD_AUTHORITY=https://login.microsoftonline.com/common
       ```
    
    1. To build and run the front-end application
@@ -132,4 +133,4 @@ the complete list of current models supporting chat completions.
 
 ## Additional resources
 
-1. [Import Document Application](./importdocument/README.md): Ingest a document to memory.
+1. [Import Document Application](./importdocument/README.md): Import a document to the memory store.
