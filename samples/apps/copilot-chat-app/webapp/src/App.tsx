@@ -7,7 +7,7 @@ import {
     useIsAuthenticated,
     useMsal,
 } from '@azure/msal-react';
-import { Avatar, Spinner, Subtitle1, makeStyles } from '@fluentui/react-components';
+import { Avatar, Spinner, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
 import * as React from 'react';

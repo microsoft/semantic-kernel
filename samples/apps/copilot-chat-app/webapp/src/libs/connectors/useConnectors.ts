@@ -84,7 +84,7 @@ export const useConnectors = () => {
      * that the server can use to authenticate to the downstream APIs
      */
     const getEnabledPlugins = () => {
-        const enabledPlugins: { headerTag: any; authData: any }[] = [];
+        const enabledPlugins: { headerTag: AuthHeaderTags; authData: string; apiRequirements?: any }[] = [];
 
         Object.entries(plugins).map((entry) => {
             const plugin = entry[1];
@@ -93,6 +93,7 @@ export const useConnectors = () => {
                 enabledPlugins.push({
                     headerTag: plugin.headerTag,
                     authData: plugin.authData!,
+                    apiRequirements: plugin.apiRequirements,
                 });
             }
 

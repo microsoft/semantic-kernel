@@ -34,7 +34,7 @@ public static class Example22_c_OpenApiSkill_GitHub
 
         var skill = await kernel.ImportOpenApiSkillFromFileAsync(
             "GitHubSkill",
-            "../../../samples/apps/copilot-chat-app/webapi/Skills/GitHubOpenApiSkill/openapi.json",
+            "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
             authenticationProvider.AuthenticateRequestAsync);
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.

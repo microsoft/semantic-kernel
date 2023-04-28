@@ -252,7 +252,10 @@ public static class KernelOpenApiExtensions
         {
             try
             {
-                var runner = new RestApiOperationRunner(new HttpClient(), authCallback);
+                // User Agent may be a required request header fields for some Rest APIs,
+                // but this detail isn't specified in OpenAPI specs, so including for all Rest APIs imported
+                var userAgent = "Microsoft-Semantic-Kernel";
+                var runner = new RestApiOperationRunner(new HttpClient(), authCallback, userAgent);
 
                 // Extract function arguments from context
                 var arguments = new Dictionary<string, string>();

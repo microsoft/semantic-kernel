@@ -3,7 +3,7 @@
 namespace SemanticKernel.Service.Skills.OpenAPI.Authentication;
 
 /// /// <summary>
-/// Represents the authentication headers for imported Open API Plugin Skills.
+/// Represents the authentication headers for imported OpenAPI Plugin Skills.
 /// </summary>
 public class OpenApiSkillsAuthHeaders
 {

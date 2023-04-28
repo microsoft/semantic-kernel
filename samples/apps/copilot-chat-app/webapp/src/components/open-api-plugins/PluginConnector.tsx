@@ -19,7 +19,7 @@ import { Dismiss20Regular } from '@fluentui/react-icons';
 import { FormEvent, useState } from 'react';
 import { TokenHelper } from '../../libs/auth/TokenHelper';
 import { useAppDispatch } from '../../redux/app/hooks';
-import { PluginAuthRequirements, Plugins } from '../../redux/features/plugins/PluginsState';
+import { AdditionalApiRequirements, PluginAuthRequirements, Plugins } from '../../redux/features/plugins/PluginsState';
 import { connectPlugin } from '../../redux/features/plugins/pluginsSlice';
 
 const useClasses = makeStyles({
@@ -47,10 +47,16 @@ interface PluginConnectorProps {
     icon: string;
     publisher: string;
     authRequirements: PluginAuthRequirements;
-    userConsentCallback?: () => {};
+    apiRequirements?: AdditionalApiRequirements;
 }
 
-export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, publisher, authRequirements }) => {
+export const PluginConnector: React.FC<PluginConnectorProps> = ({
+    name,
+    icon,
+    publisher,
+    authRequirements,
+    apiRequirements,
+}) => {
     const classes = useClasses();
 
     const usernameRequired = authRequirements.username;
@@ -62,6 +68,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, pu
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [accessToken, setAccessToken] = useState('');
+    const [apiRequirementsInput, setApiRequirmentsInput] = useState(apiRequirements);
 
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -78,6 +85,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, pu
                     connectPlugin({
                         plugin: name,
                         accessToken: token,
+                        apiRequirements: apiRequirementsInput,
                     }),
                 );
             } else if (oauthRequired) {
@@ -90,6 +98,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, pu
                         username: username,
                         password: password,
                         accessToken: accessToken,
+                        apiRequirements: apiRequirementsInput,
                     }),
                 );
             }
@@ -137,12 +146,17 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, pu
                         </DialogTitle>
                         <DialogContent className={classes.content}>
                             {errorMessage && <Body1 className={classes.error}>{errorMessage}</Body1>}
-                            You are about to connect to {name}. To continue, you will authorize the following:{' '}
-                            <div className={classes.scopes}>
-                                {authRequirements.scopes?.map((scope) => {
-                                    return <Text key={scope}>{scope}</Text>;
-                                })}
-                            </div>
+                            You are about to connect to {name}.
+                            {authRequirements.scopes && (
+                                <>
+                                    To continue, you will authorize the following:{' '}
+                                    <div className={classes.scopes}>
+                                        {authRequirements.scopes?.map((scope) => {
+                                            return <Text key={scope}>{scope}</Text>;
+                                        })}
+                                    </div>
+                                </>
+                            )}
                             {(usernameRequired || accessTokenRequired) && (
                                 <Body1Strong> Log in to {name} to continue</Body1Strong>
                             )}
@@ -200,6 +214,44 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({ name, icon, pu
                                         </a>
                                         .
                                     </Body1>
+                                </>
+                            )}
+                            {apiRequirements && (
+                                <>
+                                    <Body1Strong> Configuration </Body1Strong>
+                                    <Body1>Some additional information is required to enable {name}'s REST APIs.</Body1>
+                                    {Object.keys(apiRequirements).map((requirement) => {
+                                        return (
+                                            <>
+                                                <Input
+                                                    required
+                                                    type="text"
+                                                    id={'plugin-additional-info'}
+                                                    onChange={(_e, input) => {
+                                                        setApiRequirmentsInput({
+                                                            ...apiRequirementsInput,
+                                                            [requirement]: {
+                                                                ...apiRequirementsInput![requirement],
+                                                                value: input.value,
+                                                            },
+                                                        });
+                                                    }}
+                                                    placeholder={`Enter the ${requirement} for ${name}.`}
+                                                />
+                                                <Body1>
+                                                    For more details on obtaining the {requirement.toLocaleLowerCase()},{' '}
+                                                    <a
+                                                        href={apiRequirements[requirement].helpLink}
+                                                        target="_blank"
+                                                        rel="noreferrer noopener"
+                                                    >
+                                                        click here
+                                                    </a>
+                                                    .
+                                                </Body1>
+                                            </>
+                                        );
+                                    })}
                                 </>
                             )}
                         </DialogContent>

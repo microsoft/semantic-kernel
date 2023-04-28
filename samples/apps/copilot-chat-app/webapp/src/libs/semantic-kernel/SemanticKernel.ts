@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
+import { AdditionalApiRequirements, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
 import { BaseService } from '../services/BaseService';
 import { IAsk } from './model/Ask';
 import { IAskResult } from './model/AskResult';
@@ -14,6 +14,7 @@ export class SemanticKernel extends BaseService {
         enabledPlugins?: {
             headerTag: AuthHeaderTags;
             authData: string;
+            apiRequirements?: AdditionalApiRequirements;
         }[],
     ): Promise<IAskResult> => {
         const result = await this.getResponseAsync<IAskResult>(

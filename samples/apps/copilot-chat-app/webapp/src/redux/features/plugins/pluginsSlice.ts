@@ -2,46 +2,53 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Buffer } from 'buffer';
-import { EnablePluginPayload, initialState, Plugins, PluginsState } from './PluginsState';
+import { EnablePluginPayload, initialState, Plugin, Plugins, PluginsState } from './PluginsState';
 
 export const pluginsState = createSlice({
     name: 'plugins',
     initialState,
     reducers: {
         connectPlugin: (state: PluginsState, action: PayloadAction<EnablePluginPayload>) => {
+            var plugin: Plugin;
+            var authData = action.payload.accessToken;
+
             switch (action.payload.plugin) {
                 case Plugins.MsGraph:
-                    state.MsGraph.enabled = true;
-                    state.MsGraph.authData = action.payload.accessToken;
-                    return;
+                    plugin = state.MsGraph;
+                    break;
                 case Plugins.Jira:
-                    state.Jira.enabled = true;
+                    plugin = state.Jira;
                     const encodedData = Buffer.from(
                         `${action.payload.username}:${action.payload.accessToken}`,
                     ).toString('base64');
-                    state.Jira.authData = encodedData;
-                    return;
+                    authData = encodedData;
+                    break;
                 case Plugins.GitHub:
-                    state.GitHub.enabled = true;
-                    state.GitHub.authData = action.payload.accessToken;
-                    return;
+                    plugin = state.GitHub;
+                    break;
             }
+
+            plugin.enabled = true;
+            plugin.authData = authData;
+            plugin.apiRequirements = action.payload.apiRequirements;
         },
         disconnectPlugin: (state: PluginsState, action: PayloadAction<Plugins>) => {
+            var plugin: Plugin;
+
             switch (action.payload) {
                 case Plugins.MsGraph:
-                    state.MsGraph.enabled = false;
-                    state.MsGraph.authData = undefined;
-                    return;
+                    plugin = state.MsGraph;
+                    break;
                 case Plugins.Jira:
-                    state.Jira.enabled = false;
-                    state.Jira.authData = undefined;
-                    return;
+                    plugin = state.Jira;
+                    break;
                 case Plugins.GitHub:
-                    state.GitHub.enabled = false;
-                    state.GitHub.authData = undefined;
-                    return;
+                    plugin = state.GitHub;
+                    break;
             }
+
+            plugin.enabled = false;
+            plugin.authData = undefined;
         },
     },
 });

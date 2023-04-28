@@ -4,7 +4,7 @@ import GraphIcon from '../../../assets/graph-api-icon.png';
 import JiraIcon from '../../../assets/jira-icon.png';
 
 /*
- * For each Open API Spec you're supporting in the Kernel,
+ * For each OpenAPI Spec you're supporting in the Kernel,
  * add all the relevant information here.
  */
 export const enum Plugins {
@@ -29,6 +29,16 @@ export type PluginAuthRequirements = {
     helpLink?: string;
 };
 
+// additional information required to enable requests, i.e., server-url
+export type AdditionalApiRequirements = {
+    [key: string]: {
+        // key should be the property name and
+        // kebab case (property-name), required for valid request header
+        helpLink: string;
+        value?: string;
+    };
+};
+
 export type Plugin = {
     name: Plugins;
     publisher: string;
@@ -38,6 +48,7 @@ export type Plugin = {
     headerTag: AuthHeaderTags;
     icon: string; // Can be imported as shown above or direct URL
     authData?: string; // token or encoded auth header value
+    apiRequirements?: AdditionalApiRequirements;
 };
 
 export interface PluginsState {
@@ -71,6 +82,11 @@ export const initialState: PluginsState = {
         },
         icon: JiraIcon,
         headerTag: AuthHeaderTags.Jira,
+        apiRequirements: {
+            'server-url': {
+                helpLink: 'https://confluence.atlassian.com/adminjiraserver/configuring-the-base-url-938847830.html',
+            },
+        },
     },
     GitHub: {
         name: Plugins.GitHub,
@@ -93,4 +109,5 @@ export type EnablePluginPayload = {
     username?: string;
     password?: string;
     accessToken?: string;
+    apiRequirements?: AdditionalApiRequirements;
 };
