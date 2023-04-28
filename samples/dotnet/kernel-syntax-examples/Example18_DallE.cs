@@ -45,28 +45,28 @@ public static class Example18_DallE
         kernel.Config.AddOpenAIChatCompletionService("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        var chat = (OpenAIChatHistory)chatGPT.CreateNewChat(
+        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat(
             "You're chatting with a user. Instead of replying directly to the user" +
             " provide the description of an image that expresses what you want to say." +
             " The user won't see your message, they will see only the image. The system " +
             " generates an image using your description, so it's important you describe the image with details.");
 
         var msg = "Hi, I'm from Tokyo, where are you from?";
-        chat.AddUserMessage(msg);
+        chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        string reply = await chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings());
-        chat.AddAssistantMessage(reply);
+        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        chatHistory.AddAssistantMessage(reply);
         image = await dallE.GenerateImageAsync(reply, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
         msg = "Oh, wow. Not sure where that is, could you provide more details?";
-        chat.AddUserMessage(msg);
+        chatHistory.AddUserMessage(msg);
         Console.WriteLine("User: " + msg);
 
-        reply = await chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings());
-        chat.AddAssistantMessage(reply);
+        reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        chatHistory.AddAssistantMessage(reply);
         image = await dallE.GenerateImageAsync(reply, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);

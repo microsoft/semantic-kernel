@@ -17,8 +17,10 @@ const log = debug(Constants.debug.root).extend('chat-room');
 
 const useClasses = makeStyles({
     root: {
-        height: '100%',
-        display: 'grid',
+        height: '94.5%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
         gridTemplateColumns: '1fr',
         gridTemplateRows: '1fr auto',
         gridTemplateAreas: "'history' 'input'",

@@ -85,8 +85,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord,
-                $"Failed to convert MemoryRecord to QdrantVectorRecord");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord);
         }
 
         try
@@ -100,7 +99,6 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
                 ex);
         }
 
@@ -125,7 +123,6 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
                 ex);
         }
 
@@ -157,14 +154,12 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToGetVectorData,
-                $"Failed to get vector data from Qdrant: {ex.Message}",
                 ex);
         }
         catch (MemoryException ex)
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToConvertQdrantVectorRecordToMemoryRecord,
-                $"Failed deserialize Qdrant response to Memory Record: {ex.Message}",
                 ex);
         }
     }
@@ -216,14 +211,12 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToGetVectorData,
-                $"Failed to get vector data from Qdrant: {ex.Message}",
                 ex);
         }
         catch (MemoryException ex)
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToConvertQdrantVectorRecordToMemoryRecord,
-                $"Failed deserialize Qdrant response to Memory Record: {ex.Message}",
                 ex);
         }
     }
@@ -262,7 +255,6 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Qdrant {ex.Message}",
                 ex);
         }
     }
@@ -291,7 +283,6 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Qdrant {ex.Message}",
                 ex);
         }
     }
@@ -314,7 +305,6 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Error in batch removing data from Qdrant {ex.Message}",
                 ex);
         }
     }
@@ -328,13 +318,14 @@ public class QdrantMemoryStore : IMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        IAsyncEnumerator<(QdrantVectorRecord, double)> enumerator = this._qdrantClient.FindNearestInCollectionAsync(
-            collectionName: collectionName,
-            target: embedding.Vector,
-            threshold: minRelevanceScore,
-            top: limit,
-            withVectors: withEmbeddings,
-            cancel: cancel)
+        IAsyncEnumerator<(QdrantVectorRecord, double)> enumerator = this._qdrantClient
+            .FindNearestInCollectionAsync(
+                collectionName: collectionName,
+                target: embedding.Vector,
+                threshold: minRelevanceScore,
+                top: limit,
+                withVectors: withEmbeddings,
+                cancel: cancel)
             .GetAsyncEnumerator(cancel);
 
         // Workaround for https://github.com/dotnet/csharplang/issues/2949: Yielding in catch blocks not supported in async iterators
@@ -356,7 +347,8 @@ public class QdrantMemoryStore : IMemoryStore
             }
             catch (HttpRequestException ex) when (ex.Message.Contains("404"))
             {
-                this._logger?.LogWarning("NotFound when calling {0}::FindNearestInCollectionAsync - the collection '{1}' may not exist yet.", nameof(QdrantMemoryStore), collectionName);
+                this._logger?.LogWarning("NotFound when calling {0}::FindNearestInCollectionAsync - the collection '{1}' may not exist yet",
+                    nameof(QdrantMemoryStore), collectionName);
                 hasResult = false;
             }
 
@@ -433,8 +425,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord,
-                $"Failed to convert MemoryRecord to QdrantVectorRecord");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord);
         }
 
         return vectorData;

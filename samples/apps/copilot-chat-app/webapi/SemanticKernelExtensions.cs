@@ -8,8 +8,6 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -64,13 +62,26 @@ internal static class SemanticKernelExtensions
             }
         });
 
-        services.AddScoped<ISemanticTextMemory>(serviceProvider => new SemanticTextMemory(
+        services.AddScoped<ISemanticTextMemory>(serviceProvider
+            => new SemanticTextMemory(
                 serviceProvider.GetRequiredService<IMemoryStore>(),
                 serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
                     .ToTextEmbeddingsService(serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>())));
 
-        // Add the planner factory.
-        services.AddPlannerFactory();
+        // Add the planner.
+        services.AddScoped<CopilotChatPlanner>(sp =>
+        {
+            // Create a kernel for the planner with the same contexts as the chat's kernel except with no skills.
+            // This allows the planner to use only the skills that are available at call time.
+            IKernel chatKernel = sp.GetRequiredService<IKernel>();
+            IKernel plannerKernel = new Kernel(
+                new SkillCollection(),
+                chatKernel.PromptTemplateEngine,
+                chatKernel.Memory,
+                chatKernel.Config,
+                sp.GetRequiredService<ILogger<CopilotChatPlanner>>());
+            return new CopilotChatPlanner(plannerKernel, sp.GetRequiredService<IOptions<PlannerOptions>>());
+        });
 
         // Add the Semantic Kernel
         services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
@@ -79,39 +90,6 @@ internal static class SemanticKernelExtensions
             .AddCompletionBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>())
             .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()));
         services.AddScoped<IKernel, Kernel>();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Add the planner factory.
-    /// </summary>
-    internal static IServiceCollection AddPlannerFactory(this IServiceCollection services)
-    {
-        // TODO Replace sequential planner with a custom CopilotChat planner tuned to chat scenarios.
-
-        services.AddSingleton<SequentialPlannerConfig>(sp => sp.GetRequiredService<IOptions<SequentialPlannerOptions>>().Value.ToSequentialPlannerConfig());
-        services.AddScoped<PlannerFactoryAsync>(sp => async (IKernel kernel) =>
-        {
-            // Create a kernel for the planner with the same contexts as the chat's kernel but with only skills we want available to the planner.
-            IKernel plannerKernel = new Kernel(new SkillCollection(), kernel.PromptTemplateEngine, kernel.Memory, kernel.Config, kernel.Log);
-
-            //
-            // Add skills to the planner here.
-            //
-            await plannerKernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json")); // Klarna
-            plannerKernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "text");
-            plannerKernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TimeSkill(), "time");
-            plannerKernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.MathSkill(), "math");
-
-            SequentialPlannerOptions plannerOptions = sp.GetRequiredService<IOptions<SequentialPlannerOptions>>().Value;
-            if (!string.IsNullOrWhiteSpace(plannerOptions.SemanticSkillsDirectory))
-            {
-                plannerKernel.RegisterSemanticSkills(plannerOptions.SemanticSkillsDirectory, sp.GetRequiredService<ILogger>());
-            }
-
-            return new SequentialPlanner(plannerKernel, plannerOptions.ToSequentialPlannerConfig());
-        });
 
         return services;
     }
