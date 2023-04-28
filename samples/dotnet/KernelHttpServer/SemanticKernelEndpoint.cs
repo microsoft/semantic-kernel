@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning.Planners;
+using Microsoft.SemanticKernel.Planning;
 
 namespace KernelHttpServer;
 
@@ -80,7 +80,7 @@ public class SemanticKernelEndpoint
         HttpRequestData req,
         FunctionContext executionContext)
     {
-        var ask = await JsonSerializer.DeserializeAsync<Ask>(req.Body, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var ask = await JsonSerializer.DeserializeAsync<Ask>(req.Body, s_jsonOptions);
 
         if (ask == null)
         {

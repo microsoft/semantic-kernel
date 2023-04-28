@@ -56,8 +56,8 @@ public class VolatileMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
-        Verify.NotNull(record, "Memory record cannot be NULL");
-        Verify.NotNull(record.Metadata.Id, "Memory metadata ID cannot be NULL");
+        Verify.NotNull(record);
+        Verify.NotNull(record.Metadata.Id);
 
         if (this.TryGetCollection(collectionName, out var collectionDict, create: false))
         {
@@ -83,7 +83,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         foreach (var r in records)
         {
-            yield return await this.UpsertAsync(collectionName, r, cancel);
+            yield return await this.UpsertAsync(collectionName, r, cancel).ConfigureAwait(false);
         }
     }
 
@@ -112,7 +112,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         foreach (var key in keys)
         {
-            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel);
+            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel).ConfigureAwait(false);
 
             if (record != null)
             {
@@ -200,7 +200,7 @@ public class VolatileMemoryStore : IMemoryStore
             limit: 1,
             minRelevanceScore: minRelevanceScore,
             withEmbeddings: withEmbedding,
-            cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
+            cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel).ConfigureAwait(false);
     }
 
     #region protected ================================================================================

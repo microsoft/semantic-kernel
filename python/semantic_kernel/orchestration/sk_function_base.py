@@ -4,8 +4,12 @@ from abc import ABC, abstractmethod
 from logging import Logger
 from typing import TYPE_CHECKING, Callable, Optional
 
-from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.complete_request_settings import (
+    CompleteRequestSettings,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -80,7 +84,7 @@ class SKFunctionBase(ABC):
     @property
     @abstractmethod
     def request_settings(self) -> CompleteRequestSettings:
-        """AI backend settings"""
+        """AI service settings"""
         pass
 
     @abstractmethod
@@ -165,16 +169,16 @@ class SKFunctionBase(ABC):
         pass
 
     @abstractmethod
-    def set_ai_backend(
-        self, backend_factory: Callable[[], TextCompletionClientBase]
+    def set_ai_service(
+        self, service_factory: Callable[[], TextCompletionClientBase]
     ) -> "SKFunctionBase":
         """
-        Sets the AI backend used by the semantic function, passing in a factory
+        Sets the AI service used by the semantic function, passing in a factory
         method. The factory allows us to lazily instantiate the client and to
         properly handle its disposal
 
         Arguments:
-            backend_factory -- AI backend factory
+            service_factory -- AI service factory
 
         Returns:
             SKFunctionBase -- The function instance

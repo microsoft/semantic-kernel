@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 /// <summary>
 /// Parser for OpenAPI documents.
 /// </summary>
-internal class OpenApiDocumentParser : IOpenApiDocumentParser
+internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 {
     /// <inheritdoc/>
     public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, CancellationToken cancellationToken = default)
@@ -55,7 +55,7 @@ internal class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <returns>OpenAPI document with downgraded document version.</returns>
     private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
     {
-        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken);
+        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false);
         if (jsonObject == null)
         {
             //The document is malformed.

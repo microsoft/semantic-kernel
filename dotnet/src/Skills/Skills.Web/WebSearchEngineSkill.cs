@@ -22,7 +22,7 @@ public class WebSearchEngineSkill
     [SKFunctionInput(Description = "Text to search for")]
     public async Task<string> SearchAsync(string query, SKContext context)
     {
-        string result = await this._connector.SearchAsync(query, context.CancellationToken);
+        string result = await this._connector.SearchAsync(query, context.CancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(result))
         {
             context.Fail("Failed to get a response from the web search engine.");

@@ -15,8 +15,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.KernelExtensions;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Document.FileSystem;

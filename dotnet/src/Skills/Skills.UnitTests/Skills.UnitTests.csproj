@@ -4,10 +4,10 @@
     <AssemblyName>SemanticKernel.Skills.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Skills.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
+    <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +29,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
   <ItemGroup>

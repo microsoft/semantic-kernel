@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.KernelExtensions;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SemanticKernel.IntegrationTests;
 
@@ -14,20 +13,21 @@ internal static class TestHelpers
 {
     internal static void ImportSampleSkills(IKernel target)
     {
-        var chatSkill = GetSkill("ChatSkill", target);
-        var summarizeSkill = GetSkill("SummarizeSkill", target);
-        var writerSkill = GetSkill("WriterSkill", target);
-        var calendarSkill = GetSkill("CalendarSkill", target);
-        var childrensBookSkill = GetSkill("ChildrensBookSkill", target);
-        var classificationSkill = GetSkill("ClassificationSkill", target);
-        var codingSkill = GetSkill("CodingSkill", target);
-        var funSkill = GetSkill("FunSkill", target);
-        var intentDetectionSkill = GetSkill("IntentDetectionSkill", target);
-        var miscSkill = GetSkill("MiscSkill", target);
-        var qaSkill = GetSkill("QASkill", target);
+        var chatSkill = GetSkills(target,
+            "ChatSkill",
+            "SummarizeSkill",
+            "WriterSkill",
+            "CalendarSkill",
+            "ChildrensBookSkill",
+            "ClassificationSkill",
+            "CodingSkill",
+            "FunSkill",
+            "IntentDetectionSkill",
+            "MiscSkill",
+            "QASkill");
     }
 
-    internal static IDictionary<string, ISKFunction> GetSkill(string skillName, IKernel target)
+    internal static IDictionary<string, ISKFunction> GetSkills(IKernel target, params string[] skillNames)
     {
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
@@ -37,7 +37,7 @@ internal static class TestHelpers
 
         string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/skills"));
 
-        IDictionary<string, ISKFunction> skill = target.ImportSemanticSkillFromDirectory(skillParentDirectory, skillName);
+        IDictionary<string, ISKFunction> skill = target.ImportSemanticSkillFromDirectory(skillParentDirectory, skillNames);
         return skill;
     }
 }

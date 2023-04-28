@@ -33,7 +33,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
     public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
+        Verify.NotNull(endpoint);
         Verify.NotEmpty(model, "Model cannot be empty.");
 
         this._endpoint = endpoint;
@@ -52,7 +52,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// <param name="model">Model to use for service API call.</param>
     public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
+        Verify.NotNull(endpoint);
         Verify.NotEmpty(model, "Model cannot be empty.");
 
         this._endpoint = endpoint;
@@ -67,7 +67,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// <inheritdoc/>
     public async Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken = default)
     {
-        return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken);
+        return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -107,7 +107,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
 
             var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
 
-            return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding.ToArray())).ToList()!;
+            return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding!)).ToList()!;
         }
         catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {

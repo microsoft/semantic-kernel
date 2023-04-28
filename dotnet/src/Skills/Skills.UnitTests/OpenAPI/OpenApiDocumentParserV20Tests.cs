@@ -115,17 +115,17 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.Equal(RestApiOperationParameterLocation.Path, serverUrlParameter.Location);
         Assert.Equal("https://my-key-vault.vault.azure.net", serverUrlParameter.DefaultValue);
 
-        var valueParameter = parameters.Single(p => p.Name == "value"); //'value' body parameter.
-        Assert.True(valueParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterLocation.Body, valueParameter.Location);
-        Assert.Null(valueParameter.DefaultValue);
-        Assert.Equal("The value of the secret.", valueParameter.Description);
+        var payloadParameter = parameters.Single(p => p.Name == "payload"); //'payload' artificial parameter.
+        Assert.True(payloadParameter.IsRequired);
+        Assert.Equal(RestApiOperationParameterLocation.Body, payloadParameter.Location);
+        Assert.Null(payloadParameter.DefaultValue);
+        Assert.Equal("REST API request body.", payloadParameter.Description);
 
-        var enabledParameter = parameters.Single(p => p.Name == "enabled"); //'attributes.enabled' body parameter.
-        Assert.False(enabledParameter.IsRequired);
-        Assert.Equal(RestApiOperationParameterLocation.Body, enabledParameter.Location);
-        Assert.Null(enabledParameter.DefaultValue);
-        Assert.Equal("Determines whether the object is enabled.", enabledParameter.Description);
+        var contentTypeParameter = parameters.Single(p => p.Name == "content-type"); //'content-type' artificial parameter.
+        Assert.False(contentTypeParameter.IsRequired);
+        Assert.Equal(RestApiOperationParameterLocation.Body, contentTypeParameter.Location);
+        Assert.Null(contentTypeParameter.DefaultValue);
+        Assert.Equal("Content type of REST API request body.", contentTypeParameter.Description);
     }
 
     [Fact]

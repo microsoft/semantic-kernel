@@ -73,7 +73,7 @@ public class DocumentSkill
     public async Task<string> ReadTextAsync(string filePath, SKContext context)
     {
         this._logger.LogInformation("Reading text from {0}", filePath);
-        using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(filePath, context.CancellationToken);
+        using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
         return this._documentConnector.ReadText(stream);
     }
 
@@ -92,16 +92,16 @@ public class DocumentSkill
         }
 
         // If the document already exists, open it. If not, create it.
-        if (await this._fileSystemConnector.FileExistsAsync(filePath))
+        if (await this._fileSystemConnector.FileExistsAsync(filePath).ConfigureAwait(false))
         {
             this._logger.LogInformation("Writing text to file {0}", filePath);
-            using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(filePath, context.CancellationToken);
+            using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
             this._documentConnector.AppendText(stream, text);
         }
         else
         {
             this._logger.LogInformation("File does not exist. Creating file at {0}", filePath);
-            using Stream stream = await this._fileSystemConnector.CreateFileAsync(filePath);
+            using Stream stream = await this._fileSystemConnector.CreateFileAsync(filePath).ConfigureAwait(false);
             this._documentConnector.Initialize(stream);
 
             this._logger.LogInformation("Writing text to {0}", filePath);
