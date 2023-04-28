@@ -91,7 +91,7 @@ public class ChatHistoryController : ControllerBase
     /// </summary>
     /// <param name="userId">The user id.</param>
     [HttpGet]
-    [Route("chat/getAllChats/{userId:regex([[0-9]]+\\.[[0-9]]+)}")]
+    [Route("chat/getAllChats/{userId:regex(([[a-z0-9]]+-)+[[a-z0-9]]+\\.([[a-z0-9]]+-)+[[a-z0-9]]+)}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
