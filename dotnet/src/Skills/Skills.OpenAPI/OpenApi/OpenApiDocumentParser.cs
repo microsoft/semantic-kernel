@@ -399,13 +399,13 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         foreach (string token in tokens)
         {
-            // Removes all characters that are not ASCII letters, digits, and underscores (SKFunction name requirement).
+            // Removes all characters that are not ASCII letters, digits, and underscores.
             string formattedToken = Regex.Replace(token, "[^0-9A-Za-z_]", "");
             result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
         }
 
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine("Operation name {0} converted to \"{1}\" to comply to SK Function name requirements.", operationId, result);
+        Console.WriteLine("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{1}\" when invoking function.", operationId, result);
         Console.ResetColor();
 
         return result;
