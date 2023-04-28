@@ -10,10 +10,10 @@ import e2e_text_completion
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(raises=AssertionError, reason="OpenAI may throtle requests, preventing this test from passing")
-async def test_oai_text_service_with_skills(use_env_vars: bool):
+async def test_oai_text_service_with_skills():
     kernel = sk.Kernel()
 
-    if use_env_vars:
+    if "Python_Integration_Tests" in os.environ:
         api_key = os.environ["OpenAI__ApiKey"]
         org_id = None
     else:
@@ -27,4 +27,4 @@ async def test_oai_text_service_with_skills(use_env_vars: bool):
     await e2e_text_completion.summarize_function_test(kernel)
 
 if __name__ == "__main__":
-    asyncio.run(test_oai_text_service_with_skills("--use-env-vars" in sys.argv))
+    asyncio.run(test_oai_text_service_with_skills())

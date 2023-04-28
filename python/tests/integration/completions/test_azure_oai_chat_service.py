@@ -10,10 +10,10 @@ import e2e_text_completion
 
 
 @pytest.mark.asyncio
-async def test_azure_chat_completion_with_skills(use_env_vars: bool):
+async def test_azure_chat_completion_with_skills():
     kernel = sk.Kernel()
 
-    if use_env_vars:
+    if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
         api_key = os.environ["AzureOpenAI__ApiKey"]
         endpoint = os.environ["AzureOpenAI__Endpoint"]        
@@ -31,4 +31,4 @@ async def test_azure_chat_completion_with_skills(use_env_vars: bool):
     await e2e_text_completion.summarize_function_test(kernel)
 
 if __name__ == "__main__":
-    asyncio.run(test_azure_chat_completion_with_skills("--use-env-vars" in sys.argv))
+    asyncio.run(test_azure_chat_completion_with_skills())

@@ -7,7 +7,7 @@ import semantic_kernel as sk
 import semantic_kernel.connectors.ai.hugging_face as sk_hf
 
 @pytest.mark.asyncio
-async def test_hf_embeddings_with_memories(use_env_vars: bool):
+async def test_hf_embeddings_with_memories():
     kernel = sk.Kernel()
 
     # Configure LLM service
