@@ -47,7 +47,6 @@ public sealed class PlanTests
         Assert.Equal("Some input", result.Result);
     }
 
-
     [Fact]
     public async Task CanExecutePlanWithContextAsync()
     {
