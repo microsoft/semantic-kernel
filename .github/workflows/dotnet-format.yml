@@ -26,14 +26,45 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v35
+        with:
+          files: |
+            **/*.cs
+            **/*.csproj
 
-      - name: Run dotnet format
-        shell: bash
+      - name: No C# files changed
+        id: no-csharp
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: echo "No C# files changed"
+
+      # This step will loop over the changed files and find the nearest .csproj file for each one, then store the unique csproj files in a variable
+      - name: Find csproj files
+        id: find-csproj
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: |
-          allProjectFiles=$(find ./ -type f -name "*.csproj" | tr '\n' ' ');
-          if [ $? -ne 0 ]; then exit 1; fi
-          echo "$allProjectFiles"
+          csproj_files=()
+          for file in ${{ steps.changed-files.outputs.all_modified_files }}; do
+            dir=$(dirname $file)
+            while [[ $dir != "." && $dir != "/" ]]; do
+              if [[ -f "$dir/*.csproj" ]]; then
+                csproj_files+=("$dir/*.csproj")
+                break
+              fi
+              dir=$(dirname $dir)
+            done
+          done
+          csproj_files=($(printf "%s\n" "${csproj_files[@]}" | sort -u))
+          echo "Found ${#csproj_files[@]} unique csproj files: ${csproj_files[*]}"
+          echo "::set-output name=csproj_files::${csproj_files[*]}"
 
-          for file in $allProjectFiles; do
-              dotnet format $file --verify-no-changes --verbosity detailed
+      # This step will run dotnet format on each of the unique csproj files and fail if any changes are made
+      - name: Run dotnet format
+        if: steps.changed-files.any_changed == 'true'
+        run: |
+          for csproj in ${{ steps.find-csproj.outputs.csproj_files }}; do
+            echo "Running dotnet format on $csproj"
+            dotnet format $csproj --verify-no-changes --verbosity detailed
           done
