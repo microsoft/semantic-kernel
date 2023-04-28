@@ -14,14 +14,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '6.0.x'
-
-      - name: Install dotnet-format tool
-        run: dotnet tool install -g dotnet-format
-
       - name: Check out code
         uses: actions/checkout@v3
         with:
@@ -32,8 +24,7 @@ jobs:
         uses: tj-actions/changed-files@v35
         with:
           files: |
-            **/*.cs
-            **/*.csproj
+            **/*.{cs,csproj}
 
       - name: No C# files changed
         id: no-csharp
@@ -46,7 +37,8 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           csproj_files=()
-          for file in ${{ steps.changed-files.outputs.all_modified_files }}; do
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
             dir=$(dirname $file)
             while [[ $dir != "." && $dir != "/" ]]; do
               if [[ -f "$dir/*.csproj" ]]; then
@@ -58,7 +50,17 @@ jobs:
           done
           csproj_files=($(printf "%s\n" "${csproj_files[@]}" | sort -u))
           echo "Found ${#csproj_files[@]} unique csproj files: ${csproj_files[*]}"
-          echo "::set-output name=csproj_files::${csproj_files[*]}"
+          echo "{csproj_files}={${csproj_files[*]}}" >> $GITHUB_OUTPUT
+
+      - name: Setup .NET Core
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Install dotnet-format tool
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: dotnet tool install -g dotnet-format
 
       # This step will run dotnet format on each of the unique csproj files and fail if any changes are made
       - name: Run dotnet format
