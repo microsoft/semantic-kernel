@@ -22,9 +22,6 @@ jobs:
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35
-        with:
-          files: |
-            **/*.{cs,csproj}
 
       - name: No C# files changed
         id: no-csharp
