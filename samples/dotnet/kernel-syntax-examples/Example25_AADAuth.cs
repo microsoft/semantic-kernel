@@ -49,13 +49,13 @@ public static class Example25_AADAuth
             new DefaultAzureCredential(authOptions));
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        var chat = (OpenAIChatHistory)chatGPT.CreateNewChat();
+        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat();
 
         // User message
-        chat.AddUserMessage("Tell me a joke about hourglasses");
+        chatHistory.AddUserMessage("Tell me a joke about hourglasses");
 
         // Bot reply
-        string reply = await chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings());
+        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
         Console.WriteLine(reply);
 
         /* Output: Why did the hourglass go to the doctor? Because it was feeling a little run down! */
