@@ -29,10 +29,7 @@ internal sealed class UpsertRequest
     {
         UpsertRequest request = new();
 
-        foreach (PineconeDocument? vectorRecord in vectorRecords)
-        {
-            request.Vectors.Add(vectorRecord);
-        }
+        request.Vectors.AddRange(vectorRecords);
 
         return request;
     }
