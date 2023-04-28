@@ -47,13 +47,7 @@ jobs:
           done
           csproj_files=($(printf "%s\n" "${csproj_files[@]}" | sort -u))
           echo "Found ${#csproj_files[@]} unique csproj files: ${csproj_files[*]}"
-          echo "{csproj_files}={${csproj_files[*]}}" >> $GITHUB_OUTPUT
-
-      - name: Setup .NET Core
-        if: steps.changed-files.outputs.added_modified != ''
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '6.0.x'
+          echo "::set-output name=csproj_files::${csproj_files[*]}"
 
       - name: Install dotnet-format tool
         if: steps.changed-files.outputs.added_modified != ''
