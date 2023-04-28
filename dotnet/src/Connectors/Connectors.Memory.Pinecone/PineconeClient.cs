@@ -62,7 +62,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             this._logger.LogWarning("Index is not ready");
             yield break;
         }
-        //
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
         FetchRequest fetchRequest = FetchRequest.FetchVectors(ids)
