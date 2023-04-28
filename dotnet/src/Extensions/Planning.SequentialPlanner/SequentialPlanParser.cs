@@ -3,7 +3,6 @@
 using System;
 using System.Xml;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
