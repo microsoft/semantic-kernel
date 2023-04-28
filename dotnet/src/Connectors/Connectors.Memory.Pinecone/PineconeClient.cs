@@ -17,6 +17,9 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
+/// <summary>
+///  A client for the Pinecone API
+/// </summary>
 internal sealed class PineconeClient : IPineconeClient, IDisposable
 {
 

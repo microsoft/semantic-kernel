@@ -113,10 +113,14 @@ public class PineconeDocument
             return string.Empty;
         }
 
-        Dictionary<string, object> distinctMetaData = this.Metadata
-            .Where(x => x.Key != "text" && x.Key != "document_Id" && x.Key != "source_Id" && x.Key != "created_at")
+        var propertiesToSkip = new HashSet<string>() { "text", "document_Id", "source_Id", "created_at" };
+
+        var distinctMetadata = this.Metadata
+            .Where(x => !propertiesToSkip.Contains(x.Key))
             .ToDictionary(x => x.Key, x => x.Value);
-        return JsonSerializer.Serialize(distinctMetaData);
+
+        return JsonSerializer.Serialize(distinctMetadata);
+        
     }
 
     /// <summary>
