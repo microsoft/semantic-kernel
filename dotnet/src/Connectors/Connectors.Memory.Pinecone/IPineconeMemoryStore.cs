@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 
-
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
 /// <summary>

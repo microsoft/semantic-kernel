@@ -5,14 +5,15 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
-#pragma warning disable CA1008 // Add a member to the enum with a zero value
-
 /// <summary>
 /// Defines Environment
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum PineconeEnvironment
 {
+    
+    None = 0,
+    
     /// <summary>
     /// Enum UsWest1Gcp for value: us-west1-gcp
     /// </summary>

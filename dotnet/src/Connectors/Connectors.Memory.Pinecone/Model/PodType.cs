@@ -9,14 +9,15 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
-#pragma warning disable CA1008 // Add a member to the enum with a zero value
-
 /// <summary>
 /// The pod type
 /// </summary>
 [JsonConverter(typeof(PodTypeJsonConverter))]
 public enum PodType
 {
+    
+    None = 0,
+    
     /// <summary>
     /// Enum S1X1 for value: s1.x1
     /// </summary>

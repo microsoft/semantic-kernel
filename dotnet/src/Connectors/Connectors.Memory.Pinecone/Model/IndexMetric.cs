@@ -5,7 +5,6 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
-#pragma warning disable CA1008 // Add a member to the enum with a zero value
 /// <summary>
 /// The vector similarity metric of the index
 /// </summary>
@@ -13,6 +12,9 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum IndexMetric
 {
+    
+    None = 0,
+    
     /// <summary>
     /// Enum Euclidean for value: euclidean
     /// </summary>
