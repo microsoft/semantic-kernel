@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// Deletes an index and all its data.
 /// See https://docs.pinecone.io/reference/delete_index
 /// </summary>
-internal class DeleteIndexRequest
+internal sealed class DeleteIndexRequest
 {
     public static DeleteIndexRequest DeleteIndex(string indexName)
     {

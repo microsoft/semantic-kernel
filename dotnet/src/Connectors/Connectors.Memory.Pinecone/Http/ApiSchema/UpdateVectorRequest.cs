@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// If a set_metadata is included, the values of the fields specified in it will be added or overwrite the previous value.
 /// See https://docs.pinecone.io/reference/update
 /// </summary>
-internal class UpdateVectorRequest
+internal sealed class UpdateVectorRequest
 {
 
     /// <summary>

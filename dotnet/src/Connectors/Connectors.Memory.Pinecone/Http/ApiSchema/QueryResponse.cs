@@ -5,11 +5,13 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
+#pragma warning disable CA1812 // remove class never instantiated (used by System.Text.Json)
+
 /// <summary>
 /// QueryResponse
 /// See https://docs.pinecone.io/reference/query
 /// </summary>
-internal class QueryResponse
+internal sealed class QueryResponse
 {
 
     /// <summary>

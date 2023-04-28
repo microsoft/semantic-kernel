@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// Get information about an index.
 /// See https://docs.pinecone.io/reference/describe_index
 /// </summary>
-internal class DescribeIndexRequest
+internal sealed class DescribeIndexRequest
 {
     /// <summary>
     /// The unique name of an index.

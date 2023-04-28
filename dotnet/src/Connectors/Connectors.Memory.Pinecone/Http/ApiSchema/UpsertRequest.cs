@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// UpsertRequest
 /// See https://docs.pinecone.io/reference/upsert
 /// </summary>
-internal class UpsertRequest
+internal sealed class UpsertRequest
 {
 
     /// <summary>

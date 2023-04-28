@@ -4,11 +4,13 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
+#pragma warning disable CA1812 // remove class never instantiated (used by System.Text.Json)
+
 /// <summary>
 /// UpsertResponse
 /// See https://docs.pinecone.io/reference/upsert
 /// </summary>
-internal class UpsertResponse
+internal sealed class UpsertResponse
 {
 
     /// <summary>

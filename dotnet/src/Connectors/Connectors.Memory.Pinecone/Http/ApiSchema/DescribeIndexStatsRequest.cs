@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// DescribeIndexStatsRequest
 /// See https://docs.pinecone.io/reference/describe_index_stats_post
 /// </summary>
-internal class DescribeIndexStatsRequest
+internal sealed class DescribeIndexStatsRequest
 {
     /// <summary>
     /// If this parameter is present, the operation only affects vectors that satisfy the filter. See https://www.pinecone.io/docs/metadata-filtering/.

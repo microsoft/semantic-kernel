@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// QueryRequest
 /// See https://docs.pinecone.io/reference/query
 /// </summary>
-internal class QueryRequest
+internal sealed class QueryRequest
 {
 
     /// <summary>
