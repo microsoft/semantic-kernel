@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -288,7 +289,10 @@ public sealed class Plan : ISKFunction
     public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
         CancellationToken? cancel = null)
     {
-        context ??= new SKContext(new ContextVariables(input), null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
+        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
+
+        context.Variables.Update(input);
+
         return this.InvokeAsync(context, settings, log, cancel);
     }
 
@@ -392,7 +396,6 @@ public sealed class Plan : ISKFunction
         {
             if (context.IsFunctionRegistered(plan.SkillName, plan.Name, out var skillFunction))
             {
-                Verify.NotNull(skillFunction, nameof(skillFunction));
                 plan.SetFunction(skillFunction);
             }
         }

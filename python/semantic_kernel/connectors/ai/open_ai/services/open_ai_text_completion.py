@@ -54,7 +54,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
 
         return openai
 
-    async def complete_simple_async(
+    async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> str:
         """
@@ -83,14 +83,14 @@ class OpenAITextCompletion(TextCompletionClientBase):
         if request_settings.number_of_responses != 1:
             raise AIException(
                 AIException.ErrorCodes.InvalidRequest,
-                "complete_simple_async only supports a single completion, "
+                "complete_async only supports a single completion, "
                 f"but {request_settings.number_of_responses} were requested",
             )
 
         if request_settings.logprobs != 0:
             raise AIException(
                 AIException.ErrorCodes.InvalidRequest,
-                "complete_simple_async does not support logprobs, "
+                "complete_async does not support logprobs, "
                 f"but logprobs={request_settings.logprobs} was requested",
             )
 

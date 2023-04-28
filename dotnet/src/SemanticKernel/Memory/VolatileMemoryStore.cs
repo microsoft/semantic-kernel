@@ -56,8 +56,8 @@ public class VolatileMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
-        Verify.NotNull(record, "Memory record cannot be NULL");
-        Verify.NotNull(record.Metadata.Id, "Memory metadata ID cannot be NULL");
+        Verify.NotNull(record);
+        Verify.NotNull(record.Metadata.Id);
 
         if (this.TryGetCollection(collectionName, out var collectionDict, create: false))
         {
