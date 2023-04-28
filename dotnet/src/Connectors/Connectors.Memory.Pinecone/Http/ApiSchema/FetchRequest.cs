@@ -48,8 +48,9 @@ internal sealed class FetchRequest
         {
             path += $"&namespace={this.Namespace}";
         }
-
-        return HttpRequest.CreateGetRequest(path);
+        HttpRequestMessage request = HttpRequest.CreateGetRequest(path);
+        request.Headers.Add("accept", "application/json");
+        return request;
     }
 
     #region private ================================================================================

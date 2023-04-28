@@ -87,6 +87,8 @@ internal sealed class DeleteRequest
         HttpRequestMessage? request = HttpRequest.CreatePostRequest(
             "/vectors/delete",
             this);
+        
+        request.Headers.Add("accept", "application/json");
 
         return request;
     }

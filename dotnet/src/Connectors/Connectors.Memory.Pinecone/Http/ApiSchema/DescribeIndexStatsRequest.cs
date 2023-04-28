@@ -32,10 +32,13 @@ internal sealed class DescribeIndexStatsRequest
 
     public HttpRequestMessage Build()
     {
-        return this.Filter == null
+        HttpRequestMessage request = this.Filter == null
             ? HttpRequest.CreatePostRequest("/describe_index_stats")
             : HttpRequest
                 .CreatePostRequest("/describe_index_stats", this);
+        
+        request.Headers.Add("accept", "application/json");
+        return request;
     }
 
     #region private ================================================================================

@@ -46,7 +46,11 @@ internal sealed class ConfigureIndexRequest
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreatePatchRequest($"/database/{this.IndexName}", this);
+        HttpRequestMessage? request = HttpRequest.CreatePatchRequest(
+            $"/databases/{this.IndexName}", this);
+
+        request.Headers.Add("accept", "text/plain");
+        return request;
     }
 
     #region private ================================================================================

@@ -42,7 +42,9 @@ internal sealed class UpsertRequest
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreatePostRequest("/vectors/upsert", this);
+        HttpRequestMessage request = HttpRequest.CreatePostRequest("/vectors/upsert", this);
+        request.Headers.Add("accept", "application/json");
+        return request;
     }
 
     #region private ================================================================================

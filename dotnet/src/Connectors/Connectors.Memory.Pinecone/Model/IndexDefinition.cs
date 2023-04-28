@@ -122,6 +122,7 @@ public class IndexDefinition
     public HttpRequestMessage Build()
     {
         HttpRequestMessage? request = HttpRequest.CreatePostRequest("/databases", this);
+        request.Headers.Add("accept", "text/plain");
         return request;
     }
 

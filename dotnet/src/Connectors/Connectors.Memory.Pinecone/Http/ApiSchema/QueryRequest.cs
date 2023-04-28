@@ -121,6 +121,8 @@ internal sealed class QueryRequest
             "/query",
             this);
 
+        request.Headers.Add("accept", "application/json");
+        
         return request;
     }
 

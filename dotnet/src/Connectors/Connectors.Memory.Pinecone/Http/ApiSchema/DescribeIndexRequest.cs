@@ -24,6 +24,8 @@ internal sealed class DescribeIndexRequest
     {
         HttpRequestMessage? request = HttpRequest.CreateGetRequest(
             $"/databases/{this.IndexName}");
+        
+        request.Headers.Add("accept", "application/json");
 
         return request;
     }

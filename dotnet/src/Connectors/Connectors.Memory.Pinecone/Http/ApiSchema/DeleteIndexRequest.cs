@@ -20,6 +20,8 @@ internal sealed class DeleteIndexRequest
         HttpRequestMessage request = HttpRequest.CreateDeleteRequest(
             $"/databases/{this._indexName}");
 
+        request.Headers.Add("accept", "text/plain");
+
         return request;
     }
 
