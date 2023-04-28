@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ public static class Example28_Pinecone
                 c.AddOpenAITextCompletionService("davinci", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
                 c.AddOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
             })
-            .WithMemoryStorage(memoryStore)
+            .WithMemoryStorage(memoryStore ?? throw new InvalidOperationException())
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");
