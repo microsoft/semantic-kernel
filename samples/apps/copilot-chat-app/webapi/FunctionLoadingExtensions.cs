@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Skills;
@@ -43,6 +42,8 @@ internal static class FunctionLoadingExtensions
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
         PromptSettings promptSettings,
+        CopilotChatPlanner planner,
+        PlannerOptions plannerOptions,
         DocumentMemoryOptions documentMemoryOptions,
         ILogger logger)
     {
@@ -52,10 +53,13 @@ internal static class FunctionLoadingExtensions
         kernel.ImportSkill(timeSkill, nameof(TimeSkill));
 
         var chatSkill = new ChatSkill(
-            kernel,
-            chatMessageRepository,
-            chatSessionRepository,
-            promptSettings
+            kernel: kernel,
+            chatMessageRepository: chatMessageRepository,
+            chatSessionRepository: chatSessionRepository,
+            promptSettings: promptSettings,
+            planner: planner,
+            plannerOptions: plannerOptions,
+            logger: logger
         );
         kernel.ImportSkill(chatSkill, nameof(ChatSkill));
 

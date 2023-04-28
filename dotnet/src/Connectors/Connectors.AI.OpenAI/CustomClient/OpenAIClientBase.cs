@@ -78,7 +78,7 @@ public abstract class OpenAIClientBase : IDisposable
                     "Embeddings not found");
             }
 
-            return result.Embeddings.Select(e => new Embedding<float>(e.Values.ToArray())).ToList();
+            return result.Embeddings.Select(e => new Embedding<float>(e.Values)).ToList();
         }
         catch (Exception e) when (e is not AIException)
         {
@@ -200,7 +200,7 @@ public abstract class OpenAIClientBase : IDisposable
 
             if (response == null)
             {
-                throw new AIException(AIException.ErrorCodes.NoResponse, "Empty response");
+                throw new AIException(AIException.ErrorCodes.NoResponse);
             }
 
             this.Log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));

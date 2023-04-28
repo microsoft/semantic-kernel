@@ -125,7 +125,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
         return response.choices[0].message.content
 
-    async def complete_simple_async(
+    async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> str:
         """

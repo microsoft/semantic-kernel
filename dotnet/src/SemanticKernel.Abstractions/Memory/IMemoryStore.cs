@@ -100,10 +100,10 @@ public interface IMemoryStore
     Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default);
 
     /// <summary>
-    /// Gets the nearest matches to the <see cref="Embedding"/> of type <see cref="float"/>. Does not guarantee that the collection exists.
+    /// Gets the nearest matches to the <see cref="Embedding{Single}"/> of type <see cref="float"/>. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
-    /// <param name="embedding">The <see cref="Embedding"/> to compare the collection's embeddings with.</param>
+    /// <param name="embedding">The <see cref="Embedding{Single}"/> to compare the collection's embeddings with.</param>
     /// <param name="limit">The maximum number of similarity results to return.</param>
     /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
@@ -118,10 +118,10 @@ public interface IMemoryStore
         CancellationToken cancel = default);
 
     /// <summary>
-    /// Gets the nearest match to the <see cref="Embedding"/> of type <see cref="float"/>. Does not guarantee that the collection exists.
+    /// Gets the nearest match to the <see cref="Embedding{Single}"/> of type <see cref="float"/>. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
-    /// <param name="embedding">The <see cref="Embedding"/> to compare the collection's embeddings with.</param>
+    /// <param name="embedding">The <see cref="Embedding{Single}"/> to compare the collection's embeddings with.</param>
     /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancel">Cancellation token</param>
