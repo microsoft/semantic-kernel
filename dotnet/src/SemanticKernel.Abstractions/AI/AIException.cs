@@ -49,7 +49,7 @@ public class AIException : SKException
     /// <param name="message">A string that describes the error.</param>
     /// <param name="detail">A string that provides additional details about the error.</param>
     public AIException(ErrorCodes errorCode, string? message, string? detail)
-        : this(errorCode, message, detail: null, innerException: null)
+        : this(errorCode, message, detail, innerException: null)
     {
     }
 
