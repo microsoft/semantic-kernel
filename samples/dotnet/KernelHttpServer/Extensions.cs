@@ -15,8 +15,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.KernelExtensions;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Document.FileSystem;
@@ -134,12 +132,6 @@ internal static class Extensions
         }
     }
 
-    internal static void RegisterPlanner(this IKernel kernel)
-    {
-        PlannerSkill planner = new(kernel);
-        _ = kernel.ImportSkill(planner, nameof(PlannerSkill));
-    }
-
     internal static void RegisterTextMemory(this IKernel kernel)
     {
         _ = kernel.ImportSkill(new TextMemorySkill(), nameof(TextMemorySkill));
@@ -170,7 +162,7 @@ internal static class Extensions
         if (ShouldLoad(nameof(GitHubSkill), skillsToLoad))
         {
             var downloadSkill = new WebFileDownloadSkill();
-            GitHubSkill githubSkill = new GitHubSkill(kernel, downloadSkill);
+            GitHubSkill githubSkill = new(kernel, downloadSkill);
             _ = kernel.ImportSkill(githubSkill, nameof(GitHubSkill));
         }
     }
@@ -207,6 +199,6 @@ internal static class Extensions
 
     private static bool ShouldLoad(string skillName, IEnumerable<string>? skillsToLoad = null)
     {
-        return skillsToLoad?.Contains(skillName, StringComparer.InvariantCultureIgnoreCase) != false;
+        return skillsToLoad?.Contains(skillName, StringComparer.OrdinalIgnoreCase) != false;
     }
 }

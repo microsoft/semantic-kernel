@@ -52,9 +52,11 @@ internal static class SemanticKernelFactory
                         config.CompletionConfig.Key);
                     break;
                 case AIService.AzureOpenAI:
-                    c.AddAzureOpenAITextCompletionService(config.CompletionConfig.ServiceId, config.CompletionConfig.DeploymentOrModelId,
+                    c.AddAzureTextCompletionService(config.CompletionConfig.ServiceId, config.CompletionConfig.DeploymentOrModelId,
                         config.CompletionConfig.Endpoint,
                         config.CompletionConfig.Key);
+                    break;
+                default:
                     break;
             }
 
@@ -63,12 +65,14 @@ internal static class SemanticKernelFactory
                 switch (config.EmbeddingConfig.AIService)
                 {
                     case AIService.OpenAI:
-                        c.AddOpenAIEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
+                        c.AddOpenAITextEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
                             config.EmbeddingConfig.Key);
                         break;
                     case AIService.AzureOpenAI:
-                        c.AddAzureOpenAIEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
+                        c.AddAzureTextEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
                             config.EmbeddingConfig.Endpoint, config.EmbeddingConfig.Key);
+                        break;
+                    default:
                         break;
                 }
 
@@ -83,7 +87,6 @@ internal static class SemanticKernelFactory
 
         kernel.RegisterSemanticSkills(RepoFiles.SampleSkillsPath(), logger, skillsToLoad);
         kernel.RegisterNativeSkills(skillsToLoad);
-        kernel.RegisterPlanner();
 
         if (req.Headers.TryGetValues(SKHttpHeaders.MSGraph, out var graphToken))
         {

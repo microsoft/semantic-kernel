@@ -4,10 +4,10 @@
     <AssemblyName>SemanticKernel.Connectors.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Connectors.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
+    <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
   </ItemGroup>

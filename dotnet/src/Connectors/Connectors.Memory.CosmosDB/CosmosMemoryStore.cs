@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Cosmos;
+namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Azure Cosmos DB.
@@ -48,7 +48,7 @@ public class CosmosMemoryStore : IMemoryStore
 
         newStore._databaseName = databaseName;
         newStore._log = log ?? NullLogger<CosmosMemoryStore>.Instance;
-        var response = await client.CreateDatabaseIfNotExistsAsync(newStore._databaseName, cancellationToken: cancel);
+        var response = await client.CreateDatabaseIfNotExistsAsync(newStore._databaseName, cancellationToken: cancel).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
@@ -80,7 +80,7 @@ public class CosmosMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        var response = await this._database.CreateContainerIfNotExistsAsync(collectionName, "/" + collectionName, cancellationToken: cancel);
+        var response = await this._database.CreateContainerIfNotExistsAsync(collectionName, "/" + collectionName, cancellationToken: cancel).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
@@ -110,7 +110,7 @@ public class CosmosMemoryStore : IMemoryStore
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
         try
         {
-            await container.DeleteContainerAsync(cancellationToken: cancel);
+            await container.DeleteContainerAsync(cancellationToken: cancel).ConfigureAwait(false);
         }
         catch (CosmosException ex)
         {
@@ -119,7 +119,7 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc />
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
     {
         var id = this.ToCosmosFriendlyId(key);
         var partitionKey = PartitionKey.None;
@@ -127,7 +127,7 @@ public class CosmosMemoryStore : IMemoryStore
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
         MemoryRecord? memoryRecord = null;
 
-        var response = await container.ReadItemAsync<CosmosMemoryRecord>(id, partitionKey, cancellationToken: cancel);
+        var response = await container.ReadItemAsync<CosmosMemoryRecord>(id, partitionKey, cancellationToken: cancel).ConfigureAwait(false);
 
         if (response == null)
         {
@@ -141,11 +141,11 @@ public class CosmosMemoryStore : IMemoryStore
         {
             var result = response.Resource;
 
-            var vector = System.Text.Json.JsonSerializer.Deserialize<float[]>(result.EmbeddingString);
+            float[]? vector = withEmbedding ? System.Text.Json.JsonSerializer.Deserialize<float[]>(result.EmbeddingString) : System.Array.Empty<float>();
 
             if (vector != null)
             {
-                memoryRecord = MemoryRecord.FromJson(
+                memoryRecord = MemoryRecord.FromJsonMetadata(
                     result.MetadataString,
                     new Embedding<float>(vector),
                     result.Id,
@@ -157,12 +157,12 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys,
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         foreach (var key in keys)
         {
-            var record = await this.GetAsync(collectionName, key, cancel);
+            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel).ConfigureAwait(false);
 
             if (record != null)
             {
@@ -187,7 +187,7 @@ public class CosmosMemoryStore : IMemoryStore
 
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
 
-        var response = await container.UpsertItemAsync(entity, cancellationToken: cancel);
+        var response = await container.UpsertItemAsync(entity, cancellationToken: cancel).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
         {
@@ -206,7 +206,7 @@ public class CosmosMemoryStore : IMemoryStore
     {
         foreach (var r in records)
         {
-            yield return await this.UpsertAsync(collectionName, r, cancel);
+            yield return await this.UpsertAsync(collectionName, r, cancel).ConfigureAwait(false);
         }
     }
 
@@ -217,7 +217,7 @@ public class CosmosMemoryStore : IMemoryStore
         var response = await container.DeleteItemAsync<CosmosMemoryRecord>(
             key,
             PartitionKey.None,
-            cancellationToken: cancel);
+            cancellationToken: cancel).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.OK)
         {
@@ -232,7 +232,7 @@ public class CosmosMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
-        await Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancel)));
+        await Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancel))).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -241,6 +241,7 @@ public class CosmosMemoryStore : IMemoryStore
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
         {
@@ -252,15 +253,16 @@ public class CosmosMemoryStore : IMemoryStore
             var collectionMemories = new List<MemoryRecord>();
             TopNCollection<MemoryRecord> embeddings = new(limit);
 
-            await foreach (var entry in this.GetAllAsync(collectionName, cancel))
+            await foreach (var record in this.GetAllAsync(collectionName, cancel))
             {
-                if (entry != null)
+                if (record != null)
                 {
                     double similarity = embedding
                         .AsReadOnlySpan()
-                        .CosineSimilarity(entry.Embedding.AsReadOnlySpan());
+                        .CosineSimilarity(record.Embedding.AsReadOnlySpan());
                     if (similarity >= minRelevanceScore)
                     {
+                        var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, Embedding<float>.Empty, record.Key, record.Timestamp);
                         embeddings.Add(new(entry, similarity));
                     }
                 }
@@ -276,7 +278,7 @@ public class CosmosMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
         CancellationToken cancel = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -284,7 +286,8 @@ public class CosmosMemoryStore : IMemoryStore
             embedding: embedding,
             limit: 1,
             minRelevanceScore: minRelevanceScore,
-            cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel);
+            withEmbeddings: withEmbedding,
+            cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel).ConfigureAwait(false);
     }
 
     private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancel = default)
@@ -294,19 +297,22 @@ public class CosmosMemoryStore : IMemoryStore
 
         var iterator = container.GetItemQueryIterator<CosmosMemoryRecord>(query);
 
-        var items = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);
-
-        foreach (var item in items)
+        while (iterator.HasMoreResults) //read all result in batch
         {
-            var vector = System.Text.Json.JsonSerializer.Deserialize<float[]>(item.EmbeddingString);
+            var items = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);
 
-            if (vector != null)
+            foreach (var item in items)
             {
-                yield return MemoryRecord.FromJson(
-                    item.MetadataString,
-                    new Embedding<float>(vector),
-                    item.Id,
-                    item.Timestamp);
+                var vector = System.Text.Json.JsonSerializer.Deserialize<float[]>(item.EmbeddingString);
+
+                if (vector != null)
+                {
+                    yield return MemoryRecord.FromJsonMetadata(
+                        item.MetadataString,
+                        new Embedding<float>(vector),
+                        item.Id,
+                        item.Timestamp);
+                }
             }
         }
     }

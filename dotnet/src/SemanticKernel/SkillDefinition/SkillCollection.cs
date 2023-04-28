@@ -3,10 +3,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -15,8 +15,8 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// The class holds a list of all the functions, native and semantic, known to the kernel instance.
 /// The list is used by the planner and when executing pipelines of function compositions.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "It is a collection")]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "It is a collection")]
+[SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "It is a collection")]
+[SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "It is a collection")]
 public class SkillCollection : ISkillCollection
 {
     internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
@@ -31,7 +31,7 @@ public class SkillCollection : ISkillCollection
         this.ReadOnlySkillCollection = new ReadOnlySkillCollection(this);
 
         // Important: names are case insensitive
-        this._skillCollection = new(StringComparer.InvariantCultureIgnoreCase);
+        this._skillCollection = new(StringComparer.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc/>
@@ -40,7 +40,7 @@ public class SkillCollection : ISkillCollection
         if (!this._skillCollection.ContainsKey(functionInstance.SkillName))
         {
             // Important: names are case insensitive
-            this._skillCollection[functionInstance.SkillName] = new(StringComparer.InvariantCultureIgnoreCase);
+            this._skillCollection[functionInstance.SkillName] = new(StringComparer.OrdinalIgnoreCase);
         }
 
         this._skillCollection[functionInstance.SkillName][functionInstance.Name] = functionInstance;
@@ -51,11 +51,11 @@ public class SkillCollection : ISkillCollection
     /// <inheritdoc/>
     public ISkillCollection AddNativeFunction(ISKFunction functionInstance)
     {
-        Verify.NotNull(functionInstance, "The function is NULL");
+        Verify.NotNull(functionInstance);
         if (!this._skillCollection.ContainsKey(functionInstance.SkillName))
         {
             // Important: names are case insensitive
-            this._skillCollection[functionInstance.SkillName] = new(StringComparer.InvariantCultureIgnoreCase);
+            this._skillCollection[functionInstance.SkillName] = new(StringComparer.OrdinalIgnoreCase);
         }
 
         this._skillCollection[functionInstance.SkillName][functionInstance.Name] = functionInstance;

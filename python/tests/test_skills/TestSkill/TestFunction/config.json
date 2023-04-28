@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "type": "completion",
+  "description": "Test Description",
+  "completion": {
+    "max_tokens": 123,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 2.0
+  },
+  "default_services": [
+    "test-completion-service"
+  ]
+}

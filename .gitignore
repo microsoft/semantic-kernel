@@ -456,3 +456,10 @@ env/
 venv/
 myvenv/
 ENV/
+
+# Python dist
+dist/
+
+# Peristant storage
+data/qdrant
+data/chatstore*

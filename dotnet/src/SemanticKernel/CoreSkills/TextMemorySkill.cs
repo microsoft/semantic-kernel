@@ -69,7 +69,7 @@ public class TextMemorySkill
 
         context.Log.LogTrace("Recalling memory with key '{0}' from collection '{1}'", key, collection);
 
-        var memory = await context.Memory.GetAsync(collection, key);
+        var memory = await context.Memory.GetAsync(collection, key).ConfigureAwait(false);
 
         return memory?.Metadata.Text ?? string.Empty;
     }
@@ -99,7 +99,7 @@ public class TextMemorySkill
         if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultRelevance; }
 
         var limit = context.Variables.ContainsKey(LimitParam) ? context[LimitParam] : DefaultLimit;
-        if (string.IsNullOrWhiteSpace(limit)) { relevance = DefaultLimit; }
+        if (string.IsNullOrWhiteSpace(limit)) { limit = DefaultLimit; }
 
         context.Log.LogTrace("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
 
@@ -157,7 +157,7 @@ public class TextMemorySkill
 
         context.Log.LogTrace("Saving memory to collection '{0}'", collection);
 
-        await context.Memory.SaveInformationAsync(collection, text: text, id: key);
+        await context.Memory.SaveInformationAsync(collection, text: text, id: key).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -183,6 +183,6 @@ public class TextMemorySkill
 
         context.Log.LogTrace("Removing memory from collection '{0}'", collection);
 
-        await context.Memory.RemoveAsync(collection, key);
+        await context.Memory.RemoveAsync(collection, key).ConfigureAwait(false);
     }
 }

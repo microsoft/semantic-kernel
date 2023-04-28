@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -32,7 +33,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
     public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
+        Verify.NotNull(endpoint);
         Verify.NotEmpty(model, "Model cannot be empty.");
 
         this._endpoint = endpoint;
@@ -51,7 +52,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// <param name="model">Model to use for service API call.</param>
     public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
+        Verify.NotNull(endpoint);
         Verify.NotEmpty(model, "Model cannot be empty.");
 
         this._endpoint = endpoint;
@@ -64,9 +65,9 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     }
 
     /// <inheritdoc/>
-    public async Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(IList<string> data)
+    public async Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken = default)
     {
-        return await this.ExecuteEmbeddingRequestAsync(data);
+        return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -82,9 +83,10 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// Performs HTTP request to given endpoint for embedding generation.
     /// </summary>
     /// <param name="data">Data to embed.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of generated embeddings.</returns>
     /// <exception cref="AIException">Exception when backend didn't respond with generated embeddings.</exception>
-    private async Task<IList<Embedding<float>>> ExecuteEmbeddingRequestAsync(IList<string> data)
+    private async Task<IList<Embedding<float>>> ExecuteEmbeddingRequestAsync(IList<string> data, CancellationToken cancellationToken)
     {
         try
         {
@@ -100,12 +102,12 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
                 Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
             };
 
-            var response = await this._httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
 
-            return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding.ToArray())).ToList()!;
+            return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding!)).ToList()!;
         }
         catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {

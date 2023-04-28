@@ -19,7 +19,7 @@ public static class Example15_MemorySkill
             .Configure(c =>
             {
                 c.AddOpenAITextCompletionService("davinci", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
-                c.AddOpenAIEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
+                c.AddOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
             })
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();

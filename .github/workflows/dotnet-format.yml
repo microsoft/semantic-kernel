@@ -14,26 +14,56 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v35
+
+      - name: No C# files changed
+        id: no-csharp
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: echo "No C# files changed"
+
+      # This step will loop over the changed files and find the nearest .csproj file for each one, then store the unique csproj files in a variable
+      - name: Find csproj files
+        id: find-csproj
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          csproj_files=()
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+            dir=$(dirname $file)
+            while [[ $dir != "." && $dir != "/" ]]; do
+              if [[ -f "$dir/*.csproj" ]]; then
+                csproj_files+=("$dir/*.csproj")
+                break
+              fi
+              dir=$(dirname $dir)
+            done
+          done
+          csproj_files=($(printf "%s\n" "${csproj_files[@]}" | sort -u))
+          echo "Found ${#csproj_files[@]} unique csproj files: ${csproj_files[*]}"
+          echo "{csproj_files}={${csproj_files[*]}}" >> $GITHUB_OUTPUT
+
       - name: Setup .NET Core
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '6.0.x'
 
       - name: Install dotnet-format tool
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: dotnet tool install -g dotnet-format
 
-      - name: Check out code
-        uses: actions/checkout@v3.3.0
-        with:
-          fetch-depth: 0
-
+      # This step will run dotnet format on each of the unique csproj files and fail if any changes are made
       - name: Run dotnet format
-        shell: bash
+        if: steps.changed-files.any_changed == 'true'
         run: |
-          allProjectFiles=$(find ./ -type f -name "*.csproj" | tr '\n' ' ');
-          if [ $? -ne 0 ]; then exit 1; fi
-          echo "$allProjectFiles"
-
-          for file in $allProjectFiles; do
-              dotnet format $file --verify-no-changes --verbosity detailed
+          for csproj in ${{ steps.find-csproj.outputs.csproj_files }}; do
+            echo "Running dotnet format on $csproj"
+            dotnet format $csproj --verify-no-changes --verbosity detailed
           done

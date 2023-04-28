@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
 // ReSharper disable TemplateIsNotCompileTimeConstantProblem
-internal class CodeBlock : Block, ICodeRendering
+internal sealed class CodeBlock : Block, ICodeRendering
 {
     internal override BlockTypes Type => BlockTypes.Code;
 
@@ -84,7 +84,7 @@ internal class CodeBlock : Block, ICodeRendering
                 return ((ITextRendering)this._tokens[0]).Render(context.Variables);
 
             case BlockTypes.FunctionId:
-                return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], context);
+                return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], context).ConfigureAwait(false);
         }
 
         throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType,
@@ -123,7 +123,7 @@ internal class CodeBlock : Block, ICodeRendering
             context.Memory,
             context.Skills,
             this.Log,
-            context.CancellationToken);
+            context.CancellationToken).ConfigureAwait(false);
 
         if (result.ErrorOccurred)
         {
