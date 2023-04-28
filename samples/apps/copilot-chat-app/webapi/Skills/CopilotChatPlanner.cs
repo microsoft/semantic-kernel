@@ -40,6 +40,5 @@ public class CopilotChatPlanner
     /// <returns>The plan.</returns>
     public Task<Plan> CreatePlanAsync(string goal)
         => new SequentialPlanner(this.Kernel, this._options.ToSequentialPlannerConfig())
-        .CreatePlanAsync(goal);
-
+            .CreatePlanAsync(goal);
 }

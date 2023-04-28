@@ -60,9 +60,9 @@ public class PlannerOptions
     {
         SequentialPlannerConfig config = new()
         {
-            RelevancyThreshold = RelevancyThreshold,
-            MaxRelevantFunctions = MaxRelevantFunctions,
-            MaxTokens = MaxTokens,
+            RelevancyThreshold = this.RelevancyThreshold,
+            MaxRelevantFunctions = this.MaxRelevantFunctions,
+            MaxTokens = this.MaxTokens,
         };
 
         this.ExcludedSkills.Clear();
