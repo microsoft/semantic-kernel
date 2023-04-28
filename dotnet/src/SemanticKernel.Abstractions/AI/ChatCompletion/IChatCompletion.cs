@@ -16,7 +16,7 @@ public interface IChatCompletion
     /// <returns>Generated chat message in string format</returns>
     public Task<string> GenerateMessageAsync(
         ChatHistory chat,
-        ChatRequestSettings requestSettings,
+        ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
