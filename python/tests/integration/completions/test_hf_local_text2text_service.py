@@ -7,7 +7,7 @@ import semantic_kernel.connectors.ai.hugging_face as sk_hf
 import e2e_text_completion
 
 @pytest.mark.asyncio
-async def test_hf_local_text2text_generation_service_with_skills(use_env_vars: bool):
+async def test_hf_local_text2text_generation_service_with_skills():
     kernel = sk.Kernel()
 
     # Configure LLM service
