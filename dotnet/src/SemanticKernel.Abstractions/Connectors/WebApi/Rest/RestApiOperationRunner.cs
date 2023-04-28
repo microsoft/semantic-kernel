@@ -56,7 +56,7 @@ internal sealed class RestApiOperationRunner : IRestApiOperationRunner
 
         var headers = operation.RenderHeaders(arguments);
 
-        var payload = BuildOperationPayload(operation.Payload, arguments);
+        var payload = BuildOperationPayload(operation, arguments);
 
         return this.SendAsync(url, operation.Method, headers, payload, cancellationToken);
     }
@@ -109,78 +109,60 @@ internal sealed class RestApiOperationRunner : IRestApiOperationRunner
     /// <summary>
     /// Builds operation payload.
     /// </summary>
-    /// <param name="payloadMetadata">The payload meta-data.</param>
+    /// <param name="operation">The operation.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The HttpContent representing the payload.</returns>
-    private static HttpContent? BuildOperationPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, string> arguments)
+    private static HttpContent? BuildOperationPayload(RestApiOperation operation, IDictionary<string, string> arguments)
     {
-        if (payloadMetadata == null)
+        if (operation?.Method != HttpMethod.Put && operation?.Method != HttpMethod.Post)
         {
             return null;
         }
 
-        if (!s_payloadFactoryByMediaType.TryGetValue(payloadMetadata.MediaType, out var payloadFactory))
+        var mediaType = operation.Payload?.MediaType;
+
+        //A try to resolve payload content type from the operation arguments if it's missing in the payload metadata.
+        if (string.IsNullOrEmpty(mediaType))
         {
-            throw new RestApiOperationException($"The media type {payloadMetadata.MediaType} is not supported by {nameof(RestApiOperationRunner)}.");
+            if (!arguments.TryGetValue(RestApiOperation.ContentTypeArgumentName, out mediaType))
+            {
+                throw new RestApiOperationException($"No content type is provided for the {operation.Id} operation.");
+            }
         }
 
-        return payloadFactory.Invoke(payloadMetadata, arguments);
+        if (!s_payloadFactoryByMediaType.TryGetValue(mediaType!, out var payloadFactory))
+        {
+            throw new RestApiOperationException($"The media type {mediaType} of the {operation.Id} operation is not supported by {nameof(RestApiOperationRunner)}.");
+        }
+
+        return payloadFactory.Invoke(arguments);
     }
 
     /// <summary>
     /// Builds "application/json" payload.
     /// </summary>
-    /// <param name="payloadMetadata">The payload meta-data.</param>
-    /// <param name="arguments">The payload arguments.</param>    /// <returns></returns>
+    /// <param name="arguments">The payload arguments.</param>
     /// <returns>The HttpContent representing the payload.</returns>
-    private static HttpContent BuildAppJsonPayload(RestApiOperationPayload payloadMetadata, IDictionary<string, string> arguments)
+    private static HttpContent BuildAppJsonPayload(IDictionary<string, string> arguments)
     {
-        JsonNode BuildPayload(IList<RestApiOperationPayloadProperty> properties)
+        if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out var content))
         {
-            var result = new JsonObject();
-
-            foreach (var propertyMetadata in properties)
-            {
-                switch (propertyMetadata.Type)
-                {
-                    case "object":
-                    {
-                        var propertyValue = BuildPayload(propertyMetadata.Properties);
-                        result.Add(propertyMetadata.Name, propertyValue);
-                        break;
-                    }
-                    default: //TODO: Use the default case for unsupported types.
-                    {
-                        if (!arguments.TryGetValue(propertyMetadata.Name, out var propertyValue))
-                        {
-                            throw new RestApiOperationException($"No argument is found for the '{propertyMetadata.Name}' payload property.");
-                        }
-
-                        result.Add(propertyMetadata.Name, propertyValue);
-                        break;
-                    }
-                }
-            }
-
-            return result;
+            throw new RestApiOperationException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
         }
 
-        var payload = BuildPayload(payloadMetadata.Properties);
-
-        return new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeApplicationJson);
+        return new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson);
     }
 
     /// <summary>
     /// Builds "text/plain" payload.
     /// </summary>
-    /// <param name="payloadMetadata">The payload meta-data.</param>
-    /// <param name="arguments">The payload arguments.</param>    /// <returns></returns>
+    /// <param name="arguments">The payload arguments.</param>
     /// <returns>The HttpContent representing the payload.</returns>
-    private static HttpContent BuildPlainTextPayload(RestApiOperationPayload payloadMetadata, IDictionary<string, string> arguments)
+    private static HttpContent BuildPlainTextPayload(IDictionary<string, string> arguments)
     {
-        if (!arguments.TryGetValue(RestApiOperation.InputArgumentName, out var propertyValue))
+        if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out var propertyValue))
         {
-            throw new RestApiOperationException($"No argument is found for the '{RestApiOperation.InputArgumentName}' payload content.");
+            throw new RestApiOperationException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
         }
 
         return new StringContent(propertyValue, Encoding.UTF8, MediaTypeTextPlain);
@@ -189,8 +171,8 @@ internal sealed class RestApiOperationRunner : IRestApiOperationRunner
     /// <summary>
     /// List of payload builders/factories.
     /// </summary>
-    private static readonly Dictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>> s_payloadFactoryByMediaType =
-        new Dictionary<string, Func<RestApiOperationPayload, IDictionary<string, string>, HttpContent>>()
+    private static readonly Dictionary<string, Func<IDictionary<string, string>, HttpContent>> s_payloadFactoryByMediaType =
+        new Dictionary<string, Func<IDictionary<string, string>, HttpContent>>()
         {
             { MediaTypeApplicationJson, BuildAppJsonPayload },
             { MediaTypeTextPlain, BuildPlainTextPayload }

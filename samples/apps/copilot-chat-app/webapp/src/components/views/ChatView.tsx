@@ -11,7 +11,8 @@ const useClasses = makeStyles({
         justifyContent: 'space-between',
         width: '100%',
         height: '100%',
-        Flex: '1',
+        maxHeight: '100%',
+        position: 'fixed',
     },
 });
 

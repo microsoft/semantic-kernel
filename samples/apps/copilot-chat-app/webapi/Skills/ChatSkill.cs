@@ -47,14 +47,14 @@ public class ChatSkill
     private readonly PromptSettings _promptSettings;
 
     /// <summary>
-    /// A factory for planners that gather additional information for the user.
+    /// CopilotChat's planner to gather additional information for the chat context.
     /// </summary>
-    private readonly PlannerFactoryAsync _plannerFactoryAsync;
+    private readonly CopilotChatPlanner _planner;
 
     /// <summary>
     /// Options for the planner.
     /// </summary>
-    private readonly SequentialPlannerOptions _plannerOptions;
+    private readonly PlannerOptions _plannerOptions;
 
     /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
@@ -64,8 +64,8 @@ public class ChatSkill
         ChatMessageRepository chatMessageRepository,
         ChatSessionRepository chatSessionRepository,
         PromptSettings promptSettings,
-        PlannerFactoryAsync plannerFactory,
-        SequentialPlannerOptions plannerOptions,
+        CopilotChatPlanner planner,
+        PlannerOptions plannerOptions,
         ILogger logger)
     {
         this._logger = logger;
@@ -73,7 +73,7 @@ public class ChatSkill
         this._chatMessageRepository = chatMessageRepository;
         this._chatSessionRepository = chatSessionRepository;
         this._promptSettings = promptSettings;
-        this._plannerFactoryAsync = plannerFactory;
+        this._planner = planner;
         this._plannerOptions = plannerOptions;
     }
 
@@ -186,7 +186,7 @@ public class ChatSkill
     }
 
     /// <summary>
-    /// Extract relevant additional knowledge using a Semantic Kernel planner.
+    /// Extract relevant additional knowledge using a planner.
     /// </summary>
     [SKFunction("Acquire external information")]
     [SKFunctionName("AcquireExternalInformation")]
@@ -199,18 +199,16 @@ public class ChatSkill
             return string.Empty;
         }
 
-        // Skills run in the planner may modify the SKContext.
-        // Clone the context to avoid modifying the original context variables.
+        // Skills run in the planner may modify the SKContext. Clone the context to avoid
+        // modifying the original context variables.
         SKContext plannerContext = Utilities.CopyContextWithVariablesClone(context);
 
         // Use the user intent message as the input to the plan.
         plannerContext.Variables.Update(plannerContext["userIntent"]);
 
         // Create a plan and run it.
-        Plan plan = await (await this._plannerFactoryAsync(this._kernel))
-            .CreatePlanAsync(plannerContext.Variables.Input);
-
-        SKContext planContext = await plan.InvokeAsync(context: plannerContext);
+        Plan plan = await this._planner.CreatePlanAsync(plannerContext.Variables.Input);
+        SKContext planContext = await plan.InvokeAsync(plannerContext);
 
         // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
         if (!this.TryExtractJsonFromPlanResult(planContext.Variables.Input, out string planResult))
