@@ -21,18 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>IntegrationTests</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>IntegrationTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernel.Extensions.UnitTests</_Parameter1>
-    </AssemblyAttribute>
+    <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" PublicKey="$(StongNamePublicKey)"/>
   </ItemGroup>
 
   <ItemGroup>

@@ -69,7 +69,7 @@ public class EmbeddingTests
     public void ItThrowsWithNullVector()
     {
         // Assert
-        Assert.Throws<ValidationException>(() => new Embedding<float>(null!));
+        Assert.Throws<ArgumentNullException>("vector", () => new Embedding<float>(null!));
     }
 
     [Fact]
