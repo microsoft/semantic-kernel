@@ -40,12 +40,9 @@ internal sealed class FetchRequest
 
     public HttpRequestMessage Build()
     {
-        string? path = "/vectors/fetch?ids=" + this.Ids[0];
-
-        for (int i = 1; i < this.Ids.Count; i++)
-        {
-            path += "&ids=" + this.Ids[i];
-        }
+        string path = "/vectors/fetch?";
+        string ids = string.Join("&", this.Ids.Select(id => "ids=" + id));
+        path += ids;
 
         if (!string.IsNullOrEmpty(this.Namespace))
         {
