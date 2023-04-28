@@ -123,7 +123,7 @@ public sealed class Kernel : IKernel, IDisposable
     {
         // Future-proofing the name not to contain special chars
         Verify.ValidSkillName(skillName);
-        Verify.NotNull(customFunction, $"The {nameof(customFunction)} parameter is not set to an instance of an object.");
+        Verify.NotNull(customFunction);
 
         customFunction.SetDefaultSkillCollection(this.Skills);
         this._skillCollection.AddSemanticFunction(customFunction);

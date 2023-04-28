@@ -83,6 +83,7 @@ First, let’s set up and verify the back-end API server is running.
       ```bash
       REACT_APP_BACKEND_URI=https://localhost:40443/
       REACT_APP_AAD_CLIENT_ID=00000000-0000-0000-0000-000000000000
+      REACT_APP_AAD_AUTHORITY=https://login.microsoftonline.com/common
       ```
    
    1. To build and run the front-end application
