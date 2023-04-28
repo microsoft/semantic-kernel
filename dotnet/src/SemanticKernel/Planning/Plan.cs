@@ -260,7 +260,8 @@ public sealed class Plan : ISKFunction
             // Update state with result
             this.State.Update(result.Result.Trim());
 
-            // TODO Assuming there is one today -- multiple results may not be ordered correctly.
+            // Update state with name results (if any)
+            bool resultAppended = false;
             foreach (var item in step.NamedResults)
             {
                 // ignore the input key
@@ -269,8 +270,18 @@ public sealed class Plan : ISKFunction
                     continue;
                 }
 
+                // Also set the named result in the state for other steps to use
+                this.State.Set(item.Key, result.Result.Trim());
+
+                if (resultAppended)
+                {
+                    continue;
+                }
+
+                // Additionally, append to current plan result
                 this.State.Get(DefaultResultKey, out var currentPlanResult);
-                this.State.Set(DefaultResultKey, currentPlanResult.Trim() + "\n" + result.Result.Trim());
+                this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult.Trim(), result.Result.Trim()));
+                resultAppended = true;
             }
 
             // Update state with named outputs (if any)
