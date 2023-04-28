@@ -3,7 +3,6 @@
 using System;
 using System.Xml;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
@@ -89,9 +88,6 @@ internal static class SequentialPlanParser
 
                         if (!string.IsNullOrEmpty(functionName) && context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
                         {
-                            Verify.NotNull(functionName, nameof(functionName));
-                            Verify.NotNull(skillFunction, nameof(skillFunction));
-
                             var planStep = new Plan(skillFunction);
 
                             var functionVariables = new ContextVariables();

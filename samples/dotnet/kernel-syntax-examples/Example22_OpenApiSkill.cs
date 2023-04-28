@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -69,8 +70,7 @@ public static class Example22_OpenApiSkill
         contextVariables.Set("server-url", "https://<keyvault-name>.vault.azure.net");
         contextVariables.Set("secret-name", "<secret-name>");
         contextVariables.Set("api-version", "7.0");
-        contextVariables.Set("enabled", "true");
-        contextVariables.Set("value", "<secret>");
+        contextVariables.Set("payload", JsonSerializer.Serialize(new { value = "<secret>", attributes = new { enabled = true } }));
 
         // Run
         var result = await kernel.RunAsync(contextVariables, skill["SetSecret"]);

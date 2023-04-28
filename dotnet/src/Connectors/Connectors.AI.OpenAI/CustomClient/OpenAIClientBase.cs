@@ -200,7 +200,7 @@ public abstract class OpenAIClientBase : IDisposable
 
             if (response == null)
             {
-                throw new AIException(AIException.ErrorCodes.NoResponse, "Empty response");
+                throw new AIException(AIException.ErrorCodes.NoResponse);
             }
 
             this.Log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));

@@ -199,7 +199,7 @@ public static class KernelOpenApiExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(kernel, nameof(kernel));
+        Verify.NotNull(kernel);
         Verify.ValidSkillName(skillName);
 
         // Parse
