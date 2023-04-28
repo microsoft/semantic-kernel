@@ -20,7 +20,7 @@ export class ChatService extends BaseService {
 
         const result = await this.getResponseAsync<IChatSession>(
             {
-                commandPath: 'chat/create',
+                commandPath: 'chatSession/create',
                 method: 'POST',
                 body: body,
             },
@@ -38,7 +38,7 @@ export class ChatService extends BaseService {
     ): Promise<IChatSession> => {
         const result = await this.getResponseAsync<IChatSession>(
             {
-                commandPath: `chat/getChat/${chatId}`,
+                commandPath: `chatSession/getChat/${chatId}`,
                 method: 'GET',
             },
             accessToken,
@@ -55,7 +55,7 @@ export class ChatService extends BaseService {
     ): Promise<IChatSession[]> => {
         const result = await this.getResponseAsync<IChatSession[]>(
             {
-                commandPath: `chat/getAllChats/${userId}`,
+                commandPath: `chatSession/getAllChats/${userId}`,
                 method: 'GET',
             },
             accessToken,
@@ -73,7 +73,7 @@ export class ChatService extends BaseService {
     ): Promise<IChatMessage[]> => {
         const result = await this.getResponseAsync<IChatMessage[]>(
             {
-                commandPath: `chat/getChatMessages/${chatId}?startIdx=${startIdx}&count=${count}`,
+                commandPath: `chatSession/getChatMessages/${chatId}?startIdx=${startIdx}&count=${count}`,
                 method: 'GET',
             },
             accessToken,
@@ -97,7 +97,7 @@ export class ChatService extends BaseService {
 
         const result = await this.getResponseAsync<any>(
             {
-                commandPath: `chat/edit`,
+                commandPath: `chatSession/edit`,
                 method: 'POST',
                 body: body,
             },

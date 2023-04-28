@@ -10,6 +10,8 @@ namespace SemanticKernel.Service.Controllers;
 
 /// <summary>
 /// Controller for chat history.
+/// This controller is responsible for creating new chat sessions, retrieving chat sessions,
+/// retrieving chat messages, and editing chat sessions.
 /// </summary>
 [ApiController]
 [Authorize]
@@ -45,11 +47,11 @@ public class ChatHistoryController : ControllerBase
     /// <param name="chatParameters">Object that contains the parameters to create a new chat.</param>
     /// <returns>The HTTP action result.</returns>
     [HttpPost]
-    [Route("chat/create")]
+    [Route("chatSession/create")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> CreateChatAsync(
+    public async Task<IActionResult> CreateChatSessionAsync(
         [FromBody] ChatSession chatParameters)
     {
         var userId = chatParameters.UserId;
@@ -62,7 +64,7 @@ public class ChatHistoryController : ControllerBase
         await this.SaveResponseAsync(initialBotMessage, newChat.Id);
 
         this._logger.LogDebug("Created chat session with id {0} for user {1}.", newChat.Id, userId);
-        return this.CreatedAtAction(nameof(this.GetChatByIdAsync), new { chatId = newChat.Id }, newChat);
+        return this.CreatedAtAction(nameof(this.GetChatSessionByIdAsync), new { chatId = newChat.Id }, newChat);
     }
 
     /// <summary>
@@ -70,12 +72,12 @@ public class ChatHistoryController : ControllerBase
     /// </summary>
     /// <param name="chatId">The chat id.</param>
     [HttpGet]
-    [ActionName("GetChatByIdAsync")]
-    [Route("chat/getChat/{chatId:guid}")]
+    [ActionName("GetChatSessionByIdAsync")]
+    [Route("chatSession/getChat/{chatId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetChatByIdAsync(Guid chatId)
+    public async Task<IActionResult> GetChatSessionByIdAsync(Guid chatId)
     {
         var chat = await this._chatSessionRepository.FindByIdAsync(chatId.ToString());
         if (chat == null)
@@ -88,14 +90,17 @@ public class ChatHistoryController : ControllerBase
 
     /// <summary>
     /// Get all chat sessions associated with a user. Return an empty list if no chats are found.
+    /// The regex pattern that is used to match the user id will match the following format:
+    ///    - 2 period separated groups of one or more hyphen-delimitated alphanumeric strings.
+    /// The pattern matches two GUIDs in canonical textual representation separated by a period.
     /// </summary>
     /// <param name="userId">The user id.</param>
     [HttpGet]
-    [Route("chat/getAllChats/{userId:regex(([[a-z0-9]]+-)+[[a-z0-9]]+\\.([[a-z0-9]]+-)+[[a-z0-9]]+)}")]
+    [Route("chatSession/getAllChats/{userId:regex(([[a-z0-9]]+-)+[[a-z0-9]]+\\.([[a-z0-9]]+-)+[[a-z0-9]]+)}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetAllChatsAsync(string userId)
+    public async Task<IActionResult> GetAllChatSessionsAsync(string userId)
     {
         var chats = await this._chatSessionRepository.FindByUserIdAsync(userId);
         if (chats == null)
@@ -116,7 +121,7 @@ public class ChatHistoryController : ControllerBase
     /// <param name="count">The number of messages to return. -1 will return all messages starting from startIdx.</param>
     /// [Authorize]
     [HttpGet]
-    [Route("chat/getChatMessages/{chatId:guid}")]
+    [Route("chatSession/getChatMessages/{chatId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -149,11 +154,11 @@ public class ChatHistoryController : ControllerBase
     /// </summary>
     /// <param name="chatParameters">Object that contains the parameters to edit the chat.</param>
     [HttpPost]
-    [Route("chat/edit")]
+    [Route("chatSession/edit")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> EditChatAsync([FromBody] ChatSession chatParameters)
+    public async Task<IActionResult> EditChatSessionAsync([FromBody] ChatSession chatParameters)
     {
         var chatId = chatParameters.Id;
 
