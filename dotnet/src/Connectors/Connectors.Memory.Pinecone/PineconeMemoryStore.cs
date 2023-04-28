@@ -72,7 +72,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
 
         logger ??= NullLogger.Instance;
-        using PineconeClient client = new(pineconeEnvironment, apiKey, logger);
+        PineconeClient client = new(pineconeEnvironment, apiKey, logger);
 
         bool exists = await client.DoesIndexExistAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(false);
 
@@ -149,6 +149,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             return string.Empty;
         }
 
+        Console.WriteLine($"Upserting {record.Metadata.Id} with text {record.Metadata.Text} to {collectionName}");
         (PineconeDocument vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(collectionName, record, "", cancel).ConfigureAwait(false);
 
         Task request = operationType switch

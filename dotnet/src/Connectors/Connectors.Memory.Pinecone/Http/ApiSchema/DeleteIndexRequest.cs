@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// </summary>
 internal sealed class DeleteIndexRequest
 {
-    public static DeleteIndexRequest DeleteIndex(string indexName)
+    public static DeleteIndexRequest Create(string indexName)
     {
         return new DeleteIndexRequest(indexName);
     }

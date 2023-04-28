@@ -523,7 +523,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     {
         this._logger.LogInformation("Deleting index {0}", indexName);
 
-        using HttpRequestMessage request = DeleteIndexRequest.DeleteIndex(indexName).Build();
+        using HttpRequestMessage request = DeleteIndexRequest.Create(indexName).Build();
 
         request.Headers.Add("accept", "text/plain");
 
