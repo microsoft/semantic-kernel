@@ -12,7 +12,7 @@ kernel = sk.Kernel()
 # Load credentials from .env file
 deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
-kernel.config.add_chat_service(
+kernel.add_chat_service(
     "chat-gpt", sk_oai.AzureChatCompletion("gpt-35-turbo", endpoint, api_key)
 )
 

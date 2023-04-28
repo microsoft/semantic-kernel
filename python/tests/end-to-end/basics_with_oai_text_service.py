@@ -13,7 +13,7 @@ kernel = sk.Kernel()
 api_key, org_id = sk.openai_settings_from_dot_env()
 
 # Configure LLM service
-kernel.config.add_text_service(
+kernel.add_text_service(
     "davinci-003", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
 )
 
