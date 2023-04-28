@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Text;
 
 namespace GitHubSkills;
 
@@ -142,11 +141,11 @@ BEGIN SUMMARY:
 
             var repoBundle = $"{repositoryUri}/archive/refs/heads/{repositoryBranch}.zip";
 
-            this._logger.LogDebug($"Downloading {repoBundle}");
+            this._logger.LogDebug("Downloading {repoBundle}", repoBundle);
 
             if (context.Variables.Get(Parameters.PatToken, out string patToken))
             {
-                this._logger.LogDebug($"PATToken detected, adding authorization headers");
+                this._logger.LogDebug($"PAT detected, adding authorization headers");
 
                 // If variables would be a dictionary of object we could probably pass headers,
                 // we can also serialize it to string...
