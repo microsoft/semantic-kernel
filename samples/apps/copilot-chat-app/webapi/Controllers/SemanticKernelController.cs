@@ -133,12 +133,15 @@ public class SemanticKernelController : ControllerBase
     }
 
     /// <summary>
-    /// Register authenticated OpenAPI skills with the planner's kernel.
-    /// If the request includes an auth header for an OpenAPI skill, register the skill with the kernel.
-    /// Else, don't register the skill as it'll fail on auth.
+    /// Register skills with the planner's kernel.
     /// </summary>
-    private async Task RegisterOpenApiSkillsAsync(CopilotChatPlanner planner, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
+    private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
     {
+        await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShopping", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
+
+        // Register authenticated OpenAPI skills with the planner's kernel
+        // if the request includes an auth header for an OpenAPI skill.
+        // Else, don't register the skill as it'll fail on auth.
         if (openApiSkillsAuthHeaders.GithubAuthentication != null)
         {
             var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication); });
@@ -147,16 +150,6 @@ public class SemanticKernelController : ControllerBase
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json");
             var skill = await planner.Kernel.ImportOpenApiSkillFromFileAsync("GitHubSkill", filePath, authenticationProvider.AuthenticateRequestAsync);
         }
-    }
-
-    /// <summary>
-    /// Register skills with the planner's kernel.
-    /// </summary>
-    private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
-    {
-        await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShopping", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
-
-        await this.RegisterOpenApiSkillsAsync(planner, openApiSkillsAuthHeaders);
 
         planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "text");
         planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TimeSkill(), "time");

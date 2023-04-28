@@ -13,7 +13,7 @@ import {
     updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from './auth/AuthHelper';
-import { useConnectors } from './connectors/useConnectors'; // ConnectorTokenExample
+import { useConnectors } from './connectors/useConnectors';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
 import { AuthorRoles, ChatMessage } from './models/ChatMessage';
