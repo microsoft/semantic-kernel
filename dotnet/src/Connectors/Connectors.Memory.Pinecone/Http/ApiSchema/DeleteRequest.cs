@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
@@ -17,7 +19,7 @@ internal sealed class DeleteRequest
     /// The ids of the vectors to delete
     /// </summary>
     [JsonPropertyName("ids")]
-    public IEnumerable<string> Ids { get; set; }
+    public IEnumerable<string>? Ids { get; set; }
 
     /// <summary>
     /// Whether to delete all vectors
@@ -54,7 +56,7 @@ internal sealed class DeleteRequest
         };
     }
 
-    public static DeleteRequest DeleteVectors(IEnumerable<string> ids)
+    public static DeleteRequest DeleteVectors(IEnumerable<string>? ids)
     {
         return new DeleteRequest(ids);
     }
@@ -93,11 +95,40 @@ internal sealed class DeleteRequest
         return request;
     }
 
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        sb.Append("DeleteRequest: ");
+        if (this.Ids != null)
+        {
+            sb.Append($"Deleting {this.Ids.Count()} vectors, {string.Join(", ", this.Ids)},");
+        }
+        if (this.DeleteAll != null)
+        {
+            sb.Append($"Deleting All vectors,");
+        }
+        if (this.Namespace != null)
+        {
+            sb.Append($"From Namespace: {this.Namespace}, ");
+        }
+        if (this.Filter == null)
+        {
+            return sb.ToString();
+        }
+        sb.Append($"With Filter: ");
+        foreach (var (key, value) in this.Filter)
+        {
+            sb.Append($"{key}={value}, ");
+        }
+        return sb.ToString();
+    }
+
     #region private ================================================================================
 
-    private DeleteRequest(IEnumerable<string> ids)
+    private DeleteRequest(IEnumerable<string>? ids)
     {
-        this.Ids = ids;
+        this.Ids = ids ?? new List<string>();
     }
 
     private DeleteRequest(bool clear)

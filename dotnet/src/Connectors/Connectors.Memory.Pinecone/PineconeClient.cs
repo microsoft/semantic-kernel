@@ -304,59 +304,20 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         if (ids == null && string.IsNullOrEmpty(indexNamespace) && filter == null && !deleteAll)
         {
-            throw new ArgumentException("Must provide at least one of ids, filter, or deleteAll");
+            this._logger.LogError("Must provide at least one of ids, filter, or deleteAll");
         }
 
         ids = ids?.ToList();
 
-        DeleteRequest deleteRequest;
+        DeleteRequest deleteRequest = deleteAll
+            ? string.IsNullOrEmpty(indexNamespace)
+                ? DeleteRequest.GetDeleteAllVectorsRequest()
+                : DeleteRequest.ClearNamespace(indexNamespace)
+            : DeleteRequest.DeleteVectors(ids)
+                .FromNamespace(indexNamespace)
+                .FilterBy(filter);
 
-        switch (deleteAll)
-        {
-            case true when !string.IsNullOrEmpty(indexNamespace):
-                this._logger.LogInformation("Deleting all vectors in namespace {0}", indexNamespace);
-                deleteRequest = DeleteRequest.ClearNamespace(indexNamespace);
-                break;
-            case true:
-                this._logger.LogInformation("Deleting all vectors in index {0}", indexName);
-                deleteRequest = DeleteRequest.GetDeleteAllVectorsRequest();
-                break;
-            default:
-            {
-                if (ids != null && !string.IsNullOrEmpty(indexNamespace))
-                {
-                    if (filter != null)
-                    {
-                        this._logger.LogInformation("Deleting vectors {0} in namespace {1} with filter {2}", string.Join(",", ids), indexNamespace, filter);
-                        deleteRequest = DeleteRequest.DeleteVectors(ids)
-                            .FromNamespace(indexNamespace)
-                            .FilterBy(filter);
-                    }
-                    else
-                    {
-                        this._logger.LogInformation("Deleting vectors {0} in namespace {1}", string.Join(",", ids), indexNamespace);
-                        deleteRequest = DeleteRequest.DeleteVectors(ids)
-                            .FromNamespace(indexNamespace);
-                    }
-                }
-
-                else
-                {
-                    if (filter != null)
-                    {
-                        this._logger.LogInformation("Deleting vectors {0} with filter {1}", string.Join(",", ids), filter);
-                        deleteRequest = DeleteRequest.DeleteVectors(ids)
-                            .FilterBy(filter);
-                    }
-                    else
-                    {
-                        this._logger.LogInformation("Deleting vectors {0}", string.Join(",", ids));
-                        deleteRequest = DeleteRequest.DeleteVectors(ids);
-                    }
-                }
-                break;
-            }
-        }
+        this._logger.LogInformation("Delete operation for Index {0}: {1}", indexName, deleteRequest);
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
@@ -370,7 +331,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         }
         catch (HttpRequestException e)
         {
-            this._logger.LogWarning("Vector update for Documents {0} failed. Message: {1}", string.Join(",", ids), e.Message);
+            this._logger.LogError("Delete operation failed: {0}", e.Message);
         }
     }
 
