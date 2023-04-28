@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
+#pragma warning disable CA1716 // rename parameters so that it no longer conflicts with the reserved language keyword namespace
+
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
 /// <summary>

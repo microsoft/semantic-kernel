@@ -72,7 +72,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
 
         logger ??= NullLogger.Instance;
-        PineconeClient client = new(pineconeEnvironment, apiKey, logger);
+        using PineconeClient client = new(pineconeEnvironment, apiKey, logger);
 
         bool exists = await client.DoesIndexExistAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(false);
 
@@ -100,7 +100,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     }
 
     /// <inheritdoc/>
-    /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param> 
+    /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
+    /// <param name="cancel"></param> 
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
         if (!await this.DoesCollectionExistAsync(collectionName, cancel).ConfigureAwait(false))
@@ -696,6 +697,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
     /// <inheritdoc />
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
+    /// <param name="keys"></param>
+    /// <param name="cancel"></param>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
         if (!this._pineconeClient.Ready)

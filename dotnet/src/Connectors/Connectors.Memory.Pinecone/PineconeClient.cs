@@ -39,7 +39,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     public int Port => this._indexDescription != null ? this._indexDescription.Status.Port : 0;
 
     /// <inheritdoc />
-    public IndexState State => this._indexDescription?.Status.State ?? IndexState.NotInitialized;
+    public IndexState State => this._indexDescription?.Status.State ?? IndexState.None;
 
     /// <inheritdoc />
     public bool Ready => this._indexDescription?.Status.Ready ?? false;
@@ -283,11 +283,11 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             }
 
             totalUpserted += data.UpsertedCount;
-            this._logger.LogInformation($"Upserted batch {totalBatches} with {data.UpsertedCount} vectors");
+            this._logger.LogInformation("Upserted batch {0} with {1} vectors", totalBatches, data.UpsertedCount);
             await Task.Delay(TimeSpan.FromMilliseconds(1000), cancellationToken).ConfigureAwait(true);
         }
 
-        this._logger.LogInformation($"Upserted {totalUpserted} vectors in {totalBatches} batches");
+        this._logger.LogInformation("Upserted {0} vectors in {1} batches", totalUpserted, totalBatches);
         return totalUpserted;
     }
 
@@ -391,7 +391,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             return;
         }
 
-        this._logger.LogInformation($"Updating vector: {document.Id}");
+        this._logger.LogInformation("Updating vector: {0}", document.Id);
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
@@ -748,8 +748,9 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         using HttpResponseMessage response = await this._httpClient.SendAsync(request, cancel).ConfigureAwait(false);
 
         string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-        this._logger.LogTrace(response.IsSuccessStatusCode ? "Pinecone responded successfully" : "Pinecone responded with error");
+        
+        var logMessage = response.IsSuccessStatusCode ? "Pinecone responded successfully" : "Pinecone responded with error";
+        this._logger.LogTrace("{0} - {1}", logMessage, responseContent);
 
         return (response, responseContent);
     }

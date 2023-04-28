@@ -270,7 +270,7 @@ public static class PineconeUtils
         };
     }
 
-    internal class PineconeOperator
+    internal sealed class PineconeOperator
     {
         public string Operator { get; }
         public object Value { get; }
