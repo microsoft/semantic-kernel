@@ -577,8 +577,6 @@ public sealed class PlanTests
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Once);
     }
 
-
-
     [Fact]
     public async Task CanExecutePlanWithJoinedResultAsync()
     {
@@ -613,10 +611,10 @@ public sealed class PlanTests
         novelChapterMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null))
             .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
             {
-                returnContext.Variables.Update($"Chapter #{c.Variables["chapterIndex"]}: {c.Variables.Input}\nTheme:{c.Variables["theme"]}\nPreviously:{c.Variables["previousChapter"]}");
+                returnContext.Variables.Update(
+                    $"Chapter #{c.Variables["chapterIndex"]}: {c.Variables.Input}\nTheme:{c.Variables["theme"]}\nPreviously:{c.Variables["previousChapter"]}");
             })
             .Returns(() => Task.FromResult(returnContext));
-
 
         var plan = new Plan("A plan with steps that alternate appending to the plan result.");
 
@@ -629,7 +627,8 @@ public sealed class PlanTests
         // - MiscSkill.ElementAtIndex count='3' INPUT='$OUTLINE' index='2' => CHAPTER_3_SYNOPSIS
         // - WriterSkill.NovelChapter chapterIndex='3' previousChapter='$CHAPTER_2_SYNOPSIS' INPUT='$CHAPTER_3_SYNOPSIS' theme='Children's mystery' => RESULT__CHAPTER_3
         var planStep = new Plan(outlineMock.Object);
-        planStep.NamedParameters.Set("input", "A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.");
+        planStep.NamedParameters.Set("input",
+            "A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.");
         planStep.NamedParameters.Set("chapterCount", "3");
         planStep.NamedOutputs.Set("OUTLINE", string.Empty);
         plan.AddSteps(planStep);
@@ -688,7 +687,7 @@ public sealed class PlanTests
         ));
 
         var expected =
-@"Chapter #1: Outline section #0 of 3: Here is a 3 chapter outline about A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.
+            @"Chapter #1: Outline section #0 of 3: Here is a 3 chapter outline about A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.
 Theme:Children's mystery
 Previously:
 Chapter #2: Outline section #1 of 3: Here is a 3 chapter outline about A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.

@@ -51,7 +51,7 @@ public class TextMemorySkill
     /// </summary>
     /// <param name="collection">The default collection for Recall</param>
     /// <param name="relevance">The default relevance value for Recall</param>
-    /// <param name="limit">The default limit for Recall </param>
+    /// <param name="limit">The default limit for Recall</param>
     public TextMemorySkill(string collection = DefaultCollection, string relevance = DefaultRelevance, string limit = DefaultLimit)
     {
         this._collection = collection;

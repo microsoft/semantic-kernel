@@ -139,14 +139,14 @@ internal static class Example12_SequentialPlanner
         {
             sb.Append(step.Steps.Count switch
             {
-                0 => $"{indent}{indent}- {string.Join(".", step.SkillName, step.Name)} {string.Join(" ", step.NamedParameters.Select(p => $"{p.Key}='{p.Value}'"))}{(step.NamedOutputs.Where(s => s.Key.ToUpper(System.Globalization.CultureInfo.CurrentCulture) != "INPUT").Select(p => $"{p.Key}").FirstOrDefault() is var namedOutputs ? $" => {namedOutputs}" : "")}",
+                0 =>
+                    $"{indent}{indent}- {string.Join(".", step.SkillName, step.Name)} {string.Join(" ", step.NamedParameters.Select(p => $"{p.Key}='{p.Value}'"))}{(step.NamedOutputs.Where(s => s.Key.ToUpper(System.Globalization.CultureInfo.CurrentCulture) != "INPUT").Select(p => $"{p.Key}").FirstOrDefault() is var namedOutputs ? $" => {namedOutputs}" : "")}",
                 _ => PlanToString(step, indent + indent)
             });
         }
 
         return sb.ToString();
     }
-
 
     private static async Task MemorySampleAsync()
     {

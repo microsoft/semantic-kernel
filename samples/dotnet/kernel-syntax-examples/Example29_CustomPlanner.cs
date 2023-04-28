@@ -121,24 +121,24 @@ internal static class Example29_CustomPlanner
     private static IKernel InitializeKernel()
     {
         return new KernelBuilder()
-                    .WithLogger(ConsoleLogger.Log)
-                    .Configure(
-                        config =>
-                        {
-                            config.AddAzureTextCompletionService(
-                                Env.Var("AZURE_OPENAI_SERVICE_ID"),
-                                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                                Env.Var("AZURE_OPENAI_KEY"));
+            .WithLogger(ConsoleLogger.Log)
+            .Configure(
+                config =>
+                {
+                    config.AddAzureTextCompletionService(
+                        Env.Var("AZURE_OPENAI_SERVICE_ID"),
+                        Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
+                        Env.Var("AZURE_OPENAI_ENDPOINT"),
+                        Env.Var("AZURE_OPENAI_KEY"));
 
-                            config.AddAzureTextEmbeddingGenerationService(
-                                Env.Var("AZURE_OPENAI_EMBEDDINGS_SERVICE_ID"),
-                                Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
-                                Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
-                                Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"));
-                        })
-                    .WithMemoryStorage(new VolatileMemoryStore())
-                    .Build();
+                    config.AddAzureTextEmbeddingGenerationService(
+                        Env.Var("AZURE_OPENAI_EMBEDDINGS_SERVICE_ID"),
+                        Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
+                        Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
+                        Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"));
+                })
+            .WithMemoryStorage(new VolatileMemoryStore())
+            .Build();
     }
 }
 
@@ -169,7 +169,8 @@ public class MarkupSkill
         {
             sb.Append(step.Steps.Count switch
             {
-                0 => $"{indent}{indent}- {string.Join(".", step.SkillName, step.Name)} {string.Join(" ", step.NamedParameters.Select(p => $"{p.Key}='{p.Value}'"))}{(step.NamedOutputs.Where(s => s.Key.ToUpper(System.Globalization.CultureInfo.CurrentCulture) != "INPUT").Select(p => $"{p.Key}").FirstOrDefault() is var namedOutputs ? $" => {namedOutputs}" : "")}",
+                0 =>
+                    $"{indent}{indent}- {string.Join(".", step.SkillName, step.Name)} {string.Join(" ", step.NamedParameters.Select(p => $"{p.Key}='{p.Value}'"))}{(step.NamedOutputs.Where(s => s.Key.ToUpper(System.Globalization.CultureInfo.CurrentCulture) != "INPUT").Select(p => $"{p.Key}").FirstOrDefault() is var namedOutputs ? $" => {namedOutputs}" : "")}",
                 _ => PlanToString(step, indent + indent)
             });
         }
@@ -182,7 +183,7 @@ public static class XmlMarkupPlanParser
 {
     private static readonly Dictionary<string, KeyValuePair<string, string>> s_skillMapping = new()
     {
-        {"lookup", new KeyValuePair<string, string>("bing", "SearchAsync")},
+        { "lookup", new KeyValuePair<string, string>("bing", "SearchAsync") },
     };
 
     public static Plan FromMarkup(this string markup, string goal, SKContext context)
@@ -230,7 +231,9 @@ public static class XmlMarkupPlanParser
                 }
                 else
                 {
-                    var command = string.IsNullOrEmpty(skillName) ? context.Skills.GetFunction(functionName) : context.Skills.GetFunction(skillName, functionName);
+                    var command = string.IsNullOrEmpty(skillName)
+                        ? context.Skills.GetFunction(functionName)
+                        : context.Skills.GetFunction(skillName, functionName);
                     var planStep = new Plan(command);
                     planStep.NamedParameters.Update(node.InnerText);
                     planStep.NamedOutputs.Set($"markup.{functionName}.result", string.Empty);
@@ -245,6 +248,7 @@ public static class XmlMarkupPlanParser
 }
 
 #region Utility Classes
+
 public class XmlMarkup
 {
     public XmlMarkup(string response, string? wrapperTag = null)
@@ -284,7 +288,6 @@ public struct XmlNodeInfo
     }
 }
 #pragma warning restore CA1815
-
 
 #pragma warning disable CA1711
 public static class XmlEx
@@ -377,4 +380,5 @@ public static class XmlEx
     }
 }
 #pragma warning restore CA1711
+
 #endregion Utility Classes
