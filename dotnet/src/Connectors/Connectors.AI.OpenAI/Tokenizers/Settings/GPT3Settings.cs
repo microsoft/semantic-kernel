@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.SemanticKernel.AI;
 
@@ -10,54 +10,45 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers.Settings;
 
 internal static class GPT3Settings
 {
-    // Lazy load and cache encoding table (encoder.json)
+    /// <summary>Gets the cached encoding table (encoder.json).</summary>
     internal static Dictionary<string, int> Encoder => s_encoder.Value;
 
-    // Lazy load and cache byte pair encoding table (vocab.bpe)
+    /// <summary>Gets the cached byte pair encoding table (vocab.bpe).</summary>
     internal static Dictionary<(string, string), int> BpeRanks => s_bpeRanks.Value;
 
-    // Lazy load and cache encoding table (encoder.json)
-    private static readonly Lazy<Dictionary<string, int>> s_encoder = new(BuildEncoder);
-
-    // Lazy load and cache byte pair encoding table (vocab.bpe)
-    private static readonly Lazy<Dictionary<(string, string), int>> s_bpeRanks = new(BuildBpeRanks);
-
-    private static Dictionary<(string, string), int> BuildBpeRanks()
+    /// <summary>Lazy load the cached encoding table (encoder.json).</summary>
+    private static readonly Lazy<Dictionary<string, int>> s_encoder = new(() =>
     {
-        string[] lines = EmbeddedResource.ReadBytePairEncodingTable().Split('\n');
-        List<(string, string)> bpeMerges = new ArraySegment<string>(lines, 1, lines.Length - 1)
-            .Where(x => x.Trim().Length > 0)
-            .Select(x =>
-            {
-                string[] y = x.Split(' ');
-                return (y[0], y[1]);
-            }).ToList();
-        return DictZip(bpeMerges, Range(0, bpeMerges.Count));
-    }
-
-    private static Dictionary<string, int> BuildEncoder()
-    {
-        string json = EmbeddedResource.ReadEncodingTable();
-        var encoder = JsonSerializer.Deserialize<Dictionary<string, int>>(json);
-
-        return encoder
+        return JsonSerializer.Deserialize<Dictionary<string, int>>(EmbeddedResource.ReadEncodingTable())
                ?? throw new AIException(AIException.ErrorCodes.InvalidConfiguration,
                    "Encoding table deserialization returned NULL");
-    }
+    });
 
-    private static Dictionary<(string, string), int> DictZip(List<(string, string)> x, List<int> y)
+    /// <summary>Lazy load the cached byte pair encoding table (vocab.bpe).</summary>
+    private static readonly Lazy<Dictionary<(string, string), int>> s_bpeRanks = new(() =>
     {
+        string table = EmbeddedResource.ReadBytePairEncodingTable();
+        Debug.Assert(table.StartsWith("#version: 0.2", StringComparison.Ordinal));
+
+        // Skip past the header line
+        int pos = table.IndexOf('\n') + 1;
+        Debug.Assert(pos > 0);
+
+        // For each line, split on the first space and add the pair to the dictionary as a key with the value being the entry number.
         var result = new Dictionary<(string, string), int>();
-        for (int i = 0; i < x.Count; i++)
+        int nextPos;
+        while ((nextPos = table.IndexOf('\n', pos)) >= 0)
         {
-            result.Add(x[i], y[i]);
+            ReadOnlySpan<char> span = table.AsSpan(pos, nextPos - pos).Trim();
+            pos = span.IndexOf(' ');
+            if (pos >= 0)
+            {
+                result.Add((span.Slice(0, pos).ToString(), span.Slice(pos + 1).ToString()), result.Count);
+            }
+
+            pos = nextPos + 1;
         }
 
         return result;
-    }
-
-    private static List<int> Range(int x, int y)
-    {
-        return Enumerable.Range(x, y - x).ToList();
-    }
+    });
 }
