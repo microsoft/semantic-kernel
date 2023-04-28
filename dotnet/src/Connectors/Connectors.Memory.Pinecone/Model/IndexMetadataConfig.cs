@@ -28,15 +28,6 @@ public class MetadataIndexConfig
     public List<string> Indexed { get; set; }
 
     /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        return string.Join(",", this.Indexed);
-    }
-
-    /// <summary>
     ///  Default metadata index configuration which is meant to align with the properties of the MemoryRecordMetadata.
     /// </summary>
     /// <remarks>
