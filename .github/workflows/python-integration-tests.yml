@@ -1,13 +1,13 @@
 #
-# This workflow will run all dotnet integrations tests.
+# This workflow will run all python integrations tests.
 #
 
-name: dotnet-integration-tests
+name: python-integration-tests
 
 on:
   workflow_dispatch:
   push:
-    branches: [ "main", "feature*" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -18,27 +18,27 @@ jobs:
         matrix:
           os: [ubuntu-latest]
           configuration: [Debug]
+
     runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        clean: true
+    needs: paths-filter
+    if: needs.paths-filter.outputs.output1 == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.0.x
-
-    - name: Find projects
+    - name: Find Integration Tests
       shell: bash
-      run: echo "projects=$(find ./dotnet -type f -name "*.IntegrationTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+      run: echo "TESTS=$(find ./python/tests/integration -type f -name "*_test.py" | tr '\n' ' ')" >> $GITHUB_ENV
 
-    - name: Integration Tests
+    - name: Run Integration Tests
       shell: bash
       env: # Set Azure credentials secret as an input
         AzureOpenAI__Label: azure-text-davinci-003
         AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
         AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+        AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
         AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
         AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
         AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
@@ -47,13 +47,7 @@ jobs:
         Bing__ApiKey: ${{ secrets.BING__APIKEY }}
         OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
       run: |
-        for project in ${{ env.projects }}; do
-          dotnet test $project --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
+        cd python
+        for test in ${{ env.TESTS }}; do
+          poetry run python $test
         done
-
-    - name: Upload dotnet test results
-      uses: actions/upload-artifact@v3
-      with:
-        name: dotnet-testresults-${{ matrix.configuration }}
-        path: ./TestResults
-      if: ${{ always() }}

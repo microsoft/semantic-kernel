@@ -1,0 +1,34 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import os
+import pytest
+import sys
+import asyncio
+import semantic_kernel as sk
+import semantic_kernel.connectors.ai.open_ai as sk_oai
+import e2e_text_completion
+
+
+@pytest.mark.asyncio
+async def test_azure_chat_completion_with_skills(use_env_vars: bool):
+    kernel = sk.Kernel()
+
+    if use_env_vars:
+        deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
+        api_key = os.environ["AzureOpenAI__ApiKey"]
+        endpoint = os.environ["AzureOpenAI__Endpoint"]        
+    else:
+        # Load credentials from .env file
+        deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+        deployment_name = "gpt-35-turbo"
+
+    # Configure LLM service
+    kernel.config.add_text_service(
+        "text_service",
+        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key)
+    )
+
+    await e2e_text_completion.summarize_function_test(kernel)
+
+if __name__ == "__main__":
+    asyncio.run(test_azure_chat_completion_with_skills("--use-env-vars" in sys.argv))
