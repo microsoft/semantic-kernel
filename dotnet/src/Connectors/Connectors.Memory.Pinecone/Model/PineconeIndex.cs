@@ -34,18 +34,4 @@ public sealed class PineconeIndex
     [JsonPropertyName("status")]
     public IndexStatus Status { get; set; }
 
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.Append(" Index {\n");
-        sb.Append("  Database: ").Append(this.Configuration).Append('\n');
-        sb.Append("  Status: ").Append(this.Status).Append('\n');
-        sb.Append("}\n");
-        return sb.ToString();
-    }
-
 }

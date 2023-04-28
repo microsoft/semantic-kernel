@@ -25,13 +25,4 @@ public class IndexNamespaceStats
     [JsonPropertyName("vectorCount")]
     public long VectorCount { get; }
 
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>String presentation of the object</returns>
-    public override string ToString()
-    {
-        return "VectorCount: " + this.VectorCount;
-    }
-
 }
