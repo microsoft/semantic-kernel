@@ -87,7 +87,6 @@ public static class ImportSemanticSkillFromDirectoryExtension
                 if (File.Exists(configPath))
                 {
                     config = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
-                    Verify.NotNull(config, $"Invalid prompt template configuration, unable to parse {configPath}");
                 }
 
                 kernel.Log.LogTrace("Config {0}: {1}", functionName, config.ToJson());

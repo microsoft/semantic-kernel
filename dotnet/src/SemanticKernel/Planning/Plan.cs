@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -395,7 +394,6 @@ public sealed class Plan : ISKFunction
         {
             if (context.IsFunctionRegistered(plan.SkillName, plan.Name, out var skillFunction))
             {
-                Verify.NotNull(skillFunction, nameof(skillFunction));
                 plan.SetFunction(skillFunction);
             }
         }

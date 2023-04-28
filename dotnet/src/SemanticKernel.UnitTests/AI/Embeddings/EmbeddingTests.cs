@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Diagnostics;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.AI.Embeddings;
@@ -69,7 +68,7 @@ public class EmbeddingTests
     public void ItThrowsWithNullVector()
     {
         // Assert
-        Assert.Throws<ValidationException>(() => new Embedding<float>(null!));
+        Assert.Throws<ArgumentNullException>("vector", () => new Embedding<float>(null!));
     }
 
     [Fact]

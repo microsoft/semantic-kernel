@@ -77,7 +77,7 @@ public class ContextVariablesConverterTests
         /*lang=json,strict*/ @"{""Key"":""INPUT"",""Value"":""c""}", /*lang=json,strict*/ @"{""Key"":""a"",""Value"":""b""}", /*lang=json,strict*/
         @"{""Key"":""d"",""Value"":""e""}"
     })]
-    public void WriteToJsonSuceeds(string inputValue, IList<string> contextToSet, IList<string> expectedJson)
+    public void WriteToJsonSucceeds(string inputValue, IList<string> contextToSet, IList<string> expectedJson)
     {
         // Arrange
         var options = new JsonSerializerOptions();
