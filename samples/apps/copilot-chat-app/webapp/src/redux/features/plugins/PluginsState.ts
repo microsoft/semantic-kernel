@@ -1,7 +1,7 @@
 import { Constants } from '../../../Constants';
-import GithubIcon from '../../../assets/github-icon.png';
-import GraphIcon from '../../../assets/graph-api-icon.png';
-import JiraIcon from '../../../assets/jira-icon.png';
+import GithubIcon from '../../../assets/plugin-icons/github.png';
+import JiraIcon from '../../../assets/plugin-icons/jira.png';
+import GraphIcon from '../../../assets/plugin-icons/ms-graph.png';
 
 /*
  * For each OpenAPI Spec you're supporting in the Kernel,

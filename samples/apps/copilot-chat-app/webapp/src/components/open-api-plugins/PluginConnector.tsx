@@ -140,6 +140,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                     image: {
                                         src: icon,
                                     },
+                                    initials: '', // Set to empty string so no initials are rendered behind image
                                 }}
                                 secondaryText={`${publisher} | Semantic Kernel Skills`}
                             />

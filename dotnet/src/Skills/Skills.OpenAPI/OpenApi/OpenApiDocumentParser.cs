@@ -153,8 +153,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             }
             catch (KernelException)
             {
-                string formattedOperationName = ConvertOperationIdToValidFunctionName(operationItem.OperationId);
-                operationItem.OperationId = formattedOperationName;
+                operationItem.OperationId = ConvertOperationIdToValidFunctionName(operationItem.OperationId);
             }
 
             var operation = new RestApiOperation(
