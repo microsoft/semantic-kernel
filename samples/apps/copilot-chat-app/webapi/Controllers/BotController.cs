@@ -66,9 +66,9 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UploadAsync(
-            [FromServices] IKernel kernel,
-            [FromQuery] string userId,
-            [FromBody] Bot bot)
+        [FromServices] IKernel kernel,
+        [FromQuery] string userId,
+        [FromBody] Bot bot)
     {
         // TODO: We should get userId from server context instead of from request for privacy/security reasons when support multiple users.
         this._logger.LogDebug("Received call to upload a bot");
@@ -126,7 +126,7 @@ public class BotController : ControllerBase
     /// <returns>The serialized Bot object of the chat id.</returns>
     [Authorize]
     [HttpGet]
-    [Route("bot/download/{chatId:guid}/{userId:regex([[a-b0-9]]+\\.[[a-b0-9]]+)}")]
+    [Route("bot/download/{chatId:guid}/{userId:regex(([[a-z0-9]]+-)+[[a-z0-9]]+\\.([[a-z0-9]]+-)+[[a-z0-9]]+)}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -155,7 +155,7 @@ public class BotController : ControllerBase
     /// <param name="externalBotEmbeddingConfig">The external bot embedding configuration.</param>
     /// <param name="embeddingOptions">The embedding options.</param>
     /// <param name="botSchemaOptions">The bot schema options.</param>
-    /// <returns></returns>
+    /// <returns>True if the bot file is compatible with the app; otherwise false.</returns>
     private static bool IsBotCompatible(
         BotSchemaOptions externalBotSchema,
         BotEmbeddingConfig externalBotEmbeddingConfig,
@@ -169,6 +169,14 @@ public class BotController : ControllerBase
                && externalBotEmbeddingConfig.DeploymentOrModelId.Equals(embeddingOptions.DeploymentOrModelId, StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Get memory from memory store and append the memory records to a given list.
+    /// It will update the memory collection name in the new list if the newCollectionName is provided.
+    /// </summary>
+    /// <param name="kernel">The Semantic Kernel instance.</param>
+    /// <param name="collectionName">The current collection name. Used to query the memory storage.</param>
+    /// <param name="embeddings">The embeddings list where we will append the fetched memory records.</param>
+    /// <param name="newCollectionName">The new collection name when appends to the embeddings list.</param>
     private static async Task GetMemoryRecordsAndAppendtoEmbeddingsAsync(
         IKernel kernel,
         string collectionName,
@@ -195,6 +203,7 @@ public class BotController : ControllerBase
     /// <param name="kernel">The semantic kernel object.</param>
     /// <param name="chatId">The chat id of the bot</param>
     /// <param name="userId">The id of the current user and its home tenant.</param>
+    /// <returns>A Bot object that represents the chat session.</returns>
     private async Task<Bot> CreateBotAsync(
         IKernel kernel,
         Guid chatId,
