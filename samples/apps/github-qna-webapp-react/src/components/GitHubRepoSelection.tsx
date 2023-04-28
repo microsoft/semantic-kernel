@@ -26,6 +26,7 @@ const enum DownloadState {
 const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBranch, onLoadProject, onBack }) => {
     const [project, setProject] = useState<string>(prevProject);
     const [branch, setBranch] = useState<string>(prevBranch);
+    const [patToken, setToken] = useState<string>('');
     const [downloadState, setDownloadState] = useState<DownloadState>(DownloadState.Setup);
     const sk = useSemanticKernel(uri);
 
@@ -42,6 +43,7 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBr
                     value: project || '',
                     inputs: [
                         { key: 'repositoryBranch', value: branch || '' },
+                        { key: 'patToken', value: patToken || '' },
                         { key: 'searchPattern', value: '*.md' },
                     ],
                 },
@@ -96,6 +98,20 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBr
                         setProject(e.target.value);
                     }}
                     placeholder="https://github.com/microsoft/semantic-kernel"
+                />
+            </div>
+            <Label>
+                <strong>GitHub PAT Token (optional)</strong>
+            </Label>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+                <Input
+                    style={{ width: '100%' }}
+                    type="password"
+                    value={patToken}
+                    onChange={(e) => {
+                        setToken(e.target.value);
+                    }}
+                    placeholder=""
                 />
             </div>
             <Label>

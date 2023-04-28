@@ -40,6 +40,7 @@ const App: FC = () => {
     const [selectedTabValue, setSelectedTabValue] = useState<string>('completion');
     const [project, setProject] = useState<string>('');
     const [branch, setBranch] = useState<string>('');
+    const [repoToken, setRepoToken] = useState<string>('');
 
     useEffect(() => {
         changeAppState(appState);

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -27,6 +28,11 @@ public class WebFileDownloadSkill : IDisposable
         /// Where to save file.
         /// </summary>
         public const string FilePath = "filePath";
+
+        /// <summary>
+        /// Default headers for the download requests
+        /// </summary>
+        public const string DefaultHttpHeaders = "defaultHttpHeaders";
     }
 
     private readonly ILogger _logger;
@@ -42,6 +48,19 @@ public class WebFileDownloadSkill : IDisposable
         this._logger = logger ?? NullLogger<WebFileDownloadSkill>.Instance;
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
         this._httpClient = new HttpClient(this._httpClientHandler);
+    }
+
+    public async Task DownloadToFileAsync(string source, IDictionary<string, string> headers, SKContext context)
+    {
+        this._httpClient.DefaultRequestHeaders.Clear();
+
+        foreach (var header in headers)
+        {
+            this._httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+        }
+
+        await this.DownloadToFileAsync(source, context);
+        this._httpClient.DefaultRequestHeaders.Clear();
     }
 
     /// <summary>
@@ -69,6 +88,7 @@ public class WebFileDownloadSkill : IDisposable
         }
 
         this._logger.LogDebug("Sending GET request for {0}", source);
+
         HttpResponseMessage response = await this._httpClient.GetAsync(new Uri(source), context.CancellationToken);
         response.EnsureSuccessStatusCode();
         this._logger.LogDebug("Response received: {0}", response.StatusCode);

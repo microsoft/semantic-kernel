@@ -38,6 +38,11 @@ public class GitHubSkill
         public const string SearchPattern = "searchPattern";
 
         /// <summary>
+        /// Personal access token for private repositories.
+        /// </summary>
+        public const string PatToken = "patToken";
+
+        /// <summary>
         /// Document file path.
         /// </summary>
         public const string FilePath = "filePath";
@@ -132,9 +137,30 @@ BEGIN SUMMARY:
         try
         {
             var repositoryUri = source.Trim(new char[] { ' ', '/' });
-            var context1 = new SKContext(new ContextVariables(), NullMemory.Instance, null, context.Log);
-            context1.Variables.Set(Parameters.FilePath, filePath);
-            await this._downloadSkill.DownloadToFileAsync($"{repositoryUri}/archive/refs/heads/{repositoryBranch}.zip", context1);
+            var downloadSkillContext = new SKContext(new ContextVariables(), NullMemory.Instance, null, context.Log);
+            downloadSkillContext.Variables.Set(Parameters.FilePath, filePath);
+
+            var repoBundle = $"{repositoryUri}/archive/refs/heads/{repositoryBranch}.zip";
+
+            this._logger.LogDebug($"Downloading {repoBundle}");
+
+            if (context.Variables.Get(Parameters.PatToken, out string patToken))
+            {
+                this._logger.LogDebug($"PATToken detected, adding authorization headers");
+
+                // If variables would be a dictionary of object we could probably pass headers,
+                // we can also serialize it to string...
+                var headers = new Dictionary<string, string>()
+                {
+                    { "Authorization", $"token {patToken}" }
+                };
+
+                await this._downloadSkill.DownloadToFileAsync(repoBundle, headers, downloadSkillContext);
+            }
+            else
+            {
+                await this._downloadSkill.DownloadToFileAsync(repoBundle, downloadSkillContext);
+            }
 
             ZipFile.ExtractToDirectory(filePath, directoryPath);
 
