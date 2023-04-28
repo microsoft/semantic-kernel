@@ -318,13 +318,14 @@ public class QdrantMemoryStore : IMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        IAsyncEnumerator<(QdrantVectorRecord, double)> enumerator = this._qdrantClient.FindNearestInCollectionAsync(
-            collectionName: collectionName,
-            target: embedding.Vector,
-            threshold: minRelevanceScore,
-            top: limit,
-            withVectors: withEmbeddings,
-            cancel: cancel)
+        IAsyncEnumerator<(QdrantVectorRecord, double)> enumerator = this._qdrantClient
+            .FindNearestInCollectionAsync(
+                collectionName: collectionName,
+                target: embedding.Vector,
+                threshold: minRelevanceScore,
+                top: limit,
+                withVectors: withEmbeddings,
+                cancel: cancel)
             .GetAsyncEnumerator(cancel);
 
         // Workaround for https://github.com/dotnet/csharplang/issues/2949: Yielding in catch blocks not supported in async iterators
@@ -346,7 +347,8 @@ public class QdrantMemoryStore : IMemoryStore
             }
             catch (HttpRequestException ex) when (ex.Message.Contains("404"))
             {
-                this._logger?.LogWarning("NotFound when calling {0}::FindNearestInCollectionAsync - the collection '{1}' may not exist yet.", nameof(QdrantMemoryStore), collectionName);
+                this._logger?.LogWarning("NotFound when calling {0}::FindNearestInCollectionAsync - the collection '{1}' may not exist yet",
+                    nameof(QdrantMemoryStore), collectionName);
                 hasResult = false;
             }
 
