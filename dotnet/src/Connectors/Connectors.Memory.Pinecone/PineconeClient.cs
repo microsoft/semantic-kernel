@@ -78,7 +78,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         }
         catch (HttpRequestException e)
         {
-            this._logger.LogDebug("Vectors not found {0}", e.Message);
+            this._logger.LogError("Error occurred on Get Vectors request: {0}", e.Message);
             yield break;
         }
 
@@ -148,7 +148,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         }
         catch (HttpRequestException e)
         {
-            this._logger.LogDebug("Vectors not found {0}", e.Message);
+            this._logger.LogError("Error occurred on Query Vectors request: {0}", e.Message);
             yield break;
         }
 
@@ -265,7 +265,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             }
             catch (HttpRequestException e)
             {
-                this._logger.LogDebug("Failed to upsert vectors {0}", e.Message);
+                this._logger.LogError("Failed to upsert vectors {0}", e.Message);
                 throw;
             }
 
