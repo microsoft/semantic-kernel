@@ -72,7 +72,7 @@ public class MetadataIndexConfig
     ///     <item>
     ///     <term>created_at</term>
     ///     <description>Timestamp of when the document was created</description>
-    ///     <see cref="MemoryRecord.Timestamp"/>
+    ///     <see cref="DataEntryBase.Timestamp"/>
     ///     </item>
     /// </list>
     /// </remarks>

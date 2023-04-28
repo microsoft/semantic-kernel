@@ -8,11 +8,12 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 /// <summary>
 /// The current status of a index.
 /// </summary>
-/// <value>The current status of a index.</value>
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum IndexState
 {
 
+    None = 0,
+    
     /// <summary>
     /// Enum Initializing for value: Initializing
     /// </summary>
@@ -42,6 +43,4 @@ public enum IndexState
     /// </summary>
     [EnumMember(Value = "Ready")]
     Ready = 5,
-
-    NotInitialized
 }

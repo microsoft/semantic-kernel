@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -55,8 +55,6 @@ public class PineconeMemoryStoreTests
         this._mockPineconeClient
             .Setup<Task<bool>>(x => x.DoesIndexExistAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
-
-        IndexDefinition definition;
 
         this._mockPineconeClient
             .Setup<Task<string?>>(x => x.CreateIndexAsync(It.IsAny<IndexDefinition>(), It.IsAny<CancellationToken>()))
@@ -128,7 +126,7 @@ public class PineconeMemoryStoreTests
     }
 
     [Fact]
-    public async Task UpsertAsync_Inserts_New_DocumentAsync()
+    public async Task UpsertAsyncInsertsNewDocumentAsync()
     {
         // Arrange
         string indexName = "test-index";
@@ -155,7 +153,7 @@ public class PineconeMemoryStoreTests
     }
 
     [Fact]
-    public async Task UpsertBatchAsync_Processes_Multiple_DocumentsAsync()
+    public async Task UpsertBatchAsyncProcessesMultipleDocumentsAsync()
     {
         // Arrange
         string indexName = "test-index";
@@ -240,7 +238,7 @@ public class PineconeMemoryStoreTests
                 Values = this._embedding2.Vector,
             }, 0.5)
         };
-        
+
         this._mockPineconeClient.Setup(x => x.Ready).Returns(true);
 
         // Setup 
