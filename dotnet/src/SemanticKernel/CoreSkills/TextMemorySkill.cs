@@ -43,7 +43,7 @@ public class TextMemorySkill
     public const string LimitParam = "limit";
 
     private const string DefaultCollection = "generic";
-    private const string DefaultRelevance = "0.75";
+    private const string DefaultRelevance = "0.0";
     private const string DefaultLimit = "1";
 
     /// <summary>
@@ -118,9 +118,9 @@ public class TextMemorySkill
 
         // TODO: support locales, e.g. "0.7" and "0,7" must both work
         var limitInt = int.Parse(limit, CultureInfo.InvariantCulture);
-        var relevanceScore = float.Parse(relevance, CultureInfo.InvariantCulture);
+        var relevanceThreshold = float.Parse(relevance, CultureInfo.InvariantCulture);
         var memories = context.Memory
-            .SearchAsync(collection, text, limitInt, relevanceScore)
+            .SearchAsync(collection, text, limitInt, relevanceThreshold)
             .ToEnumerable();
 
         context.Log.LogTrace("Done looking for memories in collection '{0}')", collection);
