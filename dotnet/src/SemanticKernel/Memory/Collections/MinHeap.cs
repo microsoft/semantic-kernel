@@ -28,7 +28,10 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
     public MinHeap(T minValue, int capacity)
     {
-        Verify.GreaterThan(capacity, MinCapacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+        if (capacity < MinCapacity)
+        {
+            Verify.ThrowArgumentOutOfRangeException(nameof(capacity), capacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+        }
 
         this._items = new T[capacity + 1];
         //
@@ -106,11 +109,13 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
     public void Add(IList<T> items, int startAt = 0)
     {
-        Verify.NotNull(items, nameof(items));
+        Verify.NotNull(items);
 
         int newItemCount = items.Count;
-
-        Verify.LessThan(startAt, newItemCount, $"{nameof(startAt)} value must be less than {nameof(items)} count.");
+        if (startAt >= newItemCount)
+        {
+            Verify.ThrowArgumentOutOfRangeException(nameof(startAt), startAt, $"{nameof(startAt)} value must be less than {nameof(items)}.{nameof(items.Count)}.");
+        }
 
         this.EnsureCapacity(this._count + (newItemCount - startAt));
         for (int i = startAt; i < newItemCount; ++i)
@@ -148,7 +153,10 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
     public void EnsureCapacity(int capacity)
     {
-        Verify.GreaterThan(capacity, MinCapacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+        if (capacity < MinCapacity)
+        {
+            Verify.ThrowArgumentOutOfRangeException(nameof(capacity), capacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+        }
 
         // 0th item is always a sentinel
         capacity++;

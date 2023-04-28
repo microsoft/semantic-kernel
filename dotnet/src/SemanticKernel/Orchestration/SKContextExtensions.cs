@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable IDE0130
@@ -16,7 +17,7 @@ internal static class SKContextExtensions
     /// <param name="skillName">The skill name</param>
     /// <param name="functionName">The function name</param>
     /// <param name="registeredFunction">The registered function, if found</param>
-    internal static bool IsFunctionRegistered(this SKContext context, string skillName, string functionName, out ISKFunction? registeredFunction)
+    internal static bool IsFunctionRegistered(this SKContext context, string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? registeredFunction)
     {
         context.ThrowIfSkillCollectionNotSet();
 

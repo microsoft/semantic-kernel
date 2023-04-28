@@ -15,18 +15,18 @@ internal static class Verify
     private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNull([NotNull] object? obj, string message)
+    internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression(nameof(obj))] string? paramName = null)
     {
         if (obj is null)
         {
-            ThrowValidationException(ValidationException.ErrorCodes.NullValue, message);
+            ThrowArgumentNullException(paramName);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotEmpty([NotNull] string? str, string message)
+    internal static void NotEmpty([NotNull] string? str, string? message = null, [CallerArgumentExpression(nameof(str))] string? paramName = null)
     {
-        NotNull(str, message);
+        NotNull(str, paramName);
         if (string.IsNullOrWhiteSpace(str))
         {
             ThrowValidationException(ValidationException.ErrorCodes.EmptyValue, message);
@@ -62,8 +62,8 @@ internal static class Verify
 
     internal static void StartsWith(string text, string prefix, string message)
     {
-        NotEmpty(text, "The text to verify cannot be empty");
-        NotNull(prefix, "The prefix to verify is empty");
+        NotEmpty(text);
+        NotNull(prefix);
         if (!text.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
             ThrowValidationException(ValidationException.ErrorCodes.MissingPrefix, message);
@@ -104,26 +104,6 @@ internal static class Verify
         }
     }
 
-    internal static void GreaterThan<T>(T value, T min, string message) where T : IComparable<T>
-    {
-        int cmp = value.CompareTo(min);
-
-        if (cmp <= 0)
-        {
-            throw new ValidationException(ValidationException.ErrorCodes.OutOfRange, message);
-        }
-    }
-
-    public static void LessThan<T>(T value, T max, string message) where T : IComparable<T>
-    {
-        int cmp = value.CompareTo(max);
-
-        if (cmp >= 0)
-        {
-            throw new ValidationException(ValidationException.ErrorCodes.OutOfRange, message);
-        }
-    }
-
     [DoesNotReturn]
     private static void ThrowInvalidName(string kind, string name) =>
         throw new KernelException(
@@ -131,6 +111,14 @@ internal static class Verify
             $"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.");
 
     [DoesNotReturn]
-    private static void ThrowValidationException(ValidationException.ErrorCodes errorCodes, string message) =>
+    internal static void ThrowArgumentNullException(string? paramName) =>
+        throw new ArgumentNullException(paramName);
+
+    [DoesNotReturn]
+    internal static void ThrowArgumentOutOfRangeException<T>(string? paramName, T actualValue, string message) =>
+        throw new ArgumentOutOfRangeException(paramName, actualValue, message);
+
+    [DoesNotReturn]
+    internal static void ThrowValidationException(ValidationException.ErrorCodes errorCodes, string? message) =>
         throw new ValidationException(errorCodes, message);
 }
