@@ -12,7 +12,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 /// <summary>
 /// The pod type
 /// </summary>
-/// <value>The pod type</value>
 [JsonConverter(typeof(PodTypeJsonConverter))]
 public enum PodType
 {

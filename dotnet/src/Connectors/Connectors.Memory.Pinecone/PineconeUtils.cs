@@ -51,8 +51,6 @@ public static class PineconeUtils
         Converters =
         {
             new PodTypeJsonConverter(),
-            new IndexMetricJsonConverter(),
-            new IndexStateJsonConverter(),
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         }
     };
