@@ -11,7 +11,6 @@ import { store } from './redux/app/store';
 
 import React from 'react';
 
-
 if (!localStorage.getItem('debug')) {
     localStorage.setItem('debug', `${Constants.debug.root}:*`);
 }
@@ -35,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         </FluentProvider>
                     </MsalProvider>
                 </ReduxProvider>
-                ,
             </React.StrictMode>,
         );
     }

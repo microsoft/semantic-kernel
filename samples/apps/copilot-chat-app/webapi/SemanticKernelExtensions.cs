@@ -8,8 +8,6 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -64,7 +62,8 @@ internal static class SemanticKernelExtensions
             }
         });
 
-        services.AddScoped<ISemanticTextMemory>(serviceProvider => new SemanticTextMemory(
+        services.AddScoped<ISemanticTextMemory>(serviceProvider
+            => new SemanticTextMemory(
                 serviceProvider.GetRequiredService<IMemoryStore>(),
                 serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
                     .ToTextEmbeddingsService(serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>())));
@@ -76,7 +75,11 @@ internal static class SemanticKernelExtensions
             // This allows the planner to use only the skills that are available at call time.
             IKernel chatKernel = sp.GetRequiredService<IKernel>();
             IKernel plannerKernel = new Kernel(
-                new SkillCollection(), chatKernel.PromptTemplateEngine, chatKernel.Memory, chatKernel.Config, sp.GetRequiredService<ILogger<CopilotChatPlanner>>());
+                new SkillCollection(),
+                chatKernel.PromptTemplateEngine,
+                chatKernel.Memory,
+                chatKernel.Config,
+                sp.GetRequiredService<ILogger<CopilotChatPlanner>>());
             return new CopilotChatPlanner(plannerKernel, sp.GetRequiredService<IOptions<PlannerOptions>>());
         });
 

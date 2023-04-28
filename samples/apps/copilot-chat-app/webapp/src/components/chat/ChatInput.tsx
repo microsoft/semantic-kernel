@@ -182,7 +182,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         type="file"
                         ref={documentFileRef}
                         style={{ display: 'none' }}
-                        accept='.txt'
+                        accept='.txt,.pdf'
                         multiple={false}
                         onChange={() => importDocument()}
                     />
