@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using RepoUtils;
 using Microsoft.SemanticKernel.Skills.Grpc.Extensions;
-using System.Threading.Tasks;
+using RepoUtils;
 
 /**
  * This example shows how to use gRPC skills.
