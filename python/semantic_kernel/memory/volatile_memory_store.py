@@ -27,7 +27,6 @@ class VolatileMemoryStore(MemoryStoreBase):
     async def create_collection_async(
         self,
         collection_name: str
-        # TODO: cancel token
     ) -> None:
         """Creates a new collection if it does not exist.
 
@@ -44,7 +43,6 @@ class VolatileMemoryStore(MemoryStoreBase):
 
     async def get_collections_async(
         self,
-        # TODO: cancel token
     ) -> List[str]:
         """Gets the list of collections.
 
@@ -56,7 +54,6 @@ class VolatileMemoryStore(MemoryStoreBase):
     async def delete_collection_async(
         self,
         collection_name: str
-        # TODO: cancel token
     ) -> None:
         """Deletes a collection.
 
@@ -72,7 +69,6 @@ class VolatileMemoryStore(MemoryStoreBase):
     async def does_collection_exist_async(
         self,
         collection_name: str
-        # TODO: cancel token
     ) -> bool:
         """Checks if a collection exists.
 
@@ -88,7 +84,6 @@ class VolatileMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         record: MemoryRecord
-        # TODO: cancel token
     ) -> str:
         """Upserts a record.
 
@@ -110,7 +105,6 @@ class VolatileMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         records: List[MemoryRecord]
-        # TODO: cancel token
     ) -> List[str]:
         """Upserts a batch of records.
 
@@ -134,7 +128,6 @@ class VolatileMemoryStore(MemoryStoreBase):
         collection_name: str,
         key: str,
         with_embedding: bool = False
-        # TODO: cancel token
     ) -> MemoryRecord:
         """Gets a record.
 
@@ -165,7 +158,6 @@ class VolatileMemoryStore(MemoryStoreBase):
         collection_name: str,
         keys: List[str],
         with_embeddings: bool = False
-        # TODO: cancel token
     ) -> List[MemoryRecord]:
         """Gets a batch of records.
 
@@ -197,7 +189,6 @@ class VolatileMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         key: str
-        # TODO: cancel token
     ) -> None:
         """Removes a record.
 
@@ -220,7 +211,6 @@ class VolatileMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         keys: List[str]
-        # TODO: cancel token
     ) -> None:
         """Removes a batch of records.
 
@@ -244,7 +234,6 @@ class VolatileMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False
-        # TODO: cancel token
     ) -> Tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
@@ -271,8 +260,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         limit: int,
         min_relevance_score: float = 0.0,
-        with_embeddings: bool = False,
-        # TODO: cancel token
+        with_embeddings: bool = False
     ) -> List[Tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 

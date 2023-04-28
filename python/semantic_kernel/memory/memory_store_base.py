@@ -12,15 +12,13 @@ class MemoryStoreBase:
     @abstractmethod
     async def create_collection_async(
         self,
-        collection_name: str
-        # TODO: cancel token
+        collection_name: SystemError
     ) -> None:
         pass
 
     @abstractmethod
     async def get_collections_async(
         self,
-        # TODO: cancel token
     ) -> List[str]:
         pass
 
@@ -28,7 +26,6 @@ class MemoryStoreBase:
     async def delete_collection_async(
         self,
         collection_name: str
-        # TODO: cancel token
     ) -> None:
         pass
 
@@ -36,7 +33,6 @@ class MemoryStoreBase:
     async def does_collection_exist_async(
         self,
         collection_name: str
-        # TODO: cancel token
     ) -> bool:
         pass
 
@@ -45,7 +41,6 @@ class MemoryStoreBase:
         self,
         collection_name: str,
         record: MemoryRecord
-        # TODO: cancel token
     ) -> str:
         pass
 
@@ -54,7 +49,6 @@ class MemoryStoreBase:
         self,
         collection_name: str,
         records: List[MemoryRecord]
-        # TODO: cancel token
     ) -> List[str]:
         pass
 
@@ -64,7 +58,6 @@ class MemoryStoreBase:
         collection_name: str,
         key: str,
         with_embedding: bool
-        # TODO: cancel token
     ) -> MemoryRecord:
         pass
 
@@ -74,7 +67,6 @@ class MemoryStoreBase:
         collection_name: str,
         keys: List[str],
         with_embeddings: bool
-        # TODO: cancel token
     ) -> List[MemoryRecord]:
         pass
 
@@ -83,7 +75,6 @@ class MemoryStoreBase:
         self,
         collection_name: str,
         key: str
-        # TODO: cancel token
     ) -> None:
         pass
 
@@ -92,7 +83,6 @@ class MemoryStoreBase:
         self,
         collection_name: str,
         keys: List[str]
-        # TODO: cancel token
     ) -> None:
         pass
 
@@ -104,7 +94,6 @@ class MemoryStoreBase:
         limit: int,
         min_relevance_score: float,
         with_embeddings: bool
-        # TODO: cancel token
     ) -> List[Tuple[MemoryRecord, float]]:
         pass
 
@@ -115,6 +104,5 @@ class MemoryStoreBase:
         embedding: ndarray,
         min_relevance_score: float,
         with_embedding: bool
-        # TODO: cancel token
     ) -> Tuple[MemoryRecord, float]:
         pass
