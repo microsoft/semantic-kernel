@@ -7,6 +7,8 @@ using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
@@ -22,11 +24,6 @@ namespace Microsoft.SemanticKernel.Skills.Grpc;
 /// </summary>
 internal class GrpcOperationRunner
 {
-    /// <summary>
-    /// Name of 'address' argument used as override for the address provided by gRPC operation.
-    /// </summary>
-    internal const string AddressArgumentName = "address";
-
     /// <summary>
     /// An instance of the HttpClient class.
     /// </summary>
@@ -48,10 +45,10 @@ internal class GrpcOperationRunner
     /// <param name="arguments">The operation arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation run.</returns>
-    public async Task<object> RunAsync(GrpcOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
+    public async Task<JsonObject> RunAsync(GrpcOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(operation, $"No operation was provided for {nameof(GrpcOperationRunner)} to run.");
-        Verify.NotNull(arguments, $"No arguments were provided for {nameof(GrpcOperationRunner)} to run.");
+        Verify.NotNull(arguments, $"No arguments were provided for {operation.Name} gRPC operation.");
 
         var address = this.GetAddress(operation, arguments);
 
@@ -76,8 +73,27 @@ internal class GrpcOperationRunner
 
             var request = this.GenerateOperationRequest(operation, requestType, arguments);
 
-            return await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
+            var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).ConfigureAwait(false);
+
+            return ConvertResponse(response, responseType);
         }
+    }
+
+    /// <summary>
+    /// Converts gRPC response.
+    /// </summary>
+    /// <param name="response">The response to convert.</param>
+    /// <param name="responseType">The response type info.</param>
+    /// <returns>The converted response.</returns>
+    private static JsonObject ConvertResponse(object response, Type responseType)
+    {
+        var content = JsonSerializer.Serialize(response, responseType, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        //First iteration allowing to associate additional metadata with the returned content.
+        var result = new JsonObject();
+        result.Add("content", content);
+        result.Add("contentType", "application/json; charset=utf-8");
+        return result;
     }
 
     /// <summary>
@@ -90,7 +106,7 @@ internal class GrpcOperationRunner
     {
         string? address = null;
 
-        if (!arguments.TryGetValue(AddressArgumentName, out address))
+        if (!arguments.TryGetValue(GrpcOperation.AddressArgumentName, out address))
         {
             address = operation.Address;
         }
@@ -138,18 +154,17 @@ internal class GrpcOperationRunner
     /// <returns>The operation request instance.</returns>
     private object GenerateOperationRequest(GrpcOperation operation, Type type, IDictionary<string, string> arguments)
     {
-        var instance = Activator.CreateInstance(type);
-
-        foreach (var field in operation.Request.Fields)
+        //Getting 'payload' argument to by used as gRPC request message
+        if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out var payload))
         {
-            if (!arguments.TryGetValue(field.Name, out var value))
-            {
-                throw new GrpcOperationException($"No argument found for field - '{field.Name}' for operation - '{operation.Name}'");
-            }
+            throw new GrpcOperationException($"No '{GrpcOperation.PayloadArgumentName}' argument representing gRPC request message is found for the '{operation.Name}' gRPC operation.");
+        }
 
-            var pascalCaseName = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(field.Name);
-
-            type.GetProperty(pascalCaseName).SetValue(instance, value);
+        //Deserializing JOSN payload to gRPC request message
+        var instance = JsonSerializer.Deserialize(payload, type, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        if (instance == null)
+        {
+            throw new GrpcOperationException($"Impossible to create gRPC request message for the '{operation.Name}' gRPC operation.");
         }
 
         return instance;
@@ -160,7 +175,7 @@ internal class GrpcOperationRunner
     /// </summary>
     /// <param name="dataContractMetadata">The data contract type metadata.</param>
     /// <returns>.NET type representing the data contract type.</returns>
-    public static Type BuildGrpcOperationDataContractType(GrpcOperationDataContractType dataContractMetadata)
+    private static Type BuildGrpcOperationDataContractType(GrpcOperationDataContractType dataContractMetadata)
     {
         var assemblyName = new AssemblyName($"{dataContractMetadata.Name}Assembly");
 

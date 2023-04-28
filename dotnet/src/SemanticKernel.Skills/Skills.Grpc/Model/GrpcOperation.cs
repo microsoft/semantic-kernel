@@ -8,6 +8,16 @@ namespace Microsoft.SemanticKernel.Skills.Grpc.Model;
 internal class GrpcOperation
 {
     /// <summary>
+    /// Name of 'address' argument used as override for the address provided by gRPC operation.
+    /// </summary>
+    internal const string AddressArgumentName = "address";
+
+    /// <summary>
+    /// Name of 'payload' argument that represents gRPC operation request message.
+    /// </summary>
+    internal const string PayloadArgumentName = "payload";
+
+    /// <summary>
     /// Creates an instance of a <see cref="GrpcOperation"/> class.
     /// <param name="serviceName">The service name.</param>
     /// <param name="name">The operation name.</param>
