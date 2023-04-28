@@ -505,7 +505,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
                 catch (HttpRequestException e)
                 {
-                    this._logger.LogError(e, "Createing index failed: {0}, {1}", e.Message, responseContent);
+                    this._logger.LogError(e, "Creating index failed: {0}, {1}", e.Message, responseContent);
                     throw;
                 }
 
