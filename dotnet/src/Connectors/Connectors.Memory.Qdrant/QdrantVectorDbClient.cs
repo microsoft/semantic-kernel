@@ -307,6 +307,8 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             yield break;
         }
 
+        response.EnsureSuccessStatusCode();
+
         var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
 
         if (data == null)
