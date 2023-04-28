@@ -24,10 +24,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
 
-    async def create_collection_async(
-        self,
-        collection_name: str
-    ) -> None:
+    async def create_collection_async(self, collection_name: str) -> None:
         """Creates a new collection if it does not exist.
 
         Arguments:
@@ -51,10 +48,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         """
         return list(self._store.keys())
 
-    async def delete_collection_async(
-        self,
-        collection_name: str
-    ) -> None:
+    async def delete_collection_async(self, collection_name: str) -> None:
         """Deletes a collection.
 
         Arguments:
@@ -66,10 +60,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         if collection_name in self._store:
             del self._store[collection_name]
 
-    async def does_collection_exist_async(
-        self,
-        collection_name: str
-    ) -> bool:
+    async def does_collection_exist_async(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
         Arguments:
@@ -80,11 +71,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         """
         return collection_name in self._store
 
-    async def upsert_async(
-        self,
-        collection_name: str,
-        record: MemoryRecord
-    ) -> str:
+    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record.
 
         Arguments:
@@ -102,9 +89,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         return record._key
 
     async def upsert_batch_async(
-        self,
-        collection_name: str,
-        records: List[MemoryRecord]
+        self, collection_name: str, records: List[MemoryRecord]
     ) -> List[str]:
         """Upserts a batch of records.
 
@@ -124,10 +109,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         return [record._key for record in records]
 
     async def get_async(
-        self,
-        collection_name: str,
-        key: str,
-        with_embedding: bool = False
+        self, collection_name: str, key: str, with_embedding: bool = False
     ) -> MemoryRecord:
         """Gets a record.
 
@@ -154,10 +136,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         return result
 
     async def get_batch_async(
-        self,
-        collection_name: str,
-        keys: List[str],
-        with_embeddings: bool = False
+        self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
         """Gets a batch of records.
 
@@ -185,11 +164,7 @@ class VolatileMemoryStore(MemoryStoreBase):
                 result._embedding = None
         return results
 
-    async def remove_async(
-        self,
-        collection_name: str,
-        key: str
-    ) -> None:
+    async def remove_async(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
         Arguments:
@@ -207,11 +182,7 @@ class VolatileMemoryStore(MemoryStoreBase):
 
         del self._store[collection_name][key]
 
-    async def remove_batch_async(
-        self,
-        collection_name: str,
-        keys: List[str]
-    ) -> None:
+    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -233,7 +204,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         collection_name: str,
         embedding: ndarray,
         min_relevance_score: float = 0.0,
-        with_embedding: bool = False
+        with_embedding: bool = False,
     ) -> Tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
@@ -260,7 +231,7 @@ class VolatileMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         limit: int,
         min_relevance_score: float = 0.0,
-        with_embeddings: bool = False
+        with_embeddings: bool = False,
     ) -> List[Tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
