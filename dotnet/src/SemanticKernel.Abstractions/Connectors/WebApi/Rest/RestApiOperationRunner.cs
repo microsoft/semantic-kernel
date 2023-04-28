@@ -91,7 +91,7 @@ internal sealed class RestApiOperationRunner : IRestApiOperationRunner
             requestMessage.Content = payload;
         }
 
-        if (this._userAgent != null)
+        if (!string.IsNullOrWhiteSpace(this._userAgent))
         {
             requestMessage.Headers.Add("User-Agent", this._userAgent);
         }
