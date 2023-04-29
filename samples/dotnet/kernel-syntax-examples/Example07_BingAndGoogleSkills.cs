@@ -68,7 +68,7 @@ public static class Example07_BingAndGoogleSkills
     {
         Console.WriteLine("======== Use Search Skill to answer user questions ========");
 
-        const string SEMANTIC_FUNCTION = @"Answer questions only when you know the facts or the information is provided.
+        const string SemanticFunction = @"Answer questions only when you know the facts or the information is provided.
 When you don't have sufficient information you reply with a list of commands to find the information needed.
 When answering multiple questions, use a bullet point list.
 Note: make sure single and double quotes are escaped using a backslash char.
@@ -104,7 +104,7 @@ Answer: ";
         var questions = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
         Console.WriteLine(questions);
 
-        var oracle = kernel.CreateSemanticFunction(SEMANTIC_FUNCTION, maxTokens: 200, temperature: 0, topP: 1);
+        var oracle = kernel.CreateSemanticFunction(SemanticFunction, maxTokens: 200, temperature: 0, topP: 1);
 
         var context = kernel.CreateNewContext();
         context["externalInformation"] = "";

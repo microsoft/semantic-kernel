@@ -387,7 +387,7 @@ public class ChatSkill
         catch (JsonException)
         {
             // Expected if not valid JSON.
-            this._logger.LogDebug("Unable to extract JSON from planner response. It is likely not JSON formatted.");
+            this._logger.LogDebug("Unable to extract JSON from planner response, it is likely not JSON formatted");
         }
 
         json = string.Empty;

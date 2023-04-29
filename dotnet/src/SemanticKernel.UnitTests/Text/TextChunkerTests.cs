@@ -12,14 +12,14 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitPlainTextLines()
     {
-        const string input = "This is a test of the emergency broadcast system. This is only a test.";
+        const string Input = "This is a test of the emergency broadcast system. This is only a test.";
         var expected = new[]
         {
             "This is a test of the emergency broadcast system.",
             "This is only a test."
         };
 
-        var result = TextChunker.SplitPlainTextLines(input, 15);
+        var result = TextChunker.SplitPlainTextLines(Input, 15);
 
         Assert.Equal(expected, result);
     }
@@ -68,14 +68,14 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitMarkDownLines()
     {
-        const string input = "This is a test of the emergency broadcast system. This is only a test.";
+        const string Input = "This is a test of the emergency broadcast system. This is only a test.";
         var expected = new[]
         {
             "This is a test of the emergency broadcast system.",
             "This is only a test."
         };
 
-        var result = TextChunker.SplitMarkDownLines(input, 15);
+        var result = TextChunker.SplitMarkDownLines(Input, 15);
 
         Assert.Equal(expected, result);
     }
