@@ -22,7 +22,7 @@ public static class Example18_DallE
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         // Add your image generation service
-        kernel.Config.AddOpenAIImageGenerationService("dallE", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAIImageGenerationService(Env.Var("OPENAI_API_KEY"));
 
         IImageGeneration dallE = kernel.GetService<IImageGeneration>();
 
@@ -42,7 +42,7 @@ public static class Example18_DallE
         Console.WriteLine("======== Chat with images ========");
 
         // Add your chat completion service
-        kernel.Config.AddOpenAIChatCompletionService("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
         var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat(

@@ -105,19 +105,15 @@ internal static class SemanticKernelExtensions
         {
             case AIServiceOptions.AIServiceType.AzureOpenAI:
                 kernelConfig.AddAzureChatCompletionService(
-                    serviceId: config.Label,
                     deploymentName: config.DeploymentOrModelId,
                     endpoint: config.Endpoint,
-                    apiKey: config.Key,
-                    alsoAsTextCompletion: true);
+                    apiKey: config.Key);
                 break;
 
             case AIServiceOptions.AIServiceType.OpenAI:
                 kernelConfig.AddOpenAIChatCompletionService(
-                    serviceId: config.Label,
                     modelId: config.DeploymentOrModelId,
-                    apiKey: config.Key,
-                    alsoAsTextCompletion: true);
+                    apiKey: config.Key);
                 break;
 
             default:
@@ -138,17 +134,17 @@ internal static class SemanticKernelExtensions
         {
             case AIServiceOptions.AIServiceType.AzureOpenAI:
                 kernelConfig.AddAzureTextEmbeddingGenerationService(
-                    serviceId: config.Label,
                     deploymentName: config.DeploymentOrModelId,
                     endpoint: config.Endpoint,
-                    apiKey: config.Key);
+                    apiKey: config.Key,
+                    serviceId: config.Label);
                 break;
 
             case AIServiceOptions.AIServiceType.OpenAI:
                 kernelConfig.AddOpenAITextEmbeddingGenerationService(
-                    serviceId: config.Label,
                     modelId: config.DeploymentOrModelId,
-                    apiKey: config.Key);
+                    apiKey: config.Key,
+                    serviceId: config.Label);
                 break;
 
             default:
