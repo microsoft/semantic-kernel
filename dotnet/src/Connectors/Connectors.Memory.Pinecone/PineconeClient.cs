@@ -270,7 +270,6 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
             totalUpserted += data.UpsertedCount;
             this._logger.LogInformation("Upserted batch {0} with {1} vectors", totalBatches, data.UpsertedCount);
-            await Task.Delay(TimeSpan.FromMilliseconds(1000), cancellationToken).ConfigureAwait(true);
         }
 
         this._logger.LogInformation("Upserted {0} vectors in {1} batches", totalUpserted, totalBatches);
