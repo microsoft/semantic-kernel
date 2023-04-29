@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Google.Apis.Customsearch.v1;
+using Google.Apis.CustomSearchAPI.v1;
 using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,19 +12,28 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Microsoft.SemanticKernel.Skills.Web.Google;
 
 /// <summary>
-/// Bing API connector.
+/// Google search connector.
 /// </summary>
 public class GoogleConnector : IWebSearchEngineConnector, IDisposable
 {
     private readonly ILogger _logger;
-    private readonly CustomsearchService _search;
-    private readonly string _searchEngineId;
+    private readonly CustomSearchAPIService _search;
+    private readonly string? _searchEngineId;
 
-    public GoogleConnector(string apiKey, string searchEngineId, ILogger<GoogleConnector>? logger = null)
+    /// <summary>
+    /// Google search connector
+    /// </summary>
+    /// <param name="apiKey">Google Custom Search API (looks like "ABcdEfG1...")</param>
+    /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...")</param>
+    /// <param name="logger">Optional logger</param>
+    public GoogleConnector(
+        string apiKey,
+        string searchEngineId,
+        ILogger<GoogleConnector>? logger = null)
     {
-        this._logger = logger ?? NullLogger<GoogleConnector>.Instance;
-        this._search = new CustomsearchService(new BaseClientService.Initializer { ApiKey = apiKey });
+        this._search = new CustomSearchAPIService(new BaseClientService.Initializer { ApiKey = apiKey });
         this._searchEngineId = searchEngineId;
+        this._logger = logger ?? NullLogger<GoogleConnector>.Instance;
     }
 
     /// <inheritdoc/>
@@ -34,7 +43,7 @@ public class GoogleConnector : IWebSearchEngineConnector, IDisposable
         search.Cx = this._searchEngineId;
         search.Q = query;
 
-        var results = await search.ExecuteAsync(cancellationToken);
+        var results = await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
         var first = results.Items?.FirstOrDefault();
         this._logger.LogDebug("Result: {Title}, {Link}, {Snippet}", first?.Title, first?.Link, first?.Snippet);
