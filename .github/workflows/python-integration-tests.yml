@@ -6,22 +6,16 @@ name: python-integration-tests
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
+  schedule:
+    - cron: '0 */12 * * *' # Run every 12 hours: midnight UTC and noon UTC
+
 
 permissions:
   contents: read
 
 jobs:
   integration-tests:
-    strategy:
-        matrix:
-          os: [ubuntu-latest]
-          configuration: [Debug]
-
     runs-on: ${{ matrix.os }}
-    needs: paths-filter
-    if: needs.paths-filter.outputs.output1 == 'true'
     strategy:
       fail-fast: false
       matrix:
