@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -18,11 +18,11 @@ internal sealed class QueryResponse
     /// Initializes a new instance of the <see cref="QueryResponse" /> class.
     /// </summary>
     /// <param name="matches">matches.</param>
-    /// <param name="indexNamespace">An index namespace name.</param>
-    public QueryResponse(List<PineconeDocument> matches, string? indexNamespace = default)
+    /// <param name="nameSpace">An index namespace name.</param>
+    public QueryResponse(List<PineconeDocument> matches, string? nameSpace = default)
     {
         this.Matches = matches;
-        this.Namespace = indexNamespace;
+        this.Namespace = nameSpace;
     }
 
     /// <summary>

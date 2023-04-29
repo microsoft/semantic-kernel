@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -12,19 +12,19 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// FetchResponse
 /// See https://docs.pinecone.io/reference/fetch
 /// </summary>
-internal sealed class FetchResponse
+public sealed class FetchResponse
 {
-
+    
     /// <summary>
     /// Initializes a new instance of the <see cref="FetchResponse" /> class.
     /// </summary>
     /// <param name="vectors">vectors.</param>
-    /// <param name="indexNamespace">An index namespace name.</param>
+    /// <param name="nameSpace">An index namespace name.</param>
     [JsonConstructor]
-    public FetchResponse(Dictionary<string, PineconeDocument> vectors, string? indexNamespace = default)
+    public FetchResponse(Dictionary<string, PineconeDocument> vectors, string nameSpace = "")
     {
         this.Vectors = vectors;
-        this.Namespace = indexNamespace;
+        this.Namespace = nameSpace;
     }
 
     /// <summary>
