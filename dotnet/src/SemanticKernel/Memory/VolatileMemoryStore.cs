@@ -151,7 +151,7 @@ public class VolatileMemoryStore : IMemoryStore
             return AsyncEnumerable.Empty<(MemoryRecord, double)>();
         }
 
-        IEnumerable<MemoryRecord>? embeddingCollection = null;
+        ICollection<MemoryRecord>? embeddingCollection = null;
         if (this.TryGetCollection(collectionName, out var collectionDict))
         {
             embeddingCollection = collectionDict.Values;

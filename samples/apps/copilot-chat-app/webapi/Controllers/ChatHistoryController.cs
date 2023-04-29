@@ -130,22 +130,16 @@ public class ChatHistoryController : ControllerBase
         [FromQuery] int startIdx = 0,
         [FromQuery] int count = -1)
     {
+        // TODO: the code mixes strings and Guid without being explicit about the serialization format
         var chatMessages = await this._chatMessageRepository.FindByChatIdAsync(chatId.ToString());
         if (chatMessages == null)
         {
-            return this.NotFound($"No messages found for chat of id {chatId}.");
+            return this.NotFound($"No messages found for chat id '{chatId}'.");
         }
 
-        if (startIdx >= chatMessages.Count())
-        {
-            return this.BadRequest($"Start index {startIdx} is out of range.");
-        }
-        else if (startIdx + count > chatMessages.Count() || count == -1)
-        {
-            count = chatMessages.Count() - startIdx;
-        }
+        chatMessages = chatMessages.OrderByDescending(m => m.Timestamp).Skip(startIdx);
+        if (count >= 0) { chatMessages = chatMessages.Take(count); }
 
-        chatMessages = chatMessages.OrderByDescending(m => m.Timestamp).Skip(startIdx).Take(count);
         return this.Ok(chatMessages);
     }
 
