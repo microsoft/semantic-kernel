@@ -24,13 +24,13 @@ public class KernelExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageCtor()
     {
         // Arrange
-        const string Message = "this is a test";
-        var e = new KernelException(KernelException.ErrorCodes.FunctionNotAvailable, Message);
+        const string message = "this is a test";
+        var e = new KernelException(KernelException.ErrorCodes.FunctionNotAvailable, message);
 
         // Assert
         Assert.Equal(KernelException.ErrorCodes.FunctionNotAvailable, e.ErrorCode);
         Assert.Contains("Function not available", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
+        Assert.Contains(message, e.Message, StringComparison.Ordinal);
         Assert.Null(e.InnerException);
     }
 
@@ -38,14 +38,14 @@ public class KernelExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageExceptionCtor()
     {
         // Arrange
-        const string Message = "this is a test";
+        const string message = "this is a test";
         var inner = new FormatException();
-        var e = new KernelException(KernelException.ErrorCodes.FunctionNotAvailable, Message, inner);
+        var e = new KernelException(KernelException.ErrorCodes.FunctionNotAvailable, message, inner);
 
         // Assert
         Assert.Equal(KernelException.ErrorCodes.FunctionNotAvailable, e.ErrorCode);
         Assert.Contains("Function not available", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
+        Assert.Contains(message, e.Message, StringComparison.Ordinal);
         Assert.Same(inner, e.InnerException);
     }
 

@@ -91,7 +91,7 @@ public class ChatHistoryController : ControllerBase
     /// <summary>
     /// Get all chat sessions associated with a user. Return an empty list if no chats are found.
     /// The regex pattern that is used to match the user id will match the following format:
-    ///    - 2 period separated groups of one or more hyphen-delimitated alphanumeric strings.
+    ///    - 2 period separated groups of one or more hyphen-delimited alphanumeric strings.
     /// The pattern matches two GUIDs in canonical textual representation separated by a period.
     /// </summary>
     /// <param name="userId">The user id.</param>

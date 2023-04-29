@@ -24,13 +24,13 @@ public class PlanningExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageCtor()
     {
         // Arrange
-        const string Message = "this is a test";
-        var e = new PlanningException(PlanningException.ErrorCodes.InvalidGoal, Message);
+        const string message = "this is a test";
+        var e = new PlanningException(PlanningException.ErrorCodes.InvalidGoal, message);
 
         // Assert
         Assert.Equal(PlanningException.ErrorCodes.InvalidGoal, e.ErrorCode);
         Assert.Contains("Invalid goal", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
+        Assert.Contains(message, e.Message, StringComparison.Ordinal);
         Assert.Null(e.InnerException);
     }
 
@@ -38,14 +38,14 @@ public class PlanningExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageExceptionCtor()
     {
         // Arrange
-        const string Message = "this is a test";
+        const string message = "this is a test";
         var inner = new FormatException();
-        var e = new PlanningException(PlanningException.ErrorCodes.InvalidGoal, Message, inner);
+        var e = new PlanningException(PlanningException.ErrorCodes.InvalidGoal, message, inner);
 
         // Assert
         Assert.Equal(PlanningException.ErrorCodes.InvalidGoal, e.ErrorCode);
         Assert.Contains("Invalid goal", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
+        Assert.Contains(message, e.Message, StringComparison.Ordinal);
         Assert.Same(inner, e.InnerException);
     }
 
