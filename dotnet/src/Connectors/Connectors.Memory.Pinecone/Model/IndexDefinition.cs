@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http;
 
@@ -121,14 +122,14 @@ public class IndexDefinition
 
     public HttpRequestMessage Build()
     {
-        HttpRequestMessage? request = HttpRequest.CreatePostRequest("/databases", this);
+        HttpRequestMessage request = HttpRequest.CreatePostRequest("/databases", this);
         request.Headers.Add("accept", "text/plain");
         return request;
     }
 
     public static IndexDefinition Default(string? name = default)
     {
-        string? indexName = name ?? PineconeUtils.DefaultIndexName;
+        string indexName = name ?? PineconeUtils.DefaultIndexName;
         return Create(indexName)
             .WithDimension(PineconeUtils.DefaultDimension)
             .WithMetric(PineconeUtils.DefaultIndexMetric)
@@ -136,6 +137,28 @@ public class IndexDefinition
             .NumberOfReplicas(1)
             .WithPodType(PineconeUtils.DefaultPodType)
             .WithMetadataIndex(MetadataIndexConfig.Default);
+    }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        StringBuilder builder = new();
+        builder.Append("Configuration :");
+        builder.AppendLine($"Name: {this.Name}, ");
+        builder.AppendLine($"Dimension: {this.Dimension}, ");
+        builder.AppendLine($"Metric: {this.Metric}, ");
+        builder.AppendLine($"Pods: {this.Pods}, ");
+        builder.AppendLine($"Replicas: {this.Replicas}, ");
+        builder.AppendLine($"PodType: {this.PodType}, ");
+        if (this.MetadataConfig != null)
+        {
+            builder.AppendLine($"MetaIndex: {string.Join(",", this.MetadataConfig)}, ");
+        }
+        if (this.SourceCollection != null)
+        {
+            builder.AppendLine($"SourceCollection: {this.SourceCollection}, ");
+        }
+        return builder.ToString();
     }
 
     /// <summary>

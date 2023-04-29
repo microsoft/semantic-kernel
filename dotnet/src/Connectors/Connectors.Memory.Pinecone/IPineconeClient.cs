@@ -62,26 +62,16 @@ public interface IPineconeClient
     ///  Gets the most relevant vectors to a list of queries
     /// </summary>
     /// <param name="indexName"> the name of the index </param>
-    /// <param name="topK"> the number of results to return</param>
-    /// <param name="indexNamespace"> the namespace to use</param>
-    /// <param name="vector"> the vector to compare the collection's vectors with</param>
+    /// <param name="query"> the query parameters</param>
     /// <param name="includeValues"> whether to include the vector values</param>
     /// <param name="includeMetadata"> whether to include the metadata</param>
-    /// <param name="filter"> a filter to apply to the results</param>
-    /// <param name="sparseVector"> a sparse vector to use</param>
-    /// <param name="id"> an id to use</param>
     /// <param name="cancellationToken"></param>
     /// <returns> a list of query matches</returns>
     public IAsyncEnumerable<PineconeDocument?> QueryAsync(
         string indexName,
-        int topK,
-        string indexNamespace = "",
-        IEnumerable<float>? vector = default,
+        Query query,
         bool includeValues = false,
         bool includeMetadata = true,
-        Dictionary<string, object>? filter = default,
-        SparseVectorData? sparseVector = default,
-        string? id = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>

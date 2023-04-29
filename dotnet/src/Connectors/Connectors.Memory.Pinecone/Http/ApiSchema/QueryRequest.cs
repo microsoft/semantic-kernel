@@ -46,67 +46,44 @@ internal sealed class QueryRequest
     public string? Id { get; set; }
 
     /// <summary>
-    /// Gets or Sets SparseVector
+    /// Sparse vector data. If this is present, the query will be performed using a sparse vector in addition to the dense vector.
     /// </summary>
     [JsonPropertyName("sparseVector")]
     public SparseVectorData? SparseVector { get; set; }
 
     /// <summary>
-    /// Gets or Sets IncludeValues
+    /// Whether to include the vector values in the response. If false, only the vector IDs are returned.
     /// </summary>
     [JsonPropertyName("includeValues")]
     public bool IncludeValues { get; set; }
 
     /// <summary>
-    /// Gets or Sets IncludeMetadata
+    /// Whether to include the vector metadata in the response. If false, only the vector IDs are returned.
     /// </summary>
     [JsonPropertyName("includeMetadata")]
     public bool IncludeMetadata { get; set; }
 
-    public static QueryRequest QueryIndex(IEnumerable<float>? vector = null)
+    public static QueryRequest QueryIndex(Query query)
     {
-        return new QueryRequest(vector);
+        return new QueryRequest(query.Vector)
+        {
+            TopK = query.TopK,
+            Filter = query.Filter,
+            Namespace = query.Namespace,
+            SparseVector = query.SparseVector,
+            Id = query.Id
+        };
     }
-
-    public QueryRequest WithTopK(long topK)
-    {
-        this.TopK = topK;
-        return this;
-    }
-
-    public QueryRequest WithFilter(Dictionary<string, object>? filter)
-    {
-        this.Filter = filter;
-        return this;
-    }
-
+    
     public QueryRequest WithMetadata(bool includeMetadata)
     {
         this.IncludeMetadata = includeMetadata;
         return this;
     }
 
-    public QueryRequest WithVectors(bool includeValues)
+    public QueryRequest WithEmbeddings(bool includeValues)
     {
         this.IncludeValues = includeValues;
-        return this;
-    }
-
-    public QueryRequest InNamespace(string? indexNamespace)
-    {
-        this.Namespace = indexNamespace;
-        return this;
-    }
-
-    public QueryRequest WithSparseVector(SparseVectorData? sparseVector)
-    {
-        this.SparseVector = sparseVector;
-        return this;
-    }
-
-    public QueryRequest WithId(string? id)
-    {
-        this.Id = id;
         return this;
     }
 

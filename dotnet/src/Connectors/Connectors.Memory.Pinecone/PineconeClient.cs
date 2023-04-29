@@ -99,7 +99,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         IEnumerable<PineconeDocument> records = includeValues
             ? data.Vectors.Values
             : data.WithoutEmbeddings();
-        
+
         foreach (PineconeDocument? record in records)
         {
             yield return record;
@@ -110,17 +110,12 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     /// <inheritdoc />
     public async IAsyncEnumerable<PineconeDocument?> QueryAsync(
         string indexName,
-        int topK,
-        string indexNamespace = "",
-        IEnumerable<float>? vector = default,
+        Query query,
         bool includeValues = false,
         bool includeMetadata = true,
-        Dictionary<string, object>? filter = null,
-        SparseVectorData? sparseVector = null,
-        string? id = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Querying top {0} nearest vectors", topK);
+        this._logger.LogInformation("Querying top {0} nearest vectors", query.TopK);
 
         if (!this.Ready)
         {
@@ -128,14 +123,9 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             yield break;
         }
 
-        using HttpRequestMessage request = QueryRequest.QueryIndex(vector)
-            .WithTopK(topK)
-            .InNamespace(indexNamespace)
-            .WithFilter(filter)
+        using HttpRequestMessage request = QueryRequest.QueryIndex(query)
             .WithMetadata(includeMetadata)
-            .WithVectors(includeValues)
-            .WithSparseVector(sparseVector)
-            .WithId(id)
+            .WithEmbeddings(includeValues)
             .Build();
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
@@ -194,14 +184,15 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
         List<(PineconeDocument document, float score)> documents = new();
 
+        Query query = Query.Create(topK)
+            .WithVector(vector)
+            .InNamespace(indexNamespace)
+            .WithFilter(filter);
+
         IAsyncEnumerable<PineconeDocument?> matches = this.QueryAsync(
-            indexName,
-            topK,
-            indexNamespace,
-            vector,
+            indexName, query,
             includeValues,
-            includeMetadata,
-            filter, null, null, cancellationToken);
+            includeMetadata, cancellationToken);
 
         await foreach (PineconeDocument? match in matches.WithCancellation(cancellationToken))
         {
@@ -317,13 +308,13 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
                 .FromNamespace(indexNamespace)
                 .FilterBy(filter);
 
-        this._logger.LogInformation("Delete operation for Index {0}: {1}", indexName, deleteRequest);
+        this._logger.LogInformation("Delete operation for Index {0}: {1}", indexName, deleteRequest.ToString());
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
         using HttpRequestMessage request = deleteRequest.Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
+        (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -354,7 +345,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             .InNamespace(indexNamespace)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
+        (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -411,7 +402,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     {
         using HttpRequestMessage request = ListIndexesRequest.Create().Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
+        (HttpResponseMessage _, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
         string[]? indices = JsonSerializer.Deserialize<string[]?>(responseContent, this._jsonSerializerOptions);
 
@@ -429,7 +420,8 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     /// <inheritdoc />
     public async Task<string?> CreateIndexAsync(IndexDefinition indexDefinition, CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Creating index {0} with metadata config: {1}", indexDefinition.Name, string.Join(",", indexDefinition.MetadataConfig?.Indexed));
+
+        this._logger.LogInformation("Creating index {0}", indexDefinition.ToString());
 
         string indexName = indexDefinition.Name;
         using HttpRequestMessage request = indexDefinition.Build();
@@ -689,8 +681,8 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         using HttpResponseMessage response = await this._httpClient.SendAsync(request, cancel).ConfigureAwait(false);
 
         string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        
-        var logMessage = response.IsSuccessStatusCode ? "Pinecone responded successfully" : "Pinecone responded with error";
+
+        string logMessage = response.IsSuccessStatusCode ? "Pinecone responded successfully" : "Pinecone responded with error";
         this._logger.LogTrace("{0} - {1}", logMessage, responseContent);
 
         return (response, responseContent);

@@ -540,18 +540,19 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         try
         {
+            Query query = Query.Create(limit)
+                .InNamespace(indexNamespace)
+                .WithFilter(new Dictionary<string, object>()
+                {
+                    { "document_Id", documentId }
+                });
+
             vectorDataList = await this._pineconeClient
                 .QueryAsync(indexName,
-                    limit,
-                    indexNamespace,
-                    null,
-                    withEmbedding,
-                    true,
-                    new Dictionary<string, object>()
-                    {
-                        { "document_Id", documentId }
-                    },
-                    cancellationToken: cancel).Take(limit).ToListAsync(cancellationToken: cancel).ConfigureAwait(false);
+                    query,
+                    cancellationToken: cancel).Take(limit)
+                .ToListAsync(cancellationToken: cancel)
+                .ConfigureAwait(false);
         }
 
         catch (HttpRequestException e)
@@ -617,15 +618,16 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         try
         {
+            Query query = Query.Create(limit)
+                .InNamespace(indexNamespace)
+                .WithFilter(filter);
+            
             vectorDataList = await this._pineconeClient
                 .QueryAsync(indexName,
-                    limit,
-                    indexNamespace,
-                    null,
-                    withEmbeddings,
-                    true,
-                    filter,
-                    cancellationToken: cancel).Take(limit).ToListAsync(cancellationToken: cancel).ConfigureAwait(false);
+                    query,
+                    cancellationToken: cancel)
+                .ToListAsync(cancellationToken: cancel)
+                .ConfigureAwait(false);
         }
 
         catch (HttpRequestException e)

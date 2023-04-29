@@ -106,7 +106,7 @@ internal sealed class DeleteRequest
         }
         if (this.DeleteAll != null)
         {
-            sb.Append($"Deleting All vectors,");
+            sb.Append("Deleting All vectors,");
         }
         if (this.Namespace != null)
         {
@@ -116,10 +116,10 @@ internal sealed class DeleteRequest
         {
             return sb.ToString();
         }
-        sb.Append($"With Filter: ");
-        foreach (var (key, value) in this.Filter)
+        sb.Append("With Filter: ");
+        foreach (var pair in this.Filter)
         {
-            sb.Append($"{key}={value}, ");
+            sb.Append($"{pair.Key}={pair.Value}, ");
         }
         return sb.ToString();
     }
