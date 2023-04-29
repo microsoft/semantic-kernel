@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example28_Pinecone
+public static class Example29_Pinecone
 {
     private const string MemoryCollectionName = "pinecone-test";
 

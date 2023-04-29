@@ -91,5 +91,8 @@ public static class Program
 
         await Example28_ChatWithPrompts.RunAsync();
         Console.WriteLine("== DONE ==");
+        
+        await Example29_Pinecone.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
