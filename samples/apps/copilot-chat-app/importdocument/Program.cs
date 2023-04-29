@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.IO;
 using System.Linq;
@@ -67,14 +68,15 @@ public static class Program
                 .WithRedirectUri(config.RedirectUri)
                 .Build();
             var result = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
-            var accounts = await app.GetAccountsAsync();
-            if (!accounts.Any())
+            IEnumerable<IAccount>? accounts = await app.GetAccountsAsync();
+            IEnumerable<IAccount> accountList = accounts.ToList();
+            if (!accountList.Any())
             {
                 Console.WriteLine("Error: No accounts found");
                 return null;
             }
 
-            return accounts.First().HomeAccountId.Identifier;
+            return accountList.First().HomeAccountId.Identifier;
         }
         catch (Exception ex) when (ex is MsalServiceException || ex is MsalClientException)
         {

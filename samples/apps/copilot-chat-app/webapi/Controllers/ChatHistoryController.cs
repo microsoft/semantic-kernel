@@ -136,16 +136,17 @@ public class ChatHistoryController : ControllerBase
             return this.NotFound($"No messages found for chat of id {chatId}.");
         }
 
-        if (startIdx >= chatMessages.Count())
+        IEnumerable<ChatMessage> messages = chatMessages.ToList();
+        if (startIdx >= messages.Count())
         {
             return this.BadRequest($"Start index {startIdx} is out of range.");
         }
-        else if (startIdx + count > chatMessages.Count() || count == -1)
+        else if (startIdx + count > messages.Count() || count == -1)
         {
-            count = chatMessages.Count() - startIdx;
+            count = messages.Count() - startIdx;
         }
 
-        chatMessages = chatMessages.OrderByDescending(m => m.Timestamp).Skip(startIdx).Take(count);
+        chatMessages = messages.OrderByDescending(m => m.Timestamp).Skip(startIdx).Take(count);
         return this.Ok(chatMessages);
     }
 

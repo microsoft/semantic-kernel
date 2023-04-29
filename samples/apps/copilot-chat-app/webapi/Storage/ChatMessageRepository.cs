@@ -28,7 +28,8 @@ public class ChatMessageRepository : Repository<ChatMessage>
 
     public async Task<ChatMessage> FindLastByChatIdAsync(string chatId)
     {
-        var messages = await this.FindByChatIdAsync(chatId);
+        var chatMessages = await this.FindByChatIdAsync(chatId);
+        IEnumerable<ChatMessage> messages = chatMessages.ToList();
         if (!messages.Any())
         {
             throw new KeyNotFoundException($"No messages found for chat {chatId}.");
