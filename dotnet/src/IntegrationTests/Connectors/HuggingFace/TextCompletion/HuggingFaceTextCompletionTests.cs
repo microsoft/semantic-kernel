@@ -33,21 +33,21 @@ public sealed class HuggingFaceTextCompletionTests
     public async Task HuggingFaceLocalAndRemoteTextCompletionAsync()
     {
         // Arrange
-        const string input = "This is test";
+        const string INPUT = "This is test";
 
         using var huggingFaceLocal = new HuggingFaceTextCompletion(new Uri(Endpoint), Model);
         using var huggingFaceRemote = new HuggingFaceTextCompletion(this.GetApiKey(), Model);
 
         // Act
-        var localResponse = await huggingFaceLocal.CompleteAsync(input, new CompleteRequestSettings());
-        var remoteResponse = await huggingFaceRemote.CompleteAsync(input, new CompleteRequestSettings());
+        var localResponse = await huggingFaceLocal.CompleteAsync(INPUT, new CompleteRequestSettings());
+        var remoteResponse = await huggingFaceRemote.CompleteAsync(INPUT, new CompleteRequestSettings());
 
         // Assert
         Assert.NotNull(localResponse);
         Assert.NotNull(remoteResponse);
 
-        Assert.StartsWith(input, localResponse, StringComparison.Ordinal);
-        Assert.StartsWith(input, remoteResponse, StringComparison.Ordinal);
+        Assert.StartsWith(INPUT, localResponse, StringComparison.Ordinal);
+        Assert.StartsWith(INPUT, remoteResponse, StringComparison.Ordinal);
     }
 
     private string GetApiKey()

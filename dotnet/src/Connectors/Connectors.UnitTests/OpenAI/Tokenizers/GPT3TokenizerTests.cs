@@ -98,13 +98,13 @@ más pequeñas de los programas informáticos", 68)]
     public void ItDoesntTimeOutForABigText()
     {
         // Arrange
-        const int oneMb = 1000 * 1000;
+        const int ONE_MB = 1000 * 1000;
         var watch = new Stopwatch();
         Random rnd = new();
         StringBuilder text = new();
         watch.Start();
         var count = 0;
-        while (text.Length < oneMb)
+        while (text.Length < ONE_MB)
         {
             text.Append(GenerateWord(rnd, count++));
         }

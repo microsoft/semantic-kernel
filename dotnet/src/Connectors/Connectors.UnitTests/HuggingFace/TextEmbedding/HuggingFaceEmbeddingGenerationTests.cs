@@ -32,8 +32,8 @@ public class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task ItReturnsEmbeddingsCorrectlyAsync()
     {
         // Arrange
-        const int expectedEmbeddingCount = 1;
-        const int expectedVectorCount = 8;
+        const int EXPECTED_EMBEDDING_COUNT = 1;
+        const int EXPECTED_VECTOR_COUNT = 8;
         List<string> data = new() { "test_string_1", "test_string_2", "test_string_3" };
 
         using var service = this.CreateService(HuggingFaceTestHelper.GetTestResponse("embeddings_test_response.json"));
@@ -43,8 +43,8 @@ public class HuggingFaceEmbeddingGenerationTests : IDisposable
 
         // Assert
         Assert.NotNull(embeddings);
-        Assert.Equal(expectedEmbeddingCount, embeddings.Count);
-        Assert.Equal(expectedVectorCount, embeddings.First().Count);
+        Assert.Equal(EXPECTED_EMBEDDING_COUNT, embeddings.Count);
+        Assert.Equal(EXPECTED_VECTOR_COUNT, embeddings.First().Count);
     }
 
     /// <summary>

@@ -49,14 +49,14 @@ public class LocalUserMSALCredentialManager
     public static async Task<LocalUserMSALCredentialManager> CreateAsync()
     {
         // Initialize persistent storage for the token cache
-        const string cacheSchemaName = "com.microsoft.semantickernel.tokencache";
+        const string CACHE_SCHEMA_NAME = "com.microsoft.semantickernel.tokencache";
 
         var storage = new StorageCreationPropertiesBuilder("sk.msal.cache", MsalCacheHelper.UserRootDirectory)
             .WithMacKeyChain(
-                serviceName: $"{cacheSchemaName}.service",
-                accountName: $"{cacheSchemaName}.account")
+                serviceName: $"{CACHE_SCHEMA_NAME}.service",
+                accountName: $"{CACHE_SCHEMA_NAME}.account")
             .WithLinuxKeyring(
-                schemaName: cacheSchemaName,
+                schemaName: CACHE_SCHEMA_NAME,
                 collection: MsalCacheHelper.LinuxKeyRingDefaultCollection,
                 secretLabel: "MSAL token cache for Semantic Kernel skills.",
                 attribute1: new KeyValuePair<string, string>("Version", "1"),

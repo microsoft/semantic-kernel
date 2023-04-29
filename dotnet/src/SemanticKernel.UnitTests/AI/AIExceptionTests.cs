@@ -25,13 +25,13 @@ public class AIExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageCtor()
     {
         // Arrange
-        const string Message = "this is a test";
-        var e = new AIException(AIException.ErrorCodes.InvalidRequest, Message);
+        const string MESSAGE = "this is a test";
+        var e = new AIException(AIException.ErrorCodes.InvalidRequest, MESSAGE);
 
         // Assert
         Assert.Equal(AIException.ErrorCodes.InvalidRequest, e.ErrorCode);
         Assert.Contains("Invalid request", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
+        Assert.Contains(MESSAGE, e.Message, StringComparison.Ordinal);
         Assert.Null(e.Detail);
         Assert.Null(e.InnerException);
     }
@@ -40,14 +40,14 @@ public class AIExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageExceptionCtor()
     {
         // Arrange
-        const string Message = "this is a test";
+        const string MESSAGE = "this is a test";
         var inner = new FormatException();
-        var e = new AIException(AIException.ErrorCodes.InvalidRequest, Message, inner);
+        var e = new AIException(AIException.ErrorCodes.InvalidRequest, MESSAGE, inner);
 
         // Assert
         Assert.Equal(AIException.ErrorCodes.InvalidRequest, e.ErrorCode);
         Assert.Contains("Invalid request", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
+        Assert.Contains(MESSAGE, e.Message, StringComparison.Ordinal);
         Assert.Null(e.Detail);
         Assert.Same(inner, e.InnerException);
     }
@@ -56,15 +56,15 @@ public class AIExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageDetailCtor()
     {
         // Arrange
-        const string Message = "this is a test";
-        const string Detail = "so is this";
-        var e = new AIException(AIException.ErrorCodes.InvalidRequest, Message, Detail);
+        const string MESSAGE = "this is a test";
+        const string DETAIL = "so is this";
+        var e = new AIException(AIException.ErrorCodes.InvalidRequest, MESSAGE, DETAIL);
 
         // Assert
         Assert.Equal(AIException.ErrorCodes.InvalidRequest, e.ErrorCode);
         Assert.Contains("Invalid request", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
-        Assert.Equal(Detail, e.Detail);
+        Assert.Contains(MESSAGE, e.Message, StringComparison.Ordinal);
+        Assert.Equal(DETAIL, e.Detail);
         Assert.Null(e.InnerException);
     }
 
@@ -72,16 +72,16 @@ public class AIExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageDetailExceptionCtor()
     {
         // Arrange
-        const string Message = "this is a test";
-        const string Detail = "so is this";
+        const string MESSAGE = "this is a test";
+        const string DETAIL = "so is this";
         var inner = new FormatException();
-        var e = new AIException(AIException.ErrorCodes.InvalidRequest, Message, Detail, inner);
+        var e = new AIException(AIException.ErrorCodes.InvalidRequest, MESSAGE, DETAIL, inner);
 
         // Assert
         Assert.Equal(AIException.ErrorCodes.InvalidRequest, e.ErrorCode);
         Assert.Contains("Invalid request", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
-        Assert.Equal(Detail, e.Detail);
+        Assert.Contains(MESSAGE, e.Message, StringComparison.Ordinal);
+        Assert.Equal(DETAIL, e.Detail);
         Assert.Same(inner, e.InnerException);
     }
 

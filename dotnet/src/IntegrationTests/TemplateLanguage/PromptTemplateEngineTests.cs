@@ -27,22 +27,22 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public async Task ItSupportsVariablesAsync()
     {
         // Arrange
-        const string input = "template tests";
-        const string winner = "SK";
-        const string template = "And the winner\n of {{$input}} \nis: {{  $winner }}!";
+        const string INPUT = "template tests";
+        const string WINNER = "SK";
+        const string TEMPLATE = "And the winner\n of {{$input}} \nis: {{  $winner }}!";
 
         var kernel = Kernel.Builder.Build();
         var context = kernel.CreateNewContext();
-        context["input"] = input;
-        context["winner"] = winner;
+        context["input"] = INPUT;
+        context["winner"] = WINNER;
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(TEMPLATE, context);
 
         // Assert
-        var expected = template
-            .Replace("{{$input}}", input, StringComparison.OrdinalIgnoreCase)
-            .Replace("{{  $winner }}", winner, StringComparison.OrdinalIgnoreCase);
+        var expected = TEMPLATE
+            .Replace("{{$input}}", INPUT, StringComparison.OrdinalIgnoreCase)
+            .Replace("{{  $winner }}", WINNER, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(expected, result);
     }
 
@@ -50,31 +50,31 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public async Task ItSupportsValuesAsync()
     {
         // Arrange
-        const string template = "And the winner\n of {{'template\ntests'}} \nis: {{  \"SK\" }}!";
-        const string expected = "And the winner\n of template\ntests \nis: SK!";
+        const string TEMPLATE = "And the winner\n of {{'template\ntests'}} \nis: {{  \"SK\" }}!";
+        const string EXPECTED = "And the winner\n of template\ntests \nis: SK!";
 
         var kernel = Kernel.Builder.Build();
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(TEMPLATE, context);
 
         // Assert
-        Assert.Equal(expected, result);
+        Assert.Equal(EXPECTED, result);
     }
 
     [Fact]
     public async Task ItAllowsToPassVariablesToFunctionsAsync()
     {
         // Arrange
-        const string template = "== {{my.check123 $call}} ==";
+        const string TEMPLATE = "== {{my.check123 $call}} ==";
         var kernel = Kernel.Builder.Build();
         kernel.ImportSkill(new MySkill(), "my");
         var context = kernel.CreateNewContext();
         context["call"] = "123";
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(TEMPLATE, context);
 
         // Assert
         Assert.Equal("== 123 ok ==", result);
@@ -84,13 +84,13 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public async Task ItAllowsToPassValuesToFunctionsAsync()
     {
         // Arrange
-        const string template = "== {{my.check123 '234'}} ==";
+        const string TEMPLATE = "== {{my.check123 '234'}} ==";
         var kernel = Kernel.Builder.Build();
         kernel.ImportSkill(new MySkill(), "my");
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(TEMPLATE, context);
 
         // Assert
         Assert.Equal("== 234 != 123 ==", result);

@@ -24,13 +24,13 @@ public class MemoryExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageCtor()
     {
         // Arrange
-        const string Message = "this is a test";
-        var e = new MemoryException(MemoryException.ErrorCodes.FailedToCreateCollection, Message);
+        const string MESSAGE = "this is a test";
+        var e = new MemoryException(MemoryException.ErrorCodes.FailedToCreateCollection, MESSAGE);
 
         // Assert
         Assert.Equal(MemoryException.ErrorCodes.FailedToCreateCollection, e.ErrorCode);
         Assert.Contains("Failed to create collection", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
+        Assert.Contains(MESSAGE, e.Message, StringComparison.Ordinal);
         Assert.Null(e.InnerException);
     }
 
@@ -38,14 +38,14 @@ public class MemoryExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageExceptionCtor()
     {
         // Arrange
-        const string Message = "this is a test";
+        const string MESSAGE = "this is a test";
         var inner = new FormatException();
-        var e = new MemoryException(MemoryException.ErrorCodes.FailedToCreateCollection, Message, inner);
+        var e = new MemoryException(MemoryException.ErrorCodes.FailedToCreateCollection, MESSAGE, inner);
 
         // Assert
         Assert.Equal(MemoryException.ErrorCodes.FailedToCreateCollection, e.ErrorCode);
         Assert.Contains("Failed to create collection", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
+        Assert.Contains(MESSAGE, e.Message, StringComparison.Ordinal);
         Assert.Same(inner, e.InnerException);
     }
 

@@ -24,13 +24,13 @@ public class ValidationExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageCtor()
     {
         // Arrange
-        const string Message = "this is a test";
-        var e = new ValidationException(ValidationException.ErrorCodes.DirectoryNotFound, Message);
+        const string MESSAGE = "this is a test";
+        var e = new ValidationException(ValidationException.ErrorCodes.DirectoryNotFound, MESSAGE);
 
         // Assert
         Assert.Equal(ValidationException.ErrorCodes.DirectoryNotFound, e.ErrorCode);
         Assert.Contains("Directory not found", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
+        Assert.Contains(MESSAGE, e.Message, StringComparison.Ordinal);
         Assert.Null(e.InnerException);
     }
 
@@ -38,14 +38,14 @@ public class ValidationExceptionTests
     public void ItRoundtripsArgsToErrorCodeMessageExceptionCtor()
     {
         // Arrange
-        const string Message = "this is a test";
+        const string MESSAGE = "this is a test";
         var inner = new FormatException();
-        var e = new ValidationException(ValidationException.ErrorCodes.DirectoryNotFound, Message, inner);
+        var e = new ValidationException(ValidationException.ErrorCodes.DirectoryNotFound, MESSAGE, inner);
 
         // Assert
         Assert.Equal(ValidationException.ErrorCodes.DirectoryNotFound, e.ErrorCode);
         Assert.Contains("Directory not found", e.Message, StringComparison.Ordinal);
-        Assert.Contains(Message, e.Message, StringComparison.Ordinal);
+        Assert.Contains(MESSAGE, e.Message, StringComparison.Ordinal);
         Assert.Same(inner, e.InnerException);
     }
 

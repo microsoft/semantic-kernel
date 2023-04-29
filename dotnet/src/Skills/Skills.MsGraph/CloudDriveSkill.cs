@@ -87,9 +87,9 @@ public class CloudDriveSkill
     public async Task<string> CreateLinkAsync(string filePath, SKContext context)
     {
         this._logger.LogDebug("Creating link for '{0}'", filePath);
-        const string type = "view"; // TODO expose this as an SK variable
-        const string scope = "anonymous"; // TODO expose this as an SK variable
+        const string TYPE = "view"; // TODO expose this as an SK variable
+        const string SCOPE = "anonymous"; // TODO expose this as an SK variable
 
-        return await this._connector.CreateShareLinkAsync(filePath, type, scope, context.CancellationToken).ConfigureAwait(false);
+        return await this._connector.CreateShareLinkAsync(filePath, TYPE, SCOPE, context.CancellationToken).ConfigureAwait(false);
     }
 }

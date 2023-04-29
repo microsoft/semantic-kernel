@@ -79,9 +79,9 @@ public class PromptTemplateEngine : IPromptTemplateEngine
                     break;
 
                 default:
-                    const string error = "Unexpected block type, the block doesn't have a rendering method";
-                    this._log.LogError(error);
-                    throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, error);
+                    const string ERROR = "Unexpected block type, the block doesn't have a rendering method";
+                    this._log.LogError(ERROR);
+                    throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, ERROR);
             }
         }
 
