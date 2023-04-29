@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -72,30 +72,49 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
 
         logger ??= NullLogger.Instance;
-        PineconeClient client = new(pineconeEnvironment, apiKey, logger);
+        PineconeClient? client = new(pineconeEnvironment, apiKey, logger);
+        PineconeMemoryStore? store = null;
 
-        bool exists = await client.DoesIndexExistAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(false);
-
-        if (exists)
+        try
         {
-            if (await client.ConnectToHostAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(true))
+            bool exists = await client.DoesIndexExistAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(false);
+
+            if (exists)
             {
-                return new PineconeMemoryStore(client, logger);
+                if (await client.ConnectToHostAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(true))
+                {
+                    store = new PineconeMemoryStore(client, logger);
+                    client = null; // Ownership transferred to store, so set to null
+                }
+
+                else
+                {
+                    logger.LogError("Failed to connect to host.");
+                }
+
+                return store;
             }
 
-            logger.LogError("Failed to connect to host.");
-            return null;
+            string? indexName = await client.CreateIndexAsync(indexDefinition, cancellationToken).ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(indexName) && client.Ready)
+            {
+                store = new PineconeMemoryStore(client, logger);
+                client = null; // Ownership transferred to store, so set to null
+            }
+            else
+            {
+                logger.LogError("Failed to create index.");
+            }
+
+            return store;
         }
 
-        string? indexName = await client.CreateIndexAsync(indexDefinition, cancellationToken).ConfigureAwait(false);
-
-        if (!string.IsNullOrEmpty(indexName) && client.Ready)
+        finally
         {
-            return new PineconeMemoryStore(client, logger);
+            // Only dispose the client if we did not create a store.
+            client?.Dispose();
         }
-
-        logger.LogError("Failed to create index.");
-        return null;
 
     }
 
@@ -621,7 +640,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             Query query = Query.Create(limit)
                 .InNamespace(indexNamespace)
                 .WithFilter(filter);
-            
+
             vectorDataList = await this._pineconeClient
                 .QueryAsync(indexName,
                     query,
