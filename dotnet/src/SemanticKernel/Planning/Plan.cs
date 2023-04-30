@@ -367,7 +367,7 @@ public sealed class Plan : ISKFunction
     internal string ExpandFromVariables(ContextVariables variables, string input)
     {
         var result = input;
-        var matches = Regex.Matches(input, @"\$(?<var>\w+)");
+        var matches = s_variablesRegex.Matches(input);
         var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).OrderByDescending(m => m.Length);
 
         foreach (var varName in orderedMatches)
@@ -489,4 +489,6 @@ public sealed class Plan : ISKFunction
     private ISKFunction? Function { get; set; } = null;
 
     private readonly List<Plan> _steps = new();
+
+    private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
 }
