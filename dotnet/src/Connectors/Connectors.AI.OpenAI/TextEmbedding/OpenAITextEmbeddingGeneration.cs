@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Reliability;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
@@ -21,15 +21,15 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, IEmbedding
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
-    /// <param name="handlerFactory">Retry handler factory for HTTP requests.</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     public OpenAITextEmbeddingGeneration(
         string modelId,
         string apiKey,
         string? organization = null,
-        IDelegatingHandlerFactory? handlerFactory = null,
-        ILogger? log = null
-    ) : base(modelId, apiKey, organization, handlerFactory, log)
+        HttpClient? httpClient = null,
+        ILogger? logger = null
+    ) : base(modelId, apiKey, organization, httpClient, logger)
     {
     }
 
