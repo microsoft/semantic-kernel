@@ -88,5 +88,8 @@ public static class Program
 
         await Example27_ActionPlanner.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example28_ChatWithPrompts.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }

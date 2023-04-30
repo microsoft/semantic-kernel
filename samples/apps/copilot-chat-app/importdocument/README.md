@@ -42,4 +42,12 @@ Importing documents enables Copilot Chat to have up-to-date knowledge of specifi
    > Currently only supports txt files. A sample file is provided under ./sample-docs.
 
    Importing may take some time to generate embeddings for each piece/chunk of a document.
-5. Chat with the bot. Example: ![](../images/Document-Memory-Sample.png)
+5. Chat with the bot.
+
+   Examples:
+
+   With [ms10k.txt](./sample-docs/ms10k.txt):
+   ![](../images/Document-Memory-Sample-1.png)
+
+   With [Microsoft Responsible AI Standard v2 General Requirements.pdf](./sample-docs/Microsoft-Responsible-AI-Standard-v2-General-Requirements.pdf):
+   ![](../images/Document-Memory-Sample-2.png)

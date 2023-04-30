@@ -283,7 +283,6 @@ class SKFunction(SKFunctionBase):
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
                 logger=log if log is not None else self._log,
-                # TODO: ctoken?
             )
         else:
             # If context is passed, we need to merge the variables
@@ -330,7 +329,6 @@ class SKFunction(SKFunctionBase):
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
                 logger=log if log is not None else self._log,
-                # TODO: ctoken?
             )
         else:
             # If context is passed, we need to merge the variables
