@@ -21,7 +21,7 @@ public static class Example05_InlineFunctionDefinition
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         // OpenAI settings
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
 
         // Function defined using few-shot design pattern
         const string FUNCTION_DEFINITION = @"

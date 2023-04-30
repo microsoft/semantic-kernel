@@ -44,7 +44,7 @@ public static class Example16_CustomLLM
         ITextCompletion Factory(IKernel k) => new MyTextCompletionService();
 
         // Add your text completion service
-        kernel.Config.AddTextCompletionService("myService", Factory);
+        kernel.Config.AddTextCompletionService(Factory);
 
         const string FUNCTION_DEFINITION = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
 
