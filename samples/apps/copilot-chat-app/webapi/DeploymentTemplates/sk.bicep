@@ -32,7 +32,7 @@ var uniqueName = '${name}-${uniqueString(resourceGroup().id)}'
 
 
 resource openAI 'Microsoft.CognitiveServices/accounts@2022-03-01' = {
-  name: '${uniqueName}-ai'
+  name: 'ai-${uniqueName}'
   location: location
   kind: 'OpenAI'
   sku: {
@@ -77,7 +77,7 @@ resource openAI_textEmbeddingAda002 'Microsoft.CognitiveServices/accounts/deploy
 }
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: '${uniqueName}-plan'
+  name: 'asp-${uniqueName}'
   location: location
   sku: {
     name: appServiceSku
@@ -85,7 +85,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 }
 
 resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
-  name: '${uniqueName}sk-web'
+  name: 'app-sk${uniqueName}'
   location: location
   tags: {
     skweb: '1'
@@ -101,28 +101,8 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
       use32BitWorkerProcess: false
       appSettings: [
         {
-          name: 'Service:SemanticSkillsDirectory'
-          value: ''
-        }
-        {
-          name: 'Service:KeyVaultUri'
-          value: ''
-        }
-        {
-          name: 'KeyVaultUri'
-          value: ''
-        }
-        {
-          name: 'Completion:Label'
-          value: 'Completion'
-        }
-        {
           name: 'Completion:AIService'
           value: 'AzureOpenAI'
-        }
-        {
-          name: 'Completion:DeploymentOrModelId'
-          value: 'gpt-35-turbo'
         }
         {
           name: 'Completion:Endpoint'
@@ -133,16 +113,8 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
           value: openAI.listKeys().key1
         }
         {
-          name: 'Embedding:Label'
-          value: 'Embedding'
-        }
-        {
           name: 'Embedding:AIService'
           value: 'AzureOpenAI'
-        }
-        {
-          name: 'Embedding:DeploymentOrModelId'
-          value: 'text-embedding-ada-002'
         }
         {
           name: 'Embedding:Endpoint'
@@ -153,89 +125,12 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
           value: openAI.listKeys().key1
         }
         {
-          name: 'AzureSpeech:Region'
-          value: ''
-        }
-        {
-          name: 'AzureSpeech:Key'
-          value: ''
-        }
-        {
-          name: 'Authorization:Type'
-          value: 'None'
-        }
-        {
-          name: 'Authorization:ApiKey'
-          value: ''
-        }
-        {
-          name: 'Authorization:AzureAd:Instance'
-#disable-next-line no-hardcoded-env-urls // This is just a default value
-          value: 'https://login.microsoftonline.com/'
-        }
-        {
-          name: 'Authorization:AzureAd:TenantId'
-          value: ''
-        }
-        {
-          name: 'Authorization:AzureAd:ClientId'
-          value: ''
-        }
-        {
-          name: 'Authorization:AzureAd:Scopes'
-          value: 'access_as_user'
-        }
-        {
           name: 'ChatStore:Type'
           value: 'volatile'
         }
         {
-          name: 'ChatStore:Filesystem'
-          value: './data/chatstore.json'
-        }
-        {
           name: 'MemoriesStore:Type'
           value: 'volatile'
-        }
-        {
-          name: 'DocumentMemory:GlobalDocumentCollectionName'
-          value: 'global-documents'
-        }
-        {
-          name: 'DocumentMemory:UserDocumentCollectionNamePrefix'
-          value: 'user-documents-'
-        }
-        {
-          name: 'DocumentMemory:DocumentLineSplitMaxTokens'
-          value: '30'
-        }
-        {
-          name: 'DocumentMemory:DocumentParagraphSplitMaxLines'
-          value: '100'
-        }
-        {
-          name: 'DocumentMemory:FileSizeLimit'
-          value: '1000000'
-        }
-        {
-          name: 'Planner:MaxTokens'
-          value: '1024'
-        }
-        {
-          name: 'Planner:RelevancyThreshold'
-          value: '0.78'
-        }
-        {
-          name: 'AllowedHosts'
-          value: '*'
-        }
-        {
-          name: 'BotSchema:Name'
-          value: 'CopilotChat'
-        }
-        {
-          name: 'BotSchema:Version'
-          value: '1'
         }
         {
           name: 'Kestrel:Endpoints:Https:Url'
@@ -246,7 +141,19 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
           value: 'Warning'
         }
         {
+          name: 'Logging:LogLevel:SemanticKernel.Service'
+          value: 'Warning'
+        }
+        {
           name: 'Logging:LogLevel:Microsoft.SemanticKernel'
+          value: 'Warning'
+        }
+        {
+          name: 'Logging:LogLevel:Microsoft.AspNetCore.Hosting'
+          value: 'Warning'
+        }
+        {
+          name: 'Logging:LogLevel:Microsoft.Hosting.Lifetimel'
           value: 'Warning'
         }
         {
@@ -271,7 +178,7 @@ resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2021-03-01' = {
 }
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: '${uniqueName}-appi'
+  name: 'appi-${uniqueName}'
   location: location
   kind: 'string'
   tags: {
@@ -292,7 +199,7 @@ resource appInsightExtension 'Microsoft.Web/sites/siteextensions@2020-06-01' = {
 }
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08-01' = {
-  name: '${uniqueName}-la'
+  name: 'la-${uniqueName}'
   location: location
   tags: {
     displayName: 'Log Analytics'

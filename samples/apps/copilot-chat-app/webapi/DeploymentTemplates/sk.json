@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.16.2.56959",
-      "templateHash": "8504845975276369862"
+      "templateHash": "3882256937617292622"
     }
   },
   "parameters": {
@@ -39,7 +39,7 @@
     {
       "type": "Microsoft.CognitiveServices/accounts",
       "apiVersion": "2022-03-01",
-      "name": "[format('{0}-ai', variables('uniqueName'))]",
+      "name": "[format('ai-{0}', variables('uniqueName'))]",
       "location": "[variables('location')]",
       "kind": "OpenAI",
       "sku": {
@@ -52,7 +52,7 @@
     {
       "type": "Microsoft.CognitiveServices/accounts/deployments",
       "apiVersion": "2022-12-01",
-      "name": "[format('{0}/{1}', format('{0}-ai', variables('uniqueName')), 'gpt-35-turbo')]",
+      "name": "[format('{0}/{1}', format('ai-{0}', variables('uniqueName')), 'gpt-35-turbo')]",
       "properties": {
         "model": {
           "format": "OpenAI",
@@ -64,13 +64,13 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-ai', variables('uniqueName')))]"
+        "[resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName')))]"
       ]
     },
     {
       "type": "Microsoft.CognitiveServices/accounts/deployments",
       "apiVersion": "2022-12-01",
-      "name": "[format('{0}/{1}', format('{0}-ai', variables('uniqueName')), 'text-embedding-ada-002')]",
+      "name": "[format('{0}/{1}', format('ai-{0}', variables('uniqueName')), 'text-embedding-ada-002')]",
       "properties": {
         "model": {
           "format": "OpenAI",
@@ -82,14 +82,14 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-ai', variables('uniqueName')))]",
-        "[resourceId('Microsoft.CognitiveServices/accounts/deployments', format('{0}-ai', variables('uniqueName')), 'gpt-35-turbo')]"
+        "[resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName')))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts/deployments', format('ai-{0}', variables('uniqueName')), 'gpt-35-turbo')]"
       ]
     },
     {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2022-03-01",
-      "name": "[format('{0}-plan', variables('uniqueName'))]",
+      "name": "[format('asp-{0}', variables('uniqueName'))]",
       "location": "[variables('location')]",
       "sku": {
         "name": "[parameters('appServiceSku')]"
@@ -98,13 +98,13 @@
     {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2022-03-01",
-      "name": "[format('{0}sk-web', variables('uniqueName'))]",
+      "name": "[format('app-sk{0}', variables('uniqueName'))]",
       "location": "[variables('location')]",
       "tags": {
         "skweb": "1"
       },
       "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', format('{0}-plan', variables('uniqueName')))]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', format('asp-{0}', variables('uniqueName')))]",
         "httpsOnly": true,
         "siteConfig": {
           "alwaysOn": true,
@@ -114,140 +114,36 @@
           "use32BitWorkerProcess": false,
           "appSettings": [
             {
-              "name": "Service:SemanticSkillsDirectory",
-              "value": ""
-            },
-            {
-              "name": "Service:KeyVaultUri",
-              "value": ""
-            },
-            {
-              "name": "KeyVaultUri",
-              "value": ""
-            },
-            {
-              "name": "Completion:Label",
-              "value": "Completion"
-            },
-            {
               "name": "Completion:AIService",
               "value": "AzureOpenAI"
             },
             {
-              "name": "Completion:DeploymentOrModelId",
-              "value": "gpt-35-turbo"
-            },
-            {
               "name": "Completion:Endpoint",
-              "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}-ai', variables('uniqueName'))), '2022-03-01').endpoint]"
+              "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-03-01').endpoint]"
             },
             {
               "name": "Completion:Key",
-              "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('{0}-ai', variables('uniqueName'))), '2022-03-01').key1]"
-            },
-            {
-              "name": "Embedding:Label",
-              "value": "Embedding"
+              "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-03-01').key1]"
             },
             {
               "name": "Embedding:AIService",
               "value": "AzureOpenAI"
             },
             {
-              "name": "Embedding:DeploymentOrModelId",
-              "value": "text-embedding-ada-002"
-            },
-            {
               "name": "Embedding:Endpoint",
-              "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}-ai', variables('uniqueName'))), '2022-03-01').endpoint]"
+              "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-03-01').endpoint]"
             },
             {
               "name": "Embedding:Key",
-              "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('{0}-ai', variables('uniqueName'))), '2022-03-01').key1]"
-            },
-            {
-              "name": "AzureSpeech:Region",
-              "value": ""
-            },
-            {
-              "name": "AzureSpeech:Key",
-              "value": ""
-            },
-            {
-              "name": "Authorization:Type",
-              "value": "None"
-            },
-            {
-              "name": "Authorization:ApiKey",
-              "value": ""
-            },
-            {
-              "name": "Authorization:AzureAd:Instance",
-              "value": "https://login.microsoftonline.com/"
-            },
-            {
-              "name": "Authorization:AzureAd:TenantId",
-              "value": ""
-            },
-            {
-              "name": "Authorization:AzureAd:ClientId",
-              "value": ""
-            },
-            {
-              "name": "Authorization:AzureAd:Scopes",
-              "value": "access_as_user"
+              "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-03-01').key1]"
             },
             {
               "name": "ChatStore:Type",
               "value": "volatile"
             },
             {
-              "name": "ChatStore:Filesystem",
-              "value": "./data/chatstore.json"
-            },
-            {
               "name": "MemoriesStore:Type",
               "value": "volatile"
-            },
-            {
-              "name": "DocumentMemory:GlobalDocumentCollectionName",
-              "value": "global-documents"
-            },
-            {
-              "name": "DocumentMemory:UserDocumentCollectionNamePrefix",
-              "value": "user-documents-"
-            },
-            {
-              "name": "DocumentMemory:DocumentLineSplitMaxTokens",
-              "value": "30"
-            },
-            {
-              "name": "DocumentMemory:DocumentParagraphSplitMaxLines",
-              "value": "100"
-            },
-            {
-              "name": "DocumentMemory:FileSizeLimit",
-              "value": "1000000"
-            },
-            {
-              "name": "Planner:MaxTokens",
-              "value": "1024"
-            },
-            {
-              "name": "Planner:RelevancyThreshold",
-              "value": "0.78"
-            },
-            {
-              "name": "AllowedHosts",
-              "value": "*"
-            },
-            {
-              "name": "BotSchema:Name",
-              "value": "CopilotChat"
-            },
-            {
-              "name": "BotSchema:Version",
-              "value": "1"
             },
             {
               "name": "Kestrel:Endpoints:Https:Url",
@@ -258,39 +154,51 @@
               "value": "Warning"
             },
             {
+              "name": "Logging:LogLevel:SemanticKernel.Service",
+              "value": "Warning"
+            },
+            {
               "name": "Logging:LogLevel:Microsoft.SemanticKernel",
               "value": "Warning"
             },
             {
+              "name": "Logging:LogLevel:Microsoft.AspNetCore.Hosting",
+              "value": "Warning"
+            },
+            {
+              "name": "Logging:LogLevel:Microsoft.Hosting.Lifetimel",
+              "value": "Warning"
+            },
+            {
               "name": "ApplicationInsights:ConnectionString",
-              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-appi', variables('uniqueName'))), '2020-02-02').ConnectionString]"
+              "value": "[reference(resourceId('Microsoft.Insights/components', format('appi-{0}', variables('uniqueName'))), '2020-02-02').ConnectionString]"
             }
           ]
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Insights/components', format('{0}-appi', variables('uniqueName')))]",
-        "[resourceId('Microsoft.Web/serverfarms', format('{0}-plan', variables('uniqueName')))]",
-        "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-la', variables('uniqueName')))]",
-        "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-ai', variables('uniqueName')))]"
+        "[resourceId('Microsoft.Insights/components', format('appi-{0}', variables('uniqueName')))]",
+        "[resourceId('Microsoft.Web/serverfarms', format('asp-{0}', variables('uniqueName')))]",
+        "[resourceId('Microsoft.OperationalInsights/workspaces', format('la-{0}', variables('uniqueName')))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName')))]"
       ]
     },
     {
       "type": "Microsoft.Web/sites/extensions",
       "apiVersion": "2021-03-01",
-      "name": "[format('{0}/{1}', format('{0}sk-web', variables('uniqueName')), 'MSDeploy')]",
+      "name": "[format('{0}/{1}', format('app-sk{0}', variables('uniqueName')), 'MSDeploy')]",
       "kind": "string",
       "properties": {
         "packageUri": "[parameters('packageUri')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', format('{0}sk-web', variables('uniqueName')))]"
+        "[resourceId('Microsoft.Web/sites', format('app-sk{0}', variables('uniqueName')))]"
       ]
     },
     {
       "type": "Microsoft.Insights/components",
       "apiVersion": "2020-02-02",
-      "name": "[format('{0}-appi', variables('uniqueName'))]",
+      "name": "[format('appi-{0}', variables('uniqueName'))]",
       "location": "[variables('location')]",
       "kind": "string",
       "tags": {
@@ -298,25 +206,25 @@
       },
       "properties": {
         "Application_Type": "web",
-        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-la', variables('uniqueName')))]"
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', format('la-{0}', variables('uniqueName')))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-la', variables('uniqueName')))]"
+        "[resourceId('Microsoft.OperationalInsights/workspaces', format('la-{0}', variables('uniqueName')))]"
       ]
     },
     {
       "type": "Microsoft.Web/sites/siteextensions",
       "apiVersion": "2020-06-01",
-      "name": "[format('{0}/{1}', format('{0}sk-web', variables('uniqueName')), 'Microsoft.ApplicationInsights.AzureWebSites')]",
+      "name": "[format('{0}/{1}', format('app-sk{0}', variables('uniqueName')), 'Microsoft.ApplicationInsights.AzureWebSites')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Insights/components', format('{0}-appi', variables('uniqueName')))]",
-        "[resourceId('Microsoft.Web/sites', format('{0}sk-web', variables('uniqueName')))]"
+        "[resourceId('Microsoft.Insights/components', format('appi-{0}', variables('uniqueName')))]",
+        "[resourceId('Microsoft.Web/sites', format('app-sk{0}', variables('uniqueName')))]"
       ]
     },
     {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2020-08-01",
-      "name": "[format('{0}-la', variables('uniqueName'))]",
+      "name": "[format('la-{0}', variables('uniqueName'))]",
       "location": "[variables('location')]",
       "tags": {
         "displayName": "Log Analytics"
@@ -337,7 +245,7 @@
   "outputs": {
     "deployedUrl": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Web/sites', format('{0}sk-web', variables('uniqueName'))), '2022-03-01').defaultHostName]"
+      "value": "[reference(resourceId('Microsoft.Web/sites', format('app-sk{0}', variables('uniqueName'))), '2022-03-01').defaultHostName]"
     }
   }
 }
