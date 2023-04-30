@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb;
-internal sealed class CosmosMemoryRecordWithScore:CosmosMemoryRecord
+internal sealed class CosmosMemoryRecordWithScore : CosmosMemoryRecord
 {
     public double Score { get; set; }
 }

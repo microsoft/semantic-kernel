@@ -31,7 +31,7 @@ public class CosmosMemoryStore : IMemoryStore
     private string _databaseName;
     private ILogger _log;
     private readonly string _queryWithEmbedding = "select * from (SELECT c.id,c.collectionId,c.timestamp,c.embeddingString,c.metadataString,udf.CosinSimularity(@embedding,c.embeddingString) as score FROM c) cc where cc.score>@minScore";
-    private readonly string _queryWithoutEmbedding= "select * from (SELECT c.id,c.collectionId,c.timestamp,c.metadataString,udf.CosinSimularity(@embedding,c.embeddingString) as score FROM c) cc where cc.score>@minScore";
+    private readonly string _queryWithoutEmbedding = "select * from (SELECT c.id,c.collectionId,c.timestamp,c.metadataString,udf.CosinSimularity(@embedding,c.embeddingString) as score FROM c) cc where cc.score>@minScore";
     private SortedSet<string> _collectionCache = null;
 #pragma warning disable CS8618 // Non-nullable field is uninitialized: Class instance is created and populated via factory method.
     private CosmosMemoryStore()
@@ -88,7 +88,7 @@ public class CosmosMemoryStore : IMemoryStore
     {
         this._collectionCache = new SortedSet<string>();
         QueryDefinition queryDefinition = new QueryDefinition("select * from c");
-        var iterator=this._database.GetContainerQueryIterator<ContainerProperties>(queryDefinition);
+        var iterator = this._database.GetContainerQueryIterator<ContainerProperties>(queryDefinition);
         while (iterator.HasMoreResults)
         {
             foreach (var item in await iterator.ReadNextAsync(cancel).ConfigureAwait(false))
@@ -107,8 +107,8 @@ public class CosmosMemoryStore : IMemoryStore
         {
             Automatic = true,
             IndexingMode = IndexingMode.Consistent,//id and _ts will automatically indexed
-            ExcludedPaths = {new ExcludedPath() { Path= "/embeddingString/?" } },
-            IncludedPaths = { new IncludedPath() { Path = "/*" } } 
+            ExcludedPaths = { new ExcludedPath() { Path = "/embeddingString/?" } },
+            IncludedPaths = { new IncludedPath() { Path = "/*" } }
         };
         newContainer.PartitionKeyPath = "/id";
         var response = await this._database.CreateContainerIfNotExistsAsync(newContainer, cancellationToken: cancel).ConfigureAwait(false);
@@ -120,15 +120,15 @@ public class CosmosMemoryStore : IMemoryStore
 
 
             //create UDF
-            var createFunctionResponse=await response.Container.Scripts.CreateUserDefinedFunctionAsync(new UserDefinedFunctionProperties() { Id = "CosinSimularity", Body = ScriptResources.UDF_CosinSimularity }, cancellationToken: cancel).ConfigureAwait(false);
-            if (createFunctionResponse.StatusCode==HttpStatusCode.Created)
+            var createFunctionResponse = await response.Container.Scripts.CreateUserDefinedFunctionAsync(new UserDefinedFunctionProperties() { Id = "CosinSimularity", Body = ScriptResources.UDF_CosinSimularity }, cancellationToken: cancel).ConfigureAwait(false);
+            if (createFunctionResponse.StatusCode == HttpStatusCode.Created)
             {
-                this._log.LogInformation("Created UDF CosinSimularity in collection {0}",collectionName);
+                this._log.LogInformation("Created UDF CosinSimularity in collection {0}", collectionName);
                 this._collectionCache.Add(collectionName);
             }
             else
             {
-                throw new CosmosException($"Failed create UDF CosinSimularity in collection {collectionName}",createFunctionResponse.StatusCode,0,collectionName,0 );
+                throw new CosmosException($"Failed create UDF CosinSimularity in collection {collectionName}", createFunctionResponse.StatusCode, 0, collectionName, 0);
             }
 
         }
@@ -206,18 +206,18 @@ public class CosmosMemoryStore : IMemoryStore
         }
         catch (CosmosException ce)
         {
-            if (ce.StatusCode==HttpStatusCode.NotFound)
+            if (ce.StatusCode == HttpStatusCode.NotFound)
             {
-                this._log?.LogWarning("record not found in collection",collectionName);
+                this._log?.LogWarning("record not found in collection", collectionName);
                 return null;
             }
             else
             {
                 throw;
             }
-            
+
         }
-        
+
     }
 
     /// <inheritdoc/>
@@ -290,14 +290,14 @@ public class CosmosMemoryStore : IMemoryStore
             return;
         }
         var container = this._database.Client.GetContainer(this._databaseName, collectionName);
-        ItemResponse<CosmosMemoryRecord> response=null;
+        ItemResponse<CosmosMemoryRecord> response = null;
         try
         {
             response = await container.DeleteItemAsync<CosmosMemoryRecord>(key, new PartitionKey(key), cancellationToken: cancel).ConfigureAwait(false);
         }
         catch (CosmosException ce)
         {
-            if (ce.StatusCode==HttpStatusCode.NotFound)//ignore if no item is found
+            if (ce.StatusCode == HttpStatusCode.NotFound)//ignore if no item is found
             {
                 this._log.LogInformation("Record not found from {0}", collectionName);
                 return;
@@ -306,7 +306,7 @@ public class CosmosMemoryStore : IMemoryStore
             {
                 throw;
             }
-            
+
         }
         if (response.StatusCode == HttpStatusCode.NoContent)
         {
@@ -351,7 +351,7 @@ public class CosmosMemoryStore : IMemoryStore
 
 
             QueryDefinition query =
-                new QueryDefinition(withEmbeddings? this._queryWithEmbedding :this._queryWithoutEmbedding)
+                new QueryDefinition(withEmbeddings ? this._queryWithEmbedding : this._queryWithoutEmbedding)
                 .WithParameter("@embedding", embeddingParameter)
                 .WithParameter("@minScore", minRelevanceScore);
             var iterator = container.GetItemQueryIterator<CosmosMemoryRecordWithScore>(query);
@@ -362,7 +362,7 @@ public class CosmosMemoryStore : IMemoryStore
                 var items = await iterator.ReadNextAsync(cancel).ConfigureAwait(false);
                 foreach (var item in items)
                 {
-                    Embedding<float>? embeddingObject=null;
+                    Embedding<float>? embeddingObject = null;
                     if (withEmbeddings)
                     {
                         float[] embeddingValue = JsonSerializer.Deserialize<float[]>(item.EmbeddingString);
