@@ -129,14 +129,14 @@ public static class KernelOpenApiExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         CancellationToken cancellationToken = default)
     {
-        const string OPENAPI_FILE = "openapi.json";
+        const string OpenAPIFile = "openapi.json";
 
         Verify.ValidSkillName(skillDirectoryName);
 
         var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
         Verify.DirectoryExists(skillDir);
 
-        var openApiDocumentPath = Path.Combine(skillDir, OPENAPI_FILE);
+        var openApiDocumentPath = Path.Combine(skillDir, OpenAPIFile);
         if (!File.Exists(openApiDocumentPath))
         {
             throw new FileNotFoundException($"No OpenApi document for the specified path - {openApiDocumentPath} is found.");
