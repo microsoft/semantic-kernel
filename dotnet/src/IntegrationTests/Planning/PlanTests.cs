@@ -449,7 +449,6 @@ public sealed class PlanTests : IDisposable
             .Configure(config =>
             {
                 config.AddAzureTextCompletionService(
-                    serviceId: azureOpenAIConfiguration.ServiceId,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
@@ -457,13 +456,10 @@ public sealed class PlanTests : IDisposable
                 if (useEmbeddings)
                 {
                     config.AddAzureTextEmbeddingGenerationService(
-                        serviceId: azureOpenAIEmbeddingsConfiguration.ServiceId,
                         deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                         endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                         apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
                 }
-
-                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
             });
 
         if (useEmbeddings)

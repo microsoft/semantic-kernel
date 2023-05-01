@@ -43,7 +43,7 @@ public static class Example26_AADAuth
         };
 
         // Add Azure chat completion service using DefaultAzureCredential AAD auth
-        kernel.Config.AddAzureChatCompletionService("chat",
+        kernel.Config.AddAzureChatCompletionService(
             "gpt-35-turbo",
             "https://....openai.azure.com/",
             new DefaultAzureCredential(authOptions));

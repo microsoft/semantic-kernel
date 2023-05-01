@@ -180,7 +180,6 @@ Jane: Goodbye!
     {
         IKernel kernel = Kernel.Builder.WithLogger(ConsoleLogger.Log).Build();
         kernel.Config.AddAzureTextCompletionService(
-            Env.Var("AZURE_OPENAI_SERVICE_ID"),
             Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
             Env.Var("AZURE_OPENAI_ENDPOINT"),
             Env.Var("AZURE_OPENAI_KEY"));
