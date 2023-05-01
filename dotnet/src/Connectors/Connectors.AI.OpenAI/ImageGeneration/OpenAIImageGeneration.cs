@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +10,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
@@ -24,14 +24,14 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// </summary>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="organization">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="handlerFactory">Retry handler</param>
-    /// <param name="log">Logger</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     public OpenAIImageGeneration(
         string apiKey,
         string? organization = null,
-        IDelegatingHandlerFactory? handlerFactory = null,
-        ILogger? log = null
-    )
+        HttpClient? httpClient = null,
+        ILogger? logger = null
+    ) : base(httpClient, logger)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
         this.HTTPClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
