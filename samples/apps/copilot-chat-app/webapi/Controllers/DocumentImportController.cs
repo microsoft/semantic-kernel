@@ -35,9 +35,9 @@ public class DocumentImportController : ControllerBase
         Pdf,
     };
 
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _serviceProvider; // TODO: unused
     private readonly ILogger<DocumentImportController> _logger;
-    private readonly PromptSettings _promptSettings;
+    private readonly PromptSettings _promptSettings; // TODO: unused
     private readonly DocumentMemoryOptions _options;
 
     /// <summary>
