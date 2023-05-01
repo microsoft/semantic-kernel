@@ -472,7 +472,7 @@ public class ChatSkill
             query: item.ToFormattedString(),
             limit: 1,
             minRelevanceScore: 0.8,
-            cancel: context.CancellationToken
+            cancellationToken: context.CancellationToken
         ).ToEnumerable();
 
         if (!memories.Any())
@@ -482,7 +482,7 @@ public class ChatSkill
                 text: item.ToFormattedString(),
                 id: Guid.NewGuid().ToString(),
                 description: memoryName,
-                cancel: context.CancellationToken
+                cancellationToken: context.CancellationToken
             );
         }
     }
