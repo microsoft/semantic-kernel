@@ -1,15 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
-import pytest
-import sys
 import asyncio
+import os
+
+import e2e_text_completion
+import pytest
+
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-import e2e_text_completion
+
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(raises=AssertionError, reason="OpenAI may throtle requests, preventing this test from passing")
+@pytest.mark.xfail(
+    raises=AssertionError,
+    reason="OpenAI may throtle requests, preventing this test from passing",
+)
 async def test_oai_chat_service_with_skills():
     kernel = sk.Kernel()
 
@@ -25,6 +30,7 @@ async def test_oai_chat_service_with_skills():
     )
 
     await e2e_text_completion.summarize_function_test(kernel)
+
 
 if __name__ == "__main__":
     asyncio.run(test_oai_chat_service_with_skills())
