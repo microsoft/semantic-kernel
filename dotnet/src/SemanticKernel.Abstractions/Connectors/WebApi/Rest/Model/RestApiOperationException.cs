@@ -4,6 +4,8 @@ using System;
 
 namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
+#pragma warning disable CA1032 // Implement standard exception constructors
+
 /// <summary>
 /// Exception to be throw if a REST API operation has failed. E.g. mandatory property is missing or empty, value is out of range
 /// </summary>
@@ -23,13 +25,6 @@ public class RestApiOperationException : Exception
     /// <param name="message">The exception message.</param>
     /// <param name="innerException">The inner exception.</param>
     internal RestApiOperationException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
-
-    /// <summary>
-    /// Creates an instance of a <see cref="RestApiOperationException"/> class.
-    /// </summary>
-    internal RestApiOperationException()
     {
     }
 }

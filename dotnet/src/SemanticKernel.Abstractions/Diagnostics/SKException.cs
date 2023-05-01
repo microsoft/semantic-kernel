@@ -4,18 +4,13 @@ using System;
 
 namespace Microsoft.SemanticKernel.Diagnostics;
 
+#pragma warning disable CA1032 // Implement standard exception constructors
+
 /// <summary>
 /// Provides the base exception from which all Semantic Kernel exceptions derive.
 /// </summary>
 public abstract class SKException : Exception
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SKException"/> class with a default message.
-    /// </summary>
-    protected SKException()
-    {
-    }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SKException"/> class with its message set to <paramref name="message"/>.
     /// </summary>

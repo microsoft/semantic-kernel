@@ -4,6 +4,8 @@ using System;
 
 namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Exceptions;
 
+#pragma warning disable CA1032 // Implement standard exception constructors
+
 /// <summary>
 /// Exception thrown by the MsGraph connectors
 /// </summary>
@@ -24,10 +26,5 @@ public class MsGraphConnectorException : Exception
     /// <param name="innerException">Inner exception.</param>
     public MsGraphConnectorException(string message, Exception innerException) : base(message, innerException)
     {
-    }
-
-    private MsGraphConnectorException()
-    {
-        // Do not use, error message is required
     }
 }
