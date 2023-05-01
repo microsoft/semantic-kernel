@@ -22,6 +22,8 @@ dotnet user-secrets set "AZURE_OPENAI_SERVICE_ID" "..."
 dotnet user-secrets set "AZURE_OPENAI_DEPLOYMENT_NAME" "..."
 dotnet user-secrets set "AZURE_OPENAI_ENDPOINT" "https://... .openai.azure.com/"
 dotnet user-secrets set "AZURE_OPENAI_KEY" "..."
+dotnet user-secrets set "ACS_ENDPOINT" "https://... .search.windows.net"
+dotnet user-secrets set "ACS_API_KEY" "..."
 dotnet user-secrets set "QDRANT_ENDPOINT" "..."
 dotnet user-secrets set "QDRANT_PORT" "..."
 ```
@@ -34,5 +36,7 @@ To set your secrets with environment variables, use these names:
 * AZURE_OPENAI_DEPLOYMENT_NAME
 * AZURE_OPENAI_ENDPOINT
 * AZURE_OPENAI_KEY
+* ACS_ENDPOINT
+* ACS_API_KEY
 * QDRANT_ENDPOINT
 * QDRANT_PORT
