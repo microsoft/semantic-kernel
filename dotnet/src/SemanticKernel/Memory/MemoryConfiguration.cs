@@ -22,7 +22,7 @@ public static class MemoryConfiguration
     /// <param name="storage">Memory storage</param>
     public static void UseMemory(this IKernel kernel, IMemoryStore storage)
     {
-        UseMemory(kernel, kernel.Config.DefaultTextEmbeddingGenerationServiceId, storage);
+        UseMemory(kernel, kernel.Config.DefaultTextEmbeddingGenerationServiceId!, storage);
     }
 
     /// <summary>
@@ -33,9 +33,9 @@ public static class MemoryConfiguration
     /// <param name="storage">Memory storage</param>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The embeddingGenerator object is disposed by the kernel")]
-    public static void UseMemory(this IKernel kernel, string? embeddingsServiceId, IMemoryStore storage)
+    public static void UseMemory(this IKernel kernel, string embeddingsServiceId, IMemoryStore storage)
     {
-        Verify.NotEmpty(embeddingsServiceId, "The embedding service id is empty");
+        Verify.NotNullOrWhiteSpace(embeddingsServiceId);
 
         var embeddingGenerator = kernel.GetService<IEmbeddingGeneration<string, float>>();
 

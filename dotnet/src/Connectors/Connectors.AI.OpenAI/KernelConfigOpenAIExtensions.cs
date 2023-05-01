@@ -33,7 +33,7 @@ public static class KernelConfigOpenAIExtensions
     public static KernelConfig AddAzureTextCompletionService(this KernelConfig config,
         string serviceId, string deploymentName, string endpoint, string apiKey)
     {
-        Verify.NotEmpty(serviceId, "The service Id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
 
         ITextCompletion Factory(IKernel kernel) => new AzureTextCompletion(
             deploymentName, endpoint, apiKey, kernel.Config.HttpHandlerFactory, kernel.Log);
@@ -56,7 +56,7 @@ public static class KernelConfigOpenAIExtensions
     public static KernelConfig AddAzureTextCompletionService(this KernelConfig config,
         string serviceId, string deploymentName, string endpoint, TokenCredential credentials)
     {
-        Verify.NotEmpty(serviceId, "The service Id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
 
         ITextCompletion Factory(IKernel kernel) => new AzureTextCompletion(
             deploymentName, endpoint, credentials, kernel.Config.HttpHandlerFactory, kernel.Log);
@@ -79,7 +79,7 @@ public static class KernelConfigOpenAIExtensions
     public static KernelConfig AddOpenAITextCompletionService(this KernelConfig config,
         string serviceId, string modelId, string apiKey, string? orgId = null)
     {
-        Verify.NotEmpty(serviceId, "The service Id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
 
         ITextCompletion Factory(IKernel kernel) => new OpenAITextCompletion(
             modelId, apiKey, orgId, kernel.Config.HttpHandlerFactory, kernel.Log);
@@ -106,7 +106,7 @@ public static class KernelConfigOpenAIExtensions
     public static KernelConfig AddAzureTextEmbeddingGenerationService(this KernelConfig config,
         string serviceId, string deploymentName, string endpoint, string apiKey)
     {
-        Verify.NotEmpty(serviceId, "The service Id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
 
         IEmbeddingGeneration<string, float> Factory(IKernel kernel) => new AzureTextEmbeddingGeneration(
             deploymentName, endpoint, apiKey, kernel.Config.HttpHandlerFactory, kernel.Log);
@@ -129,7 +129,7 @@ public static class KernelConfigOpenAIExtensions
     public static KernelConfig AddAzureTextEmbeddingGenerationService(this KernelConfig config,
         string serviceId, string deploymentName, string endpoint, TokenCredential credentials)
     {
-        Verify.NotEmpty(serviceId, "The service Id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
 
         IEmbeddingGeneration<string, float> Factory(IKernel kernel) => new AzureTextEmbeddingGeneration(
             deploymentName, endpoint, credentials, kernel.Config.HttpHandlerFactory, kernel.Log);
@@ -152,7 +152,7 @@ public static class KernelConfigOpenAIExtensions
     public static KernelConfig AddOpenAITextEmbeddingGenerationService(this KernelConfig config,
         string serviceId, string modelId, string apiKey, string? orgId = null)
     {
-        Verify.NotEmpty(serviceId, "The service Id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
 
         IEmbeddingGeneration<string, float> Factory(IKernel kernel) => new OpenAITextEmbeddingGeneration(
             modelId, apiKey, orgId, kernel.Config.HttpHandlerFactory, kernel.Log);
@@ -180,7 +180,7 @@ public static class KernelConfigOpenAIExtensions
     public static KernelConfig AddAzureChatCompletionService(this KernelConfig config,
         string serviceId, string deploymentName, string endpoint, string apiKey, bool alsoAsTextCompletion = true)
     {
-        Verify.NotEmpty(serviceId, "The service Id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
 
         IChatCompletion Factory(IKernel kernel) => new AzureChatCompletion(
             deploymentName, endpoint, apiKey, kernel.Config.HttpHandlerFactory, kernel.Log);
@@ -213,7 +213,7 @@ public static class KernelConfigOpenAIExtensions
     public static KernelConfig AddAzureChatCompletionService(this KernelConfig config,
         string serviceId, string deploymentName, string endpoint, TokenCredential credentials, bool alsoAsTextCompletion = true)
     {
-        Verify.NotEmpty(serviceId, "The service Id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
 
         IChatCompletion Factory(IKernel kernel) => new AzureChatCompletion(
             deploymentName, endpoint, credentials, kernel.Config.HttpHandlerFactory, kernel.Log);
@@ -246,7 +246,7 @@ public static class KernelConfigOpenAIExtensions
     public static KernelConfig AddOpenAIChatCompletionService(this KernelConfig config,
         string serviceId, string modelId, string apiKey, string? orgId = null, bool alsoAsTextCompletion = true)
     {
-        Verify.NotEmpty(serviceId, "The service Id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
 
         IChatCompletion Factory(IKernel kernel) => new OpenAIChatCompletion(
             modelId, apiKey, orgId, kernel.Config.HttpHandlerFactory, kernel.Log);
@@ -280,7 +280,7 @@ public static class KernelConfigOpenAIExtensions
     public static KernelConfig AddOpenAIImageGenerationService(this KernelConfig config,
         string serviceId, string apiKey, string? orgId = null)
     {
-        Verify.NotEmpty(serviceId, "The service Id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
 
         IImageGeneration Factory(IKernel kernel) => new OpenAIImageGeneration(
             apiKey, orgId, kernel.Config.HttpHandlerFactory, kernel.Log);

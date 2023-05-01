@@ -31,7 +31,9 @@ public abstract class OpenAIClientBase : ClientBase
         ILogger? log = null
     )
     {
-        Verify.NotEmpty(modelId, "The Model Id cannot be empty");
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
         this.ModelId = modelId;
 
         var options = new OpenAIClientOptions();
@@ -48,7 +50,6 @@ public abstract class OpenAIClientBase : ClientBase
             options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organization!), HttpPipelinePosition.PerCall);
         }
 
-        Verify.NotEmpty(apiKey, "The OpenAI API key cannot be empty");
         this.Client = new OpenAIClient(apiKey, options);
     }
 }

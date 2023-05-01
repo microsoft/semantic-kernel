@@ -97,7 +97,7 @@ public sealed class KernelConfig
     public KernelConfig AddTextCompletionService(
         string serviceId, Func<IKernel, ITextCompletion> serviceFactory)
     {
-        Verify.NotEmpty(serviceId, "The service id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
         this.TextCompletionServices[serviceId] = serviceFactory;
         if (this.TextCompletionServices.Count == 1)
         {
@@ -117,7 +117,7 @@ public sealed class KernelConfig
     public KernelConfig AddChatCompletionService(
         string serviceId, Func<IKernel, IChatCompletion> serviceFactory)
     {
-        Verify.NotEmpty(serviceId, "The service id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
         this.ChatCompletionServices[serviceId] = serviceFactory;
         if (this.ChatCompletionServices.Count == 1)
         {
@@ -138,7 +138,7 @@ public sealed class KernelConfig
     public KernelConfig AddTextEmbeddingGenerationService(
         string serviceId, Func<IKernel, IEmbeddingGeneration<string, float>> serviceFactory, bool overwrite = false)
     {
-        Verify.NotEmpty(serviceId, "The service id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
         this.TextEmbeddingGenerationServices[serviceId] = serviceFactory;
         if (this.TextEmbeddingGenerationServices.Count == 1)
         {
@@ -158,7 +158,7 @@ public sealed class KernelConfig
     public KernelConfig AddImageGenerationService(
         string serviceId, Func<IKernel, IImageGeneration> serviceFactory)
     {
-        Verify.NotEmpty(serviceId, "The service id provided is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
         this.ImageGenerationServices[serviceId] = serviceFactory;
         if (this.ImageGenerationServices.Count == 1)
         {

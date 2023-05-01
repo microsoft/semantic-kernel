@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -181,7 +182,7 @@ public class PromptTemplateConfig
         var result = Json.Deserialize<PromptTemplateConfig>(json);
         if (result is null)
         {
-            Verify.ThrowValidationException(ValidationException.ErrorCodes.NullValue, "Unable to deserialize prompt template config. The deserialized returned NULL.");
+            throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
         }
 
         return result;

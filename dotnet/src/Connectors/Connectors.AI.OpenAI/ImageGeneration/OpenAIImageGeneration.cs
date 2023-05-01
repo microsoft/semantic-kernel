@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
     // 3P OpenAI REST API endpoint
-    private const string OpenaiEndpoint = "https://api.openai.com/v1/images/generations";
+    private const string OpenAIEndpoint = "https://api.openai.com/v1/images/generations";
 
     /// <summary>
     /// Create a new instance of OpenAI image generation service
@@ -33,7 +33,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         ILogger? log = null
     )
     {
-        Verify.NotEmpty(apiKey, "The OpenAI API key cannot be empty");
+        Verify.NotNullOrWhiteSpace(apiKey);
         this.HTTPClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
         if (!string.IsNullOrEmpty(organization))
@@ -63,7 +63,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             Format = "url",
         });
 
-        var list = await this.ExecuteImageUrlGenerationRequestAsync(OpenaiEndpoint, requestBody, cancellationToken).ConfigureAwait(false);
+        var list = await this.ExecuteImageUrlGenerationRequestAsync(OpenAIEndpoint, requestBody, cancellationToken).ConfigureAwait(false);
         return list.First();
     }
 
@@ -77,7 +77,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             Format = "b64_json",
         });
 
-        var list = await this.ExecuteImageBase64GenerationRequestAsync(OpenaiEndpoint, requestBody, cancellationToken).ConfigureAwait(false);
+        var list = await this.ExecuteImageBase64GenerationRequestAsync(OpenAIEndpoint, requestBody, cancellationToken).ConfigureAwait(false);
         return list.First();
     }
 }
