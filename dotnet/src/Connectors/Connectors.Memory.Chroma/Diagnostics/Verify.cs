@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Diagnostics;
 
 internal static class Verify
 {
