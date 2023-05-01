@@ -214,7 +214,7 @@ public static class KernelOpenApiExtensions
             try
             {
                 kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
-                var function = kernel.RegisterRestApiFunction(skillName, operation, authCallback, cancellationToken);
+                var function = kernel.RegisterRestApiFunction(skillName, operation, authCallback, null, cancellationToken);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
@@ -245,8 +245,9 @@ public static class KernelOpenApiExtensions
         string skillName,
         RestApiOperation operation,
         AuthenticateRequestAsyncCallback? authCallback = null,
-        CancellationToken cancellationToken = default,
-        string? userAgent = "Microsoft-Semantic-Kernel")
+        string? userAgent = "Microsoft-Semantic-Kernel",
+        CancellationToken cancellationToken = default
+        )
     {
         var restOperationParameters = operation.GetParameters();
 

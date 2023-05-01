@@ -55,7 +55,9 @@ export const useConnectors = () => {
      * with GitHub token.
      */
     const invokeSkillWithGitHubToken = async () => {
-        // TODO: For testing, change as needed
+        // This is an example of invoking a GitHub skill (imported as an Open API Skill),
+        // where PullsList comes from the API operation Id defined in the swagger
+        // and variables are parameter requirements of the API being called.
         const listPullRequestsAsk = {
             input: 'input',
             variables: [

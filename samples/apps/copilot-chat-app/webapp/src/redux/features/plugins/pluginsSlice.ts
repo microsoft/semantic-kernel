@@ -18,10 +18,13 @@ export const pluginsState = createSlice({
                     break;
                 case Plugins.Jira:
                     plugin = state.Jira;
+
+                    // TODO: Aman to change with Jira integration
                     const encodedData = Buffer.from(
                         `${action.payload.username}:${action.payload.accessToken}`,
                     ).toString('base64');
                     authData = encodedData;
+
                     break;
                 case Plugins.GitHub:
                     plugin = state.GitHub;

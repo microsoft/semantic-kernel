@@ -45,7 +45,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     /// Sends an HTTP request to the inner handler to send to the server as an asynchronous operation.
     /// </summary>
     /// <param name="request">The request message.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

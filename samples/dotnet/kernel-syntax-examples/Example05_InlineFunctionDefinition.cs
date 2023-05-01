@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example06_InlineFunctionDefinition
+public static class Example05_InlineFunctionDefinition
 {
     public static async Task RunAsync()
     {
