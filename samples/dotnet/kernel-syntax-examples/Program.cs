@@ -17,16 +17,16 @@ public static class Program
         await Example03_Variables.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example04_BingSkillAndConnector.RunAsync();
+        await Example04_CombineLLMPromptsAndNativeCode.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example05_CombineLLMPromptsAndNativeCode.RunAsync();
+        await Example05_InlineFunctionDefinition.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example06_InlineFunctionDefinition.RunAsync();
+        await Example06_TemplateLanguage.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example07_TemplateLanguage.RunAsync();
+        await Example07_BingAndGoogleSkills.RunAsync();
         Console.WriteLine("== DONE ==");
 
         await Example08_RetryHandler.RunAsync();

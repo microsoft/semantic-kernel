@@ -83,7 +83,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// Performs HTTP request to given endpoint for embedding generation.
     /// </summary>
     /// <param name="data">Data to embed.</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of generated embeddings.</returns>
     /// <exception cref="AIException">Exception when backend didn't respond with generated embeddings.</exception>
     private async Task<IList<Embedding<float>>> ExecuteEmbeddingRequestAsync(IList<string> data, CancellationToken cancellationToken)
