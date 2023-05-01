@@ -36,7 +36,12 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureTextCompletionService(this KernelConfig config,
-        string deploymentName, string endpoint, string apiKey, string? serviceId, HttpClient? httpClient = null, ILogger? logger = null)
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         ITextCompletion Factory(IKernel kernel) => new AzureTextCompletion(
             deploymentName,
