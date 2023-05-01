@@ -75,6 +75,6 @@ public abstract class AzureOpenAIClientBase : ClientBase
         }
 
         this.ModelId = modelId;
-        this.Client = new OpenAIClient(new Uri(endpoint), credentials, options);
+        this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
     }
 }
