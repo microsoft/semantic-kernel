@@ -63,7 +63,6 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureTextCompletionService(this KernelConfig config,
-        string serviceId,
         string deploymentName,
         string endpoint,
         TokenCredential credentials,
