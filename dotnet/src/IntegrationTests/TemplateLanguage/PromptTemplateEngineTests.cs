@@ -27,22 +27,22 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public async Task ItSupportsVariablesAsync()
     {
         // Arrange
-        const string input = "template tests";
-        const string winner = "SK";
-        const string template = "And the winner\n of {{$input}} \nis: {{  $winner }}!";
+        const string Input = "template tests";
+        const string Winner = "SK";
+        const string Template = "And the winner\n of {{$input}} \nis: {{  $winner }}!";
 
         var kernel = Kernel.Builder.Build();
         var context = kernel.CreateNewContext();
-        context["input"] = input;
-        context["winner"] = winner;
+        context["input"] = Input;
+        context["winner"] = Winner;
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(Template, context);
 
         // Assert
-        var expected = template
-            .Replace("{{$input}}", input, StringComparison.OrdinalIgnoreCase)
-            .Replace("{{  $winner }}", winner, StringComparison.OrdinalIgnoreCase);
+        var expected = Template
+            .Replace("{{$input}}", Input, StringComparison.OrdinalIgnoreCase)
+            .Replace("{{  $winner }}", Winner, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(expected, result);
     }
 
@@ -50,31 +50,31 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public async Task ItSupportsValuesAsync()
     {
         // Arrange
-        const string template = "And the winner\n of {{'template\ntests'}} \nis: {{  \"SK\" }}!";
-        const string expected = "And the winner\n of template\ntests \nis: SK!";
+        const string Template = "And the winner\n of {{'template\ntests'}} \nis: {{  \"SK\" }}!";
+        const string Expected = "And the winner\n of template\ntests \nis: SK!";
 
         var kernel = Kernel.Builder.Build();
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(Template, context);
 
         // Assert
-        Assert.Equal(expected, result);
+        Assert.Equal(Expected, result);
     }
 
     [Fact]
     public async Task ItAllowsToPassVariablesToFunctionsAsync()
     {
         // Arrange
-        const string template = "== {{my.check123 $call}} ==";
+        const string Template = "== {{my.check123 $call}} ==";
         var kernel = Kernel.Builder.Build();
         kernel.ImportSkill(new MySkill(), "my");
         var context = kernel.CreateNewContext();
         context["call"] = "123";
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(Template, context);
 
         // Assert
         Assert.Equal("== 123 ok ==", result);
@@ -84,13 +84,13 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public async Task ItAllowsToPassValuesToFunctionsAsync()
     {
         // Arrange
-        const string template = "== {{my.check123 '234'}} ==";
+        const string Template = "== {{my.check123 '234'}} ==";
         var kernel = Kernel.Builder.Build();
         kernel.ImportSkill(new MySkill(), "my");
         var context = kernel.CreateNewContext();
 
         // Act
-        var result = await this._target.RenderAsync(template, context);
+        var result = await this._target.RenderAsync(Template, context);
 
         // Assert
         Assert.Equal("== 234 != 123 ==", result);
@@ -100,8 +100,8 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public async Task ItAllowsToPassEscapedValues1ToFunctionsAsync()
     {
         // Arrange
-        const char ESC = '\\';
-        string template = "== {{my.check123 'a" + ESC + "'b'}} ==";
+        const char Esc = '\\';
+        string template = "== {{my.check123 'a" + Esc + "'b'}} ==";
         var kernel = Kernel.Builder.Build();
         kernel.ImportSkill(new MySkill(), "my");
         var context = kernel.CreateNewContext();
@@ -117,8 +117,8 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public async Task ItAllowsToPassEscapedValues2ToFunctionsAsync()
     {
         // Arrange
-        const char ESC = '\\';
-        string template = "== {{my.check123 \"a" + ESC + "\"b\"}} ==";
+        const char Esc = '\\';
+        string template = "== {{my.check123 \"a" + Esc + "\"b\"}} ==";
         var kernel = Kernel.Builder.Build();
         kernel.ImportSkill(new MySkill(), "my");
         var context = kernel.CreateNewContext();

@@ -115,14 +115,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
             catch (AIException ex)
             {
-                const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
-                log?.LogError(ex, message, skillName, functionName, ex.Message, ex.Detail);
+                const string Message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
+                log?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
                 context.Fail(ex.Message, ex);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
-                log?.LogError(ex, message, skillName, functionName, ex.Message);
+                const string Message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
+                log?.LogError(ex, Message, skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
 
@@ -159,23 +159,22 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKContext? context = null,
         CompleteRequestSettings? settings = null,
         ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
         if (context == null)
         {
-            var cToken = cancel ?? default;
             log ??= NullLogger.Instance;
             context = new SKContext(
                 new ContextVariables(""),
                 NullMemory.Instance,
                 this._skillCollection,
                 log,
-                cToken);
+                cancellationToken);
         }
 
         context.Variables.Update(input);
 
-        return this.InvokeAsync(context, settings, log, cancel);
+        return this.InvokeAsync(context, settings, log, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -183,13 +182,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKContext? context = null,
         CompleteRequestSettings? settings = null,
         ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
         if (context == null)
         {
-            var cToken = cancel ?? default;
             log ??= NullLogger.Instance;
-            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cToken);
+            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cancellationToken);
         }
 
         return this.IsSemantic

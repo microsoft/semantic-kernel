@@ -15,7 +15,7 @@ public interface ICalendarConnector
     /// Add a new event to the user's calendar
     /// </summary>
     /// <param name="calendarEvent">Event to add.</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Event that was added.</returns>
     Task<CalendarEvent> AddEventAsync(CalendarEvent calendarEvent, CancellationToken cancellationToken = default);
 }
