@@ -46,8 +46,8 @@ public sealed class SequentialPlannerTests
             functionsView.AddFunction(functionView);
 
             mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, CompleteRequestSettings, ILogger, CancellationToken>((context, settings, log, cancel) =>
+                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>()))
+                .Returns<SKContext, CompleteRequestSettings>((context, settings) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(context);
@@ -99,11 +99,9 @@ public sealed class SequentialPlannerTests
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
-            null,
-            null,
-            default
-        )).Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken>(
-            (c, s, l, ct) => c.Variables.Update("Hello world!")
+            null
+        )).Callback<SKContext, CompleteRequestSettings>(
+            (c, s) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills
@@ -189,11 +187,9 @@ public sealed class SequentialPlannerTests
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
-            null,
-            null,
-            default
-        )).Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>(
-            (c, s, l, ct) => c.Variables.Update("Hello world!")
+            null
+        )).Callback<SKContext, CompleteRequestSettings>(
+            (c, s) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills

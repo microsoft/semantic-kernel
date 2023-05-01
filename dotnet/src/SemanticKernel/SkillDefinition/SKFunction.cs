@@ -155,44 +155,29 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
-        string input,
-        SKContext? context = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? log = null,
-        CancellationToken cancellationToken = default)
+        SKContext context,
+        CompleteRequestSettings? settings = null)
     {
-        if (context == null)
-        {
-            log ??= NullLogger.Instance;
-            context = new SKContext(
-                new ContextVariables(""),
-                NullMemory.Instance,
-                this._skillCollection,
-                log,
-                cancellationToken);
-        }
-
-        context.Variables.Update(input);
-
-        return this.InvokeAsync(context, settings, log, cancellationToken);
+        return this.IsSemantic
+            ? this.InvokeSemanticAsync(context, settings)
+            : this.InvokeNativeAsync(context);
     }
 
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
-        SKContext? context = null,
+        string? input = null,
         CompleteRequestSettings? settings = null,
         ILogger? log = null,
         CancellationToken cancellationToken = default)
     {
-        if (context == null)
-        {
-            log ??= NullLogger.Instance;
-            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cancellationToken);
-        }
+        SKContext context = new(
+            new ContextVariables(input),
+            NullMemory.Instance,
+            this._skillCollection,
+            log ?? NullLogger.Instance,
+            cancellationToken);
 
-        return this.IsSemantic
-            ? this.InvokeSemanticAsync(context, settings)
-            : this.InvokeNativeAsync(context);
+        return this.InvokeAsync(context, settings);
     }
 
     /// <inheritdoc/>

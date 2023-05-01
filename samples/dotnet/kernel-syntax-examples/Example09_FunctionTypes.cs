@@ -81,26 +81,11 @@ public static class Example09_FunctionTypes
         await kernel.Func("test", "type10").InvokeAsync("");
         await test["type10"].InvokeAsync("");
 
-        await kernel.Func("test", "type11").InvokeAsync("", fakeContext);
-        await test["type11"].InvokeAsync("", fakeContext);
+        await kernel.Func("test", "type11").InvokeAsync("");
+        await test["type11"].InvokeAsync("");
 
-        await kernel.Func("test", "type12").InvokeAsync("", fakeContext);
-        await test["type12"].InvokeAsync("", fakeContext);
-
-        await kernel.Func("test", "type13").InvokeAsync("", fakeContext);
-        await test["type13"].InvokeAsync("", fakeContext);
-
-        await kernel.Func("test", "type14").InvokeAsync("", fakeContext);
-        await test["type14"].InvokeAsync("", fakeContext);
-
-        await kernel.Func("test", "type15").InvokeAsync("");
-        await test["type15"].InvokeAsync("");
-
-        await kernel.Func("test", "type16").InvokeAsync(fakeContext);
-        await test["type16"].InvokeAsync(fakeContext);
-
-        await kernel.Func("test", "type17").InvokeAsync("", fakeContext);
-        await test["type17"].InvokeAsync("", fakeContext);
+        await kernel.Func("test", "type12").InvokeAsync(fakeContext);
+        await test["type12"].InvokeAsync(fakeContext);
 
         await kernel.Func("test", "type18").InvokeAsync();
         await test["type18"].InvokeAsync();

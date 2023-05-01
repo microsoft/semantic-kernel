@@ -23,9 +23,9 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// Constructor for context variables.
     /// </summary>
     /// <param name="content">Optional value for the main variable of the context.</param>
-    public ContextVariables(string content = "")
+    public ContextVariables(string? content = null)
     {
-        this._variables[MainKey] = content;
+        this._variables[MainKey] = content ?? string.Empty;
     }
 
     /// <summary>
