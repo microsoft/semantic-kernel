@@ -22,7 +22,7 @@ using RepoUtils;
  */
 
 // ReSharper disable once InconsistentNaming
-public static class Example25_AADAuth
+public static class Example26_AADAuth
 {
     public static async Task RunAsync()
     {

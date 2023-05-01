@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Planning;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example27_ActionPlanner
+public static class Example28_ActionPlanner
 {
     public static async Task RunAsync()
     {

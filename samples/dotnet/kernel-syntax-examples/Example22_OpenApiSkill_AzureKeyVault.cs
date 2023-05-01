@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example22_OpenApiSkill
+public static class Example22_OpenApiSkill_AzureKeyVault
 {
     public static async Task RunAsync()
     {
