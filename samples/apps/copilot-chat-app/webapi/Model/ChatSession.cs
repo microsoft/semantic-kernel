@@ -3,7 +3,7 @@
 using System.Text.Json.Serialization;
 using SemanticKernel.Service.Storage;
 
-namespace SemanticKernel.Service.Skills;
+namespace SemanticKernel.Service.Model;
 
 /// <summary>
 /// A chat session

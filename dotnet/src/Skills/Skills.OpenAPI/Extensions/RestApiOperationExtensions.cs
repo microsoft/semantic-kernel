@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
@@ -32,74 +32,37 @@ internal static class RestApiOperationExtensions
             RestApiOperationParameterStyle.Simple,
             defaultValue: operation.ServerUrl));
 
-        //Register the "input" parameter to be advertised and used for "text/plain" requests.
-        if (operation.Payload?.MediaType == MediaTypeTextPlain)
+        //Register the "payload" parameter to be advertised for Put and Post operations.
+        if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)
         {
+            var type = operation.Payload?.MediaType == MediaTypeTextPlain ? "string" : "object";
+
             parameters.Add(new RestApiOperationParameter(
-                RestApiOperation.InputArgumentName,
-                "string",
+                RestApiOperation.PayloadArgumentName,
+                type,
                 true,
                 RestApiOperationParameterLocation.Body,
                 RestApiOperationParameterStyle.Simple,
-                description: operation.Payload.Description));
-        }
+                description: operation.Payload?.Description ?? "REST API request body."));
 
-        //Add Payload properties.
-        parameters.AddRange(CreateParametersFromPayloadProperties(operation.Payload));
+            parameters.Add(new RestApiOperationParameter(
+                RestApiOperation.ContentTypeArgumentName,
+                "string",
+                false,
+                RestApiOperationParameterLocation.Body,
+                RestApiOperationParameterStyle.Simple,
+                description: "Content type of REST API request body."));
+        }
 
         //Create a property alternative name without special symbols that are not supported by SK template language.
         foreach (var parameter in parameters)
         {
-            parameter.AlternativeName = Regex.Replace(parameter.Name, @"[^0-9A-Za-z_]+", "_");
+            parameter.AlternativeName = s_invalidSymbolsRegex.Replace(parameter.Name, "_");
         }
 
         return parameters;
     }
 
-    /// <summary>
-    /// Creates parameters from REST API operation payload properties.
-    /// </summary>
-    /// <param name="payload">REST API operation payload.</param>
-    /// <returns>The list of parameters.</returns>
-    private static IEnumerable<RestApiOperationParameter> CreateParametersFromPayloadProperties(RestApiOperationPayload? payload)
-    {
-        if (payload == null)
-        {
-            return Enumerable.Empty<RestApiOperationParameter>();
-        }
-
-        IList<RestApiOperationParameter> ConvertLeafProperties(RestApiOperationPayloadProperty property)
-        {
-            var parameters = new List<RestApiOperationParameter>();
-
-            if (!property.Properties.Any()) //It's a leaf property
-            {
-                parameters.Add(new RestApiOperationParameter(
-                    property.Name,
-                    property.Type,
-                    property.IsRequired,
-                    RestApiOperationParameterLocation.Body,
-                    RestApiOperationParameterStyle.Simple,
-                    description: property.Description));
-            }
-
-            foreach (var childProperty in property.Properties)
-            {
-                parameters.AddRange(ConvertLeafProperties(childProperty));
-            }
-
-            return parameters;
-        }
-
-        var result = new List<RestApiOperationParameter>();
-
-        foreach (var property in payload.Properties)
-        {
-            result.AddRange(ConvertLeafProperties(property));
-        }
-
-        return result;
-    }
-
     private const string MediaTypeTextPlain = "text/plain";
+    private static readonly Regex s_invalidSymbolsRegex = new(@"[^0-9A-Za-z_]+");
 }

@@ -34,7 +34,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
     public HuggingFaceTextCompletion(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
+        Verify.NotNull(endpoint);
         Verify.NotEmpty(model, "Model cannot be empty.");
 
         this._endpoint = endpoint;
@@ -53,7 +53,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="model">Model to use for service API call.</param>
     public HuggingFaceTextCompletion(Uri endpoint, string model)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
+        Verify.NotNull(endpoint);
         Verify.NotEmpty(model, "Model cannot be empty.");
 
         this._endpoint = endpoint;
@@ -116,7 +116,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// Performs HTTP request to given endpoint for text completion.
     /// </summary>
     /// <param name="text">Text to complete.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Completed text.</returns>
     /// <exception cref="AIException">Exception when backend didn't respond with completed text.</exception>
     private async Task<string> ExecuteCompleteRequestAsync(string text, CancellationToken cancellationToken = default)
