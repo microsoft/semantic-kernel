@@ -68,9 +68,9 @@ internal sealed class VarBlock : Block, ITextRendering
 
         if (string.IsNullOrEmpty(this.Name))
         {
-            const string errMsg = "Variable rendering failed, the variable name is empty";
-            this.Log.LogError(errMsg);
-            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, errMsg);
+            const string ErrMsg = "Variable rendering failed, the variable name is empty";
+            this.Log.LogError(ErrMsg);
+            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, ErrMsg);
         }
 
         var exists = variables.Get(this.Name, out string value);

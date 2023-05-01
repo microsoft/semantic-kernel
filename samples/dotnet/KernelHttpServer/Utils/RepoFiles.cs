@@ -13,8 +13,8 @@ internal static class RepoFiles
     /// <returns>The full path to samples/skills</returns>
     internal static string SampleSkillsPath()
     {
-        const string PARENT = "samples";
-        const string FOLDER = "skills";
+        const string Parent = "samples";
+        const string Folder = "skills";
 
         bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
         {
@@ -30,8 +30,8 @@ internal static class RepoFiles
             return found;
         }
 
-        if (!SearchPath(PARENT + Path.DirectorySeparatorChar + FOLDER, out string path)
-            && !SearchPath(FOLDER, out path))
+        if (!SearchPath(Parent + Path.DirectorySeparatorChar + Folder, out string path)
+            && !SearchPath(Folder, out path))
         {
             throw new YourAppException("Skills directory not found. The app needs the skills from the repo to work.");
         }
