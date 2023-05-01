@@ -111,7 +111,7 @@ async def main() -> None:
     kernel.config.add_text_completion_service(
         "dv", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
     )
-    kernel.config.add_embedding_generation_service(
+    kernel.config.add_text_embedding_generation_service(
         "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
     )
 
