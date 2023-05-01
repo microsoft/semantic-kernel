@@ -50,5 +50,5 @@ jobs:
         OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
       run: |
         cd python
-        poetry run pytest .\tests\integration
+        poetry run pytest ./tests/integration
         
