@@ -159,23 +159,22 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKContext? context = null,
         CompleteRequestSettings? settings = null,
         ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
         if (context == null)
         {
-            var cToken = cancel ?? default;
             log ??= NullLogger.Instance;
             context = new SKContext(
                 new ContextVariables(""),
                 NullMemory.Instance,
                 this._skillCollection,
                 log,
-                cToken);
+                cancellationToken);
         }
 
         context.Variables.Update(input);
 
-        return this.InvokeAsync(context, settings, log, cancel);
+        return this.InvokeAsync(context, settings, log, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -183,13 +182,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKContext? context = null,
         CompleteRequestSettings? settings = null,
         ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
         if (context == null)
         {
-            var cToken = cancel ?? default;
             log ??= NullLogger.Instance;
-            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cToken);
+            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cancellationToken);
         }
 
         return this.IsSemantic
