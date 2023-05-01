@@ -35,7 +35,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public HuggingFaceTextCompletion(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
         Verify.NotNull(endpoint);
-        Verify.NotEmpty(model, "Model cannot be empty.");
+        Verify.NotNullOrWhiteSpace(model);
 
         this._endpoint = endpoint;
         this._model = model;
@@ -54,7 +54,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public HuggingFaceTextCompletion(Uri endpoint, string model)
     {
         Verify.NotNull(endpoint);
-        Verify.NotEmpty(model, "Model cannot be empty.");
+        Verify.NotNullOrWhiteSpace(model);
 
         this._endpoint = endpoint;
         this._model = model;
@@ -76,7 +76,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public HuggingFaceTextCompletion(string apiKey, string model, HttpClientHandler httpClientHandler, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model, httpClientHandler)
     {
-        Verify.NotEmpty(apiKey, "HuggingFace API key cannot be empty.");
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
     }
@@ -92,7 +92,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public HuggingFaceTextCompletion(string apiKey, string model, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model)
     {
-        Verify.NotEmpty(apiKey, "HuggingFace API key cannot be empty.");
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
     }

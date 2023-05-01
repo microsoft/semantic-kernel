@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
@@ -25,9 +26,7 @@ public class ServiceConfigTests
     public void ConstructorWithEmptyRequiredParameterThrowsArgumentException()
     {
         // Act + Assert
-        var exception = Assert.Throws<ValidationException>(() => new FakeAIServiceConfig(string.Empty));
-
-        Assert.Equal(ValidationException.ErrorCodes.EmptyValue, exception?.ErrorCode);
+        Assert.Throws<ArgumentException>(() => new FakeAIServiceConfig(string.Empty));
     }
 
     private sealed class FakeAIServiceConfig : ServiceConfig

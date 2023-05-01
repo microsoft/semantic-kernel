@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 /// If you use Semantic Kernel with other models, the tokenization logic is most probably different,
 /// and you should not use the GPT tokenizer.
 /// </summary>
-public static class Example25_Tokenizer
+public static class Example29_Tokenizer
 {
     public static void Run()
     {
