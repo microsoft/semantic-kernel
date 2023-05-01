@@ -285,24 +285,24 @@ public sealed class Plan : ISKFunction
 
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
-        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
+        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
 
         context.Variables.Update(input);
 
-        return this.InvokeAsync(context, settings, log, cancel);
+        return this.InvokeAsync(context, settings, log, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
-        context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancel ?? CancellationToken.None);
+        context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
 
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings, log, cancel).ConfigureAwait(false);
+            var result = await this.Function.InvokeAsync(context, settings, log, cancellationToken).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -367,7 +367,7 @@ public sealed class Plan : ISKFunction
     internal string ExpandFromVariables(ContextVariables variables, string input)
     {
         var result = input;
-        var matches = Regex.Matches(input, @"\$(?<var>\w+)");
+        var matches = s_variablesRegex.Matches(input);
         var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).OrderByDescending(m => m.Length);
 
         foreach (var varName in orderedMatches)
@@ -489,4 +489,6 @@ public sealed class Plan : ISKFunction
     private ISKFunction? Function { get; set; } = null;
 
     private readonly List<Plan> _steps = new();
+
+    private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
 }
