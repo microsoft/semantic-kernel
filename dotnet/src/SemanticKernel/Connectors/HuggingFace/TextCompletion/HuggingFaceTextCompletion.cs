@@ -116,7 +116,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// Performs HTTP request to given endpoint for text completion.
     /// </summary>
     /// <param name="text">Text to complete.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Completed text.</returns>
     /// <exception cref="AIException">Exception when backend didn't respond with completed text.</exception>
     private async Task<string> ExecuteCompleteRequestAsync(string text, CancellationToken cancellationToken = default)
