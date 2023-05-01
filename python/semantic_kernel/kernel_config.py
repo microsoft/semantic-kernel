@@ -167,7 +167,9 @@ class KernelConfig:
         self._default_chat_service = service_id
         return self
 
-    def set_default_embedding_generation_service(self, service_id: str) -> "KernelConfig":
+    def set_default_embedding_generation_service(
+        self, service_id: str
+    ) -> "KernelConfig":
         if service_id not in self._embedding_generation_services:
             raise ValueError(
                 f"AI service with service_id '{service_id}' does not exist"
@@ -176,7 +178,9 @@ class KernelConfig:
         self._default_embedding_generation_service = service_id
         return self
 
-    def get_text_completion_service_service_id(self, service_id: Optional[str] = None) -> str:
+    def get_text_completion_service_service_id(
+        self, service_id: Optional[str] = None
+    ) -> str:
         if service_id is None or service_id not in self._text_completion_services:
             if self._default_text_completion_service is None:
                 raise ValueError("No default text service is set")
@@ -192,7 +196,9 @@ class KernelConfig:
 
         return service_id
 
-    def get_embedding_generation_service_id(self, service_id: Optional[str] = None) -> str:
+    def get_embedding_generation_service_id(
+        self, service_id: Optional[str] = None
+    ) -> str:
         if service_id is None or service_id not in self._embedding_generation_services:
             if self._default_embedding_generation_service is None:
                 raise ValueError("No default embedding service is set")
@@ -208,7 +214,9 @@ class KernelConfig:
 
         del self._text_completion_services[service_id]
         if self._default_text_completion_service == service_id:
-            self._default_text_completion_service = next(iter(self._text_completion_services), None)
+            self._default_text_completion_service = next(
+                iter(self._text_completion_services), None
+            )
         return self
 
     def remove_chat_service(self, service_id: str) -> "KernelConfig":
@@ -230,7 +238,9 @@ class KernelConfig:
 
         del self._embedding_generation_services[service_id]
         if self._default_embedding_generation_service == service_id:
-            self._default_embedding_generation_service = next(iter(self._embedding_generation_services), None)
+            self._default_embedding_generation_service = next(
+                iter(self._embedding_generation_services), None
+            )
         return self
 
     def clear_all_text_completion_services(self) -> "KernelConfig":
