@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using SemanticKernel.Service.Skills;
+using SemanticKernel.Service.Model;
 
 namespace SemanticKernel.Service.Storage;
 

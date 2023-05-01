@@ -94,7 +94,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// Should be replaced later when there's more convenient way to convert YAML content to JSON one.
     /// </summary>
     /// <param name="stream">The YAML/JSON content stream.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>JSON content stream.</returns>
     private static async Task<JsonObject?> ConvertContentToJsonAsync(Stream stream, CancellationToken cancellationToken = default)
     {

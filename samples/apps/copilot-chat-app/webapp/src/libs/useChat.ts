@@ -10,17 +10,17 @@ import {
     incrementBotProfilePictureIndex,
     setConversations,
     setSelectedConversation,
-    updateConversation,
+    updateConversation
 } from '../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from './auth/AuthHelper';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
-import { AuthorRoles, ChatMessage } from './models/ChatMessage';
+import { AuthorRoles } from './models/ChatMessage';
+import { IChatSession } from './models/ChatSession';
 import { ChatUser } from './models/ChatUser';
-import { IAsk } from './semantic-kernel/model/Ask';
-import { IAskResult, Variables } from './semantic-kernel/model/AskResult';
 import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
 import { BotService } from './services/BotService';
+import { ChatService } from './services/ChatService';
 // import { useConnectors } from './connectors/useConnectors'; // ConnectorTokenExample
 
 export const useChat = () => {
@@ -31,6 +31,7 @@ export const useChat = () => {
     const { botProfilePictureIndex } = useAppSelector((state: RootState) => state.conversations);
 
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
+    const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
 
     // const connectors = useConnectors(); // ConnectorTokenExample
 
@@ -56,37 +57,25 @@ export const useChat = () => {
         return audience.find((member) => member.id === id);
     };
 
-    const getVariableValue = (variables: Variables, key: string): string | undefined => {
-        for (const idx in variables) {
-            if (variables[idx].key === key) {
-                return variables[idx].value;
-            }
-        }
-        // End of array, did not find expected variable.
-        throw new Error(`Could not find valid ${key} variable in context.`);
-    };
-
     const createChat = async () => {
         const chatTitle = `Copilot @ ${new Date().toLocaleString()}`;
         try {
-            var ask: IAsk = {
-                input: chatTitle,
-                variables: [
-                    { key: 'userId', value: account!.homeAccountId! },
-                    { key: 'userName', value: account!.name! },
-                ],
-            };
-
-            await sk
-                .invokeAsync(ask, 'ChatHistorySkill', 'CreateChat', await AuthHelper.getSKaaSAccessToken(instance))
-                .then(async (result: IAskResult) => {
-                    const newChatId = result.value;
-                    const initialBotMessage = getVariableValue(result.variables, 'initialBotMessage');
+            await chatService.createChatAsync(
+                account?.homeAccountId!,
+                account?.name!,
+                chatTitle,
+                await AuthHelper.getSKaaSAccessToken(instance)).then(async (result: IChatSession) => {
+                    const chatMessages = await chatService.getChatMessagesAsync(
+                        result.id,
+                        0,
+                        1,
+                        await AuthHelper.getSKaaSAccessToken(instance)
+                    );
 
                     const newChat: ChatState = {
-                        id: newChatId,
-                        title: chatTitle,
-                        messages: [JSON.parse(initialBotMessage!)],
+                        id: result.id,
+                        title: result.title,
+                        messages: chatMessages,
                         audience: [loggedInUser],
                         botTypingTimestamp: 0,
                         botProfilePicture: botProfilePictures.at(botProfilePictureIndex) ?? '/assets/bot-icon-1.png',
@@ -94,9 +83,9 @@ export const useChat = () => {
 
                     dispatch(incrementBotProfilePictureIndex());
                     dispatch(addConversation(newChat));
-                    dispatch(setSelectedConversation(newChatId));
+                    dispatch(setSelectedConversation(newChat.id));
 
-                    return newChatId;
+                    return newChat.id;
                 });
         } catch (e: any) {
             const errorMessage = `Unable to create new chat. Details: ${e.message ?? e}`;
@@ -142,49 +131,28 @@ export const useChat = () => {
 
     const loadChats = async () => {
         try {
-            const ask = { input: account!.homeAccountId! };
-            var result = await sk.invokeAsync(
-                ask,
-                'ChatHistorySkill',
-                'GetAllChats',
-                await AuthHelper.getSKaaSAccessToken(instance),
-            );
+            const chatSessions = await chatService.getAllChatsAsync(
+                account?.homeAccountId!,
+                await AuthHelper.getSKaaSAccessToken(instance));
 
-            const chats = JSON.parse(result.value);
-            if (Object.keys(chats).length > 0) {
+            if (chatSessions.length > 0) {
                 const conversations: Conversations = {};
-                for (const index in chats) {
-                    const chat = chats[index];
-                    const loadMessagesAsk = {
-                        input: chat.id,
-                        variables: [
-                            { key: 'startIdx', value: '0' },
-                            { key: 'count', value: '100' },
-                        ],
-                    };
-                    const messageResult = await sk.invokeAsync(
-                        loadMessagesAsk,
-                        'ChatHistorySkill',
-                        'GetAllChatMessages',
-                        await AuthHelper.getSKaaSAccessToken(instance),
+                for (const index in chatSessions) {
+                    const chatSession = chatSessions[index];
+                    const chatMessages = await chatService.getChatMessagesAsync(
+                        chatSession.id,
+                        0,
+                        100,
+                        await AuthHelper.getSKaaSAccessToken(instance)
                     );
 
-                    const messages = JSON.parse(messageResult.value);
-
-                    // Messages are returned with most recent message at index 0 and oldest messge at the last index,
+                    // Messages are returned with most recent message at index 0 and oldest message at the last index,
                     // so we need to reverse the order for render
-                    const orderedMessages: ChatMessage[] = [];
-                    Object.keys(messages)
-                        .reverse()
-                        .map((key) => {
-                            const chatMessage = messages[key];
-                            orderedMessages.push(chatMessage);
-                            return null;
-                        });
+                    const orderedMessages = chatMessages.reverse();
 
-                    conversations[chat.id] = {
-                        id: chat.id,
-                        title: chat.title,
+                    conversations[chatSession.id] = {
+                        id: chatSession.id,
+                        title: chatSession.title,
                         audience: [loggedInUser],
                         messages: orderedMessages,
                         botTypingTimestamp: 0,
@@ -194,7 +162,7 @@ export const useChat = () => {
                 }
 
                 dispatch(setConversations(conversations));
-                dispatch(setSelectedConversation(chats[0].id));
+                dispatch(setSelectedConversation(chatSessions[0].id));
             } else {
                 // No chats exist, create first chat window
                 await createChat();

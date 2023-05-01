@@ -189,7 +189,7 @@ public class BotController : ControllerBase
                 limit: 999999999, // temp solution to get as much as record as a workaround.
                 minRelevanceScore: -1, // no relevance required since the collection only has one entry
                 withEmbeddings: true,
-                cancel: default
+                cancellationToken: default
             ).ToListAsync();
 
         embeddings.Add(new KeyValuePair<string, List<MemoryQueryResult>>(
