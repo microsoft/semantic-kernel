@@ -32,11 +32,12 @@ public abstract class AzureOpenAIClientBase : ClientBase
         IDelegatingHandlerFactory? handlerFactory = null,
         ILogger? log = null)
     {
-        Verify.NotEmpty(modelId, "The Model Id/Deployment Name cannot be empty");
-        this.ModelId = modelId;
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         var options = new OpenAIClientOptions();
-
         // TODO: reimplement
         // Doesn't work
         // if (handlerFactory != null)
@@ -44,9 +45,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         //     options.Transport = new HttpClientTransport(handlerFactory.Create(log));
         // }
 
-        Verify.NotEmpty(endpoint, "The Azure endpoint cannot be empty");
-        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
-        Verify.NotEmpty(apiKey, "The Azure API key cannot be empty");
+        this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
     }
 
@@ -65,11 +64,11 @@ public abstract class AzureOpenAIClientBase : ClientBase
         IDelegatingHandlerFactory? handlerFactory = null,
         ILogger? log = null)
     {
-        Verify.NotEmpty(modelId, "The Model Id/Deployment Name cannot be empty");
-        this.ModelId = modelId;
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
         var options = new OpenAIClientOptions();
-
         // TODO: reimplement
         // Doesn't work
         // if (handlerFactory != null)
@@ -77,8 +76,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         //     options.Transport = new HttpClientTransport(handlerFactory.Create(log));
         // }
 
-        Verify.NotEmpty(endpoint, "The Azure endpoint cannot be empty");
-        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
+        this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), credentials, options);
     }
 }
