@@ -33,7 +33,7 @@ param(
 
     [Parameter(Mandatory)]
     [string]
-    # Subscriptiom to which to make the deployment
+    # Subscription to which to make the deployment
     $Subscription,
 
     [string]

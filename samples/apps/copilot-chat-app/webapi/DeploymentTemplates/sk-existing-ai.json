@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.16.2.56959",
-      "templateHash": "15102762483719274965"
+      "templateHash": "3208014687611025036"
     }
   },
   "parameters": {
@@ -87,7 +87,7 @@
     {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2022-03-01",
-      "name": "[format('app-sk{0}', variables('uniqueName'))]",
+      "name": "[format('app-{0}skweb', variables('uniqueName'))]",
       "location": "[variables('location')]",
       "tags": {
         "skweb": "1"
@@ -182,13 +182,13 @@
     {
       "type": "Microsoft.Web/sites/extensions",
       "apiVersion": "2021-03-01",
-      "name": "[format('{0}/{1}', format('app-sk{0}', variables('uniqueName')), 'MSDeploy')]",
+      "name": "[format('{0}/{1}', format('app-{0}skweb', variables('uniqueName')), 'MSDeploy')]",
       "kind": "string",
       "properties": {
         "packageUri": "[parameters('packageUri')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', format('app-sk{0}', variables('uniqueName')))]"
+        "[resourceId('Microsoft.Web/sites', format('app-{0}skweb', variables('uniqueName')))]"
       ]
     },
     {
@@ -211,10 +211,10 @@
     {
       "type": "Microsoft.Web/sites/siteextensions",
       "apiVersion": "2020-06-01",
-      "name": "[format('{0}/{1}', format('app-sk{0}', variables('uniqueName')), 'Microsoft.ApplicationInsights.AzureWebSites')]",
+      "name": "[format('{0}/{1}', format('app-{0}skweb', variables('uniqueName')), 'Microsoft.ApplicationInsights.AzureWebSites')]",
       "dependsOn": [
         "[resourceId('Microsoft.Insights/components', format('appi-{0}', variables('uniqueName')))]",
-        "[resourceId('Microsoft.Web/sites', format('app-sk{0}', variables('uniqueName')))]"
+        "[resourceId('Microsoft.Web/sites', format('app-{0}skweb', variables('uniqueName')))]"
       ]
     },
     {
@@ -241,7 +241,7 @@
   "outputs": {
     "deployedUrl": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Web/sites', format('app-sk{0}', variables('uniqueName'))), '2022-03-01').defaultHostName]"
+      "value": "[reference(resourceId('Microsoft.Web/sites', format('app-{0}skweb', variables('uniqueName'))), '2022-03-01').defaultHostName]"
     }
   }
 }
