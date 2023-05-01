@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Memory;
 public class VolatileMemoryStore : IMemoryStore
 {
     /// <inheritdoc/>
-    public Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
+    public Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         if (!this._store.TryAdd(collectionName, new ConcurrentDictionary<string, MemoryRecord>()))
         {
@@ -31,19 +31,19 @@ public class VolatileMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
+    public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(this._store.ContainsKey(collectionName));
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancel = default)
+    public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
     {
         return this._store.Keys.ToAsyncEnumerable();
     }
 
     /// <inheritdoc/>
-    public Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
+    public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         if (!this._store.TryRemove(collectionName, out _))
         {
@@ -54,7 +54,7 @@ public class VolatileMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
+    public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
         Verify.NotNull(record.Metadata.Id);
@@ -74,21 +74,19 @@ public class VolatileMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-#pragma warning disable CS8425 // Async-iterator member has one or more parameters of type 'CancellationToken' but none of them is decorated with the 'EnumeratorCancellation' attribute, so the cancellation token parameter from the generated 'IAsyncEnumerable<>.GetAsyncEnumerator' will be unconsumed
     public async IAsyncEnumerable<string> UpsertBatchAsync(
-#pragma warning restore CS8425 // Async-iterator member has one or more parameters of type 'CancellationToken' but none of them is decorated with the 'EnumeratorCancellation' attribute, so the cancellation token parameter from the generated 'IAsyncEnumerable<>.GetAsyncEnumerator' will be unconsumed
         string collectionName,
         IEnumerable<MemoryRecord> records,
-        [EnumeratorCancellation] CancellationToken cancel = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var r in records)
         {
-            yield return await this.UpsertAsync(collectionName, r, cancel).ConfigureAwait(false);
+            yield return await this.UpsertAsync(collectionName, r, cancellationToken).ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc/>
-    public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
+    public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         if (this.TryGetCollection(collectionName, out var collectionDict)
             && collectionDict.TryGetValue(key, out var dataEntry))
@@ -102,17 +100,15 @@ public class VolatileMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-#pragma warning disable CS8425 // Async-iterator member has one or more parameters of type 'CancellationToken' but none of them is decorated with the 'EnumeratorCancellation' attribute, so the cancellation token parameter from the generated 'IAsyncEnumerable<>.GetAsyncEnumerator' will be unconsumed
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
-#pragma warning restore CS8425 // Async-iterator member has one or more parameters of type 'CancellationToken' but none of them is decorated with the 'EnumeratorCancellation' attribute, so the cancellation token parameter from the generated 'IAsyncEnumerable<>.GetAsyncEnumerator' will be unconsumed
         string collectionName,
         IEnumerable<string> keys,
         bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancel = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var key in keys)
         {
-            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancel).ConfigureAwait(false);
+            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
 
             if (record != null)
             {
@@ -122,7 +118,7 @@ public class VolatileMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
+    public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
         if (this.TryGetCollection(collectionName, out var collectionDict))
         {
@@ -133,9 +129,9 @@ public class VolatileMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+    public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        return Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancel)));
+        return Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancellationToken)));
     }
 
     public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -144,7 +140,7 @@ public class VolatileMemoryStore : IMemoryStore
         int limit,
         double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
         if (limit <= 0)
         {
@@ -192,7 +188,7 @@ public class VolatileMemoryStore : IMemoryStore
         Embedding<float> embedding,
         double minRelevanceScore = 0.0,
         bool withEmbedding = false,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchesAsync(
             collectionName: collectionName,
@@ -200,7 +196,7 @@ public class VolatileMemoryStore : IMemoryStore
             limit: 1,
             minRelevanceScore: minRelevanceScore,
             withEmbeddings: withEmbedding,
-            cancel: cancel).FirstOrDefaultAsync(cancellationToken: cancel).ConfigureAwait(false);
+            cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
     #region protected ================================================================================
