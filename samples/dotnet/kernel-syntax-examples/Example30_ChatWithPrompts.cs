@@ -46,7 +46,7 @@ using Resources;
 
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
-public static class Example28_ChatWithPrompts
+public static class Example30_ChatWithPrompts
 {
     public static async Task RunAsync()
     {
