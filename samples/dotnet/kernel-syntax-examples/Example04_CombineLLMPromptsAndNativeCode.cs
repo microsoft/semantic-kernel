@@ -17,8 +17,8 @@ public static class Example04_CombineLLMPromptsAndNativeCode
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         // OpenAI settings
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-002", "text-davinci-002", Env.Var("OPENAI_API_KEY"));
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-002");
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-003");
         kernel.Config.SetDefaultTextCompletionService("text-davinci-003");
 
         // Load native skill

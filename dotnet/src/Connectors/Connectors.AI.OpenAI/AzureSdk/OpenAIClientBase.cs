@@ -28,8 +28,7 @@ public abstract class OpenAIClientBase : ClientBase
         string apiKey,
         string? organization = null,
         IDelegatingHandlerFactory? handlerFactory = null,
-        ILogger? log = null
-    )
+        ILogger? log = null)
     {
         Verify.NotEmpty(modelId, "The Model Id cannot be empty");
         this.ModelId = modelId;

@@ -71,22 +71,25 @@ public static class Program
         await Example21_ChatGptPlugins.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example22_OpenApiSkill.RunAsync();
+        await Example22_OpenApiSkill_AzureKeyVault.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example23_ReadOnlyMemoryStore.RunAsync();
+        await Example23_OpenApiSkill_Jira.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        Example24_Tokenizer.Run();
+        await Example24_ReadOnlyMemoryStore.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example25_AADAuth.RunAsync();
+        Example25_Tokenizer.Run();
         Console.WriteLine("== DONE ==");
 
-        await Example26_SemanticFunctionsUsingChatGPT.RunAsync();
+        await Example26_AADAuth.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example27_ActionPlanner.RunAsync();
+        await Example27_SemanticFunctionsUsingChatGPT.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example28_ActionPlanner.RunAsync();
         Console.WriteLine("== DONE ==");
 
         await Example28_ChatWithPrompts.RunAsync();
