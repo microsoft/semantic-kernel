@@ -4,7 +4,7 @@ import asyncio
 from typing import Tuple
 
 import semantic_kernel as sk
-import semantic_kernel.ai.open_ai as sk_oai
+import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 async def populate_memory(kernel: sk.Kernel) -> None:
@@ -108,10 +108,10 @@ async def main() -> None:
     kernel = sk.Kernel()
 
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.config.add_text_backend(
+    kernel.config.add_text_service(
         "dv", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
     )
-    kernel.config.add_embedding_backend(
+    kernel.config.add_embedding_service(
         "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
     )
 

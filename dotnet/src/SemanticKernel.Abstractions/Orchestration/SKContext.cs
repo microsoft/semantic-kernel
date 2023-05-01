@@ -78,7 +78,7 @@ public sealed class SKContext
     /// <summary>
     /// Semantic memory
     /// </summary>
-    public ISemanticTextMemory Memory { get; internal set; }
+    public ISemanticTextMemory Memory { get; }
 
     /// <summary>
     /// Read only skills collection
@@ -94,7 +94,10 @@ public sealed class SKContext
     /// <returns>Delegate to execute the function</returns>
     public ISKFunction Func(string skillName, string functionName)
     {
-        Verify.NotNull(this.Skills, "The skill collection hasn't been set");
+        if (this.Skills is null)
+        {
+            Verify.ThrowValidationException(ValidationException.ErrorCodes.NullValue, nameof(this.Skills));
+        }
 
         if (this.Skills.HasNativeFunction(skillName, functionName))
         {

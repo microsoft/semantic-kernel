@@ -1,0 +1,26 @@
+# Add 'kernel' label to any change within Connectors, Extensions, Skills, and tests directories
+kernel:
+  - "dotnet/src/Connectors/**/*"
+  - "dotnet/src/Extensions/**/*"
+  - "dotnet/src/Skills/**/*"
+  - "dotnet/src/IntegrationTests/**/*"
+  - "dotnet/src/SemanticKernel.UnitTests/**/*"
+
+# Add 'kernel.core' label to any change within the 'SemanticKernel', 'SemanticKernel.Abstractions', or 'SemanticKernel.MetaPackage' directories
+kernel.core:
+  - dotnet/src/SemanticKernel/**/*
+  - dotnet/src/SemanticKernel.Abstractions/**/*
+  - dotnet/src/SemanticKernel.MetaPackage/**/*
+
+# Add 'python' label to any change within the 'python' directory
+python:
+  - python/**/*
+
+# Add 'samples' label to any change within the 'samples' directory
+samples:
+  - samples/**/*
+
+# Add '.NET' label to any change within samples or kernel 'dotnet' directories.
+.NET:
+  - dotnet/src/**/*
+  - samples/**/dotnet/**/*

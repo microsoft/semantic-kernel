@@ -23,6 +23,11 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 public class QdrantMemoryStore : IMemoryStore
 {
     /// <summary>
+    /// The Qdrant Vector database memory store logger.
+    /// </summary>
+    private readonly ILogger? _logger;
+
+    /// <summary>
     /// Constructor for a memory store backed by a Qdrant Vector database instance.
     /// </summary>
     /// <param name="host"></param>
@@ -31,6 +36,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="logger"></param>
     public QdrantMemoryStore(string host, int port, int vectorSize, ILogger? logger = null)
     {
+        this._logger = logger;
         this._qdrantClient = new QdrantVectorDbClient(endpoint: host, port: port, vectorSize: vectorSize, log: logger);
     }
 
@@ -45,16 +51,16 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel))
+        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel).ConfigureAwait(false))
         {
-            await this._qdrantClient.CreateCollectionAsync(collectionName, cancel: cancel);
+            await this._qdrantClient.CreateCollectionAsync(collectionName, cancel: cancel).ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
     {
-        return await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel);
+        return await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -66,21 +72,20 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel))
+        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancel: cancel).ConfigureAwait(false))
         {
-            await this._qdrantClient.DeleteCollectionAsync(collectionName, cancel: cancel);
+            await this._qdrantClient.DeleteCollectionAsync(collectionName, cancel: cancel).ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
-        var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancel);
+        var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancel).ConfigureAwait(false);
 
         if (vectorData == null)
         {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord,
-                $"Failed to convert MemoryRecord to QdrantVectorRecord");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord);
         }
 
         try
@@ -88,13 +93,12 @@ public class QdrantMemoryStore : IMemoryStore
             await this._qdrantClient.UpsertVectorsAsync(
                 collectionName,
                 new[] { vectorData },
-                cancel: cancel);
+                cancel: cancel).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
                 ex);
         }
 
@@ -105,21 +109,20 @@ public class QdrantMemoryStore : IMemoryStore
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        var tasks = Task.WhenAll(records.Select(async r => await this.ConvertFromMemoryRecordAsync(collectionName, r, cancel)));
-        var vectorData = await tasks;
+        var tasks = Task.WhenAll(records.Select(async r => await this.ConvertFromMemoryRecordAsync(collectionName, r, cancel).ConfigureAwait(false)));
+        var vectorData = await tasks.ConfigureAwait(false);
 
         try
         {
             await this._qdrantClient.UpsertVectorsAsync(
                 collectionName,
                 vectorData,
-                cancel: cancel);
+                cancel: cancel).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
                 ex);
         }
 
@@ -134,7 +137,7 @@ public class QdrantMemoryStore : IMemoryStore
     {
         try
         {
-            var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, withEmbedding, cancel: cancel);
+            var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, withEmbedding, cancel: cancel).ConfigureAwait(false);
             if (vectorData != null)
             {
                 return MemoryRecord.FromJsonMetadata(
@@ -151,14 +154,12 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToGetVectorData,
-                $"Failed to get vector data from Qdrant: {ex.Message}",
                 ex);
         }
         catch (MemoryException ex)
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToConvertQdrantVectorRecordToMemoryRecord,
-                $"Failed deserialize Qdrant response to Memory Record: {ex.Message}",
                 ex);
         }
     }
@@ -169,7 +170,7 @@ public class QdrantMemoryStore : IMemoryStore
     {
         foreach (var key in keys)
         {
-            MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancel);
+            MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancel).ConfigureAwait(false);
             if (record != null)
             {
                 yield return record;
@@ -193,7 +194,7 @@ public class QdrantMemoryStore : IMemoryStore
             var vectorDataList = this._qdrantClient
                 .GetVectorsByIdAsync(collectionName, new[] { pointId }, withEmbedding, cancel: cancel);
 
-            var vectorData = await vectorDataList.FirstOrDefaultAsync(cancel);
+            var vectorData = await vectorDataList.FirstOrDefaultAsync(cancel).ConfigureAwait(false);
 
             if (vectorData != null)
             {
@@ -210,14 +211,12 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToGetVectorData,
-                $"Failed to get vector data from Qdrant: {ex.Message}",
                 ex);
         }
         catch (MemoryException ex)
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToConvertQdrantVectorRecordToMemoryRecord,
-                $"Failed deserialize Qdrant response to Memory Record: {ex.Message}",
                 ex);
         }
     }
@@ -250,13 +249,12 @@ public class QdrantMemoryStore : IMemoryStore
     {
         try
         {
-            await this._qdrantClient.DeleteVectorByPayloadIdAsync(collectionName, key, cancel: cancel);
+            await this._qdrantClient.DeleteVectorByPayloadIdAsync(collectionName, key, cancel: cancel).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Qdrant {ex.Message}",
                 ex);
         }
     }
@@ -264,7 +262,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
-        await Task.WhenAll(keys.Select(async k => await this.RemoveAsync(collectionName, k, cancel)));
+        await Task.WhenAll(keys.Select(async k => await this.RemoveAsync(collectionName, k, cancel).ConfigureAwait(false))).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -279,13 +277,12 @@ public class QdrantMemoryStore : IMemoryStore
     {
         try
         {
-            await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, new[] { pointId }, cancel: cancel);
+            await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, new[] { pointId }, cancel: cancel).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Qdrant {ex.Message}",
                 ex);
         }
     }
@@ -302,13 +299,12 @@ public class QdrantMemoryStore : IMemoryStore
     {
         try
         {
-            await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, pointIds, cancel: cancel);
+            await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, pointIds, cancel: cancel).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
             throw new QdrantMemoryException(
                 QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Error in batch removing data from Qdrant {ex.Message}",
                 ex);
         }
     }
@@ -322,22 +318,49 @@ public class QdrantMemoryStore : IMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        var results = this._qdrantClient.FindNearestInCollectionAsync(
-            collectionName: collectionName,
-            target: embedding.Vector,
-            threshold: minRelevanceScore,
-            top: limit,
-            withVectors: withEmbeddings,
-            cancel: cancel);
+        IAsyncEnumerator<(QdrantVectorRecord, double)> enumerator = this._qdrantClient
+            .FindNearestInCollectionAsync(
+                collectionName: collectionName,
+                target: embedding.Vector,
+                threshold: minRelevanceScore,
+                top: limit,
+                withVectors: withEmbeddings,
+                cancel: cancel)
+            .GetAsyncEnumerator(cancel);
 
-        await foreach ((QdrantVectorRecord, double) result in results)
+        // Workaround for https://github.com/dotnet/csharplang/issues/2949: Yielding in catch blocks not supported in async iterators
+        (QdrantVectorRecord, double)? result = null;
+        bool hasResult = true;
+        do
         {
-            yield return (
-                MemoryRecord.FromJsonMetadata(
-                    json: result.Item1.GetSerializedPayload(),
-                    embedding: new Embedding<float>(result.Item1.Embedding)),
-                result.Item2);
-        }
+            try
+            {
+                hasResult = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                if (hasResult)
+                {
+                    result = enumerator.Current;
+                }
+                else
+                {
+                    result = null;
+                }
+            }
+            catch (HttpRequestException ex) when (ex.Message.Contains("404"))
+            {
+                this._logger?.LogWarning("NotFound when calling {0}::FindNearestInCollectionAsync - the collection '{1}' may not exist yet",
+                    nameof(QdrantMemoryStore), collectionName);
+                hasResult = false;
+            }
+
+            if (result != null)
+            {
+                yield return (
+                    MemoryRecord.FromJsonMetadata(
+                        json: result.Value.Item1.GetSerializedPayload(),
+                        embedding: new Embedding<float>(result.Value.Item1.Embedding)),
+                    result.Value.Item2);
+            }
+        } while (hasResult);
     }
 
     /// <inheritdoc/>
@@ -356,7 +379,7 @@ public class QdrantMemoryStore : IMemoryStore
             withEmbeddings: withEmbedding,
             cancel: cancel);
 
-        var record = await results.FirstOrDefaultAsync(cancellationToken: cancel);
+        var record = await results.FirstOrDefaultAsync(cancellationToken: cancel).ConfigureAwait(false);
 
         return (record.Item1, record.Item2);
     }
@@ -377,7 +400,7 @@ public class QdrantMemoryStore : IMemoryStore
         // Check if the data store contains a record with the provided metadata ID
         else
         {
-            var existingRecord = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, record.Metadata.Id, cancel: cancel);
+            var existingRecord = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, record.Metadata.Id, cancel: cancel).ConfigureAwait(false);
 
             if (existingRecord != null)
             {
@@ -390,7 +413,7 @@ public class QdrantMemoryStore : IMemoryStore
                     // If no matching record can be found, generate an ID for the new record
                     pointId = Guid.NewGuid().ToString();
                     existingRecord = await this._qdrantClient.GetVectorsByIdAsync(collectionName, new[] { pointId }, cancel: cancel)
-                        .FirstOrDefaultAsync(cancel);
+                        .FirstOrDefaultAsync(cancel).ConfigureAwait(false);
                 } while (existingRecord != null);
             }
         }
@@ -402,8 +425,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord,
-                $"Failed to convert MemoryRecord to QdrantVectorRecord");
+            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord);
         }
 
         return vectorData;

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.2.3.dev"
+version = "0.2.4.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "README.md"
@@ -11,6 +11,9 @@ python = "^3.8"
 numpy = "^1.24.2"
 openai = "^0.27.0"
 aiofiles = "^23.1.0"
+transformers = "^4.28.1"
+torch = "^2.0.0"
+sentence-transformers = "^2.2.2"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^2.21.0"

@@ -70,7 +70,7 @@ public abstract class OpenAIClientBase : IDisposable
     {
         try
         {
-            var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken);
+            var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
             if (result.Embeddings.Count < 1)
             {
                 throw new AIException(
@@ -78,7 +78,7 @@ public abstract class OpenAIClientBase : IDisposable
                     "Embeddings not found");
             }
 
-            return result.Embeddings.Select(e => new Embedding<float>(e.Values.ToArray())).ToList();
+            return result.Embeddings.Select(e => new Embedding<float>(e.Values)).ToList();
         }
         catch (Exception e) when (e is not AIException)
         {
@@ -103,7 +103,7 @@ public abstract class OpenAIClientBase : IDisposable
     {
         try
         {
-            var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken);
+            var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
             return result.Images.Select(x => x.Url).ToList();
         }
         catch (Exception e) when (e is not AIException)
@@ -129,7 +129,7 @@ public abstract class OpenAIClientBase : IDisposable
     {
         try
         {
-            var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken);
+            var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
             return result.Images.Select(x => x.AsBase64).ToList();
         }
         catch (Exception e) when (e is not AIException)
@@ -196,16 +196,16 @@ public abstract class OpenAIClientBase : IDisposable
         try
         {
             using HttpContent content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await this.HTTPClient.PostAsync(url, content, cancellationToken);
+            HttpResponseMessage response = await this.HTTPClient.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
 
             if (response == null)
             {
-                throw new AIException(AIException.ErrorCodes.NoResponse, "Empty response");
+                throw new AIException(AIException.ErrorCodes.NoResponse);
             }
 
             this.Log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
-            responseJson = await response.Content.ReadAsStringAsync();
+            responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             string? errorDetail = this.GetErrorMessageFromResponse(responseJson);
 
             if (!response.IsSuccessStatusCode)

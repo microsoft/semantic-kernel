@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-internal class VarBlock : Block, ITextRendering
+internal sealed class VarBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.Variable;
 
@@ -50,7 +50,7 @@ internal class VarBlock : Block, ITextRendering
             return false;
         }
 
-        if (!Regex.IsMatch(this.Name, "^[a-zA-Z0-9_]*$"))
+        if (!s_validNameRegex.IsMatch(this.Name))
         {
             errorMsg = $"The variable name '{this.Name}' contains invalid characters. " +
                        "Only alphanumeric chars and underscore are allowed.";
@@ -78,4 +78,6 @@ internal class VarBlock : Block, ITextRendering
 
         return exists ? value : string.Empty;
     }
+
+    private static readonly Regex s_validNameRegex = new("^[a-zA-Z0-9_]*$");
 }
