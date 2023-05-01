@@ -44,11 +44,11 @@ public static class Example16_CustomLLM
         ITextCompletion Factory(IKernel k) => new MyTextCompletionService();
 
         // Add your text completion service
-        kernel.Config.AddTextCompletionService("myService", Factory);
+        kernel.Config.AddTextCompletionService(Factory);
 
-        const string FUNCTION_DEFINITION = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
+        const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
 
-        var textValidationFunction = kernel.CreateSemanticFunction(FUNCTION_DEFINITION);
+        var textValidationFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
         var result = await textValidationFunction.InvokeAsync("I mised the training sesion this morning");
         Console.WriteLine(result);

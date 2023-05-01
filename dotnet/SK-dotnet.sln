@@ -83,6 +83,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Extensions.UnitTests", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planning.SequentialPlanner", "src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj", "{A350933D-F9D5-4AD3-8C4F-B856B5020297}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Memory.AzureCognitiveSearch", "src\Connectors\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj", "{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -197,6 +199,10 @@ Global
 		{A350933D-F9D5-4AD3-8C4F-B856B5020297}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A350933D-F9D5-4AD3-8C4F-B856B5020297}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A350933D-F9D5-4AD3-8C4F-B856B5020297}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -233,6 +239,7 @@ Global
 		{994BEF0B-E277-4D10-BB13-FE670D26620D} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{F51017A9-15C8-472D-893C-080046D710A6} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{A350933D-F9D5-4AD3-8C4F-B856B5020297} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
