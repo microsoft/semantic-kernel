@@ -32,13 +32,13 @@ public class HuggingFaceTextCompletionTests : IDisposable
     public async Task ItReturnsCompletionCorrectlyAsync()
     {
         // Arrange
-        const string prompt = "This is test";
+        const string Prompt = "This is test";
         CompleteRequestSettings requestSettings = new();
 
         using var service = this.CreateService(HuggingFaceTestHelper.GetTestResponse("completion_test_response.json"));
 
         // Act
-        var completion = await service.CompleteAsync(prompt, requestSettings);
+        var completion = await service.CompleteAsync(Prompt, requestSettings);
 
         // Assert
         Assert.Equal("This is test completion response", completion);

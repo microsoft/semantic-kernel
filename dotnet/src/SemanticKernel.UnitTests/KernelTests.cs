@@ -23,7 +23,7 @@ public class KernelTests
         // Arrange
         var kernel = KernelBuilder.Create();
         var factory = new Mock<Func<IKernel, ITextCompletion>>();
-        kernel.Config.AddTextCompletionService("x", factory.Object);
+        kernel.Config.AddTextCompletionService(factory.Object);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -51,7 +51,7 @@ public class KernelTests
         // Arrange
         var kernel = KernelBuilder.Create();
         var factory = new Mock<Func<IKernel, ITextCompletion>>();
-        kernel.Config.AddTextCompletionService("x", factory.Object);
+        kernel.Config.AddTextCompletionService(factory.Object);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -133,6 +133,18 @@ public class KernelTests
         // Assert
         Assert.Equal(3, skill.Count);
         Assert.True(kernel.Skills.HasNativeFunction("GetAnyValue"));
+    }
+
+    [Fact]
+    public void ItAllowsToImportTheSameSkillMultipleTimes()
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+
+        // Act - Assert no exception occurs
+        kernel.ImportSkill(new MySkill());
+        kernel.ImportSkill(new MySkill());
+        kernel.ImportSkill(new MySkill());
     }
 
     [Fact]

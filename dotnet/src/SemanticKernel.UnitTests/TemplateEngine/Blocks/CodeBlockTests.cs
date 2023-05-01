@@ -186,11 +186,11 @@ public class CodeBlockTests
     public async Task ItInvokesFunctionCloningAllVariablesAsync()
     {
         // Arrange
-        const string FUNC = "funcName";
+        const string Func = "funcName";
 
         var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
         var context = new SKContext(variables, NullMemory.Instance, this._skills.Object, NullLogger.Instance);
-        var funcId = new FunctionIdBlock(FUNC);
+        var funcId = new FunctionIdBlock(Func);
 
         var canary0 = string.Empty;
         var canary1 = string.Empty;
@@ -209,8 +209,8 @@ public class CodeBlockTests
                 ctx["var2"] = "overridden";
             });
 
-        this._skills.Setup(x => x.HasFunction(FUNC)).Returns(true);
-        this._skills.Setup(x => x.GetFunction(FUNC)).Returns(function.Object);
+        this._skills.Setup(x => x.HasFunction(Func)).Returns(true);
+        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId }, "", NullLogger.Instance);
@@ -231,14 +231,14 @@ public class CodeBlockTests
     public async Task ItInvokesFunctionWithCustomVariableAsync()
     {
         // Arrange
-        const string FUNC = "funcName";
-        const string VAR = "varName";
-        const string VAR_VALUE = "varValue";
+        const string Func = "funcName";
+        const string Var = "varName";
+        const string VarValue = "varValue";
 
-        var variables = new ContextVariables { [VAR] = VAR_VALUE };
+        var variables = new ContextVariables { [Var] = VarValue };
         var context = new SKContext(variables, NullMemory.Instance, this._skills.Object, NullLogger.Instance);
-        var funcId = new FunctionIdBlock(FUNC);
-        var varBlock = new VarBlock($"${VAR}");
+        var funcId = new FunctionIdBlock(Func);
+        var varBlock = new VarBlock($"${Var}");
 
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
@@ -249,28 +249,28 @@ public class CodeBlockTests
                 canary = ctx!["input"];
             });
 
-        this._skills.Setup(x => x.HasFunction(FUNC)).Returns(true);
-        this._skills.Setup(x => x.GetFunction(FUNC)).Returns(function.Object);
+        this._skills.Setup(x => x.HasFunction(Func)).Returns(true);
+        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLogger.Instance);
         string result = await codeBlock.RenderCodeAsync(context);
 
         // Assert
-        Assert.Equal(VAR_VALUE, result);
-        Assert.Equal(VAR_VALUE, canary);
+        Assert.Equal(VarValue, result);
+        Assert.Equal(VarValue, canary);
     }
 
     [Fact]
     public async Task ItInvokesFunctionWithCustomValueAsync()
     {
         // Arrange
-        const string FUNC = "funcName";
-        const string VALUE = "value";
+        const string Func = "funcName";
+        const string Value = "value";
 
         var context = new SKContext(new ContextVariables(), NullMemory.Instance, this._skills.Object, NullLogger.Instance);
-        var funcId = new FunctionIdBlock(FUNC);
-        var valBlock = new ValBlock($"'{VALUE}'");
+        var funcId = new FunctionIdBlock(Func);
+        var valBlock = new ValBlock($"'{Value}'");
 
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
@@ -281,15 +281,15 @@ public class CodeBlockTests
                 canary = ctx!["input"];
             });
 
-        this._skills.Setup(x => x.HasFunction(FUNC)).Returns(true);
-        this._skills.Setup(x => x.GetFunction(FUNC)).Returns(function.Object);
+        this._skills.Setup(x => x.HasFunction(Func)).Returns(true);
+        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLogger.Instance);
         string result = await codeBlock.RenderCodeAsync(context);
 
         // Assert
-        Assert.Equal(VALUE, result);
-        Assert.Equal(VALUE, canary);
+        Assert.Equal(Value, result);
+        Assert.Equal(Value, canary);
     }
 }

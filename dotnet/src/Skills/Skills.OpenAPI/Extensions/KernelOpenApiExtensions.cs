@@ -214,7 +214,7 @@ public static class KernelOpenApiExtensions
             try
             {
                 kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
-                var function = kernel.RegisterRestApiFunction(skillName, operation, authCallback, null, cancellationToken);
+                var function = kernel.RegisterRestApiFunction(skillName, operation, authCallback, cancellationToken: cancellationToken);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
