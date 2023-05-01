@@ -164,7 +164,6 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureTextEmbeddingGenerationService(this KernelConfig config,
-        string serviceId,
         string deploymentName,
         string endpoint,
         TokenCredential credentials,
@@ -197,7 +196,6 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddOpenAITextEmbeddingGenerationService(this KernelConfig config,
-        string serviceId,
         string modelId,
         string apiKey,
         string? orgId = null,
@@ -235,7 +233,6 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureChatCompletionService(this KernelConfig config,
-        string serviceId,
         string deploymentName,
         string endpoint,
         string apiKey,
@@ -279,7 +276,6 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureChatCompletionService(this KernelConfig config,
-        string serviceId,
         string deploymentName,
         string endpoint,
         TokenCredential credentials,
@@ -327,7 +323,6 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddOpenAIChatCompletionService(this KernelConfig config,
-        string serviceId,
         string modelId,
         string apiKey,
         string? orgId = null,
@@ -376,7 +371,6 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddOpenAIImageGenerationService(this KernelConfig config,
-        string serviceId,
         string apiKey,
         string? orgId = null,
         string? serviceId = null,
