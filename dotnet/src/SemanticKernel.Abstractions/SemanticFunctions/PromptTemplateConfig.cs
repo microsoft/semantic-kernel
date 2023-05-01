@@ -66,6 +66,12 @@ public class PromptTemplateConfig
         [JsonPropertyOrder(6)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<string> StopSequences { get; set; } = new();
+
+        /// <summary>
+        /// The name of the model to use for the completion.
+        /// </summary>
+        [JsonPropertyName("model")]
+        public string Model { get; set; } = "text-davinci-003";
     }
 
     /// <summary>

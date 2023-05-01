@@ -48,6 +48,11 @@ public class CompleteRequestSettings
     public IList<string> StopSequences { get; set; } = Array.Empty<string>();
 
     /// <summary>
+    /// The name of the model to use for the completion.
+    /// </summary>
+    public string Model { get; set; } = "text-davinci-003";
+
+    /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
     /// <param name="config"></param>
@@ -62,6 +67,7 @@ public class CompleteRequestSettings
             FrequencyPenalty = config.FrequencyPenalty,
             MaxTokens = config.MaxTokens,
             StopSequences = config.StopSequences,
+            Model = config.Model
         };
     }
 }
