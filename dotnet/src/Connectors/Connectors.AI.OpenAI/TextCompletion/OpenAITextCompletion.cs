@@ -28,8 +28,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         string apiKey,
         string? organization = null,
         IDelegatingHandlerFactory? handlerFactory = null,
-        ILogger? log = null
-    ) : base(modelId, apiKey, organization, handlerFactory, log)
+        ILogger? log = null) : base(modelId, apiKey, organization, handlerFactory, log)
     {
     }
 

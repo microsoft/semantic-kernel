@@ -62,10 +62,10 @@ public class TextMemorySkill
     public async Task<string> RetrieveAsync(SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
-        Verify.NotEmpty(collection, "Memory collection not defined");
+        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
 
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
-        Verify.NotEmpty(key, "Memory key not defined");
+        Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
 
         context.Log.LogTrace("Recalling memory with key '{0}' from collection '{1}'", key, collection);
 
@@ -93,7 +93,7 @@ public class TextMemorySkill
     public string Recall(string text, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
-        Verify.NotEmpty(collection, "Memories collection not defined");
+        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
 
         var relevance = context.Variables.ContainsKey(RelevanceParam) ? context[RelevanceParam] : DefaultRelevance;
         if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultRelevance; }
@@ -150,10 +150,10 @@ public class TextMemorySkill
     public async Task SaveAsync(string text, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
-        Verify.NotEmpty(collection, "Memory collection not defined");
+        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
 
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
-        Verify.NotEmpty(key, "Memory key not defined");
+        Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
 
         context.Log.LogTrace("Saving memory to collection '{0}'", collection);
 
@@ -176,10 +176,10 @@ public class TextMemorySkill
     public async Task RemoveAsync(SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
-        Verify.NotEmpty(collection, "Memory collection not defined");
+        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
 
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
-        Verify.NotEmpty(key, "Memory key not defined");
+        Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
 
         context.Log.LogTrace("Removing memory from collection '{0}'", collection);
 
