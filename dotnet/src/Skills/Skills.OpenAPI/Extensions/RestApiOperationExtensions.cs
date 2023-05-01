@@ -57,11 +57,12 @@ internal static class RestApiOperationExtensions
         //Create a property alternative name without special symbols that are not supported by SK template language.
         foreach (var parameter in parameters)
         {
-            parameter.AlternativeName = Regex.Replace(parameter.Name, @"[^0-9A-Za-z_]+", "_");
+            parameter.AlternativeName = s_invalidSymbolsRegex.Replace(parameter.Name, "_");
         }
 
         return parameters;
     }
 
     private const string MediaTypeTextPlain = "text/plain";
+    private static readonly Regex s_invalidSymbolsRegex = new(@"[^0-9A-Za-z_]+");
 }

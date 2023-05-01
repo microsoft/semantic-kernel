@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Skills.Web.Bing;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example05_CombineLLMPromptsAndNativeCode
+public static class Example04_CombineLLMPromptsAndNativeCode
 {
     public static async Task RunAsync()
     {
@@ -38,18 +38,18 @@ public static class Example05_CombineLLMPromptsAndNativeCode
 
         var result1 = await kernel.RunAsync(
             ask,
-            search["SearchAsync"]
+            search["Search"]
         );
 
         var result2 = await kernel.RunAsync(
             ask,
-            search["SearchAsync"],
+            search["Search"],
             sumSkill["Summarize"]
         );
 
         var result3 = await kernel.RunAsync(
             ask,
-            search["SearchAsync"],
+            search["Search"],
             sumSkill["Notegen"]
         );
 

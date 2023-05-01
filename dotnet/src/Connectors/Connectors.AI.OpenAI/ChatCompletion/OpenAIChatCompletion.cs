@@ -37,9 +37,11 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     /// <inheritdoc/>
     public Task<string> GenerateMessageAsync(
         ChatHistory chat,
-        ChatRequestSettings requestSettings,
+        ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        if (requestSettings == null) { requestSettings = new ChatRequestSettings(); }
+
         return this.InternalGenerateChatMessageAsync(chat, requestSettings, cancellationToken);
     }
 
