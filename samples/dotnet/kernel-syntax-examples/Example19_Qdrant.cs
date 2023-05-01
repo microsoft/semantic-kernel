@@ -21,8 +21,8 @@ public static class Example19_Qdrant
             .WithLogger(ConsoleLogger.Log)
             .Configure(c =>
             {
-                c.AddOpenAITextCompletionService("davinci", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
-                c.AddOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
+                c.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
+                c.AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
             })
             .WithMemoryStorage(memoryStore)
             .Build();

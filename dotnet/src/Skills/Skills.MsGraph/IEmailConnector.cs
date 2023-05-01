@@ -13,7 +13,7 @@ public interface IEmailConnector
     /// <summary>
     /// Get the user's email address.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The user's email address.</returns>
     Task<string> GetMyEmailAddressAsync(CancellationToken cancellationToken = default);
 
@@ -23,6 +23,6 @@ public interface IEmailConnector
     /// <param name="subject">Email subject.</param>
     /// <param name="content">Email content.</param>
     /// <param name="recipients">Email recipients.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task SendEmailAsync(string subject, string content, string[] recipients, CancellationToken cancellationToken = default);
 }

@@ -35,11 +35,9 @@ public class SequentialPlanParserTests
             .Configure(config =>
             {
                 config.AddAzureTextCompletionService(
-                    serviceId: azureOpenAIConfiguration.ServiceId,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
-                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
             })
             .Build();
         kernel.ImportSkill(new EmailSkillFake(), "email");

@@ -16,6 +16,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
     public const string AuthenticationScheme = "ApiKey";
     public const string ApiKeyHeaderName = "x-api-key";
 
+    // TODO: not used?
     private readonly IOptionsMonitor<ApiKeyAuthenticationSchemeOptions> _options;
 
     /// <summary>
