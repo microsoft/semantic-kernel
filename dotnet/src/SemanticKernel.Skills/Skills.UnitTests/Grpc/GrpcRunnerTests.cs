@@ -6,6 +6,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Skills.Grpc;
@@ -56,7 +58,7 @@ public sealed class GrpcRunnerTests : IDisposable
         operation.Address = "https://fake-random-test-host";
 
         var arguments = new Dictionary<string, string>();
-        arguments.Add("name", "author");
+        arguments.Add("payload", JsonSerializer.Serialize(new { name = "author" }));
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -86,7 +88,7 @@ public sealed class GrpcRunnerTests : IDisposable
         operation.Address = "https://fake-random-test-host";
 
         var arguments = new Dictionary<string, string>();
-        arguments.Add("name", "author");
+        arguments.Add("payload", JsonSerializer.Serialize(new { name = "author" }));
         arguments.Add("address", "https://fake-random-test-host-from-args");
 
         // Act
@@ -120,15 +122,25 @@ public sealed class GrpcRunnerTests : IDisposable
         operation.Address = "https://fake-random-test-host";
 
         var arguments = new Dictionary<string, string>();
-        arguments.Add("name", "author");
+        arguments.Add("payload", JsonSerializer.Serialize(new { name = "author" }));
 
         // Act
-        dynamic result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, arguments);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("greet.HelloReply", result.GetType().FullName);
-        Assert.Equal("Hello author", result.Message);
+
+        var contentProperty = result["content"]?.ToString();
+        Assert.NotNull(contentProperty);
+
+        var jsonContent = JsonObject.Parse(contentProperty);
+        Assert.NotNull(jsonContent);
+
+        var messageProperty = jsonContent["message"]?.ToString();
+        Assert.Equal("Hello author", messageProperty);
+
+        var contentTypeProperty = result["contentType"]?.ToString();
+        Assert.Equal("application/json; charset=utf-8", contentTypeProperty);
 
         //The byte array is copied from intercepted gRPC call to a local gPRC service created using this guide - https://learn.microsoft.com/en-us/aspnet/core/tutorials/grpc/grpc-start?view=aspnetcore-7.0&tabs=visual-studio
         //since there's no simple way to obtain/create serialized content of gRPC request.

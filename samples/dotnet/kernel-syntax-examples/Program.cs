@@ -85,5 +85,8 @@ public static class Program
 
         await Example26_SemanticFunctionsUsingChatGPT.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example27_GrpcSkills.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
