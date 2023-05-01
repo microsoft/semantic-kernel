@@ -70,7 +70,7 @@ class KernelConfig:
     def all_chat_services(self) -> List[str]:
         return list(self._chat_services.keys())
 
-    def all_embedding_generation_services(self) -> List[str]:
+    def all_text_embedding_generation_services(self) -> List[str]:
         return list(self.text_embedding_generation_services.keys())
 
     def add_text_completion_service(
@@ -253,7 +253,7 @@ class KernelConfig:
         self._default_chat_service = None
         return self
 
-    def clear_all_embedding_generation_services(self) -> "KernelConfig":
+    def clear_all_text_embedding_generation_services(self) -> "KernelConfig":
         self.text_embedding_generation_services = {}
         self._default_text_embedding_generation_service = None
         return self
