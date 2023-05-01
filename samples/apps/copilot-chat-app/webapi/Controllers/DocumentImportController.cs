@@ -155,8 +155,6 @@ public class DocumentImportController : ControllerBase
             fileContent += text;
         }
 
-        Console.WriteLine(fileContent);
-
         return fileContent;
     }
 

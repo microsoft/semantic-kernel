@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Skills;
@@ -471,7 +472,7 @@ public class ChatSkill
             query: item.ToFormattedString(),
             limit: 1,
             minRelevanceScore: 0.8,
-            cancel: context.CancellationToken
+            cancellationToken: context.CancellationToken
         ).ToEnumerable();
 
         if (!memories.Any())
@@ -481,7 +482,7 @@ public class ChatSkill
                 text: item.ToFormattedString(),
                 id: Guid.NewGuid().ToString(),
                 description: memoryName,
-                cancel: context.CancellationToken
+                cancellationToken: context.CancellationToken
             );
         }
     }
