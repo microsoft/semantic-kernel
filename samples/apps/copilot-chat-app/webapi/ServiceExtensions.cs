@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
@@ -21,46 +22,54 @@ internal static class ServicesExtensions
         // General  configuration
         services.AddOptions<ServiceOptions>()
             .Bind(configuration.GetSection(ServiceOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         // AI service configurations
         services.AddOptions<AIServiceOptions>(AIServiceOptions.CompletionPropertyName)
             .Bind(configuration.GetSection(AIServiceOptions.CompletionPropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart().PostConfigure(TrimStringProperties);
 
         services.AddOptions<AIServiceOptions>(AIServiceOptions.EmbeddingPropertyName)
             .Bind(configuration.GetSection(AIServiceOptions.EmbeddingPropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         // Chat log storage configuration
         services.AddOptions<ChatStoreOptions>()
             .Bind(configuration.GetSection(ChatStoreOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         // Memory store configuration
         services.AddOptions<MemoriesStoreOptions>()
             .Bind(configuration.GetSection(MemoriesStoreOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         // Azure speech token configuration
         services.AddOptions<AzureSpeechOptions>()
             .Bind(configuration.GetSection(AzureSpeechOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         // Bot schema configuration
         services.AddOptions<BotSchemaOptions>()
             .Bind(configuration.GetSection(BotSchemaOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         // Document memory options
         services.AddOptions<DocumentMemoryOptions>()
             .Bind(configuration.GetSection(DocumentMemoryOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         // Planner options
         services.AddOptions<PlannerOptions>()
             .Bind(configuration.GetSection(PlannerOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         return services;
     }
@@ -182,5 +191,49 @@ internal static class ServicesExtensions
 
         services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));
         services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
+    }
+
+    /// <summary>
+    /// Trim all string properties, recursively.
+    /// </summary>
+    private static void TrimStringProperties<T>(T options) where T : class
+    {
+        Queue<object> targets = new Queue<object>();
+        targets.Enqueue(options);
+
+        while (targets.Count > 0)
+        {
+            object target = targets.Dequeue();
+            Type targetType = target.GetType();
+            foreach (PropertyInfo property in targetType.GetProperties())
+            {
+                // Skip enumerations
+                if (property.PropertyType.IsEnum)
+                {
+                    continue;
+                }
+
+                // Property is a built-in type, readable, and writable.
+                if (property.PropertyType.Namespace == "System" &&
+                    property.CanRead &&
+                    property.CanWrite)
+                {
+                    // Property is a non-null string.
+                    if (property.PropertyType == typeof(string) &&
+                        property.GetValue(target) != null)
+                    {
+                        property.SetValue(target, property.GetValue(target)!.ToString()!.Trim());
+                    }
+                }
+                else
+                {
+                    // Property is a non-built-in and non-enum type - queue it for processing.
+                    if (property.GetValue(target) != null)
+                    {
+                        targets.Enqueue(property.GetValue(target)!);
+                    }
+                }
+            }
+        }
     }
 }

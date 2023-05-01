@@ -61,7 +61,7 @@ public abstract class OpenAIClientBase : IDisposable
     /// </summary>
     /// <param name="url">URL for the text embedding request API</param>
     /// <param name="requestBody">Request payload</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of text embeddings</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
     protected async Task<IList<Embedding<float>>> ExecuteTextEmbeddingRequestAsync(
@@ -94,7 +94,7 @@ public abstract class OpenAIClientBase : IDisposable
     /// </summary>
     /// <param name="url">URL for the image generation request API</param>
     /// <param name="requestBody">Request payload</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of image URLs</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
     protected async Task<IList<string>> ExecuteImageUrlGenerationRequestAsync(
@@ -120,7 +120,7 @@ public abstract class OpenAIClientBase : IDisposable
     /// </summary>
     /// <param name="url">URL for the image generation request API</param>
     /// <param name="requestBody">Request payload</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of images serialized in base64</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
     protected async Task<IList<string>> ExecuteImageBase64GenerationRequestAsync(

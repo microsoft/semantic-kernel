@@ -12,7 +12,7 @@ public static class Example14_Memory
 {
     public static async Task RunAsync()
     {
-        const string memoryCollectionName = "SKGitHub";
+        const string MemoryCollectionName = "SKGitHub";
 
         var githubFiles = new Dictionary<string, string>()
         {
@@ -34,7 +34,7 @@ public static class Example14_Memory
 
         var kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .Configure(c => c.AddOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY")))
+            .Configure(c => c.AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY")))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
@@ -45,7 +45,7 @@ public static class Example14_Memory
         foreach (var entry in githubFiles)
         {
             await kernel.Memory.SaveReferenceAsync(
-                collection: memoryCollectionName,
+                collection: MemoryCollectionName,
                 description: entry.Value,
                 text: entry.Value,
                 externalId: entry.Key,
@@ -76,7 +76,7 @@ public static class Example14_Memory
         Console.WriteLine("===========================\n" +
                           "Query: " + ask + "\n");
 
-        var memories = kernel.Memory.SearchAsync(memoryCollectionName, ask, limit: 5, minRelevanceScore: 0.77);
+        var memories = kernel.Memory.SearchAsync(MemoryCollectionName, ask, limit: 5, minRelevanceScore: 0.77);
 
         i = 0;
         await foreach (MemoryQueryResult memory in memories)
@@ -111,7 +111,7 @@ public static class Example14_Memory
         Console.WriteLine("===========================\n" +
                           "Query: " + ask + "\n");
 
-        memories = kernel.Memory.SearchAsync(memoryCollectionName, ask, limit: 5, minRelevanceScore: 0.77);
+        memories = kernel.Memory.SearchAsync(MemoryCollectionName, ask, limit: 5, minRelevanceScore: 0.77);
 
         i = 0;
         await foreach (MemoryQueryResult memory in memories)

@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
-using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Controllers;
@@ -16,7 +15,7 @@ namespace SemanticKernel.Service.Controllers;
 [ApiController]
 public class BotController : ControllerBase
 {
-    private readonly ILogger<SemanticKernelController> _logger;
+    private readonly ILogger<BotController> _logger;
     private readonly IMemoryStore _memoryStore;
     private readonly ChatSessionRepository _chatRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
@@ -32,7 +31,7 @@ public class BotController : ControllerBase
         IMemoryStore memoryStore,
         ChatSessionRepository chatRepository,
         ChatMessageRepository chatMessageRepository,
-        ILogger<SemanticKernelController> logger)
+        ILogger<BotController> logger)
     {
         this._logger = logger;
         this._memoryStore = memoryStore;
@@ -177,7 +176,7 @@ public class BotController : ControllerBase
     private async Task<Bot> CreateBotAsync(
         IKernel kernel,
         ChatSessionRepository chatRepository,
-        ChatMessageRepository chatMessageRepository,
+        ChatMessageRepository chatMessageRepository, // TODO: unused
         BotSchemaOptions botSchemaOptions,
         AIServiceOptions embeddingOptions,
         Guid chatId)
@@ -216,7 +215,7 @@ public class BotController : ControllerBase
                 limit: 999999999, // temp solution to get as much as record as a workaround.
                 minRelevanceScore: -1, // no relevance required since the collection only has one entry
                 withEmbeddings: true,
-                cancel: default
+                cancellationToken: default
             ).ToListAsync();
 
             bot.Embeddings.Add(new KeyValuePair<string, List<MemoryQueryResult>>(collection, collectionMemoryRecords));

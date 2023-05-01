@@ -10,7 +10,7 @@ using RepoUtils;
  */
 
 // ReSharper disable once InconsistentNaming
-public static class Example26_SemanticFunctionsUsingChatGPT
+public static class Example27_SemanticFunctionsUsingChatGPT
 {
     public static async Task RunAsync()
     {
@@ -19,7 +19,7 @@ public static class Example26_SemanticFunctionsUsingChatGPT
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         // Note: we use Chat Completion and GPT 3.5 Turbo
-        kernel.Config.AddAzureChatCompletionService("id", "gpt-35-turbo", "https://....openai.azure.com/", "...API KEY...");
+        kernel.Config.AddAzureChatCompletionService("gpt-35-turbo", "https://....openai.azure.com/", "...API KEY...");
 
         var func = kernel.CreateSemanticFunction(
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");

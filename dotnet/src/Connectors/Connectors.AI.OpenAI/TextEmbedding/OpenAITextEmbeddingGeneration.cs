@@ -37,7 +37,7 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, IEmbedding
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
     /// <param name="data">List of strings to generate embeddings for</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of embeddings</returns>
     public Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
