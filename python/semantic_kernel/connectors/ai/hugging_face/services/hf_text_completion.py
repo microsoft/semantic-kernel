@@ -4,7 +4,7 @@ from logging import Logger
 from typing import Optional
 
 import torch
-from transformers import pipeline
+from transformers import GenerationConfig, pipeline
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -69,13 +69,14 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             str -- Completion result.
         """
         try:
-            result = self.generator(
-                prompt,
-                num_return_sequences=1,
+            generation_config = GenerationConfig(
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
-                max_length=request_settings.max_tokens,
+                max_new_tokens=request_settings.max_tokens,
                 pad_token_id=50256,  # EOS token
+            )
+            result = self.generator(
+                prompt, num_return_sequences=1, generation_config=generation_config
             )
 
             if self._task == "text-generation" or self._task == "text2text-generation":
