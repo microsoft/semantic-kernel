@@ -134,14 +134,14 @@ public static class KernelChatGptPluginExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         CancellationToken cancellationToken = default)
     {
-        const string CHATGPT_PLUGIN_FILE = "ai-plugin.json";
+        const string ChatGptPluginFile = "ai-plugin.json";
 
         Verify.ValidSkillName(skillDirectoryName);
 
         var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
         Verify.DirectoryExists(skillDir);
 
-        var chatGptPluginPath = Path.Combine(skillDir, CHATGPT_PLUGIN_FILE);
+        var chatGptPluginPath = Path.Combine(skillDir, ChatGptPluginFile);
         if (!File.Exists(chatGptPluginPath))
         {
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {chatGptPluginPath} is found");
