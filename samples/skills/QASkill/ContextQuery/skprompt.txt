@@ -17,7 +17,7 @@ essay: longer answers. You can have sub-elements such as fact and fiction
 TODAY is {{time.Date}}
 FIRST NAME: {{$firstname}}
 LAST NAME: {{$lastname}}
-CITYl {{$city}}
+CITY: {{$city}}
 STATE: {{$state}}
 COUNTRY: {{$country}}
 {{memory.recall $input}}
