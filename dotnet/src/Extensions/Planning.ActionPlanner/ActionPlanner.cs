@@ -98,19 +98,18 @@ public sealed class ActionPlanner
         }
 
         // Build and return plan
+        var plan = new Plan(goal);
         ISKFunction function;
         if (planData.Plan.Function.Contains("."))
         {
             var parts = planData.Plan.Function.Split('.');
             function = this._context.Skills!.GetFunction(parts[0], parts[1]);
         }
-        else
+        else if (!string.IsNullOrWhiteSpace(planData.Plan.Function))
         {
             function = this._context.Skills!.GetFunction(planData.Plan.Function);
+            plan.AddSteps(function);
         }
-
-        var plan = new Plan(goal);
-        plan.AddSteps(function);
 
         // Create a plan using the function and the parameters suggested by the planner
         var variables = new ContextVariables();
@@ -214,7 +213,7 @@ Goal: tell me a joke.
 {"plan":{
 "rationale": "the list does not contain functions to tell jokes or something funny",
 "function": "",
-"parameters": {}
+"parameters": {
 }}}
 #END-OF-PLAN
 """;
