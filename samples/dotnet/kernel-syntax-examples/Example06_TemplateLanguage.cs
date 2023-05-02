@@ -26,7 +26,7 @@ public static class Example06_TemplateLanguage
         kernel.ImportSkill(new TimeSkill(), "time");
 
         // Semantic Function invoking time.Date and time.Time native functions
-        const string FUNCTION_DEFINITION = @"
+        const string FunctionDefinition = @"
 Today is: {{time.Date}}
 Current time is: {{time.Time}}
 
@@ -38,11 +38,11 @@ Is it weekend time (weekend/not weekend)?
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
         var promptRenderer = new PromptTemplateEngine();
-        var renderedPrompt = await promptRenderer.RenderAsync(FUNCTION_DEFINITION, kernel.CreateNewContext());
+        var renderedPrompt = await promptRenderer.RenderAsync(FunctionDefinition, kernel.CreateNewContext());
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
-        var kindOfDay = kernel.CreateSemanticFunction(FUNCTION_DEFINITION, maxTokens: 150);
+        var kindOfDay = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 150);
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");

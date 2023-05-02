@@ -19,7 +19,7 @@ class MemoryConfiguration(ExtendsKernel):
         kernel = self.kernel()
 
         if embeddings_generator is None:
-            service_id = kernel.config.get_embedding_service_id()
+            service_id = kernel.config.get_text_embedding_generation_service_id()
             if not service_id:
                 raise ValueError("The embedding service id cannot be `None` or empty")
 

@@ -22,9 +22,9 @@ public static class Example20_HuggingFace
         // Add HuggingFace text completion service
         kernel.Config.AddTextCompletionService(_ => new HuggingFaceTextCompletion(Env.Var("HF_API_KEY"), model: "gpt2"));
 
-        const string FUNCTION_DEFINITION = "Question: {{$input}}; Answer:";
+        const string FunctionDefinition = "Question: {{$input}}; Answer:";
 
-        var questionAnswerFunction = kernel.CreateSemanticFunction(FUNCTION_DEFINITION);
+        var questionAnswerFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
         var result = await questionAnswerFunction.InvokeAsync("What is New York?");
 

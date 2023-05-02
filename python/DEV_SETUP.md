@@ -87,11 +87,17 @@ it will prompt you to install them).
 
 # Tests
 
-You should be able to run the example under the [tests](tests) folder.
+You can run the unit tests under the [tests/unit](tests/unit/) folder.
 
     cd python
     poetry install
-    poetry run pytest tests
+    poetry run pytest tests/unit
+
+You can run the integration tests under the [tests/integration](tests/integration/) folder.
+
+    cd python
+    poetry install
+    poetry run pytest tests/integration
 
 # Tools and scripts
 

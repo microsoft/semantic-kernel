@@ -194,7 +194,7 @@ public sealed class OpenAICompletionTests : IDisposable
             $"Put the result in between <result></result> tags{lineEnding}" +
             $"Input:{lineEnding}{{\"name\": \"John\", \"age\": 30}}{lineEnding}{lineEnding}Request:{lineEnding}name";
 
-        const string expectedAnswerContains = "<result>John</result>";
+        const string ExpectedAnswerContains = "<result>John</result>";
 
         IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
 
@@ -206,7 +206,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
 
         // Assert
-        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(ExpectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
     #region internals
