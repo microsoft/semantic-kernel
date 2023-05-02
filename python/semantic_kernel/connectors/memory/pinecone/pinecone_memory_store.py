@@ -149,6 +149,8 @@ class PineconeMemoryStore(MemoryStoreBase):
         """
         if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
+        
+        collection = pinecone.Index(collection_name)
 
         for record in records:
             upsert_response = collection.upsert(
