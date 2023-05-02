@@ -24,8 +24,8 @@ async def test_azure_text_completion_with_skills():
         deployment_name = "text-davinci-003"
 
     # Configure LLM service
-    kernel.config.add_text_service(
-        "text_service", sk_oai.AzureTextCompletion(deployment_name, endpoint, api_key)
+    kernel.config.add_text_completion_service(
+        "text_completion", sk_oai.AzureTextCompletion(deployment_name, endpoint, api_key)
     )
 
     await e2e_text_completion.summarize_function_test(kernel)
