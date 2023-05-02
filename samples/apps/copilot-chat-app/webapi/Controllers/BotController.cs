@@ -30,7 +30,7 @@ public class BotController : ControllerBase
     /// <param name="memoryStore">The memory store.</param>
     /// <param name="chatRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
-    /// <param name="aiServiceOptions">The AI service options.</param>
+    /// <param name="aiServiceOptions">The AI service options where we need the embedding settings from.</param>
     /// <param name="botSchemaOptions">The bot schema options.</param>
     /// <param name="documentMemoryOptions">The document memory options.</param>
     /// <param name="logger">The logger.</param>
@@ -79,7 +79,9 @@ public class BotController : ControllerBase
                 embeddingOptions: this._embeddingOptions,
                 botSchemaOptions: this._botSchemaOptions))
         {
-            return this.BadRequest("Incompatible schema");
+            return this.BadRequest("Incompatible schema. " +
+                $"The supported bot schema is {this._botSchemaOptions.Name}/{this._botSchemaOptions.Version} for the {this._embeddingOptions.DeploymentOrModelId} model from {this._embeddingOptions.AIService}. " +
+                $"But the uploaded file is with schema {bot.Schema.Name}/{bot.Schema.Version} for the {bot.EmbeddingConfigurations.DeploymentOrModelId} model from {bot.EmbeddingConfigurations.AIService}.");
         }
 
         string chatTitle = $"{bot.ChatTitle} - Clone";
