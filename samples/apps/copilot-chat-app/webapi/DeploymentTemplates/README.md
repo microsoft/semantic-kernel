@@ -14,20 +14,36 @@ Also note that the F1 and D1 App Service SKU's (the Free and Shared ones) are no
 
 ## Deploying with a new Azure OpenAI instance
 
+You can deploy an instance of Semantic Kernel in a web app service within a resource group that bears the name YOUR_DEPLOYMENT_NAME preceded by the "rg-" prefix using any of the following methods.
+
+### PowerShell
+
 Use the [DeploySK.ps1](DeploySK.ps1) file found in this folder:
 ```powershell
 .\DeploySK.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID
 ```
 
-This will deploy an instance of Semantic Kernel in a web app service in a resource group that will bear the name YOUR_DEPLOYMENT_NAME followed by the "-rg" suffix in the specified subscription.
-
 For more options, see the deployment script.
+
+### Bash
+
+After ensuring DeploySK.sh file found in this folder is executable, enter the following command:
+
+```bash
+./DeploySK.sh YOUR_DEPLOYMENT_NAME YOUR_SUBSCRIPTION_ID
+```
+
+### Azure Portal
 
 Alternatively, you can deploy by clicking on the following button:
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fglahaye%2Fsemantic-kernel%2Fdeploy%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fwebapi%2FDeploymentTemplates%2Fsk.json)
 
 ## Deploying with an existing OpenAI / Azure OpenAI instance
+
+Note that, with the following methods, the Azure OpenAI endpoint is ignored and can be omitted when you are using an OpenAI instance from [openai.com](https://openai.com).
+
+### PowerShell
 
 Use the [DeploySK-Existing-AI.ps1](DeploySK-Existing-AI.ps1) file found in this folder:
 ```powershell
@@ -36,7 +52,15 @@ Use the [DeploySK-Existing-AI.ps1](DeploySK-Existing-AI.ps1) file found in this 
 
 After entering the command above, you will be prompted to enter your OpenAI or Azure OpenAI API key. (You can also pass in the API key using the -ApiKey parameter followed by a SecureString)
 
-Note: the Azure OpenAI endpoint is ignored and can be omitted when you are using an OpenAI instance from [openai.com](https://openai.com).
+### bash
+
+After ensuring DeploySK-Existing-AI.sh file found in this folder is executable, enter the following command:
+
+```bash
+./DeploySK-Existing-AI.sh YOUR_DEPLOYMENT_NAME YOUR_SUBSCRIPTION_ID YOUR_API_KEY "YOUR_AZURE_OPENAI_ENDPOINT"
+```
+
+### Azure Portal
 
 Alternatively, you can deploy by clicking on the following button:
 
