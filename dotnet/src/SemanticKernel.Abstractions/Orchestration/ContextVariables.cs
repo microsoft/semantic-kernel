@@ -34,7 +34,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <param name="content">The new input value, for the next function in the pipeline, or as a result for the user
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
-    public ContextVariables Update(string? content = null)
+    public ContextVariables Update(string? content)
     {
         this._variables[MainKey] = content ?? string.Empty;
         return this;
