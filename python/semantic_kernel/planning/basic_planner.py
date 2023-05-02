@@ -120,12 +120,13 @@ class BasicPlanner:
         skill_names = list(all_functions.keys())
         all_functions_descriptions_dict = {}
         all_functions_params_dict = {}
-        
+
         for skill_name in skill_names:
             for func in all_functions[skill_name]:
-                all_functions_descriptions_dict[skill_name + "." + func.name] = func.description
-                all_functions_params_dict[skill_name + "." + func.name] = func.parameters
-        
+                key = skill_name + "." + func.name
+                all_functions_descriptions_dict[key] = func.description
+                all_functions_params_dict[key] = func.parameters
+
         # Create the [AVAILABLE FUNCTIONS] section of the prompt
         available_functions_string = ""
         for name in list(all_functions_descriptions_dict.keys()):
@@ -137,11 +138,16 @@ class BasicPlanner:
             # Add the parameters for each function
             parameters = all_functions_params_dict[name]
             for param in parameters:
-                available_functions_string += "- " + param.name + ": " + param.description + "\n"
+                if not param.description:
+                    param_description = ""
+                else:
+                    param_description = param.description
+                available_functions_string += (
+                    "- " + param.name + ": " + param_description + "\n"
+                )
             available_functions_string += "\n"
-    
-        return available_functions_string
 
+        return available_functions_string
 
     async def create_plan_async(
         self,
