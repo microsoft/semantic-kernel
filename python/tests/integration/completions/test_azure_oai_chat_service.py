@@ -29,7 +29,8 @@ async def test_azure_chat_completion_with_skills():
 
     # Configure LLM service
     kernel.config.add_chat_service(
-        "chat_completion", sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key)
+        "chat_completion",
+        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
     )
 
     await e2e_text_completion.summarize_function_test(kernel)
