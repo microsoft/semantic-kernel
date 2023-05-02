@@ -200,6 +200,8 @@ public class ChatSkill
             return string.Empty;
         }
 
+        // TODO Running a planner can be relatively expensive
+
         // Skills run in the planner may modify the SKContext. Clone the context to avoid
         // modifying the original context variables.
         SKContext plannerContext = Utilities.CopyContextWithVariablesClone(context);

@@ -72,7 +72,7 @@ public sealed class ActionPlanner
 
         SKContext result = await this._plannerFunction.InvokeAsync(goal, this._context).ConfigureAwait(false);
 
-        var json = """{"plan":{ "rationale":""" + result;
+        var json = """{"plan":{ "rationale":""" + SanitizePlanResultString(result.ToString());
 
         // extract and parse JSON
         ActionPlanResponse? planData;
@@ -89,7 +89,7 @@ public sealed class ActionPlanner
         catch (Exception e)
         {
             throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
-                "Plan parsing error, invalid JSON", e);
+                $"Plan parsing error, invalid JSON: {json}", e);
         }
 
         if (planData == null)
@@ -99,23 +99,24 @@ public sealed class ActionPlanner
 
         // Build and return plan
         var plan = new Plan(goal);
-        ISKFunction function;
         if (planData.Plan.Function.Contains("."))
         {
             var parts = planData.Plan.Function.Split('.');
-            function = this._context.Skills!.GetFunction(parts[0], parts[1]);
+            plan.AddSteps(this._context.Skills!.GetFunction(parts[0], parts[1]));
         }
         else if (!string.IsNullOrWhiteSpace(planData.Plan.Function))
         {
-            function = this._context.Skills!.GetFunction(planData.Plan.Function);
-            plan.AddSteps(function);
+            plan.AddSteps(this._context.Skills!.GetFunction(planData.Plan.Function));
         }
 
         // Create a plan using the function and the parameters suggested by the planner
         var variables = new ContextVariables();
-        foreach (KeyValuePair<string, string> p in planData.Plan.Parameters)
+        foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
         {
-            plan.State[p.Key] = p.Value;
+            if (p.Value != null)
+            {
+                plan.State[p.Key] = p.Value.ToString();
+            }
         }
 
         //Console.WriteLine(JsonSerializer.Serialize(planData, new JsonSerializerOptions { WriteIndented = true }));
@@ -126,6 +127,7 @@ public sealed class ActionPlanner
         return plan;
     }
 
+    
     // TODO: use goal to find relevant functions in a skill store
     /// <summary>
     /// Native function returning a list of all the functions in the current context,
@@ -255,4 +257,16 @@ Goal: tell me a joke.
     {
         return x.EndsWith(".", StringComparison.Ordinal) ? x : $"{x}.";
     }
+
+    /// <summary>
+    /// Replace all double quotes and remove all new lines in resultString up to the function property.
+    /// </summary>
+    private static string SanitizePlanResultString(string result)
+    {
+        var functionStartIndex = result.IndexOf("\n\"function\":", StringComparison.OrdinalIgnoreCase);
+        var rationale = result.Substring(0, functionStartIndex).Replace("\"", "'").Replace("\n", "").Trim('"', ',');
+        var sanitizedResultString = $"\"{rationale}\",{result.Substring(functionStartIndex)}";
+        return sanitizedResultString;
+    }
+
 }
