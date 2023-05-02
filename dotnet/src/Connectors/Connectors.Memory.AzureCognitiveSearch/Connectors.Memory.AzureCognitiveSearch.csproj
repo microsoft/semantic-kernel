@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
+  </PropertyGroup>
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+
+  <PropertyGroup>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <PackageId>Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch</PackageId>
+    <Title>Semantic Kernel - Azure Cognitive Search Semantic Memory</Title>
+    <Description>Azure Cognitive Search Semantic Memory connector for Semantic Kernel</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Search.Documents" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

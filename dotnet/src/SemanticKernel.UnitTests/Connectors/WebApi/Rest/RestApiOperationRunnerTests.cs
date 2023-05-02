@@ -207,6 +207,39 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Fact]
+    public async Task ItShouldAddUserAgentHeaderToHttpRequestIfConfiguredAsync()
+    {
+        // Arrange
+        var headers = new Dictionary<string, string>();
+        headers.Add("fake-header", string.Empty);
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            "https://fake-random-test-host",
+            "fake-path",
+            HttpMethod.Get,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            headers
+        );
+
+        var arguments = new Dictionary<string, string>();
+        arguments.Add("fake-header", "fake-header-value");
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, "fake-user-agent");
+
+        // Act
+        await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
+        Assert.Equal(2, this._httpMessageHandlerStub.RequestHeaders.Count());
+
+        Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "fake-header" && h.Value.Contains("fake-header-value"));
+        Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "User-Agent" && h.Value.Contains("fake-user-agent"));
+    }
+
+    [Fact]
     public async Task ItShouldUsePayloadAndContentTypeArgumentsIfPayloadMetadataIsMissingAsync()
     {
         // Arrange

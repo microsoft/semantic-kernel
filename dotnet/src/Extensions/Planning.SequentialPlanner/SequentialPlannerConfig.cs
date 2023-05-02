@@ -33,17 +33,17 @@ public sealed class SequentialPlannerConfig
     /// <summary>
     /// A list of skills to exclude from the plan creation request.
     /// </summary>
-    public HashSet<string> ExcludedSkills { get; } = new() { };
+    public HashSet<string> ExcludedSkills { get; } = new();
 
     /// <summary>
     /// A list of functions to exclude from the plan creation request.
     /// </summary>
-    public HashSet<string> ExcludedFunctions { get; } = new() { };
+    public HashSet<string> ExcludedFunctions { get; } = new();
 
     /// <summary>
     /// A list of functions to include in the plan creation request.
     /// </summary>
-    public HashSet<string> IncludedFunctions { get; } = new() { };
+    public HashSet<string> IncludedFunctions { get; } = new();
 
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
