@@ -23,12 +23,12 @@ public static class Example22_OpenApiSkill_AzureKeyVault
             new[] { "https://vault.azure.net/.default" },
             new Uri("http://localhost"));
 
-        await GetSecretFromAzureKeyVaultRetryAsync(authenticationProvider);
+        await GetSecretFromAzureKeyVaultWithRetryAsync(authenticationProvider);
 
         await AddSecretToAzureKeyVaultAsync(authenticationProvider);
     }
 
-    public static async Task GetSecretFromAzureKeyVaultRetryAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
+    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
