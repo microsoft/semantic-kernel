@@ -30,13 +30,20 @@ internal sealed class RestApiOperationRunner : IRestApiOperationRunner
     private readonly AuthenticateRequestAsyncCallback _authCallback;
 
     /// <summary>
+    /// Request-header field containing information about the user agent originating the request
+    /// </summary>
+    private readonly string? _userAgent;
+
+    /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationRunner"/> class.
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    public RestApiOperationRunner(HttpClient httpClient, AuthenticateRequestAsyncCallback? authCallback = null)
+    /// <param name="userAgent">Optional request-header field containing information about the user agent originating the request</param>
+    public RestApiOperationRunner(HttpClient httpClient, AuthenticateRequestAsyncCallback? authCallback = null, string? userAgent = null)
     {
         this._httpClient = httpClient;
+        this._userAgent = userAgent;
 
         // If no auth callback provided, use empty function
         if (authCallback == null)
@@ -82,6 +89,11 @@ internal sealed class RestApiOperationRunner : IRestApiOperationRunner
         if (payload != null)
         {
             requestMessage.Content = payload;
+        }
+
+        if (!string.IsNullOrWhiteSpace(this._userAgent))
+        {
+            requestMessage.Headers.Add("User-Agent", this._userAgent);
         }
 
         if (headers != null)

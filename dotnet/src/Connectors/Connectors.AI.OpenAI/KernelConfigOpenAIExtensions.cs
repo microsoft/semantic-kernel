@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
 using Azure.Core;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
@@ -9,6 +11,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Reliability;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
@@ -28,12 +31,23 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureTextCompletionService(this KernelConfig config,
-        string deploymentName, string endpoint, string apiKey, string? serviceId = null)
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         ITextCompletion Factory(IKernel kernel) => new AzureTextCompletion(
-            deploymentName, endpoint, apiKey, kernel.Config.HttpHandlerFactory, kernel.Log);
+            deploymentName,
+            endpoint,
+            apiKey,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+            logger ?? kernel.Log);
 
         config.AddTextCompletionService(Factory, serviceId);
 
@@ -49,12 +63,23 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureTextCompletionService(this KernelConfig config,
-        string deploymentName, string endpoint, TokenCredential credentials, string? serviceId = null)
+        string deploymentName,
+        string endpoint,
+        TokenCredential credentials,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         ITextCompletion Factory(IKernel kernel) => new AzureTextCompletion(
-            deploymentName, endpoint, credentials, kernel.Config.HttpHandlerFactory, kernel.Log);
+            deploymentName,
+            endpoint,
+            credentials,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+            logger ?? kernel.Log);
 
         config.AddTextCompletionService(Factory, serviceId);
 
@@ -70,12 +95,23 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddOpenAITextCompletionService(this KernelConfig config,
-        string modelId, string apiKey, string? orgId = null, string? serviceId = null)
+        string modelId,
+        string apiKey,
+        string? orgId = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         ITextCompletion Factory(IKernel kernel) => new OpenAITextCompletion(
-            modelId, apiKey, orgId, kernel.Config.HttpHandlerFactory, kernel.Log);
+            modelId,
+            apiKey,
+            orgId,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+            logger ?? kernel.Log);
 
         config.AddTextCompletionService(Factory, serviceId);
 
@@ -95,12 +131,23 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureTextEmbeddingGenerationService(this KernelConfig config,
-        string deploymentName, string endpoint, string apiKey, string? serviceId = null)
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         IEmbeddingGeneration<string, float> Factory(IKernel kernel) => new AzureTextEmbeddingGeneration(
-            deploymentName, endpoint, apiKey, kernel.Config.HttpHandlerFactory, kernel.Log);
+            deploymentName,
+            endpoint,
+            apiKey,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+            logger ?? kernel.Log);
 
         config.AddTextEmbeddingGenerationService(Factory, serviceId);
 
@@ -116,12 +163,23 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureTextEmbeddingGenerationService(this KernelConfig config,
-        string deploymentName, string endpoint, TokenCredential credentials, string? serviceId = null)
+        string deploymentName,
+        string endpoint,
+        TokenCredential credentials,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         IEmbeddingGeneration<string, float> Factory(IKernel kernel) => new AzureTextEmbeddingGeneration(
-            deploymentName, endpoint, credentials, kernel.Config.HttpHandlerFactory, kernel.Log);
+            deploymentName,
+            endpoint,
+            credentials,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+            logger ?? kernel.Log);
 
         config.AddTextEmbeddingGenerationService(Factory, serviceId);
 
@@ -137,12 +195,23 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddOpenAITextEmbeddingGenerationService(this KernelConfig config,
-        string modelId, string apiKey, string? orgId = null, string? serviceId = null)
+        string modelId,
+        string apiKey,
+        string? orgId = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         IEmbeddingGeneration<string, float> Factory(IKernel kernel) => new OpenAITextEmbeddingGeneration(
-            modelId, apiKey, orgId, kernel.Config.HttpHandlerFactory, kernel.Log);
+            modelId,
+            apiKey,
+            orgId,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+            logger ?? kernel.Log);
 
         config.AddTextEmbeddingGenerationService(Factory, serviceId);
 
@@ -163,12 +232,20 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureChatCompletionService(this KernelConfig config,
-        string deploymentName, string endpoint, string apiKey, bool alsoAsTextCompletion = true, string? serviceId = null)
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        bool alsoAsTextCompletion = true,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         IChatCompletion Factory(IKernel kernel) => new AzureChatCompletion(
-            deploymentName, endpoint, apiKey, kernel.Config.HttpHandlerFactory, kernel.Log);
+            deploymentName, endpoint, apiKey, kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log), kernel.Log);
 
         config.AddChatCompletionService(Factory, serviceId);
 
@@ -176,7 +253,11 @@ public static class KernelConfigOpenAIExtensions
         if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
         {
             ITextCompletion TextServiceFactory(IKernel kernel) => new AzureChatCompletion(
-                deploymentName, endpoint, apiKey, kernel.Config.HttpHandlerFactory, kernel.Log);
+                deploymentName,
+                endpoint,
+                apiKey,
+                httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+                logger ?? kernel.Log);
 
             config.AddTextCompletionService(TextServiceFactory, serviceId);
         }
@@ -194,12 +275,24 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddAzureChatCompletionService(this KernelConfig config,
-        string deploymentName, string endpoint, TokenCredential credentials, bool alsoAsTextCompletion = true, string? serviceId = null)
+        string deploymentName,
+        string endpoint,
+        TokenCredential credentials,
+        bool alsoAsTextCompletion = true,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         IChatCompletion Factory(IKernel kernel) => new AzureChatCompletion(
-            deploymentName, endpoint, credentials, kernel.Config.HttpHandlerFactory, kernel.Log);
+            deploymentName,
+            endpoint,
+            credentials,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+            logger ?? kernel.Log);
 
         config.AddChatCompletionService(Factory, serviceId);
 
@@ -207,7 +300,11 @@ public static class KernelConfigOpenAIExtensions
         if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
         {
             ITextCompletion TextServiceFactory(IKernel kernel) => new AzureChatCompletion(
-                deploymentName, endpoint, credentials, kernel.Config.HttpHandlerFactory, kernel.Log);
+                deploymentName,
+                endpoint,
+                credentials,
+                httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+                logger ?? kernel.Log);
 
             config.AddTextCompletionService(TextServiceFactory, serviceId);
         }
@@ -225,12 +322,24 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddOpenAIChatCompletionService(this KernelConfig config,
-        string modelId, string apiKey, string? orgId = null, bool alsoAsTextCompletion = true, string? serviceId = null)
+        string modelId,
+        string apiKey,
+        string? orgId = null,
+        bool alsoAsTextCompletion = true,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         IChatCompletion Factory(IKernel kernel) => new OpenAIChatCompletion(
-            modelId, apiKey, orgId, kernel.Config.HttpHandlerFactory, kernel.Log);
+            modelId,
+            apiKey,
+            orgId,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+            logger ?? kernel.Log);
 
         config.AddChatCompletionService(Factory, serviceId);
 
@@ -238,7 +347,11 @@ public static class KernelConfigOpenAIExtensions
         if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(OpenAIChatCompletion)))
         {
             ITextCompletion TextServiceFactory(IKernel kernel) => new OpenAIChatCompletion(
-                modelId, apiKey, orgId, kernel.Config.HttpHandlerFactory, kernel.Log);
+                modelId,
+                apiKey,
+                orgId,
+                httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+                logger ?? kernel.Log);
 
             config.AddTextCompletionService(TextServiceFactory, serviceId);
         }
@@ -257,12 +370,21 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
     public static KernelConfig AddOpenAIImageGenerationService(this KernelConfig config,
-        string apiKey, string? orgId = null, string? serviceId = null)
+        string apiKey,
+        string? orgId = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         IImageGeneration Factory(IKernel kernel) => new OpenAIImageGeneration(
-            apiKey, orgId, kernel.Config.HttpHandlerFactory, kernel.Log);
+            apiKey,
+            orgId,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
+            logger ?? kernel.Log);
 
         config.AddImageGenerationService(Factory, serviceId);
 
@@ -270,4 +392,12 @@ public static class KernelConfigOpenAIExtensions
     }
 
     #endregion
+
+    private static HttpClient CreateHttpClient(this IDelegatingHandlerFactory handlerFactory,
+        ILogger? logger)
+    {
+        var retryHandler = handlerFactory.Create(logger);
+        retryHandler.InnerHandler = new HttpClientHandler { CheckCertificateRevocationList = true };
+        return new HttpClient(retryHandler);
+    }
 }
