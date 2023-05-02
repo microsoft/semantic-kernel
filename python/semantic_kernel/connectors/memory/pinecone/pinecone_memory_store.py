@@ -128,7 +128,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             namespace=''
         )
 
-        if upsert_response.upsertedCount == None:
+        if upsert_response.upsertedCount is None:
             raise Exception(f"Error upserting record: {upsert_response.text}")
         
         return record._id
@@ -151,8 +151,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             raise Exception(f"Collection '{collection_name}' does not exist")
         
         collection = pinecone.Index(collection_name)
-        
-        metadata_info = json.dumps(record._metadata)
+        metadata_info = {}
 
         for record in records:
             upsert_response = collection.upsert(
@@ -166,7 +165,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             namespace=''
         )
 
-            if upsert_response.upsertedCount == None:
+            if upsert_response.upsertedCount is None:
                 raise Exception(f"Error upserting record: {upsert_response.text}")
             else:
                 return [record._id for record in records]
