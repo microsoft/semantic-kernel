@@ -204,7 +204,7 @@ public static class KernelOpenApiExtensions
         Stream documentStream,
         string skillName,
         AuthenticateRequestAsyncCallback? authCallback = null,
-        HttpRetryConfig? retryConfiguration = null, 
+        HttpRetryConfig? retryConfiguration = null,
         string? userAgent = "Microsoft-Semantic-Kernel",
         CancellationToken cancellationToken = default)
     {
