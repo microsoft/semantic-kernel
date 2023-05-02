@@ -22,28 +22,28 @@ public static class Example17_ChatGPT
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         // Add your chat completion service
-        kernel.Config.AddOpenAIChatCompletionService("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        var chat = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");
+        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");
 
         // First user message
-        chat.AddUserMessage("Hi, I'm looking for book suggestions");
+        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
 
         // First bot message
-        string reply = await chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings());
-        chat.AddAssistantMessage(reply);
+        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        chatHistory.AddAssistantMessage(reply);
 
         // Second user message
-        chat.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
+        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
 
         // Second bot message
-        reply = await chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings());
-        chat.AddAssistantMessage(reply);
+        reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        chatHistory.AddAssistantMessage(reply);
 
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
-        foreach (var message in chat.Messages)
+        foreach (var message in chatHistory.Messages)
         {
             Console.WriteLine($"{message.AuthorRole}: {message.Content}");
             Console.WriteLine("------------------------");
