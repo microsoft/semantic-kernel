@@ -16,7 +16,7 @@ public static class Example28_ActionPlanner
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         // Note: Action Planner works with old models like text-davinci-002
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-002", "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");
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-002", "foo");
 
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");

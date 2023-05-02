@@ -137,7 +137,7 @@ public class SemanticKernelController : ControllerBase
     /// </summary>
     private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
     {
-        await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShopping", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
+        //await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShopping", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
 
         // Register authenticated OpenAPI skills with the planner's kernel
         // if the request includes an auth header for an OpenAPI skill.
@@ -151,13 +151,13 @@ public class SemanticKernelController : ControllerBase
             var skill = await planner.Kernel.ImportOpenApiSkillFromFileAsync("GitHubSkill", filePath, authenticationProvider.AuthenticateRequestAsync);
         }
 
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "text");
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TimeSkill(), "time");
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.MathSkill(), "math");
+        //planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "text");
+        //planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TimeSkill(), "time");
+        //planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.MathSkill(), "math");
 
-        if (!string.IsNullOrWhiteSpace(options.SemanticSkillsDirectory))
-        {
-            planner.Kernel.RegisterSemanticSkills(options.SemanticSkillsDirectory, this._logger);
-        }
+        //if (!string.IsNullOrWhiteSpace(options.SemanticSkillsDirectory))
+        //{
+        //    planner.Kernel.RegisterSemanticSkills(options.SemanticSkillsDirectory, this._logger);
+        //}
     }
 }
