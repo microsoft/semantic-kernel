@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Service.Skills.OpenAPI.Authentication;
+using Microsoft.AspNetCore.Mvc;
+
+namespace SemanticKernel.Service.Model;
 
 /// /// <summary>
 /// Represents the authentication headers for imported OpenAPI Plugin Skills.
