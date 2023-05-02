@@ -48,7 +48,7 @@ public class DocumentMemoryOptions
     public int FileSizeLimit { get; set; } = 1000000;
 
     /// <summary>
-    /// Similarity threshold for avoid document memory duplication when importing documents to memory.
+    /// Similarity threshold to avoid document memory duplication when importing documents to memory.
     /// </summary>
     [Range(0.0, 1.0)]
     public double DeduplicationSimilarityThreshold { get; set; } = 0.8;
