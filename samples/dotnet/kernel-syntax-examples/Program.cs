@@ -47,7 +47,7 @@ public static class Program
         await Example13_ConversationSummarySkill.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example14_Memory.RunAsync();
+        await Example14_SemanticMemory.RunAsync();
         Console.WriteLine("== DONE ==");
 
         await Example15_MemorySkill.RunAsync();
@@ -71,25 +71,31 @@ public static class Program
         await Example21_ChatGptPlugins.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example22_OpenApiSkill.RunAsync();
+        await Example22_OpenApiSkill_AzureKeyVault.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example23_ReadOnlyMemoryStore.RunAsync();
+        await Example23_OpenApiSkill_GitHub.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        Example24_Tokenizer.Run();
+        await Example24_OpenApiSkill_Jira.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example25_AADAuth.RunAsync();
+        await Example25_ReadOnlyMemoryStore.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example26_SemanticFunctionsUsingChatGPT.RunAsync();
+        await Example26_AADAuth.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example27_ActionPlanner.RunAsync();
+        await Example27_SemanticFunctionsUsingChatGPT.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example28_ChatWithPrompts.RunAsync();
+        await Example28_ActionPlanner.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        Example29_Tokenizer.Run();
+        Console.WriteLine("== DONE ==");
+
+        await Example30_ChatWithPrompts.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }

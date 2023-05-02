@@ -1,5 +1,5 @@
 #
-# This workflow will run all integrations tests.
+# This workflow will run all dotnet integrations tests.
 #
 
 name: dotnet-integration-tests

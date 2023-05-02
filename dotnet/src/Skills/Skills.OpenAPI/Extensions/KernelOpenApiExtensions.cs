@@ -214,7 +214,7 @@ public static class KernelOpenApiExtensions
             try
             {
                 kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
-                var function = kernel.RegisterRestApiFunction(skillName, operation, authCallback, cancellationToken);
+                var function = kernel.RegisterRestApiFunction(skillName, operation, authCallback, cancellationToken: cancellationToken);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
@@ -238,21 +238,27 @@ public static class KernelOpenApiExtensions
     /// <param name="operation">The REST API operation.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="userAgent">Optional override for request-header field containing information about the user agent originating the request</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
     private static ISKFunction RegisterRestApiFunction(
         this IKernel kernel,
         string skillName,
         RestApiOperation operation,
         AuthenticateRequestAsyncCallback? authCallback = null,
-        CancellationToken cancellationToken = default)
+        string? userAgent = "Microsoft-Semantic-Kernel",
+        CancellationToken cancellationToken = default
+        )
     {
         var restOperationParameters = operation.GetParameters();
 
+        // User Agent may be a required request header fields for some Rest APIs,
+        // but this detail isn't specified in OpenAPI specs, so defaulting for all Rest APIs imported.
+        // Other applications can override this value by passing it as a parameter on execution.
         async Task<SKContext> ExecuteAsync(SKContext context)
         {
             try
             {
-                var runner = new RestApiOperationRunner(new HttpClient(), authCallback);
+                var runner = new RestApiOperationRunner(new HttpClient(), authCallback, userAgent);
 
                 // Extract function arguments from context
                 var arguments = new Dictionary<string, string>();

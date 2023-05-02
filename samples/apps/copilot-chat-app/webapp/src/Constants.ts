@@ -35,7 +35,7 @@ export const Constants = {
     },
     // NOT a comprehensive list.
     // Uncomment the ones you need and pass into
-    // invokeSkillWithConnectorToken (./connectors/useConnectors.ts)
+    // invokeSkillWithMsalToken (./connectors/useConnectors.ts)
     msGraphScopes: [
         'Calendars.Read', // Get Schedule Availability
         // 'Calendars.ReadWrite',
