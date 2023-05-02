@@ -108,7 +108,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             record {MemoryRecord} -- The record to upsert.
 
         Returns:
-            str -- The unqiue database key of the record.
+            str -- The unqiue database key of the record. In Pinecone, this is the record ID.
         """
         if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
@@ -130,6 +130,8 @@ class PineconeMemoryStore(MemoryStoreBase):
 
         if upsert_response.upsertedCount == None:
             raise Exception(f"Error upserting record: {upsert_response.text}")
+        
+        return record._id
 
 
 
