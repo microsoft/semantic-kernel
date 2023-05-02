@@ -4,19 +4,19 @@ using System.Text.Json;
 
 namespace Microsoft.SemanticKernel.Text;
 
-internal static class Json
+public static class JsonExtensions
 {
-    internal static string Serialize(object? o)
+    public static string Serialize(object? o)
     {
         return JsonSerializer.Serialize(o, s_options);
     }
 
-    internal static T? Deserialize<T>(string json)
+    public static T? Deserialize<T>(string json)
     {
         return JsonSerializer.Deserialize<T>(json, s_options);
     }
 
-    internal static string ToJson(this object o)
+    public static string ToJson(this object o)
     {
         return JsonSerializer.Serialize(o, s_options);
     }

@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Core" PublicKey="$(StongNamePublicKey)"/>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" PublicKey="$(StongNamePublicKey)"/>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.ActionPlanner" PublicKey="$(StongNamePublicKey)"/>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.SequentialPlanner" PublicKey="$(StongNamePublicKey)"/>
@@ -33,5 +32,9 @@
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StongNamePublicKey)"/>
     <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StongNamePublicKey)"/>
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" PublicKey="$(StongNamePublicKey)"/> <!-- Moq -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SemanticKernel.Utilities\SemanticKernel.Utilities.csproj" />
   </ItemGroup>
 </Project>

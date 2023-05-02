@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 internal sealed class VarBlock : Block, ITextRendering
 {
-    internal override BlockTypes Type => BlockTypes.Variable;
+    public override BlockTypes Type => BlockTypes.Variable;
 
     internal string Name { get; } = string.Empty;
 

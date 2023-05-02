@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 internal sealed class TextBlock : Block, ITextRendering
 {
-    internal override BlockTypes Type => BlockTypes.Text;
+    public override BlockTypes Type => BlockTypes.Text;
 
     public TextBlock(string? text, ILogger? log = null)
         : base(text, log)

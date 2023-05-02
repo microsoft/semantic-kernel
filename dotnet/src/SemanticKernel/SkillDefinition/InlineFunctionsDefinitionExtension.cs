@@ -89,8 +89,8 @@ public static class InlineFunctionsDefinitionExtension
         string skillName = "")
     {
         functionName ??= RandomFunctionName();
-        Verify.ValidFunctionName(functionName);
-        if (!string.IsNullOrEmpty(skillName)) { Verify.ValidSkillName(skillName); }
+        FunctionValidation.ValidFunctionName(functionName);
+        if (!string.IsNullOrEmpty(skillName)) { FunctionValidation.ValidSkillName(skillName); }
 
         var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngine);
 

@@ -289,7 +289,7 @@ public abstract class OpenAIClientBase : IDisposable
 
         try
         {
-            var result = Json.Deserialize<T>(responseJson);
+            var result = JsonExtensions.Deserialize<T>(responseJson);
             if (result != null) { return result; }
 
             throw new AIException(

@@ -26,7 +26,7 @@ public sealed class SKFunctionContextParameterAttribute : Attribute
         get { return this._name; }
         set
         {
-            Verify.ValidFunctionParamName(value);
+            FunctionValidation.ValidFunctionParamName(value);
             this._name = value;
         }
     }

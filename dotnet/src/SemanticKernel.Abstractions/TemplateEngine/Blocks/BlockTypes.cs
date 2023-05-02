@@ -2,7 +2,7 @@
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-internal enum BlockTypes
+public enum BlockTypes
 {
     Undefined = 0,
     Text = 1,

@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 /// <summary>
 /// Interface for REST API operation runner classes.
 /// </summary>
-internal interface IRestApiOperationRunner
+public interface IRestApiOperationRunner
 {
     /// <summary>
     /// Runs a REST API operation.

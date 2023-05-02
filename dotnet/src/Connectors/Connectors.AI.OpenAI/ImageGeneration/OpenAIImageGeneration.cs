@@ -55,7 +55,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
     private async Task<string> GenerateImageUrlAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
-        var requestBody = Json.Serialize(new ImageGenerationRequest
+        var requestBody = JsonExtensions.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",
@@ -69,7 +69,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
     private async Task<string> GenerateImageBase64Async(string description, int width, int height, CancellationToken cancellationToken = default)
     {
-        var requestBody = Json.Serialize(new ImageGenerationRequest
+        var requestBody = JsonExtensions.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",

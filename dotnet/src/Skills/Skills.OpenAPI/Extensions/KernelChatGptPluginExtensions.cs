@@ -42,7 +42,7 @@ public static class KernelChatGptPluginExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.ValidSkillName(skillName);
+        FunctionValidation.ValidSkillName(skillName);
 
         HttpResponseMessage? response = null;
         try
@@ -96,7 +96,7 @@ public static class KernelChatGptPluginExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.ValidSkillName(skillName);
+        FunctionValidation.ValidSkillName(skillName);
 
         var type = typeof(SkillResourceNames);
 
@@ -136,7 +136,7 @@ public static class KernelChatGptPluginExtensions
     {
         const string ChatGptPluginFile = "ai-plugin.json";
 
-        Verify.ValidSkillName(skillDirectoryName);
+        FunctionValidation.ValidSkillName(skillDirectoryName);
 
         var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
         Verify.DirectoryExists(skillDir);

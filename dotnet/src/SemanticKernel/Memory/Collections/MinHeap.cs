@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.SemanticKernel.Diagnostics;
+using static Microsoft.SemanticKernel.AI.ChatCompletion.ChatHistory;
 
 namespace Microsoft.SemanticKernel.Memory.Collections;
 
@@ -30,7 +31,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     {
         if (capacity < MinCapacity)
         {
-            Verify.ThrowArgumentOutOfRangeException(nameof(capacity), capacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+            throw new ArgumentOutOfRangeException(nameof(capacity), capacity, $"MinHeap capacity must be greater than {MinCapacity}.");
         }
 
         this._items = new T[capacity + 1];
@@ -114,7 +115,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         int newItemCount = items.Count;
         if (startAt >= newItemCount)
         {
-            Verify.ThrowArgumentOutOfRangeException(nameof(startAt), startAt, $"{nameof(startAt)} value must be less than {nameof(items)}.{nameof(items.Count)}.");
+            throw new ArgumentOutOfRangeException(nameof(startAt), startAt, $"{nameof(startAt)} value must be less than {nameof(items)}.{nameof(items.Count)}.");
         }
 
         this.EnsureCapacity(this._count + (newItemCount - startAt));
@@ -155,7 +156,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     {
         if (capacity < MinCapacity)
         {
-            Verify.ThrowArgumentOutOfRangeException(nameof(capacity), capacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+            throw new ArgumentOutOfRangeException(nameof(capacity), capacity, $"MinHeap capacity must be greater than {MinCapacity}.");
         }
 
         // 0th item is always a sentinel

@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 internal sealed class ValBlock : Block, ITextRendering
 {
-    internal override BlockTypes Type => BlockTypes.Value;
+    public override BlockTypes Type => BlockTypes.Value;
 
     // Cache the first and last char
     private readonly char _first = '\0';
