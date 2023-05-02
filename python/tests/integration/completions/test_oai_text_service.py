@@ -15,7 +15,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
     raises=AssertionError,
     reason="OpenAI may throtle requests, preventing this test from passing",
 )
-async def test_oai_text_service_with_skills():
+async def test_oai_text_completion_with_skills():
     kernel = sk.Kernel()
 
     if "Python_Integration_Tests" in os.environ:
@@ -33,4 +33,4 @@ async def test_oai_text_service_with_skills():
 
 
 if __name__ == "__main__":
-    asyncio.run(test_oai_text_service_with_skills())
+    asyncio.run(test_oai_text_completion_with_skills())
