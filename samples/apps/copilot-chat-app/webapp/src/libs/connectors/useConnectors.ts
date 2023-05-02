@@ -80,6 +80,37 @@ export const useConnectors = () => {
         );
     };
 
+    /**
+     * Helper function to invoke SK skills
+     * with Jira token.
+     */
+    const invokeSkillWithJiraToken = async () => {
+        // This is an example of invoking a Jira skill (imported as an Open API Skill),
+        // where GetIssue comes from the API operation Id defined in the swagger
+        // and variables are parameter requirements of the API being called.
+        // TODO: For testing, change as needed
+        const getIssueRequestsAsk = {
+            input: 'input',
+            variables: [
+                //jira variables
+                { key: 'issueKey', value: 'SKTES-1' },
+                { key: 'server-url', value: 'https://skjiratest.atlassian.net/rest/api/latest/' },
+            ],
+        };
+        return await sk.invokeAsync(
+            getIssueRequestsAsk,
+            'JiraSkill',
+            'GetIssue',
+            await AuthHelper.getSKaaSAccessToken(instance),
+            [
+                {
+                    headerTag: plugins.Jira.headerTag,
+                    authData: plugins.Jira.authData!,
+                },
+            ],
+        );
+    };
+
     /*
      * Once enabled, each plugin will have a custom dedicated header in every SK request
      * containing respective auth information (i.e., token, encoded client info, etc.)
@@ -109,6 +140,7 @@ export const useConnectors = () => {
         invokeSkillWithMsalToken,
         invokeSkillWithGraphToken,
         invokeSkillWithGitHubToken,
+        invokeSkillWithJiraToken,
         getEnabledPlugins,
     };
 };

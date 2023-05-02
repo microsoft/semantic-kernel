@@ -151,5 +151,15 @@ public class SemanticKernelController : ControllerBase
                 filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
+
+        if (openApiSkillsAuthHeaders.JiraAuthentication != null)
+        {
+            this._logger.LogInformation("Registering Jira Skill");
+            var authenticationProvider = new BasicAuthenticationProvider(() => { return Task.FromResult(openApiSkillsAuthHeaders.JiraAuthentication); });
+            await planner.Kernel.ImportOpenApiSkillFromFileAsync(
+                skillName: "JiraSkill",
+                filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/JiraSkill/openapi.json"),
+                authCallback: authenticationProvider.AuthenticateRequestAsync);
+        }
     }
 }
