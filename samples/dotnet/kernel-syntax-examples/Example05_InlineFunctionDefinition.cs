@@ -21,10 +21,10 @@ public static class Example05_InlineFunctionDefinition
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         // OpenAI settings
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
 
         // Function defined using few-shot design pattern
-        const string FUNCTION_DEFINITION = @"
+        const string FunctionDefinition = @"
 Generate a creative reason or excuse for the given event.
 Be creative and be funny. Let your imagination run wild.
 
@@ -37,7 +37,7 @@ Excuse: I've been too busy training my pet dragon.
 Event: {{$input}}
 ";
 
-        var excuseFunction = kernel.CreateSemanticFunction(FUNCTION_DEFINITION, maxTokens: 100, temperature: 0.4, topP: 1);
+        var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 100, temperature: 0.4, topP: 1);
 
         var result = await excuseFunction.InvokeAsync("I missed the F1 final race");
         Console.WriteLine(result);

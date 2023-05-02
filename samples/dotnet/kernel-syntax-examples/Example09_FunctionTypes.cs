@@ -20,7 +20,7 @@ public static class Example09_FunctionTypes
         var fakeContext = new SKContext(new ContextVariables(), NullMemory.Instance, null, ConsoleLogger.Log);
 
         var kernel = Kernel.Builder.WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
         var test = kernel.ImportSkill(new LocalExampleSkill(), "test");
