@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
@@ -36,6 +38,7 @@ public sealed class ActionPlanner
     // Context used to access the list of functions in the kernel
     private readonly SKContext _context;
     private readonly IKernel _kernel;
+    private readonly ILogger _logger;
 
     // TODO: allow to inject skill store
     /// <summary>
@@ -43,11 +46,15 @@ public sealed class ActionPlanner
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="prompt">Optional prompt override</param>
+    /// <param name="logger">Optional logger</param>
     public ActionPlanner(
         IKernel kernel,
-        string? prompt = null)
+        string? prompt = null,
+        ILogger? logger = null)
     {
         Verify.NotNull(kernel);
+
+        this._logger = logger ?? new NullLogger<ActionPlanner>();
 
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 
@@ -237,7 +244,8 @@ Goal: tell me a joke.
                 }
                 else
                 {
-                    list.AppendLine($"// This is a description of {func.SkillName}.{func.Name}.");
+                    this._logger.LogWarning("{0}.{1} is missing a description.", func.SkillName, func.Name);
+                    list.AppendLine($"// Function {func.SkillName}.{func.Name}.");
                 }
 
                 // Function name
