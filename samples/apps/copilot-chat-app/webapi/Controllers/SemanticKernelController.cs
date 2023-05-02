@@ -146,14 +146,11 @@ public class SemanticKernelController : ControllerBase
         if (openApiSkillsAuthHeaders.GithubAuthentication != null)
         {
             this._logger.LogInformation("Registering GitHub Skill");
-            BearerAuthenticationProvider authenticationProvider = new BearerAuthenticationProvider(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
+            BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "GitHubSkill",
                 filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
-
-        // Useful for concatenating multiple results.
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "text");
     }
 }

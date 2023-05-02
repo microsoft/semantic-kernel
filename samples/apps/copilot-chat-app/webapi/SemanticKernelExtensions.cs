@@ -87,8 +87,10 @@ internal static class SemanticKernelExtensions
         services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
         services.AddScoped<ISkillCollection, SkillCollection>();
         services.AddScoped<KernelConfig>(serviceProvider => new KernelConfig()
-            .AddCompletionBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>())
-            .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()));
+            .AddCompletionBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()
+                .Get(AIServiceOptions.CompletionPropertyName))
+            .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()
+                .Get(AIServiceOptions.EmbeddingPropertyName)));
         services.AddScoped<IKernel, Kernel>();
 
         return services;
@@ -97,12 +99,6 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Add the completion backend to the kernel config
     /// </summary>
-    internal static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
-    {
-        AIServiceOptions config = aiServiceOptions.Get(AIServiceOptions.CompletionPropertyName);
-        return kernelConfig.AddCompletionBackend(config);
-    }
-    
     internal static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
     {
         switch (aiServiceOptions.AIService)
@@ -130,29 +126,27 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Add the embedding backend to the kernel config
     /// </summary>
-    internal static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
+    internal static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
     {
-        AIServiceOptions config = aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName);
-
-        switch (config.AIService)
+        switch (aiServiceOptions.AIService)
         {
             case AIServiceOptions.AIServiceType.AzureOpenAI:
                 kernelConfig.AddAzureTextEmbeddingGenerationService(
-                    deploymentName: config.DeploymentOrModelId,
-                    endpoint: config.Endpoint,
-                    apiKey: config.Key,
-                    serviceId: config.Label);
+                    deploymentName: aiServiceOptions.DeploymentOrModelId,
+                    endpoint: aiServiceOptions.Endpoint,
+                    apiKey: aiServiceOptions.Key,
+                    serviceId: aiServiceOptions.Label);
                 break;
 
             case AIServiceOptions.AIServiceType.OpenAI:
                 kernelConfig.AddOpenAITextEmbeddingGenerationService(
-                    modelId: config.DeploymentOrModelId,
-                    apiKey: config.Key,
-                    serviceId: config.Label);
+                    modelId: aiServiceOptions.DeploymentOrModelId,
+                    apiKey: aiServiceOptions.Key,
+                    serviceId: aiServiceOptions.Label);
                 break;
 
             default:
-                throw new ArgumentException($"Invalid {nameof(config.AIService)} value in '{AIServiceOptions.EmbeddingPropertyName}' settings.");
+                throw new ArgumentException($"Invalid {nameof(aiServiceOptions.AIService)} value in '{AIServiceOptions.EmbeddingPropertyName}' settings.");
         }
 
         return kernelConfig;
