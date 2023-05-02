@@ -43,7 +43,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         if (httpClient != null)
         {
             options.Transport = new HttpClientTransport(httpClient);
-        };
+        }
 
         this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
