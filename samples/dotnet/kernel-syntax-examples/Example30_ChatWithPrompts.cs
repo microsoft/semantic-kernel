@@ -58,9 +58,9 @@ public static class Example30_ChatWithPrompts
          * - 28-user-prompt.txt:   the user prompt, just for demo purpose showing that one can leverage the same approach also to augment user messages.
          */
 
-        var systemPromptTemplate = EmbeddedResource.Read("28-system-prompt.txt");
-        var selectedText = EmbeddedResource.Read("28-user-context.txt");
-        var userPromptTemplate = EmbeddedResource.Read("28-user-prompt.txt");
+        var systemPromptTemplate = EmbeddedResource.Read("30-system-prompt.txt");
+        var selectedText = EmbeddedResource.Read("30-user-context.txt");
+        var userPromptTemplate = EmbeddedResource.Read("30-user-prompt.txt");
 
         // Usual kernel initialization, with GPT 3.5 Turbo
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();

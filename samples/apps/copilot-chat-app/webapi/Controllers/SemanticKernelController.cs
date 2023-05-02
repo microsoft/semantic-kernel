@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
-using SemanticKernel.Service.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Controllers;
