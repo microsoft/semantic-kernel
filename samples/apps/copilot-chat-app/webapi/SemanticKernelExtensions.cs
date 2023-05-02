@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
@@ -66,7 +65,7 @@ internal static class SemanticKernelExtensions
             => new SemanticTextMemory(
                 serviceProvider.GetRequiredService<IMemoryStore>(),
                 serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
-                    .ToTextEmbeddingsService(serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>())));
+                    .ToTextEmbeddingsService(logger: serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>())));
 
         // Add the planner.
         services.AddScoped<CopilotChatPlanner>(sp =>
@@ -157,9 +156,12 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Construct IEmbeddingGeneration from <see cref="AIServiceOptions"/>
     /// </summary>
+    /// <param name="serviceConfig">The service configuration</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     internal static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
-        ILogger? logger = null,
-        IDelegatingHandlerFactory? handlerFactory = null)
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         return serviceConfig.AIService switch
         {
@@ -167,11 +169,14 @@ internal static class SemanticKernelExtensions
                 serviceConfig.DeploymentOrModelId,
                 serviceConfig.Endpoint,
                 serviceConfig.Key,
-                handlerFactory: handlerFactory,
-                log: logger),
+                httpClient: httpClient,
+                logger: logger),
 
             AIServiceOptions.AIServiceType.OpenAI => new OpenAITextEmbeddingGeneration(
-                serviceConfig.DeploymentOrModelId, serviceConfig.Key, handlerFactory: handlerFactory, log: logger),
+                serviceConfig.DeploymentOrModelId,
+                serviceConfig.Key,
+                httpClient: httpClient,
+                logger: logger),
 
             _ => throw new ArgumentException("Invalid AIService value in embeddings backend settings"),
         };
