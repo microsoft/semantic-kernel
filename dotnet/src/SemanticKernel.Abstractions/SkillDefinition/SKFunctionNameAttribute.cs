@@ -22,7 +22,7 @@ public sealed class SKFunctionNameAttribute : Attribute
     /// <param name="name">Function name</param>
     public SKFunctionNameAttribute(string name)
     {
-        Verify.ValidFunctionName(name);
+        FunctionValidation.ValidFunctionName(name);
         this.Name = name;
     }
 }

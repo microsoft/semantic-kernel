@@ -149,7 +149,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
             try
             {
-                Verify.ValidFunctionName(operationItem.OperationId);
+                FunctionValidation.ValidFunctionName(operationItem.OperationId);
             }
             catch (KernelException)
             {

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -12,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 /// <summary>
 /// The REST API operation.
 /// </summary>
-internal sealed class RestApiOperation
+public sealed class RestApiOperation
 {
     /// <summary>
     /// An artificial parameter that is added to be able to override RESP API operation server url.
@@ -81,7 +82,7 @@ internal sealed class RestApiOperation
     /// <param name="parameters">The operation parameters.</param>
     /// <param name="headers">The operation headers.</param>
     /// <param name="payload">The operation payload.</param>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "Having this property as a string can be useful for scenarios when AI creates an instance of the operation.")]
+    [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "Having this property as a string can be useful for scenarios when AI creates an instance of the operation.")]
     public RestApiOperation(
         string id,
         string serverUrl,

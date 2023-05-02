@@ -291,9 +291,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
     )
     {
         Verify.NotNull(delegateFunction);
-        Verify.ValidSkillName(skillName);
-        Verify.ValidFunctionName(functionName);
-        Verify.ParametersUniqueness(parameters);
+        FunctionValidation.ValidSkillName(skillName);
+        FunctionValidation.ValidFunctionName(functionName);
+        FunctionValidation.ParametersUniqueness(parameters);
 
         this._log = log ?? NullLogger.Instance;
 
@@ -566,7 +566,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         // Check for param names conflict
         // Note: the name "input" is reserved for the main parameter
-        Verify.ParametersUniqueness(result.Parameters);
+        FunctionValidation.ParametersUniqueness(result.Parameters);
 
         result.Description = skFunctionAttribute.Description ?? "";
 

@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 internal sealed class FunctionIdBlock : Block, ITextRendering
 {
-    internal override BlockTypes Type => BlockTypes.FunctionId;
+    public override BlockTypes Type => BlockTypes.FunctionId;
 
     internal string SkillName { get; } = string.Empty;
 

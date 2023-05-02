@@ -46,7 +46,7 @@ public static class KernelOpenApiExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.ValidSkillName(skillName);
+        FunctionValidation.ValidSkillName(skillName);
 
         HttpResponseMessage? response = null;
         try
@@ -98,7 +98,7 @@ public static class KernelOpenApiExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.ValidSkillName(skillName);
+        FunctionValidation.ValidSkillName(skillName);
 
         var type = typeof(SkillResourceNames);
 
@@ -131,7 +131,7 @@ public static class KernelOpenApiExtensions
     {
         const string OpenApiFile = "openapi.json";
 
-        Verify.ValidSkillName(skillDirectoryName);
+        FunctionValidation.ValidSkillName(skillDirectoryName);
 
         var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
         Verify.DirectoryExists(skillDir);
@@ -200,7 +200,7 @@ public static class KernelOpenApiExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(skillName);
+        FunctionValidation.ValidSkillName(skillName);
 
         // Parse
         var parser = new OpenApiDocumentParser();

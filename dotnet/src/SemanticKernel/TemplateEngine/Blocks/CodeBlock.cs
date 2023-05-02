@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 // ReSharper disable TemplateIsNotCompileTimeConstantProblem
 internal sealed class CodeBlock : Block, ICodeRendering
 {
-    internal override BlockTypes Type => BlockTypes.Code;
+    public override BlockTypes Type => BlockTypes.Code;
 
     public CodeBlock(string? content, ILogger log)
         : this(new CodeTokenizer(log).Tokenize(content), content?.Trim(), log)

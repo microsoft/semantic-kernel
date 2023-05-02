@@ -68,7 +68,7 @@ public static class ImportSemanticSkillFromDirectoryExtension
 
         foreach (string skillDirectoryName in skillDirectoryNames)
         {
-            Verify.ValidSkillName(skillDirectoryName);
+            FunctionValidation.ValidSkillName(skillDirectoryName);
             var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
             Verify.DirectoryExists(skillDir);
 

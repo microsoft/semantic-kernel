@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Common;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
@@ -86,8 +87,8 @@ public sealed class Kernel : IKernel, IDisposable
     public ISKFunction RegisterSemanticFunction(string skillName, string functionName, SemanticFunctionConfig functionConfig)
     {
         // Future-proofing the name not to contain special chars
-        Verify.ValidSkillName(skillName);
-        Verify.ValidFunctionName(functionName);
+        FunctionValidation.ValidSkillName(skillName);
+        FunctionValidation.ValidFunctionName(functionName);
 
         ISKFunction function = this.CreateSemanticFunction(skillName, functionName, functionConfig);
         this._skillCollection.AddSemanticFunction(function);
@@ -122,7 +123,7 @@ public sealed class Kernel : IKernel, IDisposable
     public ISKFunction RegisterCustomFunction(string skillName, ISKFunction customFunction)
     {
         // Future-proofing the name not to contain special chars
-        Verify.ValidSkillName(skillName);
+        FunctionValidation.ValidSkillName(skillName);
         Verify.NotNull(customFunction);
 
         customFunction.SetDefaultSkillCollection(this.Skills);
@@ -233,7 +234,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (typeof(T) == typeof(ITextCompletion))
         {
-            if (name == null) { name = this.Config.DefaultServiceId; }
+            if (name == null) { name = KernelConfigConstants.DefaultServiceId; }
 
             if (!this.Config.TextCompletionServices.TryGetValue(name, out Func<IKernel, ITextCompletion> factory))
             {
@@ -246,7 +247,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (typeof(T) == typeof(IEmbeddingGeneration<string, float>))
         {
-            if (name == null) { name = this.Config.DefaultServiceId; }
+            if (name == null) { name = KernelConfigConstants.DefaultServiceId; }
 
             if (!this.Config.TextEmbeddingGenerationServices.TryGetValue(name, out Func<IKernel, IEmbeddingGeneration<string, float>> factory))
             {
@@ -259,7 +260,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (typeof(T) == typeof(IChatCompletion))
         {
-            if (name == null) { name = this.Config.DefaultServiceId; }
+            if (name == null) { name = KernelConfigConstants.DefaultServiceId; }
 
             if (!this.Config.ChatCompletionServices.TryGetValue(name, out Func<IKernel, IChatCompletion> factory))
             {
@@ -272,7 +273,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (typeof(T) == typeof(IImageGeneration))
         {
-            if (name == null) { name = this.Config.DefaultServiceId; }
+            if (name == null) { name = KernelConfigConstants.DefaultServiceId; }
 
             if (!this.Config.ImageGenerationServices.TryGetValue(name, out Func<IKernel, IImageGeneration> factory))
             {

@@ -82,7 +82,7 @@ public sealed class SKContext
     /// <summary>
     /// Read only skills collection
     /// </summary>
-    public IReadOnlySkillCollection? Skills { get; internal set; }
+    public IReadOnlySkillCollection? Skills { get; set; }
 
     /// <summary>
     /// Access registered functions by skill + name. Not case sensitive.

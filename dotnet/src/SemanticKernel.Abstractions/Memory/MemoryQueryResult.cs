@@ -46,7 +46,7 @@ public class MemoryQueryResult
         this.Embedding = embedding;
     }
 
-    internal static MemoryQueryResult FromMemoryRecord(
+    public static MemoryQueryResult FromMemoryRecord(
         MemoryRecord rec,
         double relevance)
     {

@@ -25,7 +25,7 @@ public sealed class ParameterView
         }
         set
         {
-            Verify.ValidFunctionParamName(value);
+            FunctionValidation.ValidFunctionParamName(value);
             this._name = value;
         }
     }
@@ -58,7 +58,7 @@ public sealed class ParameterView
         string description,
         string defaultValue)
     {
-        Verify.ValidFunctionParamName(name);
+        FunctionValidation.ValidFunctionParamName(name);
 
         this.Name = name;
         this.Description = description;

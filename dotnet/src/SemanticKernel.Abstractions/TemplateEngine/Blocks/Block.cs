@@ -10,14 +10,14 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 /// </summary>
 public abstract class Block
 {
-    internal virtual BlockTypes Type => BlockTypes.Undefined;
+    public virtual BlockTypes Type => BlockTypes.Undefined;
 
     // internal virtual bool? SynchronousRendering => null;
 
     /// <summary>
     /// The block content
     /// </summary>
-    internal string Content { get; }
+    public string Content { get; }
 
     /// <summary>
     /// App logger

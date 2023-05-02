@@ -4,9 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Text;
 
-internal static class StringExtensions
+public static class StringExtensions
 {
-    internal static string NormalizeLineEndings(this string src)
+    public static string NormalizeLineEndings(this string src)
     {
         return src.Replace("\r\n", "\n");
     }
