@@ -6,7 +6,8 @@ async def summarize_function_test(kernel: sk.Kernel):
     sk_prompt = """
     {{$input}}
     {{$input2}}
-
+    
+    (hyphenated words count as 1 word)
     Give me the TLDR in exactly 5 words:
     """
 
