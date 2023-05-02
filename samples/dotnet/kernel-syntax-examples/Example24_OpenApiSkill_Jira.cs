@@ -15,7 +15,7 @@ using RepoUtils;
 /// This format of registering the skill and its operations, and subsequently executing those operations can be applied
 /// to an Open Api plugin that follows the Open Api Schema.
 /// </summary>
-public static class Example23_OpenApiSkill_Jira
+public static class Example24_OpenApiSkill_Jira
 {
     public static async Task RunAsync()
     {

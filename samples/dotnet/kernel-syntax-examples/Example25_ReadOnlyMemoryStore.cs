@@ -18,7 +18,7 @@ using Microsoft.SemanticKernel.Memory.Collections;
 ///     of <see cref="IMemoryStore"/> has a single collection, and thus does not need to be named.
 ///     It also assumes that the JSON formatted data can be deserialized into <see cref="MemoryRecord"/> objects.
 /// </summary>
-public static class Example24_ReadOnlyMemoryStore
+public static class Example25_ReadOnlyMemoryStore
 {
     public static async Task RunAsync()
     {

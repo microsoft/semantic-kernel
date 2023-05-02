@@ -300,6 +300,13 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             .Build();
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            this._log.LogWarning("No vectors were found.");
+            yield break;
+        }
+
         response.EnsureSuccessStatusCode();
 
         var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);

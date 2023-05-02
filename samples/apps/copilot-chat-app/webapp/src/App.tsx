@@ -7,11 +7,12 @@ import {
     useIsAuthenticated,
     useMsal,
 } from '@azure/msal-react';
-import { Avatar, Spinner, Subtitle1, makeStyles } from '@fluentui/react-components';
+import { Avatar, Spinner, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
+import { PluginGallery } from './components/open-api-plugins/PluginGallery';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
 import { Login } from './components/views/Login';
@@ -46,6 +47,10 @@ const useClasses = makeStyles({
     persona: {
         marginRight: '20px',
     },
+    cornerItems: {
+        display: 'flex',
+        ...shorthands.gap(tokens.spacingHorizontalXS),
+    },
 });
 
 enum AppState {
@@ -55,8 +60,9 @@ enum AppState {
 }
 
 const App: FC = () => {
-    const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const classes = useClasses();
+
+    const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const { alerts } = useAppSelector((state: RootState) => state.app);
     const dispatch = useAppDispatch();
 
@@ -68,6 +74,8 @@ const App: FC = () => {
 
     useEffect(() => {
         if (isAuthenticated && account && appState === AppState.LoadingChats) {
+            instance.setActiveAccount(account);
+
             // Load all chats from memory
             async function loadChats() {
                 if (await chat.loadChats()) {
@@ -99,13 +107,16 @@ const App: FC = () => {
                 <div className={classes.container}>
                     <div className={classes.header}>
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
-                        <Avatar
-                            className={classes.persona}
-                            key={account?.name}
-                            name={account?.name}
-                            size={28}
-                            badge={{ status: 'available' }}
-                        />
+                        <div className={classes.cornerItems}>
+                            <PluginGallery />
+                            <Avatar
+                                className={classes.persona}
+                                key={account?.name}
+                                name={account?.name}
+                                size={28}
+                                badge={{ status: 'available' }}
+                            />
+                        </div>
                     </div>
                     <div className={classes.content}>
                         {alerts &&

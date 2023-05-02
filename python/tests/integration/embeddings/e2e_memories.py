@@ -20,28 +20,36 @@ async def simple_memory_test(kernel: sk.Kernel):
     )
 
     # Search for documents
+    query = "What are mammals?"
     result = await kernel.memory.search_async(
-        "test", "What are mammals?", limit=2, min_relevance_score=0.0
+        "test", query, limit=2, min_relevance_score=0.0
     )
-    print(f"#1 Answer: {result[0].text}\n")
-    print(f"#2 Answer: {result[1].text}\n")
+    print(f"Query: {query}")
+    print(f"\tAnswer 1: {result[0].text}")
+    print(f"\tAnswer 2: {result[1].text}\n")
     assert "mammals." in result[0].text
     assert "mammals." in result[1].text
 
+    query = "What are fish?"
     result = await kernel.memory.search_async(
-        "test", "What are fish?", limit=1, min_relevance_score=0.0
+        "test", query, limit=1, min_relevance_score=0.0
     )
-    print(f"#1 Answer: {result[0].text}\n")
+    print(f"Query: {query}")
+    print(f"\tAnswer: {result[0].text}\n")
     assert result[0].text == "Sharks are fish."
 
+    query = "What are insects?"
     result = await kernel.memory.search_async(
-        "test", "What are insects?", limit=1, min_relevance_score=0.0
+        "test", query, limit=1, min_relevance_score=0.0
     )
-    print(f"#1 Answer: {result[0].text}\n")
+    print(f"Query: {query}")
+    print(f"\tAnswer: {result[0].text}\n")
     assert result[0].text == "Flies are insects."
 
+    query = "What are birds?"
     result = await kernel.memory.search_async(
-        "test", "What are birds?", limit=1, min_relevance_score=0.0
+        "test", query, limit=1, min_relevance_score=0.0
     )
-    print(f"#1 Answer: {result[0].text}\n")
+    print(f"Query: {query}")
+    print(f"\tAnswer: {result[0].text}\n")
     assert result[0].text == "Penguins are birds."
