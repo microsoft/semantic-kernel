@@ -5,7 +5,7 @@ import json
 
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.plan import Plan
+from semantic_kernel.planning.plan import Plan
 
 PROMPT = """
 You are a planner for the Semantic Kernel.
@@ -104,6 +104,45 @@ class BasicPlanner:
     Basic JSON-based planner for the Semantic Kernel.
     """
 
+    async def _create_available_functions_string(self, kernel: Kernel) -> str:
+        """
+        Given an instance of the Kernel, create the [AVAILABLE FUNCTIONS]
+        string for the prompt.
+        """
+        # Get a dictionary of skill names to all native and semantic functions
+        native_functions = kernel.skills.get_functions_view()._native_functions
+        semantic_functions = kernel.skills.get_functions_view()._semantic_functions
+        native_functions.update(semantic_functions)
+
+        # Create a mapping between all function names and their descriptions
+        # and also a mapping between function names and their parameters
+        all_functions = native_functions
+        skill_names = list(all_functions.keys())
+        all_functions_descriptions_dict = {}
+        all_functions_params_dict = {}
+        
+        for skill_name in skill_names:
+            for func in all_functions[skill_name]:
+                all_functions_descriptions_dict[skill_name + "." + func.name] = func.description
+                all_functions_params_dict[skill_name + "." + func.name] = func.parameters
+        
+        # Create the [AVAILABLE FUNCTIONS] section of the prompt
+        available_functions_string = ""
+        for name in list(all_functions_descriptions_dict.keys()):
+            available_functions_string += name + "\n"
+            description = all_functions_descriptions_dict[name]
+            available_functions_string += "description: " + description + "\n"
+            available_functions_string += "args:\n"
+
+            # Add the parameters for each function
+            parameters = all_functions_params_dict[name]
+            for param in parameters:
+                available_functions_string += "- " + param.name + ": " + param.description + "\n"
+            available_functions_string += "\n"
+    
+        return available_functions_string
+
+
     async def create_plan_async(
         self,
         goal: str,
@@ -120,30 +159,7 @@ class BasicPlanner:
             prompt, max_tokens=1000, temperature=0.8
         )
 
-        # Get a dictionary of skill names to all native and semantic functions
-        native_functions = kernel.skills.get_functions_view()._native_functions
-        semantic_functions = kernel.skills.get_functions_view()._semantic_functions
-        native_functions.update(semantic_functions)
-
-        # Create a flattened list of all functions
-        all_functions = native_functions
-        skill_names = list(all_functions.keys())
-        all_functions_dict = {}
-        for skill_name in skill_names:
-            for f in all_functions[skill_name]:
-                function_name = f.name
-                all_functions_dict[skill_name + "." + function_name] = f.description
-
-        # Create the [AVAILABLE FUNCTIONS] section of the prompt
-        available_functions_string = ""
-        for name in list(all_functions_dict.keys()):
-            available_functions_string += name + "\n"
-            available_functions_string += (
-                "description: " + all_functions_dict[name] + "\n"
-            )
-            available_functions_string += "args:\n"
-            # TODO: FIGURE OUT HOW TO GET ARGS FROM FUNCTIONS
-            available_functions_string += "\n"
+        available_functions_string = self._create_available_functions_string(kernel)
 
         # Create the context for the planner
         context = ContextVariables()
