@@ -15,6 +15,7 @@ using RepoUtils;
 /// This format of registering the skill and its operations, and subsequently executing those operations can be applied
 /// to an Open Api plugin that follows the Open Api Schema.
 /// </summary>
+// ReSharper disable once InconsistentNaming
 public static class Example24_OpenApiSkill_Jira
 {
     public static async Task RunAsync()
@@ -48,7 +49,7 @@ public static class Example24_OpenApiSkill_Jira
 
         // GetIssue Skill
         {
-            // Set Properties for the Get Issue operation in the openAPI.swagger.json 
+            // Set Properties for the Get Issue operation in the openAPI.swagger.json
             contextVariables.Set("issueKey", "SKTES-2");
 
             // Run operation via the semantic kernel
@@ -61,7 +62,7 @@ public static class Example24_OpenApiSkill_Jira
 
         // AddComment Skill
         {
-            // Set Properties for the AddComment operation in the openAPI.swagger.json 
+            // Set Properties for the AddComment operation in the openAPI.swagger.json
             contextVariables.Set("issueKey", "SKTES-1");
             contextVariables.Set("body", "Here is a rad comment");
 

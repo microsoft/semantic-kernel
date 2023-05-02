@@ -35,8 +35,8 @@
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\28-user-prompt.txt" />
-    <EmbeddedResource Include="Resources\28-system-prompt.txt" />
-    <EmbeddedResource Include="Resources\28-user-context.txt" />
+    <EmbeddedResource Include="Resources\30-user-prompt.txt" />
+    <EmbeddedResource Include="Resources\30-system-prompt.txt" />
+    <EmbeddedResource Include="Resources\30-user-context.txt" />
   </ItemGroup>
 </Project>
