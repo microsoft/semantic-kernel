@@ -160,7 +160,7 @@ internal class GrpcOperationRunner
             throw new GrpcOperationException($"No '{GrpcOperation.PayloadArgumentName}' argument representing gRPC request message is found for the '{operation.Name}' gRPC operation.");
         }
 
-        //Deserializing JOSN payload to gRPC request message
+        //Deserializing JSON payload to gRPC request message
         var instance = JsonSerializer.Deserialize(payload, type, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         if (instance == null)
         {
@@ -212,7 +212,7 @@ internal class GrpcOperationRunner
             setterIl.Emit(OpCodes.Stfld, fieldBuilder);
             setterIl.Emit(OpCodes.Ret);
 
-            //Registering the property get and set methods. 
+            //Registering the property get and set methods.
             propertyBuilder.SetGetMethod(getterBuilder);
             propertyBuilder.SetSetMethod(setterBuilder);
 
