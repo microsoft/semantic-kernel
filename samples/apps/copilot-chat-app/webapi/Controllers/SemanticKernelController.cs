@@ -141,7 +141,7 @@ public class SemanticKernelController : ControllerBase
         await planner.Kernel.ImportOpenApiSkillFromFileAsync(
             skillName: "KlarnaShoppingSkill",
             filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/KlarnaSkill/openapi.json"));
-        
+
         // Register authenticated OpenAPI skills with the planner's kernel if the request includes an auth header for an OpenAPI skill.
         if (openApiSkillsAuthHeaders.GithubAuthentication != null)
         {

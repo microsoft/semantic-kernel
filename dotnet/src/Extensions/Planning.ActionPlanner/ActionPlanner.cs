@@ -127,7 +127,7 @@ public sealed class ActionPlanner
         return plan;
     }
 
-    
+
     // TODO: use goal to find relevant functions in a skill store
     /// <summary>
     /// Native function returning a list of all the functions in the current context,
