@@ -98,15 +98,20 @@ public sealed class ActionPlanner
         }
 
         // Build and return plan
-        var plan = new Plan(goal);
+        Plan plan;
         if (planData.Plan.Function.Contains("."))
         {
             var parts = planData.Plan.Function.Split('.');
-            plan.AddSteps(this._context.Skills!.GetFunction(parts[0], parts[1]));
+            plan = new Plan(goal, this._context.Skills!.GetFunction(parts[0], parts[1]));
         }
         else if (!string.IsNullOrWhiteSpace(planData.Plan.Function))
         {
-            plan.AddSteps(this._context.Skills!.GetFunction(planData.Plan.Function));
+            plan = new Plan(goal, this._context.Skills!.GetFunction(planData.Plan.Function));
+        }
+        else
+        {
+            // No function was found - return a plan with no steps.
+            plan = new Plan(goal);
         }
 
         // Create a plan using the function and the parameters suggested by the planner
@@ -118,8 +123,6 @@ public sealed class ActionPlanner
                 plan.State[p.Key] = p.Value.ToString();
             }
         }
-
-        //Console.WriteLine(JsonSerializer.Serialize(planData, new JsonSerializerOptions { WriteIndented = true }));
 
         var context = this._kernel.CreateNewContext();
         context.Variables.Update(variables);
@@ -261,6 +264,9 @@ Goal: tell me a joke.
     /// <summary>
     /// Replace all double quotes and remove all new lines in resultString up to the function property.
     /// </summary>
+    /// <remarks>
+    /// The way the completion prompt is currently implemented, the rationale property value may not be formatted correctly as a JSON string.
+    /// </remarks>
     private static string SanitizePlanResultString(string result)
     {
         var functionStartIndex = result.IndexOf("\n\"function\":", StringComparison.OrdinalIgnoreCase);
