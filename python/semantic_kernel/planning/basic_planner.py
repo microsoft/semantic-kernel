@@ -104,7 +104,7 @@ class BasicPlanner:
     Basic JSON-based planner for the Semantic Kernel.
     """
 
-    async def _create_available_functions_string(self, kernel: Kernel) -> str:
+    def _create_available_functions_string(self, kernel: Kernel) -> str:
         """
         Given an instance of the Kernel, create the [AVAILABLE FUNCTIONS]
         string for the prompt.
