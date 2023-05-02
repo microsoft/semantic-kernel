@@ -230,7 +230,14 @@ Goal: tell me a joke.
             foreach (FunctionView func in skill.Value)
             {
                 // Function description
-                list.AppendLine($"// {AddPeriod(func.Description)}");
+                if (func.Description != null)
+                {
+                    list.AppendLine($"// {AddPeriod(func.Description)}");
+                }
+                else
+                {
+                    list.AppendLine($"// This is a description of {func.SkillName}.{func.Name}.");
+                }
 
                 // Function name
                 list.AppendLine($"{func.SkillName}.{func.Name}");
