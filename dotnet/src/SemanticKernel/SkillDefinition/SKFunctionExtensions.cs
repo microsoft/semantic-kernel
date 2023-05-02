@@ -95,19 +95,21 @@ public static class SKFunctionExtensions
     /// <param name="memory">Semantic memory</param>
     /// <param name="skills">Available skills</param>
     /// <param name="log">App logger</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The temporary context</returns>
     public static async Task<SKContext> InvokeWithCustomInputAsync(this ISKFunction function,
         ContextVariables input,
         ISemanticTextMemory memory,
         IReadOnlySkillCollection? skills,
         ILogger log,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var tmpContext = new SKContext(input, memory, skills, log, cancellationToken);
         try
         {
+#pragma warning disable CA2016 // the token is passed in via the context
             await function.InvokeAsync(tmpContext).ConfigureAwait(false);
+#pragma warning restore CA2016
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {

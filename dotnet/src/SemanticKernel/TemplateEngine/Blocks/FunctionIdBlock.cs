@@ -38,7 +38,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
 
     public override bool IsValid(out string errorMsg)
     {
-        if (!Regex.IsMatch(this.Content, "^[a-zA-Z0-9_.]*$"))
+        if (!s_validContentRegex.IsMatch(this.Content))
         {
             errorMsg = "The function identifier is empty";
             return false;
@@ -66,4 +66,6 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
         int count = 0;
         return value.Any(t => t == '.' && ++count > 1);
     }
+
+    private static readonly Regex s_validContentRegex = new("^[a-zA-Z0-9_.]*$");
 }

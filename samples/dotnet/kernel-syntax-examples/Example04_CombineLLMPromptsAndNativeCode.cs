@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Skills.Web.Bing;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example05_CombineLLMPromptsAndNativeCode
+public static class Example04_CombineLLMPromptsAndNativeCode
 {
     public static async Task RunAsync()
     {
@@ -17,8 +17,8 @@ public static class Example05_CombineLLMPromptsAndNativeCode
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         // OpenAI settings
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-002", "text-davinci-002", Env.Var("OPENAI_API_KEY"));
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-002");
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-003");
         kernel.Config.SetDefaultTextCompletionService("text-davinci-003");
 
         // Load native skill
@@ -38,18 +38,18 @@ public static class Example05_CombineLLMPromptsAndNativeCode
 
         var result1 = await kernel.RunAsync(
             ask,
-            search["SearchAsync"]
+            search["Search"]
         );
 
         var result2 = await kernel.RunAsync(
             ask,
-            search["SearchAsync"],
+            search["Search"],
             sumSkill["Summarize"]
         );
 
         var result3 = await kernel.RunAsync(
             ask,
-            search["SearchAsync"],
+            search["Search"],
             sumSkill["Notegen"]
         );
 
