@@ -50,4 +50,4 @@ jobs:
         cd python && poetry install
     - name: Test with pytest
       run: |
-        cd python && poetry run pytest
+        cd python && poetry run pytest ./tests/unit
