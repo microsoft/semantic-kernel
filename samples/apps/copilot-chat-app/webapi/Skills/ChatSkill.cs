@@ -209,23 +209,30 @@ public class ChatSkill
 
         // Create a plan and run it.
         Plan plan = await this._planner.CreatePlanAsync(plannerContext.Variables.Input);
-        SKContext planContext = await plan.InvokeAsync(plannerContext);
-
-        // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
-        if (!this.TryExtractJsonFromPlanResult(planContext.Variables.Input, out string planResult))
+        if (plan.Steps.Count > 0)
         {
-            // If not, use result of the plan execution result directly.
-            planResult = planContext.Variables.Input;
+            SKContext planContext = await plan.InvokeAsync(plannerContext);
+
+            // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
+            if (!this.TryExtractJsonFromPlanResult(planContext.Variables.Input, out string planResult))
+            {
+                // If not, use result of the plan execution result directly.
+                planResult = planContext.Variables.Input;
+            }
+
+            string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
+
+            // Adjust the token limit using the number of tokens in the information text.
+            int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
+            tokenLimit -= Utilities.TokenCount(informationText);
+            context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
+
+            return informationText;
         }
-
-        string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
-
-        // Adjust the token limit using the number of tokens in the information text.
-        int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
-        tokenLimit -= Utilities.TokenCount(informationText);
-        context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-
-        return informationText;
+        else
+        {
+            return string.Empty;
+        }
     }
 
     /// <summary>
