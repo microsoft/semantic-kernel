@@ -79,8 +79,10 @@ public class BotController : ControllerBase
                 botSchemaOptions: this._botSchemaOptions))
         {
             return this.BadRequest("Incompatible schema. " +
-                $"The supported bot schema is {this._botSchemaOptions.Name}/{this._botSchemaOptions.Version} for the {this._embeddingOptions.DeploymentOrModelId} model from {this._embeddingOptions.AIService}. " +
-                $"But the uploaded file is with schema {bot.Schema.Name}/{bot.Schema.Version} for the {bot.EmbeddingConfigurations.DeploymentOrModelId} model from {bot.EmbeddingConfigurations.AIService}.");
+                                   $"The supported bot schema is {this._botSchemaOptions.Name}/{this._botSchemaOptions.Version} " +
+                                   $"for the {this._embeddingOptions.DeploymentOrModelId} model from {this._embeddingOptions.AIService}. " +
+                                   $"But the uploaded file is with schema {bot.Schema.Name}/{bot.Schema.Version} " +
+                                   $"for the {bot.EmbeddingConfigurations.DeploymentOrModelId} model from {bot.EmbeddingConfigurations.AIService}.");
         }
 
         string chatTitle = $"{bot.ChatTitle} - Clone";
@@ -178,20 +180,20 @@ public class BotController : ControllerBase
     /// <param name="collectionName">The current collection name. Used to query the memory storage.</param>
     /// <param name="embeddings">The embeddings list where we will append the fetched memory records.</param>
     /// <param name="newCollectionName">The new collection name when appends to the embeddings list.</param>
-    private static async Task GetMemoryRecordsAndAppendtoEmbeddingsAsync(
+    private static async Task GetMemoryRecordsAndAppendToEmbeddingsAsync(
         IKernel kernel,
         string collectionName,
         List<KeyValuePair<string, List<MemoryQueryResult>>> embeddings,
         string newCollectionName = "")
     {
         List<MemoryQueryResult> collectionMemoryRecords = await kernel.Memory.SearchAsync(
-                collectionName,
-                "abc", // dummy query since we don't care about relevance. An empty string will cause exception.
-                limit: 999999999, // temp solution to get as much as record as a workaround.
-                minRelevanceScore: -1, // no relevance required since the collection only has one entry
-                withEmbeddings: true,
-                cancellationToken: default
-            ).ToListAsync();
+            collectionName,
+            "abc", // dummy query since we don't care about relevance. An empty string will cause exception.
+            limit: 999999999, // temp solution to get as much as record as a workaround.
+            minRelevanceScore: -1, // no relevance required since the collection only has one entry
+            withEmbeddings: true,
+            cancellationToken: default
+        ).ToListAsync();
 
         embeddings.Add(new KeyValuePair<string, List<MemoryQueryResult>>(
             string.IsNullOrEmpty(newCollectionName) ? collectionName : newCollectionName,
@@ -238,17 +240,17 @@ public class BotController : ControllerBase
 
         foreach (var collection in chatCollections)
         {
-            await GetMemoryRecordsAndAppendtoEmbeddingsAsync(kernel: kernel, collectionName: collection, embeddings: bot.Embeddings);
+            await GetMemoryRecordsAndAppendToEmbeddingsAsync(kernel: kernel, collectionName: collection, embeddings: bot.Embeddings);
         }
 
         // get the document memory collection names (global scope)
-        await GetMemoryRecordsAndAppendtoEmbeddingsAsync(
+        await GetMemoryRecordsAndAppendToEmbeddingsAsync(
             kernel: kernel,
             collectionName: this._documentMemoryOptions.GlobalDocumentCollectionName,
             embeddings: bot.DocumentEmbeddings);
 
         // get the document memory collection names (user scope)
-        await GetMemoryRecordsAndAppendtoEmbeddingsAsync(
+        await GetMemoryRecordsAndAppendToEmbeddingsAsync(
             kernel: kernel,
             collectionName: this._documentMemoryOptions.UserDocumentCollectionNamePrefix + userId,
             embeddings: bot.DocumentEmbeddings,

@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
 
 #pragma warning disable IDE0130

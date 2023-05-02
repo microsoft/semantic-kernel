@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
-using SemanticKernel.Service.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Controllers;
@@ -137,27 +136,20 @@ public class SemanticKernelController : ControllerBase
     /// </summary>
     private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
     {
-        await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShopping", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
+        // Register the Klarna shopping skill with the planner's kernel.
+        await planner.Kernel.ImportOpenApiSkillFromFileAsync(
+            skillName: "KlarnaShoppingSkill",
+            filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/KlarnaSkill/openapi.json"));
 
-        // Register authenticated OpenAPI skills with the planner's kernel
-        // if the request includes an auth header for an OpenAPI skill.
-        // Else, don't register the skill as it'll fail on auth.
+        // Register authenticated OpenAPI skills with the planner's kernel if the request includes an auth header for an OpenAPI skill.
         if (openApiSkillsAuthHeaders.GithubAuthentication != null)
         {
-            var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication); });
             this._logger.LogInformation("Registering GitHub Skill");
-
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json");
-            var skill = await planner.Kernel.ImportOpenApiSkillFromFileAsync("GitHubSkill", filePath, authenticationProvider.AuthenticateRequestAsync);
-        }
-
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "text");
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TimeSkill(), "time");
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.MathSkill(), "math");
-
-        if (!string.IsNullOrWhiteSpace(options.SemanticSkillsDirectory))
-        {
-            planner.Kernel.RegisterSemanticSkills(options.SemanticSkillsDirectory, this._logger);
+            BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
+            await planner.Kernel.ImportOpenApiSkillFromFileAsync(
+                skillName: "GitHubSkill",
+                filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
+                authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
     }
 }

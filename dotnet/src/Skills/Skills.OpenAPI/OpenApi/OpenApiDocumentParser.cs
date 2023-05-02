@@ -392,7 +392,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <returns>Valid SK Function name.</returns>
     private static string ConvertOperationIdToValidFunctionName(string operationId)
     {
-
         // Tokenize operation id on forward and back slashes
         string[] tokens = operationId.Split('/', '\\');
         string result = "";
