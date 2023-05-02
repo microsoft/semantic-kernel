@@ -133,15 +133,7 @@ public class SemanticKernelController : ControllerBase
     /// </summary>
     private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options)
     {
-        await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShopping", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
-
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "text");
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TimeSkill(), "time");
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.MathSkill(), "math");
-
-        if (!string.IsNullOrWhiteSpace(options.SemanticSkillsDirectory))
-        {
-            planner.Kernel.RegisterSemanticSkills(options.SemanticSkillsDirectory, this._logger);
-        }
+        //await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShopping", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
+        await planner.Kernel.ImportOpenApiSkillFromFileAsync("KlarnaShopping", @"C:\Users\adribona\Desktop\api-docs.json");
     }
 }

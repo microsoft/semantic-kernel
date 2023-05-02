@@ -71,16 +71,17 @@ internal static class SemanticKernelExtensions
         // Add the planner.
         services.AddScoped<CopilotChatPlanner>(sp =>
         {
-            // Create a kernel for the planner with the same contexts as the chat's kernel except with no skills.
+            // Create a kernel for the planner with the same contexts as the chat's kernel except with no skills and its own completion backend.
             // This allows the planner to use only the skills that are available at call time.
             IKernel chatKernel = sp.GetRequiredService<IKernel>();
+            IOptions<PlannerOptions> plannerOptions = sp.GetRequiredService<IOptions<PlannerOptions>>();
             IKernel plannerKernel = new Kernel(
                 new SkillCollection(),
                 chatKernel.PromptTemplateEngine,
                 chatKernel.Memory,
-                chatKernel.Config,
+                new KernelConfig().AddCompletionBackend(plannerOptions.Value.AIService!),
                 sp.GetRequiredService<ILogger<CopilotChatPlanner>>());
-            return new CopilotChatPlanner(plannerKernel, sp.GetRequiredService<IOptions<PlannerOptions>>());
+            return new CopilotChatPlanner(plannerKernel, plannerOptions);
         });
 
         // Add the Semantic Kernel
@@ -100,24 +101,28 @@ internal static class SemanticKernelExtensions
     internal static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
     {
         AIServiceOptions config = aiServiceOptions.Get(AIServiceOptions.CompletionPropertyName);
-
-        switch (config.AIService)
+        return kernelConfig.AddCompletionBackend(config);
+    }
+    
+    internal static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
+    {
+        switch (aiServiceOptions.AIService)
         {
             case AIServiceOptions.AIServiceType.AzureOpenAI:
                 kernelConfig.AddAzureChatCompletionService(
-                    deploymentName: config.DeploymentOrModelId,
-                    endpoint: config.Endpoint,
-                    apiKey: config.Key);
+                    deploymentName: aiServiceOptions.DeploymentOrModelId,
+                    endpoint: aiServiceOptions.Endpoint,
+                    apiKey: aiServiceOptions.Key);
                 break;
 
             case AIServiceOptions.AIServiceType.OpenAI:
                 kernelConfig.AddOpenAIChatCompletionService(
-                    modelId: config.DeploymentOrModelId,
-                    apiKey: config.Key);
+                    modelId: aiServiceOptions.DeploymentOrModelId,
+                    apiKey: aiServiceOptions.Key);
                 break;
 
             default:
-                throw new ArgumentException($"Invalid {nameof(config.AIService)} value in '{AIServiceOptions.CompletionPropertyName}' settings.");
+                throw new ArgumentException($"Invalid {nameof(aiServiceOptions.AIService)} value in '{AIServiceOptions.CompletionPropertyName}' settings.");
         }
 
         return kernelConfig;
