@@ -151,6 +151,8 @@ class PineconeMemoryStore(MemoryStoreBase):
             raise Exception(f"Collection '{collection_name}' does not exist")
         
         collection = pinecone.Index(collection_name)
+        
+        metadata_info = json.dumps(record._metadata)
 
         for record in records:
             upsert_response = collection.upsert(
