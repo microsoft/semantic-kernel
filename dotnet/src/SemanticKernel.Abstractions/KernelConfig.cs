@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Common;
 using Microsoft.SemanticKernel.Reliability;
 
 namespace Microsoft.SemanticKernel;
@@ -17,6 +16,11 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class KernelConfig
 {
+    /// <summary>
+    /// Default name used when binding services if the user doesn't provide a custom value
+    /// </summary>
+    internal const string DefaultServiceId = "__SK_DEFAULT";
+
     /// <summary>
     /// Factory for creating HTTP handlers.
     /// </summary>
@@ -58,19 +62,19 @@ public sealed class KernelConfig
         Func<IKernel, ITextCompletion> serviceFactory,
         string? serviceId = null)
     {
-        if (serviceId != null && serviceId.Equals(KernelConfigConstants.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
+        if (serviceId != null && serviceId.Equals(DefaultServiceId, StringComparison.OrdinalIgnoreCase))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.InvalidServiceConfiguration,
                 $"The service id '{serviceId}' is reserved, please use a different name");
         }
 
-        if (serviceId == null) { serviceId = KernelConfigConstants.DefaultServiceId; }
+        if (serviceId == null) { serviceId = DefaultServiceId; }
 
         this.TextCompletionServices[serviceId] = serviceFactory;
         if (this.TextCompletionServices.Count == 1)
         {
-            this.TextCompletionServices[KernelConfigConstants.DefaultServiceId] = serviceFactory;
+            this.TextCompletionServices[DefaultServiceId] = serviceFactory;
         }
 
         return this;
@@ -87,19 +91,19 @@ public sealed class KernelConfig
         Func<IKernel, IChatCompletion> serviceFactory,
         string? serviceId = null)
     {
-        if (serviceId != null && serviceId.Equals(KernelConfigConstants.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
+        if (serviceId != null && serviceId.Equals(DefaultServiceId, StringComparison.OrdinalIgnoreCase))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.InvalidServiceConfiguration,
                 $"The service id '{serviceId}' is reserved, please use a different name");
         }
 
-        if (serviceId == null) { serviceId = KernelConfigConstants.DefaultServiceId; }
+        if (serviceId == null) { serviceId = DefaultServiceId; }
 
         this.ChatCompletionServices[serviceId] = serviceFactory;
         if (this.ChatCompletionServices.Count == 1)
         {
-            this.ChatCompletionServices[KernelConfigConstants.DefaultServiceId] = serviceFactory;
+            this.ChatCompletionServices[DefaultServiceId] = serviceFactory;
         }
 
         return this;
@@ -116,19 +120,19 @@ public sealed class KernelConfig
         Func<IKernel, IEmbeddingGeneration<string, float>> serviceFactory,
         string? serviceId = null)
     {
-        if (serviceId != null && serviceId.Equals(KernelConfigConstants.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
+        if (serviceId != null && serviceId.Equals(DefaultServiceId, StringComparison.OrdinalIgnoreCase))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.InvalidServiceConfiguration,
                 $"The service id '{serviceId}' is reserved, please use a different name");
         }
 
-        if (serviceId == null) { serviceId = KernelConfigConstants.DefaultServiceId; }
+        if (serviceId == null) { serviceId = DefaultServiceId; }
 
         this.TextEmbeddingGenerationServices[serviceId] = serviceFactory;
         if (this.TextEmbeddingGenerationServices.Count == 1)
         {
-            this.TextEmbeddingGenerationServices[KernelConfigConstants.DefaultServiceId] = serviceFactory;
+            this.TextEmbeddingGenerationServices[DefaultServiceId] = serviceFactory;
         }
 
         return this;
@@ -145,19 +149,19 @@ public sealed class KernelConfig
         Func<IKernel, IImageGeneration> serviceFactory,
         string? serviceId = null)
     {
-        if (serviceId != null && serviceId.Equals(KernelConfigConstants.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
+        if (serviceId != null && serviceId.Equals(DefaultServiceId, StringComparison.OrdinalIgnoreCase))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.InvalidServiceConfiguration,
                 $"The service id '{serviceId}' is reserved, please use a different name");
         }
 
-        if (serviceId == null) { serviceId = KernelConfigConstants.DefaultServiceId; }
+        if (serviceId == null) { serviceId = DefaultServiceId; }
 
         this.ImageGenerationServices[serviceId] = serviceFactory;
         if (this.ImageGenerationServices.Count == 1)
         {
-            this.ImageGenerationServices[KernelConfigConstants.DefaultServiceId] = serviceFactory;
+            this.ImageGenerationServices[DefaultServiceId] = serviceFactory;
         }
 
         return this;
@@ -206,7 +210,7 @@ public sealed class KernelConfig
                 $"A text completion service id '{serviceId}' doesn't exist");
         }
 
-        this.TextCompletionServices[KernelConfigConstants.DefaultServiceId] = this.TextCompletionServices[serviceId];
+        this.TextCompletionServices[DefaultServiceId] = this.TextCompletionServices[serviceId];
         return this;
     }
 
@@ -225,7 +229,7 @@ public sealed class KernelConfig
                 $"A text embedding generation service id '{serviceId}' doesn't exist");
         }
 
-        this.TextEmbeddingGenerationServices[KernelConfigConstants.DefaultServiceId] = this.TextEmbeddingGenerationServices[serviceId];
+        this.TextEmbeddingGenerationServices[DefaultServiceId] = this.TextEmbeddingGenerationServices[serviceId];
         return this;
     }
 

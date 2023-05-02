@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--Setting version overrides to miniumum supported version, to maximize compatability.-->
+    <!--Setting version overrides to minimum supported version, to maximize compatability.-->
     <PackageReference Include="System.Text.Json" VersionOverride="[6.0.0, )" />
   </ItemGroup>
   
