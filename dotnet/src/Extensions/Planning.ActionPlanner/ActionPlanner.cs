@@ -72,13 +72,10 @@ public sealed class ActionPlanner
 
         SKContext result = await this._plannerFunction.InvokeAsync(goal, this._context).ConfigureAwait(false);
 
-        var json = """{"plan":{ "rationale":""" + SanitizePlanResultString(result.ToString());
-
-        // extract and parse JSON
         ActionPlanResponse? planData;
         try
         {
-            planData = JsonSerializer.Deserialize<ActionPlanResponse?>(json, new JsonSerializerOptions
+            planData = JsonSerializer.Deserialize<ActionPlanResponse?>(result.ToString(), new JsonSerializerOptions
             {
                 AllowTrailingCommas = true,
                 DictionaryKeyPolicy = null,
@@ -260,19 +257,4 @@ Goal: tell me a joke.
     {
         return x.EndsWith(".", StringComparison.Ordinal) ? x : $"{x}.";
     }
-
-    /// <summary>
-    /// Replace all double quotes and remove all new lines in resultString up to the function property.
-    /// </summary>
-    /// <remarks>
-    /// The way the completion prompt is currently implemented, the rationale property value may not be formatted correctly as a JSON string.
-    /// </remarks>
-    private static string SanitizePlanResultString(string result)
-    {
-        var functionStartIndex = result.IndexOf("\n\"function\":", StringComparison.OrdinalIgnoreCase);
-        var rationale = result.Substring(0, functionStartIndex).Replace("\"", "'").Replace("\n", "").Trim('"', ',');
-        var sanitizedResultString = $"\"{rationale}\",{result.Substring(functionStartIndex)}";
-        return sanitizedResultString;
-    }
-
 }
