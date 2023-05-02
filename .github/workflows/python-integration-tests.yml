@@ -8,8 +8,12 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main"]
+    paths: 
+      -'python/**'
   pull_request:
     branches: [ "main"] # TODO: remove before pushing to main
+    paths: 
+      -'python/**'
   schedule:
     - cron: '0 */12 * * *' # Run every 12 hours: midnight UTC and noon UTC
 
