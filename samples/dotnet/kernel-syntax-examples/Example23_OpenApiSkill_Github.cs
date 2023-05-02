@@ -17,6 +17,7 @@ using RepoUtils;
 /// Make sure your GitHub PAT has read permissions set for Pull Requests.
 /// Creating a PAT: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 /// </summary>
+// ReSharper disable once InconsistentNaming
 public static class Example23_OpenApiSkill_GitHub
 {
     public static async Task RunAsync()
