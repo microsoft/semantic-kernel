@@ -3,7 +3,7 @@
 import pinecone
 import json
 
-from typing import Optional, List
+from typing import Dict, List, Optional, Tuple
 from copy import deepcopy
 from logging import Logger
 
@@ -165,7 +165,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             if upsert_response.upsertedCount == None:
                 raise Exception(f"Error upserting record: {upsert_response.text}")
             else:
-                return [record._key for record in records]
+                return [record._id for record in records]
 
     async def get_async(
         self, collection_name: str, key: str, with_embedding: bool = False
@@ -192,6 +192,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             # create copy of results without embeddings
             result = deepcopy(result)
             result._embedding = None
+
         return result
 
     async def get_batch_async(
@@ -248,7 +249,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        if collection_name not in self._store:
+        if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
 
         for key in keys:
