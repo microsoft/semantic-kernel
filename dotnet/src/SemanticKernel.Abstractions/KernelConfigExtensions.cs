@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Class for extension methods for <see cref="KernelConfig"/> class.
+/// Class with extension methods for <see cref="KernelConfig"/>.
 /// </summary>
 public static class KernelConfigExtensions
 {
