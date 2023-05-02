@@ -1,6 +1,6 @@
 export const Constants = {
     app: {
-        name: 'SK Chatbot',
+        name: 'Allens Chatbot',
         updateCheckIntervalSeconds: 60 * 5,
     },
     msal: {
@@ -18,7 +18,7 @@ export const Constants = {
     bot: {
         profile: {
             id: 'bot',
-            fullName: 'SK Chatbot',
+            fullName: 'Allens Chatbot',
             emailAddress: '',
             photo: '/assets/bot-icon-1.png',
         },

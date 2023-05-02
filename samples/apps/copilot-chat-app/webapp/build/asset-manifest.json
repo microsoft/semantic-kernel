@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/static/css/main.f23f339d.css",
+    "main.js": "/static/js/main.bd9ac934.js",
+    "static/media/typing-balls-light.svg": "/static/media/typing-balls-light.a859d2fb6345248c0471c6cde7d729fe.svg",
+    "static/media/ms-symbollockup_signin_light.svg": "/static/media/ms-symbollockup_signin_light.e2f600a8cb97ce3efe4d3db463e6af48.svg",
+    "index.html": "/index.html",
+    "main.f23f339d.css.map": "/static/css/main.f23f339d.css.map",
+    "main.bd9ac934.js.map": "/static/js/main.bd9ac934.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f23f339d.css",
+    "static/js/main.bd9ac934.js"
+  ]
+}

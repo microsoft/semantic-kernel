@@ -28,11 +28,7 @@
       "problemMatcher": "$msCompile",
       "group": "build"
     },
-    // If R# commands fails run:
-    // - dotnet new tool-manifest
-    // - dotnet tool install JetBrains.ReSharper.GlobalTools
     {
-      // r# inspect - dotnet jb inspectcode -o="inspectcode.log" --no-build -s=".\SK-dotnet.sln.DotSettings" -f=Text ".\SK-dotnet.sln"
       "label": "R# check",
       "command": "dotnet",
       "type": "process",
@@ -51,7 +47,6 @@
       }
     },
     {
-      // r# cleanup - dotnet jb cleanupcode --no-build -p="Built-in: Reformat Code" -s=SK-dotnet.sln.DotSettings SK-dotnet.sln
       "label": "R# cleanup",
       "command": "dotnet",
       "type": "process",
@@ -103,7 +98,10 @@
       "label": "Test - Semantic-Kernel",
       "command": "dotnet",
       "type": "process",
-      "args": ["test", "SemanticKernel.UnitTests.csproj"],
+      "args": [
+        "test",
+        "SemanticKernel.UnitTests.csproj"
+      ],
       "problemMatcher": "$msCompile",
       "group": "test",
       "presentation": {
@@ -180,7 +178,10 @@
       "label": "Run - Kernel HTTP Server",
       "command": "func",
       "type": "shell",
-      "args": ["start", "--csharp"],
+      "args": [
+        "start",
+        "--csharp"
+      ],
       "group": "test",
       "options": {
         "cwd": "${workspaceFolder}/samples/dotnet/KernelHttpServer"
@@ -195,7 +196,9 @@
       "label": "Run - Starter Chat WebApp React",
       "command": "yarn",
       "type": "shell",
-      "args": ["start"],
+      "args": [
+        "start"
+      ],
       "group": "test",
       "options": {
         "cwd": "${workspaceFolder}/samples/apps/chat-summary-webapp-react"
@@ -210,7 +213,9 @@
       "label": "Run - Book Creator WebApp React",
       "command": "yarn",
       "type": "shell",
-      "args": ["start"],
+      "args": [
+        "start"
+      ],
       "group": "test",
       "options": {
         "cwd": "${workspaceFolder}/samples/apps/book-creator-webapp-react"
@@ -225,7 +230,9 @@
       "label": "Run - Auth API WebApp React",
       "command": "yarn",
       "type": "shell",
-      "args": ["start"],
+      "args": [
+        "start"
+      ],
       "group": "test",
       "options": {
         "cwd": "${workspaceFolder}/samples/apps/auth-api-webapp-react"
@@ -235,6 +242,82 @@
         "panel": "shared",
         "group": "Run-Samples"
       }
+    },
+    {
+      "label": "clean (functions)",
+      "command": "dotnet",
+      "args": [
+        "clean",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/samples\\dotnet\\KernelHttpServer"
+      }
+    },
+    {
+      "label": "build (functions)",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "dependsOn": "clean (functions)",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/samples\\dotnet\\KernelHttpServer"
+      }
+    },
+    {
+      "label": "clean release (functions)",
+      "command": "dotnet",
+      "args": [
+        "clean",
+        "--configuration",
+        "Release",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/samples\\dotnet\\KernelHttpServer"
+      }
+    },
+    {
+      "label": "publish (functions)",
+      "command": "dotnet",
+      "args": [
+        "publish",
+        "--configuration",
+        "Release",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "dependsOn": "clean release (functions)",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/samples\\dotnet\\KernelHttpServer"
+      }
+    },
+    {
+      "type": "func",
+      "dependsOn": "build (functions)",
+      "options": {
+        "cwd": "${workspaceFolder}/samples\\dotnet\\KernelHttpServer/bin/Debug/net6.0"
+      },
+      "command": "host start",
+      "isBackground": true,
+      "problemMatcher": "$func-dotnet-watch"
     }
   ],
   "inputs": [

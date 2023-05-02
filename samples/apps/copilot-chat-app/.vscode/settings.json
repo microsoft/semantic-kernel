@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/c9c1d355-3b20-495d-bb1b-5e5ccd757ffe/resourceGroups/rg-chatbot-web-copilot-dev/providers/Microsoft.Web/sites/chatbot-web-copilot-dev-api",
+    "appService.deploySubpath": "webapi"
+}
