@@ -13,7 +13,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 @pytest.mark.asyncio
 @pytest.mark.xfail(
     raises=AssertionError,
-    reason="Azure OpenAI may throtle requests, preventing this test from passing",
+    reason="Azure OpenAI may throttle requests, preventing this test from passing",
 )
 async def test_azure_chat_completion_with_skills():
     kernel = sk.Kernel()
