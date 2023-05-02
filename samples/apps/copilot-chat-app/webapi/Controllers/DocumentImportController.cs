@@ -181,11 +181,21 @@ public class DocumentImportController : ControllerBase
 
         foreach (var paragraph in paragraphs)
         {
-            await kernel.Memory.SaveInformationAsync(
+            var memories = kernel.Memory.SearchAsync(
                 collection: targetCollectionName,
-                text: paragraph,
-                id: Guid.NewGuid().ToString(),
-                description: $"Document: {documentName}");
+                query: paragraph,
+                limit: 1,
+                minRelevanceScore: this._options.DeduplicationSimilarityThreshold
+            ).ToEnumerable();
+
+            if (!memories.Any())
+            {
+                await kernel.Memory.SaveInformationAsync(
+                    collection: targetCollectionName,
+                    text: paragraph,
+                    id: Guid.NewGuid().ToString(),
+                    description: $"Document: {documentName}");
+            }
         }
 
         this._logger.LogInformation(
