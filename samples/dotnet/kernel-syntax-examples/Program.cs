@@ -47,7 +47,7 @@ public static class Program
         await Example13_ConversationSummarySkill.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example14_Memory.RunAsync();
+        await Example14_SemanticMemory.RunAsync();
         Console.WriteLine("== DONE ==");
 
         await Example15_MemorySkill.RunAsync();
@@ -74,13 +74,13 @@ public static class Program
         await Example22_OpenApiSkill_AzureKeyVault.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example23_OpenApiSkill_Jira.RunAsync();
+        await Example23_OpenApiSkill_GitHub.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example24_ReadOnlyMemoryStore.RunAsync();
+        await Example24_OpenApiSkill_Jira.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        Example25_Tokenizer.Run();
+        await Example25_ReadOnlyMemoryStore.RunAsync();
         Console.WriteLine("== DONE ==");
 
         await Example26_AADAuth.RunAsync();
@@ -92,7 +92,10 @@ public static class Program
         await Example28_ActionPlanner.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example28_ChatWithPrompts.RunAsync();
+        Example29_Tokenizer.Run();
+        Console.WriteLine("== DONE ==");
+
+        await Example30_ChatWithPrompts.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }

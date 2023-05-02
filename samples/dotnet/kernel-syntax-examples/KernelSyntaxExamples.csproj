@@ -26,6 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj" />
@@ -34,8 +35,8 @@
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\28-user-prompt.txt" />
-    <EmbeddedResource Include="Resources\28-system-prompt.txt" />
-    <EmbeddedResource Include="Resources\28-user-context.txt" />
+    <EmbeddedResource Include="Resources\30-user-prompt.txt" />
+    <EmbeddedResource Include="Resources\30-system-prompt.txt" />
+    <EmbeddedResource Include="Resources\30-user-context.txt" />
   </ItemGroup>
 </Project>

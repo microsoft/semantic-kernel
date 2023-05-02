@@ -35,4 +35,10 @@ public class Bot
     /// The embeddings of the bot.
     /// </summary>
     public List<KeyValuePair<string, List<MemoryQueryResult>>> Embeddings { get; set; } = new List<KeyValuePair<string, List<MemoryQueryResult>>>();
+
+    // TODO: Change from MemoryQueryResult to MemoryRecord
+    /// <summary>
+    /// The embeddings of uploaded documents in Copilot Chat. It represents the document memory which is accessible to all chat sessions of a given user.
+    /// </summary>
+    public List<KeyValuePair<string, List<MemoryQueryResult>>> DocumentEmbeddings { get; set; } = new List<KeyValuePair<string, List<MemoryQueryResult>>>();
 }

@@ -34,7 +34,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
         Verify.NotNull(endpoint);
-        Verify.NotEmpty(model, "Model cannot be empty.");
+        Verify.NotNullOrWhiteSpace(model);
 
         this._endpoint = endpoint;
         this._model = model;
@@ -53,7 +53,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model)
     {
         Verify.NotNull(endpoint);
-        Verify.NotEmpty(model, "Model cannot be empty.");
+        Verify.NotNullOrWhiteSpace(model);
 
         this._endpoint = endpoint;
         this._model = model;
