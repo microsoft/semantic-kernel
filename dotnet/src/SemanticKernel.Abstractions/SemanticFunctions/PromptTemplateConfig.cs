@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.SemanticFunctions;

@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\dotnet\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\..\..\..\dotnet\src\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj" />
     <ProjectReference Include="..\..\..\..\dotnet\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\..\..\..\dotnet\src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
     <ProjectReference Include="..\..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />

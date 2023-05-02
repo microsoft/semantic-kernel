@@ -19,6 +19,9 @@ public class BotController : ControllerBase
     private readonly IMemoryStore _memoryStore;
     private readonly ChatSessionRepository _chatRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
+    private readonly BotSchemaOptions _botSchemaOptions;
+    private readonly AIServiceOptions _embeddingOptions;
+    private readonly DocumentMemoryOptions _documentMemoryOptions;
 
     /// <summary>
     /// The constructor of BotController.
@@ -26,17 +29,26 @@ public class BotController : ControllerBase
     /// <param name="memoryStore">The memory store.</param>
     /// <param name="chatRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
+    /// <param name="aiServiceOptions">The AI service options where we need the embedding settings from.</param>
+    /// <param name="botSchemaOptions">The bot schema options.</param>
+    /// <param name="documentMemoryOptions">The document memory options.</param>
     /// <param name="logger">The logger.</param>
     public BotController(
         IMemoryStore memoryStore,
         ChatSessionRepository chatRepository,
         ChatMessageRepository chatMessageRepository,
+        IOptionsSnapshot<AIServiceOptions> aiServiceOptions,
+        IOptions<BotSchemaOptions> botSchemaOptions,
+        IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<BotController> logger)
     {
         this._logger = logger;
         this._memoryStore = memoryStore;
         this._chatRepository = chatRepository;
         this._chatMessageRepository = chatMessageRepository;
+        this._botSchemaOptions = botSchemaOptions.Value;
+        this._embeddingOptions = aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName);
+        this._documentMemoryOptions = documentMemoryOptions.Value;
     }
 
     /// <summary>
@@ -45,8 +57,6 @@ public class BotController : ControllerBase
     /// <param name="kernel">The Semantic Kernel instance.</param>
     /// <param name="userId">The user id.</param>
     /// <param name="bot">The bot object from the message body</param>
-    /// <param name="aiServiceOptions">The AI service options.</param>
-    /// <param name="botSchemaOptions">The bot schema options.</param>
     /// <returns>The HTTP action result.</returns>
     [Authorize]
     [HttpPost]
@@ -56,21 +66,23 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UploadAsync(
         [FromServices] IKernel kernel,
-        [FromServices] IOptionsSnapshot<AIServiceOptions> aiServiceOptions,
-        [FromServices] IOptions<BotSchemaOptions> botSchemaOptions,
         [FromQuery] string userId,
         [FromBody] Bot bot)
     {
         // TODO: We should get userId from server context instead of from request for privacy/security reasons when support multiple users.
         this._logger.LogDebug("Received call to upload a bot");
 
-        if (!this.IsBotCompatible(
+        if (!IsBotCompatible(
                 externalBotSchema: bot.Schema,
                 externalBotEmbeddingConfig: bot.EmbeddingConfigurations,
-                embeddingOptions: aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName),
-                botSchemaOptions: botSchemaOptions.Value))
+                embeddingOptions: this._embeddingOptions,
+                botSchemaOptions: this._botSchemaOptions))
         {
-            return this.BadRequest("Incompatible schema");
+            return this.BadRequest("Incompatible schema. " +
+                                   $"The supported bot schema is {this._botSchemaOptions.Name}/{this._botSchemaOptions.Version} " +
+                                   $"for the {this._embeddingOptions.DeploymentOrModelId} model from {this._embeddingOptions.AIService}. " +
+                                   $"But the uploaded file is with schema {bot.Schema.Name}/{bot.Schema.Version} " +
+                                   $"for the {bot.EmbeddingConfigurations.DeploymentOrModelId} model from {bot.EmbeddingConfigurations.AIService}.");
         }
 
         string chatTitle = $"{bot.ChatTitle} - Clone";
@@ -113,29 +125,25 @@ public class BotController : ControllerBase
     /// </summary>
     /// <param name="kernel">The Semantic Kernel instance.</param>
     /// <param name="chatId">The chat id to be downloaded.</param>
-    /// <param name="aiServiceOptions">The AI service options.</param>
-    /// <param name="botSchemaOptions">The bot schema options.</param>
+    /// <param name="userId">The id of the current user and its home tenant.</param>
     /// <returns>The serialized Bot object of the chat id.</returns>
     [Authorize]
     [HttpGet]
-    [Route("bot/download/{chatId:guid}")]
+    [Route("bot/download/{chatId:guid}/{userId:regex(([[a-z0-9]]+-)+[[a-z0-9]]+\\.([[a-z0-9]]+-)+[[a-z0-9]]+)}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<string>> DownloadAsync(
         [FromServices] IKernel kernel,
-        [FromServices] IOptionsSnapshot<AIServiceOptions> aiServiceOptions,
-        [FromServices] IOptions<BotSchemaOptions> botSchemaOptions,
-        Guid chatId)
+        Guid chatId,
+        string userId)
     {
+        // TODO: get thh userId from the AAD token/claim.
         this._logger.LogDebug("Received call to download a bot");
         var memory = await this.CreateBotAsync(
             kernel: kernel,
-            chatRepository: this._chatRepository,
-            chatMessageRepository: this._chatMessageRepository,
-            botSchemaOptions: botSchemaOptions.Value,
-            embeddingOptions: aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName),
-            chatId: chatId);
+            chatId: chatId,
+            userId: userId);
 
         return JsonSerializer.Serialize(memory);
     }
@@ -150,8 +158,8 @@ public class BotController : ControllerBase
     /// <param name="externalBotEmbeddingConfig">The external bot embedding configuration.</param>
     /// <param name="embeddingOptions">The embedding options.</param>
     /// <param name="botSchemaOptions">The bot schema options.</param>
-    /// <returns></returns>
-    private bool IsBotCompatible(
+    /// <returns>True if the bot file is compatible with the app; otherwise false.</returns>
+    private static bool IsBotCompatible(
         BotSchemaOptions externalBotSchema,
         BotEmbeddingConfig externalBotEmbeddingConfig,
         AIServiceOptions embeddingOptions,
@@ -165,38 +173,61 @@ public class BotController : ControllerBase
     }
 
     /// <summary>
+    /// Get memory from memory store and append the memory records to a given list.
+    /// It will update the memory collection name in the new list if the newCollectionName is provided.
+    /// </summary>
+    /// <param name="kernel">The Semantic Kernel instance.</param>
+    /// <param name="collectionName">The current collection name. Used to query the memory storage.</param>
+    /// <param name="embeddings">The embeddings list where we will append the fetched memory records.</param>
+    /// <param name="newCollectionName">The new collection name when appends to the embeddings list.</param>
+    private static async Task GetMemoryRecordsAndAppendToEmbeddingsAsync(
+        IKernel kernel,
+        string collectionName,
+        List<KeyValuePair<string, List<MemoryQueryResult>>> embeddings,
+        string newCollectionName = "")
+    {
+        List<MemoryQueryResult> collectionMemoryRecords = await kernel.Memory.SearchAsync(
+            collectionName,
+            "abc", // dummy query since we don't care about relevance. An empty string will cause exception.
+            limit: 999999999, // temp solution to get as much as record as a workaround.
+            minRelevanceScore: -1, // no relevance required since the collection only has one entry
+            withEmbeddings: true,
+            cancellationToken: default
+        ).ToListAsync();
+
+        embeddings.Add(new KeyValuePair<string, List<MemoryQueryResult>>(
+            string.IsNullOrEmpty(newCollectionName) ? collectionName : newCollectionName,
+            collectionMemoryRecords));
+    }
+
+    /// <summary>
     /// Prepare the bot information of a given chat.
     /// </summary>
     /// <param name="kernel">The semantic kernel object.</param>
-    /// <param name="chatRepository">The chat session repository object.</param>
-    /// <param name="chatMessageRepository">The chat message repository object.</param>
-    /// <param name="embeddingOptions">The embedding options.</param>
-    /// <param name="botSchemaOptions">The bot schema options.</param>
     /// <param name="chatId">The chat id of the bot</param>
+    /// <param name="userId">The id of the current user and its home tenant.</param>
+    /// <returns>A Bot object that represents the chat session.</returns>
     private async Task<Bot> CreateBotAsync(
         IKernel kernel,
-        ChatSessionRepository chatRepository,
-        ChatMessageRepository chatMessageRepository, // TODO: unused
-        BotSchemaOptions botSchemaOptions,
-        AIServiceOptions embeddingOptions,
-        Guid chatId)
+        Guid chatId,
+        string userId)
     {
         var chatIdString = chatId.ToString();
         var bot = new Bot
         {
             // get the bot schema version
-            Schema = botSchemaOptions,
+            Schema = this._botSchemaOptions,
 
             // get the embedding configuration
             EmbeddingConfigurations = new BotEmbeddingConfig
             {
-                AIService = embeddingOptions.AIService,
-                DeploymentOrModelId = embeddingOptions.DeploymentOrModelId
+                AIService = this._embeddingOptions.AIService,
+                DeploymentOrModelId = this._embeddingOptions.DeploymentOrModelId
             }
         };
 
         // get the chat title
-        ChatSession chat = await chatRepository.FindByIdAsync(chatIdString);
+        ChatSession chat = await this._chatRepository.FindByIdAsync(chatIdString);
         bot.ChatTitle = chat.Title;
 
         // get the chat history
@@ -204,22 +235,28 @@ public class BotController : ControllerBase
 
         // get the memory collections associated with this chat
         // TODO: filtering memory collections by name might be fragile.
-        var allCollections = (await kernel.Memory.GetCollectionsAsync())
+        var chatCollections = (await kernel.Memory.GetCollectionsAsync())
             .Where(collection => collection.StartsWith(chatIdString, StringComparison.OrdinalIgnoreCase));
 
-        foreach (var collection in allCollections)
+        foreach (var collection in chatCollections)
         {
-            List<MemoryQueryResult> collectionMemoryRecords = await kernel.Memory.SearchAsync(
-                collection,
-                "abc", // dummy query since we don't care about relevance. An empty string will cause exception.
-                limit: 999999999, // temp solution to get as much as record as a workaround.
-                minRelevanceScore: -1, // no relevance required since the collection only has one entry
-                withEmbeddings: true,
-                cancellationToken: default
-            ).ToListAsync();
-
-            bot.Embeddings.Add(new KeyValuePair<string, List<MemoryQueryResult>>(collection, collectionMemoryRecords));
+            await GetMemoryRecordsAndAppendToEmbeddingsAsync(kernel: kernel, collectionName: collection, embeddings: bot.Embeddings);
         }
+
+        // get the document memory collection names (global scope)
+        await GetMemoryRecordsAndAppendToEmbeddingsAsync(
+            kernel: kernel,
+            collectionName: this._documentMemoryOptions.GlobalDocumentCollectionName,
+            embeddings: bot.DocumentEmbeddings);
+
+        // get the document memory collection names (user scope)
+        await GetMemoryRecordsAndAppendToEmbeddingsAsync(
+            kernel: kernel,
+            collectionName: this._documentMemoryOptions.UserDocumentCollectionNamePrefix + userId,
+            embeddings: bot.DocumentEmbeddings,
+            // replace userId with chat id.
+            // Note: workaround solution: doc memory will become chat session scope during export, until we make doc memory a chat session scope by default.
+            newCollectionName: this._documentMemoryOptions.UserDocumentCollectionNamePrefix + chatIdString);
 
         return bot;
     }
