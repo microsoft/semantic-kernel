@@ -147,7 +147,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancel"></param>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
     {
-        if (!await this.DoesCollectionExistAsync(collectionName, cancel).ConfigureAwait(false))
+        if (await this.DoesCollectionExistAsync(collectionName, cancel).ConfigureAwait(false))
         {
             await this._pineconeClient.DeleteIndexAsync(collectionName, cancel).ConfigureAwait(false);
         }
