@@ -25,7 +25,7 @@ async def test_oai_text_completion_with_skills():
         # Load credentials from .env file
         api_key, org_id = sk.openai_settings_from_dot_env()
 
-    kernel.config.add_chat_service(
+    kernel.add_chat_service(
         "davinci-003", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
     )
 
