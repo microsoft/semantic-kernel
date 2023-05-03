@@ -37,6 +37,7 @@ public static class KernelOpenApiExtensions
     /// <param name="url">Url to in which to retrieve the OpenAPI definition.</param>
     /// <param name="httpClient">HttpClient to use for the request.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
+    /// <param name="userAgent">Optional user agent header value.</param>
     /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
@@ -46,6 +47,7 @@ public static class KernelOpenApiExtensions
         Uri url,
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
+        string? userAgent = "Microsoft-Semantic-Kernel",
         HttpRetryConfig? retryConfiguration = null,
         CancellationToken cancellationToken = default)
     {
@@ -60,7 +62,7 @@ public static class KernelOpenApiExtensions
             throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
         }
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, cancellationToken).ConfigureAwait(false);
+        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, userAgent, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

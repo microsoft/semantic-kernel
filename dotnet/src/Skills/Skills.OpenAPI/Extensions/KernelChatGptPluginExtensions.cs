@@ -33,6 +33,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="url">Url to in which to retrieve the ChatGPT plugin.</param>
     /// <param name="httpClient">HttpClient to use for the request.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
+    /// <param name="userAgent">Optional user agent header value.</param>
     /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
@@ -42,6 +43,7 @@ public static class KernelChatGptPluginExtensions
         Uri url,
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
+        string? userAgent = "Microsoft-Semantic-Kernel", 
         HttpRetryConfig? retryConfiguration = null,
         CancellationToken cancellationToken = default)
     {
@@ -53,7 +55,7 @@ public static class KernelChatGptPluginExtensions
         string gptPluginJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
-        return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, cancellationToken).ConfigureAwait(false);
+        return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -63,6 +65,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="skillName">Skill name.</param>
     /// <param name="httpClient">HttpClient to use for the request.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
+    /// <param name="userAgent">Optional user agent header value.</param>
     /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
@@ -71,6 +74,7 @@ public static class KernelChatGptPluginExtensions
         string skillName,
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
+        string? userAgent = "Microsoft-Semantic-Kernel",
         HttpRetryConfig? retryConfiguration = null,
         CancellationToken cancellationToken = default)
     {
@@ -88,7 +92,7 @@ public static class KernelChatGptPluginExtensions
 
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
-        return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, retryConfiguration, cancellationToken).ConfigureAwait(false);
+        return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
