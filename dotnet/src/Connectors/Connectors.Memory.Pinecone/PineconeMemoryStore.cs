@@ -164,8 +164,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             this._logger.LogError("Pinecone client is not ready.");
             return string.Empty;
         }
-
-        Console.WriteLine($"Upserting {record.Metadata.Id} with text {record.Metadata.Text} to {collectionName}");
+        
         (PineconeDocument vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(collectionName, record, string.Empty, cancel).ConfigureAwait(false);
 
         Task request = operationType switch
@@ -286,8 +285,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             tasks.AddRange(updates);
         }
 
-        Console.WriteLine($"UpsertBatchAsync: {upsertDocuments.Count} upserts, {updateDocuments.Count} updates");
-
         PineconeDocument[] vectorData = upsertDocuments.Concat(updateDocuments).ToArray();
 
         try
@@ -365,8 +362,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
             tasks.AddRange(updates);
         }
-
-        Console.WriteLine($"UpsertBatchAsync: {upsertDocuments.Count} upserts, {updateDocuments.Count} updates");
 
         PineconeDocument[] vectorData = upsertDocuments.Concat(updateDocuments).ToArray();
 
@@ -1053,7 +1048,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         if (existingRecord is null)
         {
-            Console.WriteLine("No existing record found with ID: " + key);
             return (vectorData, OperationType.Upsert);
         }
 
@@ -1062,11 +1056,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             if (existingRecord.Metadata.SequenceEqual(vectorData.Metadata))
             {
-                Console.WriteLine("Existing record found with matching metadata, skipping: " + key);
                 return (vectorData, OperationType.Skip);
             }
         }
-        Console.WriteLine("Existing record found with ID: " + key + ", updating");
+        
         return (vectorData, OperationType.Update);
     }
 
