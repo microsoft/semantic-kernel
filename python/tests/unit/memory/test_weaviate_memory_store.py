@@ -65,10 +65,9 @@ def memory_store():
 
 @pytest.fixture
 def memory_store_with_collection(memory_store, event_loop):
-    event_loop.run_until_complete(
-        memory_store.create_collection_async("MindRepository")
-    )
-    return memory_store
+    collection_name = "MindRepository"
+    event_loop.run_until_complete(memory_store.create_collection_async(collection_name))
+    return collection_name, memory_store
 
 
 def test_embedded_weaviate():
@@ -100,26 +99,22 @@ async def test_get_collections(memory_store):
 
 @pytest.mark.asyncio
 async def test_delete_collection(memory_store_with_collection):
-    schemas = memory_store_with_collection.client.schema.get()["classes"]
+    collection_name, memory_store = memory_store_with_collection
+
+    schemas = memory_store.client.schema.get()["classes"]
     assert len(schemas) == 1
 
-    collection_name = schemas[0]["class"]
+    await memory_store.delete_collection_async(collection_name)
 
-    await memory_store_with_collection.delete_collection_async(collection_name)
-
-    schemas = memory_store_with_collection.client.schema.get()["classes"]
+    schemas = memory_store.client.schema.get()["classes"]
     assert len(schemas) == 0
 
 
 @pytest.mark.asyncio
 async def test_collection_exists(memory_store_with_collection):
-    schemas = memory_store_with_collection.client.schema.get()["classes"]
+    collection_name, memory_store = memory_store_with_collection
 
-    collection_name = schemas[0]["class"]
+    memory_store.client.schema.get()["classes"]
 
-    assert await memory_store_with_collection.does_collection_exist_async(
-        collection_name
-    )
-    assert not await memory_store_with_collection.does_collection_exist_async(
-        "NotACollection"
-    )
+    assert await memory_store.does_collection_exist_async(collection_name)
+    assert not await memory_store.does_collection_exist_async("NotACollection")
