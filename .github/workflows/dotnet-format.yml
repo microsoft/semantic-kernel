@@ -10,9 +10,10 @@ on:
     branches: [ "main", "feature*" ]
 
 jobs:
-  dotnet-format:
+  check-for-dotnet-changes:
     runs-on: ubuntu-latest
-
+    outputs:
+      output1: ${{ steps.filter.outputs.dotnet}}
     steps:
     - uses: dorny/paths-filter@v2
       id: filter
@@ -21,6 +22,22 @@ jobs:
           dotnet:
             - 'dotnet/**'
             - 'samples/dotnet/**'
+    - uses: actions/checkout@v3
+    # run only if 'dotnet' files were changed
+    - name: dotnet changes found
+      if: steps.filter.outputs.dotnet == 'true'
+      run: echo "dotnet file"
+    # run only if not 'dotnet' files were changed
+    - name: no dotnet changes found
+      if: steps.filter.outputs.dotnet != 'true'
+      run: echo "NOT dotnet file"
+      
+  dotnet-format:
+    needs: check-for-dotnet-changes
+    if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Check out code
         uses: actions/checkout@v3
         with:

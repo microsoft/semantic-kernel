@@ -22,13 +22,6 @@ jobs:
     env:
       NUGET_CERT_REVOCATION_MODE: offline
     steps:
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          dotnet:
-            - 'dotnet/**'
-            - 'samples/dotnet/**'
     - uses: actions/checkout@v3
       with:
         clean: true

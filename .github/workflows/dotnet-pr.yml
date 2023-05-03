@@ -13,14 +13,10 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    strategy:
-        matrix:
-          os: [ubuntu-latest]
-          configuration: [Release, Debug]
-    runs-on: ${{ matrix.os }}
-    env:
-      NUGET_CERT_REVOCATION_MODE: offline
+  check-for-dotnet-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.filter.outputs.dotnet}}
     steps:
     - uses: dorny/paths-filter@v2
       id: filter
@@ -29,6 +25,27 @@ jobs:
           dotnet:
             - 'dotnet/**'
             - 'samples/dotnet/**'
+    - uses: actions/checkout@v3
+    # run only if 'dotnet' files were changed
+    - name: dotnet changes found
+      if: steps.filter.outputs.dotnet == 'true'
+      run: echo "dotnet file"
+    # run only if not 'dotnet' files were changed
+    - name: no dotnet changes found
+      if: steps.filter.outputs.dotnet != 'true'
+      run: echo "NOT dotnet file"
+
+  build-and-test:
+    strategy:
+        matrix:
+          os: [ubuntu-latest]
+          configuration: [Release, Debug]
+    runs-on: ${{ matrix.os }}
+    needs: check-for-dotnet-changes
+    if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
+    env:
+      NUGET_CERT_REVOCATION_MODE: offline
+    steps:
     - uses: actions/checkout@v3
       with:
         clean: true
