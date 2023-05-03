@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
@@ -91,8 +92,8 @@ internal static class SequentialPlanParser
                             var planStep = new Plan(skillFunction);
 
                             var functionVariables = new ContextVariables();
-                            var functionOutputs = new ContextVariables();
-                            var functionResults = new ContextVariables();
+                            var functionOutputs = new List<string>();
+                            var functionResults = new List<string>();
 
                             var view = skillFunction.Describe();
                             foreach (var p in view.Parameters)
@@ -107,12 +108,14 @@ internal static class SequentialPlanParser
                                     context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
                                     if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
                                     {
-                                        functionOutputs.Set(attr.InnerText, string.Empty);
+                                        functionOutputs.Add(attr.InnerText);
                                         continue;
                                     }
                                     else if (attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
                                     {
-                                        functionResults.Set(attr.InnerText, string.Empty);
+                                        functionOutputs.Add(attr.InnerText);
+                                        functionResults.Add(attr.InnerText);
+                                        continue;
                                     }
 
                                     functionVariables.Set(attr.Name, attr.InnerText);
@@ -120,9 +123,13 @@ internal static class SequentialPlanParser
                             }
 
                             // Plan properties
-                            planStep.NamedOutputs = functionOutputs;
-                            planStep.NamedParameters = functionVariables;
-                            planStep.NamedResults = functionResults;
+                            planStep.Outputs = functionOutputs;
+                            planStep.Parameters = functionVariables;
+                            foreach (var result in functionResults)
+                            {
+                                plan.Outputs.Add(result);
+                            }
+
                             plan.AddSteps(planStep);
                         }
                         else

@@ -203,9 +203,9 @@ public static class XmlMarkupPlanParser
                     string.IsNullOrEmpty(skillName) ? !context.Skills!.HasFunction(functionName) : !context.Skills!.HasFunction(skillName, functionName))
                 {
                     var planStep = new Plan(node.InnerText);
-                    planStep.NamedParameters.Update(node.InnerText);
-                    planStep.NamedOutputs.Set($"markup.{functionName}.result", string.Empty);
-                    plan.NamedOutputs.Set($"markup.{functionName}.result", string.Empty);
+                    planStep.Parameters.Update(node.InnerText);
+                    planStep.Outputs.Add($"markup.{functionName}.result");
+                    plan.Outputs.Add($"markup.{functionName}.result");
                     plan.AddSteps(planStep);
                 }
                 else
@@ -214,9 +214,9 @@ public static class XmlMarkupPlanParser
                         ? context.Skills.GetFunction(functionName)
                         : context.Skills.GetFunction(skillName, functionName);
                     var planStep = new Plan(command);
-                    planStep.NamedParameters.Update(node.InnerText);
-                    planStep.NamedOutputs.Set($"markup.{functionName}.result", string.Empty);
-                    plan.NamedOutputs.Set($"markup.{functionName}.result", string.Empty);
+                    planStep.Parameters.Update(node.InnerText);
+                    planStep.Outputs.Add($"markup.{functionName}.result");
+                    plan.Outputs.Add($"markup.{functionName}.result");
                     plan.AddSteps(planStep);
                 }
             }

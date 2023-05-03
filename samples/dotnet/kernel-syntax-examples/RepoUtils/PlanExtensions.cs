@@ -18,15 +18,13 @@ internal static class PlanExtensions
                 string skillName = step.SkillName;
                 string stepName = step.Name;
 
-                string namedParams = string.Join(" ", step.NamedParameters.Select(param => $"{param.Key}='{param.Value}'"));
+                string namedParams = string.Join(" ", step.Parameters.Select(param => $"{param.Key}='{param.Value}'"));
                 if (!string.IsNullOrEmpty(namedParams))
                 {
                     namedParams = $" {namedParams}";
                 }
 
-                string? namedOutputs = step.NamedOutputs?
-                    .Where(output => output.Key.ToUpper(System.Globalization.CultureInfo.CurrentCulture) != "INPUT")
-                    .Select(output => output.Key).FirstOrDefault();
+                string? namedOutputs = step.Outputs?.Select(output => output).FirstOrDefault();
                 if (!string.IsNullOrEmpty(namedOutputs))
                 {
                     namedOutputs = $" => {namedOutputs}";

@@ -627,55 +627,58 @@ public sealed class PlanTests
         // - MiscSkill.ElementAtIndex count='3' INPUT='$OUTLINE' index='2' => CHAPTER_3_SYNOPSIS
         // - WriterSkill.NovelChapter chapterIndex='3' previousChapter='$CHAPTER_2_SYNOPSIS' INPUT='$CHAPTER_3_SYNOPSIS' theme='Children's mystery' => RESULT__CHAPTER_3
         var planStep = new Plan(outlineMock.Object);
-        planStep.NamedParameters.Set("input",
-            "A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.");
-        planStep.NamedParameters.Set("chapterCount", "3");
-        planStep.NamedOutputs.Set("OUTLINE", string.Empty);
+        planStep.Parameters.Set("input",
+            "NovelOutline function input.");
+        planStep.Parameters.Set("chapterCount", "3");
+        planStep.Outputs.Add("OUTLINE");
         plan.AddSteps(planStep);
 
         planStep = new Plan(elementAtIndexMock.Object);
-        planStep.NamedParameters.Set("count", "3");
-        planStep.NamedParameters.Set("INPUT", "$OUTLINE");
-        planStep.NamedParameters.Set("index", "0");
-        planStep.NamedOutputs.Set("CHAPTER_1_SYNOPSIS", string.Empty);
+        planStep.Parameters.Set("count", "3");
+        planStep.Parameters.Set("INPUT", "$OUTLINE");
+        planStep.Parameters.Set("index", "0");
+        planStep.Outputs.Add("CHAPTER_1_SYNOPSIS");
         plan.AddSteps(planStep);
 
         planStep = new Plan(novelChapterMock.Object);
-        planStep.NamedParameters.Set("chapterIndex", "1");
-        planStep.NamedParameters.Set("previousChapter", " ");
-        planStep.NamedParameters.Set("INPUT", "$CHAPTER_1_SYNOPSIS");
-        planStep.NamedParameters.Set("theme", "Children's mystery");
-        planStep.NamedResults.Set("RESULT__CHAPTER_1", string.Empty);
+        planStep.Parameters.Set("chapterIndex", "1");
+        planStep.Parameters.Set("previousChapter", " ");
+        planStep.Parameters.Set("INPUT", "$CHAPTER_1_SYNOPSIS");
+        planStep.Parameters.Set("theme", "Children's mystery");
+        planStep.Outputs.Add("RESULT__CHAPTER_1");
+        plan.Outputs.Add("RESULT__CHAPTER_1");
         plan.AddSteps(planStep);
 
         planStep = new Plan(elementAtIndexMock.Object);
-        planStep.NamedParameters.Set("count", "3");
-        planStep.NamedParameters.Set("INPUT", "$OUTLINE");
-        planStep.NamedParameters.Set("index", "1");
-        planStep.NamedOutputs.Set("CHAPTER_2_SYNOPSIS", string.Empty);
+        planStep.Parameters.Set("count", "3");
+        planStep.Parameters.Set("INPUT", "$OUTLINE");
+        planStep.Parameters.Set("index", "1");
+        planStep.Outputs.Add("CHAPTER_2_SYNOPSIS");
         plan.AddSteps(planStep);
 
         planStep = new Plan(novelChapterMock.Object);
-        planStep.NamedParameters.Set("chapterIndex", "2");
-        planStep.NamedParameters.Set("previousChapter", "$CHAPTER_1_SYNOPSIS");
-        planStep.NamedParameters.Set("INPUT", "$CHAPTER_2_SYNOPSIS");
-        planStep.NamedParameters.Set("theme", "Children's mystery");
-        planStep.NamedResults.Set("RESULT__CHAPTER_2", string.Empty);
+        planStep.Parameters.Set("chapterIndex", "2");
+        planStep.Parameters.Set("previousChapter", "$CHAPTER_1_SYNOPSIS");
+        planStep.Parameters.Set("INPUT", "$CHAPTER_2_SYNOPSIS");
+        planStep.Parameters.Set("theme", "Children's mystery");
+        planStep.Outputs.Add("RESULT__CHAPTER_2");
+        plan.Outputs.Add("RESULT__CHAPTER_2");
         plan.AddSteps(planStep);
 
         planStep = new Plan(elementAtIndexMock.Object);
-        planStep.NamedParameters.Set("count", "3");
-        planStep.NamedParameters.Set("INPUT", "$OUTLINE");
-        planStep.NamedParameters.Set("index", "2");
-        planStep.NamedOutputs.Set("CHAPTER_3_SYNOPSIS", string.Empty);
+        planStep.Parameters.Set("count", "3");
+        planStep.Parameters.Set("INPUT", "$OUTLINE");
+        planStep.Parameters.Set("index", "2");
+        planStep.Outputs.Add("CHAPTER_3_SYNOPSIS");
         plan.AddSteps(planStep);
 
         planStep = new Plan(novelChapterMock.Object);
-        planStep.NamedParameters.Set("chapterIndex", "3");
-        planStep.NamedParameters.Set("previousChapter", "$CHAPTER_2_SYNOPSIS");
-        planStep.NamedParameters.Set("INPUT", "$CHAPTER_3_SYNOPSIS");
-        planStep.NamedParameters.Set("theme", "Children's mystery");
-        planStep.NamedResults.Set("CHAPTER_3", string.Empty);
+        planStep.Parameters.Set("chapterIndex", "3");
+        planStep.Parameters.Set("previousChapter", "$CHAPTER_2_SYNOPSIS");
+        planStep.Parameters.Set("INPUT", "$CHAPTER_3_SYNOPSIS");
+        planStep.Parameters.Set("theme", "Children's mystery");
+        planStep.Outputs.Add("CHAPTER_3");
+        plan.Outputs.Add("CHAPTER_3");
         plan.AddSteps(planStep);
 
         // Act
@@ -687,15 +690,15 @@ public sealed class PlanTests
         ));
 
         var expected =
-            @"Chapter #1: Outline section #0 of 3: Here is a 3 chapter outline about A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.
+            @"Chapter #1: Outline section #0 of 3: Here is a 3 chapter outline about NovelOutline function input.
 Theme:Children's mystery
 Previously:
-Chapter #2: Outline section #1 of 3: Here is a 3 chapter outline about A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.
+Chapter #2: Outline section #1 of 3: Here is a 3 chapter outline about NovelOutline function input.
 Theme:Children's mystery
-Previously:Outline section #0 of 3: Here is a 3 chapter outline about A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.
-Chapter #3: Outline section #2 of 3: Here is a 3 chapter outline about A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.
+Previously:Outline section #0 of 3: Here is a 3 chapter outline about NovelOutline function input.
+Chapter #3: Outline section #2 of 3: Here is a 3 chapter outline about NovelOutline function input.
 Theme:Children's mystery
-Previously:Outline section #1 of 3: Here is a 3 chapter outline about A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.";
+Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutline function input.";
 
         // Assert
         Assert.Equal(expected, result.Result);

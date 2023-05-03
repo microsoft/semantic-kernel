@@ -36,25 +36,17 @@ public sealed class Plan : ISKFunction
     public IReadOnlyList<Plan> Steps => this._steps.AsReadOnly();
 
     /// <summary>
-    /// Named parameters for the function
+    ///  parameters for the plan, used to pass information to the next step
     /// </summary>
-    [JsonPropertyName("named_parameters")]
+    [JsonPropertyName("parameters")]
     [JsonConverter(typeof(ContextVariablesConverter))]
-    public ContextVariables NamedParameters { get; set; } = new();
+    public ContextVariables Parameters { get; set; } = new();
 
     /// <summary>
-    /// Named outputs for the function -- these are used within a plan.
+    ///  outputs for the plan, used to pass information to the caller
     /// </summary>
-    [JsonPropertyName("named_outputs")]
-    [JsonConverter(typeof(ContextVariablesConverter))]
-    public ContextVariables NamedOutputs { get; set; } = new();
-
-    /// <summary>
-    /// Named results for the function -- these are used to return results from a plan.
-    /// </summary>
-    [JsonPropertyName("named_results")]
-    [JsonConverter(typeof(ContextVariablesConverter))]
-    public ContextVariables NamedResults { get; set; } = new();
+    [JsonPropertyName("outputs")]
+    public IList<string> Outputs { get; set; } = new List<string>();
 
     /// <summary>
     /// Gets whether the plan has a next step.
@@ -139,12 +131,18 @@ public sealed class Plan : ISKFunction
     /// <param name="description">The description of the plan.</param>
     /// <param name="nextStepIndex">The index of the next step.</param>
     /// <param name="state">The state of the plan.</param>
-    /// <param name="namedParameters">The named parameters of the plan.</param>
-    /// <param name="namedOutputs">The named outputs of the plan.</param>
+    /// <param name="parameters">The parameters of the plan.</param>
+    /// <param name="outputs">The outputs of the plan.</param>
     /// <param name="steps">The steps of the plan.</param>
     [JsonConstructor]
-    public Plan(string name, string skillName, string description, int nextStepIndex, ContextVariables state, ContextVariables namedParameters,
-        ContextVariables namedOutputs,
+    public Plan(
+        string name,
+        string skillName,
+        string description,
+        int nextStepIndex,
+        ContextVariables state,
+        ContextVariables parameters,
+        IList<string> outputs,
         IReadOnlyList<Plan> steps)
     {
         this.Name = name;
@@ -152,8 +150,8 @@ public sealed class Plan : ISKFunction
         this.Description = description;
         this.NextStepIndex = nextStepIndex;
         this.State = state;
-        this.NamedParameters = namedParameters;
-        this.NamedOutputs = namedOutputs;
+        this.Parameters = parameters;
+        this.Outputs = outputs;
         this._steps.Clear();
         this.AddSteps(steps.ToArray());
     }
@@ -248,6 +246,7 @@ public sealed class Plan : ISKFunction
             // Execute the step
             var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
             var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
+            var resultValue = result.Result.Trim();
 
             if (result.ErrorOccurred)
             {
@@ -258,48 +257,33 @@ public sealed class Plan : ISKFunction
             #region Update State
 
             // Update state with result
-            this.State.Update(result.Result.Trim());
+            this.State.Update(resultValue);
 
-            // Update state with name results (if any)
+            // Update Plan Result in State with matching outputs (if any)
             bool resultAppended = false;
-            foreach (var item in step.NamedResults)
+            foreach (var item in this.Outputs.Intersect(step.Outputs))
             {
-                // ignore the input key
-                if (item.Key.ToUpperInvariant() == "INPUT")
-                {
-                    continue;
-                }
-
-                // Also set the named result in the state for other steps to use
-                this.State.Set(item.Key, result.Result.Trim());
-
                 if (resultAppended)
                 {
                     continue;
                 }
 
-                // Additionally, append to current plan result
                 this.State.Get(DefaultResultKey, out var currentPlanResult);
-                this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult.Trim(), result.Result.Trim()));
+                this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult.Trim(), resultValue));
                 resultAppended = true;
+                continue;
             }
 
-            // Update state with named outputs (if any)
-            foreach (var item in step.NamedOutputs)
+            // Update state with outputs (if any)
+            foreach (var item in step.Outputs)
             {
-                // ignore the input key
-                if (item.Key.ToUpperInvariant() == "INPUT")
+                if (result.Variables.Get(item, out var val))
                 {
-                    continue;
-                }
-
-                if (result.Variables.Get(item.Key, out var val))
-                {
-                    this.State.Set(item.Key, val);
+                    this.State.Set(item, val);
                 }
                 else
                 {
-                    this.State.Set(item.Key, result.Result.Trim());
+                    this.State.Set(item, resultValue);
                 }
             }
 
@@ -471,21 +455,15 @@ public sealed class Plan : ISKFunction
         context.Variables.Update(resultString);
 
         // copy previous step's variables to the next step
-        foreach (var item in this._steps[this.NextStepIndex - 1].NamedOutputs)
+        foreach (var item in this._steps[this.NextStepIndex - 1].Outputs)
         {
-            // ignore the input key
-            if (item.Key.ToUpperInvariant() == "INPUT")
+            if (this.State.Get(item, out var val))
             {
-                continue;
-            }
-
-            if (this.State.Get(item.Key, out var val))
-            {
-                context.Variables.Set(item.Key, val);
+                context.Variables.Set(item, val);
             }
             else
             {
-                context.Variables.Set(item.Key, resultString);
+                context.Variables.Set(item, resultString);
             }
         }
 
@@ -509,7 +487,7 @@ public sealed class Plan : ISKFunction
         var stepVariables = new ContextVariables(stepInput);
 
         // Priority for remaining stepVariables is:
-        // - NamedParameters (pull from State by a key value)
+        // - Parameters (pull from State by a key value)
         // - Parameters (from context)
         // - Parameters (from State)
         var functionParameters = step.Describe();
@@ -525,7 +503,7 @@ public sealed class Plan : ISKFunction
             }
         }
 
-        foreach (var item in step.NamedParameters)
+        foreach (var item in step.Parameters)
         {
             if (!string.IsNullOrEmpty(item.Value))
             {

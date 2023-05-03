@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -137,7 +138,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("email_address", "$TheEmailFromState");
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv,
+            Parameters = cv,
         };
 
         var plan = new Plan(goal);
@@ -171,7 +172,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("email_address", string.Empty);
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv,
+            Parameters = cv,
         };
 
         var plan = new Plan(goal);
@@ -206,7 +207,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("email_address", "$TheEmailFromState");
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv
+            Parameters = cv
         };
 
         var plan = new Plan(goal);
@@ -240,22 +241,26 @@ public sealed class PlanTests : IDisposable
 
         var cv = new ContextVariables();
         cv.Set("language", inputLanguage);
-        var outputs = new ContextVariables();
-        outputs.Set("TRANSLATED_SUMMARY", string.Empty);
+        var outputs = new List<string>
+        {
+            "TRANSLATED_SUMMARY"
+        };
         var translatePlan = new Plan(writerSkill["Translate"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
         cv.Update(inputName);
-        outputs = new ContextVariables();
-        outputs.Set("TheEmailFromState", string.Empty);
+        outputs = new List<string>
+        {
+            "TheEmailFromState"
+        };
         var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
@@ -263,7 +268,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("input", "$TRANSLATED_SUMMARY");
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv
+            Parameters = cv
         };
 
         var plan = new Plan(goal);
@@ -309,23 +314,27 @@ public sealed class PlanTests : IDisposable
 
         var cv = new ContextVariables();
         cv.Set("language", inputLanguage);
-        var outputs = new ContextVariables();
-        outputs.Set("TRANSLATED_SUMMARY", string.Empty);
+        var outputs = new List<string>
+        {
+            "TRANSLATED_SUMMARY"
+        };
 
         var translatePlan = new Plan(writerSkill["Translate"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
         cv.Update(inputName);
-        outputs = new ContextVariables();
-        outputs.Set("TheEmailFromState", string.Empty);
+        outputs = new List<string>
+        {
+            "TheEmailFromState"
+        };
         var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
@@ -333,7 +342,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("input", "$TRANSLATED_SUMMARY");
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv
+            Parameters = cv
         };
 
         var plan = new Plan(goal);
@@ -364,23 +373,27 @@ public sealed class PlanTests : IDisposable
 
         var cv = new ContextVariables();
         cv.Set("language", inputLanguage);
-        var outputs = new ContextVariables();
-        outputs.Set("TRANSLATED_SUMMARY", string.Empty);
+        var outputs = new List<string>
+        {
+            "TRANSLATED_SUMMARY"
+        };
 
         var translatePlan = new Plan(writerSkill["Translate"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
         cv.Update(inputName);
-        outputs = new ContextVariables();
-        outputs.Set("TheEmailFromState", string.Empty);
+        outputs = new List<string>
+        {
+            "TheEmailFromState"
+        };
         var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
@@ -388,7 +401,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("input", "$TRANSLATED_SUMMARY");
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv
+            Parameters = cv
         };
 
         var plan = new Plan(goal);
