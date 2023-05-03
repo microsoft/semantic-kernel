@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example29_Pinecone
+public static class Example31_Pinecone
 {
     private const string MemoryCollectionName = "pinecone-test";
 
@@ -18,8 +18,8 @@ public static class Example29_Pinecone
     {
         string apiKey = Env.Var("PINECONE_API_KEY");
         PineconeEnvironment pineconeEnvironment = PineconeUtils.GetEnvironment(Env.Var("PINECONE_ENVIRONMENT"));
-        IndexDefinition indexDefinition = IndexDefinition.Default(MemoryCollectionName);
-        PineconeMemoryStore? memoryStore = await PineconeMemoryStore.InitializeAsync(pineconeEnvironment, apiKey, indexDefinition);
+
+        PineconeMemoryStore memoryStore = new(pineconeEnvironment, apiKey);
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
@@ -28,7 +28,7 @@ public static class Example29_Pinecone
                 c.AddOpenAITextCompletionService("davinci", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
                 c.AddOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
             })
-            .WithMemoryStorage(memoryStore ?? throw new InvalidOperationException())
+            .WithMemoryStorage(memoryStore)
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");
