@@ -14,7 +14,7 @@ public class IndexStats
     /// </summary>
     /// <param name="namespaces">namespaces.</param>
     /// <param name="dimension">The number of dimensions in the vector representation.</param>
-    /// <param name="indexFullness">The fullness of the index, regardless of whether a metadata filter expression was passed. The granularity of this metric is 10%..</param>
+    /// <param name="indexFullness">The fullness of the index, regardless of whether a metadata filter expression was passed. The granularity of this metric is 10%.</param>
     /// <param name="totalVectorCount">totalVectorCount.</param>
     public IndexStats(
         Dictionary<string, IndexNamespaceStats> namespaces,
