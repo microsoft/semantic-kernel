@@ -8,7 +8,7 @@ using SemanticKernel.Service.Config;
 namespace SemanticKernel.Service.Skills;
 
 /// <summary>
-/// A lightweight wrapper around the SequentialPlanner to allow for curating exactly which skills are available to it.
+/// A lightweight wrapper around a planner to allow for curating which skills are available to it.
 /// </summary>
 public class CopilotChatPlanner
 {
@@ -38,7 +38,5 @@ public class CopilotChatPlanner
     /// </summary>
     /// <param name="goal">The goal to create a plan for.</param>
     /// <returns>The plan.</returns>
-    public Task<Plan> CreatePlanAsync(string goal)
-        => new SequentialPlanner(this.Kernel, this._options.ToSequentialPlannerConfig())
-            .CreatePlanAsync(goal);
+    public Task<Plan> CreatePlanAsync(string goal) => new ActionPlanner(this.Kernel).CreatePlanAsync(goal);
 }

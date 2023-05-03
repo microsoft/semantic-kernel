@@ -103,8 +103,8 @@ public sealed class SequentialPlannerTests
             It.IsAny<SKContext>(),
             null,
             null,
-            null
-        )).Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>(
+            default
+        )).Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken>(
             (c, s, l, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
@@ -193,7 +193,7 @@ public sealed class SequentialPlannerTests
             It.IsAny<SKContext>(),
             null,
             null,
-            null
+            default
         )).Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>(
             (c, s, l, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
