@@ -293,7 +293,14 @@ public sealed class Plan : ISKFunction
                     continue;
                 }
 
-                this.State.Set(item.Key, result.Result.Trim());
+                if (result.Variables.Get(item.Key, out var val))
+                {
+                    this.State.Set(item.Key, val);
+                }
+                else
+                {
+                    this.State.Set(item.Key, result.Result.Trim());
+                }
             }
 
             #endregion Update State
@@ -355,7 +362,7 @@ public sealed class Plan : ISKFunction
 
                 await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
 
-                context.Variables.Update(this.State.Get(DefaultResultKey, out var result) ? result : this.State.ToString());
+                this.UpdateContextWithOutputs(context);
             }
         }
 
@@ -451,6 +458,38 @@ public sealed class Plan : ISKFunction
                 context.Variables.Set(item.Key, item.Value);
             }
         }
+    }
+
+    /// <summary>
+    /// Update the context with the outputs from the current step.
+    /// </summary>
+    /// <param name="context">The context to update.</param>
+    /// <returns>The updated context.</returns>
+    private SKContext UpdateContextWithOutputs(SKContext context)
+    {
+        var resultString = this.State.Get(DefaultResultKey, out var result) ? result : this.State.ToString();
+        context.Variables.Update(resultString);
+
+        // copy previous step's variables to the next step
+        foreach (var item in this._steps[this.NextStepIndex - 1].NamedOutputs)
+        {
+            // ignore the input key
+            if (item.Key.ToUpperInvariant() == "INPUT")
+            {
+                continue;
+            }
+
+            if (this.State.Get(item.Key, out var val))
+            {
+                context.Variables.Set(item.Key, val);
+            }
+            else
+            {
+                context.Variables.Set(item.Key, resultString);
+            }
+        }
+
+        return context;
     }
 
     /// <summary>

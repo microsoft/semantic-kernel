@@ -594,13 +594,13 @@ public sealed class PlanTests
         );
 
         var outlineMock = new Mock<ISKFunction>();
-        outlineMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null))
+        outlineMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
             .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
                 returnContext.Variables.Update($"Here is a {c.Variables["chapterCount"]} chapter outline about " + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
         var elementAtIndexMock = new Mock<ISKFunction>();
-        elementAtIndexMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null))
+        elementAtIndexMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
             .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
             {
                 returnContext.Variables.Update($"Outline section #{c.Variables["index"]} of {c.Variables["count"]}: " + c.Variables.Input);
@@ -608,7 +608,7 @@ public sealed class PlanTests
             .Returns(() => Task.FromResult(returnContext));
 
         var novelChapterMock = new Mock<ISKFunction>();
-        novelChapterMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null))
+        novelChapterMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
             .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
             {
                 returnContext.Variables.Update(
