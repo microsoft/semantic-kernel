@@ -55,7 +55,7 @@ public class TaskListSkill
     /// </summary>
     public static DateTimeOffset GetNextDayOfWeek(DayOfWeek dayOfWeek, TimeSpan timeOfDay)
     {
-        DateTimeOffset today = new DateTimeOffset(DateTime.Today);
+        DateTimeOffset today = new(DateTime.Today);
         int nextDayOfWeekOffset = dayOfWeek - today.DayOfWeek;
         if (nextDayOfWeekOffset <= 0)
         {
@@ -83,7 +83,7 @@ public class TaskListSkill
             return;
         }
 
-        TaskManagementTask task = new TaskManagementTask(
+        TaskManagementTask task = new(
             id: Guid.NewGuid().ToString(),
             title: title);
 
