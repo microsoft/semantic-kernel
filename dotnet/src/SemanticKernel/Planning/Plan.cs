@@ -36,14 +36,14 @@ public sealed class Plan : ISKFunction
     public IReadOnlyList<Plan> Steps => this._steps.AsReadOnly();
 
     /// <summary>
-    ///  parameters for the plan, used to pass information to the next step
+    /// Parameters for the plan, used to pass information to the next step
     /// </summary>
     [JsonPropertyName("parameters")]
     [JsonConverter(typeof(ContextVariablesConverter))]
     public ContextVariables Parameters { get; set; } = new();
 
     /// <summary>
-    ///  outputs for the plan, used to pass information to the caller
+    /// Outputs for the plan, used to pass information to the caller
     /// </summary>
     [JsonPropertyName("outputs")]
     public IList<string> Outputs { get; set; } = new List<string>();
