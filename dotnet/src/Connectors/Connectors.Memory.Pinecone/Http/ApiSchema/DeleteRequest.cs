@@ -31,7 +31,6 @@ internal sealed class DeleteRequest
     /// <summary>
     /// The namespace to delete vectors from
     /// </summary>
-    /// <example>&quot;namespace-0&quot;</example>
     [JsonPropertyName("namespace")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Namespace { get; set; }

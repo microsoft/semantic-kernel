@@ -35,7 +35,6 @@ internal sealed class QueryResponse
     /// An index namespace name
     /// </summary>
     /// <value>An index namespace name</value>
-    /// <example>&quot;namespace-0&quot;</example>
     [JsonPropertyName("namespace")]
     public string? Namespace { get; set; }
 

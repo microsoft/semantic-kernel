@@ -17,7 +17,6 @@ public class PineconeDocument
     /// The unique ID of a Document
     /// </summary>
     /// <value>The unique ID of a document</value>
-    /// <example>&quot;vector-0&quot;</example>
     [JsonPropertyName("id")]
     public string Id { get; set; }
 
