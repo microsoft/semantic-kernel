@@ -45,7 +45,7 @@ public class MetadataIndexConfig
     ///    </item>
     ///     <item>
     ///     <term>source_Id</term>
-    ///     <description>Used tp identify the source of the document</description>
+    ///     <description>Used to identify the source of the document</description>
     ///     <see cref="PineconeDocument.SourceId"/>
     ///     </item>
     ///     <item>
