@@ -23,13 +23,13 @@ description: looks up the a contact and retrieves their email address
 args:
 - name: the name to look up
 
-EmailConnector.EmailTo
+WriterSkill.EmailTo
 description: email the input text to a recipient
 args:
 - input: the text to email
 - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
 
-LanguageHelpers.TranslateTo
+WriterSkill.Translate
 description: translate the input to another language
 args:
 - input: the text to translate
@@ -46,14 +46,14 @@ args:
 - input: the input to generate a joke about
 
 [GOAL]
-"Tell a joke about cars. Translate it to French"
+"Tell a joke about cars. Translate it to Spanish"
 
 [OUTPUT]
     {
         "input": "cars",
         "subtasks": [
-            {"function": "Joke"},
-            {"function": "TranslateTo", "args": {"language": "French"}}
+            {"function": "FunSkill.Joke"},
+            {"function": "WriterSkill.Translate", "args": {"language": "Spanish"}}
         ]
     }
 
@@ -63,8 +63,8 @@ description: Brainstorm ideas
 args:
 - input: the input to brainstorm about
 
-ShakespeareSkill.shakespeare
-description: Write in Shakespearean style
+EdgarAllenPoeSkill.Poe
+description: Write in the style of author Edgar Allen Poe
 args:
 - input: the input to write about
 
@@ -75,15 +75,16 @@ args:
 - recipient: the recipient's email address.
 
 [GOAL]
-"Tomorrow is Valentine's day. I need to come up with a few date ideas. She likes Shakespeare so write using his style.
-E-mail these ideas to my significant other"
+"Tomorrow is Valentine's day. I need to come up with a few date ideas.
+She likes Edgar Allen Poe so write using his style.
+E-mail these ideas to my significant other. Translate it to French."
 
 [OUTPUT]
     {
         "input": "Valentine's Day Date Ideas",
         "subtasks": [
             {"function": "WriterSkill.Brainstorm"},
-            {"function": "ShakespeareSkill.shakespeare"},
+            {"function": "EdgarAllenPoeSkill.Poe"},
             {"function": "WriterSkill.EmailTo", "args": {"recipient": "significant_other"}},
             {"function": "translate", "args": {"language": "French"}}
         ]
