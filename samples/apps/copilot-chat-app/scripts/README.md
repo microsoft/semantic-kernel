@@ -37,6 +37,8 @@ The folowing script will generate the `.env` file and start the frontend.
 
 Rather than run each script separately, you can use one of these all-in-one solutions to start both the frontend and backend for Copilot Chat with a single command.
 
+As mentioned above, you still need to manually update `appsettings.json` before running these scripts.
+
 ### First run
 If you are running for the first time, use `start-first-run.cmd`:
 ```
