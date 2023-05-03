@@ -21,26 +21,9 @@ internal static class SKContextExtensions
     {
         context.ThrowIfSkillCollectionNotSet();
 
-        if (context.Skills!.HasNativeFunction(skillName, functionName))
-        {
-            registeredFunction = context.Skills.GetNativeFunction(skillName, functionName);
-            return true;
-        }
-
-        if (context.Skills.HasNativeFunction(functionName))
-        {
-            registeredFunction = context.Skills.GetNativeFunction(functionName);
-            return true;
-        }
-
-        if (context.Skills.HasSemanticFunction(skillName, functionName))
-        {
-            registeredFunction = context.Skills.GetSemanticFunction(skillName, functionName);
-            return true;
-        }
-
-        registeredFunction = null;
-        return false;
+        return context.Skills!.TryGetNativeFunction(skillName, functionName, out registeredFunction) ||
+               context.Skills.TryGetNativeFunction(functionName, out registeredFunction) ||
+               context.Skills.TryGetSemanticFunction(skillName, functionName, out registeredFunction);
     }
 
     /// <summary>
