@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using SemanticKernel.Service.SignalR.Hubs;
 
 namespace SemanticKernel.Service;
 
@@ -30,6 +31,9 @@ public sealed class Program
             .AddSemanticKernelServices()
             .AddPersistentChatStore();
 
+        // Add SignalR as the real time relay service
+        builder.Services.AddSignalR();
+
         // Add in the rest of the services.
         builder.Services
             .AddApplicationInsightsTelemetry()
@@ -42,10 +46,15 @@ public sealed class Program
 
         // Configure middleware and endpoints
         WebApplication app = builder.Build();
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
         app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
+
+        app.MapHub<ChatHub>("/chatHub");
 
         // Enable Swagger for development environments.
         if (app.Environment.IsDevelopment())

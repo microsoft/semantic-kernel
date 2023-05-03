@@ -14,6 +14,7 @@ import { useAppDispatch } from '../../redux/app/hooks';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { useSKSpeechService } from './../../libs/semantic-kernel/useSKSpeech';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
+import { useSKMultiUserChat } from './../../libs/semantic-kernel/useSKMultiUserChat';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -70,6 +71,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
     const speechService = useSKSpeechService(process.env.REACT_APP_BACKEND_URI as string);
+    const chatRelay = useSKMultiUserChat(process.env.REACT_APP_BACKEND_URI as string);
     const [documentImporting, SetDocumentImporting] = React.useState(false);
     const documentImportService = useDocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
@@ -126,6 +128,9 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
             if (data.trim() === '') {
                 return; // only submit if data is not empty
             }
+
+            chatRelay.SendTestMessage();
+
             onSubmit(data);
             setPreviousValue(data);
             setValue('');

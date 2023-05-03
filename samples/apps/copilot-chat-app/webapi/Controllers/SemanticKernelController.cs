@@ -4,6 +4,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
@@ -19,6 +20,7 @@ using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
+using SemanticKernel.Service.SignalR;
 
 namespace SemanticKernel.Service.Controllers;
 
@@ -52,6 +54,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
     /// <param name="kernel">Semantic kernel obtained through dependency injection</param>
     /// <param name="chatRepository">Storage repository to store chat sessions</param>
     /// <param name="chatMessageRepository">Storage repository to store chat messages</param>
+    /// <param name="chatHubContext">Message Hub that perfroms the real time relay service</param>
     /// <param name="documentMemoryOptions">Options for document memory handling.</param>
     /// <param name="planner">Planner to use to create function sequences.</param>
     /// <param name="plannerOptions">Options for the planner.</param>
@@ -70,6 +73,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
         [FromServices] IKernel kernel,
         [FromServices] ChatSessionRepository chatRepository,
         [FromServices] ChatMessageRepository chatMessageRepository,
+        [FromServices] IHubContext<ChatHub> chatHubContext,
         [FromServices] IOptions<DocumentMemoryOptions> documentMemoryOptions,
         [FromServices] CopilotChatPlanner planner,
         [FromServices] IOptions<PlannerOptions> plannerOptions,
@@ -135,6 +139,10 @@ public class SemanticKernelController : ControllerBase, IDisposable
 
             return this.BadRequest(result.LastErrorDescription);
         }
+
+        // SignalR broadcasting
+        await chatHubContext.Clients.All.SendAsync("ReceiveMessage", $"Home page loaded at: {DateTime.Now}");
+
 
         return this.Ok(new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) });
     }
