@@ -75,3 +75,15 @@ async def test_create_collection(memory_store):
     await memory_store.create_collection_async(collection_name)
 
     assert memory_store.client.schema.get(collection_name)
+
+
+@pytest.mark.asyncio
+async def test_get_collections(memory_store):
+    collection_names = ["MemoryVault", "ThoughtArchive"]
+
+    for collection_name in collection_names:
+        await memory_store.create_collection_async(collection_name)
+
+    results = await memory_store.get_collections_async()
+
+    assert set(results) == set(collection_names)

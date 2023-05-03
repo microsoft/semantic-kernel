@@ -1,7 +1,7 @@
 import asyncio
 from dataclasses import dataclass
 from logging import Logger
-from typing import Optional
+from typing import List, Optional
 
 import weaviate
 from weaviate.embedded import EmbeddedOptions
@@ -85,3 +85,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         schema = SCHEMA.copy()
         schema["class"] = collection_name
         await asyncio.to_thread(self.client.schema.create_class, schema)
+
+    async def get_collections_async(self) -> List[str]:
+        schemas = await asyncio.to_thread(self.client.schema.get)
+        return [schema["class"] for schema in schemas["classes"]]
