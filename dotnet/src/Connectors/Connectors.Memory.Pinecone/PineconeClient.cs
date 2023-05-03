@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -246,7 +246,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         await foreach (UpsertRequest? batch in PineconeUtils.GetUpsertBatchesAsync(validVectors, MaxBatchSize).WithCancellation(cancellationToken))
         {
             totalBatches++;
-            HttpRequestMessage request = batch.ToNamespace(indexNamespace).Build();
+            using HttpRequestMessage request = batch.ToNamespace(indexNamespace).Build();
 
             (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
