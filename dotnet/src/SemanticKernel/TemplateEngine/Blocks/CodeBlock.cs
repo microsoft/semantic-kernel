@@ -140,22 +140,16 @@ internal sealed class CodeBlock : Block, ICodeRendering
         FunctionIdBlock fBlock,
         [NotNullWhen(true)] out ISKFunction? function)
     {
-        // Function in the global skill
-        if (string.IsNullOrEmpty(fBlock.SkillName) && skills.HasFunction(fBlock.FunctionName))
+        if (string.IsNullOrEmpty(fBlock.SkillName))
         {
-            function = skills.GetFunction(fBlock.FunctionName);
-            return true;
+            // Function in the global skill
+            return skills.TryGetFunction(fBlock.FunctionName, out function);
         }
-
-        // Function within a specific skill
-        if (!string.IsNullOrEmpty(fBlock.SkillName) && skills.HasFunction(fBlock.SkillName, fBlock.FunctionName))
+        else
         {
-            function = skills.GetFunction(fBlock.SkillName, fBlock.FunctionName);
-            return true;
+            // Function within a specific skill
+            return skills.TryGetFunction(fBlock.SkillName, fBlock.FunctionName, out function);
         }
-
-        function = null;
-        return false;
     }
 
     #endregion

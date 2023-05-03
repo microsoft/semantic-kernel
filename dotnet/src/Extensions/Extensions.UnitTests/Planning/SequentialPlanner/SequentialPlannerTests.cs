@@ -57,13 +57,15 @@ public sealed class SequentialPlannerTests
             {
                 skills.Setup(x => x.GetSemanticFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
                     .Returns(mockFunction.Object);
-                skills.Setup(x => x.HasSemanticFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name))).Returns(true);
+                ISKFunction? outFunc = mockFunction.Object;
+                skills.Setup(x => x.TryGetSemanticFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
             }
             else
             {
                 skills.Setup(x => x.GetNativeFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
                     .Returns(mockFunction.Object);
-                skills.Setup(x => x.HasNativeFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name))).Returns(true);
+                ISKFunction? outFunc = mockFunction.Object;
+                skills.Setup(x => x.TryGetNativeFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
             }
         }
 

@@ -31,6 +31,10 @@ param(
     # Model to use for text embeddings
     $EmbeddingModel = "text-embedding-ada-002",
 
+    [string]
+    # Completion model the task planner should use
+    $PlannerModel = "gpt-35-turbo",
+
     [Parameter(Mandatory)]
     [string]
     # Subscription to which to make the deployment
@@ -78,15 +82,15 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Validating template file..."
-az deployment group validate --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
+az deployment group validate --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
 Write-Host "Deploying..."
 if ($DebugDeployment) {
-    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --debug --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
+    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --debug --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
 }
 else {
-    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
+    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
 }

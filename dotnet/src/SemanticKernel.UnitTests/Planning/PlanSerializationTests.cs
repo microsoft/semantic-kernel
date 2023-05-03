@@ -441,7 +441,8 @@ public sealed class PlanSerializationTests
             }
         });
 
-        skills.Setup(x => x.HasNativeFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+        ISKFunction? outFunc = mockFunction.Object;
+        skills.Setup(x => x.TryGetNativeFunction(It.IsAny<string>(), It.IsAny<string>(), out outFunc)).Returns(true);
         skills.Setup(x => x.GetNativeFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
