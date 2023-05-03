@@ -52,7 +52,7 @@ Use the [DeploySK-Existing-AI.ps1](DeploySK-Existing-AI.ps1) file found in this 
 
 After entering the command above, you will be prompted to enter your OpenAI or Azure OpenAI API key. (You can also pass in the API key using the -ApiKey parameter followed by a SecureString)
 
-### bash
+### Bash
 
 After ensuring DeploySK-Existing-AI.sh file found in this folder is executable, enter the following command:
 
