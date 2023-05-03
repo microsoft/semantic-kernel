@@ -615,7 +615,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
             return $"https://{this._indexDescription!.Status.Host}";
         }
 
-        if (!await this.ConnectToHostAsync(indexName).ConfigureAwait(false) == false)
+        if (!await this.ConnectToHostAsync(indexName).ConfigureAwait(false))
         {
             this._logger.LogError("Failed to connect to host");
         }
