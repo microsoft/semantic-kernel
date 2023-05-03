@@ -280,8 +280,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         if (updateDocuments.Count > 0)
         {
-            IEnumerable<Task> updates = updateDocuments.Select(async d
-                => await this._pineconeClient.UpdateAsync(collectionName, d, "", cancel).ConfigureAwait(false));
+            IEnumerable<Task> updates = updateDocuments.Select(async document
+                => await this._pineconeClient.UpdateAsync(collectionName, document, "", cancel).ConfigureAwait(false));
 
             tasks.AddRange(updates);
         }
