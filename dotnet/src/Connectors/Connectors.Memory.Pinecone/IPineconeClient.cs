@@ -206,7 +206,7 @@ public interface IPineconeClient
     /// Create index
     /// </summary>
     /// <remarks>
-    /// This operation creates a Pinecone index. You can use it to specify the measure of similarity, the dimension of vectors to be stored in the index, the numbers of replicas to use, and more.
+    /// This operation creates a Pinecone index. It's possible to use it to specify the measure of similarity, the dimension of vectors to be stored in the index, the numbers of replicas to use, and more.
     /// </remarks>
     /// <param name="indexDefinition">  the configuration of the index.</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
