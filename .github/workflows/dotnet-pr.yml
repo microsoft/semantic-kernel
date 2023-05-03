@@ -42,7 +42,6 @@ jobs:
           configuration: [Release, Debug]
     runs-on: ${{ matrix.os }}
     needs: check-for-dotnet-changes
-    if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
     env:
       NUGET_CERT_REVOCATION_MODE: offline
     steps:
@@ -51,6 +50,7 @@ jobs:
         clean: true
 
     - name: Setup .NET
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
@@ -58,6 +58,7 @@ jobs:
         NUGET_AUTH_TOKEN: ${{ secrets.GPR_READ_TOKEN }}
 
     - uses: actions/cache@v3
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       with:
         path: ~/.nuget/packages
         # Look to see if there is a cache hit for the corresponding requirements file
@@ -67,10 +68,12 @@ jobs:
 
     - name: Find solutions
       shell: bash
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: echo "solutions=$(find ./ -type f -name "*.sln" | tr '\n' ' ')" >> $GITHUB_ENV
 
     - name: Restore dependencies
       shell: bash
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: |
         for solution in ${{ env.solutions }}; do
           dotnet restore $solution
@@ -78,6 +81,7 @@ jobs:
 
     - name: Build
       shell: bash
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: |
         for solution in ${{ env.solutions }}; do
           dotnet build $solution --no-restore --configuration ${{ matrix.configuration }}
@@ -85,10 +89,12 @@ jobs:
 
     - name: Find unit test projects
       shell: bash
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: echo "projects=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
 
     - name: Test
       shell: bash
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: |
         for project in ${{ env.projects }}; do
             dotnet test $project --no-build --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
