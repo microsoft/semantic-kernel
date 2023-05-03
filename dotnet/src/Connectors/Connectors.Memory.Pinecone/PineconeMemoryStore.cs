@@ -56,9 +56,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken"></param>
     /// <returns> a new instance of the <see cref="PineconeMemoryStore"/> class </returns>
     /// <remarks>
-    ///  This is the preferred method of creating a new instance of the <see cref="PineconeMemoryStore"/>
-    ///  class because it ensures that the index exists and is ready. I think it makes sense to have this
-    ///  method be static because it is a factory method that returns a new instance of the class.
     ///  If the index does not exist, it will be created. If the index exists, it will be connected to.
     ///  If it is a new index, the method will block until it is ready.
     ///  If the index exists but is not ready, it will be connected to and the method will block until it is ready.
