@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from logging import Logger
 from typing import List, Optional
 
+import numpy as np
 import weaviate
 from weaviate.embedded import EmbeddedOptions
 
@@ -52,6 +53,8 @@ SCHEMA = {
     ],
 }
 
+ALL_PROPERTIES = [property["name"] for property in SCHEMA["properties"]]
+
 
 @dataclass
 class WeaviateConfig:
@@ -96,6 +99,13 @@ class WeaviateMemoryStore(MemoryStoreBase):
                 for k, v in weaviate_dict.items()
                 if k in cls.WEAVIATE_TO_SK_MAPPING
             }
+
+        @classmethod
+        def remove_underscore_prefix(cls, sk_dict):
+            """
+            Used to initialize a MemoryRecord from a SK's dict of private attribute-values.
+            """
+            return {key.lstrip("_"): value for key, value in sk_dict.items()}
 
     def __init__(self, config: WeaviateConfig, logger: Optional[Logger] = None):
         self._logger = logger or NullLogger()
@@ -171,3 +181,57 @@ class WeaviateMemoryStore(MemoryStoreBase):
             return results
 
         return await asyncio.to_thread(_upsert_batch_inner)
+
+    async def get_async(
+        self, collection_name: str, key: str, with_embedding: bool
+    ) -> MemoryRecord:
+        # Call the batched version with a single key
+        results = await self.get_batch_async(collection_name, [key], with_embedding)
+        return results[0] if results else None
+
+    async def get_batch_async(
+        self, collection_name: str, keys: List[str], with_embedding: bool
+    ) -> List[MemoryRecord]:
+        queries = self._build_multi_get_query(collection_name, keys, with_embedding)
+
+        results = await asyncio.to_thread(self.client.query.multi_get(queries).do)
+
+        get_dict = results.get("data", {}).get("Get", {})
+
+        memory_records = [
+            self._convert_weaviate_doc_to_memory_record(doc)
+            for docs in get_dict.values()
+            for doc in docs
+        ]
+
+        return memory_records
+
+    def _build_multi_get_query(
+        self, collection_name: str, keys: List[str], with_embedding: bool
+    ):
+        queries = []
+        for i, key in enumerate(keys):
+            query = self.client.query.get(collection_name, ALL_PROPERTIES).with_where(
+                {
+                    "path": ["key"],
+                    "operator": "Equal",
+                    "valueString": key,
+                }
+            )
+            if with_embedding:
+                query = query.with_additional("vector")
+
+            query = query.with_alias(f"query_{i}")
+
+            queries.append(query)
+
+        return queries
+
+    def _convert_weaviate_doc_to_memory_record(
+        self, weaviate_doc: dict
+    ) -> MemoryRecord:
+        vector = weaviate_doc.pop("_additional", {}).get("vector")
+        weaviate_doc["vector"] = np.array(vector) if vector else None
+        sk_doc = self.FieldMapper.weaviate_to_sk(weaviate_doc)
+        mem_vals = self.FieldMapper.remove_underscore_prefix(sk_doc)
+        return MemoryRecord(**mem_vals)
