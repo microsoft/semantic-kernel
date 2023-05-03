@@ -92,3 +92,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
     async def delete_collection_async(self, collection_name: str) -> bool:
         await asyncio.to_thread(self.client.schema.delete_class, collection_name)
+
+    async def does_collection_exist_async(self, collection_name: str) -> bool:
+        collections = await self.get_collections_async()
+        return collection_name in collections

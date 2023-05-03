@@ -109,3 +109,17 @@ async def test_delete_collection(memory_store_with_collection):
 
     schemas = memory_store_with_collection.client.schema.get()["classes"]
     assert len(schemas) == 0
+
+
+@pytest.mark.asyncio
+async def test_collection_exists(memory_store_with_collection):
+    schemas = memory_store_with_collection.client.schema.get()["classes"]
+
+    collection_name = schemas[0]["class"]
+
+    assert await memory_store_with_collection.does_collection_exist_async(
+        collection_name
+    )
+    assert not await memory_store_with_collection.does_collection_exist_async(
+        "NotACollection"
+    )
