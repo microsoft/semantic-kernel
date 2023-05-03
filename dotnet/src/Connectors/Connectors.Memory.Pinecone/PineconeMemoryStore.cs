@@ -200,7 +200,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             return string.Empty;
         }
 
-        (PineconeDocument vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(indexName, record, "", cancel).ConfigureAwait(false);
+        (PineconeDocument vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(indexName, record, indexNamespace, cancel).ConfigureAwait(false);
 
         Task request = operationType switch
         {
