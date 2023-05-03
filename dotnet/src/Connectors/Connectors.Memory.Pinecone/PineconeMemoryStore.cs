@@ -46,6 +46,21 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     }
 
     /// <summary>
+    ///  Constructor for a Pinecone memory store when an index already exists.
+    /// </summary>
+    /// <param name="pineconeEnvironment"> the location of the pinecone server </param>
+    /// <param name="apiKey"> the user's api key for the pinecone server </param>
+    /// <param name="logger"></param>
+    public PineconeMemoryStore(
+        PineconeEnvironment pineconeEnvironment,
+        string apiKey,
+        ILogger? logger = null)
+    {
+        this._logger = logger ?? NullLogger.Instance;
+        this._pineconeClient = new PineconeClient(pineconeEnvironment, apiKey, logger);
+    }
+
+    /// <summary>
     ///   Initializes a new instance of the <see cref="PineconeMemoryStore"/> class and ensures that the index exists and is ready.
     /// </summary>
     /// <param name="pineconeEnvironment"> the location of the pinecone server </param>
@@ -164,7 +179,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async Task<string> UpsertToNamespaceAsync(string indexName, string indexNamespace, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             return string.Empty;
@@ -218,7 +233,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             yield break;
@@ -311,7 +326,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             return null;
@@ -371,7 +386,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             yield break;
@@ -429,7 +444,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             yield break;
@@ -452,7 +467,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             yield break;
@@ -498,7 +513,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async Task RemoveFromNamespaceAsync(string indexName, string indexNamespace, string key, CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             return;
@@ -534,7 +549,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async Task RemoveBatchFromNamespaceAsync(string indexName, string indexNamespace, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             return;
@@ -549,7 +564,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         string indexNamespace = "",
         CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             return;
@@ -585,7 +600,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <exception cref="PineconeMemoryException"></exception>
     public async Task RemoveWithDocumentIdAsync(string indexName, string documentId, string indexNamespace, CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             return;
@@ -622,7 +637,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         string indexNamespace,
         CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             return;
@@ -680,7 +695,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             yield break;
@@ -734,7 +749,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             return null;
@@ -765,7 +780,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (!this._pineconeClient.Ready)
+        if (!await this.EnsurePineconeClientReadyAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             this._logger.LogError("Pinecone client is not ready.");
             yield break;
@@ -814,6 +829,19 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
     private readonly IPineconeClient _pineconeClient;
     private readonly ILogger _logger;
+    
+    // a async method that ensures the pinecone client is ready
+    private async Task<bool> EnsurePineconeClientReadyAsync(string indexName, CancellationToken cancellationToken = default)
+    {
+        if (this._pineconeClient.Ready)
+        {
+            return true;
+        }
+        
+        PineconeClient client = (PineconeClient)this._pineconeClient;
+
+        return await client.ConnectToHostAsync(indexName, cancellationToken).ConfigureAwait(false);
+    }
 
     private async Task<(PineconeDocument, OperationType)> EvaluateAndUpdateMemoryRecordAsync(
         string indexName,

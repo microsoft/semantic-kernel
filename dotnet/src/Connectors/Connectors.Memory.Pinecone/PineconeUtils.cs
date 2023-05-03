@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections;
@@ -19,20 +19,20 @@ public static class PineconeUtils
     ///  The maximum size of the metadata associated with each vector.
     ///  See https://docs.pinecone.io/docs/metadata-filtering#supported-metadata-size
     /// </summary>
-    private const int MaxMetadataSize = 40 * 1024;
-    
+    public const int MaxMetadataSize = 40 * 1024;
+
     /// <summary>
     ///  The default dimension for Pinecone vectors. Equivalent to text-embeddings-ada-002 dimension.
     /// </summary>
     public const int DefaultDimension = 1536;
-    
+
     public const string DefaultIndexName = "sk-index";
-    
+
     /// <summary>
     /// Defaults to cosine similarity.
     /// </summary>
     public const IndexMetric DefaultIndexMetric = IndexMetric.Cosine;
-    
+
     /// <summary>
     ///  The standard index type for Pinecone vectors.
     /// </summary>
@@ -68,7 +68,7 @@ public static class PineconeUtils
     ///  The text field will be added to the metadata of the split documents. The split documents will be returned in the
     ///  same order as the original document.
     /// </remarks>
-    internal static async IAsyncEnumerable<PineconeDocument> EnsureValidMetadataAsync(
+    public static async IAsyncEnumerable<PineconeDocument> EnsureValidMetadataAsync(
         IAsyncEnumerable<PineconeDocument> documents)
     {
         await foreach (PineconeDocument document in documents)
@@ -185,7 +185,7 @@ public static class PineconeUtils
     ///  This is necessary because Pinecone has a different format for filters using the MongoDB query language
     ///  operators. This method converts the filters to the format expected by Pinecone.
     /// </remarks>
-    internal static Dictionary<string, object> ConvertFilterToPineconeFilter(Dictionary<string, object> filter)
+    public static Dictionary<string, object> ConvertFilterToPineconeFilter(Dictionary<string, object> filter)
     {
         Dictionary<string, object> pineconeFilter = new();
 
@@ -264,7 +264,7 @@ public static class PineconeUtils
         };
     }
 
-    internal sealed class PineconeOperator
+    public sealed class PineconeOperator
     {
         public string Operator { get; }
         public object Value { get; }
