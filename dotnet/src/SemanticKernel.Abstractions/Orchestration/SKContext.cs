@@ -3,6 +3,7 @@
 using System;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -18,11 +19,6 @@ public sealed class SKContext
     /// </summary>
     /// <returns>Processed input, aka result</returns>
     public string Result => this.Variables.ToString();
-
-    // /// <summary>
-    // /// Whether an error occurred while executing functions in the pipeline.
-    // /// </summary>
-    // public bool ErrorOccurred => this.Variables.ErrorOccurred;
 
     /// <summary>
     /// Whether an error occurred while executing functions in the pipeline.
@@ -124,14 +120,14 @@ public sealed class SKContext
     public SKContext(
         ContextVariables variables,
         ISemanticTextMemory memory,
-        IReadOnlySkillCollection? skills,
-        ILogger logger,
+        IReadOnlySkillCollection? skills = null,
+        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
         this.Variables = variables;
         this.Memory = memory;
         this.Skills = skills;
-        this.Log = logger;
+        this.Log = logger ?? NullLogger.Instance;
         this.CancellationToken = cancellationToken;
     }
 

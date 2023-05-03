@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Orchestration;
@@ -17,7 +17,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <summary>
     /// In the simplest scenario, the data is an input string, stored here.
     /// </summary>
-    public string Input => this._variables[MainKey];
+    public string Input => this.TryGet(MainKey, out var value) ? value : string.Empty;
 
     /// <summary>
     /// Constructor for context variables.
@@ -25,7 +25,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <param name="content">Optional value for the main variable of the context.</param>
     public ContextVariables(string? content = null)
     {
-        this._variables[MainKey] = content ?? string.Empty;
+        this.Set(MainKey, content);
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <returns>The current instance</returns>
     public ContextVariables Update(string? content)
     {
-        this._variables[MainKey] = content ?? string.Empty;
+        this.Set(MainKey, content);
         return this;
     }
 
@@ -49,12 +49,15 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <returns>The current instance</returns>
     public ContextVariables Update(ContextVariables newData, bool merge = true)
     {
-        // If requested, discard old data and keep only the new one.
-        if (!merge) { this._variables.Clear(); }
-
-        foreach (KeyValuePair<string, string> varData in newData._variables)
+        if (!object.ReferenceEquals(this, newData))
         {
-            this._variables[varData.Key] = varData.Value;
+            // If requested, discard old data and keep only the new one.
+            if (!merge && this._variables.IsValueCreated) { this._variables.Value.Clear(); }
+
+            foreach (KeyValuePair<string, string> varData in newData)
+            {
+                this.Set(varData.Key, varData.Value);
+            }
         }
 
         return this;
@@ -66,18 +69,18 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// to inject more information into prompt templates.
     /// </summary>
     /// <param name="name">Variable name</param>
-    /// <param name="value">Value to store. If the value is NULL the variable is deleted.</param>
+    /// <param name="value">Value to store. If the value is null or empty, the variable is deleted.</param>
     /// TODO: support for more complex data types, and plan for rendering these values into prompt templates.
     public void Set(string name, string? value)
     {
         Verify.NotNullOrWhiteSpace(name);
-        if (value != null)
+        if (!string.IsNullOrEmpty(value))
         {
-            this._variables[name] = value;
+            this._variables.Value[name] = value!;
         }
-        else
+        else if (this._variables.IsValueCreated)
         {
-            this._variables.TryRemove(name, out _);
+            _ = this._variables.Value.Remove(name);
         }
     }
 
@@ -88,12 +91,10 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <param name="value">Value</param>
     /// <returns>Whether the value exists in the context variables</returns>
     /// TODO: provide additional method that returns the value without using 'out'.
-    public bool Get(string name, out string value)
+    public bool TryGet(string name, out string value)
     {
-        if (this._variables.TryGetValue(name, out value!)) { return true; }
-
         value = string.Empty;
-        return false;
+        return this._variables.IsValueCreated && this._variables.Value.TryGetValue(name, out value);
     }
 
     /// <summary>
@@ -103,8 +104,10 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <returns>The value of the variable.</returns>
     public string this[string name]
     {
-        get => this._variables[name];
-        set => this._variables[name] = value;
+        get => this.TryGet(name, out string value) ? value
+                : throw new KeyNotFoundException($"Key not found in ContextVariables: {name}");
+
+        set => this.Set(name, value);
     }
 
     /// <summary>
@@ -114,7 +117,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <returns>True if there is a variable with the given name, false otherwise</returns>
     public bool ContainsKey(string key)
     {
-        return this._variables.ContainsKey(key);
+        return this._variables.IsValueCreated && this._variables.Value.ContainsKey(key);
     }
 
     /// <summary>
@@ -132,12 +135,13 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <returns>An enumerator that iterates through the context variables</returns>
     public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
     {
-        return this._variables.GetEnumerator();
+        return this._variables.IsValueCreated ? this._variables.Value.GetEnumerator()
+            : Enumerable.Empty<KeyValuePair<string, string>>().GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return this._variables.GetEnumerator();
+        return this.GetEnumerator();
     }
 
     /// <summary>
@@ -147,10 +151,14 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     public ContextVariables Clone()
     {
         var clone = new ContextVariables();
-        foreach (KeyValuePair<string, string> x in this._variables)
+        if (this._variables.IsValueCreated)
         {
-            clone[x.Key] = x.Value;
+            foreach (KeyValuePair<string, string> x in this._variables.Value)
+            {
+                clone[x.Key] = x.Value;
+            }
         }
+
 
         return clone;
     }
@@ -160,7 +168,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     private const string MainKey = "INPUT";
 
     // Important: names are case insensitive
-    private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Lazy<Dictionary<string, string>> _variables = new(() => new (StringComparer.OrdinalIgnoreCase));
 
     #endregion
 }

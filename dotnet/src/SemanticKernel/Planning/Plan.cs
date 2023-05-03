@@ -288,7 +288,7 @@ public sealed class Plan : ISKFunction
     public Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
-        ILogger? log = null,
+        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
         this.State.Update(input);
@@ -296,9 +296,8 @@ public sealed class Plan : ISKFunction
         SKContext context = new(
             this.State,
             NullMemory.Instance,
-            null,
-            log ?? NullLogger.Instance,
-            cancellationToken);
+            logger: log,
+            cancellationToken: cancellationToken);
 
         return this.InvokeAsync(context, settings);
     }
@@ -378,9 +377,9 @@ public sealed class Plan : ISKFunction
 
         foreach (var varName in orderedMatches)
         {
-            result = variables.Get(varName, out var value)
+            result = variables.TryGet(varName, out var value)
                 ? result.Replace($"${varName}", value)
-                : this.State.Get(varName, out value)
+                : this.State.TryGet(varName, out value)
                     ? result.Replace($"${varName}", value)
                     : result.Replace($"${varName}", string.Empty);
         }
@@ -452,11 +451,11 @@ public sealed class Plan : ISKFunction
         var functionParameters = step.Describe();
         foreach (var param in functionParameters.Parameters)
         {
-            if (variables.Get(param.Name, out var value) && !string.IsNullOrEmpty(value))
+            if (variables.TryGet(param.Name, out var value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(param.Name, value);
             }
-            else if (this.State.Get(param.Name, out value) && !string.IsNullOrEmpty(value))
+            else if (this.State.TryGet(param.Name, out value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(param.Name, value);
             }
@@ -469,11 +468,11 @@ public sealed class Plan : ISKFunction
                 var value = this.ExpandFromVariables(variables, item.Value);
                 stepVariables.Set(item.Key, value);
             }
-            else if (variables.Get(item.Key, out var value) && !string.IsNullOrEmpty(value))
+            else if (variables.TryGet(item.Key, out var value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(item.Key, value);
             }
-            else if (this.State.Get(item.Key, out value) && !string.IsNullOrEmpty(value))
+            else if (this.State.TryGet(item.Key, out value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(item.Key, value);
             }
