@@ -24,7 +24,6 @@ public class PineconeDocument
     /// <summary>
     /// Vector dense data. This should be the same length as the dimension of the index being queried.
     /// </summary>
-    /// <value>Vector dense data. This should be the same length as the dimension of the index being queried.</value>
     [JsonPropertyName("values")]
     public IEnumerable<float> Values { get; set; }
 
