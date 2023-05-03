@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace SemanticKernel.Service.Skills.OpenApiSkills;
 
@@ -47,10 +47,10 @@ public class GitHubUser
     /// <param name="siteAdmin">Whether the user is a site admin.</param>
     public GitHubUser(string name, string email, int id, string type, bool siteAdmin)
     {
-        Name = name;
-        Email = email;
-        Id = id;
-        Type = type;
-        SiteAdmin = siteAdmin;
+        this.Name = name;
+        this.Email = email;
+        this.Id = id;
+        this.Type = type;
+        this.SiteAdmin = siteAdmin;
     }
 }

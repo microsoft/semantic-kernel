@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace SemanticKernel.Service.Skills.OpenApiSkills;
 
@@ -7,19 +7,6 @@ namespace SemanticKernel.Service.Skills.OpenApiSkills;
 /// </summary>
 public class Label
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Label"/> class.
-    /// </summary>
-    /// <param name="id">The ID of the label.</param>
-    /// <param name="name">The name of the label.</param>
-    /// <param name="description">The description of the label.</param>
-    public Label(long id, string name, string description)
-    {
-        Id = id;
-        Name = name;
-        Description = description;
-    }
-
     /// <summary>
     /// Gets or sets the ID of the label.
     /// </summary>
@@ -37,4 +24,17 @@ public class Label
     /// </summary>
     [JsonPropertyName("description")]
     public string Description { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Label"/> class.
+    /// </summary>
+    /// <param name="id">The ID of the label.</param>
+    /// <param name="name">The name of the label.</param>
+    /// <param name="description">The description of the label.</param>
+    public Label(long id, string name, string description)
+    {
+        this.Id = id;
+        this.Name = name;
+        this.Description = description;
+    }
 }

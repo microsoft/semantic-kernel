@@ -1,12 +1,15 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace SemanticKernel.Service.Skills.OpenApiSkills;
 
+/// <summary>
+/// Represents a GitHub Pull Request.
+/// </summary>
 public class PullRequest
 {
     // The URL of the pull request
     [JsonPropertyName("url")]
-    public string Url { get; set; }
+    public System.Uri Url { get; set; }
 
     // The unique identifier of the pull request
     [JsonPropertyName("id")]
@@ -50,7 +53,7 @@ public class PullRequest
 
     // Constructor
     public PullRequest(
-        string url,
+        System.Uri url,
         int id,
         int number,
         string state,
@@ -63,16 +66,16 @@ public class PullRequest
         DateTime? mergedAt
     )
     {
-        Url = url;
-        Id = id;
-        Number = number;
-        State = state;
-        Locked = locked;
-        Title = title;
-        User = user;
-        Labels = labels;
-        UpdatedAt = updatedAt;
-        ClosedAt = closedAt;
-        MergedAt = mergedAt;
+        this.Url = url;
+        this.Id = id;
+        this.Number = number;
+        this.State = state;
+        this.Locked = locked;
+        this.Title = title;
+        this.User = user;
+        this.Labels = labels;
+        this.UpdatedAt = updatedAt;
+        this.ClosedAt = closedAt;
+        this.MergedAt = mergedAt;
     }
 }

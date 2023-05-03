@@ -1,7 +1,10 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace SemanticKernel.Service.Skills.OpenApiSkills;
 
+/// <summary>
+/// Represents a GitHub Repo.
+/// </summary>
 public class Repo
 {
     // The name of the repo
@@ -14,8 +17,8 @@ public class Repo
 
     public Repo(string name, string fullName)
     {
-        Name = name;
-        FullName = fullName;
+        this.Name = name;
+        this.FullName = fullName;
     }
 
 }
