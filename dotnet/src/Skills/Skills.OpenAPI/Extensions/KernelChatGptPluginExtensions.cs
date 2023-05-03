@@ -43,7 +43,7 @@ public static class KernelChatGptPluginExtensions
         Uri url,
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
-        string? userAgent = "Microsoft-Semantic-Kernel", 
+        string? userAgent = "Microsoft-Semantic-Kernel",
         HttpRetryConfig? retryConfiguration = null,
         CancellationToken cancellationToken = default)
     {
