@@ -1,12 +1,13 @@
-from dataclasses import dataclass
-from typing import Optional
-from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-import weaviate
-from semantic_kernel.utils.null_logger import NullLogger
-from logging import Logger
-from weaviate.embedded import EmbeddedOptions
 import asyncio
+from dataclasses import dataclass
+from logging import Logger
+from typing import Optional
 
+import weaviate
+from weaviate.embedded import EmbeddedOptions
+
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.null_logger import NullLogger
 
 SCHEMA = {
     "class": "MemoryRecord",

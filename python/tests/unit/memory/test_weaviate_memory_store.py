@@ -1,7 +1,8 @@
-import pytest
-from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.memory import weaviate_memory_store
 import numpy as np
+import pytest
+
+from semantic_kernel.memory import weaviate_memory_store
+from semantic_kernel.memory.memory_record import MemoryRecord
 
 
 @pytest.fixture
