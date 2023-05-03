@@ -20,13 +20,13 @@ public static class Example21_ChatGptPlugins
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         using HttpClient importHttpClient = new HttpClient();
         importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.SemanticKernel");
-        
+
         //Import a ChatGPT plugin using one of the following Kernel extension methods
         //kernel.ImportChatGptPluginSkillFromResourceAsync
         //kernel.ImportChatGptPluginSkillSkillFromDirectory
         //kernel.ImportChatGptPluginSkillSkillFromFile
         //kernel.ImportChatGptPluginSkillFromUrlAsync
-        
+
         var skill = await kernel.ImportChatGptPluginSkillFromUrlAsync("<skill name>", new Uri("<chatGPT-plugin>"), importHttpClient);
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.

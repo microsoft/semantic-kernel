@@ -146,7 +146,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
     private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
     {
         // Register the Klarna shopping ChatGPT plugin with the planner's kernel.
-        using DefaultHttpRetryHandler retryHandler = new (new HttpRetryConfig(), this._logger) { InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true } };
+        using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger) { InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true } };
         using HttpClient importHttpClient = new HttpClient(retryHandler, false);
         importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
         await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), importHttpClient);
