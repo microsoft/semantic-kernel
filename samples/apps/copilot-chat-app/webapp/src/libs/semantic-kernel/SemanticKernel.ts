@@ -2,7 +2,7 @@
 
 import { AdditionalApiRequirements, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
 import { BaseService } from '../services/BaseService';
-import { IAsk } from './model/Ask';
+import { IAsk, IAskVariables } from './model/Ask';
 import { IAskResult } from './model/AskResult';
 
 export class SemanticKernel extends BaseService {
@@ -17,6 +17,27 @@ export class SemanticKernel extends BaseService {
             apiRequirements?: AdditionalApiRequirements;
         }[],
     ): Promise<IAskResult> => {
+        // If skill requires any additional api requirements, append to context
+        if (enabledPlugins && enabledPlugins.length > 0) {
+            const openApiSkillVariables: IAskVariables[] = [];
+
+            for (var idx in enabledPlugins) {
+                var plugin = enabledPlugins[idx];
+
+                if (plugin.apiRequirements) {
+                    const apiRequirments = plugin.apiRequirements;
+                    for (var property in apiRequirments) {
+                        openApiSkillVariables.push({
+                            key: property,
+                            value: apiRequirments[property].value!,
+                        });
+                    }
+                }
+            }
+
+            ask.variables = ask.variables ? ask.variables.concat(openApiSkillVariables) : openApiSkillVariables;
+        }
+
         const result = await this.getResponseAsync<IAskResult>(
             {
                 commandPath: `skills/${skillName}/functions/${functionName}/invoke`,

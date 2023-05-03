@@ -29,13 +29,14 @@ export type PluginAuthRequirements = {
     helpLink?: string;
 };
 
-// additional information required to enable requests, i.e., server-url
+// Additional information required to enable requests, i.e., server-url
 export type AdditionalApiRequirements = {
+    // Key should be the property name and in kebab case (valid format for request header),
+    // make sure it matches exactly with the property name the API requires
     [key: string]: {
-        // key should be the property name and
-        // kebab case (property-name), required for valid request header
-        helpLink: string;
+        helpLink?: string;
         value?: string;
+        description?: string;
     };
 };
 
@@ -96,11 +97,21 @@ export const initialState: PluginsState = {
         enabled: false,
         authRequirements: {
             personalAccessToken: true,
+            scopes: ['Read and Write access to pull requests'],
             helpLink:
                 'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token',
         },
         icon: GithubIcon,
         headerTag: AuthHeaderTags.GitHub,
+        apiRequirements: {
+            owner: {
+                description: 'account owner of repository. i.e., "microsoft"',
+            },
+            repo: {
+                description: 'name of repository. i.e., "semantic-kernel"',
+                helpLink: 'https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests',
+            },
+        },
     },
 };
 

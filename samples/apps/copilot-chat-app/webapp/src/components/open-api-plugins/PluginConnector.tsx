@@ -40,6 +40,12 @@ const useClasses = makeStyles({
     error: {
         color: '#d13438',
     },
+    section: {
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        rowGap: '10px',
+    },
 });
 
 interface PluginConnectorProps {
@@ -147,7 +153,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                         </DialogTitle>
                         <DialogContent className={classes.content}>
                             {errorMessage && <Body1 className={classes.error}>{errorMessage}</Body1>}
-                            You are about to connect to {name}.
+                            You are about to connect to {name}.{' '}
                             {authRequirements.scopes && (
                                 <>
                                     To continue, you will authorize the following:{' '}
@@ -222,35 +228,41 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                     <Body1Strong> Configuration </Body1Strong>
                                     <Body1>Some additional information is required to enable {name}'s REST APIs.</Body1>
                                     {Object.keys(apiRequirements).map((requirement) => {
+                                        const requirementDetails = apiRequirementsInput![requirement];
                                         return (
-                                            <>
+                                            <div className={classes.section} key={requirement}>
                                                 <Input
+                                                    key={requirement}
                                                     required
                                                     type="text"
-                                                    id={'plugin-additional-info'}
+                                                    id={'plugin-additional-info' + requirement}
                                                     onChange={(_e, input) => {
                                                         setApiRequirmentsInput({
                                                             ...apiRequirementsInput,
                                                             [requirement]: {
-                                                                ...apiRequirementsInput![requirement],
+                                                                ...requirementDetails,
                                                                 value: input.value,
                                                             },
                                                         });
                                                     }}
-                                                    placeholder={`Enter the ${requirement} for ${name}.`}
+                                                    placeholder={`Enter the ${
+                                                        requirementDetails.description ?? requirement
+                                                    }`}
                                                 />
-                                                <Body1>
-                                                    For more details on obtaining the {requirement.toLocaleLowerCase()},{' '}
-                                                    <a
-                                                        href={apiRequirements[requirement].helpLink}
-                                                        target="_blank"
-                                                        rel="noreferrer noopener"
-                                                    >
-                                                        click here
-                                                    </a>
-                                                    .
-                                                </Body1>
-                                            </>
+                                                {requirementDetails.helpLink && (
+                                                    <Body1>
+                                                        For more details on obtaining this information,{' '}
+                                                        <a
+                                                            href={requirementDetails.helpLink}
+                                                            target="_blank"
+                                                            rel="noreferrer noopener"
+                                                        >
+                                                            click here
+                                                        </a>
+                                                        .
+                                                    </Body1>
+                                                )}
+                                            </div>
                                         );
                                     })}
                                 </>
