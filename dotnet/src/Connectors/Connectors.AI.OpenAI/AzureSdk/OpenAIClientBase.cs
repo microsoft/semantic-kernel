@@ -41,7 +41,7 @@ public abstract class OpenAIClientBase : ClientBase
         if (httpClient != null)
         {
             options.Transport = new HttpClientTransport(httpClient);
-        };
+        }
 
         if (!string.IsNullOrWhiteSpace(organization))
         {
