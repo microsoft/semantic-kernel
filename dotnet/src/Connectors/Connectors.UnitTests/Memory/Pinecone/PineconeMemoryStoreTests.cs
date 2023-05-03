@@ -117,6 +117,10 @@ public class PineconeMemoryStoreTests
         this._mockPineconeClient
             .Setup<Task>(x => x.DeleteIndexAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()));
 
+        this._mockPineconeClient
+            .Setup<Task<bool>>(x => x.DoesIndexExistAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
         // Act
         await this._pineconeMemoryStore.DeleteCollectionAsync("test");
 
