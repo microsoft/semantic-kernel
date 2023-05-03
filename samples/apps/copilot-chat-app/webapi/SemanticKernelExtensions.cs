@@ -8,9 +8,6 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
@@ -64,54 +61,37 @@ internal static class SemanticKernelExtensions
             }
         });
 
-        services.AddScoped<ISemanticTextMemory>(serviceProvider => new SemanticTextMemory(
+        services.AddScoped<ISemanticTextMemory>(serviceProvider
+            => new SemanticTextMemory(
                 serviceProvider.GetRequiredService<IMemoryStore>(),
                 serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
-                    .ToTextEmbeddingsService(serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>())));
+                    .ToTextEmbeddingsService(logger: serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>())));
 
-        // Add the planner factory.
-        services.AddPlannerFactory();
+        // Add the planner.
+        services.AddScoped<CopilotChatPlanner>(sp =>
+        {
+            // Create a kernel for the planner with the same contexts as the chat's kernel except with no skills and its own completion backend.
+            // This allows the planner to use only the skills that are available at call time.
+            IKernel chatKernel = sp.GetRequiredService<IKernel>();
+            IOptions<PlannerOptions> plannerOptions = sp.GetRequiredService<IOptions<PlannerOptions>>();
+            IKernel plannerKernel = new Kernel(
+                new SkillCollection(),
+                chatKernel.PromptTemplateEngine,
+                chatKernel.Memory,
+                new KernelConfig().AddCompletionBackend(plannerOptions.Value.AIService!),
+                sp.GetRequiredService<ILogger<CopilotChatPlanner>>());
+            return new CopilotChatPlanner(plannerKernel, plannerOptions);
+        });
 
         // Add the Semantic Kernel
         services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
         services.AddScoped<ISkillCollection, SkillCollection>();
         services.AddScoped<KernelConfig>(serviceProvider => new KernelConfig()
-            .AddCompletionBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>())
-            .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()));
+            .AddCompletionBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()
+                .Get(AIServiceOptions.CompletionPropertyName))
+            .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()
+                .Get(AIServiceOptions.EmbeddingPropertyName)));
         services.AddScoped<IKernel, Kernel>();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Add the planner factory.
-    /// </summary>
-    internal static IServiceCollection AddPlannerFactory(this IServiceCollection services)
-    {
-        // TODO Replace sequential planner with a custom CopilotChat planner tuned to chat scenarios.
-
-        services.AddSingleton<SequentialPlannerConfig>(sp => sp.GetRequiredService<IOptions<SequentialPlannerOptions>>().Value.ToSequentialPlannerConfig());
-        services.AddScoped<PlannerFactoryAsync>(sp => async (IKernel kernel) =>
-        {
-            // Create a kernel for the planner with the same contexts as the chat's kernel but with only skills we want available to the planner.
-            IKernel plannerKernel = new Kernel(new SkillCollection(), kernel.PromptTemplateEngine, kernel.Memory, kernel.Config, kernel.Log);
-
-            //
-            // Add skills to the planner here.
-            //
-            await plannerKernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json")); // Klarna
-            plannerKernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "text");
-            plannerKernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TimeSkill(), "time");
-            plannerKernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.MathSkill(), "math");
-
-            SequentialPlannerOptions plannerOptions = sp.GetRequiredService<IOptions<SequentialPlannerOptions>>().Value;
-            if (!string.IsNullOrWhiteSpace(plannerOptions.SemanticSkillsDirectory))
-            {
-                plannerKernel.RegisterSemanticSkills(plannerOptions.SemanticSkillsDirectory, sp.GetRequiredService<ILogger>());
-            }
-
-            return new SequentialPlanner(plannerKernel, plannerOptions.ToSequentialPlannerConfig());
-        });
 
         return services;
     }
@@ -119,31 +99,25 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Add the completion backend to the kernel config
     /// </summary>
-    internal static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
+    internal static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
     {
-        AIServiceOptions config = aiServiceOptions.Get(AIServiceOptions.CompletionPropertyName);
-
-        switch (config.AIService)
+        switch (aiServiceOptions.AIService)
         {
             case AIServiceOptions.AIServiceType.AzureOpenAI:
                 kernelConfig.AddAzureChatCompletionService(
-                    serviceId: config.Label,
-                    deploymentName: config.DeploymentOrModelId,
-                    endpoint: config.Endpoint,
-                    apiKey: config.Key,
-                    alsoAsTextCompletion: true);
+                    deploymentName: aiServiceOptions.DeploymentOrModelId,
+                    endpoint: aiServiceOptions.Endpoint,
+                    apiKey: aiServiceOptions.Key);
                 break;
 
             case AIServiceOptions.AIServiceType.OpenAI:
                 kernelConfig.AddOpenAIChatCompletionService(
-                    serviceId: config.Label,
-                    modelId: config.DeploymentOrModelId,
-                    apiKey: config.Key,
-                    alsoAsTextCompletion: true);
+                    modelId: aiServiceOptions.DeploymentOrModelId,
+                    apiKey: aiServiceOptions.Key);
                 break;
 
             default:
-                throw new ArgumentException($"Invalid {nameof(config.AIService)} value in '{AIServiceOptions.CompletionPropertyName}' settings.");
+                throw new ArgumentException($"Invalid {nameof(aiServiceOptions.AIService)} value in '{AIServiceOptions.CompletionPropertyName}' settings.");
         }
 
         return kernelConfig;
@@ -152,29 +126,27 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Add the embedding backend to the kernel config
     /// </summary>
-    internal static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, IOptionsSnapshot<AIServiceOptions> aiServiceOptions)
+    internal static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
     {
-        AIServiceOptions config = aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName);
-
-        switch (config.AIService)
+        switch (aiServiceOptions.AIService)
         {
             case AIServiceOptions.AIServiceType.AzureOpenAI:
                 kernelConfig.AddAzureTextEmbeddingGenerationService(
-                    serviceId: config.Label,
-                    deploymentName: config.DeploymentOrModelId,
-                    endpoint: config.Endpoint,
-                    apiKey: config.Key);
+                    deploymentName: aiServiceOptions.DeploymentOrModelId,
+                    endpoint: aiServiceOptions.Endpoint,
+                    apiKey: aiServiceOptions.Key,
+                    serviceId: aiServiceOptions.Label);
                 break;
 
             case AIServiceOptions.AIServiceType.OpenAI:
                 kernelConfig.AddOpenAITextEmbeddingGenerationService(
-                    serviceId: config.Label,
-                    modelId: config.DeploymentOrModelId,
-                    apiKey: config.Key);
+                    modelId: aiServiceOptions.DeploymentOrModelId,
+                    apiKey: aiServiceOptions.Key,
+                    serviceId: aiServiceOptions.Label);
                 break;
 
             default:
-                throw new ArgumentException($"Invalid {nameof(config.AIService)} value in '{AIServiceOptions.EmbeddingPropertyName}' settings.");
+                throw new ArgumentException($"Invalid {nameof(aiServiceOptions.AIService)} value in '{AIServiceOptions.EmbeddingPropertyName}' settings.");
         }
 
         return kernelConfig;
@@ -183,9 +155,12 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Construct IEmbeddingGeneration from <see cref="AIServiceOptions"/>
     /// </summary>
+    /// <param name="serviceConfig">The service configuration</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     internal static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
-        ILogger? logger = null,
-        IDelegatingHandlerFactory? handlerFactory = null)
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         return serviceConfig.AIService switch
         {
@@ -193,11 +168,14 @@ internal static class SemanticKernelExtensions
                 serviceConfig.DeploymentOrModelId,
                 serviceConfig.Endpoint,
                 serviceConfig.Key,
-                handlerFactory: handlerFactory,
-                log: logger),
+                httpClient: httpClient,
+                logger: logger),
 
             AIServiceOptions.AIServiceType.OpenAI => new OpenAITextEmbeddingGeneration(
-                serviceConfig.DeploymentOrModelId, serviceConfig.Key, handlerFactory: handlerFactory, log: logger),
+                serviceConfig.DeploymentOrModelId,
+                serviceConfig.Key,
+                httpClient: httpClient,
+                logger: logger),
 
             _ => throw new ArgumentException("Invalid AIService value in embeddings backend settings"),
         };

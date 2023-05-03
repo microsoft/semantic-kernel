@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ChatMessage } from '../../../libs/models/ChatMessage';
+import { IChatMessage } from '../../../libs/models/ChatMessage';
 import { ChatState } from './ChatState';
 import { Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
 export const conversationsSlice = createSlice({
-    name: 'hub',
+    name: 'conversations',
     initialState,
     reducers: {
         incrementBotProfilePictureIndex: (state: ConversationsState) => {
@@ -30,7 +30,7 @@ export const conversationsSlice = createSlice({
         },
         updateConversation: (
             state: ConversationsState,
-            action: PayloadAction<{ message: ChatMessage; chatId?: string }>,
+            action: PayloadAction<{ message: IChatMessage; chatId?: string }>,
         ) => {
             const { message, chatId } = action.payload;
             const id = chatId ?? state.selectedId;
@@ -46,7 +46,7 @@ export const {
     editConversationTitle,
     setSelectedConversation,
     addConversation,
-    updateConversation
+    updateConversation,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

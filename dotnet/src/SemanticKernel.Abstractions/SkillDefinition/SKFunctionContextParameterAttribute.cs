@@ -47,7 +47,10 @@ public sealed class SKFunctionContextParameterAttribute : Attribute
     /// <returns>Parameter view.</returns>
     public ParameterView ToParameterView()
     {
-        Verify.NotEmpty(this.Name, "The parameter name is missing");
+        if (string.IsNullOrWhiteSpace(this.Name))
+        {
+            throw new InvalidOperationException($"The {nameof(SKFunctionContextParameterAttribute)}'s Name must be non-null and not composed entirely of whitespace.");
+        }
 
         return new ParameterView
         {

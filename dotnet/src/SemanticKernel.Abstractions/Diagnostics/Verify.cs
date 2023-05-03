@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -14,28 +15,29 @@ internal static class Verify
 {
     private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");
 
+    // Equivalent of ArgumentNullException.ThrowIfNull
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNull([NotNull] object? obj, string message)
+    internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression(nameof(obj))] string? paramName = null)
     {
         if (obj is null)
         {
-            ThrowValidationException(ValidationException.ErrorCodes.NullValue, message);
+            ThrowArgumentNullException(paramName);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotEmpty([NotNull] string? str, string message)
+    internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression(nameof(str))] string? paramName = null)
     {
-        NotNull(str, message);
+        NotNull(str, paramName);
         if (string.IsNullOrWhiteSpace(str))
         {
-            ThrowValidationException(ValidationException.ErrorCodes.EmptyValue, message);
+            ThrowArgumentWhiteSpaceException(paramName);
         }
     }
 
     internal static void ValidSkillName([NotNull] string? skillName)
     {
-        NotEmpty(skillName, "The skill name cannot be empty");
+        NotNullOrWhiteSpace(skillName);
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(skillName))
         {
             ThrowInvalidName("skill name", skillName);
@@ -44,7 +46,7 @@ internal static class Verify
 
     internal static void ValidFunctionName([NotNull] string? functionName)
     {
-        NotEmpty(functionName, "The function name cannot be empty");
+        NotNullOrWhiteSpace(functionName);
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionName))
         {
             ThrowInvalidName("function name", functionName);
@@ -53,20 +55,21 @@ internal static class Verify
 
     internal static void ValidFunctionParamName([NotNull] string? functionParamName)
     {
-        NotEmpty(functionParamName, "The function parameter name cannot be empty");
+        NotNullOrWhiteSpace(functionParamName);
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionParamName))
         {
             ThrowInvalidName("function parameter name", functionParamName);
         }
     }
 
-    internal static void StartsWith(string text, string prefix, string message)
+    internal static void StartsWith(string text, string prefix, string message, [CallerArgumentExpression(nameof(text))] string? textParamName = null)
     {
-        NotEmpty(text, "The text to verify cannot be empty");
-        NotNull(prefix, "The prefix to verify is empty");
+        Debug.Assert(prefix is not null);
+
+        NotNullOrWhiteSpace(text, textParamName);
         if (!text.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
-            ThrowValidationException(ValidationException.ErrorCodes.MissingPrefix, message);
+            throw new ArgumentException(textParamName, message);
         }
     }
 
@@ -74,7 +77,7 @@ internal static class Verify
     {
         if (!Directory.Exists(path))
         {
-            ThrowValidationException(ValidationException.ErrorCodes.DirectoryNotFound, $"Directory not found: {path}");
+            throw new DirectoryNotFoundException($"Directory '{path}' could not be found.");
         }
     }
 
@@ -91,8 +94,18 @@ internal static class Verify
             for (int i = 0; i < count; i++)
             {
                 ParameterView p = parameters[i];
-
-                NotEmpty(p.Name, "The parameter name is empty");
+                if (string.IsNullOrWhiteSpace(p.Name))
+                {
+                    string paramName = $"{nameof(parameters)}[{i}].{p.Name}";
+                    if (p.Name is null)
+                    {
+                        ThrowArgumentNullException(paramName);
+                    }
+                    else
+                    {
+                        ThrowArgumentWhiteSpaceException(paramName);
+                    }
+                }
 
                 if (!seen.Add(p.Name))
                 {
@@ -104,26 +117,6 @@ internal static class Verify
         }
     }
 
-    internal static void GreaterThan<T>(T value, T min, string message) where T : IComparable<T>
-    {
-        int cmp = value.CompareTo(min);
-
-        if (cmp <= 0)
-        {
-            throw new ValidationException(ValidationException.ErrorCodes.OutOfRange, message);
-        }
-    }
-
-    public static void LessThan<T>(T value, T max, string message) where T : IComparable<T>
-    {
-        int cmp = value.CompareTo(max);
-
-        if (cmp >= 0)
-        {
-            throw new ValidationException(ValidationException.ErrorCodes.OutOfRange, message);
-        }
-    }
-
     [DoesNotReturn]
     private static void ThrowInvalidName(string kind, string name) =>
         throw new KernelException(
@@ -131,6 +124,14 @@ internal static class Verify
             $"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.");
 
     [DoesNotReturn]
-    private static void ThrowValidationException(ValidationException.ErrorCodes errorCodes, string message) =>
-        throw new ValidationException(errorCodes, message);
+    internal static void ThrowArgumentNullException(string? paramName) =>
+        throw new ArgumentNullException(paramName);
+
+    [DoesNotReturn]
+    internal static void ThrowArgumentWhiteSpaceException(string? paramName) =>
+        throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", paramName);
+
+    [DoesNotReturn]
+    internal static void ThrowArgumentOutOfRangeException<T>(string? paramName, T actualValue, string message) =>
+        throw new ArgumentOutOfRangeException(paramName, actualValue, message);
 }

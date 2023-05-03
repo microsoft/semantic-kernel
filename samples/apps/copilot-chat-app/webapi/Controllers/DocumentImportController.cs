@@ -8,6 +8,8 @@ using Microsoft.SemanticKernel.Text;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
+using UglyToad.PdfPig;
+using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 
 namespace SemanticKernel.Service.Controllers;
 
@@ -25,12 +27,17 @@ public class DocumentImportController : ControllerBase
         /// <summary>
         /// .txt
         /// </summary>
-        Txt
+        Txt,
+
+        /// <summary>
+        /// .pdf
+        /// </summary>
+        Pdf,
     };
 
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _serviceProvider; // TODO: unused
     private readonly ILogger<DocumentImportController> _logger;
-    private readonly PromptSettings _promptSettings;
+    private readonly PromptSettings _promptSettings; // TODO: unused
     private readonly DocumentMemoryOptions _options;
 
     /// <summary>
@@ -87,6 +94,9 @@ public class DocumentImportController : ControllerBase
                 case SupportedFileType.Txt:
                     fileContent = await this.ReadTxtFileAsync(formFile);
                     break;
+                case SupportedFileType.Pdf:
+                    fileContent = this.ReadPdfFile(formFile);
+                    break;
                 default:
                     return this.BadRequest($"Unsupported file type: {fileType}");
             }
@@ -113,6 +123,7 @@ public class DocumentImportController : ControllerBase
         return extension switch
         {
             ".txt" => SupportedFileType.Txt,
+            ".pdf" => SupportedFileType.Pdf,
             _ => throw new ArgumentOutOfRangeException($"Unsupported file type: {extension}"),
         };
     }
@@ -126,6 +137,25 @@ public class DocumentImportController : ControllerBase
     {
         using var streamReader = new StreamReader(file.OpenReadStream());
         return await streamReader.ReadToEndAsync();
+    }
+
+    /// <summary>
+    /// Read the content of a PDF file, ignoring images.
+    /// </summary>
+    /// <param name="file">An IFormFile object.</param>
+    /// <returns>A string of the content of the file.</returns>
+    private string ReadPdfFile(IFormFile file)
+    {
+        var fileContent = string.Empty;
+
+        using var pdfDocument = PdfDocument.Open(file.OpenReadStream());
+        foreach (var page in pdfDocument.GetPages())
+        {
+            var text = ContentOrderTextExtractor.GetText(page);
+            fileContent += text;
+        }
+
+        return fileContent;
     }
 
     /// <summary>

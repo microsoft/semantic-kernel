@@ -20,6 +20,7 @@ public class WebSearchEngineSkill
 
     [SKFunction("Perform a web search.")]
     [SKFunctionInput(Description = "Text to search for")]
+    [SKFunctionName("search")]
     public async Task<string> SearchAsync(string query, SKContext context)
     {
         string result = await this._connector.SearchAsync(query, context.CancellationToken).ConfigureAwait(false);

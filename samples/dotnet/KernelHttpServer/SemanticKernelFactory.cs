@@ -48,13 +48,17 @@ internal static class SemanticKernelFactory
             switch (config.CompletionConfig.AIService)
             {
                 case AIService.OpenAI:
-                    c.AddOpenAITextCompletionService(config.CompletionConfig.ServiceId, config.CompletionConfig.DeploymentOrModelId,
-                        config.CompletionConfig.Key);
+                    c.AddOpenAITextCompletionService(
+                        config.CompletionConfig.DeploymentOrModelId,
+                        config.CompletionConfig.Key,
+                        serviceId: config.CompletionConfig.ServiceId);
                     break;
                 case AIService.AzureOpenAI:
-                    c.AddAzureTextCompletionService(config.CompletionConfig.ServiceId, config.CompletionConfig.DeploymentOrModelId,
+                    c.AddAzureTextCompletionService(
+                        config.CompletionConfig.DeploymentOrModelId,
                         config.CompletionConfig.Endpoint,
-                        config.CompletionConfig.Key);
+                        config.CompletionConfig.Key,
+                        serviceId: config.CompletionConfig.ServiceId);
                     break;
                 default:
                     break;
@@ -65,12 +69,17 @@ internal static class SemanticKernelFactory
                 switch (config.EmbeddingConfig.AIService)
                 {
                     case AIService.OpenAI:
-                        c.AddOpenAITextEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
-                            config.EmbeddingConfig.Key);
+                        c.AddOpenAITextEmbeddingGenerationService(
+                            config.EmbeddingConfig.DeploymentOrModelId,
+                            config.EmbeddingConfig.Key,
+                            serviceId: config.EmbeddingConfig.ServiceId);
                         break;
                     case AIService.AzureOpenAI:
-                        c.AddAzureTextEmbeddingGenerationService(config.EmbeddingConfig.ServiceId, config.EmbeddingConfig.DeploymentOrModelId,
-                            config.EmbeddingConfig.Endpoint, config.EmbeddingConfig.Key);
+                        c.AddAzureTextEmbeddingGenerationService(
+                            config.EmbeddingConfig.DeploymentOrModelId,
+                            config.EmbeddingConfig.Endpoint,
+                            config.EmbeddingConfig.Key,
+                            serviceId: config.EmbeddingConfig.ServiceId);
                         break;
                     default:
                         break;
@@ -93,10 +102,7 @@ internal static class SemanticKernelFactory
             kernel.RegisterNativeGraphSkills(graphToken.First());
         }
 
-        if (kernel.Config.DefaultTextEmbeddingGenerationServiceId != null)
-        {
-            kernel.RegisterTextMemory();
-        }
+        kernel.RegisterTextMemory();
 
         return kernel;
     }

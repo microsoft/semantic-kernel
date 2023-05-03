@@ -16,7 +16,7 @@ public class TopNCollectionTests
     public void ItResetsCollectionCorrectly()
     {
         // Arrange
-        const int expectedItemsCount = 0;
+        const int ExpectedItemsCount = 0;
 
         var topNCollection = this.GetTestCollection(MaxItemsCount);
 
@@ -24,20 +24,20 @@ public class TopNCollectionTests
         topNCollection.Reset();
 
         // Assert
-        Assert.Equal(expectedItemsCount, topNCollection.Count);
+        Assert.Equal(ExpectedItemsCount, topNCollection.Count);
     }
 
     [Fact]
     public void ItKeepsMaxItemsCountWhenMoreItemsWereAdded()
     {
         // Arrange
-        const int expectedCollectionCount = 5;
+        const int ExpectedCollectionCount = 5;
 
         // Act
-        var topNCollection = this.GetTestCollection(expectedCollectionCount);
+        var topNCollection = this.GetTestCollection(ExpectedCollectionCount);
 
         // Assert
-        Assert.Equal(expectedCollectionCount, topNCollection.Count);
+        Assert.Equal(ExpectedCollectionCount, topNCollection.Count);
     }
 
     [Fact]
