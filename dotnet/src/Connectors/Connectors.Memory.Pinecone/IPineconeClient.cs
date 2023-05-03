@@ -114,7 +114,7 @@ public interface IPineconeClient
     /// Delete
     /// </summary>
     /// <remarks>
-    /// The Delete operation deletes vectors, by id, from a single namespace. You can delete items by their id, from a single namespace.
+    /// The Delete operation deletes vectors, by id, from a single namespace. It's possible to delete items by their id, from a single namespace.
     /// </remarks>
     /// <param name="indexName"> The name of the index</param>
     /// <param name="ids"> The ids to delete</param>
