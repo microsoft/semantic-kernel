@@ -14,6 +14,7 @@ on:
     branches: [ "main"] # TODO: remove before pushing to main
     paths: 
       -'python/**'
+      -'.github/workflows/python-integration-tests.yml'
   schedule:
     - cron: '0 */12 * * *' # Run every 12 hours: midnight UTC and noon UTC
 
