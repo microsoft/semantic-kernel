@@ -118,6 +118,13 @@ public sealed class ActionPlanner
             plan = new Plan(goal);
         }
 
+        // Planner should not suggest server-url as a parameter.
+        // Server URL should be be parsed from OpenAPI spec or provided by user
+        if (planData.Plan.Parameters.ContainsKey("server-url"))
+        {
+            planData.Plan.Parameters.Remove("server-url");
+        }
+
         // Create a plan using the function and the parameters suggested by the planner
         var variables = new ContextVariables();
         foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
