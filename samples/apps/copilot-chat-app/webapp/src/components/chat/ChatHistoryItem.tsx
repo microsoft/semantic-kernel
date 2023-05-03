@@ -2,7 +2,7 @@
 
 import { Label, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { AuthorRoles, ChatMessage } from '../../libs/models/ChatMessage';
+import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
 import { SKBotAudienceMember } from '../../libs/semantic-kernel/bot-agent/models/SKBotAudienceMember';
 import { useChat } from '../../libs/useChat';
 import { useAppSelector } from '../../redux/app/hooks';
@@ -54,7 +54,7 @@ const useClasses = makeStyles({
 
 interface ChatHistoryItemProps {
     audience: SKBotAudienceMember[];
-    message: ChatMessage;
+    message: IChatMessage;
 }
 
 const createCommandLink = (command: string) => {
