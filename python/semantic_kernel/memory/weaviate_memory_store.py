@@ -89,3 +89,6 @@ class WeaviateMemoryStore(MemoryStoreBase):
     async def get_collections_async(self) -> List[str]:
         schemas = await asyncio.to_thread(self.client.schema.get)
         return [schema["class"] for schema in schemas["classes"]]
+
+    async def delete_collection_async(self, collection_name: str) -> bool:
+        await asyncio.to_thread(self.client.schema.delete_class, collection_name)

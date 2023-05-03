@@ -60,6 +60,15 @@ def memory_store():
     store = weaviate_memory_store.WeaviateMemoryStore(config)
     store.client.schema.delete_all()
     yield store
+    store.client.schema.delete_all()
+
+
+@pytest.fixture
+def memory_store_with_collection(memory_store, event_loop):
+    event_loop.run_until_complete(
+        memory_store.create_collection_async("MindRepository")
+    )
+    return memory_store
 
 
 def test_embedded_weaviate():
@@ -87,3 +96,16 @@ async def test_get_collections(memory_store):
     results = await memory_store.get_collections_async()
 
     assert set(results) == set(collection_names)
+
+
+@pytest.mark.asyncio
+async def test_delete_collection(memory_store_with_collection):
+    schemas = memory_store_with_collection.client.schema.get()["classes"]
+    assert len(schemas) == 1
+
+    collection_name = schemas[0]["class"]
+
+    await memory_store_with_collection.delete_collection_async(collection_name)
+
+    schemas = memory_store_with_collection.client.schema.get()["classes"]
+    assert len(schemas) == 0
