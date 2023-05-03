@@ -87,8 +87,6 @@ public static class PineconeUtils
                 continue;
             }
 
-            Console.WriteLine($"Splitting document {document.Id} into multiple documents because metadata size is too large");
-
             string text = value as string ?? string.Empty;
             int textSize = Encoding.UTF8.GetByteCount(text);
             document.Metadata.Remove("text");
@@ -120,8 +118,6 @@ public static class PineconeUtils
 
                 splitCounter++;
             }
-
-            Console.WriteLine($"Split document {document.Id} into {splitCounter} documents");
         }
     }
 
@@ -130,9 +126,10 @@ public static class PineconeUtils
     /// </summary>
     /// <param name="data"></param>
     /// <param name="batchSize"></param>
-    /// <returns></returns>
+    /// <returns> A stream of upsert requests. </returns>
     /// <remarks>
     ///  The recommended batch size as per Pinecone documentation is 100.
+    ///  See https://docs.pinecone.io/docs/insert-data#batching-upserts
     /// </remarks>
     internal static async IAsyncEnumerable<UpsertRequest> GetUpsertBatchesAsync(
         IAsyncEnumerable<PineconeDocument> data,
@@ -154,7 +151,6 @@ public static class PineconeUtils
 
             batchCounter++;
             currentBatch = new List<PineconeDocument>(batchSize);
-            Console.WriteLine("Batch {0} processed", batchCounter);
         }
 
         if (currentBatch.Count <= 0)
@@ -163,8 +159,6 @@ public static class PineconeUtils
         }
 
         yield return UpsertRequest.UpsertVectors(currentBatch);
-
-        Console.WriteLine("Batch {0} processed", batchCounter + 1);
     }
 
     private static int GetMetadataSize(Dictionary<string, object> metadata)
