@@ -610,17 +610,19 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
 
     private async Task<string> GetVectorOperationsApiBasePathAsync(string indexName)
     {
-        if (this._indexDescription != null && this._indexDescription.Configuration.Name == indexName)
+        if (this._indexDescription?.Configuration.Name == indexName)
         {
             return $"https://{this._indexDescription!.Status.Host}";
         }
 
-        if (!await this.ConnectToHostAsync(indexName).ConfigureAwait(false))
+        if (await this.ConnectToHostAsync(indexName).ConfigureAwait(false))
         {
-            this._logger.LogError("Failed to connect to host");
+            return $"https://{this._indexDescription!.Status.Host}";
         }
+        
+        this._logger.LogError("Failed to connect to host");
+        return string.Empty;
 
-        return $"https://{this._indexDescription!.Status.Host}";
     }
 
     private string GetIndexOperationsApiBasePath()
