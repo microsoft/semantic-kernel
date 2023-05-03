@@ -125,6 +125,18 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
           value: openAI.listKeys().key1
         }
         {
+          name: 'Planner:AIService'
+          value: 'AzureOpenAI'
+        }
+        {
+          name: 'Planner:Endpoint'
+          value: openAI.properties.endpoint
+        }
+        {
+          name: 'Planner:Key'
+          value: openAI.listKeys().key1
+        }
+        {
           name: 'ChatStore:Type'
           value: 'volatile'
         }
