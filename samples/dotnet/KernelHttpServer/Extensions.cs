@@ -90,14 +90,12 @@ internal static class Extensions
 
     internal static ISKFunction GetFunction(this IReadOnlySkillCollection skills, string skillName, string functionName)
     {
-        return skills.HasNativeFunction(skillName, functionName)
-            ? skills.GetNativeFunction(skillName, functionName)
-            : skills.GetSemanticFunction(skillName, functionName);
+        return skills.GetFunction(skillName, functionName);
     }
 
     internal static bool HasSemanticOrNativeFunction(this IReadOnlySkillCollection skills, string skillName, string functionName)
     {
-        return skills.HasSemanticFunction(skillName, functionName) || skills.HasNativeFunction(skillName, functionName);
+        return skills.TryGetFunction(skillName, functionName, out _);
     }
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
