@@ -64,7 +64,7 @@ def memory_store():
 
 
 @pytest.fixture
-def memory_store_with_collection(memory_store, event_loop):
+def memory_store_with_empty_collection(memory_store, event_loop):
     collection_name = "MindRepository"
     event_loop.run_until_complete(memory_store.create_collection_async(collection_name))
     return collection_name, memory_store
@@ -98,8 +98,8 @@ async def test_get_collections(memory_store):
 
 
 @pytest.mark.asyncio
-async def test_delete_collection(memory_store_with_collection):
-    collection_name, memory_store = memory_store_with_collection
+async def test_delete_collection(memory_store_with_empty_collection):
+    collection_name, memory_store = memory_store_with_empty_collection
 
     schemas = memory_store.client.schema.get()["classes"]
     assert len(schemas) == 1
@@ -111,8 +111,8 @@ async def test_delete_collection(memory_store_with_collection):
 
 
 @pytest.mark.asyncio
-async def test_collection_exists(memory_store_with_collection):
-    collection_name, memory_store = memory_store_with_collection
+async def test_collection_exists(memory_store_with_empty_collection):
+    collection_name, memory_store = memory_store_with_empty_collection
 
     memory_store.client.schema.get()["classes"]
 
@@ -121,8 +121,8 @@ async def test_collection_exists(memory_store_with_collection):
 
 
 @pytest.mark.asyncio
-async def test_upsert(memory_store_with_collection, documents):
-    collection_name, memory_store = memory_store_with_collection
+async def test_upsert(memory_store_with_empty_collection, documents):
+    collection_name, memory_store = memory_store_with_empty_collection
 
     for doc in documents[:2]:
         await memory_store.upsert_async(collection_name, doc)
@@ -134,8 +134,8 @@ async def test_upsert(memory_store_with_collection, documents):
 
 
 @pytest.mark.asyncio
-async def test_upsert_batch(memory_store_with_collection, documents):
-    collection_name, memory_store = memory_store_with_collection
+async def test_upsert_batch(memory_store_with_empty_collection, documents):
+    collection_name, memory_store = memory_store_with_empty_collection
 
     await memory_store.upsert_batch_async(collection_name, documents)
 
