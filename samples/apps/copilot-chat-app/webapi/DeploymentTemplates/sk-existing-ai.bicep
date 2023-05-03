@@ -35,6 +35,9 @@ param completionModel string = 'gpt-35-turbo'
 @description('Model to use for text embeddings')
 param embeddingModel string = 'text-embedding-ada-002'
 
+@description('Completion model the task planner should use')
+param plannerModel string = 'gpt-35-turbo'
+
 @description('Azure OpenAI endpoint to use (ignored when AI service is not AzureOpenAI)')
 param endpoint string = ''
 
@@ -105,6 +108,22 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'Embedding:Key'
+          value: apiKey
+        }
+        {
+          name: 'Planner:AIService'
+          value: aiService
+        }
+        {
+          name: 'Planner:DeploymentOrModelId'
+          value: plannerModel
+        }
+        {
+          name: 'Planner:Endpoint'
+          value: endpoint
+        }
+        {
+          name: 'Planner:Key'
           value: apiKey
         }
         {
