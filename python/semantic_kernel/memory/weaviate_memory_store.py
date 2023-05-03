@@ -6,6 +6,7 @@ from typing import List, Optional
 import weaviate
 from weaviate.embedded import EmbeddedOptions
 
+from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
 
@@ -60,6 +61,42 @@ class WeaviateConfig:
 
 
 class WeaviateMemoryStore(MemoryStoreBase):
+    class FieldMapper:
+        """
+        This inner class is responsible for mapping attribute names between
+        the SK's memory record and weaviate's schema. It provides methods
+        for converting between the two naming conventions.
+        """
+
+        SK_TO_WEAVIATE_MAPPING = {
+            "_key": "key",
+            "_timestamp": "timestamp",
+            "_is_reference": "isReference",
+            "_external_source_name": "externalSourceName",
+            "_id": "skId",
+            "_description": "description",
+            "_text": "text",
+            "_embedding": "vector",
+        }
+
+        WEAVIATE_TO_SK_MAPPING = {v: k for k, v in SK_TO_WEAVIATE_MAPPING.items()}
+
+        @classmethod
+        def sk_to_weaviate(cls, sk_dict):
+            return {
+                cls.SK_TO_WEAVIATE_MAPPING.get(k, k): v
+                for k, v in sk_dict.items()
+                if k in cls.SK_TO_WEAVIATE_MAPPING
+            }
+
+        @classmethod
+        def weaviate_to_sk(cls, weaviate_dict):
+            return {
+                cls.WEAVIATE_TO_SK_MAPPING.get(k, k): v
+                for k, v in weaviate_dict.items()
+                if k in cls.WEAVIATE_TO_SK_MAPPING
+            }
+
     def __init__(self, config: WeaviateConfig, logger: Optional[Logger] = None):
         self._logger = logger or NullLogger()
         self.config = config
@@ -96,3 +133,41 @@ class WeaviateMemoryStore(MemoryStoreBase):
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         collections = await self.get_collections_async()
         return collection_name in collections
+
+    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+        weaviate_record = self.FieldMapper.sk_to_weaviate(vars(record))
+
+        vector = weaviate_record.pop("vector", None)
+        weaviate_id = weaviate.util.generate_uuid5(weaviate_record, collection_name)
+
+        return await asyncio.to_thread(
+            self.client.data_object.create,
+            data_object=weaviate_record,
+            uuid=weaviate_id,
+            vector=vector,
+            class_name=collection_name,
+        )
+
+    async def upsert_batch_async(
+        self, collection_name: str, records: List[MemoryRecord]
+    ) -> List[str]:
+        def _upsert_batch_inner():
+            results = []
+            with self.client.batch as batch:
+                for record in records:
+                    weaviate_record = self.FieldMapper.sk_to_weaviate(vars(record))
+                    vector = weaviate_record.pop("vector", None)
+                    weaviate_id = weaviate.util.generate_uuid5(
+                        weaviate_record, collection_name
+                    )
+                    batch.add_data_object(
+                        data_object=weaviate_record,
+                        uuid=weaviate_id,
+                        vector=vector,
+                        class_name=collection_name,
+                    )
+                    results.append(weaviate_id)
+
+            return results
+
+        return await asyncio.to_thread(_upsert_batch_inner)

@@ -118,3 +118,28 @@ async def test_collection_exists(memory_store_with_collection):
 
     assert await memory_store.does_collection_exist_async(collection_name)
     assert not await memory_store.does_collection_exist_async("NotACollection")
+
+
+@pytest.mark.asyncio
+async def test_upsert(memory_store_with_collection, documents):
+    collection_name, memory_store = memory_store_with_collection
+
+    for doc in documents[:2]:
+        await memory_store.upsert_async(collection_name, doc)
+
+    total_docs = memory_store.client.data_object.get(class_name=collection_name)[
+        "totalResults"
+    ]
+    assert total_docs == 2
+
+
+@pytest.mark.asyncio
+async def test_upsert_batch(memory_store_with_collection, documents):
+    collection_name, memory_store = memory_store_with_collection
+
+    await memory_store.upsert_batch_async(collection_name, documents)
+
+    total_docs = memory_store.client.data_object.get(class_name=collection_name)[
+        "totalResults"
+    ]
+    assert total_docs == len(documents)
