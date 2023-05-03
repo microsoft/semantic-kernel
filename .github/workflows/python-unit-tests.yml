@@ -1,4 +1,4 @@
-name: Python tests
+name: Python Unit Tests
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
       - 'python/**'
 
 jobs:
-  paths-filter:
+  python-unit-tests:
     runs-on: ubuntu-latest
     outputs:
       output1: ${{ steps.filter.outputs.python}}

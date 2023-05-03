@@ -2,7 +2,7 @@
 # This workflow will run all python integrations tests.
 #
 
-name: python-integration-tests
+name: Python Integration Tests
 
 on:
   workflow_dispatch:
@@ -24,7 +24,7 @@ permissions:
   contents: read
 
 jobs:
-  integration-tests:
+  python-integration-tests:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
