@@ -8,14 +8,19 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ "main", "feature*" ]
-    paths: 
-      - 'dotnet/**'
 
 jobs:
-  check-format:
+  dotnet-format:
     runs-on: ubuntu-latest
 
     steps:
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          dotnet:
+            - 'dotnet/**'
+            - 'samples/dotnet/**'
       - name: Check out code
         uses: actions/checkout@v3
         with:

@@ -10,6 +10,7 @@ on:
     branches: ["main", "feature*"]
     paths: 
       - 'dotnet/**'
+      - 'samples/dotnet/**'
 
 permissions:
   contents: read

@@ -3,8 +3,6 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ "main", "feature*" ]
-    paths: 
-      -'python/**'
 
 jobs:
   paths-filter:
@@ -12,6 +10,12 @@ jobs:
     outputs:
       output1: ${{ steps.filter.outputs.python}}
     steps:
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          python:
+            - 'python/**'
     - uses: actions/checkout@v3
     - name: python tests
       if: steps.filter.outputs.python == 'true'

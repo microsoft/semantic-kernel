@@ -13,6 +13,12 @@ jobs:
     outputs:
       output1: ${{ steps.filter.outputs.python}}
     steps:
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          python:
+            - 'python/**'
     - uses: actions/checkout@v3
     # run only if 'python' files were changed
     - name: python tests
