@@ -10,6 +10,7 @@ on:
     branches: [ "main"]
     paths: 
       -'python/**'
+      -'.github/workflows/python-integration-tests.yml'
   pull_request:
     branches: [ "main"] # TODO: remove before pushing to main
     paths: 
