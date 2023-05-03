@@ -496,11 +496,7 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         this._logger.LogInformation("Checking for index {0}", indexName);
         List<string?>? indexNames = await this.ListIndexesAsync(cancel).ToListAsync(cancel).ConfigureAwait(false);
 
-        if (indexNames.Count == 0 || indexNames == null)
-        {
-            return false;
-        }
-        return indexNames.Any(name => name == indexName);
+        return indexNames != null && indexNames.Any(name => name == indexName);
     }
 
     /// <inheritdoc />
