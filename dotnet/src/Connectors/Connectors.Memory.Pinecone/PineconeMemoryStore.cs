@@ -159,36 +159,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancel"></param>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
     {
-        if (!this._pineconeClient.Ready)
-        {
-            this._logger.LogError("Pinecone client is not ready.");
-            return string.Empty;
-        }
-        
-        (PineconeDocument vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(collectionName, record, string.Empty, cancel).ConfigureAwait(false);
-
-        Task request = operationType switch
-        {
-            OperationType.Upsert => this._pineconeClient.UpsertAsync(collectionName, new[] { vectorData }, "", cancel),
-            OperationType.Update => this._pineconeClient.UpdateAsync(collectionName, vectorData, "", cancel),
-            OperationType.Skip => Task.CompletedTask,
-            _ => Task.CompletedTask
-        };
-
-        try
-        {
-            await request.ConfigureAwait(false);
-
-        }
-        catch (HttpRequestException ex)
-        {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
-                ex);
-        }
-
-        return vectorData.Id;
+        return await this.UpsertToNamespaceAsync(collectionName, string.Empty, record, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -235,74 +206,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        if (!this._pineconeClient.Ready)
-        {
-            this._logger.LogError("Pinecone client is not ready.");
-            yield break;
-        }
-
-        List<PineconeDocument> upsertDocuments = new();
-        List<PineconeDocument> updateDocuments = new();
-
-        foreach (MemoryRecord? record in records)
-        {
-            (PineconeDocument document, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(
-                collectionName,
-                record,
-                "",
-                cancel).ConfigureAwait(false);
-
-            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
-            switch (operationType)
-            {
-                case OperationType.Upsert:
-                    upsertDocuments.Add(document);
-                    break;
-
-                case OperationType.Update:
-                    updateDocuments.Add(document);
-                    break;
-
-                case OperationType.Skip:
-                    yield return document.Id;
-                    break;
-
-            }
-        }
-
-        List<Task> tasks = new();
-
-        if (upsertDocuments.Count > 0)
-        {
-            tasks.Add(this._pineconeClient.UpsertAsync(collectionName, upsertDocuments, "", cancel));
-        }
-
-        if (updateDocuments.Count > 0)
-        {
-            IEnumerable<Task> updates = updateDocuments.Select(async document
-                => await this._pineconeClient.UpdateAsync(collectionName, document, "", cancel).ConfigureAwait(false));
-
-            tasks.AddRange(updates);
-        }
-
-        PineconeDocument[] vectorData = upsertDocuments.Concat(updateDocuments).ToArray();
-
-        try
-        {
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
-        catch (HttpRequestException ex)
-        {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
-                ex);
-        }
-
-        foreach (PineconeDocument? v in vectorData)
-        {
-            yield return v.Id;
-        }
+        return await this.UpsertBatchToNamespaceAsync(collectionName, string.Empty, records, cancel).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -394,38 +298,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbedding = false,
         CancellationToken cancel = default)
     {
-        if (!this._pineconeClient.Ready)
-        {
-            this._logger.LogError("Pinecone client is not ready.");
-            return null;
-        }
-
-        try
-        {
-            await foreach (PineconeDocument? record in this._pineconeClient.FetchVectorsAsync(collectionName,
-                new[] { key },
-                "",
-                withEmbedding, cancel))
-            {
-                return record?.ToMemoryRecord();
-            }
-        }
-        catch (HttpRequestException ex)
-        {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToGetVectorData,
-                $"Failed to get vector data from Pinecone: {ex.Message}",
-                ex);
-        }
-        catch (MemoryException ex)
-        {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToConvertPineconeDocumentToMemoryRecord,
-                $"Failed deserialize Pinecone response to Memory Record: {ex.Message}",
-                ex);
-        }
-
-        return null;
+        return await this.GetFromNamespaceAsync(collectionName, string.Empty, key, withEmbedding, cancel).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -481,21 +354,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        if (!this._pineconeClient.Ready)
-        {
-            this._logger.LogError("Pinecone client is not ready.");
-            yield break;
-        }
-
-        foreach (string? key in keys)
-        {
-            MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancel).ConfigureAwait(false);
-
-            if (record != null)
-            {
-                yield return record;
-            }
-        }
+        return await this.GetBatchFromNamespaceAsync(collectionName, string.Empty, keys, withEmbeddings, cancel).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -541,42 +400,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbedding = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        if (!this._pineconeClient.Ready)
-        {
-            this._logger.LogError("Pinecone client is not ready.");
-            yield return null;
-        }
-
-        IEnumerable<PineconeDocument?> vectorDataList;
-
-        try
-        {
-            Query query = Query.Create(limit)
-                .InNamespace(indexNamespace)
-                .WithFilter(new Dictionary<string, object>()
-                {
-                    { "document_Id", documentId }
-                });
-
-            vectorDataList = await this._pineconeClient
-                .QueryAsync(indexName,
-                    query,
-                    cancellationToken: cancel).Take(limit)
-                .ToListAsync(cancellationToken: cancel)
-                .ConfigureAwait(false);
-        }
-
-        catch (HttpRequestException e)
-        {
-            this._logger.LogError(e, "Error getting batch with filter from Pinecone.");
-            yield break;
-        }
-
-        foreach (PineconeDocument? record in vectorDataList)
-        {
-            yield return record?.ToMemoryRecord();
-        }
-
+        return await this.GetWithDocumentIdBatchAsync(indexName, new[] { documentId }, limit, indexNamespace, withEmbedding, cancel).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -659,27 +483,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancel"></param>
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
     {
-        if (!this._pineconeClient.Ready)
-        {
-            this._logger.LogError("Pinecone client is not ready.");
-            return;
-        }
-
-        try
-        {
-            await this._pineconeClient.DeleteAsync(collectionName, new[]
-                {
-                    key
-                },
-                cancellationToken: cancel).ConfigureAwait(false);
-        }
-        catch (HttpRequestException ex)
-        {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Pinecone {ex.Message}",
-                ex);
-        }
+        await this.RemoveFromNamespaceAsync(collectionName, string.Empty, key, cancel).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -715,13 +519,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancel"></param>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
     {
-        if (!this._pineconeClient.Ready)
-        {
-            this._logger.LogError("Pinecone client is not ready.");
-            return;
-        }
-
-        await Task.WhenAll(keys.Select(async k => await this.RemoveAsync(collectionName, k, cancel).ConfigureAwait(false))).ConfigureAwait(false);
+        await this.RemoveBatchFromNamespaceAsync(collectionName, string.Empty, keys, cancel).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -853,27 +651,14 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancel = default)
     {
-        if (!this._pineconeClient.Ready)
-        {
-            this._logger.LogError("Pinecone client is not ready.");
-            yield break;
-        }
-
-        IAsyncEnumerable<(PineconeDocument, double)> results = this._pineconeClient.GetMostRelevantAsync(
+        return await this.GetNearestMatchesFromNamespaceAsync(
             collectionName,
-            embedding.Vector,
-            minRelevanceScore,
+            string.Empty,
+            embedding,
             limit,
+            minRelevanceScore,
             withEmbeddings,
-            true,
-            "",
-            default,
             cancel);
-
-        await foreach ((PineconeDocument, double) result in results.WithCancellation(cancel))
-        {
-            yield return (result.Item1.ToMemoryRecord(), result.Item2);
-        }
     }
 
     /// <inheritdoc />
@@ -922,23 +707,13 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbedding = false,
         CancellationToken cancel = default)
     {
-        if (!this._pineconeClient.Ready)
-        {
-            this._logger.LogError("Pinecone client is not ready.");
-            return null;
-        }
-
-        IAsyncEnumerable<(MemoryRecord, double)> results = this.GetNearestMatchesAsync(
+        return await this.GetNearestMatchFromNamespaceAsync(
             collectionName,
+            string.Empty,
             embedding,
-            minRelevanceScore: minRelevanceScore,
-            limit: 1,
-            withEmbeddings: withEmbedding,
-            cancel: cancel);
-
-        (MemoryRecord, double) record = await results.FirstOrDefaultAsync(cancel).ConfigureAwait(false);
-
-        return (record.Item1, record.Item2);
+            minRelevanceScore,
+            withEmbedding,
+            cancel);
     }
 
     /// <inheritdoc />
