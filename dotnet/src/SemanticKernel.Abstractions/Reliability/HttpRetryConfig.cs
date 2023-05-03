@@ -59,7 +59,11 @@ public sealed class HttpRetryConfig
         (HttpStatusCode)HttpStatusCodeType.RequestTimeout,
         (HttpStatusCode)HttpStatusCodeType.ServiceUnavailable,
         (HttpStatusCode)HttpStatusCodeType.GatewayTimeout,
-        (HttpStatusCode)HttpStatusCodeType.TooManyRequests
+        (HttpStatusCode)HttpStatusCodeType.TooManyRequests,
+        (HttpStatusCode)HttpStatusCodeType.InternalServerError,
+        (HttpStatusCode)HttpStatusCodeType.NotImplemented,
+        (HttpStatusCode)HttpStatusCodeType.BadGateway,
+        (HttpStatusCode)HttpStatusCodeType.InsufficientStorage
     };
 
     /// <summary>
