@@ -105,7 +105,7 @@ public class TaskListSkill
     {
         TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(context.CancellationToken)
             .ConfigureAwait(false);
-        
+
         if (defaultTaskList == null)
         {
             context.Fail("No default task list found.");
@@ -123,7 +123,7 @@ public class TaskListSkill
 
         IEnumerable<TaskManagementTask> tasks = await this._connector.GetTasksAsync(defaultTaskList.Id, includeCompleted, context.CancellationToken)
             .ConfigureAwait(false);
-        
+
         return JsonSerializer.Serialize(tasks);
     }
 }
