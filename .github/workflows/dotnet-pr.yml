@@ -8,6 +8,8 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ "main", "feature*" ]
+    paths: 
+      -'dotnet/**'
 
 permissions:
   contents: read
