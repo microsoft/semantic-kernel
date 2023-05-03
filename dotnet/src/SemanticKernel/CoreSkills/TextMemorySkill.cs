@@ -49,9 +49,9 @@ public class TextMemorySkill
     /// <summary>
     /// Creates a new instance of the TextMemorySkill
     /// </summary>
-    /// <param name="collection">The default collection for Recall</param>
-    /// <param name="relevance">The default relevance value for Recall</param>
-    /// <param name="limit">The default limit for Recall</param>
+    /// <param name="collection">The default collection for Recall. Memories collection to search.</param>
+    /// <param name="relevance">The default relevance value for Recall. The relevance score, from 0.0 to 1.0, where 1.0 means perfect match.</param>
+    /// <param name="limit">The default limit for Recall. The maximum number of relevant memories to recall.</param>
     public TextMemorySkill(string collection = DefaultCollection, string relevance = DefaultRelevance, string limit = DefaultLimit)
     {
         this._collection = collection;

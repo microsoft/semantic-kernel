@@ -17,7 +17,7 @@ using RepoUtils;
 
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
-internal static class Example29_CustomPlanner
+internal static class Example31_CustomPlanner
 {
     public static async Task RunAsync()
     {
@@ -79,7 +79,7 @@ internal static class Example29_CustomPlanner
 
     private static async Task RememberFactsAsync(IKernel kernel)
     {
-        kernel.ImportSkill(new TextMemorySkill("contextQueryMemories", "0.3", "5"), "memory");
+        kernel.ImportSkill(new TextMemorySkill("contextQueryMemories", "0.3", "5"));
 
         List<string> memoriesToSave = new()
         {
@@ -124,13 +124,11 @@ internal static class Example29_CustomPlanner
                 config =>
                 {
                     config.AddAzureTextCompletionService(
-                        Env.Var("AZURE_OPENAI_SERVICE_ID"),
                         Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_ENDPOINT"),
                         Env.Var("AZURE_OPENAI_KEY"));
 
                     config.AddAzureTextEmbeddingGenerationService(
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_SERVICE_ID"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"));
