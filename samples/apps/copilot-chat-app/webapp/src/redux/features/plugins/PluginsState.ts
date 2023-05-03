@@ -29,11 +29,12 @@ export type PluginAuthRequirements = {
     helpLink?: string;
 };
 
-// Additional information required to enable requests, i.e., server-url
-export type AdditionalApiRequirements = {
+// Additional information required to enable OpenAPI skills, i.e., server-url
+export type AdditionalApiProperties = {
     // Key should be the property name and in kebab case (valid format for request header),
     // make sure it matches exactly with the property name the API requires
     [key: string]: {
+        required: boolean;
         helpLink?: string;
         value?: string;
         description?: string;
@@ -49,7 +50,7 @@ export type Plugin = {
     headerTag: AuthHeaderTags;
     icon: string; // Can be imported as shown above or direct URL
     authData?: string; // token or encoded auth header value
-    apiRequirements?: AdditionalApiRequirements;
+    apiProperties?: AdditionalApiProperties;
 };
 
 export interface PluginsState {
@@ -83,8 +84,9 @@ export const initialState: PluginsState = {
         },
         icon: JiraIcon,
         headerTag: AuthHeaderTags.Jira,
-        apiRequirements: {
+        apiProperties: {
             'server-url': {
+                required: true,
                 helpLink: 'https://confluence.atlassian.com/adminjiraserver/configuring-the-base-url-938847830.html',
             },
         },
@@ -103,11 +105,13 @@ export const initialState: PluginsState = {
         },
         icon: GithubIcon,
         headerTag: AuthHeaderTags.GitHub,
-        apiRequirements: {
+        apiProperties: {
             owner: {
+                required: false,
                 description: 'account owner of repository. i.e., "microsoft"',
             },
             repo: {
+                required: false,
                 description: 'name of repository. i.e., "semantic-kernel"',
                 helpLink: 'https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests',
             },
@@ -120,5 +124,5 @@ export type EnablePluginPayload = {
     username?: string;
     password?: string;
     accessToken?: string;
-    apiRequirements?: AdditionalApiRequirements;
+    apiProperties?: AdditionalApiProperties;
 };

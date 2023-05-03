@@ -1,4 +1,4 @@
-import { AdditionalApiRequirements, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
+import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
 
 interface ServiceRequest {
     commandPath: string;
@@ -17,7 +17,7 @@ export class BaseService {
         enabledPlugins?: {
             headerTag: AuthHeaderTags;
             authData: string;
-            apiRequirements?: AdditionalApiRequirements;
+            apiProperties?: AdditionalApiProperties;
         }[],
     ): Promise<T> => {
         const { commandPath, method, body } = request;

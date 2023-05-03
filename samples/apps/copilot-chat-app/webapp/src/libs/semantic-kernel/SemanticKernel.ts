@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AdditionalApiRequirements, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
+import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
 import { BaseService } from '../services/BaseService';
 import { IAsk, IAskVariables } from './model/Ask';
 import { IAskResult } from './model/AskResult';
@@ -14,23 +14,32 @@ export class SemanticKernel extends BaseService {
         enabledPlugins?: {
             headerTag: AuthHeaderTags;
             authData: string;
-            apiRequirements?: AdditionalApiRequirements;
+            apiProperties?: AdditionalApiProperties;
         }[],
     ): Promise<IAskResult> => {
-        // If skill requires any additional api requirements, append to context
+        // If skill requires any additional api properties, append to context
         if (enabledPlugins && enabledPlugins.length > 0) {
             const openApiSkillVariables: IAskVariables[] = [];
 
             for (var idx in enabledPlugins) {
                 var plugin = enabledPlugins[idx];
 
-                if (plugin.apiRequirements) {
-                    const apiRequirments = plugin.apiRequirements;
-                    for (var property in apiRequirments) {
-                        openApiSkillVariables.push({
-                            key: property,
-                            value: apiRequirments[property].value!,
-                        });
+                if (plugin.apiProperties) {
+                    const apiProperties = plugin.apiProperties;
+
+                    for (var property in apiProperties) {
+                        const propertyDetails = apiProperties[property];
+
+                        if (propertyDetails.required && !propertyDetails.value) {
+                            throw new Error(`Missing required property ${property} for ${plugin} skill.`);
+                        }
+
+                        if (propertyDetails.value) {
+                            openApiSkillVariables.push({
+                                key: property,
+                                value: apiProperties[property].value!,
+                            });
+                        }
                     }
                 }
             }

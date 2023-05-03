@@ -19,7 +19,7 @@ import { Dismiss20Regular } from '@fluentui/react-icons';
 import { FormEvent, useState } from 'react';
 import { TokenHelper } from '../../libs/auth/TokenHelper';
 import { useAppDispatch } from '../../redux/app/hooks';
-import { AdditionalApiRequirements, PluginAuthRequirements, Plugins } from '../../redux/features/plugins/PluginsState';
+import { AdditionalApiProperties, PluginAuthRequirements, Plugins } from '../../redux/features/plugins/PluginsState';
 import { connectPlugin } from '../../redux/features/plugins/pluginsSlice';
 
 const useClasses = makeStyles({
@@ -53,7 +53,7 @@ interface PluginConnectorProps {
     icon: string;
     publisher: string;
     authRequirements: PluginAuthRequirements;
-    apiRequirements?: AdditionalApiRequirements;
+    apiProperties?: AdditionalApiProperties;
 }
 
 export const PluginConnector: React.FC<PluginConnectorProps> = ({
@@ -61,7 +61,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
     icon,
     publisher,
     authRequirements,
-    apiRequirements,
+    apiProperties,
 }) => {
     const classes = useClasses();
 
@@ -74,7 +74,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [accessToken, setAccessToken] = useState('');
-    const [apiRequirementsInput, setApiRequirmentsInput] = useState(apiRequirements);
+    const [apiPropertiesInput, setApiRequirmentsInput] = useState(apiProperties);
 
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -91,7 +91,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                     connectPlugin({
                         plugin: name,
                         accessToken: token,
-                        apiRequirements: apiRequirementsInput,
+                        apiProperties: apiPropertiesInput,
                     }),
                 );
             } else if (oauthRequired) {
@@ -104,7 +104,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                         username: username,
                         password: password,
                         accessToken: accessToken,
-                        apiRequirements: apiRequirementsInput,
+                        apiProperties: apiPropertiesInput,
                     }),
                 );
             }
@@ -223,37 +223,35 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                     </Body1>
                                 </>
                             )}
-                            {apiRequirements && (
+                            {apiProperties && (
                                 <>
                                     <Body1Strong> Configuration </Body1Strong>
                                     <Body1>Some additional information is required to enable {name}'s REST APIs.</Body1>
-                                    {Object.keys(apiRequirements).map((requirement) => {
-                                        const requirementDetails = apiRequirementsInput![requirement];
+                                    {Object.keys(apiProperties).map((property) => {
+                                        const propertyDetails = apiPropertiesInput![property];
                                         return (
-                                            <div className={classes.section} key={requirement}>
+                                            <div className={classes.section} key={property}>
                                                 <Input
-                                                    key={requirement}
-                                                    required
+                                                    key={property}
+                                                    required={propertyDetails.required}
                                                     type="text"
-                                                    id={'plugin-additional-info' + requirement}
+                                                    id={'plugin-additional-info' + property}
                                                     onChange={(_e, input) => {
                                                         setApiRequirmentsInput({
-                                                            ...apiRequirementsInput,
-                                                            [requirement]: {
-                                                                ...requirementDetails,
+                                                            ...apiPropertiesInput,
+                                                            [property]: {
+                                                                ...propertyDetails,
                                                                 value: input.value,
                                                             },
                                                         });
                                                     }}
-                                                    placeholder={`Enter the ${
-                                                        requirementDetails.description ?? requirement
-                                                    }`}
+                                                    placeholder={`Enter the ${propertyDetails.description ?? property}`}
                                                 />
-                                                {requirementDetails.helpLink && (
+                                                {propertyDetails.helpLink && (
                                                     <Body1>
                                                         For more details on obtaining this information,{' '}
                                                         <a
-                                                            href={requirementDetails.helpLink}
+                                                            href={propertyDetails.helpLink}
                                                             target="_blank"
                                                             rel="noreferrer noopener"
                                                         >

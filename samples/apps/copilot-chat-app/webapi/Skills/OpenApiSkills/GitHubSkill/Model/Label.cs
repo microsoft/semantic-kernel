@@ -3,7 +3,7 @@
 namespace SemanticKernel.Service.Skills.OpenApiSkills;
 
 /// <summary>
-/// Represents a label.
+/// Represents a pull request label.
 /// </summary>
 public class Label
 {

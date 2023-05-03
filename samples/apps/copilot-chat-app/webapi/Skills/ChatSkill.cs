@@ -415,7 +415,7 @@ public class ChatSkill
     /// </summary>
     private string OptimizeOpenApiSkillJson(string jsonContent, int tokenLimit, Plan plan)
     {
-        int jsonTokenLimit = (int)(tokenLimit * 0.8);
+        int jsonTokenLimit = (int)(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
 
         // Remove all new line characters + leading and trailing white space
         jsonContent = Regex.Replace(jsonContent.Trim(), @"[\n\r]", string.Empty);
