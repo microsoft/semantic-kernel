@@ -14,7 +14,7 @@ namespace SemanticKernel.Connectors.UnitTests.Memory.Pinecone;
 public class PineconeUtilsTests
 {
     [Fact]
-    public async Task EnsureValidMetadataAsync_ShouldSplitMetadata_WhenExceedsMaxSizeAsync()
+    public async Task EnsureValidMetadataAsyncShouldSplitMetadataWhenExceedsMaxSizeAsync()
     {
         var document = new PineconeDocument
         {
@@ -33,7 +33,7 @@ public class PineconeUtilsTests
     }
 
     [Fact]
-    public async Task EnsureValidMetadataAsync_ShouldNotSplitMetadata_WhenNotExceedsMaxSizeAsync()
+    public async Task EnsureValidMetadataAsyncShouldNotSplitMetadataWhenNotExceedsMaxSizeAsync()
     {
         var document = new PineconeDocument
         {
@@ -52,7 +52,7 @@ public class PineconeUtilsTests
     }
 
     [Fact]
-    public void ConvertFilterToPineconeFilter_ShouldConvertFilterCorrectly()
+    public void ConvertFilterToPineconeFilterShouldConvertFilterCorrectly()
     {
         var filter = new Dictionary<string, object>
         {
