@@ -166,7 +166,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
 
         Console.WriteLine($"Upserting {record.Metadata.Id} with text {record.Metadata.Text} to {collectionName}");
-        (PineconeDocument vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(collectionName, record, "", cancel).ConfigureAwait(false);
+        (PineconeDocument vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(collectionName, record, string.Empty, cancel).ConfigureAwait(false);
 
         Task request = operationType switch
         {
