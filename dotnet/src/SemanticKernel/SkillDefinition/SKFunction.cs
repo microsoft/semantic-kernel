@@ -97,14 +97,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SemanticFunctionConfig functionConfig,
         ILogger? log = null)
     {
-        Verify.NotNull(functionConfig, "Function configuration is empty");
+        Verify.NotNull(functionConfig);
 
         async Task<SKContext> LocalFunc(
             ITextCompletion client,
             CompleteRequestSettings requestSettings,
             SKContext context)
         {
-            Verify.NotNull(client, "AI LLM backed is empty");
+            Verify.NotNull(client);
 
             try
             {
@@ -115,14 +115,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
             catch (AIException ex)
             {
-                const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
-                log?.LogError(ex, message, skillName, functionName, ex.Message, ex.Detail);
+                const string Message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
+                log?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
                 context.Fail(ex.Message, ex);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
-                log?.LogError(ex, message, skillName, functionName, ex.Message);
+                const string Message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
+                log?.LogError(ex, Message, skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
 
@@ -159,23 +159,22 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKContext? context = null,
         CompleteRequestSettings? settings = null,
         ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
         if (context == null)
         {
-            var cToken = cancel ?? default;
             log ??= NullLogger.Instance;
             context = new SKContext(
                 new ContextVariables(""),
                 NullMemory.Instance,
                 this._skillCollection,
                 log,
-                cToken);
+                cancellationToken);
         }
 
         context.Variables.Update(input);
 
-        return this.InvokeAsync(context, settings, log, cancel);
+        return this.InvokeAsync(context, settings, log, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -183,13 +182,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKContext? context = null,
         CompleteRequestSettings? settings = null,
         ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
         if (context == null)
         {
-            var cToken = cancel ?? default;
             log ??= NullLogger.Instance;
-            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cToken);
+            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cancellationToken);
         }
 
         return this.IsSemantic
@@ -207,7 +205,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
-        Verify.NotNull(serviceFactory, "AI LLM service factory is empty");
+        Verify.NotNull(serviceFactory);
         this.VerifyIsSemantic();
         this._aiService = serviceFactory.Invoke();
         return this;
@@ -216,7 +214,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
     {
-        Verify.NotNull(settings, "AI LLM request settings are empty");
+        Verify.NotNull(settings);
         this.VerifyIsSemantic();
         this._aiRequestSettings = settings;
         return this;
@@ -292,7 +290,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         ILogger? log = null
     )
     {
-        Verify.NotNull(delegateFunction, "The function delegate is empty");
+        Verify.NotNull(delegateFunction);
         Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
         Verify.ParametersUniqueness(parameters);
@@ -497,7 +495,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     private static MethodDetails GetMethodDetails(MethodInfo methodSignature, object? methodContainerInstance, ILogger? log = null)
     {
-        Verify.NotNull(methodSignature, "Method is NULL");
+        Verify.NotNull(methodSignature);
 
         var result = new MethodDetails
         {

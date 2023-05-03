@@ -48,21 +48,12 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Fact]
-    public async Task ItCanRunCrudOperationWithJsonPayloadSuccessfullyAsync()
+    public async Task ItCanRunCreateAndUpdateOperationsWithJsonPayloadSuccessfullyAsync()
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
 
-        List<RestApiOperationPayloadProperty> payloadProperties = new()
-        {
-            new("value", "string", true, new List<RestApiOperationPayloadProperty>(), "fake-value-description"),
-            new("attributes", "object", false, new List<RestApiOperationPayloadProperty>()
-            {
-                new("enabled", "boolean", false, new List<RestApiOperationPayloadProperty>(), "fake-enabled-description"),
-            })
-        };
-
-        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+        var payloadMetadata = new RestApiOperationPayload(MediaTypeNames.Application.Json, new List<RestApiOperationPayloadProperty>());
 
         var operation = new RestApiOperation(
             "fake-id",
@@ -72,12 +63,20 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             "fake-description",
             new List<RestApiOperationParameter>(),
             new Dictionary<string, string>(),
-            payload
+            payloadMetadata
         );
 
+        var payload = new
+        {
+            value = "fake-value",
+            attributes = new
+            {
+                enabled = true
+            }
+        };
+
         var arguments = new Dictionary<string, string>();
-        arguments.Add("value", "fake-value");
-        arguments.Add("enabled", "true");
+        arguments.Add("payload", System.Text.Json.JsonSerializer.Serialize(payload));
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
@@ -122,7 +121,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Fact]
-    public async Task ItCanRunCrudOperationWithPlainTextPayloadSuccessfullyAsync()
+    public async Task ItCanRunCreateAndUpdateOperationsWithPlainTextPayloadSuccessfullyAsync()
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
@@ -141,7 +140,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         );
 
         var arguments = new Dictionary<string, string>();
-        arguments.Add("input", "fake-input-value");
+        arguments.Add("payload", "fake-input-value");
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
@@ -159,7 +158,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
-        Assert.True(messageContent.Any());
+        Assert.True(messageContent.Length != 0);
 
         var payloadText = System.Text.Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
         Assert.Equal("fake-input-value", payloadText);
@@ -186,7 +185,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             "fake-id",
             "https://fake-random-test-host",
             "fake-path",
-            HttpMethod.Post,
+            HttpMethod.Get,
             "fake-description",
             new List<RestApiOperationParameter>(),
             headers
@@ -205,6 +204,95 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Single(this._httpMessageHandlerStub.RequestHeaders);
 
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "fake-header" && h.Value.Contains("fake-header-value"));
+    }
+
+    [Fact]
+    public async Task ItShouldAddUserAgentHeaderToHttpRequestIfConfiguredAsync()
+    {
+        // Arrange
+        var headers = new Dictionary<string, string>();
+        headers.Add("fake-header", string.Empty);
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            "https://fake-random-test-host",
+            "fake-path",
+            HttpMethod.Get,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            headers
+        );
+
+        var arguments = new Dictionary<string, string>();
+        arguments.Add("fake-header", "fake-header-value");
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, "fake-user-agent");
+
+        // Act
+        await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
+        Assert.Equal(2, this._httpMessageHandlerStub.RequestHeaders.Count());
+
+        Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "fake-header" && h.Value.Contains("fake-header-value"));
+        Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "User-Agent" && h.Value.Contains("fake-user-agent"));
+    }
+
+    [Fact]
+    public async Task ItShouldUsePayloadAndContentTypeArgumentsIfPayloadMetadataIsMissingAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            "https://fake-random-test-host",
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            new Dictionary<string, string>()
+        );
+
+        var payload = new
+        {
+            value = "fake-value",
+            attributes = new
+            {
+                enabled = true
+            }
+        };
+
+        var arguments = new Dictionary<string, string>();
+        arguments.Add("payload", System.Text.Json.JsonSerializer.Serialize(payload));
+        arguments.Add("content-type", "application/json");
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
+        Assert.Contains(this._httpMessageHandlerStub.ContentHeaders, h => h.Key == "Content-Type" && h.Value.Contains("application/json; charset=utf-8"));
+
+        var messageContent = this._httpMessageHandlerStub.RequestContent;
+        Assert.NotNull(messageContent);
+        Assert.True(messageContent.Length != 0);
+
+        var deserializedPayload = JsonNode.Parse(new MemoryStream(messageContent));
+        Assert.NotNull(deserializedPayload);
+
+        var valueProperty = deserializedPayload["value"]?.ToString();
+        Assert.Equal("fake-value", valueProperty);
+
+        var attributesProperty = deserializedPayload["attributes"];
+        Assert.NotNull(attributesProperty);
+
+        var enabledProperty = attributesProperty["enabled"]?.AsValue();
+        Assert.NotNull(enabledProperty);
+        Assert.Equal("true", enabledProperty.ToString());
     }
 
     /// <summary>

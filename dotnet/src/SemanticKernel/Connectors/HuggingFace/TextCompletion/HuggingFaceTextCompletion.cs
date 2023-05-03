@@ -34,8 +34,8 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
     public HuggingFaceTextCompletion(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
-        Verify.NotEmpty(model, "Model cannot be empty.");
+        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(model);
 
         this._endpoint = endpoint;
         this._model = model;
@@ -53,8 +53,8 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="model">Model to use for service API call.</param>
     public HuggingFaceTextCompletion(Uri endpoint, string model)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
-        Verify.NotEmpty(model, "Model cannot be empty.");
+        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(model);
 
         this._endpoint = endpoint;
         this._model = model;
@@ -76,7 +76,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public HuggingFaceTextCompletion(string apiKey, string model, HttpClientHandler httpClientHandler, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model, httpClientHandler)
     {
-        Verify.NotEmpty(apiKey, "HuggingFace API key cannot be empty.");
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
     }
@@ -92,7 +92,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public HuggingFaceTextCompletion(string apiKey, string model, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model)
     {
-        Verify.NotEmpty(apiKey, "HuggingFace API key cannot be empty.");
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
     }
@@ -116,7 +116,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// Performs HTTP request to given endpoint for text completion.
     /// </summary>
     /// <param name="text">Text to complete.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Completed text.</returns>
     /// <exception cref="AIException">Exception when backend didn't respond with completed text.</exception>
     private async Task<string> ExecuteCompleteRequestAsync(string text, CancellationToken cancellationToken = default)

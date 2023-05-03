@@ -61,8 +61,8 @@ public static class ImportSemanticSkillFromDirectoryExtension
     public static IDictionary<string, ISKFunction> ImportSemanticSkillFromDirectory(
         this IKernel kernel, string parentDirectory, params string[] skillDirectoryNames)
     {
-        const string CONFIG_FILE = "config.json";
-        const string PROMPT_FILE = "skprompt.txt";
+        const string ConfigFile = "config.json";
+        const string PromptFile = "skprompt.txt";
 
         var skill = new Dictionary<string, ISKFunction>();
 
@@ -78,16 +78,15 @@ public static class ImportSemanticSkillFromDirectoryExtension
                 var functionName = Path.GetFileName(dir);
 
                 // Continue only if prompt template exists
-                var promptPath = Path.Combine(dir, PROMPT_FILE);
+                var promptPath = Path.Combine(dir, PromptFile);
                 if (!File.Exists(promptPath)) { continue; }
 
                 // Load prompt configuration. Note: the configuration is optional.
                 var config = new PromptTemplateConfig();
-                var configPath = Path.Combine(dir, CONFIG_FILE);
+                var configPath = Path.Combine(dir, ConfigFile);
                 if (File.Exists(configPath))
                 {
                     config = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
-                    Verify.NotNull(config, $"Invalid prompt template configuration, unable to parse {configPath}");
                 }
 
                 kernel.Log.LogTrace("Config {0}: {1}", functionName, config.ToJson());

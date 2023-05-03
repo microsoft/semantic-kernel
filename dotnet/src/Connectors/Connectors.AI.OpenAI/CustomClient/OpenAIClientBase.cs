@@ -17,7 +17,6 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
@@ -28,6 +27,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "OpenAI users use strings")]
 public abstract class OpenAIClientBase : IDisposable
 {
+    protected readonly static HttpClientHandler DefaultHttpClientHandler = new() { CheckCertificateRevocationList = true };
+
     /// <summary>
     /// Logger
     /// </summary>
@@ -38,20 +39,20 @@ public abstract class OpenAIClientBase : IDisposable
     /// </summary>
     protected HttpClient HTTPClient { get; }
 
-    private readonly HttpClientHandler _httpClientHandler;
-    private readonly IDelegatingHandlerFactory _handlerFactory;
-    private readonly DelegatingHandler _retryHandler;
-
-    internal OpenAIClientBase(ILogger? log = null, IDelegatingHandlerFactory? handlerFactory = null)
+    internal OpenAIClientBase(HttpClient? httpClient = null, ILogger? logger = null)
     {
-        this.Log = log ?? this.Log;
-        this._handlerFactory = handlerFactory ?? new DefaultHttpRetryHandlerFactory();
+        this.Log = logger ?? this.Log;
 
-        this._httpClientHandler = new() { CheckCertificateRevocationList = true };
-        this._retryHandler = this._handlerFactory.Create(this.Log);
-        this._retryHandler.InnerHandler = this._httpClientHandler;
+        if (httpClient == null)
+        {
+            this.HTTPClient = new HttpClient(DefaultHttpClientHandler, disposeHandler: false);
+            this._disposeHttpClient = true; // If client is created internally, dispose it when done
+        }
+        else
+        {
+            this.HTTPClient = httpClient;
+        }
 
-        this.HTTPClient = new HttpClient(this._retryHandler);
         this.HTTPClient.DefaultRequestHeaders.Add("User-Agent", HTTPUseragent);
     }
 
@@ -60,7 +61,7 @@ public abstract class OpenAIClientBase : IDisposable
     /// </summary>
     /// <param name="url">URL for the text embedding request API</param>
     /// <param name="requestBody">Request payload</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of text embeddings</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
     protected async Task<IList<Embedding<float>>> ExecuteTextEmbeddingRequestAsync(
@@ -93,7 +94,7 @@ public abstract class OpenAIClientBase : IDisposable
     /// </summary>
     /// <param name="url">URL for the image generation request API</param>
     /// <param name="requestBody">Request payload</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of image URLs</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
     protected async Task<IList<string>> ExecuteImageUrlGenerationRequestAsync(
@@ -119,7 +120,7 @@ public abstract class OpenAIClientBase : IDisposable
     /// </summary>
     /// <param name="url">URL for the image generation request API</param>
     /// <param name="requestBody">Request payload</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of images serialized in base64</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
     protected async Task<IList<string>> ExecuteImageBase64GenerationRequestAsync(
@@ -156,11 +157,9 @@ public abstract class OpenAIClientBase : IDisposable
     /// <param name="disposing"></param>
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing)
+        if (disposing & this._disposeHttpClient)
         {
             this.HTTPClient.Dispose();
-            this._httpClientHandler.Dispose();
-            this._retryHandler.Dispose();
         }
     }
 
@@ -189,6 +188,9 @@ public abstract class OpenAIClientBase : IDisposable
     // HTTP user agent sent to remote endpoints
     private const string HTTPUseragent = "Microsoft Semantic Kernel";
 
+    // Set to true to dispose of HttpClient when disposing. If HttpClient was passed in, then the caller can manage.
+    private readonly bool _disposeHttpClient = false;
+
     private async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
     {
         string responseJson;
@@ -200,7 +202,7 @@ public abstract class OpenAIClientBase : IDisposable
 
             if (response == null)
             {
-                throw new AIException(AIException.ErrorCodes.NoResponse, "Empty response");
+                throw new AIException(AIException.ErrorCodes.NoResponse);
             }
 
             this.Log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));

@@ -131,9 +131,7 @@ class SKFunction(SKFunctionBase):
                     context.variables.update(completion)
                 else:
                     prompt = await function_config.prompt_template.render_async(context)
-                    completion = await client.complete_simple_async(
-                        prompt, request_settings
-                    )
+                    completion = await client.complete_async(prompt, request_settings)
                     context.variables.update(completion)
             except Exception as e:
                 # TODO: "critical exceptions"
@@ -285,7 +283,6 @@ class SKFunction(SKFunctionBase):
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
                 logger=log if log is not None else self._log,
-                # TODO: ctoken?
             )
         else:
             # If context is passed, we need to merge the variables
@@ -332,7 +329,6 @@ class SKFunction(SKFunctionBase):
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
                 logger=log if log is not None else self._log,
-                # TODO: ctoken?
             )
         else:
             # If context is passed, we need to merge the variables

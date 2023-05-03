@@ -48,6 +48,9 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
         import openai
 
         openai.api_key = self._api_key
+        openai.api_base = "https://api.openai.com/v1"
+        openai.api_type = "openai"
+        openai.api_version = None
         if self._org_id is not None:
             openai.organization = self._org_id
 

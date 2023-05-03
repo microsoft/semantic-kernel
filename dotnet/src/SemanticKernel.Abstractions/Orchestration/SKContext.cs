@@ -3,7 +3,6 @@
 using System;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -41,7 +40,7 @@ public sealed class SKContext
     public Exception? LastException { get; private set; }
 
     /// <summary>
-    /// Cancellation token.
+    /// The token to monitor for cancellation requests.
     /// </summary>
     public CancellationToken CancellationToken { get; }
 
@@ -94,7 +93,12 @@ public sealed class SKContext
     /// <returns>Delegate to execute the function</returns>
     public ISKFunction Func(string skillName, string functionName)
     {
-        Verify.NotNull(this.Skills, "The skill collection hasn't been set");
+        if (this.Skills is null)
+        {
+            throw new KernelException(
+                KernelException.ErrorCodes.SkillCollectionNotSet,
+                "Skill collection not found in the context");
+        }
 
         if (this.Skills.HasNativeFunction(skillName, functionName))
         {

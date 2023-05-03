@@ -20,31 +20,14 @@ Install this package manually only if you are selecting individual Semantic Kern
   </PropertyGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Connectors.OpenAI</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Planning.ActionPlanner</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Planning.SequentialPlanner</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Skills.OpenAPI</_Parameter1>
-    </AssemblyAttribute>
-    <!-- Testing -->
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernel.UnitTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernel.Skills.UnitTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>IntegrationTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>DynamicProxyGenAssembly2</_Parameter1> <!-- Moq -->
-    </AssemblyAttribute>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.ActionPlanner" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.SequentialPlanner" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Skills.OpenAPI" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="SemanticKernel.IntegrationTests" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" PublicKey="$(StongNamePublicKey)"/> <!-- Moq -->
   </ItemGroup>
 
   <ItemGroup>
