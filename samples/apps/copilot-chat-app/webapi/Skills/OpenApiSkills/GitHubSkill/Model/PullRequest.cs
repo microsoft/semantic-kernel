@@ -31,7 +31,8 @@ public class PullRequest
     [JsonPropertyName("state")]
     public string State { get; set; }
 
-    // Whether the pull request is locked
+    /// <summary>
+    /// Whether the pull request is locked
     /// </summary>
     [JsonPropertyName("locked")]
     public bool Locked { get; set; }
