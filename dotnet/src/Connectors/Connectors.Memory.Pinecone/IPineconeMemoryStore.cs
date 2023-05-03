@@ -195,7 +195,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="indexNamespace"> the namespace to remove from.</param>
     /// <param name="cancel"></param>
     /// <remarks>
-    ///  In the same way that you can filter your vector search results, you can also filter your vector deletion.
+    ///  It's possible to filter vector deletion in the same way as filtering vector search results.
     /// </remarks>
     Task RemoveWithFilterAsync(
         string indexName,
