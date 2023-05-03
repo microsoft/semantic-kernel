@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [ "main", "feature*" ]
     paths: 
-      -'dotnet/**'
+      - 'dotnet/**'
 
 permissions:
   contents: read
