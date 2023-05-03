@@ -211,29 +211,33 @@ public class ChatSkill
 
         // Create a plan and run it.
         Plan plan = await this._planner.CreatePlanAsync(plannerContext.Variables.Input);
-        SKContext planContext = await plan.InvokeAsync(plannerContext);
-
-        int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
-
-        // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
-        if (!this.TryExtractJsonFromOpenApiPlanResult(planContext.Variables.Input, out string planResult))
+        if (plan.Steps.Count > 0)
         {
-            // If not, use result of the plan execution result directly.
-            planResult = planContext.Variables.Input;
+            SKContext planContext = await plan.InvokeAsync(plannerContext);
+            int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
+
+            // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
+            if (!this.TryExtractJsonFromOpenApiPlanResult(planContext.Variables.Input, out string planResult))
+            {
+                // If not, use result of the plan execution result directly.
+                planResult = planContext.Variables.Input;
+            }
+            else
+            {
+                int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
+                planResult = this.OptimizeOpenApiSkillJson(planResult, relatedInformationTokenLimit, plan);
+            }
+
+            string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
+
+            // Adjust the token limit using the number of tokens in the information text.
+            tokenLimit -= Utilities.TokenCount(informationText);
+            context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
+
+            return informationText;
         }
-        else
-        {
-            int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
-            planResult = this.OptimizeOpenApiSkillJson(planResult, relatedInformationTokenLimit, plan);
-        }
 
-        string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
-
-        // Adjust the token limit using the number of tokens in the information text.
-        tokenLimit -= Utilities.TokenCount(informationText);
-        context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-
-        return informationText;
+        return string.Empty;
     }
 
     /// <summary>
