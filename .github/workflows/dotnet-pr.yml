@@ -35,7 +35,7 @@ jobs:
       if: steps.filter.outputs.dotnet != 'true'
       run: echo "NOT dotnet file"
 
-  build-and-test:
+  build:
     strategy:
         matrix:
           os: [ubuntu-latest]
