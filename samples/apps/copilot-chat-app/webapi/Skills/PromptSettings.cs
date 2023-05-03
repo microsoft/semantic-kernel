@@ -36,7 +36,7 @@ public class PromptSettings
 
     /// <summary>
     /// Weight of information returned from planner (i.e., responses from OpenAPI skills).
-    /// Percentage of the remaining token limit after memories response and document context have already been allocated.
+    /// Percentage calculated from remaining token limit after memories response and document context have already been allocated.
     /// Contextual prompt excludes all the system commands.
     /// </summary>
     internal double RelatedInformationContextWeight { get; } = 0.75;

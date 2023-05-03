@@ -434,8 +434,6 @@ public class ChatSkill
             return jsonContent;
         }
 
-        // if (jsonContentTokenCount < jsonTokenLimit * 1.2)
-        // {
         List<object> itemList = new();
 
         // Summary (List) Object
@@ -476,10 +474,9 @@ public class ChatSkill
             }
         }
 
-        return itemList.Count > 0 ? JsonSerializer.Serialize(itemList) : JsonSerializer.Serialize(jsonContent);
-        //}
-
-        // return string.Empty;
+        return itemList.Count > 0
+            ? JsonSerializer.Serialize(itemList)
+            : String.Format("JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
     }
 
     /// <summary>
