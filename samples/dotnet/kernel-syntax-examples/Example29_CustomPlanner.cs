@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
@@ -153,29 +151,12 @@ public class MarkupSkill
         var plan = docString.FromMarkup("Run a piece of xml markup", context);
 
         Console.WriteLine("Markup plan:");
-        Console.WriteLine(PlanToString(plan));
+        Console.WriteLine(plan.ToPlanString());
         Console.WriteLine();
 
         var result = await plan.InvokeAsync();
         context.Variables.Update(result.Result);
         return context;
-    }
-
-    private static string PlanToString(Plan originalPlan, string indent = " ")
-    {
-        var sb = new StringBuilder($"{indent}Goal: {originalPlan.Description}\n\n{indent}Steps:\n");
-
-        foreach (var step in originalPlan.Steps)
-        {
-            sb.Append(step.Steps.Count switch
-            {
-                0 =>
-                    $"{indent}{indent}- {string.Join(".", step.SkillName, step.Name)} {string.Join(" ", step.NamedParameters.Select(p => $"{p.Key}='{p.Value}'"))}{(step.NamedOutputs.Where(s => s.Key.ToUpper(System.Globalization.CultureInfo.CurrentCulture) != "INPUT").Select(p => $"{p.Key}").FirstOrDefault() is var namedOutputs ? $" => {namedOutputs}" : "")}",
-                _ => PlanToString(step, indent + indent)
-            });
-        }
-
-        return sb.ToString();
     }
 }
 
