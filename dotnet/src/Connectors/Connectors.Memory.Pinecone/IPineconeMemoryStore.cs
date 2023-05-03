@@ -217,9 +217,9 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <returns>A group of tuples where item1 is a <see cref="MemoryRecord"/> and item2 is its similarity score as a <see cref="double"/>.</returns>
     /// <remarks>
     ///  from https://docs.pinecone.io/docs/metadata-filtering#supported-metadata-types
-    /// You can limit your vector search based on metadata. Pinecone lets you attach metadata key-value pairs to vectors in an index,
-    /// and specify filter expressions when you query the index. Searches with metadata filters retrieve exactly the number of
-    /// nearest-neighbor results that match the filters.For most cases, the search latency will be even lower than unfiltered searches.
+    /// It's possible to limit vector search based on metadata. Pinecone allows to attach metadata key-value pairs to vectors in an index,
+    /// and specify filter expressions when querying the index. Searches with metadata filters retrieve exactly the number of
+    /// nearest-neighbor results that match the filters. For most cases, the search latency will be even lower than unfiltered searches.
     /// </remarks>
     IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesWithFilterAsync(
         string indexName,
