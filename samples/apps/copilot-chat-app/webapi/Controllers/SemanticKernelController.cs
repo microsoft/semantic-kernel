@@ -4,10 +4,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.MsGraph;
+using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
+using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
@@ -139,17 +143,32 @@ public class SemanticKernelController : ControllerBase
         // Register the Klarna shopping skill with the planner's kernel.
         await planner.Kernel.ImportOpenApiSkillFromFileAsync(
             skillName: "KlarnaShoppingSkill",
-            filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/KlarnaSkill/openapi.json"));
+            filePath: Path.Combine(System.IO.Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/KlarnaSkill/openapi.json"));
 
         // Register authenticated OpenAPI skills with the planner's kernel if the request includes an auth header for an OpenAPI skill.
-        if (openApiSkillsAuthHeaders.GithubAuthentication != null)
+        if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.GithubAuthentication))
         {
-            this._logger.LogInformation("Registering GitHub Skill");
+            this._logger.LogInformation("Enabling GitHub skill.");
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "GitHubSkill",
-                filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
+                filePath: Path.Combine(System.IO.Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
+        }
+
+        if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.GraphAuthentication))
+        {
+            this._logger.LogInformation("Enabling Microsoft Graph skill(s).");
+            BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GraphAuthentication));
+
+            IList<DelegatingHandler> graphMiddlewareHandlers =
+                GraphClientFactory.CreateDefaultHandlers(new DelegateAuthenticationProvider(authenticationProvider.AuthenticateRequestAsync));
+            graphMiddlewareHandlers.Add(new MsGraphClientLoggingHandler(this._logger));
+            
+            GraphServiceClient graphServiceClient = new(GraphClientFactory.Create(graphMiddlewareHandlers));
+
+            TaskListSkill todoSkill = new(new MicrosoftToDoConnector(graphServiceClient));
+            planner.Kernel.ImportSkill(todoSkill, "todo");
         }
     }
 }

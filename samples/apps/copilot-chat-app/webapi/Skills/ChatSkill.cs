@@ -394,7 +394,12 @@ public class ChatSkill
         catch (JsonException)
         {
             // Expected if not valid JSON.
-            this._logger.LogDebug("Unable to extract JSON from planner response, it is likely not JSON formatted");
+            this._logger.LogDebug("Unable to extract JSON from planner response, it is likely not from an OpenAPI skill.");
+        }
+        catch (InvalidOperationException)
+        {
+            // Expected if valid JSON but not from an OpenAPI-based skill.
+            this._logger.LogDebug("Unable to extract JSON from planner response, it is likely already proper JSON.");
         }
 
         json = string.Empty;
