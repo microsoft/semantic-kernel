@@ -74,6 +74,12 @@ args:
 - input: the input to write about
 - recipient: the recipient's email address.
 
+WriterSkill.Translate
+description: translate the input to another language
+args:
+- input: the text to translate
+- language: the language to translate to
+
 [GOAL]
 "Tomorrow is Valentine's day. I need to come up with a few date ideas.
 She likes Edgar Allen Poe so write using his style.
