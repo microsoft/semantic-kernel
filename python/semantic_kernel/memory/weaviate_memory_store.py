@@ -235,3 +235,22 @@ class WeaviateMemoryStore(MemoryStoreBase):
         sk_doc = self.FieldMapper.weaviate_to_sk(weaviate_doc)
         mem_vals = self.FieldMapper.remove_underscore_prefix(sk_doc)
         return MemoryRecord(**mem_vals)
+
+    async def remove_async(self, collection_name: str, key: str) -> None:
+        await self.remove_batch_async(collection_name, [key])
+
+    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+        # TODO: Use In operator when it's available (https://github.com/weaviate/weaviate/issues/2387)
+        #       and handle max delete objects (https://weaviate.io/developers/weaviate/api/rest/batch#maximum-number-of-deletes-per-query)
+        for key in keys:
+            where = {
+                "path": ["key"],
+                "operator": "Equal",
+                "valueString": key,
+            }
+
+            await asyncio.to_thread(
+                self.client.batch.delete_objects,
+                class_name=collection_name,
+                where=where,
+            )

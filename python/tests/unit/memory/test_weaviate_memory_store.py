@@ -209,3 +209,31 @@ async def test_get_batch(memory_store_with_collection, documents):
     for expected, actual in zip(expected_results, actual_results):
         expected.__dict__["_embedding"] = None
         npt.assert_equal(expected.__dict__, actual.__dict__)
+
+
+@pytest.mark.asyncio
+async def test_remove_batch(memory_store_with_collection, documents):
+    collection_name, memory_store = memory_store_with_collection
+
+    keys = ["Alpha", "Beta", "Gamma"]
+
+    await memory_store.remove_batch_async(collection_name, keys)
+
+    remaining_docs = memory_store.client.data_object.get(class_name=collection_name)[
+        "totalResults"
+    ]
+    assert remaining_docs == len(documents) - len(keys)
+
+
+@pytest.mark.asyncio
+async def test_remove(memory_store_with_collection, documents):
+    collection_name, memory_store = memory_store_with_collection
+
+    key = "Alpha"
+
+    await memory_store.remove_async(collection_name, key)
+
+    remaining_docs = memory_store.client.data_object.get(class_name=collection_name)[
+        "totalResults"
+    ]
+    assert remaining_docs == len(documents) - 1
