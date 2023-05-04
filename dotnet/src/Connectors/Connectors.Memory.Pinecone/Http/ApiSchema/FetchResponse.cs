@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// </summary>
 public sealed class FetchResponse
 {
-    
     /// <summary>
     /// Initializes a new instance of the <see cref="FetchResponse" /> class.
     /// </summary>
@@ -44,5 +43,4 @@ public sealed class FetchResponse
     [JsonPropertyName("namespace")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Namespace { get; set; }
-
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
 
@@ -9,7 +9,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 /// </summary>
 public class IndexStatus
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="IndexStatus" /> class.
     /// </summary>
@@ -49,5 +48,4 @@ public class IndexStatus
     /// </summary>
     [JsonPropertyName("ready")]
     public bool Ready { get; set; }
-
 }

@@ -165,14 +165,16 @@ public static class PineconeUtils
     {
         using MemoryStream stream = new();
         using Utf8JsonWriter writer = new(stream);
+
         JsonSerializer.Serialize(writer, metadata);
+
         return (int)stream.Length;
     }
 
     private static int GetEntrySize(KeyValuePair<string, object> entry)
     {
-        Dictionary<string, object> temp = new()
-            { { entry.Key, entry.Value } };
+        Dictionary<string, object> temp = new() { { entry.Key, entry.Value } };
+
         return GetMetadataSize(temp);
     }
 
@@ -195,6 +197,7 @@ public static class PineconeUtils
             {
                 PineconeOperator op => op.ToDictionary(),
                 IList list => new PineconeOperator("$in", list).ToDictionary(),
+
                 DateTimeOffset dateTimeOffset => new PineconeOperator("$eq", dateTimeOffset.ToUnixTimeSeconds()).ToDictionary(),
                 _ => new PineconeOperator("$eq", entry.Value).ToDictionary()
             };

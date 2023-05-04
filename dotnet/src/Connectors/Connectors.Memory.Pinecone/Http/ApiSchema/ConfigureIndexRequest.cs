@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
 using System.Text.Json.Serialization;
@@ -50,6 +50,7 @@ internal sealed class ConfigureIndexRequest
             $"/databases/{this.IndexName}", this);
 
         request.Headers.Add("accept", "text/plain");
+
         return request;
     }
 
@@ -65,5 +66,4 @@ internal sealed class ConfigureIndexRequest
     }
 
     #endregion
-
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Linq;
@@ -15,9 +15,8 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 [JsonConverter(typeof(PodTypeJsonConverter))]
 public enum PodType
 {
-    
     None = 0,
-    
+
     /// <summary>
     /// Enum S1X1 for value: s1.x1
     /// </summary>
@@ -89,7 +88,6 @@ public enum PodType
     /// </summary>
     [EnumMember(Value = "p2.x8")]
     P2X8 = 12
-
 }
 
 public class PodTypeJsonConverter : JsonConverter<PodType>

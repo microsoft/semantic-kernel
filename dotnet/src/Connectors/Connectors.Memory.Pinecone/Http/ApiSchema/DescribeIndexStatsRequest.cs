@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Net.Http;
@@ -34,10 +34,10 @@ internal sealed class DescribeIndexStatsRequest
     {
         HttpRequestMessage request = this.Filter == null
             ? HttpRequest.CreatePostRequest("/describe_index_stats")
-            : HttpRequest
-                .CreatePostRequest("/describe_index_stats", this);
-        
+            : HttpRequest.CreatePostRequest("/describe_index_stats", this);
+
         request.Headers.Add("accept", "application/json");
+
         return request;
     }
 
@@ -48,5 +48,4 @@ internal sealed class DescribeIndexStatsRequest
     }
 
     #endregion
-
 }

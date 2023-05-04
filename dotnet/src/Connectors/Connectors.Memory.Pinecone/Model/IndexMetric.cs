@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
@@ -12,9 +12,8 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum IndexMetric
 {
-    
     None = 0,
-    
+
     /// <summary>
     /// Enum Euclidean for value: euclidean
     /// </summary>
@@ -32,5 +31,4 @@ public enum IndexMetric
     /// </summary>
     [EnumMember(Value = "dotproduct")]
     Dotproduct = 3
-
 }

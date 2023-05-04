@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -11,7 +11,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 /// </summary>
 public class MetadataIndexConfig
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataIndexConfig" /> class.
     /// </summary>
@@ -77,5 +76,4 @@ public class MetadataIndexConfig
         "tags",
         "created_at"
     }));
-
 }

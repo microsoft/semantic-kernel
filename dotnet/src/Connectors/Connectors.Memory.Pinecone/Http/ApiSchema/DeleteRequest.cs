@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// </summary>
 internal sealed class DeleteRequest
 {
-
     /// <summary>
     /// The ids of the vectors to delete
     /// </summary>
@@ -88,7 +87,7 @@ internal sealed class DeleteRequest
         HttpRequestMessage? request = HttpRequest.CreatePostRequest(
             "/vectors/delete",
             this);
-        
+
         request.Headers.Add("accept", "application/json");
 
         return request;
@@ -98,28 +97,36 @@ internal sealed class DeleteRequest
     public override string ToString()
     {
         var sb = new StringBuilder();
+
         sb.Append("DeleteRequest: ");
+
         if (this.Ids != null)
         {
             sb.Append($"Deleting {this.Ids.Count()} vectors, {string.Join(", ", this.Ids)},");
         }
+
         if (this.DeleteAll != null)
         {
             sb.Append("Deleting All vectors,");
         }
+
         if (this.Namespace != null)
         {
             sb.Append($"From Namespace: {this.Namespace}, ");
         }
+
         if (this.Filter == null)
         {
             return sb.ToString();
         }
+
         sb.Append("With Filter: ");
+
         foreach (var pair in this.Filter)
         {
             sb.Append($"{pair.Key}={pair.Value}, ");
         }
+
         return sb.ToString();
     }
 
@@ -137,5 +144,4 @@ internal sealed class DeleteRequest
     }
 
     #endregion
-
 }

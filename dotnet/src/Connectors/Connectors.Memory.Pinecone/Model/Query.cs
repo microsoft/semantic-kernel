@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -14,7 +14,7 @@ public class Query
     /// The number of results to return for each query.
     /// </summary>
     public int TopK { get; set; }
-    
+
     /// <summary>
     ///  The namespace of the index to query. If not specified, the default namespace is used.
     /// </summary>
@@ -47,7 +47,7 @@ public class Query
             TopK = topK
         };
     }
-    
+
     public Query WithVector(IEnumerable<float>? vector)
     {
         this.Vector = vector;
@@ -84,6 +84,6 @@ public class Query
     [JsonConstructor]
     private Query()
     {
-        
+
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Threading;
@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 /// </summary>
 public interface IPineconeMemoryStore : IMemoryStore
 {
-
     /// <summary>
     /// Upserts a memory record into the data store in the given namespace.
     ///     If the record already exists, it will be updated.

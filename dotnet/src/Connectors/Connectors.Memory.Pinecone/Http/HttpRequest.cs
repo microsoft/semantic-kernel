@@ -8,7 +8,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http;
 
 internal static class HttpRequest
 {
-
     public static HttpRequestMessage CreateGetRequest(string url, object? payload = null)
     {
         return new HttpRequestMessage(HttpMethod.Get, url)

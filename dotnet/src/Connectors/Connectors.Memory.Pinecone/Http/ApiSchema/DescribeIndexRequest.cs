@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
 
@@ -24,7 +24,7 @@ internal sealed class DescribeIndexRequest
     {
         HttpRequestMessage? request = HttpRequest.CreateGetRequest(
             $"/databases/{this.IndexName}");
-        
+
         request.Headers.Add("accept", "application/json");
 
         return request;
@@ -38,5 +38,4 @@ internal sealed class DescribeIndexRequest
     }
 
     #endregion
-
 }

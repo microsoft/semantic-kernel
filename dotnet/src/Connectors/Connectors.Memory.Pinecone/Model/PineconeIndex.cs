@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
 
@@ -32,5 +32,4 @@ public sealed class PineconeIndex
     /// </summary>
     [JsonPropertyName("status")]
     public IndexStatus Status { get; set; }
-
 }

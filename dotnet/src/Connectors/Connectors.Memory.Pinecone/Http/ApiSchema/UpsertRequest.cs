@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Net.Http;
@@ -12,7 +12,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// </summary>
 internal sealed class UpsertRequest
 {
-
     /// <summary>
     /// The vectors to upsert
     /// </summary>
@@ -43,7 +42,9 @@ internal sealed class UpsertRequest
     public HttpRequestMessage Build()
     {
         HttpRequestMessage request = HttpRequest.CreatePostRequest("/vectors/upsert", this);
+
         request.Headers.Add("accept", "application/json");
+
         return request;
     }
 
@@ -59,5 +60,4 @@ internal sealed class UpsertRequest
     }
 
     #endregion
-
 }

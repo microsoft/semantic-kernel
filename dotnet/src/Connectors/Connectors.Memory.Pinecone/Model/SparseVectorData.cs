@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -10,7 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 /// </summary>
 public class SparseVectorData
 {
-
     /// <summary>
     /// The indices of the sparse data.
     /// </summary>
@@ -41,5 +40,4 @@ public class SparseVectorData
         this.Indices = indices;
         this.Values = values;
     }
-
 }

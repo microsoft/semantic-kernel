@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
@@ -11,9 +11,8 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum PineconeEnvironment
 {
-    
     None = 0,
-    
+
     /// <summary>
     /// Enum UsWest1Gcp for value: us-west1-gcp
     /// </summary>
@@ -55,5 +54,4 @@ public enum PineconeEnvironment
     /// </summary>
     [EnumMember(Value = "us-east1-aws")]
     UsEast1Aws = 7
-
 }

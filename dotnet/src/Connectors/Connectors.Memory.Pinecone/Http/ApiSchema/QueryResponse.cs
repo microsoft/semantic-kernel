@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// </summary>
 internal sealed class QueryResponse
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="QueryResponse" /> class.
     /// </summary>
@@ -37,5 +36,4 @@ internal sealed class QueryResponse
     /// <value>An index namespace name</value>
     [JsonPropertyName("namespace")]
     public string? Namespace { get; set; }
-
 }

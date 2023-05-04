@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
 
@@ -12,7 +12,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// </summary>
 internal sealed class UpsertResponse
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="UpsertResponse" /> class.
     /// </summary>
@@ -27,5 +26,4 @@ internal sealed class UpsertResponse
     /// </summary>
     [JsonPropertyName("upsertedCount")]
     public int UpsertedCount { get; set; }
-
 }

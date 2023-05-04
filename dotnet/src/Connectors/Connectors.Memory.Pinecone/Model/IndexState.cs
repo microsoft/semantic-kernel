@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
@@ -11,9 +11,8 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum IndexState
 {
-
     None = 0,
-    
+
     /// <summary>
     /// Enum Initializing for value: Initializing
     /// </summary>

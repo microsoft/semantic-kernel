@@ -1,3 +1,5 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -8,7 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 /// </summary>
 public class IndexStats
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="IndexStats" /> class.
     /// </summary>
@@ -51,5 +52,4 @@ public class IndexStats
     /// </summary>
     [JsonPropertyName("totalVectorCount")]
     public long TotalVectorCount { get; set; }
-
 }

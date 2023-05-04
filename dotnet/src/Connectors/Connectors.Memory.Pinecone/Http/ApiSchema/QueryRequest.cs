@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Net.Http;
@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// </summary>
 internal sealed class QueryRequest
 {
-
     /// <summary>
     /// An index namespace name
     /// </summary>
@@ -74,7 +73,7 @@ internal sealed class QueryRequest
             Id = query.Id
         };
     }
-    
+
     public QueryRequest WithMetadata(bool includeMetadata)
     {
         this.IncludeMetadata = includeMetadata;
@@ -99,7 +98,7 @@ internal sealed class QueryRequest
             this);
 
         request.Headers.Add("accept", "application/json");
-        
+
         return request;
     }
 
@@ -111,5 +110,4 @@ internal sealed class QueryRequest
     {
         this.Vector = values;
     }
-
 }

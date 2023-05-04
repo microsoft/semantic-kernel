@@ -14,13 +14,6 @@ using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
-internal enum OperationType
-{
-    Upsert,
-    Update,
-    Skip
-}
-
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Pinecone Vector database.
 /// </summary>
@@ -33,7 +26,6 @@ internal enum OperationType
 /// </remarks>
 public class PineconeMemoryStore : IPineconeMemoryStore
 {
-
     /// <summary>
     /// Constructor for a memory store backed by a <see cref="IPineconeClient"/>
     /// </summary>
@@ -81,7 +73,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-
         logger ??= NullLogger.Instance;
         PineconeClient? client = new(pineconeEnvironment, apiKey, logger);
         PineconeMemoryStore? store = null;
@@ -120,13 +111,11 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
             return store;
         }
-
         finally
         {
             // Only dispose the client if we did not create a store.
             client?.Dispose();
         }
-
     }
 
     /// <inheritdoc/>
@@ -265,7 +254,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 case OperationType.Skip:
                     yield return document.Id;
                     break;
-
             }
         }
 
@@ -371,7 +359,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-
         await foreach (MemoryRecord? record in this.GetBatchFromNamespaceAsync(collectionName, string.Empty, keys, withEmbeddings, cancellationToken).ConfigureAwait(false))
         {
             yield return record;
@@ -488,7 +475,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 .ToListAsync(cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
-
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "Error getting batch with filter from Pinecone.");
@@ -554,6 +540,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             this._logger.LogError("Pinecone client is not ready.");
             return;
         }
+
         await Task.WhenAll(keys.Select(async k => await this.RemoveFromNamespaceAsync(indexName, indexNamespace, k, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
     }
 
@@ -586,7 +573,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 $"Failed to remove vector data from Pinecone {ex.Message}",
                 ex);
         }
-
     }
 
     /// <summary>
@@ -829,7 +815,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
     private readonly IPineconeClient _pineconeClient;
     private readonly ILogger _logger;
-    
+
     // a async method that ensures the pinecone client is ready
     private async Task<bool> EnsurePineconeClientReadyAsync(string indexName, CancellationToken cancellationToken = default)
     {
@@ -837,7 +823,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             return true;
         }
-        
+
         PineconeClient client = (PineconeClient)this._pineconeClient;
 
         return await client.ConnectToHostAsync(indexName, cancellationToken).ConfigureAwait(false);
@@ -876,5 +862,4 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     }
 
     #endregion
-
 }

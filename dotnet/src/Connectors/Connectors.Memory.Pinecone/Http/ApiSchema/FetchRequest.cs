@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// </summary>
 internal sealed class FetchRequest
 {
-
     /// <summary>
     /// Gets or Sets Ids
     /// </summary>
@@ -42,14 +41,18 @@ internal sealed class FetchRequest
     {
         string path = "/vectors/fetch?";
         string ids = string.Join("&", this.Ids.Select(id => "ids=" + id));
+
         path += ids;
 
         if (!string.IsNullOrEmpty(this.Namespace))
         {
             path += $"&namespace={this.Namespace}";
         }
+
         HttpRequestMessage request = HttpRequest.CreateGetRequest(path);
+
         request.Headers.Add("accept", "application/json");
+
         return request;
     }
 
@@ -64,5 +67,4 @@ internal sealed class FetchRequest
     }
 
     #endregion
-
 }

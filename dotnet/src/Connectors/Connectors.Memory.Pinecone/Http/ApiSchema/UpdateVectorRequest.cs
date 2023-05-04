@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Net.Http;
@@ -15,7 +15,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// </summary>
 internal sealed class UpdateVectorRequest
 {
-
     /// <summary>
     /// The vectors unique ID
     /// </summary>
@@ -88,7 +87,7 @@ internal sealed class UpdateVectorRequest
     {
         HttpRequestMessage? request = HttpRequest.CreatePostRequest(
             "/vectors/update", this);
-        
+
         request.Headers.Add("accept", "application/json");
 
         return request;
@@ -107,5 +106,4 @@ internal sealed class UpdateVectorRequest
     }
 
     #endregion
-
 }

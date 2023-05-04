@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
@@ -10,7 +12,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 /// </summary>
 public class PineconeMemoryException : SKException
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeMemoryException"/> class with a provided error code.
     /// </summary>

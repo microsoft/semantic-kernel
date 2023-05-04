@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -31,6 +31,7 @@ public static class PineconeDocumentExtensions
         {
             JsonSerializerOptions options = PineconeUtils.DefaultSerializerOptions;
             var additionalMetaData = JsonSerializer.Deserialize<Dictionary<string, object>>(memoryRecord.Metadata.AdditionalMetadata, options);
+
             if (additionalMetaData != null)
             {
                 foreach (var item in additionalMetaData)
@@ -40,7 +41,8 @@ public static class PineconeDocumentExtensions
             }
         }
 
-        return PineconeDocument.Create(key, memoryRecord.Embedding.Vector)
+        return PineconeDocument
+            .Create(key, memoryRecord.Embedding.Vector)
             .WithMetadata(metadata);
     }
 
@@ -64,6 +66,5 @@ public static class PineconeDocumentExtensions
             : null;
 
         return MemoryRecord.FromMetadata(memoryRecordMetadata, embedding, pineconeDocument.Id, timestamp);
-
     }
 }

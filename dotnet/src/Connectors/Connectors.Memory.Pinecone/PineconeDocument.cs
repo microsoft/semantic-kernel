@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
 public class PineconeDocument
 {
-
     /// <summary>
     /// The unique ID of a Document
     /// </summary>
@@ -118,7 +117,6 @@ public class PineconeDocument
             .ToDictionary(x => x.Key, x => x.Value);
 
         return JsonSerializer.Serialize(distinctMetadata);
-        
     }
 
     /// <summary>
@@ -143,5 +141,4 @@ public class PineconeDocument
         this.SparseValues = sparseValues;
         this.Score = score;
     }
-
 }
