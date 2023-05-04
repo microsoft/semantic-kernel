@@ -70,18 +70,17 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
 
-        return this.GenerateImageAsync(description, width, height, 1, "url", x => x.Url, cancellationToken);
+        return this.GenerateImageAsync(description, width, height, "url", x => x.Url, cancellationToken);
     }
 
     private async Task<string> GenerateImageAsync(
         string description,
         int width, int height,
-        int count, string format, Func<ImageGenerationResponse.Image, string> extractResponse,
+        string format, Func<ImageGenerationResponse.Image, string> extractResponse,
         CancellationToken cancellationToken)
     {
         Debug.Assert(width == height);
         Debug.Assert(width is 256 or 512 or 1024);
-        Debug.Assert(count > 0);
         Debug.Assert(format is "url" or "b64_json");
         Debug.Assert(extractResponse is not null);
 
@@ -89,7 +88,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         {
             Prompt = description,
             Size = $"{width}x{height}",
-            Count = count,
+            Count = 1,
             Format = format,
         });
 
