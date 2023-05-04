@@ -199,7 +199,10 @@ class KernelConfig:
     def get_text_embedding_generation_service_id(
         self, service_id: Optional[str] = None
     ) -> str:
-        if service_id is None or service_id not in self._text_embedding_generation_services:
+        if (
+            service_id is None
+            or service_id not in self._text_embedding_generation_services
+        ):
             if self._default_text_embedding_generation_service is None:
                 raise ValueError("No default embedding service is set")
             return self._default_text_embedding_generation_service
@@ -230,7 +233,9 @@ class KernelConfig:
             self._default_chat_service = next(iter(self._chat_services), None)
         return self
 
-    def remove_text_embedding_generation_service(self, service_id: str) -> "KernelConfig":
+    def remove_text_embedding_generation_service(
+        self, service_id: str
+    ) -> "KernelConfig":
         if service_id not in self._text_embedding_generation_services:
             raise ValueError(
                 f"AI service with service_id '{service_id}' does not exist"
