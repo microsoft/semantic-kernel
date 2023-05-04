@@ -4,24 +4,31 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.MsGraph;
+using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
+using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
+using Directory = System.IO.Directory;
 
 namespace SemanticKernel.Service.Controllers;
 
 [ApiController]
-public class SemanticKernelController : ControllerBase
+public class SemanticKernelController : ControllerBase, IDisposable
 {
     private readonly ILogger<SemanticKernelController> _logger;
     private readonly PromptSettings _promptSettings;
     private readonly ServiceOptions _options;
+    private readonly List<IDisposable> _disposables;
 
     public SemanticKernelController(
         IOptions<ServiceOptions> options,
@@ -31,6 +38,7 @@ public class SemanticKernelController : ControllerBase
         this._logger = logger;
         this._options = options.Value;
         this._promptSettings = promptSettings;
+        this._disposables = new List<IDisposable>();
     }
 
     /// <summary>
@@ -136,20 +144,81 @@ public class SemanticKernelController : ControllerBase
     /// </summary>
     private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
     {
-        // Register the Klarna shopping skill with the planner's kernel.
-        await planner.Kernel.ImportOpenApiSkillFromFileAsync(
-            skillName: "KlarnaShoppingSkill",
-            filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/KlarnaSkill/openapi.json"));
-
-        // Register authenticated OpenAPI skills with the planner's kernel if the request includes an auth header for an OpenAPI skill.
-        if (openApiSkillsAuthHeaders.GithubAuthentication != null)
+        // Register the Klarna shopping ChatGPT plugin with the planner's kernel.
+        using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger)
         {
-            this._logger.LogInformation("Registering GitHub Skill");
+            InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true }
+        };
+        using HttpClient importHttpClient = new HttpClient(retryHandler, false);
+        importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
+        await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"),
+            importHttpClient);
+
+        //
+        // Register authenticated skills with the planner's kernel only if the request includes an auth header for the skill.
+        //
+
+        // GitHub
+        if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.GithubAuthentication))
+        {
+            this._logger.LogInformation("Enabling GitHub skill.");
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "GitHubSkill",
                 filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
+
+        // Microsoft Graph
+        if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.GraphAuthentication))
+        {
+            this._logger.LogInformation("Enabling Microsoft Graph skill(s).");
+            BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GraphAuthentication));
+            GraphServiceClient graphServiceClient = this.CreateGraphServiceClient(authenticationProvider.AuthenticateRequestAsync);
+            TaskListSkill todoSkill = new(new MicrosoftToDoConnector(graphServiceClient));
+            planner.Kernel.ImportSkill(todoSkill, "todo");
+        }
+    }
+
+    /// <summary>
+    /// Create a Microsoft Graph service client.
+    /// </summary>
+    /// <param name="authenticateRequestAsyncDelegate">The delegate to authenticate the request.</param>
+    private GraphServiceClient CreateGraphServiceClient(AuthenticateRequestAsyncDelegate authenticateRequestAsyncDelegate)
+    {
+        MsGraphClientLoggingHandler graphLoggingHandler = new(this._logger);
+        this._disposables.Add(graphLoggingHandler);
+
+        IList<DelegatingHandler> graphMiddlewareHandlers =
+            GraphClientFactory.CreateDefaultHandlers(new DelegateAuthenticationProvider(authenticateRequestAsyncDelegate));
+        graphMiddlewareHandlers.Add(graphLoggingHandler);
+
+        HttpClient graphHttpClient = GraphClientFactory.Create(graphMiddlewareHandlers);
+        this._disposables.Add(graphHttpClient);
+
+        GraphServiceClient graphServiceClient = new(graphHttpClient);
+        return graphServiceClient;
+    }
+
+    /// <summary>
+    /// Dispose of the object.
+    /// </summary>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            foreach (IDisposable disposable in this._disposables)
+            {
+                disposable.Dispose();
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

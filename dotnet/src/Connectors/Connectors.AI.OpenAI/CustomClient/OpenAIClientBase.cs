@@ -112,10 +112,10 @@ public abstract class OpenAIClientBase : IDisposable
     #region private ================================================================================
 
     // Shared singleton HttpClientHandler used when an existing HttpClient isn't provided
-    private readonly static HttpClientHandler s_defaultHttpClientHandler = new() { CheckCertificateRevocationList = true };
+    private static readonly HttpClientHandler s_defaultHttpClientHandler = new() { CheckCertificateRevocationList = true };
 
     // HTTP user agent sent to remote endpoints
-    private const string HttpUserAgent = "Microsoft Semantic Kernel";
+    private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
 
     // Set to true to dispose of HttpClient when disposing. If HttpClient was passed in, then the caller can manage.
     private readonly bool _disposeHttpClient;
