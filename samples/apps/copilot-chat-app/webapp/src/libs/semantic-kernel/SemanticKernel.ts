@@ -36,7 +36,7 @@ export class SemanticKernel extends BaseService {
 
                         if (propertyDetails.value) {
                             openApiSkillVariables.push({
-                                key: `${plugin.headerTag}-${property}`,
+                                key: `${property}`,
                                 value: apiProperties[property].value!,
                             });
                         }
