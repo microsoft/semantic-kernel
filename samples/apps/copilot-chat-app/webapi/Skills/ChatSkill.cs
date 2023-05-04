@@ -3,6 +3,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
@@ -11,6 +12,8 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
+using SemanticKernel.Service.Skills.OpenApiSkills;
+using SemanticKernel.Service.Skills.OpenApiSkills.JiraSkill.Model;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Skills;
@@ -212,6 +215,7 @@ public class ChatSkill
         if (plan.Steps.Count > 0)
         {
             SKContext planContext = await plan.InvokeAsync(plannerContext);
+            int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
             // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
             if (!this.TryExtractJsonFromPlanResult(planContext.Variables.Input, out string planResult))
@@ -219,20 +223,108 @@ public class ChatSkill
                 // If not, use result of the plan execution result directly.
                 planResult = planContext.Variables.Input;
             }
+            else
+            {
+                int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
+                planResult = this.OptimizeOpenApiSkillJson(planResult, relatedInformationTokenLimit, plan);
+            }
 
             string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
 
             // Adjust the token limit using the number of tokens in the information text.
-            int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
             tokenLimit -= Utilities.TokenCount(informationText);
             context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
 
             return informationText;
         }
-        else
+
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// Try to optimize json from the planner response
+    /// based on token limit
+    /// </summary>
+    private string OptimizeOpenApiSkillJson(string jsonContent, int tokenLimit, Plan plan)
+    {
+        int jsonTokenLimit = (int)(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
+
+        // Remove all new line characters + leading and trailing white space
+        jsonContent = Regex.Replace(jsonContent.Trim(), @"[\n\r]", string.Empty);
+        var document = JsonDocument.Parse(jsonContent);
+        string lastSkillInvoked = plan.Steps[^1].SkillName;
+        string lastSkillOperationInvoked = plan.Steps[^1].Name;
+
+        // Check if the last skill invoked was JiraSkill and deserialize the JSON content accordingly
+        if (string.Equals(lastSkillInvoked, "JiraSkill", StringComparison.Ordinal))
         {
-            return string.Empty;
+            Type skillResponseType = typeof(IssueResponse); // reasonable assumption of type so value isnt null
+            if (lastSkillOperationInvoked == "GetIssue")
+            {
+                skillResponseType = document.RootElement.ValueKind == JsonValueKind.Array ? typeof(IssueResponse[]) : typeof(IssueResponse);
+            }
+            //else if (lastSkillOperationInvoked == "AddComment")
+            //{
+            //    skillResponseType = document.RootElement.ValueKind == JsonValueKind.Array ? typeof(CommentResponse[]) : typeof(CommentResponse);
+            //}
+
+            // Deserializing limits the json content to only the fields defined in the GitHubSkill/Model classes
+            var skillResponse = JsonSerializer.Deserialize(jsonContent, skillResponseType);
+            jsonContent = skillResponse != null ? JsonSerializer.Serialize(skillResponse) : string.Empty;
+            document = JsonDocument.Parse(jsonContent);
         }
+
+        int jsonContentTokenCount = Utilities.TokenCount(jsonContent);
+
+        // Return the JSON content if it does not exceed the token limit
+        if (jsonContentTokenCount < jsonTokenLimit)
+        {
+            return jsonContent;
+        }
+
+        List<object> itemList = new();
+
+        // Summary (List) Object
+        if (document.RootElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement item in document.RootElement.EnumerateArray())
+            {
+                int itemTokenCount = Utilities.TokenCount(item.ToString());
+
+                if (jsonTokenLimit - itemTokenCount > 0)
+                {
+                    itemList.Add(item);
+                    jsonTokenLimit -= itemTokenCount;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        // Detail Object
+        if (document.RootElement.ValueKind == JsonValueKind.Object)
+        {
+            foreach (JsonProperty property in document.RootElement.EnumerateObject())
+            {
+                int propertyTokenCount = Utilities.TokenCount(property.ToString());
+
+                if (jsonTokenLimit - propertyTokenCount > 0)
+                {
+                    itemList.Add(property);
+                    jsonTokenLimit -= propertyTokenCount;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        return itemList.Count > 0
+            ? JsonSerializer.Serialize(itemList)
+            : String.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
     }
 
     /// <summary>
