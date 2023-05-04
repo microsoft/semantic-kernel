@@ -15,7 +15,7 @@ async def test_azure_text_embeddings_with_memories():
     kernel = sk.Kernel()
 
     if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AZUREOPENAIEMBEDDING__DEPLOYMENTNAME"]
+        deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
         api_key = os.environ["AzureOpenAI__ApiKey"]
         endpoint = os.environ["AzureOpenAI__Endpoint"]
     else:

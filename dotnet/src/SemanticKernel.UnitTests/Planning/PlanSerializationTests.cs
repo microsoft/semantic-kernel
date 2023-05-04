@@ -441,7 +441,8 @@ public sealed class PlanSerializationTests
             }
         });
 
-        skills.Setup(x => x.HasNativeFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+        ISKFunction? outFunc = mockFunction.Object;
+        skills.Setup(x => x.TryGetNativeFunction(It.IsAny<string>(), It.IsAny<string>(), out outFunc)).Returns(true);
         skills.Setup(x => x.GetNativeFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
@@ -525,10 +526,10 @@ public sealed class PlanSerializationTests
         Assert.NotNull(deserializedPlan);
         Assert.Equal(goal, deserializedPlan.Description);
 
-        Assert.Equal(string.Join(",", plan.NamedOutputs.Select(kv => $"{kv.Key}:{kv.Value}")),
-            string.Join(",", deserializedPlan.NamedOutputs.Select(kv => $"{kv.Key}:{kv.Value}")));
-        Assert.Equal(string.Join(",", plan.NamedParameters.Select(kv => $"{kv.Key}:{kv.Value}")),
-            string.Join(",", deserializedPlan.NamedParameters.Select(kv => $"{kv.Key}:{kv.Value}")));
+        Assert.Equal(string.Join(",", plan.Outputs),
+            string.Join(",", deserializedPlan.Outputs));
+        Assert.Equal(string.Join(",", plan.Parameters.Select(kv => $"{kv.Key}:{kv.Value}")),
+            string.Join(",", deserializedPlan.Parameters.Select(kv => $"{kv.Key}:{kv.Value}")));
         Assert.Equal(string.Join(",", plan.State.Select(kv => $"{kv.Key}:{kv.Value}")),
             string.Join(",", deserializedPlan.State.Select(kv => $"{kv.Key}:{kv.Value}")));
 
