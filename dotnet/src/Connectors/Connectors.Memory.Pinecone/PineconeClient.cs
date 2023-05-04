@@ -20,9 +20,9 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 /// <summary>
 ///  A client for the Pinecone API
 /// </summary>
-internal sealed class PineconeClient : IPineconeClient, IDisposable
+public sealed class PineconeClient : IPineconeClient, IDisposable
 {
-    internal PineconeClient(PineconeEnvironment pineconeEnvironment, string apiKey, ILogger? logger = null)
+    public PineconeClient(PineconeEnvironment pineconeEnvironment, string apiKey, ILogger? logger = null)
     {
         this._pineconeEnvironment = pineconeEnvironment;
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
