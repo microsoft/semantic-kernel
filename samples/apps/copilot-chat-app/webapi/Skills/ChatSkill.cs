@@ -218,7 +218,7 @@ public class ChatSkill
             int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
             // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
-            if (!this.TryExtractJsonFromPlanResult(planContext.Variables.Input, out string planResult))
+            if (!this.TryExtractJsonFromOpenApiPlanResult(planContext.Variables.Input, out string planResult))
             {
                 // If not, use result of the plan execution result directly.
                 planResult = planContext.Variables.Input;
@@ -467,7 +467,7 @@ public class ChatSkill
     /// <summary>
     /// Try to extract json from the planner response as if it were from an OpenAPI skill.
     /// </summary>
-    private bool TryExtractJsonFromPlanResult(string openApiSkillResponse, out string json)
+    private bool TryExtractJsonFromOpenApiPlanResult(string openApiSkillResponse, out string json)
     {
         try
         {
@@ -485,8 +485,11 @@ public class ChatSkill
         }
         catch (JsonException)
         {
-            // Expected if not valid JSON.
-            this._logger.LogDebug("Unable to extract JSON from planner response, it is likely not JSON formatted");
+            this._logger.LogDebug("Unable to extract JSON from planner response, it is likely not from an OpenAPI skill.");
+        }
+        catch (InvalidOperationException)
+        {
+            this._logger.LogDebug("Unable to extract JSON from planner response, it may already be proper JSON.");
         }
 
         json = string.Empty;
