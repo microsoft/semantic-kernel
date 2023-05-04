@@ -5,24 +5,24 @@ on:
     branches: [ "main", "feature*" ]
 
 jobs:
-  paths-filter:
+  check-for-python-changes:
     runs-on: ubuntu-latest
     outputs:
       output1: ${{ steps.filter.outputs.python}}
     steps:
-    - uses: actions/checkout@v3
     - uses: dorny/paths-filter@v2
       id: filter
       with:
         filters: |
           python:
             - 'python/**'
+    - uses: actions/checkout@v3
     # run only if 'python' files were changed
-    - name: python tests
+    - name: python changes found
       if: steps.filter.outputs.python == 'true'
       run: echo "Python file"
     # run only if not 'python' files were changed
-    - name: not python tests
+    - name: no python changes found
       if: steps.filter.outputs.python != 'true'
       run: echo "NOT python file"
 
@@ -32,8 +32,8 @@ jobs:
       matrix:
         python-version: ["3.8"]
     runs-on: ubuntu-latest
-    needs: paths-filter
-    if: needs.paths-filter.outputs.output1 == 'true'
+    needs: check-for-python-changes
+    if: needs.check-for-python-changes.outputs.output1 == 'true'
     timeout-minutes: 5
     steps:
       - run: echo "/root/.local/bin" >> $GITHUB_PATH
