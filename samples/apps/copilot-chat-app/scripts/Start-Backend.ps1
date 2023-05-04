@@ -7,11 +7,12 @@ param (
     [string] $Key
 )
 
+# Install dev certificate
 if ($IsWindows -or $IsMacOS)
 {
     dotnet dev-certs https --trust
 }
-else
+elseif ($IsLinux)
 {
     dotnet dev-certs https
 }

@@ -3,9 +3,9 @@
 ## Before You Begin
 To run these scripts, you will need the following:
 - *YOUR_CLIENT_ID*
-  - Also know as the application ID, this is the identifier for your Azure Active Directory (AAD) application registration.
+  - This is the client ID (also known as application ID) associated with your Azure Active Directory (AAD) application registration, which you can find in the Azure portal.
 - *YOUR_TENANT_ID*
-  - This is the tenant ID associated with your AAD app registration, which you can find in the Azure portal. If you are using a personal MSA account, you can simply enter `msa` for this value to use the personal MSA tenant.
+  - This is the tenant ID (also known as directory ID) associated with your AAD app registration, which you can find in the Azure portal. If you are using a personal MSA account, you can simply enter `msa` for this value to use the personal MSA tenant.
 - *YOUR_API_KEY*
   - This is your API key for OpenAI or Azure OpenAI
 
@@ -15,7 +15,7 @@ For more information on how to prepare this data, see the [full instructions for
 
 ## Install Requirements
 ### Windows
-Open a PowerShell window, navigate to this directory, and run the following command:
+Open a PowerShell window as an administrator, navigate to this directory, and run the following command:
 ```powershell
 .\Install-Requirements.ps1
 ```
@@ -31,4 +31,15 @@ Open a PowerShell window, navigate to this directory, and run the following comm
 
 ```powershell
 .\Start.ps1 -ClientId YOUR_CLIENT_ID -TenantId YOUR_TENANT_ID -Key YOUR_API_KEY
+```
+
+### Bash
+Open a Bash window and navigate to this directory. First, ensure the `Start.sh` script is executable:
+```bash
+chmod +x Start.sh
+```
+
+Then run the following command:
+```bash
+./Start.sh YOUR_CLIENT_ID YOUR_TENANT_ID YOUR_API_KEY
 ```

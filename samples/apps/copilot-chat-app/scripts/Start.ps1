@@ -12,13 +12,17 @@ param (
     [string] $Key
 )
 
+# Start backend (in new PS process)
 if ($Key -eq '')
 {
+    # no key
     Start-Process PowerShell -ArgumentList "-noexit", "-command $PSScriptRoot/Start-Backend.ps1"
 }
 else
 {
+    # with key
     Start-Process PowerShell -ArgumentList "-noexit", "-command $PSScriptRoot/Start-Backend.ps1 -Key $Key"
 }
 
-Start-Process PowerShell -ArgumentList "-noexit", "-command $PSScriptRoot/Start-Frontend.ps1 -ClientId $ClientId -TenantId $TenantId"
+# Start frontend (in current PS process)
+& "$PSScriptRoot/Start-Frontend.ps1" -ClientId $ClientId -TenantId $TenantId
