@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Net.Http;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
-using Microsoft.Graph.CallRecords;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
@@ -20,6 +18,7 @@ using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
+using Directory = System.IO.Directory;
 
 namespace SemanticKernel.Service.Controllers;
 
@@ -146,10 +145,14 @@ public class SemanticKernelController : ControllerBase, IDisposable
     private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
     {
         // Register the Klarna shopping ChatGPT plugin with the planner's kernel.
-        using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger) { InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true } };
+        using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger)
+        {
+            InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true }
+        };
         using HttpClient importHttpClient = new HttpClient(retryHandler, false);
         importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
-        await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), importHttpClient);
+        await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"),
+            importHttpClient);
 
         //
         // Register authenticated skills with the planner's kernel only if the request includes an auth header for the skill.
@@ -162,7 +165,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "GitHubSkill",
-                filePath: Path.Combine(System.IO.Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
+                filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
 
@@ -211,7 +214,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
         }
     }
 
-    // <inheritdoc />
+    /// <inheritdoc />
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method

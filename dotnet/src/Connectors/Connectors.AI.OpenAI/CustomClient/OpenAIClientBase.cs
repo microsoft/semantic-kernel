@@ -200,7 +200,7 @@ public abstract class OpenAIClientBase : IDisposable
             using HttpContent content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await this.HTTPClient.PostAsync(url, content, cancellationToken).ConfigureAwait(false)
-                ?? throw new AIException(AIException.ErrorCodes.NoResponse);
+                                           ?? throw new AIException(AIException.ErrorCodes.NoResponse);
 
             this.Log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
