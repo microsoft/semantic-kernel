@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 namespace Microsoft.SemanticKernel.Orchestration;
 #pragma warning restore IDE0130
 
-internal static class SKContextExtensions
+public static class SKContextExtensions
 {
     /// <summary>
     /// Simple extension method to check if a function is registered in the SKContext.
@@ -17,7 +17,7 @@ internal static class SKContextExtensions
     /// <param name="skillName">The skill name</param>
     /// <param name="functionName">The function name</param>
     /// <param name="registeredFunction">The registered function, if found</param>
-    internal static bool IsFunctionRegistered(this SKContext context, string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? registeredFunction)
+    public static bool IsFunctionRegistered(this SKContext context, string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? registeredFunction)
     {
         context.ThrowIfSkillCollectionNotSet();
 
@@ -47,7 +47,7 @@ internal static class SKContextExtensions
     /// Ensures the context has a skill collection available
     /// </summary>
     /// <param name="context">SK execution context</param>
-    internal static void ThrowIfSkillCollectionNotSet(this SKContext context)
+    public static void ThrowIfSkillCollectionNotSet(this SKContext context)
     {
         if (context.Skills == null)
         {
