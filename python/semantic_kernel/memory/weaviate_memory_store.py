@@ -1,7 +1,7 @@
 import asyncio
 from dataclasses import dataclass
 from logging import Logger
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 import weaviate
@@ -230,9 +230,10 @@ class WeaviateMemoryStore(MemoryStoreBase):
     def _convert_weaviate_doc_to_memory_record(
         self, weaviate_doc: dict
     ) -> MemoryRecord:
-        vector = weaviate_doc.pop("_additional", {}).get("vector")
-        weaviate_doc["vector"] = np.array(vector) if vector else None
-        sk_doc = self.FieldMapper.weaviate_to_sk(weaviate_doc)
+        weaviate_doc_copy = weaviate_doc.copy()
+        vector = weaviate_doc_copy.pop("_additional", {}).get("vector")
+        weaviate_doc_copy["vector"] = np.array(vector) if vector else None
+        sk_doc = self.FieldMapper.weaviate_to_sk(weaviate_doc_copy)
         mem_vals = self.FieldMapper.remove_underscore_prefix(sk_doc)
         return MemoryRecord(**mem_vals)
 
@@ -254,3 +255,52 @@ class WeaviateMemoryStore(MemoryStoreBase):
                 class_name=collection_name,
                 where=where,
             )
+
+    async def get_nearest_matches_async(
+        self,
+        collection_name: str,
+        embedding: np.ndarray,
+        limit: int,
+        min_relevance_score: float,
+        with_embeddings: bool,
+    ) -> List[Tuple[MemoryRecord, float]]:
+        nearVector = {
+            "vector": embedding,
+            "certainty": min_relevance_score,
+        }
+
+        additional = ["certainty"]
+        if with_embeddings:
+            additional.append("vector")
+
+        query = (
+            self.client.query.get(collection_name, ALL_PROPERTIES)
+            .with_near_vector(nearVector)
+            .with_additional(additional)
+            .with_limit(limit)
+        )
+
+        results = await asyncio.to_thread(query.do)
+
+        get_dict = results.get("data", {}).get("Get", {})
+
+        memory_records_and_scores = [
+            (
+                self._convert_weaviate_doc_to_memory_record(doc),
+                item["_additional"]["certainty"],
+            )
+            for items in get_dict.values()
+            for item in items
+            for doc in [item]
+        ]
+
+        return memory_records_and_scores
+
+    async def get_nearest_match_async(
+        self,
+        collection_name: str,
+        embedding: np.ndarray,
+        min_relevance_score: float,
+        with_embedding: bool,
+    ) -> Tuple[MemoryRecord, float]:
+        pass

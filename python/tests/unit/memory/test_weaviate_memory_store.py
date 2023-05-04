@@ -40,7 +40,7 @@ def documents():
             "4",
             "Lorem ipsum dolor sit amet.",
             "A common placeholder text.",
-            np.array([10, 10]),
+            np.array([-10, -10]),
         )
     )
     records.append(
@@ -48,7 +48,7 @@ def documents():
             "5",
             "Etiam faucibus orci vitae lacus pellentesque.",
             "A Latin text.",
-            np.array([10.1, 10.2]),
+            np.array([-10.1, -10.2]),
         )
     )
 
@@ -237,3 +237,54 @@ async def test_remove(memory_store_with_collection, documents):
         "totalResults"
     ]
     assert remaining_docs == len(documents) - 1
+
+
+@pytest.mark.asyncio
+async def test_get_nearest_matches(memory_store_with_collection, documents):
+    collection_name, memory_store = memory_store_with_collection
+
+    search_query = np.array([-10, -10])
+    min_relevance_score = 0.9
+    limit = 4
+
+    expected_result = [documents[3], documents[4]]
+    actual_result = await memory_store.get_nearest_matches_async(
+        collection_name, search_query, limit, min_relevance_score, with_embeddings=True
+    )
+    actual_docss, _ = list(zip(*actual_result))
+
+    assert len(actual_result) == len(expected_result)
+    for expected, actual in zip(expected_result, actual_docss):
+        npt.assert_equal(expected.__dict__, actual.__dict__)
+
+    actual_result = await memory_store.get_nearest_matches_async(
+        collection_name, search_query, limit, min_relevance_score, with_embeddings=False
+    )
+    actual_docss, _ = list(zip(*actual_result))
+
+    assert len(actual_result) == len(expected_result)
+    for expected, actual in zip(expected_result, actual_docss):
+        expected.__dict__["_embedding"] = None
+        npt.assert_equal(expected.__dict__, actual.__dict__)
+
+
+@pytest.mark.asyncio
+async def test_get_nearest_match(memory_store_with_collection, documents):
+    collection_name, memory_store = memory_store_with_collection
+
+    search_query = np.array([-10, -10])
+    min_relevance_score = 0.9
+
+    expected_result = documents[3]
+    actual_result = await memory_store.get_nearest_match_async(
+        collection_name, search_query, min_relevance_score, with_embedding=True
+    )
+
+    npt.assert_equal(expected_result.__dict__, actual_result[0].__dict__)
+
+    actual_result = await memory_store.get_nearest_match_async(
+        collection_name, search_query, min_relevance_score, with_embedding=False
+    )
+
+    expected_result.__dict__["_embedding"] = None
+    npt.assert_equal(expected_result.__dict__, actual_result[0].__dict__)
