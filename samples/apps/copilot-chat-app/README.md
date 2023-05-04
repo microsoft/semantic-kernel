@@ -14,9 +14,9 @@ functions that work together to construct each response.
 
 # Configure your environment
 Before you get started, make sure you have the following requirements in place:
-- [.NET 6.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
-- [Node.js](https://nodejs.org/en/download)
-- [Yarn](https://classic.yarnpkg.com/lang/en/docs/install)
+- [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
+- [Node.js](https://nodejs.org/)
+- [Yarn](https://yarnpkg.com/)
 - [Visual Studio Code](https://code.visualstudio.com/Download) **(Optional)** 
 - [Azure OpenAI](https://aka.ms/oai/access) resource or an account with [OpenAI](https://platform.openai.com).
 
