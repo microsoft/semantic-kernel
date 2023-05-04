@@ -116,7 +116,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         if self.config.use_embed:
             return weaviate.Client(embedded_options=EmbeddedOptions())
         elif self.config.url:
-            if self.api_key:
+            if self.config.api_key:
                 return weaviate.Client(
                     url=self.config.url,
                     auth_client_secret=weaviate.auth.AuthApiKey(
