@@ -98,7 +98,7 @@ public static class Program
         await Example30_ChatWithPrompts.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example29_GrpcSkills.RunAsync();
+        await Example31_GrpcSkills.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
