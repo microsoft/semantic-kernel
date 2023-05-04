@@ -18,19 +18,19 @@ internal static class PlanExtensions
                 string skillName = step.SkillName;
                 string stepName = step.Name;
 
-                string namedParams = string.Join(" ", step.Parameters.Select(param => $"{param.Key}='{param.Value}'"));
-                if (!string.IsNullOrEmpty(namedParams))
+                string parameters = string.Join(" ", step.Parameters.Select(param => $"{param.Key}='{param.Value}'"));
+                if (!string.IsNullOrEmpty(parameters))
                 {
-                    namedParams = $" {namedParams}";
+                    parameters = $" {parameters}";
                 }
 
-                string? namedOutputs = step.Outputs?.Select(output => output).FirstOrDefault();
-                if (!string.IsNullOrEmpty(namedOutputs))
+                string? outputs = step.Outputs.FirstOrDefault();
+                if (!string.IsNullOrEmpty(outputs))
                 {
-                    namedOutputs = $" => {namedOutputs}";
+                    outputs = $" => {outputs}";
                 }
 
-                return $"{indent}{indent}- {string.Join(".", skillName, stepName)}{namedParams}{namedOutputs}";
+                return $"{indent}{indent}- {string.Join(".", skillName, stepName)}{parameters}{outputs}";
             }
             else
             {
