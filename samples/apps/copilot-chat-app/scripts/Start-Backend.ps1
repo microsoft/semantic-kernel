@@ -4,10 +4,10 @@ Initialize and run the Copilot Chat backend.
 #>
 
 param (
-    [SecureString] $Key
+    [string] $Key
 )
 
-if ($IsWindows)
+if ($IsWindows -or $IsMacOS)
 {
     dotnet dev-certs https --trust
 }
@@ -19,9 +19,10 @@ else
 cd $PSScriptRoot/../WebApi
 
 # If key provided, store it in user secrets
-If (-Not $Key -eq '') {
+if (-not $Key -eq '') {
     dotnet user-secrets set "Completion:Key" "$Key"
     dotnet user-secrets set "Embedding:Key" "$Key"
+    dotnet user-secrets set "Planner:AIService:Key" "$Key"
 }
 
 # Build and run the backend API server
