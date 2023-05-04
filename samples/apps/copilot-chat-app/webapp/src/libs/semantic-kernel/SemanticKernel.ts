@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AdditionalApiProperties, SkillNames } from '../../redux/features/plugins/PluginsState';
+import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
 import { BaseService } from '../services/BaseService';
 import { IAsk, IAskVariables } from './model/Ask';
 import { IAskResult } from './model/AskResult';
@@ -12,7 +12,7 @@ export class SemanticKernel extends BaseService {
         functionName: string,
         accessToken: string,
         enabledPlugins?: {
-            headerTag: SkillNames;
+            headerTag: AuthHeaderTags;
             authData: string;
             apiProperties?: AdditionalApiProperties;
         }[],
