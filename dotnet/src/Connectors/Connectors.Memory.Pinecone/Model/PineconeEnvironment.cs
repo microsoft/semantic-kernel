@@ -53,5 +53,11 @@ public enum PineconeEnvironment
     /// Enum UsEast1Aws for value: us-east1-aws
     /// </summary>
     [EnumMember(Value = "us-east1-aws")]
-    UsEast1Aws = 7
+    UsEast1Aws = 7,
+
+    /// <summary>
+    /// Enum UsWest1GcpFree for value: us-west1-gcp-free
+    /// </summary>
+    [EnumMember(Value = "us-west1-gcp-free")]
+    UsWest1GcpFree = 8
 }
