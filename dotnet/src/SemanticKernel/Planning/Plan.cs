@@ -260,18 +260,10 @@ public sealed class Plan : ISKFunction
             this.State.Update(resultValue);
 
             // Update Plan Result in State with matching outputs (if any)
-            bool resultAppended = false;
-            foreach (var item in this.Outputs.Intersect(step.Outputs))
+            if (this.Outputs.Intersect(step.Outputs).Any())
             {
-                if (resultAppended)
-                {
-                    continue;
-                }
-
                 this.State.Get(DefaultResultKey, out var currentPlanResult);
                 this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult.Trim(), resultValue));
-                resultAppended = true;
-                continue;
             }
 
             // Update state with outputs (if any)
