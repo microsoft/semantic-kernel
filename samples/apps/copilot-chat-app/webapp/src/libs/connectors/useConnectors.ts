@@ -50,43 +50,13 @@ export const useConnectors = () => {
         );
     };
 
-    /**
-     * Helper function to invoke SK skills
-     * with GitHub token.
-     */
-    const invokeSkillWithGitHubToken = async () => {
-        // This is an example of invoking a GitHub skill (imported as an Open API Skill),
-        // where PullsList comes from the API operation Id defined in the swagger
-        // and variables are parameter requirements of the API being called.
-        const listPullRequestsAsk = {
-            input: 'input',
-            variables: [
-                { key: 'owner', value: 'microsoft' },
-                { key: 'repo', value: 'semantic-kernel' },
-            ],
-        };
-
-        return await sk.invokeAsync(
-            listPullRequestsAsk,
-            'GitHubSkill',
-            'PullsList',
-            await AuthHelper.getSKaaSAccessToken(instance),
-            [
-                {
-                    headerTag: plugins.GitHub.headerTag,
-                    authData: plugins.GitHub.authData!,
-                },
-            ],
-        );
-    };
-
     /*
      * Once enabled, each plugin will have a custom dedicated header in every SK request
      * containing respective auth information (i.e., token, encoded client info, etc.)
      * that the server can use to authenticate to the downstream APIs
      */
     const getEnabledPlugins = () => {
-        const enabledPlugins: { headerTag: AuthHeaderTags; authData: string; apiRequirements?: any }[] = [];
+        const enabledPlugins: { headerTag: AuthHeaderTags; authData: string; apiProperties?: any }[] = [];
 
         Object.entries(plugins).map((entry) => {
             const plugin = entry[1];
@@ -95,7 +65,7 @@ export const useConnectors = () => {
                 enabledPlugins.push({
                     headerTag: plugin.headerTag,
                     authData: plugin.authData!,
-                    apiRequirements: plugin.apiRequirements,
+                    apiProperties: plugin.apiProperties,
                 });
             }
 
@@ -108,7 +78,6 @@ export const useConnectors = () => {
     return {
         invokeSkillWithMsalToken,
         invokeSkillWithGraphToken,
-        invokeSkillWithGitHubToken,
         getEnabledPlugins,
     };
 };
