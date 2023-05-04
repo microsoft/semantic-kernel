@@ -60,7 +60,8 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         return this.InternalCompleteTextAsync(text, requestSettings, cancellationToken);
     }
 
-    public IAsyncEnumerable<string> CompletionStreamAsync(
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string> CompleteStreamAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -28,6 +29,11 @@ public class MyTextCompletionService : ITextCompletion
         var result = "...output from your custom model...";
 
         return result;
+    }
+
+    public IAsyncEnumerable<string> CompleteStreamAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }
 

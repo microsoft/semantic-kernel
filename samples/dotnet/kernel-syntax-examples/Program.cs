@@ -8,6 +8,7 @@ public static class Program
     // ReSharper disable once InconsistentNaming
     public static async Task Main()
     {
+        /*
         Example01_NativeFunctions.Run();
         Console.WriteLine("== DONE ==");
 
@@ -96,6 +97,9 @@ public static class Program
         Console.WriteLine("== DONE ==");
 
         await Example30_ChatWithPrompts.RunAsync();
+        Console.WriteLine("== DONE ==");*/
+
+        await Example31_StreamingCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
