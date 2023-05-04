@@ -19,7 +19,7 @@ import { Dismiss20Regular } from '@fluentui/react-icons';
 import { FormEvent, useState } from 'react';
 import { TokenHelper } from '../../libs/auth/TokenHelper';
 import { useAppDispatch } from '../../redux/app/hooks';
-import { AdditionalApiRequirements, PluginAuthRequirements, Plugins } from '../../redux/features/plugins/PluginsState';
+import { AdditionalApiProperties, PluginAuthRequirements, Plugins } from '../../redux/features/plugins/PluginsState';
 import { connectPlugin } from '../../redux/features/plugins/pluginsSlice';
 
 const useClasses = makeStyles({
@@ -40,6 +40,12 @@ const useClasses = makeStyles({
     error: {
         color: '#d13438',
     },
+    section: {
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        rowGap: '10px',
+    },
 });
 
 interface PluginConnectorProps {
@@ -47,7 +53,7 @@ interface PluginConnectorProps {
     icon: string;
     publisher: string;
     authRequirements: PluginAuthRequirements;
-    apiRequirements?: AdditionalApiRequirements;
+    apiProperties?: AdditionalApiProperties;
 }
 
 export const PluginConnector: React.FC<PluginConnectorProps> = ({
@@ -55,7 +61,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
     icon,
     publisher,
     authRequirements,
-    apiRequirements,
+    apiProperties,
 }) => {
     const classes = useClasses();
 
@@ -68,7 +74,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [accessToken, setAccessToken] = useState('');
-    const [apiRequirementsInput, setApiRequirmentsInput] = useState(apiRequirements);
+    const [apiPropertiesInput, setApiRequirmentsInput] = useState(apiProperties);
 
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -85,7 +91,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                     connectPlugin({
                         plugin: name,
                         accessToken: token,
-                        apiRequirements: apiRequirementsInput,
+                        apiProperties: apiPropertiesInput,
                     }),
                 );
             } else if (oauthRequired) {
@@ -98,7 +104,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                         username: username,
                         password: password,
                         accessToken: accessToken,
-                        apiRequirements: apiRequirementsInput,
+                        apiProperties: apiPropertiesInput,
                     }),
                 );
             }
@@ -147,7 +153,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                         </DialogTitle>
                         <DialogContent className={classes.content}>
                             {errorMessage && <Body1 className={classes.error}>{errorMessage}</Body1>}
-                            You are about to connect to {name}.
+                            You are about to connect to {name}.{' '}
                             {authRequirements.scopes && (
                                 <>
                                     To continue, you will authorize the following:{' '}
@@ -217,40 +223,44 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                     </Body1>
                                 </>
                             )}
-                            {apiRequirements && (
+                            {apiProperties && (
                                 <>
                                     <Body1Strong> Configuration </Body1Strong>
                                     <Body1>Some additional information is required to enable {name}'s REST APIs.</Body1>
-                                    {Object.keys(apiRequirements).map((requirement) => {
+                                    {Object.keys(apiProperties).map((property) => {
+                                        const propertyDetails = apiPropertiesInput![property];
                                         return (
-                                            <>
+                                            <div className={classes.section} key={property}>
                                                 <Input
-                                                    required
+                                                    key={property}
+                                                    required={propertyDetails.required}
                                                     type="text"
-                                                    id={'plugin-additional-info'}
+                                                    id={'plugin-additional-info' + property}
                                                     onChange={(_e, input) => {
                                                         setApiRequirmentsInput({
-                                                            ...apiRequirementsInput,
-                                                            [requirement]: {
-                                                                ...apiRequirementsInput![requirement],
+                                                            ...apiPropertiesInput,
+                                                            [property]: {
+                                                                ...propertyDetails,
                                                                 value: input.value,
                                                             },
                                                         });
                                                     }}
-                                                    placeholder={`Enter the ${requirement} for ${name}.`}
+                                                    placeholder={`Enter the ${propertyDetails.description ?? property}`}
                                                 />
-                                                <Body1>
-                                                    For more details on obtaining the {requirement.toLocaleLowerCase()},{' '}
-                                                    <a
-                                                        href={apiRequirements[requirement].helpLink}
-                                                        target="_blank"
-                                                        rel="noreferrer noopener"
-                                                    >
-                                                        click here
-                                                    </a>
-                                                    .
-                                                </Body1>
-                                            </>
+                                                {propertyDetails.helpLink && (
+                                                    <Body1>
+                                                        For more details on obtaining this information,{' '}
+                                                        <a
+                                                            href={propertyDetails.helpLink}
+                                                            target="_blank"
+                                                            rel="noreferrer noopener"
+                                                        >
+                                                            click here
+                                                        </a>
+                                                        .
+                                                    </Body1>
+                                                )}
+                                            </div>
                                         );
                                     })}
                                 </>
