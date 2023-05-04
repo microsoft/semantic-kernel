@@ -5,7 +5,7 @@ using SemanticKernel.Service.Skills.OpenApiSkills.JiraSkill.Model;
 
 namespace SemanticKernel.Service.Skills.OpenApiSkills;
 
-public class Fields
+public class IssueResponseFields
 {
     /// <summary>
     /// Gets or sets the ID of the label.
@@ -32,13 +32,13 @@ public class Fields
     public CommentResponse commentResponse { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Fields"/> class.
+    /// Initializes a new instance of the <see cref="IssueResponseFields"/> class.
     /// </summary>
     /// <param name="statuscategorychangedate">The date time the issue was last changed.</param>
     /// <param name="summary">The summary of the issue.</param>
     /// <param name="parent">The parent of the issue.</param>
     /// <param name="commentResponse">List of comments.</param>
-    public Fields(string statuscategorychangedate, string summary, IssueResponse parent, CommentResponse commentResponse)
+    public IssueResponseFields(string statuscategorychangedate, string summary, IssueResponse parent, CommentResponse commentResponse)
     {
         this.statuscategorychangedate = statuscategorychangedate;
         this.summary = summary;

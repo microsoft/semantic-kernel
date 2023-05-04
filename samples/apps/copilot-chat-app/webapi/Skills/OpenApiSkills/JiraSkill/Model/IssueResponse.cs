@@ -25,7 +25,7 @@ public class IssueResponse
     public string self { get; set; }
 
     [JsonPropertyName("fields")]
-    public Fields fields { get; set; }
+    public IssueResponseFields fields { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IssueResponse"/> class.
@@ -34,7 +34,7 @@ public class IssueResponse
     /// <param name="key">The readable id of the Issue.</param>
     /// <param name="self">The url of the Issue.</param>
     /// <param name="fields">The fields that make up the response body.</param>
-    public IssueResponse(string id, string key, string self, Fields fields)
+    public IssueResponse(string id, string key, string self, IssueResponseFields fields)
     {
         this.Id = id;
         this.key = key;
