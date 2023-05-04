@@ -96,14 +96,17 @@ public class PodTypeJsonConverter : JsonConverter<PodType>
     {
         string? stringValue = reader.GetString();
 
-        foreach (object? enumValue in from object? enumValue in Enum.GetValues(typeToConvert)
-                                      let enumMemberAttr = typeToConvert.GetMember(enumValue.ToString())[0]
-                                          .GetCustomAttribute(typeof(EnumMemberAttribute)) as EnumMemberAttribute
-                                      where enumMemberAttr != null && enumMemberAttr.Value == stringValue
-                                      select enumValue)
+        var enumValue = Enum
+            .GetValues(typeToConvert)
+            .Cast<object?>()
+            .FirstOrDefault(value => value != null && typeToConvert.GetMember(value.ToString())[0]
+                    .GetCustomAttribute(typeof(EnumMemberAttribute)) is EnumMemberAttribute enumMemberAttr && enumMemberAttr.Value == stringValue);
+
+        if (enumValue != null)
         {
             return (PodType)enumValue;
         }
+
         throw new JsonException($"Unable to parse '{stringValue}' as a PodType enum.");
     }
 
