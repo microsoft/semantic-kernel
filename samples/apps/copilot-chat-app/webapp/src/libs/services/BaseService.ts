@@ -1,4 +1,4 @@
-import { AdditionalApiRequirements, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
+import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
 
 interface ServiceRequest {
     commandPath: string;
@@ -17,7 +17,7 @@ export class BaseService {
         enabledPlugins?: {
             headerTag: AuthHeaderTags;
             authData: string;
-            apiRequirements?: AdditionalApiRequirements;
+            apiProperties?: AdditionalApiProperties;
         }[],
     ): Promise<T> => {
         const { commandPath, method, body } = request;
@@ -32,12 +32,6 @@ export class BaseService {
             for (var idx in enabledPlugins) {
                 var plugin = enabledPlugins[idx];
                 headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData);
-                if (plugin.apiRequirements) {
-                    const apiRequirments = plugin.apiRequirements;
-                    for (var property in apiRequirments) {
-                        headers.append(`x-sk-copilot-${plugin.headerTag}-${property}`, apiRequirments[property].value!);
-                    }
-                }
             }
         }
 
@@ -51,7 +45,8 @@ export class BaseService {
 
             if (!response.ok) {
                 const responseText = await response.text();
-                const errorMessage = `${response.status}: ${response.statusText}` + (responseText ? ` => ${responseText}` : '');
+                const errorMessage =
+                    `${response.status}: ${response.statusText}` + (responseText ? ` => ${responseText}` : '');
 
                 throw Object.assign(new Error(errorMessage));
             }
