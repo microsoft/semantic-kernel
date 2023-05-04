@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
@@ -49,7 +48,7 @@ internal static class Example12_SequentialPlanner
         // - WriterSkill.Translate language='Italian' INPUT='' =>
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(PlanToString(plan));
+        Console.WriteLine(plan.ToPlanString());
 
         var result = await kernel.RunAsync(plan);
 
@@ -81,7 +80,7 @@ internal static class Example12_SequentialPlanner
         // - email.SendEmail INPUT='$TRANSLATED_SUMMARY' email_address='$EMAIL_ADDRESS' =>
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(PlanToString(plan));
+        Console.WriteLine(plan.ToPlanString());
 
         var input =
             "Once upon a time, in a faraway kingdom, there lived a kind and just king named Arjun. " +
@@ -123,19 +122,11 @@ internal static class Example12_SequentialPlanner
         // - WriterSkill.NovelChapter chapterIndex='3' previousChapter='$CHAPTER_2_SYNOPSIS' INPUT='$CHAPTER_3_SYNOPSIS' theme='Children's mystery' => RESULT__CHAPTER_3
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(PlanToString(originalPlan));
+        Console.WriteLine(originalPlan.ToPlanString());
 
         Stopwatch sw = new();
         sw.Start();
         await ExecutePlanAsync(kernel, originalPlan);
-    }
-
-    private static string PlanToString(Plan originalPlan)
-    {
-        return $"Goal: {originalPlan.Description}\n\nSteps:\n" + string.Join("\n", originalPlan.Steps.Select(
-            s =>
-                $"- {s.SkillName}.{s.Name} {string.Join(" ", s.NamedParameters.Select(p => $"{p.Key}='{p.Value}'"))}{" => " + string.Join(" ", s.NamedOutputs.Where(s => s.Key.ToUpper(System.Globalization.CultureInfo.CurrentCulture) != "INPUT").Select(p => $"{p.Key}"))}"
-        ));
     }
 
     private static async Task MemorySampleAsync()
@@ -186,7 +177,7 @@ internal static class Example12_SequentialPlanner
         var plan = await planner.CreatePlanAsync(goal);
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(PlanToString(plan));
+        Console.WriteLine(plan.ToPlanString());
     }
 
     private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)

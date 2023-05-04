@@ -134,7 +134,6 @@ public sealed class ActionPlanner
         return plan;
     }
 
-
     // TODO: use goal to find relevant functions in a skill store
     /// <summary>
     /// Native function returning a list of all the functions in the current context,
@@ -166,33 +165,33 @@ public sealed class ActionPlanner
     [SKFunctionInput(Description = "The current goal processed by the planner", DefaultValue = "")]
     public string GoodExamples(string goal, SKContext context)
     {
-        return """
+        return @"
 [EXAMPLE]
 - List of functions:
 // Read a file.
 FileIOSkill.ReadAsync
-Parameter "path": Source file.
+Parameter ""path"": Source file.
 // Write a file.
 FileIOSkill.WriteAsync
-Parameter "path": Destination file.
-Parameter "content": File content.
+Parameter ""path"": Destination file.
+Parameter ""content"": File content.
 // Get the current time.
 TimeSkill.Time
 No parameters.
 // Makes a POST request to a uri.
 HttpSkill.PostAsync
-Parameter "body": The body of the request.
+Parameter ""body"": The body of the request.
 - End list of functions.
-Goal: create a file called "something.txt".
-{"plan":{
-"rationale": "the list contains a function that allows to create files",
-"function": "FileIOSkill.WriteAsync",
-"parameters": {
-"path": "something.txt",
-"content": null
+Goal: create a file called ""something.txt"".
+{""plan"":{
+""rationale"": ""the list contains a function that allows to create files"",
+""function"": ""FileIOSkill.WriteAsync"",
+""parameters"": {
+""path"": ""something.txt"",
+""content"": null
 }}}
 #END-OF-PLAN
-""";
+";
     }
 
     // TODO: generate string programmatically
@@ -201,7 +200,7 @@ Goal: create a file called "something.txt".
     [SKFunctionInput(Description = "The current goal processed by the planner", DefaultValue = "")]
     public string EdgeCaseExamples(string goal, SKContext context)
     {
-        return """
+        return @"
 [EXAMPLE]
 - List of functions:
 // Get the current time.
@@ -209,23 +208,23 @@ TimeSkill.Time
 No parameters.
 // Write a file.
 FileIOSkill.WriteAsync
-Parameter "path": Destination file.
-Parameter "content": File content.
+Parameter ""path"": Destination file.
+Parameter ""content"": File content.
 // Makes a POST request to a uri.
 HttpSkill.PostAsync
-Parameter "body": The body of the request.
+Parameter ""body"": The body of the request.
 // Read a file.
 FileIOSkill.ReadAsync
-Parameter "path": Source file.
+Parameter ""path"": Source file.
 - End list of functions.
 Goal: tell me a joke.
-{"plan":{
-"rationale": "the list does not contain functions to tell jokes or something funny",
-"function": "",
-"parameters": {
+{""plan"":{
+""rationale"": ""the list does not contain functions to tell jokes or something funny"",
+""function"": """",
+""parameters"": {
 }}}
 #END-OF-PLAN
-""";
+";
     }
 
     private void PopulateList(StringBuilder list, IDictionary<string, List<FunctionView>> functions)

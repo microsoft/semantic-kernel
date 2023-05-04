@@ -28,7 +28,7 @@ You can start the WebApi service using the command-line, Visual Studio Code, or 
 1. Open a terminal
 1. Change directory to the Copilot Chat webapi project directory.
    ```
-   cd semantic-kernel/samples/app/copilot-chat-app/webapi
+   cd semantic-kernel/samples/apps/copilot-chat-app/webapi
    ```
 1. (Optional) Build the service and verify there are no errors.
    ```
