@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Install the prerequisites for running Copilot Chat. Note that this script only works on Windows.
+Install the requirements for running Copilot Chat. Note that this script only works on Windows.
 #>
 
 if ($IsWindows)
@@ -17,5 +17,5 @@ if ($IsWindows)
 }
 else
 {
-    # TODO: error?
+    Write-Host "ERROR: This script is only supported on Windows."
 }
