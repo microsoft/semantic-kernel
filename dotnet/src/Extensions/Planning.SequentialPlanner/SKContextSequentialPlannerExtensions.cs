@@ -125,7 +125,7 @@ public static class SKContextSequentialPlannerExtensions
     internal static async Task RememberFunctionsAsync(SKContext context, List<FunctionView> availableFunctions)
     {
         // Check if the functions have already been saved to memory.
-        if (context.Variables.Get(PlanSKFunctionsAreRemembered, out var _))
+        if (context.Variables.TryGet(PlanSKFunctionsAreRemembered, out var _))
         {
             return;
         }

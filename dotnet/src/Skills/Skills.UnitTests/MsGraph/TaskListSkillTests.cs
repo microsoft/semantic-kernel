@@ -45,7 +45,7 @@ public class TaskListSkillTests
         TaskListSkill target = new TaskListSkill(connectorMock.Object);
 
         // Verify no reminder is set
-        Assert.False(this._context.Variables.Get(Parameters.Reminder, out _));
+        Assert.False(this._context.Variables.TryGet(Parameters.Reminder, out _));
 
         // Act
         await target.AddTaskAsync(anyTitle, this._context);

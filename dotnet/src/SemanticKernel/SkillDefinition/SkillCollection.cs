@@ -34,12 +34,16 @@ public class SkillCollection : ISkillCollection
     }
 
     /// <inheritdoc/>
-    public ISkillCollection AddSemanticFunction(ISKFunction functionInstance) =>
-        this.AddFunction(functionInstance);
+    public ISkillCollection AddFunction(ISKFunction functionInstance)
+    {
+        Verify.NotNull(functionInstance, "The function is NULL");
 
-    /// <inheritdoc/>
-    public ISkillCollection AddNativeFunction(ISKFunction functionInstance) =>
-        this.AddFunction(functionInstance);
+        ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.SkillName, static _ => new(StringComparer.OrdinalIgnoreCase));
+        skill.TryAdd(functionInstance.Name, functionInstance);
+
+        return this;
+    }
+
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName) =>
@@ -162,16 +166,6 @@ public class SkillCollection : ISkillCollection
     }
 
     #region private ================================================================================
-
-    private SkillCollection AddFunction(ISKFunction functionInstance)
-    {
-        Verify.NotNull(functionInstance, "The function is NULL");
-
-        ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.SkillName, static _ => new(StringComparer.OrdinalIgnoreCase));
-        skill.TryAdd(functionInstance.Name, functionInstance);
-
-        return this;
-    }
 
     [DoesNotReturn]
     private void ThrowFunctionNotAvailable(string skillName, string functionName)

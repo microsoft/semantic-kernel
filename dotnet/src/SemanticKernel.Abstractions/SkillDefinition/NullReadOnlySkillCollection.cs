@@ -14,14 +14,17 @@ internal class NullReadOnlySkillCollection : IReadOnlySkillCollection
     public ISKFunction GetFunction(string skillName, string functionName)
         => ThrowFunctionNotAvailable(skillName, functionName);
 
-    public FunctionsView GetFunctionsView(bool includeSemantic = true, bool includeNative = true)
-        => new FunctionsView();
+    public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance)
+    {
+        functionInstance = null;
+        return false;
+    }
 
-    public ISKFunction GetNativeFunction(string skillName, string functionName)
-        => ThrowFunctionNotAvailable(skillName, functionName);
-
-    public ISKFunction GetNativeFunction(string functionName)
-        => ThrowFunctionNotAvailable(functionName);
+    public bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance)
+    {
+        functionInstance = null;
+        return false;
+    }
 
     public ISKFunction GetSemanticFunction(string functionName)
         => ThrowFunctionNotAvailable(functionName);
@@ -29,15 +32,39 @@ internal class NullReadOnlySkillCollection : IReadOnlySkillCollection
     public ISKFunction GetSemanticFunction(string skillName, string functionName)
         => ThrowFunctionNotAvailable(skillName, functionName);
 
-    public bool HasFunction(string skillName, string functionName) => false;
+    public bool TryGetSemanticFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance)
+    {
+        functionInstance = null;
+        return false;
+    }
 
-    public bool HasFunction(string functionName) => false;
+    public bool TryGetSemanticFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance)
+    {
+        functionInstance = null;
+        return false;
+    }
 
-    public bool HasNativeFunction(string skillName, string functionName) => false;
+    public ISKFunction GetNativeFunction(string skillName, string functionName)
+        => ThrowFunctionNotAvailable(skillName, functionName);
 
-    public bool HasNativeFunction(string functionName) => false;
+    public ISKFunction GetNativeFunction(string functionName)
+        => ThrowFunctionNotAvailable(functionName);
 
-    public bool HasSemanticFunction(string skillName, string functionName) => false;
+
+    public bool TryGetNativeFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance)
+    {
+        functionInstance = null;
+        return false;
+    }
+
+    public bool TryGetNativeFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance)
+    {
+        functionInstance = null;
+        return false;
+    }
+
+    public FunctionsView GetFunctionsView(bool includeSemantic = true, bool includeNative = true)
+        => new FunctionsView();
 
     private NullReadOnlySkillCollection()
     {

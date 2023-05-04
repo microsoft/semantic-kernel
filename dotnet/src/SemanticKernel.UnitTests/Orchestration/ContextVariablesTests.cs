@@ -104,7 +104,7 @@ public class ContextVariablesTests
         target.Set(anyName, anyContent);
 
         // Assert
-        Assert.True(target.Get(anyName, out string _));
+        Assert.True(target.TryGet(anyName, out string _));
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public class ContextVariablesTests
         target.Set(anyName, anyContent);
 
         // Assert
-        Assert.True(target.Get(anyName, out string _));
+        Assert.True(target.TryGet(anyName, out string _));
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public class ContextVariablesTests
         target[anyName] = anyContent;
 
         // Assert
-        Assert.True(target.Get(anyName, out string _));
+        Assert.True(target.TryGet(anyName, out string _));
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public class ContextVariablesTests
         target.Set(anyName, anyContent);
 
         // Assert
-        Assert.True(target.Get(anyName, out string _));
+        Assert.True(target.TryGet(anyName, out string _));
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class ContextVariablesTests
         target.Set(anyName, anyContent);
 
         // Assert
-        Assert.True(target.Get(anyName, out string _));
+        Assert.True(target.TryGet(anyName, out string _));
     }
 
     [Fact]
@@ -182,6 +182,6 @@ public class ContextVariablesTests
         target.Set(anyName, anyContent);
 
         // Assert
-        Assert.True(target.Get(anyName, out string _));
+        Assert.True(target.TryGet(anyName, out string _));
     }
 }

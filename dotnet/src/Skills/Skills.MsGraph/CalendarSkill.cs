@@ -84,13 +84,13 @@ public class CalendarSkill
             return;
         }
 
-        if (!memory.Get(Parameters.Start, out string start))
+        if (!memory.TryGet(Parameters.Start, out string start))
         {
             context.Fail($"Missing variable {Parameters.Start}.");
             return;
         }
 
-        if (!memory.Get(Parameters.End, out string end))
+        if (!memory.TryGet(Parameters.End, out string end))
         {
             context.Fail($"Missing variable {Parameters.End}.");
             return;
@@ -101,17 +101,17 @@ public class CalendarSkill
             DateTimeOffset.Parse(start, CultureInfo.InvariantCulture.DateTimeFormat),
             DateTimeOffset.Parse(end, CultureInfo.InvariantCulture.DateTimeFormat));
 
-        if (memory.Get(Parameters.Location, out string location))
+        if (memory.TryGet(Parameters.Location, out string location))
         {
             calendarEvent.Location = location;
         }
 
-        if (memory.Get(Parameters.Content, out string content))
+        if (memory.TryGet(Parameters.Content, out string content))
         {
             calendarEvent.Content = content;
         }
 
-        if (memory.Get(Parameters.Attendees, out string attendees))
+        if (memory.TryGet(Parameters.Attendees, out string attendees))
         {
             calendarEvent.Attendees = attendees.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
         }

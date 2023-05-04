@@ -63,13 +63,13 @@ public class EmailSkill
     [SKFunctionContextParameter(Name = Parameters.Subject, Description = "Subject of the email")]
     public async Task SendEmailAsync(string content, SKContext context)
     {
-        if (!context.Variables.Get(Parameters.Recipients, out string recipients))
+        if (!context.Variables.TryGet(Parameters.Recipients, out string recipients))
         {
             context.Fail($"Missing variable {Parameters.Recipients}.");
             return;
         }
 
-        if (!context.Variables.Get(Parameters.Subject, out string subject))
+        if (!context.Variables.TryGet(Parameters.Subject, out string subject))
         {
             context.Fail($"Missing variable {Parameters.Subject}.");
             return;
