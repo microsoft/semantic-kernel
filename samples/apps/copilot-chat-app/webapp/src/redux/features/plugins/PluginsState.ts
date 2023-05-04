@@ -14,9 +14,9 @@ export const enum Plugins {
 }
 
 export const enum AuthHeaderTags {
-    MsGraph = 'graph',
-    Jira = 'jira',
-    GitHub = 'github',
+    MsGraph = 'GraphSkill',
+    Jira = 'JiraSkill',
+    GitHub = 'GitHubSkill',
 }
 
 export type PluginAuthRequirements = {
