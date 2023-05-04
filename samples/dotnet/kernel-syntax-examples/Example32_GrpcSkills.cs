@@ -11,7 +11,7 @@ using RepoUtils;
  * This example shows how to use gRPC skills.
  */
 
-public static class Example31_GrpcSkills
+public static class Example32_GrpcSkills
 {
     public static async Task RunAsync()
     {
