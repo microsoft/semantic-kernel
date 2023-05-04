@@ -7,8 +7,8 @@ namespace Microsoft.SemanticKernel.Diagnostics;
 /// <summary>
 /// Contains the values of status codes defined for HTTP in the response to an HTTP request.
 /// </summary>
-[SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "<Pending>")]
-internal enum HttpStatusCodeType
+[SuppressMessage("Design", "CA1008:Enums should have zero value", Justification = "There is no HTTP status code with zero value.")]
+public enum HttpStatusCodeType
 {
     /// <summary>
     /// The server has received the request headers and the client should proceed to send the request body.
@@ -83,17 +83,7 @@ internal enum HttpStatusCodeType
     /// <summary>
     /// The requested resource has multiple representations and the client should choose one of them.
     /// </summary>
-    Ambiguous = 300,
-
-    /// <summary>
-    /// The requested resource has multiple representations and the client should choose one of them.
-    /// </summary>
     MultipleChoices = 300,
-
-    /// <summary>
-    /// The requested resource has been permanently moved to a new location and the client should use the new URI.
-    /// </summary>
-    Moved = 301,
 
     /// <summary>
     /// The requested resource has been permanently moved to a new location and the client should use the new URI.
@@ -104,16 +94,6 @@ internal enum HttpStatusCodeType
     /// The requested resource has been temporarily moved to a new location and the client should use the new URI.
     /// </summary>
     Found = 302,
-
-    /// <summary>
-    /// The requested resource has been temporarily moved to a new location and the client should use the new URI.
-    /// </summary>
-    Redirect = 302,
-
-    /// <summary>
-    /// The requested resource can be found at a different URI and the client should use a GET method to retrieve it.
-    /// </summary>
-    RedirectMethod = 303,
 
     /// <summary>
     /// The requested resource can be found at a different URI and the client should use a GET method to retrieve it.
@@ -134,11 +114,6 @@ internal enum HttpStatusCodeType
     /// This status code is no longer used and is reserved for future use.
     /// </summary>
     Unused = 306,
-
-    /// <summary>
-    /// The requested resource has been temporarily moved to a new location and the client should use the same method to access it.
-    /// </summary>
-    RedirectKeepVerb = 307,
 
     /// <summary>
     /// The requested resource has been temporarily moved to a new location and the client should use the same method to access it.
