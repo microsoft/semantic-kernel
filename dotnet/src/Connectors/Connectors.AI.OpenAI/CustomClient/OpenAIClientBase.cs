@@ -27,7 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "OpenAI users use strings")]
 public abstract class OpenAIClientBase : IDisposable
 {
-    protected readonly static HttpClientHandler DefaultHttpClientHandler = new() { CheckCertificateRevocationList = true };
+    protected static readonly HttpClientHandler DefaultHttpClientHandler = new() { CheckCertificateRevocationList = true };
 
     /// <summary>
     /// Logger
@@ -53,7 +53,7 @@ public abstract class OpenAIClientBase : IDisposable
             this.HTTPClient = httpClient;
         }
 
-        this.HTTPClient.DefaultRequestHeaders.Add("User-Agent", HTTPUseragent);
+        this.HTTPClient.DefaultRequestHeaders.Add("User-Agent", HTTPUserAgent);
     }
 
     /// <summary>
@@ -186,7 +186,7 @@ public abstract class OpenAIClientBase : IDisposable
     #region private ================================================================================
 
     // HTTP user agent sent to remote endpoints
-    private const string HTTPUseragent = "Microsoft Semantic Kernel";
+    private const string HTTPUserAgent = "Microsoft-Semantic-Kernel";
 
     // Set to true to dispose of HttpClient when disposing. If HttpClient was passed in, then the caller can manage.
     private readonly bool _disposeHttpClient = false;
@@ -198,12 +198,9 @@ public abstract class OpenAIClientBase : IDisposable
         try
         {
             using HttpContent content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await this.HTTPClient.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
 
-            if (response == null)
-            {
-                throw new AIException(AIException.ErrorCodes.NoResponse);
-            }
+            HttpResponseMessage response = await this.HTTPClient.PostAsync(url, content, cancellationToken).ConfigureAwait(false)
+                ?? throw new AIException(AIException.ErrorCodes.NoResponse);
 
             this.Log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 

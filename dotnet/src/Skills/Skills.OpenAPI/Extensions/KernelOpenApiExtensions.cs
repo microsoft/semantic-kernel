@@ -35,8 +35,9 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
     /// <param name="url">Url to in which to retrieve the OpenAPI definition.</param>
-    /// <param name="httpClient">Optional HttpClient to use for the request.</param>
+    /// <param name="httpClient">HttpClient to use for the request.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
+    /// <param name="userAgent">Optional user agent header value.</param>
     /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
@@ -44,47 +45,24 @@ public static class KernelOpenApiExtensions
         this IKernel kernel,
         string skillName,
         Uri url,
-        HttpClient? httpClient = null,
+        HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
+        string? userAgent = "Microsoft-Semantic-Kernel",
         HttpRetryConfig? retryConfiguration = null,
         CancellationToken cancellationToken = default)
     {
         Verify.ValidSkillName(skillName);
 
-        HttpResponseMessage? response = null;
-        try
+        using HttpResponseMessage response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        if (stream == null)
         {
-            if (httpClient == null)
-            {
-                // TODO Fix this:  throwing "The inner handler has not been assigned"
-                //using DefaultHttpRetryHandler retryHandler = new DefaultHttpRetryHandler(
-                //  config: new HttpRetryConfig() { MaxRetryCount = 3 },
-                //  log: null);
-
-                //using HttpClient client = new HttpClient(retryHandler, false);
-                using HttpClient client = new HttpClient();
-
-                response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            if (stream == null)
-            {
-                throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
-            }
-
-            return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, cancellationToken: cancellationToken).ConfigureAwait(false);
+            throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
         }
-        finally
-        {
-            response?.Dispose();
-        }
+
+        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, userAgent, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
