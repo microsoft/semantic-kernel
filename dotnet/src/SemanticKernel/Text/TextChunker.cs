@@ -4,16 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
+namespace Microsoft.SemanticKernel.Text;
 
 /// <summary>
 /// Split text in chunks, attempting to leave meaning intact.
 /// For plain text, split looking at new lines first, then periods, and so on.
 /// For markdown, split looking at punctuation first, and so on.
 /// </summary>
-public static class SemanticTextPartitioner
+public static class TextChunker
 {
     private static readonly char[] s_spaceChar = new[] { ' ' };
     private static readonly string?[] s_plaintextSplitOptions = new[] { "\n\r", ".", "?!", ";", ":", ",", ")]}", " ", "-", null };
@@ -51,8 +50,10 @@ public static class SemanticTextPartitioner
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
     /// <returns>List of paragraphs.</returns>
-    public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph) =>
-        InternalSplitTextParagraphs(lines, maxTokensPerParagraph, (text, result) => InternalSplitLines(text, maxTokensPerParagraph, trim: false, s_plaintextSplitOptions, result));
+    public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph)
+    {
+        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, (text, result) => InternalSplitLines(text, maxTokensPerParagraph, trim: false, s_plaintextSplitOptions, result));
+    }
 
     /// <summary>
     /// Split markdown text into paragraphs.
@@ -60,8 +61,10 @@ public static class SemanticTextPartitioner
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
     /// <returns>List of paragraphs.</returns>
-    public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph) =>
-        InternalSplitTextParagraphs(lines, maxTokensPerParagraph, (text, result) => InternalSplitLines(text, maxTokensPerParagraph, trim: false, s_markdownSplitOptions, result));
+    public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph)
+    {
+        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, (text, result) => InternalSplitLines(text, maxTokensPerParagraph, trim: false, s_markdownSplitOptions, result));
+    }
 
     private static List<string> InternalSplitTextParagraphs(List<string> lines, int maxTokensPerParagraph, Action<string, List<string>> longLinesSplitter)
     {

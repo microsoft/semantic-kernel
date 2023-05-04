@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Storage;
@@ -198,10 +199,18 @@ public class ChatSkill
             return string.Empty;
         }
 
+        // Skills run in the planner may modify the SKContext.
+        // Clone the context to avoid modifying the original context variables.
+        SKContext plannerContext = Utilities.CopyContextWithVariablesClone(context);
+
+        // Use the user intent message as the input to the plan.
+        plannerContext.Variables.Update(plannerContext["userIntent"]);
+
         // Create a plan and run it.
-        SKContext planContext = await (await (await this._plannerFactoryAsync(this._kernel))
-            .CreatePlanAsync(context["userIntent"]))
-            .InvokeAsync(input: context["userIntent"], context: context);
+        Plan plan = await (await this._plannerFactoryAsync(this._kernel))
+            .CreatePlanAsync(plannerContext.Variables.Input);
+
+        SKContext planContext = await plan.InvokeAsync(context: plannerContext);
 
         // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
         if (!this.TryExtractJsonFromPlanResult(planContext.Variables.Input, out string planResult))
