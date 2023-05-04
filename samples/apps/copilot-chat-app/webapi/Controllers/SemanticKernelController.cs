@@ -147,7 +147,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
     {
         // Register the Klarna shopping ChatGPT plugin with the planner's kernel.
         using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger) { InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true } };
-        using HttpClient importHttpClient = new HttpClient(retryHandler, false);
+        using HttpClient importHttpClient = new(retryHandler, false);
         importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
         await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), importHttpClient);
 
@@ -172,8 +172,10 @@ public class SemanticKernelController : ControllerBase, IDisposable
             this._logger.LogInformation("Enabling Microsoft Graph skill(s).");
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GraphAuthentication));
             GraphServiceClient graphServiceClient = this.CreateGraphServiceClient(authenticationProvider.AuthenticateRequestAsync);
-            TaskListSkill todoSkill = new(new MicrosoftToDoConnector(graphServiceClient));
-            planner.Kernel.ImportSkill(todoSkill, "todo");
+
+            planner.Kernel.ImportSkill(new TaskListSkill(new MicrosoftToDoConnector(graphServiceClient)), "todo");
+            planner.Kernel.ImportSkill(new CalendarSkill(new OutlookCalendarConnector(graphServiceClient)), "calendar");
+            planner.Kernel.ImportSkill(new EmailSkill(new OutlookMailConnector(graphServiceClient)), "email");
         }
     }
 
