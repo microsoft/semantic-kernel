@@ -19,7 +19,7 @@ internal static class RestApiOperationExtensions
     /// Returns list of REST API operation parameters.
     /// </summary>
     /// <returns>The list of parameters.</returns>
-    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation)
+    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation, string? serverUrlOverride)
     {
         var parameters = new List<RestApiOperationParameter>(operation.Parameters);
 
@@ -30,7 +30,7 @@ internal static class RestApiOperationExtensions
             false,
             RestApiOperationParameterLocation.Path,
             RestApiOperationParameterStyle.Simple,
-            defaultValue: operation.ServerUrl));
+            defaultValue: serverUrlOverride ?? operation.ServerUrl));
 
         //Register the "payload" parameter to be advertised for Put and Post operations.
         if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)

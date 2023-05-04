@@ -144,6 +144,7 @@ public static class KernelOpenApiExtensions
     /// <param name="filePath">File path to the OpenAPI document.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="retryConfiguration">Optional retry configuration.</param>
+    /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromFileAsync(
@@ -152,6 +153,9 @@ public static class KernelOpenApiExtensions
         string filePath,
         AuthenticateRequestAsyncCallback? authCallback = null,
         HttpRetryConfig? retryConfiguration = null,
+#pragma warning disable CA1054 // URI-like parameters should not be strings
+        string? serverUrlOverride = null,
+#pragma warning restore CA1054 // URI-like parameters should not be strings
         CancellationToken cancellationToken = default)
     {
         if (!File.Exists(filePath))
@@ -163,7 +167,7 @@ public static class KernelOpenApiExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, serverUrlOverride: serverUrlOverride, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -175,6 +179,7 @@ public static class KernelOpenApiExtensions
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="userAgent">Optional override for request-header field containing information about the user agent originating the request</param>
+    /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiSkillAsync(
@@ -184,6 +189,9 @@ public static class KernelOpenApiExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         HttpRetryConfig? retryConfiguration = null,
         string? userAgent = "Microsoft-Semantic-Kernel",
+#pragma warning disable CA1054 // URI-like parameters should not be strings
+        string? serverUrlOverride = null,
+#pragma warning restore CA1054 // URI-like parameters should not be strings
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -212,7 +220,7 @@ public static class KernelOpenApiExtensions
             try
             {
                 kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
-                var function = kernel.RegisterRestApiFunction(skillName, runner, operation, cancellationToken);
+                var function = kernel.RegisterRestApiFunction(skillName, runner, operation, serverUrlOverride, cancellationToken);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
@@ -235,6 +243,7 @@ public static class KernelOpenApiExtensions
     /// <param name="skillName">Skill name.</param>
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
+    /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
     private static ISKFunction RegisterRestApiFunction(
@@ -242,9 +251,10 @@ public static class KernelOpenApiExtensions
         string skillName,
         IRestApiOperationRunner runner,
         RestApiOperation operation,
+        string? serverUrlOverride = null,
         CancellationToken cancellationToken = default)
     {
-        var restOperationParameters = operation.GetParameters();
+        var restOperationParameters = operation.GetParameters(serverUrlOverride);
 
         async Task<SKContext> ExecuteAsync(SKContext context)
         {
