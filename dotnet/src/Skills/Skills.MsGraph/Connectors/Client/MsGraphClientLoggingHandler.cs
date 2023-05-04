@@ -63,7 +63,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     {
         if (this._logger.IsEnabled(LogLevel.Debug))
         {
-            StringBuilder message = new StringBuilder();
+            StringBuilder message = new();
             message.AppendLine($"{prefix} {uri}");
             foreach (string headerName in this._headerNamesToLog)
             {
