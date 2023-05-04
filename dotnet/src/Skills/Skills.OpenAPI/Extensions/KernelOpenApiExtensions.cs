@@ -254,12 +254,6 @@ public static class KernelOpenApiExtensions
                 var arguments = new Dictionary<string, string>();
                 foreach (var parameter in restOperationParameters)
                 {
-                    if (parameter.AlternativeName == "server_url")
-                    {
-                        arguments.Add(parameter.Name, "https://skjiratest.atlassian.net/rest/api/latest/");
-                        continue;
-                    }
-
                     // A try to resolve argument by alternative parameter name
                     if (!string.IsNullOrEmpty(parameter.AlternativeName) && context.Variables.Get(parameter.AlternativeName!, out var value))
                     {
