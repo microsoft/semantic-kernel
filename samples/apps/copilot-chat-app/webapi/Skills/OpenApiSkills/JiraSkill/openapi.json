@@ -49,42 +49,6 @@
         "deprecated": false,
         "x-ms-visibility": "advanced"
       }
-    },
-    "/issue/{issueKey}/comment": {
-      "post": {
-        "summary": "Add comment",
-        "description": "This operation is used to add a comment to an existing JIRA issue.",
-        "operationId": "AddComment",
-        "parameters": [
-          {
-            "name": "issueKey",
-            "in": "path",
-            "description": "Unique Key of the issue to add a comment to.",
-            "required": true,
-            "x-ms-summary": "Issue Key",
-            "type": "string",
-            "x-ms-test-value": "TPDND-1"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Comment"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/CommentResponse"
-            }
-          }
-        },
-        "deprecated": false,
-        "x-ms-visibility": "advanced"
-      }
     }
   },
   "definitions": {

@@ -93,7 +93,7 @@ public sealed class ActionPlanner
         catch (Exception e)
         {
             throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
-                "Plan parsing error, invalid JSON", e);
+                $"Plan parsing error, invalid JSON: {result.ToString()}", e);
         }
 
         if (planData == null)
