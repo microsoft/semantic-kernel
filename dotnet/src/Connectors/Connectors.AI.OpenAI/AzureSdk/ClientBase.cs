@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -81,6 +82,58 @@ public abstract class ClientBase
         }
 
         return response.Value.Choices[0].Text;
+    }
+
+    protected async IAsyncEnumerable<string> InternalCompletionStreamAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(requestSettings);
+
+        if (requestSettings.MaxTokens < 1)
+        {
+            throw new AIException(
+                AIException.ErrorCodes.InvalidRequest,
+                $"MaxTokens {requestSettings.MaxTokens} is not valid, the value must be greater than zero");
+        }
+
+        var options = new CompletionsOptions
+        {
+            Prompts = { text.NormalizeLineEndings() },
+            MaxTokens = requestSettings.MaxTokens,
+            Temperature = (float?)requestSettings.Temperature,
+            NucleusSamplingFactor = (float?)requestSettings.TopP,
+            FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
+            PresencePenalty = (float?)requestSettings.PresencePenalty,
+            Echo = false,
+            ChoicesPerPrompt = 1,
+            GenerationSampleCount = 1,
+            LogProbabilityCount = null,
+            User = null,
+        };
+
+        if (requestSettings.StopSequences is { Count: > 0 })
+        {
+            foreach (var s in requestSettings.StopSequences)
+            {
+                options.StopSequences.Add(s);
+            }
+        }
+
+        Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
+            () => this.Client.GetCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+
+        using StreamingCompletions streamingChatCompletions = response.Value;
+        await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
+        {
+            await foreach (string message in choice.GetTextStreaming(cancellationToken))
+            {
+                yield return message;
+            }
+
+            yield return Environment.NewLine;
+        }
     }
 
     /// <summary>
