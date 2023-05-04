@@ -833,7 +833,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         string indexName,
         MemoryRecord record,
         string indexNamespace = "",
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
         string key = !string.IsNullOrEmpty(record.Key)
             ? record.Key
@@ -841,8 +841,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         PineconeDocument vectorData = record.ToPineconeDocument();
 
-        PineconeDocument? existingRecord = await this._pineconeClient.FetchVectorsAsync(indexName, new[] { key }, indexNamespace, false, cancel)
-            .FirstOrDefaultAsync(cancel).ConfigureAwait(false);
+        PineconeDocument? existingRecord = await this._pineconeClient.FetchVectorsAsync(indexName, new[] { key }, indexNamespace, false, cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
         if (existingRecord is null)
         {

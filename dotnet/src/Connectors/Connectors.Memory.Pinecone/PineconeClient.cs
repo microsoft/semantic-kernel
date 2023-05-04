@@ -488,11 +488,11 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancel = default)
+    public async Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancellationToken = default)
     {
         this._logger.LogInformation("Checking for index {0}", indexName);
 
-        List<string?>? indexNames = await this.ListIndexesAsync(cancel).ToListAsync(cancel).ConfigureAwait(false);
+        List<string?>? indexNames = await this.ListIndexesAsync(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
 
         return indexNames != null && indexNames.Any(name => name == indexName);
     }
@@ -574,11 +574,11 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
         this._httpClient.Dispose();
     }
 
-    internal async Task<bool> ConnectToHostAsync(string indexName, CancellationToken cancel = default)
+    internal async Task<bool> ConnectToHostAsync(string indexName, CancellationToken cancellationToken = default)
     {
         this._logger.LogInformation("Connecting to Pinecone Host");
 
-        PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancel).ConfigureAwait(false);
+        PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
 
         if (pineconeIndex == null)
         {
@@ -670,12 +670,12 @@ internal sealed class PineconeClient : IPineconeClient, IDisposable
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
         string baseURL,
         HttpRequestMessage request,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
         request.Headers.Add(this._authHeader.Key, this._authHeader.Value);
         request.RequestUri = new Uri(baseURL + request.RequestUri);
 
-        using HttpResponseMessage response = await this._httpClient.SendAsync(request, cancel).ConfigureAwait(false);
+        using HttpResponseMessage response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 

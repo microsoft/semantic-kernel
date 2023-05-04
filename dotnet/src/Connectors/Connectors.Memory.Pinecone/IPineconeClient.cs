@@ -188,8 +188,8 @@ public interface IPineconeClient
     /// Check if a vector collection exists.
     /// </summary>
     /// <param name="indexName">The name assigned to a collection of vectors.</param>
-    /// <param name="cancel">Cancellation Token.</param>
-    public Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancel = default);
+    /// <param name="cancellationToken">Cancellation Token.</param>
+    public Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Describe index
