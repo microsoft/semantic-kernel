@@ -96,11 +96,11 @@ public class PodTypeJsonConverter : JsonConverter<PodType>
     {
         string? stringValue = reader.GetString();
 
-        var enumValue = Enum
+        object? enumValue = Enum
             .GetValues(typeToConvert)
             .Cast<object?>()
             .FirstOrDefault(value => value != null && typeToConvert.GetMember(value.ToString())[0]
-                    .GetCustomAttribute(typeof(EnumMemberAttribute)) is EnumMemberAttribute enumMemberAttr && enumMemberAttr.Value == stringValue);
+                .GetCustomAttribute(typeof(EnumMemberAttribute)) is EnumMemberAttribute enumMemberAttr && enumMemberAttr.Value == stringValue);
 
         if (enumValue != null)
         {
