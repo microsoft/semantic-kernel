@@ -36,13 +36,13 @@ public class IndexDefinition
     /// The number of dimensions in the vector representation
     /// </summary>
     [JsonPropertyName("dimension")]
-    public int Dimension { get; set; }
+    public int Dimension { get; set; } = 1536;
 
     /// <summary>
     /// The number of pods for the index to use,including replicas.
     /// </summary>
     [JsonPropertyName("pods")]
-    public int Pods { get; set; }
+    public int Pods { get; set; } = 1;
 
     /// <summary>
     /// The number of replicas. Replicas duplicate your index. They provide higher availability and throughput.
