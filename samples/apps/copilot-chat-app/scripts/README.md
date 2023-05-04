@@ -1,61 +1,34 @@
-# Copilot Chat Dev Setup Scripts
+# Copilot Chat Setup Scripts
 
-> **NOTE:**  These scripts are currently **for Windows only**.
+## Before You Begin
+To run these scripts, you will need the following:
+- *YOUR_CLIENT_ID*
+  - Also know as the application ID, this is the identifier for your Azure Active Directory (AAD) application registration.
+- *YOUR_TENANT_ID*
+  - This is the tenant ID associated with your AAD app registration, which you can find in the Azure portal. If you are using a personal MSA account, you can simply enter `msa` for this value to use the personal MSA tenant.
+- *YOUR_API_KEY*
+  - This is your API key for OpenAI or Azure OpenAI
 
-## Individual Scripts
+You also need to update `appsettings.json` with the relevant deployment or model information, as well as endpoint if you are using Azure OpenAI.
 
-These scripts take you through each step of the setup process for running Copilot Chat locally.
+For more information on how to prepare this data, see the [full instructions for Copilot Chat](../README.md).
 
-### 1. Install prerequisites
-The first script ensures all requirements are installed using the Chocolatey package manager:
+## Install Requirements
+### Windows
+Open a PowerShell window, navigate to this directory, and run the following command:
+```powershell
+.\Install-Requirements.ps1
 ```
-.\1_install-reqs.cmd
-```
+This will install .NET 6.0 SDK, Node.js, and Yarn using the Chocolatey package manager.
 
-### 2. Start the backend
-Before starting the backend, make sure your `appsettings.json` is up to date with the correct endpoints and service specification. You can either store your OpenAI or Azure OpenAI key manually using `dotnet user-secrets`, or let this script do it for you by optionally providing your key as a parameter. 
-This script will also generate a localhost developer certificate, and build and run the backend.
-```
-.\2_init-backend.cmd [KEY]
-```
+For all other operating systems, you need to ensure that these requirements are already installed before proceeding.
 
-### 3. Start the frontend
+## Run Copilot Chat locally
+The `Start` script initializes and runs both the backend and frontend for Copilot Chat on your local machine.
 
-The folowing script will generate the `.env` file and start the frontend.
-```
-.\3_init-frontend.cmd <CLIENT_ID> <TENANT_ID>
-```
- Provide your client ID and tenant ID as parameters.
- Alternatively, in place of the tenant ID, you can specify one of the following:
-- `common` - for the common endpoint
-- `msa` - for the personal MSA tenant
-- `msft` - for the Microsoft corporate tenant (internal testing only)
+### Powershell
+Open a PowerShell window, navigate to this directory, and run the following command:
 
-
-
-## All-in-One Scripts
-
-Rather than run each script separately, you can use one of these all-in-one solutions to start both the frontend and backend for Copilot Chat with a single command.
-
-As mentioned above, you still need to manually update `appsettings.json` before running these scripts.
-
-### First run
-If you are running for the first time, use `start-first-run.cmd`:
-```
-.\start-first-run.cmd <KEY> <CLIENT_ID> <TENANT_ID>
-```
-This will run all three of the above scripts to install the prerequisites, store your key, generate the `.env` file, and start both the backend server and frontend app.
-
-
-### Subsequent runs
-If you've previously run Copilot Chat, you can use `start.cmd`. This script does **NOT** install prerequisites and assumes that your key has already been stored in user secrets.
-
-You can optionally provide your client ID and tenant ID as described above. If these arguments are not provided, the script will look for an existing `.env` file to use.
-
-```
-.\start.cmd
-```
-or
-```
-.\start.cmd <CLIENT_ID> <TENANT_ID>
+```powershell
+.\Start.ps1 -ClientId YOUR_CLIENT_ID -TenantId YOUR_TENANT_ID -Key YOUR_API_KEY
 ```
