@@ -25,7 +25,7 @@ internal class ProtoDocumentParser
     public IList<GrpcOperation> Parse(Stream document, string name)
     {
         Verify.NotNull(document, $"The {nameof(document)} parameter is not set to an instance of an object.");
-        Verify.NotEmpty(name, ".proto file name is not provided.");
+        Verify.NotNullOrWhiteSpace(name, ".proto file name is not provided.");
 
         using var textReader = new StreamReader(document);
 
