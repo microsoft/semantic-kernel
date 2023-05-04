@@ -303,4 +303,12 @@ class WeaviateMemoryStore(MemoryStoreBase):
         min_relevance_score: float,
         with_embedding: bool,
     ) -> Tuple[MemoryRecord, float]:
-        pass
+        results = await self.get_nearest_matches_async(
+            collection_name,
+            embedding,
+            limit=1,
+            min_relevance_score=min_relevance_score,
+            with_embeddings=with_embedding,
+        )
+
+        return results[0]
