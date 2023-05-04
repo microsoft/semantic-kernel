@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -118,12 +119,7 @@ public sealed class ActionPlanner
             plan = new Plan(goal);
         }
 
-        // Planner should not suggest server-url as a parameter.
-        // Server URL should be be parsed from OpenAPI spec or provided by user
-        planData.Plan.Parameters.Remove("server-url");
-
         // Create a plan using the function and the parameters suggested by the planner
-        var variables = new ContextVariables();
         foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
         {
             if (p.Value != null)
@@ -131,9 +127,6 @@ public sealed class ActionPlanner
                 plan.State[p.Key] = p.Value.ToString();
             }
         }
-
-        var context = this._kernel.CreateNewContext();
-        context.Variables.Update(variables);
 
         return plan;
     }
@@ -154,12 +147,12 @@ public sealed class ActionPlanner
         Verify.NotNull(context.Skills);
         var functionsAvailable = context.Skills.GetFunctionsView();
 
-        // Prepare list using the format used by skprompt.txt
-        var list = new StringBuilder();
-        this.PopulateList(list, functionsAvailable.NativeFunctions);
-        this.PopulateList(list, functionsAvailable.SemanticFunctions);
+        var functions = functionsAvailable.SemanticFunctions
+            .Concat(functionsAvailable.NativeFunctions)
+            .SelectMany(x => x.Value)
+            .ToList();
 
-        return list.ToString();
+        return string.Join("\n\n", functions.Select(x => x.ToManualString()));
     }
 
     // TODO: generate string programmatically
@@ -172,19 +165,32 @@ public sealed class ActionPlanner
         return @"
 [EXAMPLE]
 - List of functions:
-// Read a file.
-FileIOSkill.ReadAsync
-Parameter ""path"": Source file.
-// Write a file.
-FileIOSkill.WriteAsync
-Parameter ""path"": Destination file.
-Parameter ""content"": File content.
-// Get the current time.
-TimeSkill.Time
-No parameters.
-// Makes a POST request to a uri.
-HttpSkill.PostAsync
-Parameter ""body"": The body of the request.
+  FileIOSkill.ReadAsync:
+    description: Reads a file.
+    inputs:
+    - path: The path to the source file. (default value: /)
+
+  FileIOSkill.WriteAsync:
+    description: Writes a file.
+    inputs:
+    - path: The path to the destination file.
+    - content: The content to be written.
+    
+  TimeSkill.Time:
+    description: Gets the current time.
+    inputs:
+    - none
+
+  HttpSkill.PostAsync:
+    description: Makes a POST request to a URI.
+    inputs:
+    - body: The body of the request.
+
+  LanguageHelpers.TranslateTo:
+    description: translate the input to another language
+    inputs:
+    - input: the text to translate
+    - translate_to_language: the language to translate to (default value: english)
 - End list of functions.
 Goal: create a file called ""something.txt"".
 {""plan"":{
@@ -207,20 +213,32 @@ Goal: create a file called ""something.txt"".
         return @"
 [EXAMPLE]
 - List of functions:
-// Get the current time.
-TimeSkill.Time
-No parameters.
-// Write a file.
-FileIOSkill.WriteAsync
-Parameter ""path"": Destination file.
-Parameter ""content"": File content.
-// Makes a POST request to a uri.
-HttpSkill.PostAsync
-Parameter ""body"": The body of the request.
-// Read a file.
-FileIOSkill.ReadAsync
-Parameter ""path"": Source file.
-- End list of functions.
+  FileIOSkill.ReadAsync:
+    description: Reads a file.
+    inputs:
+    - path: The path to the source file.  
+
+  FileIOSkill.WriteAsync:
+    description: Writes a file.
+    inputs:
+    - path: The path to the destination file.
+    - content: The content to be written.
+    
+  TimeSkill.Time:
+    description: Gets the current time.
+    inputs:
+    - none
+
+  HttpSkill.PostAsync:
+    description: Makes a POST request to a URI.
+    inputs:
+    - body: The body of the request.
+    
+  LanguageHelpers.TranslateTo:
+    description: translate the input to another language
+    inputs:
+    - input: the text to translate
+    - translate_to_language: the language to translate to (default value: english)
 Goal: tell me a joke.
 {""plan"":{
 ""rationale"": ""the list does not contain functions to tell jokes or something funny"",
