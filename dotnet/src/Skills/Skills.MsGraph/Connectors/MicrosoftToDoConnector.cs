@@ -86,6 +86,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
         {
             filterValue = "status ne 'completed'";
         }
+
         ITodoTaskListTasksCollectionPage tasksPage = await this._graphServiceClient.Me
             .Todo.Lists[listId]
             .Tasks.Request().Filter(filterValue).GetAsync(cancellationToken).ConfigureAwait(false);
