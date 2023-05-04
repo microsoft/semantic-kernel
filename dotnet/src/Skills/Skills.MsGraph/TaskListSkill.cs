@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -25,6 +27,11 @@ public class TaskListSkill
         /// Task reminder as DateTimeOffset.
         /// </summary>
         public const string Reminder = "reminder";
+
+        /// <summary>
+        /// Whether to include completed tasks.
+        /// </summary>
+        public const string IncludeCompleted = "includeCompleted";
     }
 
     private readonly ITaskManagementConnector _connector;
@@ -48,7 +55,7 @@ public class TaskListSkill
     /// </summary>
     public static DateTimeOffset GetNextDayOfWeek(DayOfWeek dayOfWeek, TimeSpan timeOfDay)
     {
-        DateTimeOffset today = new DateTimeOffset(DateTime.Today);
+        DateTimeOffset today = new(DateTime.Today);
         int nextDayOfWeekOffset = dayOfWeek - today.DayOfWeek;
         if (nextDayOfWeekOffset <= 0)
         {
@@ -76,7 +83,7 @@ public class TaskListSkill
             return;
         }
 
-        TaskManagementTask task = new TaskManagementTask(
+        TaskManagementTask task = new(
             id: Guid.NewGuid().ToString(),
             title: title);
 
@@ -87,5 +94,36 @@ public class TaskListSkill
 
         this._logger.LogInformation("Adding task '{0}' to task list '{1}'", task.Title, defaultTaskList.Name);
         await this._connector.AddTaskAsync(defaultTaskList.Id, task, context.CancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Get tasks from the default task list.
+    /// </summary>
+    [SKFunction("Get tasks from the default task list.")]
+    [SKFunctionContextParameter(Name = Parameters.IncludeCompleted, Description = "Whether to include completed tasks (optional)", DefaultValue = "false")]
+    public async Task<string> GetDefaultTasksAsync(SKContext context)
+    {
+        TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(context.CancellationToken)
+            .ConfigureAwait(false);
+
+        if (defaultTaskList == null)
+        {
+            context.Fail("No default task list found.");
+            return string.Empty;
+        }
+
+        bool includeCompleted = false;
+        if (context.Variables.Get(Parameters.IncludeCompleted, out string includeCompletedString))
+        {
+            if (!bool.TryParse(includeCompletedString, out includeCompleted))
+            {
+                this._logger.LogWarning("Invalid value for '{0}' variable: '{1}'", Parameters.IncludeCompleted, includeCompletedString);
+            }
+        }
+
+        IEnumerable<TaskManagementTask> tasks = await this._connector.GetTasksAsync(defaultTaskList.Id, includeCompleted, context.CancellationToken)
+            .ConfigureAwait(false);
+
+        return JsonSerializer.Serialize(tasks);
     }
 }

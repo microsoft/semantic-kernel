@@ -1,3 +1,5 @@
+import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
+
 interface ServiceRequest {
     commandPath: string;
     method?: string;
@@ -12,7 +14,11 @@ export class BaseService {
     protected readonly getResponseAsync = async <T>(
         request: ServiceRequest,
         accessToken: string,
-        connectorAccessToken?: string,
+        enabledPlugins?: {
+            headerTag: AuthHeaderTags;
+            authData: string;
+            apiProperties?: AdditionalApiProperties;
+        }[],
     ): Promise<T> => {
         const { commandPath, method, body } = request;
         const headers = new Headers({
@@ -20,8 +26,14 @@ export class BaseService {
             'Content-Type': 'application/json',
         });
 
-        //TODO: not sure what scenario this helps with?
-        if (connectorAccessToken) headers.append(`sk-copilot-connector-access-token`, connectorAccessToken);
+        // For each enabled plugin, pass its auth information as a customer header
+        // to the backend so the server can authenticate to the plugin
+        if (enabledPlugins && enabledPlugins.length > 0) {
+            for (var idx in enabledPlugins) {
+                var plugin = enabledPlugins[idx];
+                headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData);
+            }
+        }
 
         try {
             const requestUrl = new URL(commandPath, this.serviceUrl);
@@ -33,7 +45,8 @@ export class BaseService {
 
             if (!response.ok) {
                 const responseText = await response.text();
-                const errorMessage = `${response.status}: ${response.statusText}` + (responseText ? ` => ${responseText}` : '');
+                const errorMessage =
+                    `${response.status}: ${response.statusText}` + (responseText ? ` => ${responseText}` : '');
 
                 throw Object.assign(new Error(errorMessage));
             }

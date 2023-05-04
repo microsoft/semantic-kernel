@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  dotnet-build-and-test:
     strategy:
         matrix:
           os: [ubuntu-latest, windows-latest]
