@@ -37,7 +37,7 @@ export const Constants = {
     // Uncomment the ones you need and pass into
     // invokeSkillWithMsalToken (./connectors/useConnectors.ts)
     msGraphScopes: [
-        'Calendars.Read', // Get Schedule Availability
+        // 'Calendars.Read', // Get Schedule Availability
         // 'Calendars.ReadWrite',
         // 'Calendars.Read.Shared',
         // 'ChannelMessage.Read.All',
@@ -47,28 +47,28 @@ export const Constants = {
         // 'Files.Read',
         // 'Files.Read.All',
         // 'Files.Read.Selected',
-        'Files.ReadWrite', // Upload Files to OneDrive, Create a Share link
+        // 'Files.ReadWrite', // Upload Files to OneDrive, Create a Share link
         // 'Group.Read.All',
-        'Mail.Read',
+        // 'Mail.Read',
         // 'Mail.Read.Shared',
-        'Mail.Send', // Send Email
+        // 'Mail.Send', // Send Email
         // 'MailboxSettings.Read',
         // 'Notes.Read',
         // 'Notes.Read.All',
         // 'offline_access',
         // 'OnlineMeetingArtifact.Read.All',
         // 'OnlineMeetings.Read',
-        'OnlineMeetings.ReadWrite', // Create Meeting
+        // 'OnlineMeetings.ReadWrite', // Create Meeting
         // 'OnlineMeetings.ReadWrite.All',
-        'People.Read',
+        // 'People.Read',
         // 'Presence.Read.All',
-        'Sites.Read.All', // List Trending SharePoint Documents
+        // 'Sites.Read.All', // List Trending SharePoint Documents
         // 'Tasks.Read',
         // 'Tasks.Read.Shared',
         'Tasks.ReadWrite', // Manage Task or To Do Task list
         // 'TeamSettings.Read.All',
         'User.Read',
-        'User.Read.All', // Get Manager (requires admin consent)
+        // 'User.Read.All', // Get Manager (requires admin consent)
         // 'User.ReadBasic.All',
     ],
     adoScopes: ['vso.work'],
