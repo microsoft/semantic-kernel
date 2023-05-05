@@ -42,14 +42,15 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         try:
             import torch
             import sentence_transformers
-            self.device = (
-                "cuda:" + device if device >= 0 and torch.cuda.is_available() else "cpu"
-            )
-            self.generator = sentence_transformers.SentenceTransformer(
-                model_name_or_path=self._model_id, device=self.device
-            )
-        except (ImportError, ModuleNotFoundError):
+        except (ImportError):
             raise ImportError("Please ensure that torch and sentence-transformers are installed to use HuggingFaceTextEmbedding")
+        
+        self.device = (
+            "cuda:" + device if device >= 0 and torch.cuda.is_available() else "cpu"
+        )
+        self.generator = sentence_transformers.SentenceTransformer(
+            model_name_or_path=self._model_id, device=self.device
+        )
 
     async def generate_embeddings_async(self, texts: List[str]) -> ndarray:
         """

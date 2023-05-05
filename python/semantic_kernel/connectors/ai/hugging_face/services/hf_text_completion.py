@@ -52,14 +52,15 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         try:
             import transformers
             import torch
-            self.device = (
-                "cuda:" + device if device >= 0 and torch.cuda.is_available() else "cpu"
-            )
-            self.generator = transformers.pipeline(
-                task=self._task, model=self._model_id, device=self.device
-            )
         except (ImportError, ModuleNotFoundError):
             raise ImportError("Please ensure that torch and transformers are installed to use HuggingFaceTextCompletion")
+        
+        self.device = (
+            "cuda:" + device if device >= 0 and torch.cuda.is_available() else "cpu"
+        )
+        self.generator = transformers.pipeline(
+            task=self._task, model=self._model_id, device=self.device
+        )
 
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
