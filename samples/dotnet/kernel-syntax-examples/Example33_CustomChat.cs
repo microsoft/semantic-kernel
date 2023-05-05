@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -12,9 +13,7 @@ using RepoUtils;
 /**
  * The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
  */
-
 // ReSharper disable once InconsistentNaming
-// ReSharper disable CommentTypo
 public static class Example33_CustomChat
 {
     public static async Task RunAsync()
@@ -147,7 +146,10 @@ public static class Example33_CustomChat
             return Task.FromResult(this._outputAssistantResult);
         }
 
-        public async IAsyncEnumerable<string> GenerateMessageStreamAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<string> GenerateMessageStreamAsync(
+            ChatHistory chat,
+            ChatRequestSettings? requestSettings = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var streamedOutput = this._outputAssistantResult.Split(' ');
             foreach (string word in streamedOutput)

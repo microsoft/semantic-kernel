@@ -12,9 +12,7 @@ using RepoUtils;
 /**
  * The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
  */
-
 // ReSharper disable once InconsistentNaming
-// ReSharper disable CommentTypo
 public static class Example17_ChatGPT
 {
     public static async Task RunAsync()
