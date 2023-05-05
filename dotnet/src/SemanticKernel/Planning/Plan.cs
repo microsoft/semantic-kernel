@@ -497,6 +497,12 @@ public sealed class Plan : ISKFunction
 
         foreach (var item in step.Parameters)
         {
+            // Don't overwrite variable values that are already set except for INPUT
+            if (!item.Key.Equals("INPUT", StringComparison.OrdinalIgnoreCase) && stepVariables.Get(item.Key, out var val))
+            {
+                continue;
+            }
+
             if (!string.IsNullOrEmpty(item.Value))
             {
                 var value = this.ExpandFromVariables(variables, item.Value);
