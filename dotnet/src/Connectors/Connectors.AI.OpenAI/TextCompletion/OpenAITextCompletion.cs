@@ -43,6 +43,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         return this.InternalCompleteTextAsync(text, requestSettings, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public IAsyncEnumerable<string> CompleteStreamAsync(
         string text,
         CompleteRequestSettings requestSettings,

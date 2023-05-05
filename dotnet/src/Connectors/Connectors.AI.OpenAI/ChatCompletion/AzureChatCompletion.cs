@@ -77,6 +77,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<string> CompleteStreamAsync(string text,
         CompleteRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
