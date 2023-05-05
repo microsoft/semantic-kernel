@@ -470,21 +470,49 @@ public sealed class Plan : ISKFunction
     /// <returns>The context variables for the next step in the plan.</returns>
     private ContextVariables GetNextStepVariables(ContextVariables variables, Plan step)
     {
-        // If the current step is passing to another plan, we set the default input to an empty string.
-        // Otherwise, we use the description from the current plan as the default input.
-        // We then set the input to the value from the SKContext, or the input from the Plan.State, or the default input.
-        var defaultInput = step.Steps.Count > 0 ? string.Empty : this.Description ?? string.Empty;
-        var planInput = string.IsNullOrEmpty(variables.Input) ? this.State.Input : variables.Input;
-        var stepInput = string.IsNullOrEmpty(planInput) ? defaultInput : planInput;
-        var stepVariables = new ContextVariables(stepInput);
+        // Priority for Input
+        // - Parameters (expand from variables if needed)
+        // - SKContext.Variables
+        // - Plan.State
+        // - Empty if sending to another plan
+        // - Plan.Description
+
+        var input = string.Empty;
+        if (!string.IsNullOrEmpty(step.Parameters.Input))
+        {
+            input = this.ExpandFromVariables(variables, step.Parameters.Input);
+        }
+        else if (!string.IsNullOrEmpty(variables.Input))
+        {
+            input = variables.Input;
+        }
+        else if (!string.IsNullOrEmpty(this.State.Input))
+        {
+            input = this.State.Input;
+        }
+        else if (step.Steps.Count > 0)
+        {
+            input = string.Empty;
+        }
+        else if (!string.IsNullOrEmpty(this.Description))
+        {
+            input = this.Description;
+        }
+
+        var stepVariables = new ContextVariables(input);
+
 
         // Priority for remaining stepVariables is:
-        // - Parameters (pull from State by a key value)
-        // - Parameters (from context)
-        // - Parameters (from State)
+        // - Function Parameters (pull from variables or state by a key value)
+        // - Step Parameters (pull from variables or state by a key value)
         var functionParameters = step.Describe();
         foreach (var param in functionParameters.Parameters)
         {
+            if (param.Name.Equals("INPUT", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             if (variables.Get(param.Name, out var value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(param.Name, value);
@@ -497,16 +525,16 @@ public sealed class Plan : ISKFunction
 
         foreach (var item in step.Parameters)
         {
-            // Don't overwrite variable values that are already set except for INPUT
-            if (!item.Key.Equals("INPUT", StringComparison.OrdinalIgnoreCase) && stepVariables.Get(item.Key, out var val))
+            // Don't overwrite variable values that are already set
+            if (stepVariables.Get(item.Key, out var val))
             {
                 continue;
             }
 
-            if (!string.IsNullOrEmpty(item.Value))
+            var expandedValue = this.ExpandFromVariables(variables, item.Value);
+            if (!string.IsNullOrEmpty(item.Value) && !expandedValue.Equals(item.Value, StringComparison.OrdinalIgnoreCase))
             {
-                var value = this.ExpandFromVariables(variables, item.Value);
-                stepVariables.Set(item.Key, value);
+                stepVariables.Set(item.Key, expandedValue);
             }
             else if (variables.Get(item.Key, out var value) && !string.IsNullOrEmpty(value))
             {
@@ -515,6 +543,10 @@ public sealed class Plan : ISKFunction
             else if (this.State.Get(item.Key, out value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(item.Key, value);
+            }
+            else if (!string.IsNullOrEmpty(expandedValue) && !stepVariables.Get(item.Key, out var _))
+            {
+                stepVariables.Set(item.Key, expandedValue);
             }
         }
 
