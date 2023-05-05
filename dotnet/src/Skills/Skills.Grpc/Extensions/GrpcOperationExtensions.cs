@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Skills.Grpc.Model;
 namespace Microsoft.SemanticKernel.Skills.Grpc.Extensions;
 
 /// <summary>
-/// Class for extensions methods for the <see cref="GrpcOperationExtensions"/> class.
+/// Class for extensions methods for the <see cref="GrpcOperation"/> class.
 /// </summary>
 internal static class GrpcOperationExtensions
 {
