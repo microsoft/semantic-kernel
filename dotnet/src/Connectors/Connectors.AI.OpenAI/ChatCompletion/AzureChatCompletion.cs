@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,6 +59,15 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         CancellationToken cancellationToken = default)
     {
         return this.InternalGenerateChatMessageAsync(chat, requestSettings ?? new(), cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string> GenerateMessageStreamAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalGenerateChatMessageStreamAsync(chat, requestSettings ?? new(), cancellationToken);
     }
 
     /// <inheritdoc/>
