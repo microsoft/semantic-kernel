@@ -54,7 +54,7 @@ public static class Example17_ChatGPT
 
     private static async Task OpenAIChatSampleAsync()
     {
-        Console.WriteLine("======== Open AI ChatGPT ========");
+        Console.WriteLine("======== Open AI - ChatGPT ========");
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
@@ -75,7 +75,7 @@ public static class Example17_ChatGPT
 
     private static async Task AzureOpenAIChatSampleAsync()
     {
-        Console.WriteLine("======== SK with ChatGPT ========");
+        Console.WriteLine("======== Azure Open AI - ChatGPT ========");
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
@@ -99,7 +99,7 @@ public static class Example17_ChatGPT
 
     private static async Task OpenAIChatStreamSampleAsync()
     {
-        Console.WriteLine("======== Open AI ChatGPT - Stream ========");
+        Console.WriteLine("======== Open AI - ChatGPT Streaming ========");
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
@@ -118,7 +118,7 @@ public static class Example17_ChatGPT
 
     private static async Task AzureOpenAIChatStreamSampleAsync()
     {
-        Console.WriteLine("======== Azure OpenAI ChatGPT - Stream ========");
+        Console.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
