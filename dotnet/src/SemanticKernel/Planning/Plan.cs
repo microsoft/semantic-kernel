@@ -501,7 +501,6 @@ public sealed class Plan : ISKFunction
 
         var stepVariables = new ContextVariables(input);
 
-
         // Priority for remaining stepVariables is:
         // - Function Parameters (pull from variables or state by a key value)
         // - Step Parameters (pull from variables or state by a key value)

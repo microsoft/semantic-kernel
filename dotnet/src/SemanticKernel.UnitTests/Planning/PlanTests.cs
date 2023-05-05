@@ -636,7 +636,6 @@ public sealed class PlanTests
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Exactly(2));
     }
 
-
     [Fact]
     public async Task CanExecutePlanWithCustomStateAsync()
     {
