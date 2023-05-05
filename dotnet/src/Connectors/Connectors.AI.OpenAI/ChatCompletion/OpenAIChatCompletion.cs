@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -61,8 +62,11 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken);
     }
 
-    public IAsyncEnumerable<string> CompleteStreamAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> CompleteStreamAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        yield return await this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
     }
 }
