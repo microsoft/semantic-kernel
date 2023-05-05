@@ -9,19 +9,18 @@ using RepoUtils;
 /**
  * The following example shows how to use Semantic Kernel with Text Completion as streaming
  */
-
 // ReSharper disable once InconsistentNaming
-// ReSharper disable CommentTypo
-public static class Example31_StreamingCompletion
+public static class Example32_StreamingCompletion
 {
     public static async Task RunAsync()
     {
-        await AzureTextCompletionSampleAsync();
+        await AzureOpenAITextCompletionSampleAsync();
+        await OpenAITextCompletionSampleAsync();
     }
 
-    private static async Task AzureTextCompletionSampleAsync()
+    private static async Task AzureOpenAITextCompletionSampleAsync()
     {
-        Console.WriteLine("======== Streaming TextCompletion ========");
+        Console.WriteLine("======== Azure OpenAI - Streaming TextCompletion ========");
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         kernel.Config.AddAzureTextCompletionService(
@@ -31,6 +30,23 @@ public static class Example31_StreamingCompletion
 
         ITextCompletion textCompletion = kernel.GetService<ITextCompletion>();
 
+        await TextCompletionSampleAsync(textCompletion);
+    }
+
+    private static async Task OpenAITextCompletionSampleAsync()
+    {
+        Console.WriteLine("======== Open AI - Streaming TextCompletion ========");
+
+        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-003");
+
+        ITextCompletion textCompletion = kernel.GetService<ITextCompletion>();
+
+        await TextCompletionSampleAsync(textCompletion);
+    }
+
+    private static async Task TextCompletionSampleAsync(ITextCompletion textCompletion)
+    {
         var requestSettings = new CompleteRequestSettings()
         {
             MaxTokens = 100,
@@ -47,6 +63,8 @@ public static class Example31_StreamingCompletion
         {
             Console.Write(message);
         }
+
+        Console.WriteLine();
 
         /* Output (Fluid content):
 

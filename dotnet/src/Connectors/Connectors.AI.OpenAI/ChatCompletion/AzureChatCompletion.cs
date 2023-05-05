@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
@@ -76,10 +77,10 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken);
     }
 
-    public IAsyncEnumerable<string> CompleteStreamAsync(string text,
+    public async IAsyncEnumerable<string> CompleteStreamAsync(string text,
         CompleteRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        yield return await this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
     }
 }

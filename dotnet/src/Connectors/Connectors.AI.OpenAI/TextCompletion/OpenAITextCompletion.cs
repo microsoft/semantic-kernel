@@ -43,8 +43,11 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         return this.InternalCompleteTextAsync(text, requestSettings, cancellationToken);
     }
 
-    public IAsyncEnumerable<string> CompleteStreamAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<string> CompleteStreamAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        return this.InternalCompletionStreamAsync(text, requestSettings, cancellationToken);
     }
 }
