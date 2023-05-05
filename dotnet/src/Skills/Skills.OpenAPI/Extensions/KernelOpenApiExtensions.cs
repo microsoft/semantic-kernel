@@ -75,6 +75,7 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
+    /// <param name="userAgent">Optional user agent header value.</param>
     /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -83,6 +84,7 @@ public static class KernelOpenApiExtensions
         this IKernel kernel,
         string skillName,
         AuthenticateRequestAsyncCallback? authCallback = null,
+        string? userAgent = "Microsoft-Semantic-Kernel",
         HttpRetryConfig? retryConfiguration = null,
 #pragma warning disable CA1054 // URI-like parameters should not be strings
         string? serverUrlOverride = null,
@@ -101,7 +103,7 @@ public static class KernelOpenApiExtensions
             throw new MissingManifestResourceException($"Unable to load OpenApi skill from assembly resource '{resourceName}'.");
         }
 
-        return kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, serverUrlOverride: serverUrlOverride, cancellationToken: cancellationToken);
+        return kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, userAgent, serverUrlOverride, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -112,6 +114,7 @@ public static class KernelOpenApiExtensions
     /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="retryConfiguration">Optional retry configuration.</param>
+    /// <param name="userAgent">Optional user agent header value.</param>
     /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken"></param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
@@ -120,6 +123,7 @@ public static class KernelOpenApiExtensions
         string parentDirectory,
         string skillDirectoryName,
         AuthenticateRequestAsyncCallback? authCallback = null,
+        string? userAgent = "Microsoft-Semantic-Kernel",
         HttpRetryConfig? retryConfiguration = null,
 #pragma warning disable CA1054 // URI-like parameters should not be strings
         string? serverUrlOverride = null,
@@ -145,7 +149,7 @@ public static class KernelOpenApiExtensions
 
         using var stream = File.OpenRead(openApiDocumentPath);
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillDirectoryName, authCallback, retryConfiguration, serverUrlOverride, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await kernel.RegisterOpenApiSkillAsync(stream, skillDirectoryName, authCallback, retryConfiguration, userAgent, serverUrlOverride, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -155,6 +159,7 @@ public static class KernelOpenApiExtensions
     /// <param name="skillName">Name of the skill to register.</param>
     /// <param name="filePath">File path to the OpenAPI document.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
+    /// <param name="userAgent">Optional user agent header value.</param>
     /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -164,6 +169,7 @@ public static class KernelOpenApiExtensions
         string skillName,
         string filePath,
         AuthenticateRequestAsyncCallback? authCallback = null,
+        string? userAgent = "Microsoft-Semantic-Kernel",
         HttpRetryConfig? retryConfiguration = null,
 #pragma warning disable CA1054 // URI-like parameters should not be strings
         string? serverUrlOverride = null,
@@ -179,7 +185,7 @@ public static class KernelOpenApiExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, serverUrlOverride, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, userAgent, serverUrlOverride, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

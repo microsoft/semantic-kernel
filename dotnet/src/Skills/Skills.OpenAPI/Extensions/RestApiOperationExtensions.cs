@@ -23,14 +23,18 @@ internal static class RestApiOperationExtensions
     {
         var parameters = new List<RestApiOperationParameter>(operation.Parameters);
 
-        //Register the "server-url" parameter so that it's possible to override it if needed.
-        parameters.Add(new RestApiOperationParameter(
-            RestApiOperation.ServerUrlArgumentName,
-            "string",
-            false,
-            RestApiOperationParameterLocation.Path,
-            RestApiOperationParameterStyle.Simple,
-            defaultValue: serverUrlOverride ?? operation.ServerUrl));
+        //Register the "server-url" parameter if override is provided
+        if (!string.IsNullOrEmpty(serverUrlOverride))
+        {
+            parameters.Add(new RestApiOperationParameter(
+                RestApiOperation.ServerUrlArgumentName,
+                "string",
+                false,
+                RestApiOperationParameterLocation.Path,
+                RestApiOperationParameterStyle.Simple,
+                defaultValue: serverUrlOverride)
+            );
+        }
 
         //Register the "payload" parameter to be advertised for Put and Post operations.
         if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -120,6 +119,7 @@ public sealed class ActionPlanner
         }
 
         // Create a plan using the function and the parameters suggested by the planner
+        var variables = new ContextVariables();
         foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
         {
             if (p.Value != null)
@@ -127,6 +127,9 @@ public sealed class ActionPlanner
                 plan.State[p.Key] = p.Value.ToString();
             }
         }
+
+        var context = this._kernel.CreateNewContext();
+        context.Variables.Update(variables);
 
         return plan;
     }
@@ -147,12 +150,12 @@ public sealed class ActionPlanner
         Verify.NotNull(context.Skills);
         var functionsAvailable = context.Skills.GetFunctionsView();
 
-        var functions = functionsAvailable.SemanticFunctions
-            .Concat(functionsAvailable.NativeFunctions)
-            .SelectMany(x => x.Value)
-            .ToList();
+        // Prepare list using the format used by skprompt.txt
+        var list = new StringBuilder();
+        this.PopulateList(list, functionsAvailable.NativeFunctions);
+        this.PopulateList(list, functionsAvailable.SemanticFunctions);
 
-        return string.Join("\n\n", functions.Select(x => x.ToManualString()));
+        return list.ToString();
     }
 
     // TODO: generate string programmatically
@@ -165,32 +168,19 @@ public sealed class ActionPlanner
         return @"
 [EXAMPLE]
 - List of functions:
-  FileIOSkill.ReadAsync:
-    description: Reads a file.
-    inputs:
-    - path: The path to the source file. (default value: /)
-
-  FileIOSkill.WriteAsync:
-    description: Writes a file.
-    inputs:
-    - path: The path to the destination file.
-    - content: The content to be written.
-    
-  TimeSkill.Time:
-    description: Gets the current time.
-    inputs:
-    - none
-
-  HttpSkill.PostAsync:
-    description: Makes a POST request to a URI.
-    inputs:
-    - body: The body of the request.
-
-  LanguageHelpers.TranslateTo:
-    description: translate the input to another language
-    inputs:
-    - input: the text to translate
-    - translate_to_language: the language to translate to (default value: english)
+// Read a file.
+FileIOSkill.ReadAsync
+Parameter ""path"": Source file.
+// Write a file.
+FileIOSkill.WriteAsync
+Parameter ""path"": Destination file. (default value: sample.txt)
+Parameter ""content"": File content.
+// Get the current time.
+TimeSkill.Time
+No parameters.
+// Makes a POST request to a uri.
+HttpSkill.PostAsync
+Parameter ""body"": The body of the request.
 - End list of functions.
 Goal: create a file called ""something.txt"".
 {""plan"":{
@@ -213,32 +203,20 @@ Goal: create a file called ""something.txt"".
         return @"
 [EXAMPLE]
 - List of functions:
-  FileIOSkill.ReadAsync:
-    description: Reads a file.
-    inputs:
-    - path: The path to the source file.  
-
-  FileIOSkill.WriteAsync:
-    description: Writes a file.
-    inputs:
-    - path: The path to the destination file.
-    - content: The content to be written.
-    
-  TimeSkill.Time:
-    description: Gets the current time.
-    inputs:
-    - none
-
-  HttpSkill.PostAsync:
-    description: Makes a POST request to a URI.
-    inputs:
-    - body: The body of the request.
-    
-  LanguageHelpers.TranslateTo:
-    description: translate the input to another language
-    inputs:
-    - input: the text to translate
-    - translate_to_language: the language to translate to (default value: english)
+// Get the current time.
+TimeSkill.Time
+No parameters.
+// Write a file.
+FileIOSkill.WriteAsync
+Parameter ""path"": Destination file. (default value: sample.txt)
+Parameter ""content"": File content.
+// Makes a POST request to a uri.
+HttpSkill.PostAsync
+Parameter ""body"": The body of the request.
+// Read a file.
+FileIOSkill.ReadAsync
+Parameter ""path"": Source file.
+- End list of functions.
 Goal: tell me a joke.
 {""plan"":{
 ""rationale"": ""the list does not contain functions to tell jokes or something funny"",
@@ -276,7 +254,8 @@ Goal: tell me a joke.
                 foreach (var p in func.Parameters)
                 {
                     var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description;
-                    list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)}");
+                    var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $" (default value: {p.DefaultValue})";
+                    list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)} {defaultValueString}");
                 }
             }
         }
