@@ -44,7 +44,7 @@ internal static class MicrosoftGraphModelExtensions
     /// <summary>
     /// Convert a calendar event to a Microsoft Graph event.
     /// </summary>
-    public static Event ToGraphEvent(this CalendarEvent calendarEvent)
+    public static Graph.Event ToGraphEvent(this CalendarEvent calendarEvent)
        => new()
        {
            Subject = calendarEvent.Subject,
@@ -58,7 +58,7 @@ internal static class MicrosoftGraphModelExtensions
     /// <summary>
     /// Convert a Microsoft Graph event to a calendar event.
     /// </summary>
-    public static CalendarEvent ToCalendarEvent(this Event msGraphEvent)
+    public static Models.CalendarEvent ToCalendarEvent(this Event msGraphEvent)
         => new()
         {
             Subject = msGraphEvent.Subject,

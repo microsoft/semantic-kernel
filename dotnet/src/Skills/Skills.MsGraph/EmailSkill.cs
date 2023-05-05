@@ -104,10 +104,9 @@ public class EmailSkill
         DefaultValue = "0")]
     public async Task<string> GetEmailMessagesAsync(SKContext context)
     {
-        this._logger.LogInformation("Getting email messages with query options top: '{0}', skip:'{1}'.",
-            context.Variables.Get(Parameters.MaxResults, out string maxResultsString),
-            context.Variables.Get(Parameters.Skip, out string skipString)
-        );
+        context.Variables.Get(Parameters.MaxResults, out string maxResultsString);
+        context.Variables.Get(Parameters.Skip, out string skipString);
+        this._logger.LogInformation("Getting email messages with query options top: '{0}', skip:'{1}'.", maxResultsString, skipString);
 
         string selectString = "subject,receivedDateTime,bodyPreview";
 

@@ -29,6 +29,6 @@ public interface ICalendarConnector
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The user's calendar events.</returns>
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    Task<IEnumerable<CalendarEvent>> GetEventsAsync(int? top, int? skip, string? select, CancellationToken cancellationToken = default);
+    Task<IEnumerable<CalendarEvent>> GetEventsAsync(int? top, int? skip, string? @select, CancellationToken cancellationToken = default);
 #pragma warning restore CA1716 // Identifiers should not match keywords
 }

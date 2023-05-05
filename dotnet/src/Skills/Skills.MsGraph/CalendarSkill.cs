@@ -139,14 +139,13 @@ public class CalendarSkill
     /// Get calendar events with specified optional clauses used to query for messages.
     /// </summary>
     [SKFunction("Get calendar events.")]
-    [SKFunctionContextParameter(Name = Parameters.MaxResults, Description = "Optional limit of the number of events to retrieve.")]
-    [SKFunctionContextParameter(Name = Parameters.Skip, Description = "Optional number of events to skip before retrieving results.")]
+    [SKFunctionContextParameter(Name = Parameters.MaxResults, Description = "Optional limit of the number of events to retrieve.", DefaultValue = "10")]
+    [SKFunctionContextParameter(Name = Parameters.Skip, Description = "Optional number of events to skip before retrieving results.", DefaultValue = "0")]
     public async Task<string> GetCalendarEventsAsync(SKContext context)
     {
-        this._logger.LogInformation("Getting calendar events with query options top: '{0}', skip:'{1}'.",
-            context.Variables.Get(Parameters.MaxResults, out string maxResultsString),
-            context.Variables.Get(Parameters.Skip, out string skipString)
-        );
+        context.Variables.Get(Parameters.MaxResults, out string maxResultsString);
+        context.Variables.Get(Parameters.Skip, out string skipString);
+        this._logger.LogInformation("Getting calendar events with query options top: '{0}', skip:'{1}'.", maxResultsString, skipString);
 
         string selectString = "start,subject,organizer,location";
 
@@ -172,8 +171,8 @@ public class CalendarSkill
             top: top,
             skip: skip,
             select: selectString,
-            context.CancellationToken)
-            .ConfigureAwait(false);
+            context.CancellationToken
+        ).ConfigureAwait(false);
 
         return JsonSerializer.Serialize(
             value: events,
