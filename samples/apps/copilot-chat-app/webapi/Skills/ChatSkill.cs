@@ -483,7 +483,7 @@ public class ChatSkill
 
         return itemList.Count > 0
             ? JsonSerializer.Serialize(itemList)
-            : String.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
+            : string.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
     }
 
     /// <summary>

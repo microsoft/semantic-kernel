@@ -10,7 +10,7 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 
 class MemoryStoreBase:
     @abstractmethod
-    async def create_collection_async(self, collection_name: SystemError) -> None:
+    async def create_collection_async(self, collection_name: str) -> None:
         pass
 
     @abstractmethod
