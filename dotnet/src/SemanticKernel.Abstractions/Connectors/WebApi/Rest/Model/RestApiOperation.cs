@@ -116,7 +116,7 @@ internal sealed class RestApiOperation
         //Override defined server url - https://api.example.com/v1 by the one from arguments.
         if (arguments.TryGetValue(ServerUrlArgumentName, out string serverUrlString))
         {
-            serverUrl = new Uri(serverUrlString);    
+            serverUrl = new Uri(serverUrlString);
         }
         else
         {
