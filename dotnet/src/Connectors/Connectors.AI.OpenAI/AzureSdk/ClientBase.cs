@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -129,43 +130,8 @@ public abstract class ClientBase
         Verify.NotNull(chat);
         Verify.NotNull(requestSettings);
 
-        if (requestSettings.MaxTokens < 1)
-        {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                $"MaxTokens {requestSettings.MaxTokens} is not valid, the value must be greater than zero");
-        }
-
-        var options = new ChatCompletionsOptions
-        {
-            MaxTokens = requestSettings.MaxTokens,
-            Temperature = (float?)requestSettings.Temperature,
-            NucleusSamplingFactor = (float?)requestSettings.TopP,
-            FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
-            PresencePenalty = (float?)requestSettings.PresencePenalty,
-            ChoicesPerPrompt = 1,
-        };
-
-        if (requestSettings.StopSequences is { Count: > 0 })
-        {
-            foreach (var s in requestSettings.StopSequences)
-            {
-                options.StopSequences.Add(s);
-            }
-        }
-
-        foreach (ChatHistory.Message message in chat.Messages)
-        {
-            var role = message.AuthorRole switch
-            {
-                ChatHistory.AuthorRoles.User => ChatRole.User,
-                ChatHistory.AuthorRoles.Assistant => ChatRole.Assistant,
-                ChatHistory.AuthorRoles.System => ChatRole.System,
-                _ => throw new ArgumentException($"Invalid chat message author: {message.AuthorRole:G}")
-            };
-
-            options.Messages.Add(new ChatMessage(role, message.Content));
-        }
+        this.ValidateMaxTokens(requestSettings.MaxTokens);
+        var options = this.CreateChatCompletionsOptions(requestSettings, chat);
 
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
             () => this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
@@ -176,6 +142,45 @@ public abstract class ClientBase
         }
 
         return response.Value.Choices[0].Message.Content;
+    }
+
+    /// <summary>
+    /// Generate a new chat message stream
+    /// </summary>
+    /// <param name="chat">Chat history</param>
+    /// <param name="requestSettings">AI request settings</param>
+    /// <param name="cancellationToken">Async cancellation token</param>
+    /// <returns>Streaming of generated chat message in string format</returns>
+    protected async IAsyncEnumerable<string> InternalGenerateChatMessageStreamAsync(
+        ChatHistory chat,
+        ChatRequestSettings requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(chat);
+        Verify.NotNull(requestSettings);
+
+        this.ValidateMaxTokens(requestSettings.MaxTokens);
+        var options = this.CreateChatCompletionsOptions(requestSettings, chat);
+
+        Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
+            () => this.Client.GetChatCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+
+        using StreamingChatCompletions streamingChatCompletions = response.Value;
+
+        if (response is null)
+        {
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
+        }
+
+        await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
+        {
+            await foreach (ChatMessage message in choice.GetMessageStreaming(cancellationToken))
+            {
+                yield return message.Content;
+            }
+
+            yield return Environment.NewLine;
+        }
     }
 
     /// <summary>
@@ -213,6 +218,52 @@ public abstract class ClientBase
         };
 
         return await this.InternalGenerateChatMessageAsync(chat, settings, cancellationToken).ConfigureAwait(false);
+    }
+
+    private ChatCompletionsOptions CreateChatCompletionsOptions(ChatRequestSettings requestSettings, ChatHistory chat)
+    {
+        var options = new ChatCompletionsOptions
+        {
+            MaxTokens = requestSettings.MaxTokens,
+            Temperature = (float?)requestSettings.Temperature,
+            NucleusSamplingFactor = (float?)requestSettings.TopP,
+            FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
+            PresencePenalty = (float?)requestSettings.PresencePenalty,
+            ChoicesPerPrompt = 1,
+        };
+
+        if (requestSettings.StopSequences is { Count: > 0 })
+        {
+            foreach (var s in requestSettings.StopSequences)
+            {
+                options.StopSequences.Add(s);
+            }
+        }
+
+        foreach (ChatHistory.Message message in chat.Messages)
+        {
+            var role = message.AuthorRole switch
+            {
+                ChatHistory.AuthorRoles.User => ChatRole.User,
+                ChatHistory.AuthorRoles.Assistant => ChatRole.Assistant,
+                ChatHistory.AuthorRoles.System => ChatRole.System,
+                _ => throw new ArgumentException($"Invalid chat message author: {message.AuthorRole:G}")
+            };
+
+            options.Messages.Add(new ChatMessage(role, message.Content));
+        }
+
+        return options;
+    }
+
+    private void ValidateMaxTokens(int maxTokens)
+    {
+        if (maxTokens < 1)
+        {
+            throw new AIException(
+                AIException.ErrorCodes.InvalidRequest,
+                $"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+        }
     }
 
     private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
