@@ -240,7 +240,7 @@ public static class KernelOpenApiExtensions
     private static ISKFunction RegisterRestApiFunction(
         this IKernel kernel,
         string skillName,
-        IRestApiOperationRunner runner,
+        RestApiOperationRunner runner,
         RestApiOperation operation,
         CancellationToken cancellationToken = default)
     {

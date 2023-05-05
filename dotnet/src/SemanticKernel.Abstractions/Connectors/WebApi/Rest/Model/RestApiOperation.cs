@@ -52,7 +52,6 @@ internal sealed class RestApiOperation
     /// <summary>
     /// The server URL.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "Having this property as a string can be useful for scenarios when AI creates an instance of the operation.")]
     public string ServerUrl { get; }
 
     /// <summary>
@@ -81,7 +80,6 @@ internal sealed class RestApiOperation
     /// <param name="parameters">The operation parameters.</param>
     /// <param name="headers">The operation headers.</param>
     /// <param name="payload">The operation payload.</param>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "Having this property as a string can be useful for scenarios when AI creates an instance of the operation.")]
     public RestApiOperation(
         string id,
         string serverUrl,
