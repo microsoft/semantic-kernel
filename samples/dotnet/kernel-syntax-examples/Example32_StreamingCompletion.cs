@@ -97,7 +97,7 @@ public static class Example32_StreamingCompletion
         */
     }
 
-    private class MyTextCompletionService : ITextCompletion
+    private sealed class MyTextCompletionService : ITextCompletion
     {
         private readonly string _outputResult =
             @"AI is awesome because it can help us solve complex problems, enhance our creativity,
