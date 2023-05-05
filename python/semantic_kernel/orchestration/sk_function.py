@@ -307,7 +307,7 @@ class SKFunction(SKFunctionBase):
             if self.is_semantic:
                 return self._runThread(self._invoke_semantic_async(context, settings))
             else:
-                return self._runThread(self._invoke_semantic_async(context))
+                return self._runThread(self._invoke_native_async(context))
         else:
             if self.is_semantic:
                 return asyncio.run(self._invoke_semantic_async(context, settings))
