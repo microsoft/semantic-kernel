@@ -1,11 +1,18 @@
 <#
 .SYNOPSIS
-Initialize and run the Copilot Chat backend.
+Initializes and runs the Copilot Chat backend.
+
+.PARAMETER Key
+Your OpenAI or Azure OpenAI API key.
 #>
+
+#Requires -Version 6
 
 param (
     [string] $Key
 )
+
+cd "$PSScriptRoot/../WebApi"
 
 # Install dev certificate
 if ($IsWindows -or $IsMacOS)
@@ -16,8 +23,6 @@ elseif ($IsLinux)
 {
     dotnet dev-certs https
 }
-
-cd $PSScriptRoot/../WebApi
 
 # If key provided, store it in user secrets
 if (-not $Key -eq '') {

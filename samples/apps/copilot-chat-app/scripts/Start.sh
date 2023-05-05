@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Initialize and run both the backend and frontend for Copilot Chat.
+# Initializes and runs both the backend and frontend for Copilot Chat.
 
 set -e
 

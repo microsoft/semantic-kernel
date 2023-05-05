@@ -1,7 +1,17 @@
 <#
 .SYNOPSIS
-Initialize and run the Copilot Chat frontend.
+Initializes and runs the Copilot Chat frontend.
+
+.PARAMETER ClientId
+The client (application) ID for your AAD app registration.
+
+.PARAMETER TenantId
+The tenant (directory) ID for your AAD app registration.
+If you are using a personal MSA account, enter 'msa' here.
+Defaults to the 'common' endpoint.
 #>
+
+#Requires -Version 6
 
 param (
     [Parameter(Mandatory)]
@@ -10,6 +20,7 @@ param (
     [string] $TenantId = 'common'
 )
 
+cd "$PSScriptRoot/../WebApp"
 $EnvFilePath = "$PSScriptRoot/../WebApp/.env"
 
 # Overwrite existing .env file
@@ -24,6 +35,5 @@ Add-Content -Path $EnvFilePath -Value "REACT_APP_AAD_AUTHORITY=https://login.mic
 Add-Content -Path $EnvFilePath -Value "REACT_APP_AAD_CLIENT_ID=$ClientId"
 
 # Build and run the frontend application
-cd $PSScriptRoot/../WebApp
 yarn install
 yarn start

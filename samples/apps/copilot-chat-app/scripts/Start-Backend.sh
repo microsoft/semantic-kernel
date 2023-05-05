@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# Initialize and run the Copilot Chat backend.
+# Initializes and runs the Copilot Chat backend.
 
 set -e
+
+ScriptDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ScriptDir/../WebApi"
 
 # Parameters
 Key="$1"
@@ -17,9 +20,6 @@ case "$OSTYPE" in
   linux*)
     dotnet dev-certs https ;;
 esac
-
-ScriptDir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-cd $ScriptDir/../WebApi
 
 # If key provided, store it in user secrets
 if [ "$Key" != "" ]; then

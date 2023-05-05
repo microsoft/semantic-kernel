@@ -1,5 +1,7 @@
 # Copilot Chat Setup Scripts
 
+> The PowerShell scripts in this directory require [PowerShell Core 6 or higher](https://github.com/PowerShell/PowerShell#get-powershell).
+
 ## Before You Begin
 To run these scripts, you will need the following:
 - *YOUR_CLIENT_ID*
@@ -9,7 +11,7 @@ To run these scripts, you will need the following:
 - *YOUR_API_KEY*
   - This is your API key for OpenAI or Azure OpenAI
 
-You also need to update `appsettings.json` with the relevant deployment or model information, as well as endpoint if you are using Azure OpenAI.
+You also need to update [`appsettings.json`](../webapi/appsettings.json) with the relevant deployment or model information, as well as endpoint if you are using Azure OpenAI.
 
 For more information on how to prepare this data, see the [full instructions for Copilot Chat](../README.md).
 
@@ -26,7 +28,7 @@ For all other operating systems, you need to ensure that these requirements are 
 ## Run Copilot Chat locally
 The `Start` script initializes and runs both the backend and frontend for Copilot Chat on your local machine.
 
-### Powershell
+### PowerShell
 Open a PowerShell window, navigate to this directory, and run the following command:
 
 ```powershell
@@ -43,3 +45,4 @@ Then run the following command:
 ```bash
 ./Start.sh YOUR_CLIENT_ID YOUR_TENANT_ID YOUR_API_KEY
 ```
+Note that this script starts `CopilotChatApi.exe` as a background process. Be sure to clean it up when you are finished.

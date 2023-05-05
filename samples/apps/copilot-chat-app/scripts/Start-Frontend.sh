@@ -1,15 +1,16 @@
 #!/bin/bash
 
-# Initialize and run the Copilot Chat frontend.
+# Initializes and runs the Copilot Chat frontend.
 
 set -e
+
+ScriptDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ScriptDir/../WebApp"
+EnvFilePath="$ScriptDir/../WebApp/.env"
 
 # Parameters
 ClientId="$1"
 TenantId="${2:-common}"
-
-ScriptDir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-EnvFilePath="$ScriptDir/../WebApp/.env"
 
 # Overwrite existing .env file
 echo "REACT_APP_BACKEND_URI=https://localhost:40443/" > $EnvFilePath
@@ -22,5 +23,4 @@ echo "REACT_APP_AAD_AUTHORITY=https://login.microsoftonline.com/$TenantId" >> $E
 echo "REACT_APP_AAD_CLIENT_ID=$ClientId" >> $EnvFilePath
 
 # Build and run the frontend application
-cd $ScriptDir/../WebApp
 yarn install && yarn start
