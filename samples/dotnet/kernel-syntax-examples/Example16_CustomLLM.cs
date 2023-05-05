@@ -18,17 +18,15 @@ using RepoUtils;
  */
 public class MyTextCompletionService : ITextCompletion
 {
-    public async Task<string> CompleteAsync(
+    public Task<string> CompleteAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        await Task.Delay(0, cancellationToken);
-
         // Your model logic here
         var result = "...output from your custom model...";
 
-        return result;
+        return Task.FromResult(result);
     }
 
     public IAsyncEnumerable<string> CompleteStreamAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
