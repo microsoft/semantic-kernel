@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -22,11 +21,10 @@ public static class Example17_ChatGPT
     {
         await AzureOpenAIChatStreamSampleAsync();
         await OpenAIChatStreamSampleAsync();
-        await CustomChatStreamSampleAsync();
 
         await AzureOpenAIChatSampleAsync();
         await OpenAIChatSampleAsync();
-        await CustomChatSampleAsync();
+
         /* Output:
 
         Chat content:
@@ -58,7 +56,7 @@ public static class Example17_ChatGPT
 
     private static async Task OpenAIChatSampleAsync()
     {
-        Console.WriteLine("======== SK with ChatGPT ========");
+        Console.WriteLine("======== Open AI ChatGPT ========");
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
@@ -122,7 +120,7 @@ public static class Example17_ChatGPT
 
     private static async Task AzureOpenAIChatStreamSampleAsync()
     {
-        Console.WriteLine("======== Azure Open AI ChatGPT - Stream ========");
+        Console.WriteLine("======== Azure OpenAI ChatGPT - Stream ========");
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
@@ -202,117 +200,4 @@ public static class Example17_ChatGPT
         chatHistory.AddAssistantMessage(reply);
         return chatHistory;
     }
-
-    #region Custom Chat Service
-
-    private static async Task CustomChatSampleAsync()
-    {
-        Console.WriteLine("======== SK with Custom Chat ========");
-
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        IChatCompletion Factory(IKernel k) => new MyChatCompletionService();
-        // Add your chat completion service
-        kernel.Config.AddChatCompletionService(Factory);
-
-        IChatCompletion customChat = kernel.GetService<IChatCompletion>();
-        ChatHistory chatHistory = await CustomPrepareChatHistoryAsync(customChat);
-
-        Console.WriteLine("Chat content:");
-        Console.WriteLine("------------------------");
-        foreach (var message in chatHistory.Messages)
-        {
-            Console.WriteLine($"{message.AuthorRole}: {message.Content}");
-            Console.WriteLine("------------------------");
-        }
-    }
-
-    private static async Task<ChatHistory> CustomPrepareChatHistoryAsync(IChatCompletion customChat)
-    {
-        var chatHistory = customChat.CreateNewChat("You are a my SK Custom Assistant");
-
-        // First user message
-        chatHistory.AddMessage(ChatHistory.AuthorRoles.User, "Hi, who are you?");
-
-        // First bot message
-        string reply = await customChat.GenerateMessageAsync(chatHistory);
-        chatHistory.AddMessage(ChatHistory.AuthorRoles.Assistant, reply);
-
-        return chatHistory;
-    }
-
-    private static async Task CustomChatStreamSampleAsync()
-    {
-        Console.WriteLine("======== Azure Open AI ChatGPT - Stream ========");
-
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        IChatCompletion Factory(IKernel k) => new MyChatCompletionService();
-        // Add your chat completion service
-        kernel.Config.AddChatCompletionService(Factory);
-
-        IChatCompletion customChat = kernel.GetService<IChatCompletion>();
-
-        var chat = customChat.CreateNewChat("You are a librarian, expert about books");
-
-        Console.WriteLine("Chat content:");
-        Console.WriteLine("------------------------");
-        await foreach (var message in CustomStreamingChatAsync(customChat))
-        {
-            Console.Write(message);
-        }
-    }
-
-    private static async IAsyncEnumerable<string> CustomStreamingChatAsync(IChatCompletion chatGPT)
-    {
-        var chatHistory = chatGPT.CreateNewChat("You are a my SK Custom Assistant");
-        yield return MessageToString(chatHistory.Messages.Last());
-
-        chatHistory.AddMessage(ChatHistory.AuthorRoles.User, "Hi, who are you?");
-        yield return MessageToString(chatHistory.Messages.Last());
-
-        await foreach (var assistantWord in AssistantStreamMessageAsync(chatGPT, chatHistory))
-        {
-            yield return assistantWord;
-        }
-
-        string MessageToString(ChatHistory.Message message)
-        {
-            return $"{message.AuthorRole}: {message.Content}\n------------------------\n";
-        }
-    }
-
-    private sealed class MyChatCompletionService : IChatCompletion
-    {
-        private readonly string _outputAssistantResult = "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)";
-
-        public ChatHistory CreateNewChat(string instructions = "")
-        {
-            var chatHistory = new ChatHistory();
-
-            if (!string.IsNullOrWhiteSpace(instructions))
-            {
-                chatHistory.AddMessage(ChatHistory.AuthorRoles.System, instructions);
-            }
-
-            return chatHistory;
-        }
-
-        public Task<string> GenerateMessageAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(this._outputAssistantResult);
-        }
-
-        public async IAsyncEnumerable<string> GenerateMessageStreamAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-        {
-            var streamedOutput = this._outputAssistantResult.Split(' ');
-            foreach (string word in streamedOutput)
-            {
-                await Task.Delay(200, cancellationToken);
-                yield return $"{word} ";
-            }
-        }
-    }
-
-    #endregion
 }
