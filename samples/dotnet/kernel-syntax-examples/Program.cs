@@ -100,5 +100,8 @@ public static class Program
 
         await Example31_CustomPlanner.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example33_CustomChat.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
