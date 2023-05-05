@@ -175,8 +175,10 @@ public class SemanticKernelController : ControllerBase, IDisposable
             this._logger.LogInformation("Enabling Microsoft Graph skill(s).");
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GraphAuthentication));
             GraphServiceClient graphServiceClient = this.CreateGraphServiceClient(authenticationProvider.AuthenticateRequestAsync);
-            TaskListSkill todoSkill = new(new MicrosoftToDoConnector(graphServiceClient));
-            planner.Kernel.ImportSkill(todoSkill, "todo");
+
+            planner.Kernel.ImportSkill(new TaskListSkill(new MicrosoftToDoConnector(graphServiceClient)), "todo");
+            planner.Kernel.ImportSkill(new CalendarSkill(new OutlookCalendarConnector(graphServiceClient)), "calendar");
+            planner.Kernel.ImportSkill(new EmailSkill(new OutlookMailConnector(graphServiceClient)), "email");
         }
     }
 
