@@ -206,36 +206,6 @@ public static class PineconeUtils
         return pineconeFilter;
     }
 
-    public static string EnvironmentToString(PineconeEnvironment environment)
-    {
-        return environment switch
-        {
-            PineconeEnvironment.UsWest1Gcp => "us-west1-gcp",
-            PineconeEnvironment.UsWest4Gcp => "us-west4-gcp",
-            PineconeEnvironment.UsCentral1Gcp => "us-central1-gcp",
-            PineconeEnvironment.UsEast1Gcp => "us-east1-gcp",
-            PineconeEnvironment.UsEast4Gcp => "us-east4-gcp",
-            PineconeEnvironment.EuWest1Gcp => "eu-west1-gcp",
-            PineconeEnvironment.UsEast1Aws => "us-east1-aws",
-            _ => throw new ArgumentOutOfRangeException(nameof(environment), environment, null)
-        };
-    }
-
-    public static PineconeEnvironment GetEnvironment(string environment)
-    {
-        return environment switch
-        {
-            "us-west1-gcp" => PineconeEnvironment.UsWest1Gcp,
-            "us-west4-gcp" => PineconeEnvironment.UsWest4Gcp,
-            "us-central1-gcp" => PineconeEnvironment.UsCentral1Gcp,
-            "us-east1-gcp" => PineconeEnvironment.UsEast1Gcp,
-            "us-east4-gcp" => PineconeEnvironment.UsEast4Gcp,
-            "eu-west1-gcp" => PineconeEnvironment.EuWest1Gcp,
-            "us-east1-aws" => PineconeEnvironment.UsEast1Aws,
-            _ => throw new ArgumentOutOfRangeException(nameof(environment), environment, null)
-        };
-    }
-
     public static string MetricTypeToString(IndexMetric x)
     {
         return x switch

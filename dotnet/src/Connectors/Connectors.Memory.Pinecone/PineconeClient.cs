@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 /// </summary>
 public sealed class PineconeClient : IPineconeClient, IDisposable
 {
-    public PineconeClient(PineconeEnvironment pineconeEnvironment, string apiKey, ILogger? logger = null)
+    public PineconeClient(string pineconeEnvironment, string apiKey, ILogger? logger = null)
     {
         this._pineconeEnvironment = pineconeEnvironment;
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
@@ -566,7 +566,6 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
 
         this._logger.LogDebug("Collection created. {0}", indexName);
 
-        return;
     }
 
     public void Dispose()
@@ -595,7 +594,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
 
     #region private ================================================================================
 
-    private readonly PineconeEnvironment _pineconeEnvironment;
+    private readonly string _pineconeEnvironment;
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
 
@@ -626,7 +625,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
 
     private string GetIndexOperationsApiBasePath()
     {
-        return $"https://controller.{PineconeUtils.EnvironmentToString(this._pineconeEnvironment)}.pinecone.io";
+        return $"https://controller.{this._pineconeEnvironment}.pinecone.io";
     }
 
     private async Task WaitForIndexStateAsync(

@@ -44,7 +44,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="apiKey"> the user's api key for the pinecone server </param>
     /// <param name="logger"></param>
     public PineconeMemoryStore(
-        PineconeEnvironment pineconeEnvironment,
+        string pineconeEnvironment,
         string apiKey,
         ILogger? logger = null)
     {
@@ -67,7 +67,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     ///  If the index exists but is not ready, it will be connected to and the method will block until it is ready.
     /// </remarks>
     public static async Task<PineconeMemoryStore?> InitializeAsync(
-        PineconeEnvironment pineconeEnvironment,
+        string pineconeEnvironment,
         string apiKey,
         IndexDefinition indexDefinition,
         ILogger? logger = null,
