@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 
@@ -17,7 +16,7 @@ public static class Example32_Pinecone
     public static async Task RunAsync()
     {
         string apiKey = Env.Var("PINECONE_API_KEY");
-        PineconeEnvironment pineconeEnvironment = PineconeUtils.GetEnvironment(Env.Var("PINECONE_ENVIRONMENT"));
+        string pineconeEnvironment = Env.Var("PINECONE_ENVIRONMENT");
 
         PineconeMemoryStore memoryStore = new(pineconeEnvironment, apiKey);
         
