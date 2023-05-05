@@ -92,11 +92,11 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         var putOperation = operations.Single(o => o.Id == "SetSecret");
         Assert.NotNull(putOperation);
         Assert.Equal("Sets a secret in a specified key vault.", putOperation.Description);
-        Assert.Equal("https://my-key-vault.vault.azure.net", putOperation.ServerUrl);
+        Assert.Equal("https://my-key-vault.vault.azure.net", putOperation.ServerUrl?.AbsoluteUri);
         Assert.Equal(HttpMethod.Put, putOperation.Method);
         Assert.Equal("/secrets/{secret-name}", putOperation.Path);
 
-        var parameters = putOperation.GetParameters(putOperation.ServerUrl);
+        var parameters = putOperation.GetParameters();
         Assert.NotNull(parameters);
         Assert.True(parameters.Count >= 5);
 

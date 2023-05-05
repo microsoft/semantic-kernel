@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
+using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace
@@ -21,22 +23,20 @@ internal static class RestApiOperationExtensions
     /// <param name="operation">The REST API operation.</param>
     /// <param name="serverUrlOverride">The server URL override.</param>
     /// <returns>The list of parameters.</returns>
-    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation, string? serverUrlOverride = null)
+    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation, Uri? serverUrlOverride = null)
     {
-        var parameters = new List<RestApiOperationParameter>(operation.Parameters);
-
-        // Register the "server-url" parameter if override is provided
-        if (!string.IsNullOrEmpty(serverUrlOverride))
+        var parameters = new List<RestApiOperationParameter>(operation.Parameters)
         {
-            parameters.Add(new RestApiOperationParameter(
+            // Register the "server-url" parameter if override is provided
+            new RestApiOperationParameter(
                 RestApiOperation.ServerUrlArgumentName,
                 "string",
                 false,
                 RestApiOperationParameterLocation.Path,
                 RestApiOperationParameterStyle.Simple,
-                defaultValue: serverUrlOverride)
-            );
-        }
+                defaultValue: serverUrlOverride?.AbsoluteUri ?? operation.ServerUrl?.AbsoluteUri)
+        };
+
 
         // Register the "payload" parameter to be advertised for Put and Post operations.
         if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)

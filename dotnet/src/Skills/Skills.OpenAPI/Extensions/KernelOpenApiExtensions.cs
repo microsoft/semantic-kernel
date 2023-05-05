@@ -50,9 +50,7 @@ public static class KernelOpenApiExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         string? userAgent = "Microsoft-Semantic-Kernel",
         HttpRetryConfig? retryConfiguration = null,
-#pragma warning disable CA1054 // URI-like parameters should not be strings
-        string? serverUrlOverride = null,
-#pragma warning restore CA1054 // URI-like parameters should not be strings
+        Uri? serverUrlOverride = null,
         CancellationToken cancellationToken = default)
     {
         Verify.ValidSkillName(skillName);
@@ -86,9 +84,7 @@ public static class KernelOpenApiExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         string? userAgent = "Microsoft-Semantic-Kernel",
         HttpRetryConfig? retryConfiguration = null,
-#pragma warning disable CA1054 // URI-like parameters should not be strings
-        string? serverUrlOverride = null,
-#pragma warning restore CA1054 // URI-like parameters should not be strings
+        Uri? serverUrlOverride = null,
         CancellationToken cancellationToken = default)
     {
         Verify.ValidSkillName(skillName);
@@ -125,9 +121,7 @@ public static class KernelOpenApiExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         string? userAgent = "Microsoft-Semantic-Kernel",
         HttpRetryConfig? retryConfiguration = null,
-#pragma warning disable CA1054 // URI-like parameters should not be strings
-        string? serverUrlOverride = null,
-#pragma warning restore CA1054 // URI-like parameters should not be strings
+        Uri? serverUrlOverride = null,
         CancellationToken cancellationToken = default)
     {
         const string OpenApiFile = "openapi.json";
@@ -171,9 +165,7 @@ public static class KernelOpenApiExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         string? userAgent = "Microsoft-Semantic-Kernel",
         HttpRetryConfig? retryConfiguration = null,
-#pragma warning disable CA1054 // URI-like parameters should not be strings
-        string? serverUrlOverride = null,
-#pragma warning restore CA1054 // URI-like parameters should not be strings
+        Uri? serverUrlOverride = null,
         CancellationToken cancellationToken = default)
     {
         if (!File.Exists(filePath))
@@ -207,9 +199,7 @@ public static class KernelOpenApiExtensions
         AuthenticateRequestAsyncCallback? authCallback = null,
         HttpRetryConfig? retryConfiguration = null,
         string? userAgent = "Microsoft-Semantic-Kernel",
-#pragma warning disable CA1054 // URI-like parameters should not be strings
-        string? serverUrlOverride = null,
-#pragma warning restore CA1054 // URI-like parameters should not be strings
+        Uri? serverUrlOverride = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -269,7 +259,7 @@ public static class KernelOpenApiExtensions
         string skillName,
         IRestApiOperationRunner runner,
         RestApiOperation operation,
-        string? serverUrlOverride = null,
+        Uri? serverUrlOverride = null,
         CancellationToken cancellationToken = default)
     {
         var restOperationParameters = operation.GetParameters(serverUrlOverride);
