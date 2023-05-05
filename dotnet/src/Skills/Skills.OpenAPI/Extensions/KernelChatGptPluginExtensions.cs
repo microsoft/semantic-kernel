@@ -55,7 +55,9 @@ public static class KernelChatGptPluginExtensions
         string gptPluginJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
-        return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken).ConfigureAwait(false);
+        return await kernel
+            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -85,14 +87,16 @@ public static class KernelChatGptPluginExtensions
         var resourceName = $"{skillName}.ai-plugin.json";
 
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName)
-            ?? throw new MissingManifestResourceException($"Unable to load OpenApi skill from assembly resource '{resourceName}'.");
+                     ?? throw new MissingManifestResourceException($"Unable to load OpenApi skill from assembly resource '{resourceName}'");
 
         using StreamReader reader = new(stream);
         string gptPluginJson = await reader.ReadToEndAsync().ConfigureAwait(false);
 
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
-        return await kernel.ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken).ConfigureAwait(false);
+        return await kernel
+            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -132,7 +136,9 @@ public static class KernelChatGptPluginExtensions
 
         using var stream = File.OpenRead(chatGptPluginPath);
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillDirectoryName, authCallback, retryConfiguration, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await kernel
+            .RegisterOpenApiSkillAsync(stream, skillDirectoryName, authCallback, retryConfiguration, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -155,14 +161,16 @@ public static class KernelChatGptPluginExtensions
     {
         if (!File.Exists(filePath))
         {
-            throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {filePath} is found.");
+            throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {filePath} is found");
         }
 
-        kernel.Log.LogTrace("Registering Rest functions from {0} ChatGPT Plugin.", filePath);
+        kernel.Log.LogTrace("Registering Rest functions from {0} ChatGPT Plugin", filePath);
 
         using var stream = File.OpenRead(filePath);
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await kernel
+            .RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private static string ParseOpenApiUrl(string gptPluginJson)
@@ -178,7 +186,7 @@ public static class KernelChatGptPluginExtensions
         string? openApiUrl = gptPlugin?["api"]?["url"]?.ToString();
         if (string.IsNullOrWhiteSpace(openApiUrl))
         {
-            throw new InvalidOperationException($"Invalid ChatGPT plugin document. OpenAPI url is missing");
+            throw new InvalidOperationException($"Invalid ChatGPT plugin document, OpenAPI URL is missing");
         }
 
         return openApiUrl!;

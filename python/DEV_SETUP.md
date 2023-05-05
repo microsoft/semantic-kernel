@@ -99,6 +99,12 @@ You can run the integration tests under the [tests/integration](tests/integratio
     poetry install
     poetry run pytest tests/integration
 
+You can also run all the tests together under the [tests](tests/) folder.
+
+    cd python
+    poetry install
+    poetry run pytest tests
+
 # Tools and scripts
 
 ## Pipeline checks
