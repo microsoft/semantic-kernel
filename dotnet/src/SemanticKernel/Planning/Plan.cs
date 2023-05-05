@@ -508,7 +508,7 @@ public sealed class Plan : ISKFunction
         var functionParameters = step.Describe();
         foreach (var param in functionParameters.Parameters)
         {
-            if (param.Name.Equals("INPUT", StringComparison.OrdinalIgnoreCase))
+            if (param.Name.Equals(ContextVariables.MainKey, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
