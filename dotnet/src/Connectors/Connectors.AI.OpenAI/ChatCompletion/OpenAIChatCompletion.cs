@@ -42,7 +42,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        if (requestSettings == null) { requestSettings = new ChatRequestSettings(); }
+        requestSettings ??= new ChatRequestSettings();
 
         return this.InternalGenerateChatMessageAsync(chat, requestSettings, cancellationToken);
     }
