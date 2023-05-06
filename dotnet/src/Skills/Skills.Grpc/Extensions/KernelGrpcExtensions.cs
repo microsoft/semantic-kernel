@@ -96,12 +96,14 @@ public static class KernelGrpcExtensions
 
         var skill = new Dictionary<string, ISKFunction>();
 
+        var runner = new GrpcOperationRunner(new HttpClient());
+
         foreach (var operation in operations)
         {
             try
             {
                 kernel.Log.LogTrace("Registering gRPC function {0}.{1}", skillName, operation.Name);
-                var function = kernel.RegisterGrpcFunction(skillName, operation);
+                var function = kernel.RegisterGrpcFunction(runner, skillName, operation);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
@@ -121,11 +123,13 @@ public static class KernelGrpcExtensions
     /// Registers SKFunction for a gRPC operation.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="runner">gRPC operation runner.</param>
     /// <param name="skillName">Skill name.</param>
     /// <param name="operation">The gRPC operation.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
     private static ISKFunction RegisterGrpcFunction(
         this IKernel kernel,
+        GrpcOperationRunner runner,
         string skillName,
         GrpcOperation operation)
     {
@@ -150,8 +154,6 @@ public static class KernelGrpcExtensions
                     throw new KeyNotFoundException($"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{skillName}.{operation.Name}' gRPC function.");
                 }
 
-                var runner = new GrpcOperationRunner(new HttpClient());
-
                 //SKFunction should be extended to pass cancellation token for delegateFunction calls.
                 var result = await runner.RunAsync(operation, arguments, CancellationToken.None).ConfigureAwait(false);
 
@@ -170,7 +172,6 @@ public static class KernelGrpcExtensions
             return context;
         }
 
-        // TODO: to be fixed later
 #pragma warning disable CA2000 // Dispose objects before losing scope.
         var function = new SKFunction(
             delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
