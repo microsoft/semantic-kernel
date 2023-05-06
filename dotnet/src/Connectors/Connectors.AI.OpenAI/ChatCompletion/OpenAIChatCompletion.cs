@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -63,11 +63,11 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> CompleteStreamAsync(
+    public IAsyncEnumerable<string> CompleteStreamAsync(
         string text,
         CompleteRequestSettings requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        yield return await this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
+        return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken).ToAsyncEnumerable();
     }
 }
