@@ -525,7 +525,7 @@ public sealed class Plan : ISKFunction
         foreach (var item in step.Parameters)
         {
             // Don't overwrite variable values that are already set
-            if (stepVariables.Get(item.Key, out var val))
+            if (stepVariables.Get(item.Key, out _))
             {
                 continue;
             }
