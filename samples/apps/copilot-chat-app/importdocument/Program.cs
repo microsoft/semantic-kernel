@@ -79,7 +79,7 @@ public static class Program
 
             return first.HomeAccountId.Identifier;
         }
-        catch (Exception ex) when (ex is MsalServiceException || ex is MsalClientException)
+        catch (Exception ex) when (ex is MsalServiceException or MsalClientException)
         {
             Console.WriteLine($"Error: {ex.Message}");
             return null;

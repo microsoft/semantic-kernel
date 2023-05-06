@@ -163,9 +163,9 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
         return clone;
     }
 
-    #region private ================================================================================
+    internal const string MainKey = "INPUT";
 
-    private const string MainKey = "INPUT";
+    #region private ================================================================================
 
     // Important: names are case insensitive
     private readonly Lazy<Dictionary<string, string>> _variables = new(() => new (StringComparer.OrdinalIgnoreCase));

@@ -11,6 +11,10 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 @pytest.mark.asyncio
+@pytest.mark.xfail(
+    raises=AssertionError,
+    reason="Azure OpenAI may throttle requests, preventing this test from passing",
+)
 async def test_azure_chat_completion_with_skills():
     kernel = sk.Kernel()
 
@@ -21,11 +25,12 @@ async def test_azure_chat_completion_with_skills():
     else:
         # Load credentials from .env file
         deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-        deployment_name = "gpt-35-turbo"
+        deployment_name = "gpt-4"
 
     # Configure LLM service
-    kernel.config.add_text_completion_service(
-        "text_completion", sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key)
+    kernel.add_chat_service(
+        "chat_completion",
+        sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
     )
 
     await e2e_text_completion.summarize_function_test(kernel)

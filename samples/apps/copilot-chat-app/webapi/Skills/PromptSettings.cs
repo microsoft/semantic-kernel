@@ -35,6 +35,13 @@ public class PromptSettings
     internal double DocumentContextWeight { get; } = 0.3;
 
     /// <summary>
+    /// Weight of information returned from planner (i.e., responses from OpenAPI skills).
+    /// Percentage calculated from remaining token limit after memories response and document context have already been allocated.
+    /// Contextual prompt excludes all the system commands.
+    /// </summary>
+    internal double RelatedInformationContextWeight { get; } = 0.75;
+
+    /// <summary>
     /// Maximum number of tokens per line that will be used to split a document into lines.
     /// Setting this to a low value will result in higher context granularity, but
     /// takes longer to process the entire document into embeddings.

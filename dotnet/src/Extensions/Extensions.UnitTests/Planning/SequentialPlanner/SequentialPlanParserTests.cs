@@ -128,7 +128,7 @@ public class SequentialPlanParserTests
 <plan>
     <function.SummarizeSkill.Summarize/>
     <function.WriterSkill.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
-    <function.email.GetEmailAddressAsync input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
+    <function.email.GetEmailAddressAsync input=""John Doe"" setContextVariable=""EMAIL_ADDRESS"" appendToResult=""PLAN_RESULT""/>
     <function.email.SendEmailAsync input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
 </plan>";
         var goal = "Summarize an input, translate to french, and e-mail to John Doe";
@@ -151,22 +151,22 @@ public class SequentialPlanParserTests
             {
                 Assert.Equal("WriterSkill", step.SkillName);
                 Assert.Equal("Translate", step.Name);
-                Assert.Equal("French", step.NamedParameters["language"]);
-                Assert.True(step.NamedOutputs.ContainsKey("TRANSLATED_SUMMARY"));
+                Assert.Equal("French", step.Parameters["language"]);
+                Assert.True(step.Outputs.Contains("TRANSLATED_SUMMARY"));
             },
             step =>
             {
                 Assert.Equal("email", step.SkillName);
                 Assert.Equal("GetEmailAddressAsync", step.Name);
-                Assert.Equal("John Doe", step.NamedParameters["input"]);
-                Assert.True(step.NamedOutputs.ContainsKey("EMAIL_ADDRESS"));
+                Assert.Equal("John Doe", step.Parameters["input"]);
+                Assert.True(step.Outputs.Contains("EMAIL_ADDRESS"));
             },
             step =>
             {
                 Assert.Equal("email", step.SkillName);
                 Assert.Equal("SendEmailAsync", step.Name);
-                Assert.Equal("$TRANSLATED_SUMMARY", step.NamedParameters["input"]);
-                Assert.Equal("$EMAIL_ADDRESS", step.NamedParameters["email_address"]);
+                Assert.Equal("$TRANSLATED_SUMMARY", step.Parameters["input"]);
+                Assert.Equal("$EMAIL_ADDRESS", step.Parameters["email_address"]);
             }
         );
     }

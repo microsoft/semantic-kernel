@@ -198,7 +198,7 @@ internal static class ServicesExtensions
     /// </summary>
     private static void TrimStringProperties<T>(T options) where T : class
     {
-        Queue<object> targets = new Queue<object>();
+        Queue<object> targets = new();
         targets.Enqueue(options);
 
         while (targets.Count > 0)

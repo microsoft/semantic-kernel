@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
@@ -65,25 +66,25 @@ internal static class SequentialPlanParser
             var plan = new Plan(goal);
 
             // loop through solution node and add to Steps
-            foreach (XmlNode o in solution)
+            foreach (XmlNode solutionNode in solution)
             {
-                var parentNodeName = o.Name;
+                var parentNodeName = solutionNode.Name;
 
-                foreach (XmlNode o2 in o.ChildNodes)
+                foreach (XmlNode childNode in solutionNode.ChildNodes)
                 {
-                    if (o2.Name == "#text")
+                    if (childNode.Name == "#text")
                     {
-                        if (o2.Value != null)
+                        if (childNode.Value != null)
                         {
-                            plan.AddSteps(new Plan(o2.Value.Trim()));
+                            plan.AddSteps(new Plan(childNode.Value.Trim()));
                         }
 
                         continue;
                     }
 
-                    if (o2.Name.StartsWith(FunctionTag, StringComparison.OrdinalIgnoreCase))
+                    if (childNode.Name.StartsWith(FunctionTag, StringComparison.OrdinalIgnoreCase))
                     {
-                        var skillFunctionName = o2.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
+                        var skillFunctionName = childNode.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
                         GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
 
                         if (!string.IsNullOrEmpty(functionName) && context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
@@ -91,7 +92,8 @@ internal static class SequentialPlanParser
                             var planStep = new Plan(skillFunction);
 
                             var functionVariables = new ContextVariables();
-                            var functionOutputs = new ContextVariables();
+                            var functionOutputs = new List<string>();
+                            var functionResults = new List<string>();
 
                             var view = skillFunction.Describe();
                             foreach (var p in view.Parameters)
@@ -99,37 +101,47 @@ internal static class SequentialPlanParser
                                 functionVariables.Set(p.Name, p.DefaultValue);
                             }
 
-                            if (o2.Attributes is not null)
+                            if (childNode.Attributes is not null)
                             {
-                                foreach (XmlAttribute attr in o2.Attributes)
+                                foreach (XmlAttribute attr in childNode.Attributes)
                                 {
                                     context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
-                                    if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase)
-                                        || attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
+                                    if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
                                     {
-                                        functionOutputs.Set(attr.InnerText, string.Empty);
-                                        continue;
+                                        functionOutputs.Add(attr.InnerText);
                                     }
-
-                                    functionVariables.Set(attr.Name, attr.InnerText);
+                                    else if (attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        functionOutputs.Add(attr.InnerText);
+                                        functionResults.Add(attr.InnerText);
+                                    }
+                                    else
+                                    {
+                                        functionVariables.Set(attr.Name, attr.InnerText);
+                                    }
                                 }
                             }
 
                             // Plan properties
-                            planStep.NamedOutputs = functionOutputs;
-                            planStep.NamedParameters = functionVariables;
+                            planStep.Outputs = functionOutputs;
+                            planStep.Parameters = functionVariables;
+                            foreach (var result in functionResults)
+                            {
+                                plan.Outputs.Add(result);
+                            }
+
                             plan.AddSteps(planStep);
                         }
                         else
                         {
                             context.Log.LogTrace("{0}: appending function node {1}", parentNodeName, skillFunctionName);
-                            plan.AddSteps(new Plan(o2.InnerText));
+                            plan.AddSteps(new Plan(childNode.InnerText));
                         }
 
                         continue;
                     }
 
-                    plan.AddSteps(new Plan(o2.InnerText));
+                    plan.AddSteps(new Plan(childNode.InnerText));
                 }
             }
 
