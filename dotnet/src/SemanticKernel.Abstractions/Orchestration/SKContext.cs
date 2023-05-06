@@ -121,7 +121,7 @@ public sealed class SKContext
     {
         this.Variables = variables;
         this.Memory = memory;
-        this.Skills = skills;
+        this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
         this.Log = logger ?? NullLogger.Instance;
         this.CancellationToken = cancellationToken;
     }
