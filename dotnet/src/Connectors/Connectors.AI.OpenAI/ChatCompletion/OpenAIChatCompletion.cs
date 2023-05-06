@@ -63,11 +63,11 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> CompleteStreamAsync(
+    public IAsyncEnumerable<string> CompleteStreamAsync(
         string text,
         CompleteRequestSettings requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        yield return await this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
+        return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken).ToAsyncEnumerable();
     }
 }
