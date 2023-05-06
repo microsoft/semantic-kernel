@@ -230,7 +230,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <returns></returns>
     public override string ToString()
     {
-        return $"{this.Name} - {this.Description}";
+        string s = this.IsSemantic ? "Semantic" : "Native";
+
+        return $"{this.Name} \t {s} \t- {this.Description}";
     }
 
     /// <summary>
