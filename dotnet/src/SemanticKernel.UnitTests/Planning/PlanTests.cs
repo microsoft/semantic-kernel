@@ -585,7 +585,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
                 c.Variables.Get("type", out var t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
@@ -596,11 +596,10 @@ public sealed class PlanTests
         planStep.Parameters.Set("type", string.Empty);
         var plan = new Plan(string.Empty);
         plan.AddSteps(planStep);
-        plan.State.Set("input", "Cleopatra");
         plan.State.Set("type", "poem");
 
         // Act
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync("Cleopatra");
 
         // Assert
         Assert.NotNull(result);
@@ -626,7 +625,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            .Callback<SKContext, CompleteRequestSettings?>((c, s) =>
             {
                 c.Variables.Get("type", out var t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
@@ -634,11 +633,10 @@ public sealed class PlanTests
             .Returns(() => Task.FromResult(returnContext));
 
         var plan = new Plan(mockFunction.Object);
-        plan.State.Set("input", "Cleopatra");
         plan.State.Set("type", "poem");
 
         // Act
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync("Cleopatra");
 
         // Assert
         Assert.NotNull(result);
@@ -646,11 +644,10 @@ public sealed class PlanTests
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Once);
 
         plan = new Plan(mockFunction.Object);
-        plan.State.Set("input", "Cleopatra");
         plan.State.Set("type", "poem");
 
         var contextOverride = new SKContext(
-            new ContextVariables(),
+            new ContextVariables("Cleopatra"),
             memory.Object,
             skills.Object,
             log.Object
@@ -685,7 +682,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
                 c.Variables.Get("type", out var t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
@@ -695,12 +692,11 @@ public sealed class PlanTests
         var planStep = new Plan(mockFunction.Object);
         planStep.Parameters.Set("type", string.Empty);
         var plan = new Plan("A plan");
-        plan.State.Set("input", "Medusa");
         plan.State.Set("type", "joke");
         plan.AddSteps(planStep);
 
         // Act
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync("Medusa");
 
         // Assert
         Assert.NotNull(result);
@@ -709,14 +705,12 @@ public sealed class PlanTests
 
         planStep = new Plan(mockFunction.Object);
         plan = new Plan("A plan");
-        planStep.Parameters.Set("input", "Medusa");
         planStep.Parameters.Set("type", "joke");
-        plan.State.Set("input", "Cleopatra"); // state input will not override parameter
         plan.State.Set("type", "poem");
         plan.AddSteps(planStep);
 
         // Act
-        result = await plan.InvokeAsync();
+        result = await plan.InvokeAsync("Medusa");
 
         // Assert
         Assert.NotNull(result);
@@ -725,17 +719,16 @@ public sealed class PlanTests
 
         planStep = new Plan(mockFunction.Object);
         plan = new Plan("A plan");
-        planStep.Parameters.Set("input", "Cleopatra");
         planStep.Parameters.Set("type", "poem");
         plan.AddSteps(planStep);
         var contextOverride = new SKContext(
-            new ContextVariables(),
+            new ContextVariables("Medusa"),
             memory.Object,
             skills.Object,
             log.Object
         );
         contextOverride.Variables.Set("type", "joke");
-        contextOverride.Variables.Update("Medusa"); // context input will not override parameters
+        contextOverride.Variables.Update("Cleopatra");
 
         // Act
         result = await plan.InvokeAsync(contextOverride);
@@ -764,13 +757,13 @@ public sealed class PlanTests
 
         var outlineMock = new Mock<ISKFunction>();
         outlineMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
                 returnContext.Variables.Update($"Here is a {c.Variables["chapterCount"]} chapter outline about " + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
         var elementAtIndexMock = new Mock<ISKFunction>();
         elementAtIndexMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
                 returnContext.Variables.Update($"Outline section #{c.Variables["index"]} of {c.Variables["count"]}: " + c.Variables.Input);
             })
@@ -778,7 +771,7 @@ public sealed class PlanTests
 
         var novelChapterMock = new Mock<ISKFunction>();
         novelChapterMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
                 returnContext.Variables.Update(
                     $"Chapter #{c.Variables["chapterIndex"]}: {c.Variables.Input}\nTheme:{c.Variables["theme"]}\nPreviously:{c.Variables["previousChapter"]}");
