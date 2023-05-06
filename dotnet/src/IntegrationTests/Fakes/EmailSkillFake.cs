@@ -14,7 +14,7 @@ internal sealed class EmailSkillFake
     [SKFunctionContextParameter(Name = "email_address", Description = "The email address to send email to.", DefaultValue = "default@email.com")]
     public Task<SKContext> SendEmailAsync(string input, SKContext context)
     {
-        context.Variables.TryGet("email_address", out string emailAddress);
+        context.Variables.Get("email_address", out string emailAddress);
         context.Variables.Update($"Sent email to: {emailAddress}. Body: {input}");
         return Task.FromResult(context);
     }

@@ -17,7 +17,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <summary>
     /// In the simplest scenario, the data is an input string, stored here.
     /// </summary>
-    public string Input => this.TryGet(MainKey, out var value) ? value : string.Empty;
+    public string Input => this.Get(MainKey, out var value) ? value : string.Empty;
 
     /// <summary>
     /// Constructor for context variables.
@@ -91,7 +91,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <param name="value">Value</param>
     /// <returns>Whether the value exists in the context variables</returns>
     /// TODO: provide additional method that returns the value without using 'out'.
-    public bool TryGet(string name, out string value)
+    public bool Get(string name, out string value)
     {
         value = string.Empty;
         return this._variables.IsValueCreated && this._variables.Value.TryGetValue(name, out value);
@@ -104,7 +104,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <returns>The value of the variable.</returns>
     public string this[string name]
     {
-        get => this.TryGet(name, out string value) ? value
+        get => this.Get(name, out string value) ? value
                 : throw new KeyNotFoundException($"Key not found in ContextVariables: {name}");
 
         set => this.Set(name, value);

@@ -340,7 +340,7 @@ public sealed class PlanTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
             .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
-                c.Variables.TryGet("variables", out var v);
+                c.Variables.Get("variables", out var v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
@@ -587,7 +587,7 @@ public sealed class PlanTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
             .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
             {
-                c.Variables.TryGet("type", out var t);
+                c.Variables.Get("type", out var t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
             .Returns(() => Task.FromResult(returnContext));
@@ -628,7 +628,7 @@ public sealed class PlanTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
             .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
             {
-                c.Variables.TryGet("type", out var t);
+                c.Variables.Get("type", out var t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
             .Returns(() => Task.FromResult(returnContext));
@@ -687,7 +687,7 @@ public sealed class PlanTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
             .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
             {
-                c.Variables.TryGet("type", out var t);
+                c.Variables.Get("type", out var t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
             .Returns(() => Task.FromResult(returnContext));

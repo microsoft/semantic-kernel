@@ -97,13 +97,13 @@ public class CalendarSkill
             return;
         }
 
-        if (!memory.TryGet(Parameters.Start, out string start))
+        if (!memory.Get(Parameters.Start, out string start))
         {
             context.Fail($"Missing variable {Parameters.Start}.");
             return;
         }
 
-        if (!memory.TryGet(Parameters.End, out string end))
+        if (!memory.Get(Parameters.End, out string end))
         {
             context.Fail($"Missing variable {Parameters.End}.");
             return;
@@ -116,17 +116,17 @@ public class CalendarSkill
             End = DateTimeOffset.Parse(end, CultureInfo.InvariantCulture.DateTimeFormat)
         };
 
-        if (memory.TryGet(Parameters.Location, out string location))
+        if (memory.Get(Parameters.Location, out string location))
         {
             calendarEvent.Location = location;
         }
 
-        if (memory.TryGet(Parameters.Content, out string content))
+        if (memory.Get(Parameters.Content, out string content))
         {
             calendarEvent.Content = content;
         }
 
-        if (memory.TryGet(Parameters.Attendees, out string attendees))
+        if (memory.Get(Parameters.Attendees, out string attendees))
         {
             calendarEvent.Attendees = attendees.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
         }
@@ -143,8 +143,8 @@ public class CalendarSkill
     [SKFunctionContextParameter(Name = Parameters.Skip, Description = "Optional number of events to skip before retrieving results.", DefaultValue = "0")]
     public async Task<string> GetCalendarEventsAsync(SKContext context)
     {
-        context.Variables.TryGet(Parameters.MaxResults, out string maxResultsString);
-        context.Variables.TryGet(Parameters.Skip, out string skipString);
+        context.Variables.Get(Parameters.MaxResults, out string maxResultsString);
+        context.Variables.Get(Parameters.Skip, out string skipString);
         this._logger.LogInformation("Getting calendar events with query options top: '{0}', skip:'{1}'.", maxResultsString, skipString);
 
         string selectString = "start,subject,organizer,location";

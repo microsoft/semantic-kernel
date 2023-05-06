@@ -262,14 +262,14 @@ public sealed class Plan : ISKFunction
             // Update Plan Result in State with matching outputs (if any)
             if (this.Outputs.Intersect(step.Outputs).Any())
             {
-                this.State.TryGet(DefaultResultKey, out var currentPlanResult);
+                this.State.Get(DefaultResultKey, out var currentPlanResult);
                 this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult.Trim(), resultValue));
             }
 
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (result.Variables.TryGet(item, out var val))
+                if (result.Variables.Get(item, out var val))
                 {
                     this.State.Set(item, val);
                 }
@@ -389,9 +389,9 @@ public sealed class Plan : ISKFunction
 
         foreach (var varName in orderedMatches)
         {
-            result = variables.TryGet(varName, out var value)
+            result = variables.Get(varName, out var value)
                 ? result.Replace($"${varName}", value)
-                : this.State.TryGet(varName, out value)
+                : this.State.Get(varName, out value)
                     ? result.Replace($"${varName}", value)
                     : result.Replace($"${varName}", string.Empty);
         }
@@ -447,13 +447,13 @@ public sealed class Plan : ISKFunction
     /// <returns>The updated context.</returns>
     private SKContext UpdateContextWithOutputs(SKContext context)
     {
-        var resultString = this.State.TryGet(DefaultResultKey, out var result) ? result : this.State.ToString();
+        var resultString = this.State.Get(DefaultResultKey, out var result) ? result : this.State.ToString();
         context.Variables.Update(resultString);
 
         // copy previous step's variables to the next step
         foreach (var item in this._steps[this.NextStepIndex - 1].Outputs)
         {
-            if (this.State.TryGet(item, out var val))
+            if (this.State.Get(item, out var val))
             {
                 context.Variables.Set(item, val);
             }
@@ -516,11 +516,11 @@ public sealed class Plan : ISKFunction
                 continue;
             }
 
-            if (variables.TryGet(param.Name, out var value))
+            if (variables.Get(param.Name, out var value))
             {
                 stepVariables.Set(param.Name, value);
             }
-            else if (this.State.TryGet(param.Name, out value) && !string.IsNullOrEmpty(value))
+            else if (this.State.Get(param.Name, out value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(param.Name, value);
             }
@@ -529,7 +529,7 @@ public sealed class Plan : ISKFunction
         foreach (var item in step.Parameters)
         {
             // Don't overwrite variable values that are already set
-            if (stepVariables.TryGet(item.Key, out _))
+            if (stepVariables.Get(item.Key, out _))
             {
                 continue;
             }
@@ -539,11 +539,11 @@ public sealed class Plan : ISKFunction
             {
                 stepVariables.Set(item.Key, expandedValue);
             }
-            else if (variables.TryGet(item.Key, out var value))
+            else if (variables.Get(item.Key, out var value))
             {
                 stepVariables.Set(item.Key, value);
             }
-            else if (this.State.TryGet(item.Key, out value))
+            else if (this.State.Get(item.Key, out value))
             {
                 stepVariables.Set(item.Key, value);
             }
