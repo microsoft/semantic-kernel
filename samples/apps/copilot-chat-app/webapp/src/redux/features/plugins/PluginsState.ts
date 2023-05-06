@@ -85,7 +85,8 @@ export const initialState: PluginsState = {
         icon: JiraIcon,
         headerTag: AuthHeaderTags.Jira,
         apiProperties: {
-            'server-url': {
+            'jira-server-url': {
+                description: 'base server url',
                 required: true,
                 helpLink: 'https://confluence.atlassian.com/adminjiraserver/configuring-the-base-url-938847830.html',
             },
