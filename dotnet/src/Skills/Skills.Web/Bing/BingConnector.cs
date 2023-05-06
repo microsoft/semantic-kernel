@@ -11,15 +11,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Skills.Web.Bing;
 
 /// <summary>
 /// Bing API connector.
 /// </summary>
-public class BingConnector : IWebSearchEngineConnector, IDisposable
+public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
 {
     private readonly ILogger _logger;
     private readonly HttpClientHandler _httpClientHandler;
