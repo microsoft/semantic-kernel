@@ -33,11 +33,11 @@ export const Constants = {
             defaultDefinition: 'int',
         },
     },
-    // NOT a comprehensive list.
-    // Uncomment the ones you need and pass into
-    // invokeSkillWithMsalToken (./connectors/useConnectors.ts)
+    // This is not a comprehensive list, see https://learn.microsoft.com/en-us/graph/permissions-reference.
+    // Uncomment the ones you need and pass into invokeSkillWithMsalToken (./connectors/useConnectors.ts)
+    // Your application will need to be granted these permissions in Azure AD.
     msGraphScopes: [
-        // 'Calendars.Read', // Get Schedule Availability
+        'Calendars.Read', // Get Schedule Availability
         // 'Calendars.ReadWrite',
         // 'Calendars.Read.Shared',
         // 'ChannelMessage.Read.All',
@@ -49,7 +49,7 @@ export const Constants = {
         // 'Files.Read.Selected',
         // 'Files.ReadWrite', // Upload Files to OneDrive, Create a Share link
         // 'Group.Read.All',
-        // 'Mail.Read',
+        'Mail.Read',
         // 'Mail.Read.Shared',
         // 'Mail.Send', // Send Email
         // 'MailboxSettings.Read',

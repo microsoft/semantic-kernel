@@ -82,7 +82,7 @@ internal sealed class RestApiOperation
     /// <param name="payload">The operation payload.</param>
     public RestApiOperation(
         string id,
-        string serverUrl,
+        Uri? serverUrl,
         string path,
         HttpMethod method,
         string description,
@@ -111,13 +111,19 @@ internal sealed class RestApiOperation
 
         path = this.AddQueryString(path, arguments);
 
+        Uri serverUrl;
+
         //Override defined server url - https://api.example.com/v1 by the one from arguments.
-        if (!arguments.TryGetValue(ServerUrlArgumentName, out var serverUrl))
+        if (arguments.TryGetValue(ServerUrlArgumentName, out string serverUrlString))
         {
-            serverUrl = this.ServerUrl;
+            serverUrl = new Uri(serverUrlString);
+        }
+        else
+        {
+            serverUrl = this.ServerUrl ?? throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
         }
 
-        return new Uri($"{serverUrl.TrimEnd('/')}/{path.TrimStart('/')}", UriKind.Absolute);
+        return new Uri(serverUrl, $"{path.TrimStart('/')}");
     }
 
     /// <summary>
@@ -149,12 +155,8 @@ internal sealed class RestApiOperation
             }
 
             //Getting metadata for the header
-            var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName);
-            if (headerMetadata == null)
-            {
-                //No metadata found for the header.
-                throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
-            }
+            var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName)
+                ?? throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
 
             //If parameter is required it's value should always be provided.
             if (headerMetadata.IsRequired)
@@ -247,7 +249,7 @@ internal sealed class RestApiOperation
         return string.IsNullOrEmpty(queryString) ? path : $"{path}?{queryString}";
     }
 
-    private static readonly Regex s_urlParameterMatch = new Regex(@"\{([\w-]+)\}");
+    private static readonly Regex s_urlParameterMatch = new(@"\{([\w-]+)\}");
 
     # endregion
 }
