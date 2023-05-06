@@ -11,8 +11,6 @@ on:
 
 jobs:
   check-format:
-    needs: check-for-dotnet-changes
-    if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
     runs-on: ubuntu-latest
 
     steps:
