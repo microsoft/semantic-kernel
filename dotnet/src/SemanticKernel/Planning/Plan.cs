@@ -512,11 +512,11 @@ public sealed class Plan : ISKFunction
                 continue;
             }
 
-            if (variables.Get(param.Name, out var value) && !string.IsNullOrEmpty(value))
+            if (variables.Get(param.Name, out var value))
             {
                 stepVariables.Set(param.Name, value);
             }
-            else if (this.State.Get(param.Name, out value) && !string.IsNullOrEmpty(value))
+            else if (this.State.Get(param.Name, out value))
             {
                 stepVariables.Set(param.Name, value);
             }
@@ -531,19 +531,19 @@ public sealed class Plan : ISKFunction
             }
 
             var expandedValue = this.ExpandFromVariables(variables, item.Value);
-            if (!string.IsNullOrEmpty(item.Value) && !expandedValue.Equals(item.Value, StringComparison.OrdinalIgnoreCase))
+            if (!expandedValue.Equals(item.Value, StringComparison.OrdinalIgnoreCase))
             {
                 stepVariables.Set(item.Key, expandedValue);
             }
-            else if (variables.Get(item.Key, out var value) && !string.IsNullOrEmpty(value))
+            else if (variables.Get(item.Key, out var value))
             {
                 stepVariables.Set(item.Key, value);
             }
-            else if (this.State.Get(item.Key, out value) && !string.IsNullOrEmpty(value))
+            else if (this.State.Get(item.Key, out value))
             {
                 stepVariables.Set(item.Key, value);
             }
-            else if (!string.IsNullOrEmpty(expandedValue) && !stepVariables.Get(item.Key, out var _))
+            else
             {
                 stepVariables.Set(item.Key, expandedValue);
             }
