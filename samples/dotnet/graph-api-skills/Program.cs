@@ -12,8 +12,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
@@ -69,7 +69,7 @@ public sealed class Program
         // Note that LocalUserMSALCredentialManager is NOT safe for multi-user and cloud-service deployments.
         // TODO: Include sample code credential manager for multi-user and cloud service scenario.
         // TODO: the var is never used
-        LocalUserMSALCredentialManager credentialManager = new();
+        LocalUserMSALCredentialManager credentialManager = await LocalUserMSALCredentialManager.CreateAsync();
 
         // For more details on creating a Graph API client and choosing authentication provider see:
         //   https://learn.microsoft.com/graph/sdks/create-client
@@ -77,7 +77,7 @@ public sealed class Program
 
         // Add authentication handler.
         IList<DelegatingHandler> handlers = GraphClientFactory.CreateDefaultHandlers(
-            CreateAuthenticationProvider(new LocalUserMSALCredentialManager(), graphApiConfiguration));
+            CreateAuthenticationProvider(await LocalUserMSALCredentialManager.CreateAsync(), graphApiConfiguration));
 
         // Add logging handler to log Graph API requests and responses request IDs.
         using MsGraphClientLoggingHandler loggingHandler = new(logger);
@@ -105,10 +105,10 @@ public sealed class Program
             if (azureOpenAIConfiguration != null)
             {
                 sk.Config.AddAzureTextCompletionService(
-                    serviceId: azureOpenAIConfiguration.ServiceId,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
+                    apiKey: azureOpenAIConfiguration.ApiKey,
+                    serviceId: azureOpenAIConfiguration.ServiceId);
             }
         }
 
@@ -118,7 +118,6 @@ public sealed class Program
             if (openAIConfiguration != null)
             {
                 sk.Config.AddOpenAITextCompletionService(
-                    serviceId: openAIConfiguration.ServiceId,
                     modelId: openAIConfiguration.ModelId,
                     apiKey: openAIConfiguration.ApiKey);
             }

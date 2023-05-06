@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.AI.Embeddings;
 /// A view of a vector that allows for low-level, optimized, read-write mathematical operations.
 /// </summary>
 /// <typeparam name="TEmbedding">The unmanaged data type (<see cref="float"/>, <see cref="double"/> currently supported).</typeparam>
-public ref struct EmbeddingSpan<TEmbedding>
+public readonly ref struct EmbeddingSpan<TEmbedding>
     where TEmbedding : unmanaged
 {
     /// <summary>
@@ -36,7 +36,7 @@ public ref struct EmbeddingSpan<TEmbedding>
     /// <summary>
     /// Gets the underlying <see cref="Span{T}"/> of unmanaged data.
     /// </summary>
-    public Span<TEmbedding> Span { get; internal set; }
+    public Span<TEmbedding> Span { get; }
 
     /// <summary>
     /// Normalizes the underlying vector in-place, such that the Euclidean length is 1.

@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.AI.Embeddings;
 /// A view of a vector that allows for low-level, optimized, read-only mathematical operations.
 /// </summary>
 /// <typeparam name="TEmbedding">The unmanaged data type (<see cref="float"/>, <see cref="double"/> currently supported).</typeparam>
-public ref struct EmbeddingReadOnlySpan<TEmbedding>
+public readonly ref struct EmbeddingReadOnlySpan<TEmbedding>
     where TEmbedding : unmanaged
 {
     /// <summary>
@@ -64,12 +64,12 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// <summary>
     /// Gets the underlying <see cref="ReadOnlySpan{T}"/> of unmanaged data.
     /// </summary>
-    public ReadOnlySpan<TEmbedding> ReadOnlySpan { get; internal set; }
+    public ReadOnlySpan<TEmbedding> ReadOnlySpan { get; }
 
     /// <summary>
     /// True if the data was specified to be normalized at construction.
     /// </summary>
-    public bool IsNormalized { get; internal set; }
+    public bool IsNormalized { get; }
 
     /// <summary>
     /// Calculates the dot product of this vector with another.

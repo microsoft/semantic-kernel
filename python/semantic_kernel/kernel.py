@@ -4,11 +4,17 @@ import inspect
 from logging import Logger
 from typing import Any, Dict, Optional
 
-from semantic_kernel.ai.ai_exception import AIException
-from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
+from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.complete_request_settings import (
+    CompleteRequestSettings,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.kernel_exception import KernelException
@@ -107,22 +113,25 @@ class Kernel(KernelBase, KernelExtensions):
         return function
 
     async def run_async(
-            self,
-            *functions: Any,
-            input_context: Optional[SKContext] = None,
-            input_vars: Optional[ContextVariables] = None,
-            input_str: Optional[str] = None,
+        self,
+        *functions: Any,
+        input_context: Optional[SKContext] = None,
+        input_vars: Optional[ContextVariables] = None,
+        input_str: Optional[str] = None,
     ) -> SKContext:
-            
         # if the user passed in a context, prioritize it, but merge with any other inputs
         if input_context is not None:
             context = input_context
             if input_vars is not None:
-                context._variables = input_vars.merge_or_overwrite(new_vars=context._variables, overwrite=False)
+                context._variables = input_vars.merge_or_overwrite(
+                    new_vars=context._variables, overwrite=False
+                )
 
             if input_str is not None:
-                context._variables = ContextVariables(input_str).merge_or_overwrite(new_vars=context._variables, overwrite=False)
-                
+                context._variables = ContextVariables(input_str).merge_or_overwrite(
+                    new_vars=context._variables, overwrite=False
+                )
+
         # if the user did not pass in a context, prioritize an input string, and merge that with input context variables
         else:
             if input_str is not None and input_vars is None:
@@ -131,7 +140,9 @@ class Kernel(KernelBase, KernelExtensions):
                 variables = input_vars
             elif input_str is not None and input_vars is not None:
                 variables = ContextVariables(input_str)
-                variables = variables.merge_or_overwrite(new_vars=input_vars, overwrite=False)
+                variables = variables.merge_or_overwrite(
+                    new_vars=input_vars, overwrite=False
+                )
             else:
                 variables = ContextVariables()
             context = SKContext(
@@ -140,7 +151,7 @@ class Kernel(KernelBase, KernelExtensions):
                 self._skill_collection.read_only_skill_collection,
                 self._log,
             )
-            
+
         pipeline_step = 0
         for func in functions:
             assert isinstance(func, SKFunctionBase), (
@@ -263,10 +274,10 @@ class Kernel(KernelBase, KernelExtensions):
         function.set_default_skill_collection(self.skills)
 
         if function_config.has_chat_prompt:
-            backend = self._config.get_ai_backend(
+            service = self._config.get_ai_service(
                 ChatCompletionClientBase,
-                function_config.prompt_template_config.default_backends[0]
-                if len(function_config.prompt_template_config.default_backends) > 0
+                function_config.prompt_template_config.default_services[0]
+                if len(function_config.prompt_template_config.default_services) > 0
                 else None,
             )
 
@@ -276,20 +287,20 @@ class Kernel(KernelBase, KernelExtensions):
                 )
             )
 
-            if backend is None:
+            if service is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    "Could not load chat backend, unable to prepare semantic function. "
+                    "Could not load chat service, unable to prepare semantic function. "
                     "Function description: "
                     "{function_config.prompt_template_config.description}",
                 )
 
-            function.set_chat_backend(lambda: backend(self))
+            function.set_chat_service(lambda: service(self))
         else:
-            backend = self._config.get_ai_backend(
+            service = self._config.get_ai_service(
                 TextCompletionClientBase,
-                function_config.prompt_template_config.default_backends[0]
-                if len(function_config.prompt_template_config.default_backends) > 0
+                function_config.prompt_template_config.default_services[0]
+                if len(function_config.prompt_template_config.default_services) > 0
                 else None,
             )
 
@@ -299,14 +310,14 @@ class Kernel(KernelBase, KernelExtensions):
                 )
             )
 
-            if backend is None:
+            if service is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    "Could not load text backend, unable to prepare semantic function. "
+                    "Could not load text service, unable to prepare semantic function. "
                     "Function description: "
                     "{function_config.prompt_template_config.description}",
                 )
 
-            function.set_ai_backend(lambda: backend(self))
+            function.set_ai_service(lambda: service(self))
 
         return function

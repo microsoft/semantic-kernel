@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 using KernelHttpServer.Model;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 
 namespace KernelHttpServer;
 
@@ -72,6 +74,39 @@ public class SemanticKernelEndpoint
         return r;
     }
 
+    [Function("CreatePlan")]
+    public async Task<HttpResponseData> CreatePlanAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "planner/createplan")]
+        HttpRequestData req,
+        FunctionContext executionContext)
+    {
+        var ask = await JsonSerializer.DeserializeAsync<Ask>(req.Body, s_jsonOptions);
+
+        if (ask == null)
+        {
+            return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, "Invalid request, unable to parse the request payload");
+        }
+
+        var kernel = SemanticKernelFactory.CreateForRequest(
+            req,
+            executionContext.GetLogger<SemanticKernelEndpoint>(),
+            ask.Skills);
+
+        if (kernel == null)
+        {
+            return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, "Missing one or more expected HTTP Headers");
+        }
+
+        var planner = new SequentialPlanner(kernel);
+        var goal = ask.Value;
+
+        var plan = await planner.CreatePlanAsync(goal);
+
+        var r = req.CreateResponse(HttpStatusCode.OK);
+        await r.WriteAsJsonAsync(new AskResult { Value = plan.ToJson() });
+        return r;
+    }
+
     [Function("ExecutePlan")]
     public async Task<HttpResponseData> ExecutePlanAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "planner/execute/{maxSteps?}")]
@@ -87,50 +122,45 @@ public class SemanticKernelEndpoint
 
         var kernel = SemanticKernelFactory.CreateForRequest(
             req,
-            executionContext.GetLogger<SemanticKernelEndpoint>());
+            executionContext.GetLogger<SemanticKernelEndpoint>(),
+            ask.Skills);
 
         if (kernel == null)
         {
             return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, "Missing one or more expected HTTP Headers");
         }
 
-        var contextVariables = new ContextVariables(ask.Value);
+        var context = kernel.CreateNewContext();
 
-        foreach (var input in ask.Inputs)
-        {
-            contextVariables.Set(input.Key, input.Value);
-        }
-
-        var planner = kernel.Skills.GetFunction("plannerskill", "executeplan");
-        var result = await kernel.RunAsync(contextVariables, planner);
+        var plan = Plan.FromJson(ask.Value, context);
 
         var iterations = 1;
 
-        while (!result.Variables.ToPlan().IsComplete &&
-               result.Variables.ToPlan().IsSuccessful &&
+        while (plan.HasNextStep &&
                iterations < maxSteps)
         {
-            result = await kernel.RunAsync(result.Variables, planner);
+            try
+            {
+                plan = await kernel.StepAsync(context.Variables, plan);
+            }
+            catch (KernelException e)
+            {
+                context.Fail(e.Message, e);
+                return await ResponseErrorWithMessageAsync(req, context);
+            }
+
             iterations++;
         }
 
-        if (result.ErrorOccurred)
-        {
-            return await ResponseErrorWithMessageAsync(req, result);
-        }
-
         var r = req.CreateResponse(HttpStatusCode.OK);
-        await r.WriteAsJsonAsync(new AskResult { Value = result.Variables.ToPlan().Result });
+        await r.WriteAsJsonAsync(new AskResult { Value = plan.State.ToString() });
         return r;
     }
 
     private static async Task<HttpResponseData> ResponseErrorWithMessageAsync(HttpRequestData req, SKContext result)
     {
-        if (result.LastException is AIException aiException && aiException.Detail is not null)
-        {
-            return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, string.Concat(aiException.Message, " - Detail: " + aiException.Detail));
-        }
-
-        return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, result.LastErrorDescription);
+        return result.LastException is AIException aiException && aiException.Detail is not null
+            ? await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, string.Concat(aiException.Message, " - Detail: " + aiException.Detail))
+            : await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, result.LastErrorDescription);
     }
 }

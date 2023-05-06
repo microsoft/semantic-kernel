@@ -41,6 +41,16 @@ export class SemanticKernel {
         return result;
     };
 
+    public createPlanAsync = async (keyConfig: IKeyConfig, ask: IAsk): Promise<IAskResult> => {
+        const result = await this.getResponseAsync<IAskResult>({
+            commandPath: `/api/planner/createplan`,
+            method: 'POST',
+            body: ask,
+            keyConfig: keyConfig,
+        });
+        return result;
+    };
+
     public executePlanAsync = async (keyConfig: IKeyConfig, ask: IAsk, maxSteps: number = 10): Promise<IAskResult> => {
         const result = await this.getResponseAsync<IAskResult>({
             commandPath: `/api/planner/execute/${maxSteps}`,

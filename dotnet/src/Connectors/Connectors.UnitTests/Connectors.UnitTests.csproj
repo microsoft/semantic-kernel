@@ -4,10 +4,10 @@
     <AssemblyName>SemanticKernel.Connectors.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Connectors.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
+    <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

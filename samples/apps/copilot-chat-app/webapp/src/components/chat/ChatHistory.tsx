@@ -2,7 +2,7 @@
 
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { ChatMessage } from '../../libs/models/ChatMessage';
+import { IChatMessage } from '../../libs/models/ChatMessage';
 import { SKBotAudienceMember } from '../../libs/semantic-kernel/bot-agent/models/SKBotAudienceMember';
 import { ChatHistoryItem } from './ChatHistoryItem';
 import { ChatStatus } from './ChatStatus';
@@ -25,7 +25,7 @@ const useClasses = makeStyles({
 
 interface ChatHistoryProps {
     audience: SKBotAudienceMember[];
-    messages: ChatMessage[];
+    messages: IChatMessage[];
 }
 
 export const ChatHistory: React.FC<ChatHistoryProps> = (props) => {

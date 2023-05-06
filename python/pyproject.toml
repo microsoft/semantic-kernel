@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.2.3.dev"
+version = "0.2.6.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "README.md"
@@ -14,11 +14,17 @@ aiofiles = "^23.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^2.21.0"
-black = {version = "^23.1.0", allow-prereleases = true}
+black = {version = "^23.3.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
 pytest = "7.2.0"
 ruff = "^0.0.257"
 pytest-asyncio = "^0.21.0"
+
+
+[tool.poetry.group.hugging_face.dependencies]
+torch = "^2.0.0"
+transformers = "^4.28.1"
+sentence-transformers = "^2.2.2"
 
 [tool.isort]
 profile = "black"

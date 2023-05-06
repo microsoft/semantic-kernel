@@ -24,7 +24,7 @@ public class WaitSkill
         Task DelayAsync(int milliSeconds);
     }
 
-    private class WaitProvider : IWaitProvider
+    private sealed class WaitProvider : IWaitProvider
     {
         public Task DelayAsync(int milliSeconds)
         {
@@ -56,6 +56,6 @@ public class WaitSkill
         var milliseconds = seconds * 1000;
         milliseconds = (milliseconds > 0) ? milliseconds : 0;
 
-        await this._waitProvider.DelayAsync((int)milliseconds);
+        await this._waitProvider.DelayAsync((int)milliseconds).ConfigureAwait(false);
     }
 }
