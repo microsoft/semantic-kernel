@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using System;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -45,6 +46,16 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         requestSettings ??= new ChatRequestSettings();
 
         return this.InternalGenerateChatMessageAsync(chat, requestSettings, cancellationToken);
+    }
+    public Task<string> GenerateMessageStreamAsync(
+        ChatHistory chat,
+        Func<string, Task> onDataReceived, // Add delegate parameter here
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (requestSettings == null) { requestSettings = new ChatRequestSettings(); }
+
+        return this.InternalGenerateChatMessageStreamAsync(chat, requestSettings,onDataReceived, cancellationToken);
     }
 
     /// <inheritdoc/>

@@ -185,6 +185,80 @@ public abstract class ClientBase
     }
 
     /// <summary>
+    /// Generate a new chat message
+    /// </summary>
+    /// <param name="chat">Chat history</param>
+    /// <param name="requestSettings">AI request settings</param>
+    /// <param name="cancellationToken">Async cancellation token</param>
+    /// <returns>Generated chat message in string format</returns>
+    protected async Task<string> InternalGenerateChatMessageStreamAsync(
+        ChatHistory chat,
+        ChatRequestSettings requestSettings,
+        Func<string, Task> onDataReceived, // Add delegate parameter here
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(chat);
+        Verify.NotNull(requestSettings);
+
+        if (requestSettings.MaxTokens < 1)
+        {
+            throw new AIException(
+                AIException.ErrorCodes.InvalidRequest,
+                $"MaxTokens {requestSettings.MaxTokens} is not valid, the value must be greater than zero");
+        }
+
+        var options = new ChatCompletionsOptions
+        {
+            MaxTokens = requestSettings.MaxTokens,
+            Temperature = (float?)requestSettings.Temperature,
+            NucleusSamplingFactor = (float?)requestSettings.TopP,
+            FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
+            PresencePenalty = (float?)requestSettings.PresencePenalty,
+            ChoicesPerPrompt = 1,
+        };
+
+        if (requestSettings.StopSequences is { Count: > 0 })
+        {
+            foreach (var s in requestSettings.StopSequences)
+            {
+                options.StopSequences.Add(s);
+            }
+        }
+
+        foreach (ChatHistory.Message message in chat.Messages)
+        {
+            var role = message.AuthorRole switch
+            {
+                ChatHistory.AuthorRoles.User => ChatRole.User,
+                ChatHistory.AuthorRoles.Assistant => ChatRole.Assistant,
+                ChatHistory.AuthorRoles.System => ChatRole.System,
+                _ => throw new ArgumentException($"Invalid chat message author: {message.AuthorRole:G}")
+            };
+
+            options.Messages.Add(new ChatMessage(role, message.Content));
+        }
+
+        var response = await this.Client.GetChatCompletionsStreamingAsync(this.ModelId, options, cancellationToken).ConfigureAwait(false);
+        using StreamingChatCompletions streamingChatCompletions = response.Value;
+        string completion = string.Empty;
+
+        await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
+        {
+            await foreach (ChatMessage message in choice.GetMessageStreaming(cancellationToken))
+            {
+                string data = message.Content;
+                completion += data;
+
+                // Call the delegate function with the received chunk
+                await onDataReceived(data).ConfigureAwait(false);
+            }
+            completion += "\n";
+        }
+
+        return completion;
+    }
+
+    /// <summary>
     /// Create a new empty chat instance
     /// </summary>
     /// <param name="instructions">Optional chat instructions for the AI service</param>
