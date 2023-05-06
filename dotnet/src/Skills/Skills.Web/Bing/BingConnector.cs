@@ -54,7 +54,7 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
         return results == null ? Enumerable.Empty<string>() : results.Select(x => x.Snippet);
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (disposing)
         {
