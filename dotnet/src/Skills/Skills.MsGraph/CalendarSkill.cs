@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -46,6 +49,16 @@ public class CalendarSkill
         /// Event's attendees, separated by ',' or ';'.
         /// </summary>
         public const string Attendees = "attendees";
+
+        /// <summary>
+        /// The name of the top parameter used to limit the number of results returned in the response.
+        /// </summary>
+        public const string MaxResults = "maxResults";
+
+        /// <summary>
+        /// The name of the skip parameter used to skip a certain number of results in the response.
+        /// </summary>
+        public const string Skip = "skip";
     }
 
     private readonly ICalendarConnector _connector;
@@ -96,10 +109,12 @@ public class CalendarSkill
             return;
         }
 
-        CalendarEvent calendarEvent = new CalendarEvent(
-            memory.Input,
-            DateTimeOffset.Parse(start, CultureInfo.InvariantCulture.DateTimeFormat),
-            DateTimeOffset.Parse(end, CultureInfo.InvariantCulture.DateTimeFormat));
+        CalendarEvent calendarEvent = new()
+        {
+            Subject = memory.Input,
+            Start = DateTimeOffset.Parse(start, CultureInfo.InvariantCulture.DateTimeFormat),
+            End = DateTimeOffset.Parse(end, CultureInfo.InvariantCulture.DateTimeFormat)
+        };
 
         if (memory.Get(Parameters.Location, out string location))
         {
@@ -118,5 +133,53 @@ public class CalendarSkill
 
         this._logger.LogInformation("Adding calendar event '{0}'", calendarEvent.Subject);
         await this._connector.AddEventAsync(calendarEvent).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Get calendar events with specified optional clauses used to query for messages.
+    /// </summary>
+    [SKFunction("Get calendar events.")]
+    [SKFunctionContextParameter(Name = Parameters.MaxResults, Description = "Optional limit of the number of events to retrieve.", DefaultValue = "10")]
+    [SKFunctionContextParameter(Name = Parameters.Skip, Description = "Optional number of events to skip before retrieving results.", DefaultValue = "0")]
+    public async Task<string> GetCalendarEventsAsync(SKContext context)
+    {
+        context.Variables.Get(Parameters.MaxResults, out string maxResultsString);
+        context.Variables.Get(Parameters.Skip, out string skipString);
+        this._logger.LogInformation("Getting calendar events with query options top: '{0}', skip:'{1}'.", maxResultsString, skipString);
+
+        string selectString = "start,subject,organizer,location";
+
+        int? top = null;
+        if (!string.IsNullOrWhiteSpace(maxResultsString))
+        {
+            if (int.TryParse(maxResultsString, out int topValue))
+            {
+                top = topValue;
+            }
+        }
+
+        int? skip = null;
+        if (!string.IsNullOrWhiteSpace(skipString))
+        {
+            if (int.TryParse(skipString, out int skipValue))
+            {
+                skip = skipValue;
+            }
+        }
+
+        IEnumerable<CalendarEvent> events = await this._connector.GetEventsAsync(
+            top: top,
+            skip: skip,
+            select: selectString,
+            context.CancellationToken
+        ).ConfigureAwait(false);
+
+        return JsonSerializer.Serialize(
+            value: events,
+            options: new JsonSerializerOptions
+            {
+                WriteIndented = false,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            });
     }
 }

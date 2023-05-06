@@ -3,8 +3,6 @@
 from logging import Logger
 from typing import Optional
 
-import torch
-from transformers import GenerationConfig, pipeline
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -48,10 +46,17 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self._model_id = model_id
         self._task = "text2text-generation" if task is None else task
         self._log = log if log is not None else NullLogger()
+
+        try:
+            import transformers
+            import torch
+        except (ImportError, ModuleNotFoundError):
+            raise ImportError("Please ensure that torch and transformers are installed to use HuggingFaceTextCompletion")
+        
         self.device = (
             "cuda:" + device if device >= 0 and torch.cuda.is_available() else "cpu"
         )
-        self.generator = pipeline(
+        self.generator = transformers.pipeline(
             task=self._task, model=self._model_id, device=self.device
         )
 
@@ -69,7 +74,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             str -- Completion result.
         """
         try:
-            generation_config = GenerationConfig(
+            import transformers
+            generation_config = transformers.GenerationConfig(
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
                 max_new_tokens=request_settings.max_tokens,

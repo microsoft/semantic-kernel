@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -101,6 +102,14 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public async Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
         return await this.ExecuteCompleteRequestAsync(text, cancellationToken).ConfigureAwait(false);
+    }
+
+    public IAsyncEnumerable<string> CompleteStreamAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        return this.ExecuteCompleteRequestAsync(text, cancellationToken).ToAsyncEnumerable();
     }
 
     /// <inheritdoc/>

@@ -3,10 +3,8 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-#pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of SKContext
 namespace Microsoft.SemanticKernel.Orchestration;
-#pragma warning restore IDE0130
 
 internal static class SKContextExtensions
 {
