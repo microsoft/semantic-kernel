@@ -371,8 +371,6 @@ class Kernel(KernelBase, KernelExtensions):
 
         return self
 
-    # TODO: look harder at retry stuff
-
     def set_default_text_completion_service(self, service_id: str) -> "Kernel":
         if service_id not in self._text_completion_services:
             raise ValueError(
