@@ -97,5 +97,11 @@ public static class Program
 
         await Example30_ChatWithPrompts.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example31_CustomPlanner.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example32_StreamingCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
