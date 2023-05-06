@@ -43,7 +43,7 @@ public abstract class ClientBase
     {
         Verify.NotNull(requestSettings);
 
-        this.ValidateMaxTokens(requestSettings.MaxTokens);
+        ValidateMaxTokens(requestSettings.MaxTokens);
         var options = this.CreateCompletionsOptions(text, requestSettings);
 
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
@@ -71,7 +71,7 @@ public abstract class ClientBase
     {
         Verify.NotNull(requestSettings);
 
-        this.ValidateMaxTokens(requestSettings.MaxTokens);
+        ValidateMaxTokens(requestSettings.MaxTokens);
         var options = this.CreateCompletionsOptions(text, requestSettings);
 
         Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
@@ -249,7 +249,7 @@ public abstract class ClientBase
         return options;
     }
 
-    private void ValidateMaxTokens(int maxTokens)
+    private static void ValidateMaxTokens(int maxTokens)
     {
         if (maxTokens < 1)
         {
