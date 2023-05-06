@@ -4,9 +4,6 @@ from logging import Logger
 from typing import List, Optional
 from numpy import array, ndarray
 
-# import torch
-# from sentence_transformers import SentenceTransformer
-
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,

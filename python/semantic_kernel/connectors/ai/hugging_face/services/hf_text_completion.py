@@ -3,8 +3,6 @@
 from logging import Logger
 from typing import Optional
 
-# import torch
-# from transformers import GenerationConfig, pipeline
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
