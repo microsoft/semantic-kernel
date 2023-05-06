@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -31,7 +30,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var context = new SKContext(new ContextVariables(), NullMemory.Instance, this._skills.Object, this._log.Object);
+        var context = new SKContext(skills: this._skills.Object, logger: this._log.Object);
         this._skills.Setup(x => x.TryGetFunction("functionName", out It.Ref<ISKFunction?>.IsAny)).Returns(false);
         var target = new CodeBlock("functionName", this._log.Object);
 
@@ -46,7 +45,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var context = new SKContext(new ContextVariables(), NullMemory.Instance, this._skills.Object, this._log.Object);
+        var context = new SKContext(skills: this._skills.Object, logger: this._log.Object);
         var function = new Mock<ISKFunction>();
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>()))
@@ -127,7 +126,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "foo" };
-        var context = new SKContext(variables, NullMemory.Instance, null, NullLogger.Instance);
+        var context = new SKContext(variables);
 
         // Act
         var codeBlock = new CodeBlock("$varName", NullLogger.Instance);
@@ -142,7 +141,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "bar" };
-        var context = new SKContext(variables, NullMemory.Instance, null, NullLogger.Instance);
+        var context = new SKContext(variables);
         var varBlock = new VarBlock("$varName");
 
         // Act
@@ -157,7 +156,7 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock1Async()
     {
         // Arrange
-        var context = new SKContext(new ContextVariables(), NullMemory.Instance, null, NullLogger.Instance);
+        var context = new SKContext();
 
         // Act
         var codeBlock = new CodeBlock("'ciao'", NullLogger.Instance);
@@ -171,7 +170,7 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
     {
         // Arrange
-        var context = new SKContext(new ContextVariables(), NullMemory.Instance, null, NullLogger.Instance);
+        var context = new SKContext();
         var valBlock = new ValBlock("'arrivederci'");
 
         // Act
@@ -189,7 +188,7 @@ public class CodeBlockTests
         const string Func = "funcName";
 
         var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
-        var context = new SKContext(variables, NullMemory.Instance, this._skills.Object, NullLogger.Instance);
+        var context = new SKContext(variables, skills: this._skills.Object);
         var funcId = new FunctionIdBlock(Func);
 
         var canary0 = string.Empty;
@@ -237,7 +236,7 @@ public class CodeBlockTests
         const string VarValue = "varValue";
 
         var variables = new ContextVariables { [Var] = VarValue };
-        var context = new SKContext(variables, NullMemory.Instance, this._skills.Object, NullLogger.Instance);
+        var context = new SKContext(variables, skills: this._skills.Object);
         var funcId = new FunctionIdBlock(Func);
         var varBlock = new VarBlock($"${Var}");
 
@@ -270,7 +269,7 @@ public class CodeBlockTests
         const string Func = "funcName";
         const string Value = "value";
 
-        var context = new SKContext(new ContextVariables(), NullMemory.Instance, this._skills.Object, NullLogger.Instance);
+        var context = new SKContext(skills: this._skills.Object);
         var funcId = new FunctionIdBlock(Func);
         var valBlock = new ValBlock($"'{Value}'");
 

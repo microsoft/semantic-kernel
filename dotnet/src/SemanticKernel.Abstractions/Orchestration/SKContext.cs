@@ -113,14 +113,14 @@ public sealed class SKContext
     /// <param name="logger">Logger for operations in context.</param>
     /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
     public SKContext(
-        ContextVariables variables,
-        ISemanticTextMemory memory,
+        ContextVariables? variables = null,
+        ISemanticTextMemory? memory = null,
         IReadOnlySkillCollection? skills = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        this.Variables = variables;
-        this.Memory = memory;
+        this.Variables = variables ?? new();
+        this.Memory = memory ?? NullMemory.Instance;
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
         this.Log = logger ?? NullLogger.Instance;
         this.CancellationToken = cancellationToken;

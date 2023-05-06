@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -307,7 +306,6 @@ public sealed class Plan : ISKFunction
 
         SKContext context = new(
             this.State,
-            NullMemory.Instance,
             logger: log,
             cancellationToken: cancellationToken);
 
