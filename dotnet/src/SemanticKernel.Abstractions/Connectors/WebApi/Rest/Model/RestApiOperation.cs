@@ -52,7 +52,7 @@ internal sealed class RestApiOperation
     /// <summary>
     /// The server URL.
     /// </summary>
-    public string ServerUrl { get; }
+    public Uri? ServerUrl { get; }
 
     /// <summary>
     /// The operation headers.
