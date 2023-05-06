@@ -189,6 +189,7 @@ public abstract class ClientBase
     /// </summary>
     /// <param name="chat">Chat history</param>
     /// <param name="requestSettings">AI request settings</param>
+    /// <param name="onDataReceived">Delegate function called on each data received</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
     protected async Task<string> InternalGenerateChatMessageStreamAsync(

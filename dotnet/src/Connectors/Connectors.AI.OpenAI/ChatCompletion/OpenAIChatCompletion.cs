@@ -47,6 +47,8 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
 
         return this.InternalGenerateChatMessageAsync(chat, requestSettings, cancellationToken);
     }
+
+    /// <inheritdoc/>
     public Task<string> GenerateMessageStreamAsync(
         ChatHistory chat,
         Func<string, Task> onDataReceived, // Add delegate parameter here
