@@ -14,6 +14,8 @@ public class PassThroughAuthenticationHandler : AuthenticationHandler<Authentica
 {
     public const string AuthenticationScheme = "PassThrough";
 
+    private readonly ILogger<PassThroughAuthenticationHandler> _logger;
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -23,10 +25,13 @@ public class PassThroughAuthenticationHandler : AuthenticationHandler<Authentica
         UrlEncoder encoder,
         ISystemClock clock) : base(options, logger, encoder, clock)
     {
+        this._logger = logger.CreateLogger<PassThroughAuthenticationHandler>();
     }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        this._logger.LogInformation("Allowing request to pass through");
+
         var principal = new ClaimsPrincipal(new ClaimsIdentity(AuthenticationScheme));
         var ticket = new AuthenticationTicket(principal, this.Scheme.Name);
 
