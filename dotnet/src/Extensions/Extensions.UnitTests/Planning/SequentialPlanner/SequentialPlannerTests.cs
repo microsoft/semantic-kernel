@@ -102,7 +102,7 @@ public sealed class SequentialPlannerTests
         kernel.Setup(x => x.Skills).Returns(skills.Object);
         kernel.Setup(x => x.CreateNewContext()).Returns(context);
 
-        kernel.Setup(x => x.RegisterSemanticFunction(
+        kernel.Setup(x => x.ImportSemanticFunction(
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<SemanticFunctionConfig>()
@@ -192,7 +192,7 @@ public sealed class SequentialPlannerTests
         kernel.Setup(x => x.Skills).Returns(skills.Object);
         kernel.Setup(x => x.CreateNewContext()).Returns(context);
 
-        kernel.Setup(x => x.RegisterSemanticFunction(
+        kernel.Setup(x => x.ImportSemanticFunction(
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<SemanticFunctionConfig>()

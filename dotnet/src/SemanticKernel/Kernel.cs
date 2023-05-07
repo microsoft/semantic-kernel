@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
@@ -14,7 +13,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -77,25 +75,6 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig)
-    {
-        return this.RegisterSemanticFunction(SkillCollection.GlobalSkill, functionName, functionConfig);
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string skillName, string functionName, SemanticFunctionConfig functionConfig)
-    {
-        // Future-proofing the name not to contain special chars
-        Verify.ValidSkillName(skillName);
-        Verify.ValidFunctionName(functionName);
-
-        ISKFunction function = this.CreateSemanticFunction(skillName, functionName, functionConfig);
-        this._skillCollection.AddFunction(function);
-
-        return function;
-    }
-
-    /// <inheritdoc/>
     public IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName = "")
     {
         if (string.IsNullOrWhiteSpace(skillName))
@@ -119,7 +98,7 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction RegisterCustomFunction(string skillName, ISKFunction customFunction)
+    public ISKFunction ImportFunction(string skillName, ISKFunction customFunction)
     {
         // Future-proofing the name not to contain special chars
         Verify.ValidSkillName(skillName);
@@ -300,32 +279,6 @@ public sealed class Kernel : IKernel, IDisposable
     private readonly ISkillCollection _skillCollection;
     private ISemanticTextMemory _memory;
     private readonly IPromptTemplateEngine _promptTemplateEngine;
-
-    private ISKFunction CreateSemanticFunction(
-        string skillName,
-        string functionName,
-        SemanticFunctionConfig functionConfig)
-    {
-        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new AIException(
-                AIException.ErrorCodes.FunctionTypeNotSupported,
-                $"Function type not supported: {functionConfig.PromptTemplateConfig}");
-        }
-
-        ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig, this._log);
-
-        // Connect the function to the current kernel skill collection, in case the function
-        // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultSkillCollection(this.Skills);
-
-        func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
-
-        // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>());
-
-        return func;
-    }
 
     /// <summary>
     /// Import a skill into the kernel skill collection, so that semantic functions and pipelines can consume its functions.

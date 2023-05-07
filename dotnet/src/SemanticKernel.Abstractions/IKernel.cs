@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -43,36 +42,6 @@ public interface IKernel
     IReadOnlySkillCollection Skills { get; }
 
     /// <summary>
-    /// Build and register a function in the internal skill collection, in a global generic skill.
-    /// </summary>
-    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-    ISKFunction RegisterSemanticFunction(
-        string functionName,
-        SemanticFunctionConfig functionConfig);
-
-    /// <summary>
-    /// Build and register a function in the internal skill collection.
-    /// </summary>
-    /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-    ISKFunction RegisterSemanticFunction(
-        string skillName,
-        string functionName,
-        SemanticFunctionConfig functionConfig);
-
-    /// <summary>
-    /// Registers a custom function in the internal skill collection.
-    /// </summary>
-    /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="customFunction">The custom function to register.</param>
-    /// <returns>A C# function wrapping the function execution logic.</returns>
-    ISKFunction RegisterCustomFunction(string skillName, ISKFunction customFunction);
-
-    /// <summary>
     /// Import a set of functions from the given skill. The functions must have the `SKFunction` attribute.
     /// Once these functions are imported, the prompt templates can use functions to import content at runtime.
     /// </summary>
@@ -80,6 +49,14 @@ public interface IKernel
     /// <param name="skillName">Name of the skill for skill collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
     IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName = "");
+
+    /// <summary>
+    /// Registers a custom function in the internal skill collection.
+    /// </summary>
+    /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="customFunction">The custom function to register.</param>
+    /// <returns>A C# function wrapping the function execution logic.</returns>
+    ISKFunction ImportFunction(string skillName, ISKFunction customFunction);
 
     /// <summary>
     /// Set the semantic memory to use

@@ -99,8 +99,8 @@ public static class InlineFunctionsDefinitionExtension
 
         // TODO: manage overwrites, potentially error out
         return string.IsNullOrEmpty(skillName)
-            ? kernel.RegisterSemanticFunction(functionName, functionConfig)
-            : kernel.RegisterSemanticFunction(skillName, functionName, functionConfig);
+            ? kernel.ImportSemanticFunction(functionName, functionConfig)
+            : kernel.ImportSemanticFunction(skillName, functionName, functionConfig);
     }
 
     private static string RandomFunctionName() => "func" + Guid.NewGuid().ToString("N");
