@@ -15,13 +15,20 @@ internal static class SKContextExtensions
     /// <param name="skillName">The skill name</param>
     /// <param name="functionName">The function name</param>
     /// <param name="registeredFunction">The registered function, if found</param>
-    internal static bool IsFunctionRegistered(this SKContext context, string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? registeredFunction)
+    internal static bool IsFunctionRegistered(this SKContext context, 
+        string skillName, 
+        string functionName,
+        [NotNullWhen(true)] out ISKFunction? registeredFunction)
     {
         context.ThrowIfSkillCollectionNotSet();
 
-        return context.Skills!.TryGetNativeFunction(skillName, functionName, out registeredFunction) ||
-               context.Skills.TryGetNativeFunction(functionName, out registeredFunction) ||
-               context.Skills.TryGetSemanticFunction(skillName, functionName, out registeredFunction);
+        if (string.IsNullOrEmpty(skillName))
+        {
+            return context.Skills!.TryGetFunction(functionName, out registeredFunction);
+        }
+
+        return context.Skills!.TryGetFunction(skillName, functionName, out registeredFunction) ||
+               context.Skills.TryGetFunction(functionName, out registeredFunction);
     }
 
     /// <summary>

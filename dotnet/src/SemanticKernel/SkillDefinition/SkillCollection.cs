@@ -33,13 +33,15 @@ public class SkillCollection : ISkillCollection
         this._skillCollection = new(StringComparer.OrdinalIgnoreCase);
     }
 
-    /// <inheritdoc/>
-    public ISkillCollection AddSemanticFunction(ISKFunction functionInstance) =>
-        this.AddFunction(functionInstance);
+    public ISkillCollection AddFunction(ISKFunction functionInstance)
+    {
+        Verify.NotNull(functionInstance, "The function is NULL");
 
-    /// <inheritdoc/>
-    public ISkillCollection AddNativeFunction(ISKFunction functionInstance) =>
-        this.AddFunction(functionInstance);
+        ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.SkillName, static _ => new(StringComparer.OrdinalIgnoreCase));
+        skill.TryAdd(functionInstance.Name, functionInstance);
+
+        return this;
+    }
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName) =>
@@ -76,70 +78,6 @@ public class SkillCollection : ISkillCollection
     }
 
     /// <inheritdoc/>
-    public ISKFunction GetSemanticFunction(string functionName) =>
-        this.GetSemanticFunction(GlobalSkill, functionName);
-
-    /// <inheritdoc/>
-    public ISKFunction GetSemanticFunction(string skillName, string functionName)
-    {
-        if (!this.TryGetSemanticFunction(skillName, functionName, out ISKFunction? functionInstance))
-        {
-            this.ThrowFunctionNotAvailable(skillName, functionName);
-        }
-
-        return functionInstance;
-    }
-
-    /// <inheritdoc/>
-    public bool TryGetSemanticFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance) =>
-        this.TryGetSemanticFunction(GlobalSkill, functionName, out functionInstance);
-
-    /// <inheritdoc/>
-    public bool TryGetSemanticFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance)
-    {
-        if (this.TryGetFunction(skillName, functionName, out ISKFunction? func) && func.IsSemantic)
-        {
-            functionInstance = func;
-            return true;
-        }
-
-        functionInstance = null;
-        return false;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction GetNativeFunction(string functionName) =>
-        this.GetNativeFunction(GlobalSkill, functionName);
-
-    /// <inheritdoc/>
-    public ISKFunction GetNativeFunction(string skillName, string functionName)
-    {
-        if (!this.TryGetNativeFunction(skillName, functionName, out ISKFunction? functionInstance))
-        {
-            this.ThrowFunctionNotAvailable(skillName, functionName);
-        }
-
-        return functionInstance;
-    }
-
-    /// <inheritdoc/>
-    public bool TryGetNativeFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance) =>
-        this.TryGetNativeFunction(GlobalSkill, functionName, out functionInstance);
-
-    /// <inheritdoc/>
-    public bool TryGetNativeFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance)
-    {
-        if (this.TryGetFunction(skillName, functionName, out ISKFunction? func) && !func.IsSemantic)
-        {
-            functionInstance = func;
-            return true;
-        }
-
-        functionInstance = null;
-        return false;
-    }
-
-    /// <inheritdoc/>
     public FunctionsView GetFunctionsView(bool includeSemantic = true, bool includeNative = true)
     {
         var result = new FunctionsView();
@@ -162,16 +100,6 @@ public class SkillCollection : ISkillCollection
     }
 
     #region private ================================================================================
-
-    private SkillCollection AddFunction(ISKFunction functionInstance)
-    {
-        Verify.NotNull(functionInstance, "The function is NULL");
-
-        ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.SkillName, static _ => new(StringComparer.OrdinalIgnoreCase));
-        skill.TryAdd(functionInstance.Name, functionInstance);
-
-        return this;
-    }
 
     [DoesNotReturn]
     private void ThrowFunctionNotAvailable(string skillName, string functionName)
