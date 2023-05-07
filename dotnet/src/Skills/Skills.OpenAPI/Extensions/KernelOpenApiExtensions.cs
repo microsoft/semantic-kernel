@@ -257,7 +257,7 @@ public static class KernelOpenApiExtensions
     private static ISKFunction RegisterRestApiFunction(
         this IKernel kernel,
         string skillName,
-        IRestApiOperationRunner runner,
+        RestApiOperationRunner runner,
         RestApiOperation operation,
         Uri? serverUrlOverride = null,
         CancellationToken cancellationToken = default)
