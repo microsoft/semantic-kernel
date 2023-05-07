@@ -48,7 +48,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
                 return false;
             }
 
-            if (this._tokens[1].Type != BlockTypes.Value && this._tokens[1].Type != BlockTypes.Variable)
+            if (this._tokens[1].Type is not BlockTypes.Value and not BlockTypes.Variable)
             {
                 errorMsg = "Functions support only one parameter";
                 this.Log.LogError(errorMsg);

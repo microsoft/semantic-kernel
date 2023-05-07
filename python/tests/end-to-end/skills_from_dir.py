@@ -15,12 +15,12 @@ service_id = model
 # Configure AI service used by the kernel
 if useAzureOpenAI:
     api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-    kernel.config.add_text_completion_service(
+    kernel.add_text_completion_service(
         service_id, sk_oai.AzureTextCompletion(model, api_key, endpoint)
     )
 else:
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.config.add_text_completion_service(
+    kernel.add_text_completion_service(
         service_id, sk_oai.OpenAITextCompletion(model, api_key, org_id)
     )
 
