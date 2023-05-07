@@ -41,7 +41,7 @@ $templateFile = "$($PSScriptRoot)/sk.bicep"
 
 if (!$ResourceGroup)
 {
-    $ResourceGroup = $DeploymentName + "-rg"
+    $ResourceGroup = "rg-" + $DeploymentName
 }
 
 Write-Host "Log into your Azure account"

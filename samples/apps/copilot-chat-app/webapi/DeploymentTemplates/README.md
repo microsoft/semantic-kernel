@@ -50,7 +50,7 @@ Use the [DeploySK-Existing-AI.ps1](DeploySK-Existing-AI.ps1) file found in this 
 .\DeploySK-Existing-AI.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -Endpoint "YOUR_AZURE_OPENAI_ENDPOINT"
 ```
 
-After entering the command above, you will be prompted to enter your OpenAI or Azure OpenAI API key. (You can also pass in the API key using the -ApiKey parameter followed by a SecureString)
+After entering the command above, you will be prompted to enter your OpenAI or Azure OpenAI API key. (You can also pass in the API key using the -ApiKey parameter)
 
 ### Bash
 

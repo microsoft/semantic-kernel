@@ -20,7 +20,7 @@ AppServiceSku="${12:-B1}"
 DebugDeployment="${13:-false}"
 
 if [ -z "$ResourceGroup" ]; then
-    ResourceGroup="${DeploymentName}-rg"
+    ResourceGroup="$rg-{DeploymentName}"
 fi
 
 templateFile="$(dirname "$0")/sk-existing-ai.bicep"

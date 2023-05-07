@@ -10,7 +10,6 @@ param(
     $DeploymentName,
 
     [Parameter(Mandatory)]
-    [SecureString]
     # Azure OpenAI or OpenAI API key
     $ApiKey,
 
@@ -67,7 +66,7 @@ $templateFile = "$($PSScriptRoot)/sk-existing-ai.bicep"
 
 if (!$ResourceGroup)
 {
-    $ResourceGroup = $DeploymentName + "-rg"
+    $ResourceGroup = "rg-" + $DeploymentName
 }
 
 Write-Host "Log into your Azure account"

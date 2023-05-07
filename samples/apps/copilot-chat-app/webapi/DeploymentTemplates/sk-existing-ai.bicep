@@ -51,7 +51,16 @@ param apiKey string = ''
 var location = resourceGroup().location       // more intelligible deployment experience at the cost of some flexibility
 
 @description('Name for the deployment - Made unique')
-var uniqueName = '${name}-${uniqueString(resourceGroup().id)}'
+var rgIdHash = uniqueString(resourceGroup().id)
+
+@description('Name for the deployment - Made unique')
+var uniqueName = '${name}-${rgIdHash}'
+
+@description('Name of the Azure Storage file share to create')
+var storageFileShareName = 'aciqdrantshare'
+
+@description('Name of the ACI container volume')
+var containerVolumeMountName = 'azqdrantvolume'
 
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
@@ -132,7 +141,11 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'MemoriesStore:Type'
-          value: 'volatile'
+          value: 'Qdrant'
+        }
+        {
+          name: 'MemoriesStore:Qdrant:Host'
+          value: 'http://${aci.properties.ipAddress.ip}'
         }
         {
           name: 'Kestrel:Endpoints:Https:Url'
@@ -218,5 +231,88 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08
     }
   }
 }
+
+resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: 'st${rgIdHash}' // Not using full unique name to avoid hitting 24 char limit
+  location: location
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+  properties: {
+    supportsHttpsTrafficOnly: true
+  }
+  resource fileservices 'fileServices' = {
+    name: 'default'
+    resource share 'shares' = {
+      name: storageFileShareName
+    }
+  }
+}
+
+resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = {
+  name: 'ci-${uniqueName}'
+  location: location
+  properties: {
+    sku: 'Standard'
+    containers: [
+      {
+        name: uniqueName
+        properties: {
+          image: 'qdrant/qdrant:latest'
+          ports: [
+            {
+              port: 80
+              protocol: 'TCP'
+            }
+            {
+              port: 6333
+              protocol: 'TCP'
+            }
+          ]
+          resources: {
+            requests: {
+              cpu: 4
+              memoryInGB: 16
+            }
+          }
+          volumeMounts: [
+            {
+              name: containerVolumeMountName
+              mountPath: '/qdrant/storage'
+            }
+          ]
+        }
+      }
+    ]
+    osType: 'Linux'
+    restartPolicy: 'OnFailure'
+    ipAddress: {
+      ports: [
+        {
+          port: 80
+          protocol: 'TCP'
+        }
+        {
+          port: 6333
+          protocol: 'TCP'
+        }
+      ]
+      type: 'Public'
+      dnsNameLabel: uniqueName
+    }
+    volumes: [
+      {
+        name: containerVolumeMountName
+        azureFile: {
+          shareName: storageFileShareName
+          storageAccountName: storage.name
+          storageAccountKey: storage.listKeys().keys[0].value
+        }
+      }
+    ]
+  }
+}
+
 
 output deployedUrl string = appServiceWeb.properties.defaultHostName
