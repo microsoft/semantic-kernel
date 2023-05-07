@@ -54,7 +54,7 @@ public static class SemanticKernelExtensions
 
             // Wrap AI logic into a function and store it
             var functionConfig = new SemanticFunctionConfig(config, template);
-            skill[functionName] = kernel.RegisterSemanticFunction(skillName, functionName, functionConfig);
+            skill[functionName] = kernel.ImportSemanticFunction(skillName, functionName, functionConfig);
         }
 
         return skill;

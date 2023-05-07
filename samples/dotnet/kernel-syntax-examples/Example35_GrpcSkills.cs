@@ -11,6 +11,7 @@ using RepoUtils;
  * This example shows how to use gRPC skills.
  */
 
+// ReSharper disable once InconsistentNaming
 public static class Example35_GrpcSkills
 {
     public static async Task RunAsync()

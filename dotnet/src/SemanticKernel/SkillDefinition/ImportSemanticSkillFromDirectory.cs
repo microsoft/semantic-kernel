@@ -97,7 +97,7 @@ public static class ImportSemanticSkillFromDirectoryExtension
                 var functionConfig = new SemanticFunctionConfig(config, template);
 
                 kernel.Log.LogTrace("Registering function {0}.{1} loaded from {2}", skillDirectoryName, functionName, dir);
-                skill[functionName] = kernel.RegisterSemanticFunction(skillDirectoryName, functionName, functionConfig);
+                skill[functionName] = kernel.ImportSemanticFunction(skillDirectoryName, functionName, functionConfig);
             }
         }
 

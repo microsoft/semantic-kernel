@@ -82,7 +82,7 @@ public class SequentialPlanParserTests
 
             if (string.IsNullOrEmpty(name))
             {
-                kernelMock.Setup(x => x.RegisterSemanticFunction(
+                kernelMock.Setup(x => x.ImportSemanticFunction(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<SemanticFunctionConfig>()

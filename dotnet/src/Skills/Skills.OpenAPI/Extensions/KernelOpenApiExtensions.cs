@@ -331,7 +331,7 @@ public static class KernelOpenApiExtensions
             log: kernel.Log);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        return kernel.RegisterCustomFunction(skillName, function);
+        return kernel.ImportFunction(skillName, function);
     }
 
     #endregion
