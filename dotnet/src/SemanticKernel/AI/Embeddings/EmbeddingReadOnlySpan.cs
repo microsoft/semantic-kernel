@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.AI.Embeddings;
 /// A view of a vector that allows for low-level, optimized, read-only mathematical operations.
 /// </summary>
 /// <typeparam name="TEmbedding">The unmanaged data type (<see cref="float"/>, <see cref="double"/> currently supported).</typeparam>
-public ref struct EmbeddingReadOnlySpan<TEmbedding>
+public readonly ref struct EmbeddingReadOnlySpan<TEmbedding>
     where TEmbedding : unmanaged
 {
     /// <summary>
@@ -19,13 +19,13 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// <param name="vector">A a vector of contiguous, unmanaged data.</param>
     /// <param name="isNormalized">Indicates whether the data was pre-normalized.</param>
     /// <remarks>
-    /// This does not verified that the data is normalized, nor make any guarantees that it remains so,
+    /// This does not verify that the data is normalized, nor make any guarantees that it remains so,
     /// as the data can be modified at its source. The <paramref name="isNormalized"/> parameter simply
     /// directs these operations to perform faster if the data is known to be normalized.
     /// </remarks>
     public EmbeddingReadOnlySpan(ReadOnlySpan<TEmbedding> vector, bool isNormalized = false)
     {
-        SupportedTypes.VerifyTypeSupported(typeof(TEmbedding));
+        SupportedTypes.VerifyTypeSupported<TEmbedding>();
 
         this.ReadOnlySpan = vector;
         this.IsNormalized = isNormalized;
@@ -37,7 +37,7 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// <param name="vector">A vector of contiguous, unmanaged data.</param>
     /// <param name="isNormalized">Indicates whether the data was pre-normalized.</param>
     /// <remarks>
-    /// This does not verified that the data is normalized, nor make any guarantees that it remains so,
+    /// This does not verify that the data is normalized, nor make any guarantees that it remains so,
     /// as the data can be modified at its source. The <paramref name="isNormalized"/> parameter simply
     /// directs these operations to perform faster if the data is known to be normalized.
     /// </remarks>
@@ -52,7 +52,7 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// <param name="span">A vector of contiguous, unmanaged data.</param>
     /// <param name="isNormalized">Indicates whether the data was pre-normalized.</param>
     /// <remarks>
-    /// This does not verified that the data is normalized, nor make any guarantees that it remains so,
+    /// This does not verify that the data is normalized, nor make any guarantees that it remains so,
     /// as the data can be modified at its source. The <paramref name="isNormalized"/> parameter simply
     /// directs these operations to perform faster if the data is known to be normalized.
     /// </remarks>
@@ -64,12 +64,12 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// <summary>
     /// Gets the underlying <see cref="ReadOnlySpan{T}"/> of unmanaged data.
     /// </summary>
-    public ReadOnlySpan<TEmbedding> ReadOnlySpan { get; internal set; }
+    public ReadOnlySpan<TEmbedding> ReadOnlySpan { get; }
 
     /// <summary>
     /// True if the data was specified to be normalized at construction.
     /// </summary>
-    public bool IsNormalized { get; internal set; }
+    public bool IsNormalized { get; }
 
     /// <summary>
     /// Calculates the dot product of this vector with another.
@@ -111,5 +111,5 @@ public ref struct EmbeddingReadOnlySpan<TEmbedding>
     /// Gets a value that indicates whether <typeparamref name="TEmbedding"/> is supported.
     /// </summary>
     [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Following 'IsSupported' pattern of System.Numerics.")]
-    public static bool IsSupported => SupportedTypes.IsSupported(typeof(TEmbedding));
+    public static bool IsSupported => SupportedTypes.IsSupported<TEmbedding>();
 }

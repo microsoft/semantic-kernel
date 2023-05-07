@@ -409,10 +409,12 @@ FodyWeavers.xsd
 *.crt
 *.key
 
-
-appsettings.development.json
-testsettings.development.json
+.env
+certs/
+launchSettings.json
 config.development.yaml
+*.development.config
+*.development.json
 .DS_Store
 .idea/
 node_modules/
@@ -445,3 +447,19 @@ _site
 # Yarn
 .yarn
 .yarnrc.yml
+
+# Python Environments
+.env
+.venv
+.myenv
+env/
+venv/
+myvenv/
+ENV/
+
+# Python dist
+dist/
+
+# Peristant storage
+data/qdrant
+data/chatstore*

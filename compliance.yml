@@ -17,10 +17,10 @@ steps:
     ErrorLevel: 'warn'
 
 - task: UseDotNet@2
-  displayName: 'Use .NET Core SDK 3.1'
+  displayName: 'Use .NET 7.0'
   inputs:
     packageType: 'sdk'
-    version: '3.1.x'
+    version: '7.x'
 
 - task: Semmle@1
   env: 

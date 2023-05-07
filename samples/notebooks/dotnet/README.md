@@ -5,10 +5,10 @@ the Semantic Kernel. The notebooks are organized in order of increasing complexi
 
 To run the notebooks, we recommend the following steps:
 
--   [Install .NET 7](https://dotnet.microsoft.com/download/dotnet/7.0)
--   [Install Visual Studio Code (VS Code)](https://code.visualstudio.com)
--   Launch VS Code and [install the "Polyglot" extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode).
-    Min version required: v1.0.4102020 (Feb 2022).
+- [Install .NET 7](https://dotnet.microsoft.com/download/dotnet/7.0)
+- [Install Visual Studio Code (VS Code)](https://code.visualstudio.com)
+- Launch VS Code and [install the "Polyglot" extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode).
+  Min version required: v1.0.4102020 (Feb 2022).
 
 The steps above should be sufficient, you can now **open all the C# notebooks in VS Code**.
 
@@ -26,10 +26,10 @@ For Azure OpenAI:
 
 ```json
 {
-    "type": "azure",
-    "model": "...", // Azure OpenAI Deployment Name
-    "endpoint": "...", // Azure OpenAI endpoint
-    "apikey": "..." // Azure OpenAI key
+  "type": "azure",
+  "model": "...", // Azure OpenAI Deployment Name
+  "endpoint": "...", // Azure OpenAI endpoint
+  "apikey": "..." // Azure OpenAI key
 }
 ```
 
@@ -37,10 +37,10 @@ For OpenAI:
 
 ```json
 {
-    "type": "openai",
-    "model": "text-davinci-003", // OpenAI model name
-    "apikey": "...", // OpenAI API Key
-    "org": "" // only for OpenAI accounts with multiple orgs
+  "type": "openai",
+  "model": "text-davinci-003", // OpenAI model name
+  "apikey": "...", // OpenAI API Key
+  "org": "" // only for OpenAI accounts with multiple orgs
 }
 ```
 
@@ -52,14 +52,16 @@ If you need an OpenAI key, go [here](https://platform.openai.com/account/api-key
 Before starting, make sure you configured `config/settings.json`,
 see the previous section.
 
-For a quick dive, look at the [getting started notebook](Getting-Started-Notebook.ipynb).
+For a quick dive, look at the [getting started notebook](00-getting-started.ipynb).
 
-1. [Loading and configuring Semantic Kernel](1-basic-loading-the-kernel.ipynb)
-2. [Running AI prompts from file](2-running-prompts-from-file.ipynb)
-3. [Creating Semantic Functions at runtime (i.e. inline functions)](3-semantic-function-inline.ipynb)
-4. [Using Context Variables to Build a Chat Experience](4-context-variables-chat.ipynb)
-5. [Creating and Executing Plans](5-using-the-planner.ipynb)
-6. [Building Memory with Embeddings](6-memory-and-embeddings.ipynb)
+1. [Loading and configuring Semantic Kernel](01-basic-loading-the-kernel.ipynb)
+2. [Running AI prompts from file](02-running-prompts-from-file.ipynb)
+3. [Creating Semantic Functions at runtime (i.e. inline functions)](03-semantic-function-inline.ipynb)
+4. [Using Context Variables to Build a Chat Experience](04-context-variables-chat.ipynb)
+5. [Creating and Executing Plans](05-using-the-planner.ipynb)
+6. [Building Memory with Embeddings](06-memory-and-embeddings.ipynb)
+7. [Creating images with DALL-E 2](07-DALL-E-2.ipynb)
+8. [Chatting with ChatGPT and Images](08-chatGPT-with-DALL-E-2.ipynb)
 
 # Run notebooks in the browser with JupyterLab
 
@@ -85,17 +87,33 @@ Enter the notebooks folder, and run this to launch the browser interface:
 
 # Troubleshooting
 
-If you are unable to get the Nuget package, run one of the `force-nuget-download` scripts for your machine.
+## Nuget
+
+If you are unable to get the Nuget package, first list your Nuget sources:
+
+```sh
+dotnet nuget list source
+```
+
+If you see `No sources found.`, add the NuGet official package source:
+
+```sh
+dotnet nuget add source "https://api.nuget.org/v3/index.json" --name "nuget.org"
+```
+
+Run `dotnet nuget list source` again to verify the source was added.
+
+## Polyglot Notebooks
 
 If somehow the notebooks don't work, run these commands:
 
--   Install .NET Interactive: `dotnet tool install -g Microsoft.dotnet-interactive`
--   Register .NET kernels into Jupyter: `dotnet interactive jupyter install` (this might return some errors, ignore them)
--   If you are still stuck, read the following pages:
-    -   https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode
-    -   https://devblogs.microsoft.com/dotnet/net-core-with-juypter-notebooks-is-here-preview-1/
-    -   https://docs.servicestack.net/jupyter-notebooks-csharp
-    -   https://developers.refinitiv.com/en/article-catalog/article/using--net-core-in-jupyter-notebook
+- Install .NET Interactive: `dotnet tool install -g Microsoft.dotnet-interactive`
+- Register .NET kernels into Jupyter: `dotnet interactive jupyter install` (this might return some errors, ignore them)
+- If you are still stuck, read the following pages:
+  - https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode
+  - https://devblogs.microsoft.com/dotnet/net-core-with-juypter-notebooks-is-here-preview-1/
+  - https://docs.servicestack.net/jupyter-notebooks-csharp
+  - https://developers.refinitiv.com/en/article-catalog/article/using--net-core-in-jupyter-notebook
 
 Note: ["Polyglot Notebooks" used to be called ".NET Interactive Notebooks"](https://devblogs.microsoft.com/dotnet/dotnet-interactive-notebooks-is-now-polyglot-notebooks/),
 so you might find online some documentation referencing the old name.

@@ -53,6 +53,16 @@ public class TimeSkill
     }
 
     /// <summary>
+    /// Get the current date
+    /// </summary>
+    /// <example>
+    /// {{time.today}} => Sunday, 12 January, 2031
+    /// </example>
+    /// <returns> The current date </returns>
+    [SKFunction("Get the current date")]
+    public string Today() => this.Date();
+
+    /// <summary>
     /// Get the current date and time in the local time zone"
     /// </summary>
     /// <example>
@@ -203,7 +213,7 @@ public class TimeSkill
     public string Minute()
     {
         // Example: 15
-        return DateTimeOffset.Now.ToString("m", CultureInfo.CurrentCulture);
+        return DateTimeOffset.Now.ToString("mm", CultureInfo.CurrentCulture);
     }
 
     /// <summary>
@@ -217,7 +227,7 @@ public class TimeSkill
     public string Second()
     {
         // Example: 7
-        return DateTimeOffset.Now.ToString("s", CultureInfo.CurrentCulture);
+        return DateTimeOffset.Now.ToString("ss", CultureInfo.CurrentCulture);
     }
 
     /// <summary>

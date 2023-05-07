@@ -12,41 +12,55 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </summary>
 public sealed class NullMemory : ISemanticTextMemory
 {
+    private static readonly Task<string> s_emptyStringTask = Task.FromResult(string.Empty);
+
     /// <summary>
     /// Singleton instance
     /// </summary>
     public static NullMemory Instance { get; } = new();
 
     /// <inheritdoc/>
-    public Task SaveInformationAsync(
+    public Task<string> SaveInformationAsync(
         string collection,
         string text,
         string id,
         string? description = null,
-        CancellationToken cancel = default)
+        string? additionalMetadata = null,
+        CancellationToken cancellationToken = default)
     {
-        return Task.CompletedTask;
+        return s_emptyStringTask;
     }
 
     /// <inheritdoc/>
-    public Task SaveReferenceAsync(
+    public Task<string> SaveReferenceAsync(
         string collection,
         string text,
         string externalId,
         string externalSourceName,
         string? description = null,
-        CancellationToken cancel = default)
+        string? additionalMetadata = null,
+        CancellationToken cancellationToken = default)
     {
-        return Task.CompletedTask;
+        return s_emptyStringTask;
     }
 
     /// <inheritdoc/>
     public Task<MemoryQueryResult?> GetAsync(
         string collection,
         string key,
-        CancellationToken cancel = default)
+        bool withEmbedding = false,
+        CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(null as MemoryQueryResult);
+        return Task.FromResult<MemoryQueryResult?>(null);
+    }
+
+    /// <inheritdoc/>
+    public Task RemoveAsync(
+        string collection,
+        string key,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -54,17 +68,18 @@ public sealed class NullMemory : ISemanticTextMemory
         string collection,
         string query,
         int limit = 1,
-        double minRelevanceScore = 0.7,
-        CancellationToken cancel = default)
+        double minRelevanceScore = 0.0,
+        bool withEmbeddings = false,
+        CancellationToken cancellationToken = default)
     {
         return AsyncEnumerable.Empty<MemoryQueryResult>();
     }
 
     /// <inheritdoc/>
     public Task<IList<string>> GetCollectionsAsync(
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(new List<string>() as IList<string>);
+        return Task.FromResult<IList<string>>(new List<string>());
     }
 
     private NullMemory()

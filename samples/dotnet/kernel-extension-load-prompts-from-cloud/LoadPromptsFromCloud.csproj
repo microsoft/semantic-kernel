@@ -8,10 +8,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <LangVersion>10</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

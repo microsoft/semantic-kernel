@@ -1,109 +1,572 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
-/// Object that contains details about a plan and its goal and details of its execution.
+/// Standard Semantic Kernel callable plan.
+/// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
-public class Plan
+public sealed class Plan : ISKFunction
 {
     /// <summary>
-    /// Internal constant string representing the ID key.
+    /// State of the plan
     /// </summary>
-    internal const string IdKey = "PLAN__ID";
+    [JsonPropertyName("state")]
+    [JsonConverter(typeof(ContextVariablesConverter))]
+    public ContextVariables State { get; } = new();
 
     /// <summary>
-    /// Internal constant string representing the goal key.
+    /// Steps of the plan
     /// </summary>
-    internal const string GoalKey = "PLAN__GOAL";
+    [JsonPropertyName("steps")]
+    public IReadOnlyList<Plan> Steps => this._steps.AsReadOnly();
 
     /// <summary>
-    /// Internal constant string representing the plan key.
+    /// Parameters for the plan, used to pass information to the next step
     /// </summary>
-    internal const string PlanKey = "PLAN__PLAN";
+    [JsonPropertyName("parameters")]
+    [JsonConverter(typeof(ContextVariablesConverter))]
+    public ContextVariables Parameters { get; set; } = new();
 
     /// <summary>
-    /// Internal constant string representing the arguments key.
+    /// Outputs for the plan, used to pass information to the caller
     /// </summary>
-    internal const string ArgumentsKey = "PLAN__ARGUMENTS";
+    [JsonPropertyName("outputs")]
+    public IList<string> Outputs { get; set; } = new List<string>();
 
     /// <summary>
-    /// Internal constant string representing the is complete key.
+    /// Gets whether the plan has a next step.
     /// </summary>
-    internal const string IsCompleteKey = "PLAN__ISCOMPLETE";
+    [JsonIgnore]
+    public bool HasNextStep => this.NextStepIndex < this.Steps.Count;
 
     /// <summary>
-    /// Internal constant string representing the is successful key.
+    /// Gets the next step index.
     /// </summary>
-    internal const string IsSuccessfulKey = "PLAN__ISSUCCESSFUL";
+    [JsonPropertyName("next_step_index")]
+    public int NextStepIndex { get; private set; }
+
+    #region ISKFunction implementation
+
+    /// <inheritdoc/>
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    /// <inheritdoc/>
+    [JsonPropertyName("skill_name")]
+    public string SkillName { get; set; } = string.Empty;
+
+    /// <inheritdoc/>
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = string.Empty;
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public bool IsSemantic { get; private set; }
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+
+    #endregion ISKFunction implementation
 
     /// <summary>
-    /// Internal constant string representing the result key.
+    /// Initializes a new instance of the <see cref="Plan"/> class with a goal description.
     /// </summary>
-    internal const string ResultKey = "PLAN__RESULT";
+    /// <param name="goal">The goal of the plan used as description.</param>
+    public Plan(string goal)
+    {
+        this.Description = goal;
+        this.SkillName = this.GetType().FullName;
+    }
 
     /// <summary>
-    /// The ID of the plan.
-    /// Can be used to track creation of a plan and execution over multiple steps.
+    /// Initializes a new instance of the <see cref="Plan"/> class with a goal description and steps.
     /// </summary>
-    [JsonPropertyName("id")]
-    public string Id { get; set; } = string.Empty;
+    /// <param name="goal">The goal of the plan used as description.</param>
+    /// <param name="steps">The steps to add.</param>
+    public Plan(string goal, params ISKFunction[] steps) : this(goal)
+    {
+        this.AddSteps(steps);
+    }
 
     /// <summary>
-    /// The goal of the plan.
+    /// Initializes a new instance of the <see cref="Plan"/> class with a goal description and steps.
     /// </summary>
-    [JsonPropertyName("goal")]
-    public string Goal { get; set; } = string.Empty;
+    /// <param name="goal">The goal of the plan used as description.</param>
+    /// <param name="steps">The steps to add.</param>
+    public Plan(string goal, params Plan[] steps) : this(goal)
+    {
+        this.AddSteps(steps);
+    }
 
     /// <summary>
-    /// The plan details in string.
+    /// Initializes a new instance of the <see cref="Plan"/> class with a function.
     /// </summary>
-    [JsonPropertyName("plan")]
-    public string PlanString { get; set; } = string.Empty;
+    /// <param name="function">The function to execute.</param>
+    public Plan(ISKFunction function)
+    {
+        this.SetFunction(function);
+    }
 
     /// <summary>
-    /// The arguments for the plan.
+    /// Initializes a new instance of the <see cref="Plan"/> class with a function and steps.
     /// </summary>
-    [JsonPropertyName("arguments")]
-    public string Arguments { get; set; } = string.Empty;
+    /// <param name="name">The name of the plan.</param>
+    /// <param name="skillName">The name of the skill.</param>
+    /// <param name="description">The description of the plan.</param>
+    /// <param name="nextStepIndex">The index of the next step.</param>
+    /// <param name="state">The state of the plan.</param>
+    /// <param name="parameters">The parameters of the plan.</param>
+    /// <param name="outputs">The outputs of the plan.</param>
+    /// <param name="steps">The steps of the plan.</param>
+    [JsonConstructor]
+    public Plan(
+        string name,
+        string skillName,
+        string description,
+        int nextStepIndex,
+        ContextVariables state,
+        ContextVariables parameters,
+        IList<string> outputs,
+        IReadOnlyList<Plan> steps)
+    {
+        this.Name = name;
+        this.SkillName = skillName;
+        this.Description = description;
+        this.NextStepIndex = nextStepIndex;
+        this.State = state;
+        this.Parameters = parameters;
+        this.Outputs = outputs;
+        this._steps.Clear();
+        this.AddSteps(steps.ToArray());
+    }
 
     /// <summary>
-    /// Flag indicating if the plan is complete.
+    /// Deserialize a JSON string into a Plan object.
     /// </summary>
-    [JsonPropertyName("is_complete")]
-    public bool IsComplete { get; set; }
+    /// <param name="json">JSON string representation of a Plan</param>
+    /// <param name="context">The context to use for function registrations.</param>
+    /// <returns>An instance of a Plan object.</returns>
+    /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
+    public static Plan FromJson(string json, SKContext? context = null)
+    {
+        var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions() { IncludeFields = true }) ?? new Plan(string.Empty);
+
+        if (context != null)
+        {
+            plan = SetRegisteredFunctions(plan, context);
+        }
+
+        return plan;
+    }
 
     /// <summary>
-    /// Flag indicating if the plan is successful.
+    /// Get JSON representation of the plan.
     /// </summary>
-    [JsonPropertyName("is_successful")]
-    public bool IsSuccessful { get; set; }
-
-    /// <summary>
-    /// The result of the plan execution.
-    /// </summary>
-    [JsonPropertyName("result")]
-    public string Result { get; set; } = string.Empty;
-
-    /// <summary>
-    /// To help with writing plans to <see cref="Orchestration.ContextVariables"/>.
-    /// </summary>
-    /// <returns>JSON string representation of the Plan</returns>
     public string ToJson()
     {
         return JsonSerializer.Serialize(this);
     }
 
     /// <summary>
-    /// To help with reading plans from <see cref="Orchestration.ContextVariables"/>.
+    /// Adds one or more existing plans to the end of the current plan as steps.
     /// </summary>
-    /// <param name="json">JSON string representation of aPlan</param>
-    /// <returns>An instance of a Plan object.</returns>
-    public static Plan FromJson(string json)
+    /// <param name="steps">The plans to add as steps to the current plan.</param>
+    /// <remarks>
+    /// When you add a plan as a step to the current plan, the steps of the added plan are executed after the steps of the current plan have completed.
+    /// </remarks>
+    public void AddSteps(params Plan[] steps)
     {
-        return JsonSerializer.Deserialize<Plan>(json) ?? new Plan();
+        this._steps.AddRange(steps);
     }
+
+    /// <summary>
+    /// Adds one or more new steps to the end of the current plan.
+    /// </summary>
+    /// <param name="steps">The steps to add to the current plan.</param>
+    /// <remarks>
+    /// When you add a new step to the current plan, it is executed after the previous step in the plan has completed. Each step can be a function call or another plan.
+    /// </remarks>
+    public void AddSteps(params ISKFunction[] steps)
+    {
+        this._steps.AddRange(steps.Select(step => new Plan(step)));
+    }
+
+    /// <summary>
+    /// Runs the next step in the plan using the provided kernel instance and variables.
+    /// </summary>
+    /// <param name="kernel">The kernel instance to use for executing the plan.</param>
+    /// <param name="variables">The variables to use for the execution of the plan.</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the execution of the plan.</param>
+    /// <returns>A task representing the asynchronous execution of the plan's next step.</returns>
+    /// <remarks>
+    /// This method executes the next step in the plan using the specified kernel instance and context variables. The context variables contain the necessary information for executing the plan, such as the memory, skills, and logger. The method returns a task representing the asynchronous execution of the plan's next step.
+    /// </remarks>
+    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+    {
+        var context = new SKContext(
+            variables,
+            kernel.Memory,
+            kernel.Skills,
+            kernel.Log,
+            cancellationToken);
+        return this.InvokeNextStepAsync(context);
+    }
+
+    /// <summary>
+    /// Invoke the next step of the plan
+    /// </summary>
+    /// <param name="context">Context to use</param>
+    /// <returns>The updated plan</returns>
+    /// <exception cref="KernelException">If an error occurs while running the plan</exception>
+    public async Task<Plan> InvokeNextStepAsync(SKContext context)
+    {
+        if (this.HasNextStep)
+        {
+            var step = this.Steps[this.NextStepIndex];
+
+            // Merge the state with the current context variables for step execution
+            var functionVariables = this.GetNextStepVariables(context.Variables, step);
+
+            // Execute the step
+            var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
+            var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
+            var resultValue = result.Result.Trim();
+
+            if (result.ErrorOccurred)
+            {
+                throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
+                    $"Error occurred while running plan step: {context.LastErrorDescription}", context.LastException);
+            }
+
+            #region Update State
+
+            // Update state with result
+            this.State.Update(resultValue);
+
+            // Update Plan Result in State with matching outputs (if any)
+            if (this.Outputs.Intersect(step.Outputs).Any())
+            {
+                this.State.Get(DefaultResultKey, out var currentPlanResult);
+                this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult.Trim(), resultValue));
+            }
+
+            // Update state with outputs (if any)
+            foreach (var item in step.Outputs)
+            {
+                if (result.Variables.Get(item, out var val))
+                {
+                    this.State.Set(item, val);
+                }
+                else
+                {
+                    this.State.Set(item, resultValue);
+                }
+            }
+
+            #endregion Update State
+
+            this.NextStepIndex++;
+        }
+
+        return this;
+    }
+
+    #region ISKFunction implementation
+
+    /// <inheritdoc/>
+    public FunctionView Describe()
+    {
+        // TODO - Eventually, we should be able to describe a plan and it's expected inputs/outputs
+        return this.Function?.Describe() ?? new();
+    }
+
+    /// <inheritdoc/>
+    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+        CancellationToken cancellationToken = default)
+    {
+        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
+
+        context.Variables.Update(input);
+
+        return this.InvokeAsync(context, settings, log, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+        CancellationToken cancellationToken = default)
+    {
+        context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
+
+        if (this.Function is not null)
+        {
+            var result = await this.Function.InvokeAsync(context, settings, log, cancellationToken).ConfigureAwait(false);
+
+            if (result.ErrorOccurred)
+            {
+                result.Log.LogError(
+                    result.LastException,
+                    "Something went wrong in plan step {0}.{1}:'{2}'", this.SkillName, this.Name, context.LastErrorDescription);
+                return result;
+            }
+
+            context.Variables.Update(result.Result.ToString());
+        }
+        else
+        {
+            // loop through steps and execute until completion
+            while (this.HasNextStep)
+            {
+                var functionContext = context;
+
+                AddVariablesToContext(this.State, functionContext);
+
+                await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
+
+                this.UpdateContextWithOutputs(context);
+            }
+        }
+
+        return context;
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    {
+        return this.Function is null
+            ? throw new NotImplementedException()
+            : this.Function.SetDefaultSkillCollection(skills);
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        return this.Function is null
+            ? throw new NotImplementedException()
+            : this.Function.SetAIService(serviceFactory);
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    {
+        return this.Function is null
+            ? throw new NotImplementedException()
+            : this.Function.SetAIConfiguration(settings);
+    }
+
+    #endregion ISKFunction implementation
+
+    /// <summary>
+    /// Expand variables in the input string.
+    /// </summary>
+    /// <param name="variables">Variables to use for expansion.</param>
+    /// <param name="input">Input string to expand.</param>
+    /// <returns>Expanded string.</returns>
+    internal string ExpandFromVariables(ContextVariables variables, string input)
+    {
+        var result = input;
+        var matches = s_variablesRegex.Matches(input);
+        var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).OrderByDescending(m => m.Length);
+
+        foreach (var varName in orderedMatches)
+        {
+            result = variables.Get(varName, out var value)
+                ? result.Replace($"${varName}", value)
+                : this.State.Get(varName, out value)
+                    ? result.Replace($"${varName}", value)
+                    : result.Replace($"${varName}", string.Empty);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Set functions for a plan and its steps.
+    /// </summary>
+    /// <param name="plan">Plan to set functions for.</param>
+    /// <param name="context">Context to use.</param>
+    /// <returns>The plan with functions set.</returns>
+    private static Plan SetRegisteredFunctions(Plan plan, SKContext context)
+    {
+        if (plan.Steps.Count == 0)
+        {
+            if (context.IsFunctionRegistered(plan.SkillName, plan.Name, out var skillFunction))
+            {
+                plan.SetFunction(skillFunction);
+            }
+        }
+        else
+        {
+            foreach (var step in plan.Steps)
+            {
+                SetRegisteredFunctions(step, context);
+            }
+        }
+
+        return plan;
+    }
+
+    /// <summary>
+    /// Add any missing variables from a plan state variables to the context.
+    /// </summary>
+    private static void AddVariablesToContext(ContextVariables vars, SKContext context)
+    {
+        // Loop through vars and add anything missing to context
+        foreach (var item in vars)
+        {
+            if (!context.Variables.ContainsKey(item.Key))
+            {
+                context.Variables.Set(item.Key, item.Value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Update the context with the outputs from the current step.
+    /// </summary>
+    /// <param name="context">The context to update.</param>
+    /// <returns>The updated context.</returns>
+    private SKContext UpdateContextWithOutputs(SKContext context)
+    {
+        var resultString = this.State.Get(DefaultResultKey, out var result) ? result : this.State.ToString();
+        context.Variables.Update(resultString);
+
+        // copy previous step's variables to the next step
+        foreach (var item in this._steps[this.NextStepIndex - 1].Outputs)
+        {
+            if (this.State.Get(item, out var val))
+            {
+                context.Variables.Set(item, val);
+            }
+            else
+            {
+                context.Variables.Set(item, resultString);
+            }
+        }
+
+        return context;
+    }
+
+    /// <summary>
+    /// Get the variables for the next step in the plan.
+    /// </summary>
+    /// <param name="variables">The current context variables.</param>
+    /// <param name="step">The next step in the plan.</param>
+    /// <returns>The context variables for the next step in the plan.</returns>
+    private ContextVariables GetNextStepVariables(ContextVariables variables, Plan step)
+    {
+        // Priority for Input
+        // - Parameters (expand from variables if needed)
+        // - SKContext.Variables
+        // - Plan.State
+        // - Empty if sending to another plan
+        // - Plan.Description
+
+        var input = string.Empty;
+        if (!string.IsNullOrEmpty(step.Parameters.Input))
+        {
+            input = this.ExpandFromVariables(variables, step.Parameters.Input);
+        }
+        else if (!string.IsNullOrEmpty(variables.Input))
+        {
+            input = variables.Input;
+        }
+        else if (!string.IsNullOrEmpty(this.State.Input))
+        {
+            input = this.State.Input;
+        }
+        else if (step.Steps.Count > 0)
+        {
+            input = string.Empty;
+        }
+        else if (!string.IsNullOrEmpty(this.Description))
+        {
+            input = this.Description;
+        }
+
+        var stepVariables = new ContextVariables(input);
+
+        // Priority for remaining stepVariables is:
+        // - Function Parameters (pull from variables or state by a key value)
+        // - Step Parameters (pull from variables or state by a key value)
+        var functionParameters = step.Describe();
+        foreach (var param in functionParameters.Parameters)
+        {
+            if (param.Name.Equals(ContextVariables.MainKey, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (variables.Get(param.Name, out var value))
+            {
+                stepVariables.Set(param.Name, value);
+            }
+            else if (this.State.Get(param.Name, out value))
+            {
+                stepVariables.Set(param.Name, value);
+            }
+        }
+
+        foreach (var item in step.Parameters)
+        {
+            // Don't overwrite variable values that are already set
+            if (stepVariables.Get(item.Key, out _))
+            {
+                continue;
+            }
+
+            var expandedValue = this.ExpandFromVariables(variables, item.Value);
+            if (!expandedValue.Equals(item.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                stepVariables.Set(item.Key, expandedValue);
+            }
+            else if (variables.Get(item.Key, out var value))
+            {
+                stepVariables.Set(item.Key, value);
+            }
+            else if (this.State.Get(item.Key, out value))
+            {
+                stepVariables.Set(item.Key, value);
+            }
+            else
+            {
+                stepVariables.Set(item.Key, expandedValue);
+            }
+        }
+
+        return stepVariables;
+    }
+
+    private void SetFunction(ISKFunction function)
+    {
+        this.Function = function;
+        this.Name = function.Name;
+        this.SkillName = function.SkillName;
+        this.Description = function.Description;
+        this.IsSemantic = function.IsSemantic;
+        this.RequestSettings = function.RequestSettings;
+    }
+
+    private ISKFunction? Function { get; set; } = null;
+
+    private readonly List<Plan> _steps = new();
+
+    private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
+
+    private const string DefaultResultKey = "PLAN.RESULT";
 }

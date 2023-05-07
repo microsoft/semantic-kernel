@@ -11,7 +11,7 @@ tips on how you can make reporting your issue as effective as possible.
 
 ### Where to Report
 
-New issues can be reported in our [list of issues](https://github.com/semantic-kernel/issues).
+New issues can be reported in our [list of issues](https://github.com/microsoft/semantic-kernel/issues).
 
 Before filing a new issue, please search the list of issues to make sure it does
 not already exist.
@@ -45,6 +45,7 @@ DO's:
 
 - **DO** follow the standard
   [.NET coding style](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
+  and [Python code style](https://pypi.org/project/black/)
 - **DO** give priority to the current style of the project or file you're changing
   if it diverges from the general guidelines.
 - **DO** include tests when adding new features. When fixing bugs, start with

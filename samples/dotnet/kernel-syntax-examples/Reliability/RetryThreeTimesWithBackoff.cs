@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Reliability;
 using Polly;
 using Polly.Retry;
@@ -12,27 +12,55 @@ using Polly.Retry;
 namespace Reliability;
 
 /// <summary>
-/// An example of a retry mechanism that retries three times with backoff.
+/// A factory for creating a retry handler.
 /// </summary>
-public class RetryThreeTimesWithBackoff : IRetryMechanism
+public class RetryThreeTimesWithBackoffFactory : IDelegatingHandlerFactory
 {
-    public Task ExecuteWithRetryAsync(Func<Task> action, ILogger log, CancellationToken cancellationToken = default)
+    public DelegatingHandler Create(ILogger? log)
     {
-        var policy = GetPolicy(log);
-        return policy.ExecuteAsync((_) => action(), cancellationToken);
+        return new RetryThreeTimesWithBackoff(log);
+    }
+}
+
+/// <summary>
+/// A basic example of a retry mechanism that retries three times with backoff.
+/// </summary>
+public class RetryThreeTimesWithBackoff : DelegatingHandler
+{
+    private readonly AsyncRetryPolicy<HttpResponseMessage> _policy;
+
+    public RetryThreeTimesWithBackoff(ILogger? log)
+    {
+        this._policy = GetPolicy(log);
     }
 
-    private static AsyncRetryPolicy GetPolicy(ILogger log)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        return await this._policy.ExecuteAsync(async () =>
+        {
+            var response = await base.SendAsync(request, cancellationToken);
+            return response;
+        });
+    }
+
+    private static AsyncRetryPolicy<HttpResponseMessage> GetPolicy(ILogger? log)
+    {
+        // Handle 429 and 401 errors
+        // Typically 401 would not be something we retry but for demonstration
+        // purposes we are doing so as it's easy to trigger when using an invalid key.
         return Policy
-            .Handle<AIException>(ex => ex.ErrorCode == AIException.ErrorCodes.Throttling)
+            .HandleResult<HttpResponseMessage>(response =>
+                response.StatusCode is System.Net.HttpStatusCode.TooManyRequests or System.Net.HttpStatusCode.Unauthorized)
             .WaitAndRetryAsync(new[]
                 {
                     TimeSpan.FromSeconds(2),
                     TimeSpan.FromSeconds(4),
                     TimeSpan.FromSeconds(8)
                 },
-                (ex, timespan, retryCount, _) => log.LogWarning(ex,
-                    "Error executing action [attempt {0} of ], pausing {1} msecs", retryCount, timespan.TotalMilliseconds));
+                (outcome, timespan, retryCount, _) => log?.LogWarning(
+                    "Error executing action [attempt {0} of 3], pausing {1}ms. Outcome: {2}",
+                    retryCount,
+                    timespan.TotalMilliseconds,
+                    outcome.Result.StatusCode));
     }
 }

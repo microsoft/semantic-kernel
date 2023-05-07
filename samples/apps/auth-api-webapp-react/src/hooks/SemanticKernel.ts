@@ -4,11 +4,15 @@ import { IAsk } from '../model/Ask';
 import { IAskResult } from '../model/AskResult';
 import {
     IKeyConfig,
-    SK_HTTP_HEADER_API_KEY,
-    SK_HTTP_HEADER_COMPLETION,
-    SK_HTTP_HEADER_ENDPOINT,
-    SK_HTTP_HEADER_MODEL,
-    SK_HTTP_HEADER_MSGRAPH
+    SK_HTTP_HEADER_COMPLETION_BACKEND,
+    SK_HTTP_HEADER_COMPLETION_ENDPOINT,
+    SK_HTTP_HEADER_COMPLETION_KEY,
+    SK_HTTP_HEADER_COMPLETION_MODEL,
+    SK_HTTP_HEADER_EMBEDDING_BACKEND,
+    SK_HTTP_HEADER_EMBEDDING_ENDPOINT,
+    SK_HTTP_HEADER_EMBEDDING_KEY,
+    SK_HTTP_HEADER_EMBEDDING_MODEL,
+    SK_HTTP_HEADER_MSGRAPH,
 } from '../model/KeyConfig';
 
 interface ServiceRequest {
@@ -37,14 +41,44 @@ export class SemanticKernel {
         return result;
     };
 
+    public createPlanAsync = async (keyConfig: IKeyConfig, ask: IAsk): Promise<IAskResult> => {
+        const result = await this.getResponseAsync<IAskResult>({
+            commandPath: `/api/planner/createPlan`,
+            method: 'POST',
+            body: ask,
+            keyConfig: keyConfig,
+        });
+        return result;
+    };
+
+    public executePlanAsync = async (keyConfig: IKeyConfig, ask: IAsk, maxSteps: number = 10): Promise<IAskResult> => {
+        const result = await this.getResponseAsync<IAskResult>({
+            commandPath: `/api/planner/execute/${maxSteps}`,
+            method: 'POST',
+            body: ask,
+            keyConfig: keyConfig,
+        });
+        return result;
+    };
+
     private readonly getResponseAsync = async <T>(request: ServiceRequest): Promise<T> => {
         const { commandPath, method, body, keyConfig } = request;
 
         const headers = new Headers();
-        headers.append(SK_HTTP_HEADER_MODEL, keyConfig.deploymentOrModelId);
-        headers.append(SK_HTTP_HEADER_ENDPOINT, keyConfig.endpoint);
-        headers.append(SK_HTTP_HEADER_API_KEY, keyConfig.key);
-        headers.append(SK_HTTP_HEADER_COMPLETION, keyConfig.completionBackend.toString());
+
+        if (keyConfig.completionConfig !== undefined) {
+            headers.append(SK_HTTP_HEADER_COMPLETION_KEY, keyConfig.completionConfig.key);
+            headers.append(SK_HTTP_HEADER_COMPLETION_MODEL, keyConfig.completionConfig.deploymentOrModelId);
+            headers.append(SK_HTTP_HEADER_COMPLETION_ENDPOINT, keyConfig.completionConfig.endpoint);
+            headers.append(SK_HTTP_HEADER_COMPLETION_BACKEND, keyConfig.completionConfig.backend.toString());
+        }
+
+        if (keyConfig.embeddingConfig !== undefined) {
+            headers.append(SK_HTTP_HEADER_EMBEDDING_KEY, keyConfig.embeddingConfig.key);
+            headers.append(SK_HTTP_HEADER_EMBEDDING_MODEL, keyConfig.embeddingConfig.deploymentOrModelId);
+            headers.append(SK_HTTP_HEADER_EMBEDDING_ENDPOINT, keyConfig.embeddingConfig.endpoint);
+            headers.append(SK_HTTP_HEADER_EMBEDDING_BACKEND, keyConfig.embeddingConfig.backend.toString());
+        }
 
         if (keyConfig.graphToken !== undefined) {
             headers.append(SK_HTTP_HEADER_MSGRAPH, keyConfig.graphToken);
@@ -58,17 +92,18 @@ export class SemanticKernel {
             });
 
             if (!response.ok) {
-                throw response.statusText + " => " + await response.text();
+                throw Object.assign(new Error(response.statusText + ' => ' + (await response.text())));
             }
 
             return (await response.json()) as T;
         } catch (e) {
-            var additional_error_msg = ''
+            var additional_error_msg = '';
             if (e instanceof TypeError) {
                 // fetch() will reject with a TypeError when a network error is encountered.
-                additional_error_msg = '\n\nPlease check you have the function running and that it is accessible by the app'
+                additional_error_msg =
+                    '\n\nPlease check you have the function running and that it is accessible by the app';
             }
-            throw e + additional_error_msg;
+            throw Object.assign(new Error(e + additional_error_msg));
         }
     };
 }

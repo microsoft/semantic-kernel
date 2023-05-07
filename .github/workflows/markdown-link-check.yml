@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
     
 permissions:
   contents: read
@@ -14,8 +16,6 @@ jobs:
     # check out the latest version of the code
     steps:
     - uses: actions/checkout@v3
-      with:
-        ref: 'main'
 
     # Checks the status of hyperlinks in .md files in verbose mode
     - name: Check links

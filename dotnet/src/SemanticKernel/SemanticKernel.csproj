@@ -1,43 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Core</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
+  
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.SemanticKernel</AssemblyName>
-    <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <PackageId>Microsoft.SemanticKernel</PackageId>
-    <Title>Semantic Kernel</Title>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <DocumentationFile>bin\Release\netstandard2.1\SemanticKernel.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>portable</DebugType>
-    <DocumentationFile>bin\Debug\netstandard2.1\SemanticKernel.xml</DocumentationFile>
+    <Title>Semantic Kernel Core</Title>
+    <Description>Semantic Kernel core orchestration, runtime and skills.
+This package is automatically installed by 'Microsoft.SemanticKernel' package with other useful packages.
+Install this package manually only if you are selecting individual Semantic Kernel components.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="System.Linq.Async" />
-    <PackageReference Include="System.Text.Json" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.ActionPlanner" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.SequentialPlanner" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Skills.OpenAPI" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="SemanticKernel.IntegrationTests" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" PublicKey="$(StongNamePublicKey)"/> <!-- Moq -->
   </ItemGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernelTests</_Parameter1>
-    </AssemblyAttribute>
+    <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
   </ItemGroup>
+
 </Project>

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Anything",
+  "description": "Given a text input, continue it with additional text.",
   "type": "completion",
   "completion": {
     "max_tokens": 4000,
@@ -9,7 +9,13 @@
     "presence_penalty": 0.0,
     "frequency_penalty": 0.0
   },
-  "default_backends": [
-    "text-davinci-003"
-  ]
+  "input": {
+    "parameters": [
+      {
+        "name": "input",
+        "description": "The text to continue.",
+        "defaultValue": ""
+      }
+    ]
+  }
 }

@@ -4,6 +4,10 @@
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
 // You can access the builder using either Kernel.Builder or KernelBuilder.
 
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+
 IKernel kernel1 = KernelBuilder.Create();
 
 IKernel kernel2 = Kernel.Builder.Build();
@@ -37,12 +41,15 @@ var kernelX3 = builderX.Build();
 // Manually setup all the dependencies used internally by the kernel
 var logger = NullLogger.Instance;
 var memoryStorage = new VolatileMemoryStore();
-var embeddingGenerator = new AzureTextEmbeddings("modelId", "https://...", "apiKey", "2022-12-01", logger);
-var memory = new SemanticTextMemory(memoryStorage, embeddingGenerator);
+var textEmbeddingGenerator = new AzureTextEmbeddingGeneration("modelId", "https://...", "apiKey", logger: logger);
+var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
 var skills = new SkillCollection();
 var templateEngine = new PromptTemplateEngine(logger);
 var config = new KernelConfig();
-config.AddAzureOpenAICompletionBackend("foo", "deploymentName", "https://...", "apiKey", "2022-12-01");
+var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), logger);
+var httpClient = new HttpClient(httpHandler);
+ITextCompletion Factory(IKernel kernel) => new AzureTextCompletion("deploymentName", "https://...", "apiKey", httpClient, logger);
+config.AddTextCompletionService(Factory);
 
 // Create kernel manually injecting all the dependencies
 var kernel3 = new Kernel(skills, templateEngine, memory, config, logger);
@@ -57,14 +64,14 @@ var kernel4 = Kernel.Builder
     .WithMemory(memory)
     .Configure(c =>
     {
-        c.AddAzureOpenAICompletionBackend("foo", "deploymentName", "https://...", "apiKey", "2022-12-01");
+        c.AddAzureTextCompletionService("deploymentName", "https://...", "apiKey");
     })
     .Build();
 
 // Example: how to use a custom memory storage and custom embedding generator
 var kernel5 = Kernel.Builder
     .WithLogger(NullLogger.Instance)
-    .WithMemoryStorageAndEmbeddingGenerator(memoryStorage, embeddingGenerator)
+    .WithMemoryStorageAndTextEmbeddingGeneration(memoryStorage, textEmbeddingGenerator)
     .Build();
 
 // Example: how to use a custom memory storage
@@ -74,10 +81,10 @@ var kernel6 = Kernel.Builder
     .Configure(c =>
     {
         // This will be used when using AI completions
-        c.AddAzureOpenAICompletionBackend("myName1", "completionDeploymentName", "https://...", "apiKey", "2022-12-01");
+        c.AddAzureTextCompletionService("completionDeploymentName", "https://...", "apiKey");
 
         // This will be used when indexing memory records
-        c.AddAzureOpenAIEmbeddingsBackend("myName2", "embeddingsDeploymentName", "https://...", "apiKey", "2022-12-01");
+        c.AddAzureTextEmbeddingGenerationService("embeddingsDeploymentName", "https://...", "apiKey", serviceId: "myName3");
     })
     .Build();
 
@@ -88,31 +95,68 @@ var kernel6 = Kernel.Builder
 var kernel7 = Kernel.Builder
     .Configure(c =>
     {
-        c.AddAzureOpenAICompletionBackend("myName1", "completionDeploymentName", "https://...", "apiKey", "2022-12-01");
+        c.AddAzureTextCompletionService("completionDeploymentName", "https://...", "apiKey");
+    })
+    .Configure(c =>
+    {
+        c.SetDefaultTextEmbeddingGenerationService("myName3");
     })
     .Build();
 
 kernel7.Config
-    .AddAzureOpenAIEmbeddingsBackend("myName2", "embeddingsDeploymentName1", "https://...", "apiKey", "2022-12-01")
-    .AddAzureOpenAIEmbeddingsBackend("myName3", "embeddingsDeploymentName2", "https://...", "apiKey", "2022-12-01")
-    .AddOpenAICompletionBackend("myName4", "text-davinci-003", "sk-...")
-    .SetDefaultEmbeddingsBackend("myName3");
+    .AddAzureTextEmbeddingGenerationService("embeddingsDeploymentName1", "https://...", "apiKey", serviceId: "myName2")
+    .AddAzureTextEmbeddingGenerationService("embeddingsDeploymentName2", "https://...", "apiKey", serviceId: "myName3")
+    .AddOpenAITextCompletionService("text-davinci-003", "sk-...");
 
 // ==========================================================================================================
-// When invoking AI, by default the kernel will not retry on transient errors, such as throttling
-// and timeouts. This behavior can be customized injecting a retry strategy that applies to all
+// When invoking AI, by default the kernel will retry on transient errors, such as throttling and timeouts.
+// The default behavior can be configured or a custom retry handler can be injected that will apply to all
 // AI requests (when using the kernel).
 
 var kernel8 = Kernel.Builder
-    .Configure(c => c.SetRetryMechanism(new RetryThreeTimes()))
+    .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
+    {
+        MaxRetryCount = 3,
+        UseExponentialBackoff = true,
+        //  MinRetryDelay = TimeSpan.FromSeconds(2),
+        //  MaxRetryDelay = TimeSpan.FromSeconds(8),
+        //  MaxTotalRetryTime = TimeSpan.FromSeconds(30),
+        //  RetryableStatusCodes = new[] { HttpStatusCode.TooManyRequests, HttpStatusCode.RequestTimeout },
+        //  RetryableExceptions = new[] { typeof(HttpRequestException) }
+    }))
     .Build();
 
-public class RetryThreeTimes : IRetryMechanism
+var kernel9 = Kernel.Builder
+    .Configure(c => c.SetHttpRetryHandlerFactory(new NullHttpRetryHandlerFactory()))
+    .Build();
+
+var kernel10 = Kernel.Builder.WithRetryHandlerFactory(new RetryThreeTimesFactory()).Build();
+
+// Example of a basic custom retry handler
+public class RetryThreeTimesFactory : IDelegatingHandlerFactory
 {
-    public Task ExecuteWithRetryAsync(Func<Task> action, ILogger log, CancellationToken cancellationToken = default)
+    public DelegatingHandler Create(ILogger? log)
     {
-        var policy = GetPolicy(log);
-        return policy.ExecuteAsync((_) => action(), cancellationToken);
+        return new RetryThreeTimes(log);
+    }
+}
+
+public class RetryThreeTimes : DelegatingHandler
+{
+    private readonly AsyncRetryPolicy _policy;
+
+    public RetryThreeTimes(ILogger? log = null)
+    {
+        this._policy = GetPolicy(log ?? NullLogger.Instance);
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        return await this._policy.ExecuteAsync(async () =>
+        {
+            var response = await base.SendAsync(request, cancellationToken);
+            return response;
+        });
     }
 
     private static AsyncRetryPolicy GetPolicy(ILogger log)
@@ -126,7 +170,7 @@ public class RetryThreeTimes : IRetryMechanism
                     TimeSpan.FromSeconds(8)
                 },
                 (ex, timespan, retryCount, _) => log.LogWarning(ex,
-                    "Error executing action [attempt {0} of ], pausing {1} msecs",
+                    "Error executing action [attempt {0} of 3], pausing {1}ms",
                     retryCount, timespan.TotalMilliseconds));
     }
 }

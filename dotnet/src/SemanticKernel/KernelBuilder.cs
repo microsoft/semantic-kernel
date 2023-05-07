@@ -4,10 +4,9 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Configuration;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -19,10 +18,11 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class KernelBuilder
 {
-    private KernelConfig _config = new KernelConfig();
+    private KernelConfig _config = new();
     private ISemanticTextMemory _memory = NullMemory.Instance;
     private ILogger _log = NullLogger.Instance;
-    private IMemoryStore<float>? _memoryStorage = null;
+    private IMemoryStore? _memoryStorage = null;
+    private IDelegatingHandlerFactory? _httpHandlerFactory = null;
 
     /// <summary>
     /// Create a new kernel instance
@@ -40,6 +40,11 @@ public sealed class KernelBuilder
     /// <returns>Kernel instance</returns>
     public IKernel Build()
     {
+        if (this._httpHandlerFactory != null)
+        {
+            this._config.SetHttpRetryHandlerFactory(this._httpHandlerFactory);
+        }
+
         var instance = new Kernel(
             new SkillCollection(this._log),
             new PromptTemplateEngine(this._log),
@@ -64,7 +69,7 @@ public sealed class KernelBuilder
     /// <returns>Updated kernel builder including the logger.</returns>
     public KernelBuilder WithLogger(ILogger log)
     {
-        Verify.NotNull(log, "The logger instance provided is NULL");
+        Verify.NotNull(log);
         this._log = log;
         return this;
     }
@@ -76,7 +81,7 @@ public sealed class KernelBuilder
     /// <returns>Updated kernel builder including the semantic text memory entity.</returns>
     public KernelBuilder WithMemory(ISemanticTextMemory memory)
     {
-        Verify.NotNull(memory, "The memory instance provided is NULL");
+        Verify.NotNull(memory);
         this._memory = memory;
         return this;
     }
@@ -86,9 +91,9 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="storage">Storage to add.</param>
     /// <returns>Updated kernel builder including the memory storage.</returns>
-    public KernelBuilder WithMemoryStorage(IMemoryStore<float> storage)
+    public KernelBuilder WithMemoryStorage(IMemoryStore storage)
     {
-        Verify.NotNull(storage, "The memory instance provided is NULL");
+        Verify.NotNull(storage);
         this._memoryStorage = storage;
         return this;
     }
@@ -99,12 +104,24 @@ public sealed class KernelBuilder
     /// <param name="storage">Storage to add.</param>
     /// <param name="embeddingGenerator">Embedding generator to add.</param>
     /// <returns>Updated kernel builder including the memory storage and embedding generator.</returns>
-    public KernelBuilder WithMemoryStorageAndEmbeddingGenerator(
-        IMemoryStore<float> storage, IEmbeddingGenerator<string, float> embeddingGenerator)
+    public KernelBuilder WithMemoryStorageAndTextEmbeddingGeneration(
+        IMemoryStore storage, IEmbeddingGeneration<string, float> embeddingGenerator)
     {
-        Verify.NotNull(storage, "The memory instance provided is NULL");
-        Verify.NotNull(embeddingGenerator, "The embedding generator instance provided is NULL");
+        Verify.NotNull(storage);
+        Verify.NotNull(embeddingGenerator);
         this._memory = new SemanticTextMemory(storage, embeddingGenerator);
+        return this;
+    }
+
+    /// <summary>
+    /// Add a retry handler factory to the kernel to be built.
+    /// </summary>
+    /// <param name="httpHandlerFactory">Retry handler factory to add.</param>
+    /// <returns>Updated kernel builder including the retry handler factory.</returns>
+    public KernelBuilder WithRetryHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
+    {
+        Verify.NotNull(httpHandlerFactory);
+        this._httpHandlerFactory = httpHandlerFactory;
         return this;
     }
 
@@ -115,7 +132,7 @@ public sealed class KernelBuilder
     /// <returns>Updated kernel builder including the given configuration.</returns>
     public KernelBuilder WithConfiguration(KernelConfig config)
     {
-        Verify.NotNull(config, "The configuration instance provided is NULL");
+        Verify.NotNull(config);
         this._config = config;
         return this;
     }
@@ -127,7 +144,7 @@ public sealed class KernelBuilder
     /// <returns>Updated kernel builder including the updated configuration.</returns>
     public KernelBuilder Configure(Action<KernelConfig> configure)
     {
-        Verify.NotNull(configure, "The configuration action provided is NULL");
+        Verify.NotNull(configure);
         configure.Invoke(this._config);
         return this;
     }
