@@ -30,8 +30,6 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="filename">Path to the database file. If file does not exist, it will be created.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    [SuppressMessage("Design", "CA1000:Do not declare static members on generic types",
-        Justification = "Static factory method used to ensure successful connection.")]
     public static async Task<SqliteMemoryStore> ConnectAsync(string filename,
         CancellationToken cancellationToken = default)
     {
