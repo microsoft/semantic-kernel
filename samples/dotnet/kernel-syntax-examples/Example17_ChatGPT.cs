@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -62,15 +61,8 @@ public static class Example17_ChatGPT
         kernel.Config.AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        OpenAIChatHistory chatHistory = await PrepareChatHistoryAsync(chatGPT);
 
-        Console.WriteLine("Chat content:");
-        Console.WriteLine("------------------------");
-        foreach (var message in chatHistory.Messages)
-        {
-            Console.WriteLine($"{message.AuthorRole}: {message.Content}");
-            Console.WriteLine("------------------------");
-        }
+        await StartChatAsync(chatGPT);
     }
 
     private static async Task AzureOpenAIChatSampleAsync()
@@ -86,15 +78,8 @@ public static class Example17_ChatGPT
             Env.Var("AZURE_OPENAI_KEY"));
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        OpenAIChatHistory chatHistory = await PrepareChatHistoryAsync(chatGPT);
 
-        Console.WriteLine("Chat content:");
-        Console.WriteLine("------------------------");
-        foreach (var message in chatHistory.Messages)
-        {
-            Console.WriteLine($"{message.AuthorRole}: {message.Content}");
-            Console.WriteLine("------------------------");
-        }
+        await StartChatAsync(chatGPT);
     }
 
     private static async Task OpenAIChatStreamSampleAsync()
@@ -108,12 +93,7 @@ public static class Example17_ChatGPT
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
 
-        Console.WriteLine("Chat content:");
-        Console.WriteLine("------------------------");
-        await foreach (var message in StreamingChatAsync(chatGPT))
-        {
-            Console.Write(message);
-        }
+        await StartStreamingChatAsync(chatGPT);
     }
 
     private static async Task AzureOpenAIChatStreamSampleAsync()
@@ -130,53 +110,59 @@ public static class Example17_ChatGPT
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
 
+        await StartStreamingChatAsync(chatGPT);
+    }
+
+    private static async Task StartStreamingChatAsync(IChatCompletion chatGPT)
+    {
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
-        await foreach (var message in StreamingChatAsync(chatGPT))
-        {
-            Console.Write(message);
-        }
-    }
 
-    private static async IAsyncEnumerable<string> StreamingChatAsync(IChatCompletion chatGPT)
-    {
         var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");
-        yield return MessageToString(chatHistory.Messages.Last());
+        await UserMessageOutputAsync(chatHistory.Messages.Last());
 
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
-        yield return MessageToString(chatHistory.Messages.Last());
-
-        await foreach (var assistantWord in AssistantStreamMessageAsync(chatGPT, chatHistory))
-        {
-            yield return assistantWord;
-        }
+        await UserMessageOutputAsync(chatHistory.Messages.Last());
+        await AssistantMessageOutputAsync(chatGPT, chatHistory);
 
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
-        yield return MessageToString(chatHistory.Messages.Last());
+        await UserMessageOutputAsync(chatHistory.Messages.Last());
+        await AssistantMessageOutputAsync(chatGPT, chatHistory);
+    }
 
-        await foreach (var assistantWord in AssistantStreamMessageAsync(chatGPT, chatHistory))
-        {
-            yield return assistantWord;
-        }
+    private static async Task StartChatAsync(IChatCompletion chatGPT)
+    {
+        OpenAIChatHistory chatHistory = await PrepareChatHistoryAsync(chatGPT);
 
-        string MessageToString(ChatHistory.Message message)
+        Console.WriteLine("Chat content:");
+        Console.WriteLine("------------------------");
+        foreach (var message in chatHistory.Messages)
         {
-            return $"{message.AuthorRole}: {message.Content}\n------------------------\n";
+            Console.WriteLine($"{message.AuthorRole}: {message.Content}");
+            Console.WriteLine("------------------------");
         }
     }
 
-    private static async IAsyncEnumerable<string> AssistantStreamMessageAsync(IChatCompletion chatGPT, ChatHistory chatHistory)
+    private static Task UserMessageOutputAsync(ChatHistory.Message message)
     {
-        yield return "Assistant: ";
+        Console.WriteLine($"{message.AuthorRole}: {message.Content}");
+        Console.WriteLine("------------------------");
+
+        return Task.CompletedTask;
+    }
+
+    private static async Task AssistantMessageOutputAsync(IChatCompletion chatGPT, OpenAIChatHistory chatHistory)
+    {
+        Console.Write("Assistant: ");
         string assistantMessage = string.Empty;
         await foreach (string message in chatGPT.GenerateMessageStreamAsync(chatHistory))
         {
             assistantMessage += message;
-            yield return message;
+            Console.Write(message);
         }
 
-        yield return "\n------------------------\n";
-        chatHistory.AddMessage(ChatHistory.AuthorRoles.Assistant, assistantMessage);
+        Console.WriteLine("\n------------------------");
+        chatHistory.AddAssistantMessage(assistantMessage);
     }
 
     private static async Task<OpenAIChatHistory> PrepareChatHistoryAsync(IChatCompletion chatGPT)
