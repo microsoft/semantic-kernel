@@ -4,7 +4,7 @@
 [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)
 [![dotnet](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci.yml)
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
-[![Discord](https://img.shields.io/discord/1063152441819942922)](https://aka.ms/SKDiscord)
+[![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
 > ℹ️ **NOTE**: This project is in early alpha and, just like AI, will evolve quickly.
 > We invite you to join us in developing the Semantic Kernel together!
@@ -24,17 +24,18 @@ SK supports
 [prompt templating](docs/PROMPT_TEMPLATE_LANGUAGE.md), function
 chaining,
 [vectorized memory](docs/EMBEDDINGS.md), and
-[intelligent planning](docs/PLANNER.md)
+[intelligent planning](docs/PLANNERS.md)
 capabilities out of the box.
 
 ![image](https://user-images.githubusercontent.com/371009/221739773-cf43522f-c1e4-42f2-b73d-5ba84e21febb.png)
 
-Semantic Kernel is designed to support and encapsulate several design patterns from the
-latest in AI research, such that developers can infuse their applications with complex
-[skills](docs/SKILLS.md) like [prompt](docs/PROMPT_TEMPLATE_LANGUAGE.md) chaining,
-recursive reasoning, summarization, zero/few-shot learning, contextual memory,
-long-term memory, [embeddings](docs/EMBEDDINGS.md), semantic indexing, [planning](docs/PLANNER.md),
-and accessing external knowledge stores as well as your own data.
+Semantic Kernel supports and encapsulates several design patterns from the latest
+in AI research, such that developers can infuse their applications with complex
+[skills](docs/SKILLS.md) like [prompt](docs/PROMPT_TEMPLATE_LANGUAGE.md)
+chaining, recursive reasoning, summarization, zero/few-shot learning, contextual
+memory, long-term memory, [embeddings](docs/EMBEDDINGS.md), semantic indexing,
+[planning](docs/PLANNERS.md), retrieval-augmented generation and accessing external
+knowledge stores as well as your own data.
 
 By joining the SK community, you can build AI-first apps faster and have a front-row
 peek at how the SDK is being built. SK has been released as open-source so that more
@@ -55,6 +56,8 @@ Semantic Kernel is available to explore AI and build apps with C# and Python:
 <a href="python/README.md">Using Semantic Kernel in Python</a>.
 </div>
 <br/>
+
+See the [Feature Matrix](FEATURE_MATRIX.md) to see a breakdown of feature parity between C# and Python.
 
 The quickest way to get started with the basics is to get an API key
 (OpenAI or Azure OpenAI)

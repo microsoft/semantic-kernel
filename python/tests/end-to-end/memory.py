@@ -4,7 +4,7 @@ import asyncio
 from typing import Tuple
 
 import semantic_kernel as sk
-import semantic_kernel.ai.open_ai as sk_oai
+import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 async def populate_memory(kernel: sk.Kernel) -> None:
@@ -97,7 +97,7 @@ async def chat(
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_on_vars_async(context.variables, chat_func)
+    answer = await kernel.run_async(chat_func, input_vars=context.variables)
     context["chat_history"] += f"\nUser:> {user_input}\nChatBot:> {answer}\n"
 
     print(f"ChatBot:> {answer}")
@@ -108,10 +108,10 @@ async def main() -> None:
     kernel = sk.Kernel()
 
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.config.add_text_backend(
+    kernel.add_text_completion_service(
         "dv", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
     )
-    kernel.config.add_embedding_backend(
+    kernel.add_text_embedding_generation_service(
         "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
     )
 

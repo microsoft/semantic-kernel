@@ -70,7 +70,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// TODO: support for more complex data types, and plan for rendering these values into prompt templates.
     public void Set(string name, string? value)
     {
-        Verify.NotEmpty(name, "The variable name is empty");
+        Verify.NotNullOrWhiteSpace(name);
         if (value != null)
         {
             this._variables[name] = value;
@@ -155,12 +155,12 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
         return clone;
     }
 
+    internal const string MainKey = "INPUT";
+
     #region private ================================================================================
 
-    private const string MainKey = "INPUT";
-
     // Important: names are case insensitive
-    private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.InvariantCultureIgnoreCase);
+    private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.OrdinalIgnoreCase);
 
     #endregion
 }

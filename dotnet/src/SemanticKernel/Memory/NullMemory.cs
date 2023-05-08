@@ -12,6 +12,8 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </summary>
 public sealed class NullMemory : ISemanticTextMemory
 {
+    private static readonly Task<string> s_emptyStringTask = Task.FromResult(string.Empty);
+
     /// <summary>
     /// Singleton instance
     /// </summary>
@@ -24,9 +26,9 @@ public sealed class NullMemory : ISemanticTextMemory
         string id,
         string? description = null,
         string? additionalMetadata = null,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(string.Empty);
+        return s_emptyStringTask;
     }
 
     /// <inheritdoc/>
@@ -37,9 +39,9 @@ public sealed class NullMemory : ISemanticTextMemory
         string externalSourceName,
         string? description = null,
         string? additionalMetadata = null,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(string.Empty);
+        return s_emptyStringTask;
     }
 
     /// <inheritdoc/>
@@ -47,16 +49,16 @@ public sealed class NullMemory : ISemanticTextMemory
         string collection,
         string key,
         bool withEmbedding = false,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(null as MemoryQueryResult);
+        return Task.FromResult<MemoryQueryResult?>(null);
     }
 
     /// <inheritdoc/>
     public Task RemoveAsync(
         string collection,
         string key,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -66,18 +68,18 @@ public sealed class NullMemory : ISemanticTextMemory
         string collection,
         string query,
         int limit = 1,
-        double minRelevanceScore = 0.7,
+        double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
         return AsyncEnumerable.Empty<MemoryQueryResult>();
     }
 
     /// <inheritdoc/>
     public Task<IList<string>> GetCollectionsAsync(
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(new List<string>() as IList<string>);
+        return Task.FromResult<IList<string>>(new List<string>());
     }
 
     private NullMemory()

@@ -121,6 +121,8 @@
       "type": "process",
       "args": [
         "test",
+        "--results-directory",
+        "${workspaceFolder}/dotnet/TestResults/",
         "--collect",
         "XPlat Code Coverage;Format=lcov",
         "--filter",
@@ -138,16 +140,18 @@
       }
     },
     {
-      "label": "Test - Semantic-Kernel Integration (Code Coverage)",
+      "label": "Test - Extensions (Code Coverage)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "test",
+        "--results-directory",
+        "${workspaceFolder}/dotnet/TestResults/",
         "--collect",
         "XPlat Code Coverage;Format=lcov",
         "--filter",
         "${input:filter}",
-        "SemanticKernel.IntegrationTests.csproj"
+        "Extensions.UnitTests.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",
@@ -156,7 +160,54 @@
         "panel": "shared"
       },
       "options": {
-        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.IntegrationTests/"
+        "cwd": "${workspaceFolder}/dotnet/src/Extensions/Extensions.UnitTests/"
+      }
+    },
+    {
+      "label": "Test - ALL (Code Coverage)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "--results-directory",
+        "${workspaceFolder}/dotnet/TestResults/",
+        "--collect",
+        "XPlat Code Coverage;Format=lcov",
+        "--filter",
+        "${input:filter}"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/"
+      }
+    },
+    {
+      "label": "Test - Semantic-Kernel Integration (Code Coverage)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "--results-directory",
+        "${workspaceFolder}/dotnet/TestResults/",
+        "--collect",
+        "XPlat Code Coverage;Format=lcov",
+        "--filter",
+        "${input:filter}",
+        "IntegrationTests.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
       }
     },
     {

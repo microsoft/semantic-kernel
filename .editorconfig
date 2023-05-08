@@ -105,7 +105,6 @@ dotnet_diagnostic.CS1591.severity = none # Missing XML comment for publicly visi
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static
 dotnet_diagnostic.CA1848.severity = none # For improved performance, use the LoggerMessage delegates
-dotnet_diagnostic.CA1852.severity = none # Type '...' can be sealed because it has no subtypes in its containing assembly and is not externally visible
 dotnet_diagnostic.CA2007.severity = none # Do not directly await a Task
 dotnet_diagnostic.CA2225.severity = none # Operator overloads have named alternates
 dotnet_diagnostic.CA2227.severity = none # Change to be read-only by removing the property setter
@@ -132,11 +131,16 @@ dotnet_diagnostic.CA2201.severity = warning # Exception type System.Exception is
 
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
+dotnet_naming_style.camel_case_style.capitalization = camel_case
+
 dotnet_naming_style.static_underscored.capitalization = camel_case
 dotnet_naming_style.static_underscored.required_prefix = s_
 
 dotnet_naming_style.underscored.capitalization = camel_case
 dotnet_naming_style.underscored.required_prefix = _
+
+dotnet_naming_style.uppercase_with_underscore_separator.capitalization = all_upper
+dotnet_naming_style.uppercase_with_underscore_separator.word_separator = _
 
 dotnet_naming_style.end_in_async.required_prefix =
 dotnet_naming_style.end_in_async.required_suffix = Async
@@ -148,6 +152,10 @@ dotnet_naming_style.end_in_async.word_separator =
 dotnet_naming_symbols.constant_fields.applicable_kinds = field
 dotnet_naming_symbols.constant_fields.applicable_accessibilities  = *
 dotnet_naming_symbols.constant_fields.required_modifiers = const
+
+dotnet_naming_symbols.local_constant.applicable_kinds = local
+dotnet_naming_symbols.local_constant.applicable_accessibilities  = *
+dotnet_naming_symbols.local_constant.required_modifiers = const
 
 dotnet_naming_symbols.private_static_fields.applicable_kinds = field
 dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
@@ -162,9 +170,13 @@ dotnet_naming_symbols.any_async_methods.required_modifiers = async
 
 # Rules
 
-dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = error
-dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
+dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols = constant_fields
 dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
+dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = error
+
+dotnet_naming_rule.local_constant_should_be_pascal_case.symbols = local_constant
+dotnet_naming_rule.local_constant_should_be_pascal_case.style = pascal_case_style
+dotnet_naming_rule.local_constant_should_be_pascal_case.severity = error
 
 dotnet_naming_rule.private_static_fields_underscored.symbols = private_static_fields
 dotnet_naming_rule.private_static_fields_underscored.style = static_underscored

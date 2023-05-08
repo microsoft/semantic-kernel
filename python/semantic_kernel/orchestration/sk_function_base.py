@@ -4,8 +4,12 @@ from abc import ABC, abstractmethod
 from logging import Logger
 from typing import TYPE_CHECKING, Callable, Optional
 
-from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.connectors.ai.complete_request_settings import (
+    CompleteRequestSettings,
+)
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -80,7 +84,7 @@ class SKFunctionBase(ABC):
     @property
     @abstractmethod
     def request_settings(self) -> CompleteRequestSettings:
-        """AI backend settings"""
+        """AI service settings"""
         pass
 
     @abstractmethod
@@ -98,20 +102,21 @@ class SKFunctionBase(ABC):
     def invoke(
         self,
         input: Optional[str] = None,
+        variables: ContextVariables = None,
         context: Optional[SKContext] = None,
+        memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None
-        # TODO: ctoken
+        log: Optional[Logger] = None,
     ) -> SKContext:
         """
         Invokes the function with an explicit string input
-
         Keyword Arguments:
             input {str} -- The explicit string input (default: {None})
+            variables {ContextVariables} -- The custom input
             context {SKContext} -- The context to use
+            memory: {SemanticTextMemoryBase} -- The memory to use
             settings {CompleteRequestSettings} -- LLM completion settings
             log {Logger} -- Application logger
-
         Returns:
             SKContext -- The updated context, potentially a new one if
             context switching is implemented.
@@ -122,62 +127,21 @@ class SKFunctionBase(ABC):
     async def invoke_async(
         self,
         input: Optional[str] = None,
+        variables: ContextVariables = None,
         context: Optional[SKContext] = None,
+        memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
-        log: Optional[Logger] = None
-        # TODO: ctoken
+        log: Optional[Logger] = None,
     ) -> SKContext:
         """
         Invokes the function with an explicit string input
-
         Keyword Arguments:
             input {str} -- The explicit string input (default: {None})
+            variables {ContextVariables} -- The custom input
             context {SKContext} -- The context to use
+            memory: {SemanticTextMemoryBase} -- The memory to use
             settings {CompleteRequestSettings} -- LLM completion settings
             log {Logger} -- Application logger
-
-        Returns:
-            SKContext -- The updated context, potentially a new one if
-            context switching is implemented.
-        """
-        pass
-
-    @abstractmethod
-    def invoke_with_vars(
-        self,
-        input: ContextVariables,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        log: Optional[Logger] = None,
-    ) -> SKContext:
-        """
-        Invokes the function with a custom input
-
-        Arguments:
-            input {ContextVariables} -- The custom input
-            memory {SemanticTextMemoryBase} -- The memory to use
-            log {Logger} -- Application logger
-
-        Returns:
-            SKContext -- The updated context, potentially a new one if
-            context switching is implemented.
-        """
-        pass
-
-    @abstractmethod
-    async def invoke_with_vars_async(
-        self,
-        input: ContextVariables,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        log: Optional[Logger] = None,
-    ) -> SKContext:
-        """
-        Invokes the function with a custom input
-
-        Arguments:
-            input {ContextVariables} -- The custom input
-            memory {SemanticTextMemoryBase} -- The memory to use
-            log {Logger} -- Application logger
-
         Returns:
             SKContext -- The updated context, potentially a new one if
             context switching is implemented.
@@ -203,16 +167,16 @@ class SKFunctionBase(ABC):
         pass
 
     @abstractmethod
-    def set_ai_backend(
-        self, backend_factory: Callable[[], TextCompletionClientBase]
+    def set_ai_service(
+        self, service_factory: Callable[[], TextCompletionClientBase]
     ) -> "SKFunctionBase":
         """
-        Sets the AI backend used by the semantic function, passing in a factory
+        Sets the AI service used by the semantic function, passing in a factory
         method. The factory allows us to lazily instantiate the client and to
         properly handle its disposal
 
         Arguments:
-            backend_factory -- AI backend factory
+            service_factory -- AI service factory
 
         Returns:
             SKFunctionBase -- The function instance

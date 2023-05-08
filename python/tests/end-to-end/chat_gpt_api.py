@@ -3,7 +3,7 @@
 import asyncio
 
 import semantic_kernel as sk
-import semantic_kernel.ai.open_ai as sk_oai
+import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -17,7 +17,7 @@ flowery prose.
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.config.add_chat_backend(
+kernel.add_chat_service(
     "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
 )
 
@@ -40,11 +40,11 @@ chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_co
 
 
 async def chat() -> bool:
-    context = sk.ContextVariables()
+    context_vars = sk.ContextVariables()
 
     try:
         user_input = input("User:> ")
-        context["user_input"] = user_input
+        context_vars["user_input"] = user_input
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
         return False
@@ -56,7 +56,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_on_vars_async(context, chat_function)
+    answer = await kernel.run_async(chat_function, input_vars=context_vars)
     print(f"Mosscap:> {answer}")
     return True
 
