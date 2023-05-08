@@ -159,7 +159,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
             await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"),
                 importHttpClient);
         }
-        
+
         // GitHub
         if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.GithubAuthentication))
         {
