@@ -221,15 +221,16 @@ public class ChatSkill
             int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
             // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
-            if (!this.TryExtractJsonFromOpenApiPlanResult(planContext.Variables.Input, out string planResult))
-            {
-                // If not, use result of the plan execution result directly.
-                planResult = planContext.Variables.Input;
-            }
-            else
+            bool extractJsonFromOpenApi = this.TryExtractJsonFromOpenApiPlanResult(planContext.Variables.Input, out string planResult);
+            if (extractJsonFromOpenApi)
             {
                 int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
                 planResult = this.OptimizeOpenApiSkillJson(planResult, relatedInformationTokenLimit, plan);
+            }
+            else
+            {
+                // If not, use result of the plan execution result directly.
+                planResult = planContext.Variables.Input;
             }
 
             string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
