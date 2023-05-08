@@ -2,6 +2,7 @@ import { Constants } from '../../../Constants';
 import GithubIcon from '../../../assets/plugin-icons/github.png';
 import JiraIcon from '../../../assets/plugin-icons/jira.png';
 import GraphIcon from '../../../assets/plugin-icons/ms-graph.png';
+import KlarnaIcon from '../../../assets/plugin-icons/klarna.png';
 
 /*
  * For each OpenAPI Spec you're supporting in the Kernel,
@@ -11,12 +12,14 @@ export const enum Plugins {
     MsGraph = 'Microsoft Graph',
     Jira = 'Jira',
     GitHub = 'GitHub',
+    Klarna = 'Klarna',
 }
 
 export const enum AuthHeaderTags {
     MsGraph = 'graph',
     Jira = 'jira',
     GitHub = 'github',
+    Klarna = 'klarna',
 }
 
 export type PluginAuthRequirements = {
@@ -57,6 +60,7 @@ export interface PluginsState {
     MsGraph: Plugin;
     Jira: Plugin;
     GitHub: Plugin;
+    Klarna: Plugin;
 }
 
 export const initialState: PluginsState = {
@@ -117,6 +121,21 @@ export const initialState: PluginsState = {
                 helpLink: 'https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests',
             },
         },
+    },
+    Klarna: {
+        name: Plugins.Klarna,
+        publisher: 'Klarna',
+        description:
+            'TODO.',
+        enabled: false,
+        authRequirements: {
+            personalAccessToken: true,
+            scopes: ['Read and Write access to pull requests'],
+            helpLink:
+                'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token',
+        },
+        icon: KlarnaIcon,
+        headerTag: AuthHeaderTags.Klarna,
     },
 };
 
