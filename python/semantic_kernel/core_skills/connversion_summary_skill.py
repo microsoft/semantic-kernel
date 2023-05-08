@@ -40,7 +40,7 @@ class ConversationSummarySkill:
         name="SummarizeConversation",
         input_description="A long conversation transcript."
     )
-    def SummarizeConversationAsync(self, input: str, context: SKContext) -> SKContext:
+    async def summarize_conversation_async(self, input: str, context: SKContext) -> SKContext:
         """
         Given a long conversation transcript, summarize the conversation.
 
@@ -53,4 +53,4 @@ class ConversationSummarySkill:
         paragraphs = text_chunker._split_text_paragraph(
             lines, ConversationSummarySkill.MaxTokens)
 
-        return aggregate_chunked_results_async(self._summarizeConversationFunction, paragraphs, context)
+        return await aggregate_chunked_results_async(self._summarizeConversationFunction, paragraphs, context)
