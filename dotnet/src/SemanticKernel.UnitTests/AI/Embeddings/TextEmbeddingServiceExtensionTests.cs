@@ -46,7 +46,7 @@ public class TextEmbeddingServiceExtensionsTests
         var provider = services.Build();
 
         // Assert
-        Assert.True(provider.TryGetService<IChatCompletion>(serviceId, out _));
+        Assert.True(provider.TryGetService<ITextEmbeddingGeneration>(serviceId, out _));
     }
 
     [Fact]

@@ -107,7 +107,7 @@ public class AIServiceCollection
             typeDefault => typeDefault.Key,
             typeDefault => typeDefault.Value);
 
-        return (IAIServiceProvider)new NamedServiceProvider<IAIService>(servicesClone, defaultsClone);
+        return new AIServiceProvider(servicesClone, defaultsClone);
     }
 
     private bool HasDefault<T>() where T : IAIService
