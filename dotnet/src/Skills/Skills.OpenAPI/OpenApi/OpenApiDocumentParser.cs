@@ -158,7 +158,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
             var operation = new RestApiOperation(
                 operationItem.OperationId,
-                serverUrl,
+                new Uri(serverUrl),
                 path,
                 new HttpMethod(method),
                 operationItem.Description,
@@ -358,7 +358,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// List of supported Media Types.
     /// </summary>
-    private static readonly List<string> s_supportedMediaTypes = new List<string>
+    private static readonly List<string> s_supportedMediaTypes = new()
     {
         "application/json",
         "text/plain"
@@ -372,7 +372,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// Latest supported version of OpenAPI document.
     /// </summary>
-    private static readonly Version s_latestSupportedVersion = new Version(3, 0, 1);
+    private static readonly Version s_latestSupportedVersion = new(3, 0, 1);
 
     /// <summary>
     /// Max depth to traverse down OpenApi schema to discover payload properties.
