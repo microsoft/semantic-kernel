@@ -68,7 +68,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             throw new PineconeMemoryException(
                 PineconeMemoryException.ErrorCodes.IndexNotReady,
                 $"Index creation is not supported within memory store. " +
-                $"It should be created manually or using {nameof(IPineconeClient.CreateIndexAsync)}." +
+                $"It should be created manually or using {nameof(IPineconeClient.CreateIndexAsync)}. " +
                 $"Ensure index state is {IndexState.Ready}.");
         }
     }
