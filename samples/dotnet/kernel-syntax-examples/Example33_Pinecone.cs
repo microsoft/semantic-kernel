@@ -9,7 +9,13 @@ using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example32_Pinecone
+/// <summary>
+///  This example shows how to use the PineconeMemoryStore to store and retrieve memories with Pinecone assuming
+///  you have a Pinecone account and have created an index. You can create an index using the Pinecone UI or
+///  instead initialize the index using PineconeClient.InitializeIndexAsync. But note that it can take a few minutes
+///  for the index to be ready for use and PineconeClient will block until the index is ready.
+/// </summary>
+public static class Example33_Pinecone
 {
     private const string MemoryCollectionName = "pinecone-test";
 
@@ -18,7 +24,9 @@ public static class Example32_Pinecone
         string apiKey = Env.Var("PINECONE_API_KEY");
         string pineconeEnvironment = Env.Var("PINECONE_ENVIRONMENT");
 
-        PineconeMemoryStore memoryStore = new(pineconeEnvironment, apiKey);
+        IPineconeClient pineconeClient = await PineconeClient.CreateAsync(pineconeEnvironment, apiKey, MemoryCollectionName);
+
+        PineconeMemoryStore memoryStore = new(pineconeClient);
         
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)

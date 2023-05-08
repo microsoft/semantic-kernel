@@ -686,6 +686,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         }
 
         this._pineconeIndex = pineconeIndex;
+
         this._logger.LogInformation("Connected to Pinecone Host {0}", this._pineconeIndex.Status.Host);
 
         return true;
@@ -742,9 +743,11 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
             try
             {
                 this._pineconeIndex = await this.DescribeIndexAsync(indexName, cts.Token).ConfigureAwait(false);
+
+                this._logger.LogInformation("Index {0} is in state {1}", indexName, this._pineconeIndex?.Status.State);
                 
                 this._logger.LogInformation("Index {0} is in state {1}", indexName, this._pineconeIndex?.Status.State);
-
+                
                 if (this._pineconeIndex?.Status.State == targetState)
                 {
                     this._logger.LogInformation("Index {0} reached state {1}. Exiting....", indexName, targetState);
