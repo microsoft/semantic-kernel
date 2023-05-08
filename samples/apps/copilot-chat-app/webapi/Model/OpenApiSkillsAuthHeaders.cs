@@ -30,6 +30,6 @@ public class OpenApiSkillsAuthHeaders
     /// <summary>
     /// Gets or sets the Klarna header value.
     /// </summary>
-    [FromHeader(Name = "x-sk-copilot-github-auth")]
+    [FromHeader(Name = "x-sk-copilot-klarna-auth")]
     public string? KlarnaAuthentication { get; set; }
 }

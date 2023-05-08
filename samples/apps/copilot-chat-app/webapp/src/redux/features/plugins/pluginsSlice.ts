@@ -31,6 +31,7 @@ export const pluginsState = createSlice({
                     break;
                 case Plugins.Klarna:
                     plugin = state.Klarna;
+                    authData = "klarna-auth-data";
                     break;
             }
 
