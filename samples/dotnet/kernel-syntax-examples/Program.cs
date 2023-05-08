@@ -100,8 +100,8 @@ public static class Program
         
         await Example31_CustomPlanner.RunAsync();
         Console.WriteLine("== DONE ==");
-        
-        await Example32_Pinecone.RunAsync();
+
+        await Example32_StreamingCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
