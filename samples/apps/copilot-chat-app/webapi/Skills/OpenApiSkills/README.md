@@ -13,7 +13,7 @@ This definition was retrieved using Klarna's official ChatGPT plugin hosted at h
 Serving the OpenAPI definition from the repo is a workaround for Klarna's ChatGPT plugin sometimes returning a 403 when requested from CopilotChat. 
 
 ## JiraSkill
-The OpenAPI spec at `./JiraSkill/openapi.json` defines the APIs for Jira's operations.
+The Power Platform Connector/OpenAPI spec at `./JiraSkill/openapi.json` defines the APIs for Jira's operations.
 This definition was retrieved using Jira's official OpenAPI description, version 2.0 (not version 3.0), hosted at https://github.com/microsoft/PowerPlatformConnectors/blob/dev/certified-connectors/JIRA/apiDefinition.swagger.json .
 Serving the OpenAPI definition from the repo is a workaround to use version 2.0 for the swagger document which is the version currently supported by the semantic kernel. 
 This version however doesn't follow OpenAPI specification for all of its operations. 

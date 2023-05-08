@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Globalization;
+using System.Numerics;
+using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
@@ -242,92 +245,6 @@ public class ChatSkill
     }
 
     /// <summary>
-    /// Try to optimize json from the planner response
-    /// based on token limit
-    /// </summary>
-    private string OptimizeOpenApiSkillJson(string jsonContent, int tokenLimit, Plan plan)
-    {
-        int jsonTokenLimit = (int)(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
-
-        // Remove all new line characters + leading and trailing white space
-        jsonContent = Regex.Replace(jsonContent.Trim(), @"[\n\r]", string.Empty);
-        var document = JsonDocument.Parse(jsonContent);
-        string lastSkillInvoked = plan.Steps[^1].SkillName;
-        string lastSkillOperationInvoked = plan.Steps[^1].Name;
-
-        // Check if the last skill invoked was JiraSkill and deserialize the JSON content accordingly
-        if (string.Equals(lastSkillInvoked, "JiraSkill", StringComparison.Ordinal))
-        {
-            Type skillResponseType = typeof(IssueResponse); // reasonable assumption of type so value isnt null
-            if (lastSkillOperationInvoked == "GetIssue")
-            {
-                skillResponseType = document.RootElement.ValueKind == JsonValueKind.Array ? typeof(IssueResponse[]) : typeof(IssueResponse);
-            }
-            //else if (lastSkillOperationInvoked == "AddComment")
-            //{
-            //    skillResponseType = document.RootElement.ValueKind == JsonValueKind.Array ? typeof(CommentResponse[]) : typeof(CommentResponse);
-            //}
-
-            // Deserializing limits the json content to only the fields defined in the GitHubSkill/Model classes
-            var skillResponse = JsonSerializer.Deserialize(jsonContent, skillResponseType);
-            jsonContent = skillResponse != null ? JsonSerializer.Serialize(skillResponse) : string.Empty;
-            document = JsonDocument.Parse(jsonContent);
-        }
-
-        int jsonContentTokenCount = Utilities.TokenCount(jsonContent);
-
-        // Return the JSON content if it does not exceed the token limit
-        if (jsonContentTokenCount < jsonTokenLimit)
-        {
-            return jsonContent;
-        }
-
-        List<object> itemList = new();
-
-        // Summary (List) Object
-        if (document.RootElement.ValueKind == JsonValueKind.Array)
-        {
-            foreach (JsonElement item in document.RootElement.EnumerateArray())
-            {
-                int itemTokenCount = Utilities.TokenCount(item.ToString());
-
-                if (jsonTokenLimit - itemTokenCount > 0)
-                {
-                    itemList.Add(item);
-                    jsonTokenLimit -= itemTokenCount;
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-
-        // Detail Object
-        if (document.RootElement.ValueKind == JsonValueKind.Object)
-        {
-            foreach (JsonProperty property in document.RootElement.EnumerateObject())
-            {
-                int propertyTokenCount = Utilities.TokenCount(property.ToString());
-
-                if (jsonTokenLimit - propertyTokenCount > 0)
-                {
-                    itemList.Add(property);
-                    jsonTokenLimit -= propertyTokenCount;
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-
-        return itemList.Count > 0
-            ? JsonSerializer.Serialize(itemList)
-            : String.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
-    }
-
-    /// <summary>
     /// Extract chat history.
     /// </summary>
     /// <param name="context">Contains the 'tokenLimit' controlling the length of the prompt.</param>
@@ -508,15 +425,18 @@ public class ChatSkill
         jsonContent = Regex.Replace(jsonContent.Trim(), @"[\n\r]", string.Empty);
         var document = JsonDocument.Parse(jsonContent);
         string lastSkillInvoked = plan.Steps[^1].SkillName;
+        string lastSkillOperationInvoked = plan.Steps[^1].Name;
+        bool trimSkillResponse = false;
 
-        // Check if the last skill invoked was GitHubSkill and deserialize the JSON content accordingly
-        if (string.Equals(lastSkillInvoked, "GitHubSkill", StringComparison.Ordinal))
+        // The json will be deserialized based on the response type of the particular operation that was last invoked by the planner
+        // The response type can be a custom trimmed down json structure, which is useful in staying within the token limit
+        Type skillResponseType = this.GetOpenApiSkillResponseType(ref document, ref lastSkillInvoked, ref lastSkillOperationInvoked, ref trimSkillResponse);
+
+        if (trimSkillResponse)
         {
-            var pullRequestType = document.RootElement.ValueKind == JsonValueKind.Array ? typeof(PullRequest[]) : typeof(PullRequest);
-
-            // Deserializing limits the json content to only the fields defined in the GitHubSkill/Model classes
-            var pullRequest = JsonSerializer.Deserialize(jsonContent, pullRequestType);
-            jsonContent = pullRequest != null ? JsonSerializer.Serialize(pullRequest) : string.Empty;
+            // Deserializing limits the json content to only the fields defined in the specific OpenApiSkill's Model classes
+            var skillResponse = JsonSerializer.Deserialize(jsonContent, skillResponseType);
+            jsonContent = skillResponse != null ? JsonSerializer.Serialize(skillResponse) : string.Empty;
             document = JsonDocument.Parse(jsonContent);
         }
 
@@ -531,6 +451,7 @@ public class ChatSkill
         List<object> itemList = new();
 
         // Summary (List) Object
+        // To stay within token limits, attempt to truncate the list of results
         if (document.RootElement.ValueKind == JsonValueKind.Array)
         {
             foreach (JsonElement item in document.RootElement.EnumerateArray())
@@ -550,6 +471,7 @@ public class ChatSkill
         }
 
         // Detail Object
+        // To stay within token limits, attempt to truncate the list of properties
         if (document.RootElement.ValueKind == JsonValueKind.Object)
         {
             foreach (JsonProperty property in document.RootElement.EnumerateObject())
@@ -571,6 +493,42 @@ public class ChatSkill
         return itemList.Count > 0
             ? JsonSerializer.Serialize(itemList)
             : string.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
+    }
+
+    private Type GetOpenApiSkillResponseType(ref JsonDocument document, ref string lastSkillInvoked, ref string lastSkillOperationInvoked, ref bool trimSkillResponse)
+    {
+        Type skillResponseType = typeof(PullRequest); // Use a reasonable default response type
+
+        // Different operations under the skill will return responses as json structures;
+        // Prune each operation response according to the most important/contextual fields only to avoid going over the token limit
+        // Check what the last skill invoked was and deserialize the JSON content accordingly
+        if (string.Equals(lastSkillInvoked, "GitHubSkill", StringComparison.Ordinal))
+        {
+            trimSkillResponse = true;
+            skillResponseType = this.GetGithubSkillResponseType(ref document);
+        }
+        else if (string.Equals(lastSkillInvoked, "JiraSkill", StringComparison.Ordinal))
+        {
+            trimSkillResponse = true;
+            skillResponseType = this.GetJiraSkillResponseType(ref document, ref lastSkillOperationInvoked);
+        }
+
+        return skillResponseType;
+    }
+
+    private Type GetGithubSkillResponseType(ref JsonDocument document)
+    {
+        return document.RootElement.ValueKind == JsonValueKind.Array ? typeof(PullRequest[]) : typeof(PullRequest);
+    }
+
+    private Type GetJiraSkillResponseType(ref JsonDocument document, ref string lastSkillOperationInvoked)
+    {
+        if (lastSkillOperationInvoked == "GetIssue")
+        {
+            return document.RootElement.ValueKind == JsonValueKind.Array ? typeof(IssueResponse[]) : typeof(IssueResponse);
+        }
+
+        return typeof(IssueResponse);
     }
 
     /// <summary>
