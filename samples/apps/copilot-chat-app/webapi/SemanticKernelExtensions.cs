@@ -35,7 +35,7 @@ internal static class SemanticKernelExtensions
         services.AddSingleton<PromptSettings>();
 
         // Add the semantic memory with backing memory store.
-        services.AddSingleton<ISemanticTextMemory>(CreateSemanticTextMemory);
+        services.AddScoped<ISemanticTextMemory>(CreateSemanticTextMemory);
 
         // Add the planner.
         services.AddScoped<CopilotChatPlanner>(sp =>
