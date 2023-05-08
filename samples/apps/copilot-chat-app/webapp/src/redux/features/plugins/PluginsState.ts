@@ -12,7 +12,7 @@ export const enum Plugins {
     MsGraph = 'Microsoft Graph',
     Jira = 'Jira',
     GitHub = 'GitHub',
-    Klarna = 'Klarna',
+    Klarna = 'Klarna Shopping',
 }
 
 export const enum AuthHeaderTags {
