@@ -19,56 +19,56 @@ public class PineconeMemoryStoreTests
     private readonly string _id = "Id";
     private readonly string _id2 = "Id2";
     private readonly string _id3 = "Id3";
+
     private readonly string _text = "text";
     private readonly string _text2 = "text2";
     private readonly string _text3 = "text3";
+
     private readonly string _description = "description";
     private readonly string _description2 = "description2";
     private readonly string _description3 = "description3";
+
     private readonly Embedding<float> _embedding = new(new float[] { 1, 1, 1 });
     private readonly Embedding<float> _embedding2 = new(new float[] { 2, 2, 2 });
     private readonly Embedding<float> _embedding3 = new(new float[] { 3, 3, 3 });
 
     private readonly Mock<IPineconeClient> _mockPineconeClient;
     private readonly Mock<ILogger<PineconeMemoryStore>> _mockLogger = new();
+
     private readonly PineconeMemoryStore _pineconeMemoryStore;
 
     public PineconeMemoryStoreTests()
     {
         this._mockPineconeClient = new Mock<IPineconeClient>();
-        this._mockPineconeClient.SetupGet(x => x.Ready).Returns(true);
         this._pineconeMemoryStore = new PineconeMemoryStore(this._mockPineconeClient.Object, this._mockLogger.Object);
     }
 
     [Fact]
     public void ConnectionCanBeInitialized()
     {
-        // Arrange
+        // Arrange & Act
         PineconeMemoryStore memoryStore = new(this._mockPineconeClient.Object, this._mockLogger.Object);
+
+        // Assert
         Assert.NotNull(memoryStore);
     }
 
     [Fact]
-    public async Task ItCreatesNewIndexAsync()
+    public async Task ItThrowsExceptionOnIndexCreationAsync()
     {
         // Arrange
         this._mockPineconeClient
             .Setup<Task<bool>>(x => x.DoesIndexExistAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        this._mockPineconeClient
-            .Setup<Task<string?>>(x => x.CreateIndexAsync(It.IsAny<IndexDefinition>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync("test");
-
         // Act
-        await this._pineconeMemoryStore.CreateCollectionAsync("test");
+        var exception = await Assert.ThrowsAsync<PineconeMemoryException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
 
         // Assert
         this._mockPineconeClient
             .Verify<Task<bool>>(x => x.DoesIndexExistAsync("test", It.IsAny<CancellationToken>()), Times.Once());
 
-        this._mockPineconeClient
-            .Verify<Task<string?>>(x => x.CreateIndexAsync(It.IsAny<IndexDefinition>(), It.IsAny<CancellationToken>()), Times.Once());
+        Assert.Equal(PineconeMemoryException.ErrorCodes.IndexNotReady, exception.ErrorCode);
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public class PineconeMemoryStoreTests
     {
         // Arrange
         string indexName = "test-index";
-        // Arrange
+
         MemoryRecord memoryRecord = MemoryRecord.LocalRecord(
             this._id,
             this._text,
@@ -191,12 +191,12 @@ public class PineconeMemoryStoreTests
 
         // Assert
         this._mockPineconeClient.Verify(x => x.UpsertAsync(It.IsAny<string>(), It.IsAny<IEnumerable<PineconeDocument>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+
         Assert.Equal(3, upsertBatch.Count);
-        // compare the ids of the records
+
         Assert.Equal(memoryRecord.Metadata.Id, upsertBatch[0]);
         Assert.Equal(memoryRecord2.Metadata.Id, upsertBatch[1]);
         Assert.Equal(memoryRecord3.Metadata.Id, upsertBatch[2]);
-
     }
 
     [Fact]
@@ -206,7 +206,6 @@ public class PineconeMemoryStoreTests
         string collectionName = "testCollection";
         string key = "doc1";
 
-        this._mockPineconeClient.Setup(x => x.Ready).Returns(true);
         this._mockPineconeClient
             .Setup<Task>(x => x.DeleteAsync(collectionName, new[] { key }, "", null, false, CancellationToken.None))
             .Returns(Task.CompletedTask);
@@ -243,10 +242,6 @@ public class PineconeMemoryStoreTests
             }, 0.5)
         };
 
-        this._mockPineconeClient.Setup(x => x.Ready).Returns(true);
-
-        // Setup 
-
         this._mockPineconeClient
             .Setup<IAsyncEnumerable<(PineconeDocument, double)>>(x => x.GetMostRelevantAsync(
                 It.IsAny<string>(),
@@ -260,6 +255,7 @@ public class PineconeMemoryStoreTests
                 It.IsAny<CancellationToken>()))
             .Returns(queryResults.ToAsyncEnumerable());
 
+        // Act
         List<(MemoryRecord, double)> results = await this._pineconeMemoryStore.GetNearestMatchesAsync(
             "indexName",
             new Embedding<float>(new[] { 0.1f, 0.2f, 0.3f }),
@@ -267,9 +263,9 @@ public class PineconeMemoryStoreTests
             0.5,
             true).ToListAsync();
 
+        // Assert
         Assert.Equal(2, results.Count);
         Assert.Equal("Id", results[0].Item1.Key);
         Assert.Equal(0.9, results[0].Item2);
     }
-
 }

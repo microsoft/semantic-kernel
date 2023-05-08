@@ -16,6 +16,7 @@ public class PineconeUtilsTests
     [Fact]
     public async Task EnsureValidMetadataAsyncShouldSplitMetadataWhenExceedsMaxSizeAsync()
     {
+        // Arrange
         var document = new PineconeDocument
         {
             Id = "1",
@@ -25,8 +26,10 @@ public class PineconeUtilsTests
 
         var documents = new List<PineconeDocument> { document }.ToAsyncEnumerable();
 
+        // Act
         var result = await PineconeUtils.EnsureValidMetadataAsync(documents).ToListAsync();
 
+        // Assert
         Assert.True(result.Count > 1);
         Assert.All(result, item => Assert.StartsWith(document.Id, item.Id, StringComparison.Ordinal));
         Assert.All(result, item => Assert.True(Encoding.UTF8.GetByteCount(item.Metadata?["text"].ToString() ?? string.Empty) <= PineconeUtils.MaxMetadataSize));
@@ -35,6 +38,7 @@ public class PineconeUtilsTests
     [Fact]
     public async Task EnsureValidMetadataAsyncShouldNotSplitMetadataWhenNotExceedsMaxSizeAsync()
     {
+        // Arrange
         var document = new PineconeDocument
         {
             Id = "1",
@@ -44,8 +48,10 @@ public class PineconeUtilsTests
 
         var documents = new List<PineconeDocument> { document }.ToAsyncEnumerable();
 
+        // Act
         var result = await PineconeUtils.EnsureValidMetadataAsync(documents).ToListAsync();
 
+        // Assert
         Assert.Single((IEnumerable)result);
         Assert.Equal(document.Id, result[0].Id);
         Assert.Equal(document.Metadata["text"], result[0].Metadata?["text"]);
@@ -54,6 +60,7 @@ public class PineconeUtilsTests
     [Fact]
     public void ConvertFilterToPineconeFilterShouldConvertFilterCorrectly()
     {
+        // Arrange
         var filter = new Dictionary<string, object>
         {
             { "key1", new PineconeUtils.PineconeOperator("$eq", "value1") },
@@ -62,8 +69,10 @@ public class PineconeUtilsTests
             { "key4", "value4" }
         };
 
+        // Act
         var result = PineconeUtils.ConvertFilterToPineconeFilter(filter);
 
+        // Assert
         Assert.Equal(new Dictionary<string, object>
         {
             { "key1", new Dictionary<string, string> { { "$eq", "value1" } } },

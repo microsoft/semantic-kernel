@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -23,8 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 public sealed class PineconeClient : IPineconeClient, IDisposable
 {
     /// <summary>
-    /// Public for testing purposes, but should not be used directly because the client still needs to fetch the
-    /// index configuration from the server and set the <see cref="_pineconeIndex"/> field.
+    /// Initializes a new instance of the <see cref="PineconeClient"/> class.
     /// </summary>
     /// <param name="pineconeEnvironment"></param>
     /// <param name="apiKey"></param>
@@ -36,104 +36,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
         this._logger = logger ?? NullLogger<PineconeClient>.Instance;
         this._httpClient = new HttpClient(HttpHandlers.CheckCertificateRevocation);
-    }
-
-    /// <inheritdoc />
-    public string IndexName => this._pineconeIndex?.Configuration.Name ?? string.Empty;
-
-    /// <inheritdoc />
-    public string Host => this._pineconeIndex?.Status.Host ?? string.Empty;
-
-    /// <inheritdoc />
-    public int Port => this._pineconeIndex != null ? this._pineconeIndex.Status.Port : 0;
-
-    /// <inheritdoc />
-    public IndexState State => this._pineconeIndex?.Status.State ?? IndexState.None;
-
-    /// <inheritdoc />
-    public bool Ready => this._pineconeIndex?.Status.Ready ?? false;
-
-    /// <summary>
-    ///  Creates a new PineconeClient instance and connects to the specified index.
-    /// </summary>
-    /// <param name="pineconeEnvironment"></param>
-    /// <param name="apiKey"></param>
-    /// <param name="indexName"></param>
-    /// <param name="logger"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns> a new instance of the <see cref="PineconeMemoryStore"/> class </returns>
-    /// <remarks>
-    ///  Safest way to create a new instance of the <see cref="PineconeClient"/> class and preferable to using the constructor.
-    /// </remarks>
-    public static async Task<PineconeClient> CreateAsync(string pineconeEnvironment, string apiKey, string indexName, ILogger? logger = null, CancellationToken cancellationToken = default)
-    {
-        var client = new PineconeClient(pineconeEnvironment, apiKey, logger);
-        _ = await client.ConnectToHostAsync(indexName, cancellationToken).ConfigureAwait(false);
-        return client;
-    }
-
-    /// <summary>
-    ///   Initializes a new instance of the <see cref="PineconeClient"/> class and ensures that the index is ready for use before returning.
-    /// </summary>
-    /// <param name="pineconeEnvironment"> the location of the pinecone server </param>
-    /// <param name="apiKey"> the api key for the pinecone server </param>
-    /// <param name="indexDefinition"> the index definition </param>
-    /// <param name="logger"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns> a new instance of the <see cref="PineconeMemoryStore"/> class </returns>
-    /// <remarks>
-    ///  This should only be used if the user's intention is to create a new index and wait for it to be fully initialized before use.
-    /// </remarks>
-    public static async Task<IPineconeClient?> InitializeAsync(
-        string pineconeEnvironment,
-        string apiKey,
-        IndexDefinition indexDefinition,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        logger ??= NullLogger.Instance;
-        PineconeClient? client = new(pineconeEnvironment, apiKey, logger);
-
-        try
-        {
-            bool exists = await client.DoesIndexExistAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(false);
-
-            IPineconeClient? result;
-            if (exists)
-            {
-                if (await client.ConnectToHostAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(true))
-                {
-                    result = client;
-                    client = null;
-                    return result;
-                }
-
-                logger.LogError("Failed to connect to host.");
-            }
-
-            string indexName = await client.CreateIndexAsync(indexDefinition, cancellationToken).ConfigureAwait(false) ?? string.Empty;
-
-            if (!string.IsNullOrEmpty(indexName))
-            {
-                await client.WaitForIndexStateAsync(indexName, IndexState.Ready, cancellationToken).ConfigureAwait(false);
-
-                if (client.Ready)
-                {
-                    result = client;
-                    client = null;
-                    return result;
-                }
-            }
-
-            logger.LogError("Failed to create index.");
-        }
-
-        finally
-        {
-            client?.Dispose();
-        }
-
-        return null;
+        this._indexHostMapping = new ConcurrentDictionary<string, string>();
     }
 
     /// <inheritdoc />
@@ -145,12 +48,6 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this._logger.LogInformation("Searching vectors by id");
-
-        if (!this.Ready)
-        {
-            this._logger.LogWarning("Pinecone client is not connected to an index. Please ensure index is initialized before creating a PineconeMemoryStore instance or call InitializeAsync before");
-            yield break;
-        }
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
@@ -206,12 +103,6 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
     {
         this._logger.LogInformation("Querying top {0} nearest vectors", query.TopK);
 
-        if (!this.Ready)
-        {
-            this._logger.LogWarning("Pinecone client is not connected to an index. Please ensure index is initialized before creating a PineconeMemoryStore instance or call InitializeAsync before");
-            yield break;
-        }
-
         using HttpRequestMessage request = QueryRequest.QueryIndex(query)
             .WithMetadata(includeMetadata)
             .WithEmbeddings(includeValues)
@@ -265,12 +156,6 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
     {
         this._logger.LogInformation("Searching top {0} nearest vectors with threshold {1}", topK, threshold);
 
-        if (!this.Ready)
-        {
-            this._logger.LogWarning("Pinecone client is not connected to an index. Please ensure index is initialized before creating a PineconeMemoryStore instance or call InitializeAsync before");
-            yield break;
-        }
-
         List<(PineconeDocument document, float score)> documents = new();
 
         Query query = Query.Create(topK)
@@ -319,12 +204,6 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         CancellationToken cancellationToken = default)
     {
         this._logger.LogInformation("Upserting vectors");
-
-        if (!this.Ready)
-        {
-            this._logger.LogWarning("Pinecone client is not connected to an index. Please ensure index is initialized before creating a PineconeMemoryStore instance or call InitializeAsync before");
-            return 0;
-        }
 
         int totalUpserted = 0;
         int totalBatches = 0;
@@ -377,15 +256,11 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         bool deleteAll = false,
         CancellationToken cancellationToken = default)
     {
-        if (!this.Ready)
-        {
-            this._logger.LogWarning("Pinecone client is not connected to an index. Please ensure index is initialized before creating a PineconeMemoryStore instance or call InitializeAsync before");
-            return;
-        }
-
         if (ids == null && string.IsNullOrEmpty(indexNamespace) && filter == null && !deleteAll)
         {
-            this._logger.LogError("Must provide at least one of ids, filter, or deleteAll");
+            throw new PineconeMemoryException(
+                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
+                $"Must provide at least one of ids, filter, or deleteAll");
         }
 
         ids = ids?.ToList();
@@ -413,18 +288,13 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         catch (HttpRequestException e)
         {
             this._logger.LogError("Delete operation failed: {0}", e.Message);
+            throw;
         }
     }
 
     /// <inheritdoc />
     public async Task UpdateAsync(string indexName, PineconeDocument document, string indexNamespace = "", CancellationToken cancellationToken = default)
     {
-        if (!this.Ready)
-        {
-            this._logger.LogWarning("Pinecone client is not connected to an index. Please ensure index is initialized before creating a PineconeMemoryStore instance or call InitializeAsync before");
-            return;
-        }
-
         this._logger.LogInformation("Updating vector: {0}", document.Id);
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
@@ -443,6 +313,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         catch (HttpRequestException e)
         {
             this._logger.LogWarning("Vector update for Document {0} failed. Message: {1}", document.Id, e.Message);
+            throw;
         }
     }
 
@@ -469,7 +340,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         catch (HttpRequestException e)
         {
             this._logger.LogDebug("Index not found {0}", e.Message);
-            return null;
+            throw;
         }
 
         IndexStats? result = JsonSerializer.Deserialize<IndexStats>(responseContent, this._jsonSerializerOptions);
@@ -507,7 +378,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task<string?> CreateIndexAsync(IndexDefinition indexDefinition, CancellationToken cancellationToken = default)
+    public async Task CreateIndexAsync(IndexDefinition indexDefinition, CancellationToken cancellationToken = default)
     {
         this._logger.LogInformation("Creating index {0}", indexDefinition.ToString());
 
@@ -536,17 +407,6 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
             this._logger.LogError(e, "Creating index failed: {0}, {1}", e.Message, responseContent);
             throw;
         }
-
-        if (response.StatusCode != HttpStatusCode.Created)
-        {
-            return this._pineconeIndex?.Configuration.Name;
-        }
-
-        this._logger.LogInformation("Index creation accepted: {0}, {1}", indexName, responseContent);
-        // because this sets the the PineConeClient._indexDescription 
-        await this.ConnectToHostAsync(indexDefinition.Name, cancellationToken).ConfigureAwait(false);
-
-        return this._pineconeIndex?.Configuration.Name;
     }
 
     /// <inheritdoc />
@@ -558,33 +418,22 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            this._logger.LogError("Index Not Found: {0}, {1}", response.StatusCode, responseContent);
-            return;
-        }
-
         try
         {
             response.EnsureSuccessStatusCode();
-
-            if (response.StatusCode == HttpStatusCode.Accepted)
-            {
-                this._logger.LogDebug("Index: {0} been successfully deleted.", indexName);
-            }
         }
-
+        catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            this._logger.LogError(e, "Index Not Found: {0}, {1}", response.StatusCode, responseContent);
+            throw;
+        }
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "Deleting index failed: {0}, {1}", e.Message, responseContent);
             throw;
         }
 
-        if (response.StatusCode == HttpStatusCode.Accepted)
-        {
-            this._logger.LogInformation("Index: {0} been successfully deleted.", indexName);
-            this._pineconeIndex = null;
-        }
+        this._logger.LogInformation("Index: {0} has been successfully deleted.", indexName);
     }
 
     /// <inheritdoc />
@@ -594,7 +443,14 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
 
         List<string?>? indexNames = await this.ListIndexesAsync(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        return indexNames != null && indexNames.Any(name => name == indexName);
+        if (indexNames == null || !indexNames.Any(name => name == indexName))
+        {
+            return false;
+        }
+
+        PineconeIndex? index = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
+
+        return index != null && index.Status.State == IndexState.Ready;
     }
 
     /// <inheritdoc />
@@ -665,7 +521,6 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         }
 
         this._logger.LogDebug("Collection created. {0}", indexName);
-
     }
 
     public void Dispose()
@@ -673,23 +528,36 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         this._httpClient.Dispose();
     }
 
-    public async Task<bool> ConnectToHostAsync(string indexName, CancellationToken cancellationToken = default)
+    public async Task<string> GetIndexHostAsync(string indexName, CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Connecting to Pinecone Host");
+        if (this._indexHostMapping.TryGetValue(indexName, out string indexHost))
+        {
+            return indexHost;
+        }
+
+        this._logger.LogInformation("Getting index host from Pinecone.");
 
         PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
 
         if (pineconeIndex == null)
         {
-            this._logger.LogError("Index not found");
-            return false;
+            throw new PineconeMemoryException(
+                PineconeMemoryException.ErrorCodes.IndexNotFound,
+                $"Index not found in Pinecone. Create index to perform operations with vectors.");
         }
 
-        this._pineconeIndex = pineconeIndex;
+        if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
+        {
+            throw new PineconeMemoryException(
+                PineconeMemoryException.ErrorCodes.UnknownIndexHost,
+                $"Host of index {indexName} is unknown.");
+        }
 
-        this._logger.LogInformation("Connected to Pinecone Host {0}", this._pineconeIndex.Status.Host);
+        this._logger.LogInformation("Found host {0} for index {1}", pineconeIndex.Status.Host, indexName);
 
-        return true;
+        this._indexHostMapping.TryAdd(indexName, pineconeIndex.Status.Host);
+
+        return pineconeIndex.Status.Host;
     }
 
     #region private ================================================================================
@@ -700,72 +568,19 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
 
     private readonly KeyValuePair<string, string> _authHeader;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
-    private PineconeIndex? _pineconeIndex;
+    private readonly ConcurrentDictionary<string, string> _indexHostMapping;
     private const int MaxBatchSize = 100;
-    private const int PollingInterval = 10;
-    private const int Timeout = 5;
 
     private async Task<string> GetVectorOperationsApiBasePathAsync(string indexName)
     {
-        if (this._pineconeIndex?.Configuration.Name == indexName)
-        {
-            return $"https://{this._pineconeIndex!.Status.Host}";
-        }
+        string indexHost = await this.GetIndexHostAsync(indexName).ConfigureAwait(false);
 
-        if (await this.ConnectToHostAsync(indexName).ConfigureAwait(false))
-        {
-            return $"https://{this._pineconeIndex!.Status.Host}";
-        }
-
-        this._logger.LogError("Failed to connect to host");
-
-        return string.Empty;
-
+        return $"https://{indexHost}";
     }
 
     private string GetIndexOperationsApiBasePath()
     {
         return $"https://controller.{this._pineconeEnvironment}.pinecone.io";
-    }
-
-    private async Task WaitForIndexStateAsync(
-        string indexName,
-        IndexState targetState,
-        CancellationToken cancellationToken = default)
-    {
-        using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        TimeSpan timeout = TimeSpan.FromMinutes(Timeout);
-
-        cts.CancelAfter(timeout);
-
-        while (!cts.Token.IsCancellationRequested)
-        {
-            try
-            {
-                this._pineconeIndex = await this.DescribeIndexAsync(indexName, cts.Token).ConfigureAwait(false);
-
-                this._logger.LogInformation("Index {0} is in state {1}", indexName, this._pineconeIndex?.Status.State);
-                
-                this._logger.LogInformation("Index {0} is in state {1}", indexName, this._pineconeIndex?.Status.State);
-                
-                if (this._pineconeIndex?.Status.State == targetState)
-                {
-                    this._logger.LogInformation("Index {0} reached state {1}. Exiting....", indexName, targetState);
-                    break;
-                }
-            }
-            catch (HttpRequestException e)
-            {
-                this._logger.LogError(e, "Error while polling index state for {0}: {1}", indexName, e.Message);
-            }
-
-            await Task.Delay(TimeSpan.FromSeconds(PollingInterval), cts.Token).ConfigureAwait(true);
-        }
-
-        if (cts.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
-        {
-            throw new TimeoutException($"Waiting for index {indexName} to reach state {targetState} timed out after {timeout}.");
-        }
     }
 
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(

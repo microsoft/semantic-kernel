@@ -13,35 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 public interface IPineconeClient
 {
     /// <summary>
-    ///  The name of the index this client is connected to
-    /// </summary>
-    public string IndexName { get; }
-
-    /// <summary>
-    ///  The host this client is connected to which is unique to the index
-    /// </summary>
-    public string Host { get; }
-
-    /// <summary>
-    ///  The port this client is connected to
-    /// </summary>
-    public int Port { get; }
-
-    /// <summary>
-    /// The state of the index
-    /// </summary>
-    /// <remarks>
-    /// Important to make sure the index is ready before querying when initializing
-    ///  a new index. This is because a new index can a few minutes to be ready for use.
-    /// </remarks>
-    public IndexState State { get; }
-
-    /// <summary>
-    ///  Whether the index is ready for use
-    /// </summary>
-    public bool Ready { get; }
-
-    /// <summary>
     ///  Get vectors by id
     /// </summary>
     /// <param name="indexName"> the name of the index </param>
@@ -211,7 +182,7 @@ public interface IPineconeClient
     /// <param name="indexDefinition">  the configuration of the index.</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of void</returns>
-    Task<string?> CreateIndexAsync(IndexDefinition indexDefinition, CancellationToken cancellationToken = default);
+    Task CreateIndexAsync(IndexDefinition indexDefinition, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Configure index

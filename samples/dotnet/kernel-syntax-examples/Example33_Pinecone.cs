@@ -24,9 +24,7 @@ public static class Example33_Pinecone
         string apiKey = Env.Var("PINECONE_API_KEY");
         string pineconeEnvironment = Env.Var("PINECONE_ENVIRONMENT");
 
-        IPineconeClient pineconeClient = await PineconeClient.CreateAsync(pineconeEnvironment, apiKey, MemoryCollectionName);
-
-        PineconeMemoryStore memoryStore = new(pineconeClient);
+        PineconeMemoryStore memoryStore = new(pineconeEnvironment, apiKey);
         
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)

@@ -27,8 +27,10 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 public class PineconeMemoryStore : IPineconeMemoryStore
 {
     /// <summary>
-    /// Constructor for a memory store backed by a <see cref="IPineconeClient"/>
+    /// Initializes a new instance of the <see cref="PineconeMemoryStore"/> class.
     /// </summary>
+    /// <param name="pineconeClient">Instance of Pinecone client which implements <see cref="IPineconeClient"/> interface.</param>
+    /// <param name="logger">Instance of logger.</param>
     public PineconeMemoryStore(
         IPineconeClient pineconeClient,
         ILogger? logger = null)
@@ -37,18 +39,37 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         this._logger = logger ?? NullLogger.Instance;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PineconeMemoryStore"/> class.
+    /// </summary>
+    /// <param name="pineconeEnvironment">Pinecone project environment, see https://docs.pinecone.io/docs/projects#project-environment.</param>
+    /// <param name="apiKey">Pinecone API key.</param>
+    /// <param name="logger">Instance of logger.</param>
+    public PineconeMemoryStore(
+        string pineconeEnvironment,
+        string apiKey,
+        ILogger? logger = null)
+    {
+        this._pineconeClient = new PineconeClient(pineconeEnvironment, apiKey, logger);
+        this._logger = logger ?? NullLogger.Instance;
+    }
+
     /// <inheritdoc/>
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
     /// <param name="cancellationToken"></param>
     /// <remarks>
-    ///  This method will create a new index if one does not already exist but it does not guarantee that the index will be ready for use.
+    /// Pinecone index creation is asynchronous action which should be performed before any interaction with it.
+    /// To make operations within index, its state should be <see cref="IndexState.Ready"/>.
     /// </remarks>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         if (!await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
-            IndexDefinition indexDefinition = IndexDefinition.Default(collectionName);
-            await this._pineconeClient.CreateIndexAsync(indexDefinition, cancellationToken).ConfigureAwait(false);
+            throw new PineconeMemoryException(
+                PineconeMemoryException.ErrorCodes.IndexNotReady,
+                $"Index creation is not supported within memory store. " +
+                $"It should be created manually or using {nameof(IPineconeClient.CreateIndexAsync)}." +
+                $"Ensure index state is {IndexState.Ready}.");
         }
     }
 
@@ -224,7 +245,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        
         try
         {
             await foreach (PineconeDocument? record in this._pineconeClient.FetchVectorsAsync(indexName,
@@ -330,7 +350,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-
         foreach (IAsyncEnumerable<MemoryRecord?>? records in documentIds.Select(documentId =>
             this.GetWithDocumentIdAsync(indexName, documentId, limit, indexNamespace, withEmbeddings, cancellationToken)))
         {
@@ -538,8 +557,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-       
+    { 
         IAsyncEnumerable<(PineconeDocument, double)> results = this._pineconeClient.GetMostRelevantAsync(
             indexName,
             embedding.Vector,
@@ -588,7 +606,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-
         IAsyncEnumerable<(MemoryRecord, double)> results = this.GetNearestMatchesFromNamespaceAsync(
             indexName,
             indexNamespace,

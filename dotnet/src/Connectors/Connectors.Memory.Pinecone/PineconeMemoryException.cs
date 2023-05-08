@@ -91,9 +91,19 @@ public class PineconeMemoryException : SKException
         UnknownError,
 
         /// <summary>
+        /// The index is not found.
+        /// </summary>
+        IndexNotFound,
+
+        /// <summary>
         /// The index is not ready.
         /// </summary>
         IndexNotReady,
+
+        /// <summary>
+        /// The index host is unknown.
+        /// </summary>
+        UnknownIndexHost,
 
         /// <summary>
         /// Failed to deserialize the record payload.
