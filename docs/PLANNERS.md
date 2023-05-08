@@ -2,7 +2,7 @@
 
 ![image](https://user-images.githubusercontent.com/371009/221739773-cf43522f-c1e4-42f2-b73d-5ba84e21febb.png)
 
-The planner works backwards from a goal that’s provided from a user's ASK.
+Planners work backwards from a goal that’s provided from a user's ASK.
 
 ![image](https://user-images.githubusercontent.com/371009/221742094-2920c697-7494-4a7b-a894-4f24fb90965f.png)
 
@@ -14,10 +14,10 @@ attainable when the right
 [skills](SKILLS.md) 
 are available.
 
-Because the planner has access to either a pre-defined library of pre-made skills
-and/or a dynamically defined set of skills it is able to fulfill an
+Because planners have access to either a pre-defined library of pre-made skills
+and/or a dynamically defined set of skills, they are able to fulfill an
 [ASK](GLOSSARY.md)
-with confidence. In addition, the planner calls upon memories to best situate the
+with confidence. In addition, planners call upon memories to best situate the
 ASK's context and connectors to call APIs and to leverage other external
 capabilities.
 
@@ -33,9 +33,9 @@ service can be designed and delivered more effectively. You just need to make th
 right ASK that isn't just "turn on the lights" and instead a more challenging goal
 like "I want a job promotion."
 
-# What if the Planner needs a Skill that's unavailable?
+# What if Planners need a Skill that's unavailable?
 
-The planner will operate within the skills it has available. In the event that a
-desired skill does not exist, the planner can suggest you to create the skill.
-Or, depending upon the level of complexity the kernel can help you write the missing
-skill.
+Planners will operate within the skills they have available. In the event that a
+desired skill does not exist, some planners can suggest you to create the skill.
+Or, depending upon the level of complexity, the kernel can help you write the
+missing skill.
