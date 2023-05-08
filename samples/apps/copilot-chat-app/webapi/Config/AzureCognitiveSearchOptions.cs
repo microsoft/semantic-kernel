@@ -10,7 +10,7 @@ namespace SemanticKernel.Service.Config;
 public class AzureCognitiveSearchOptions
 {
     /// <summary>
-    /// Gets or sets the endpoint protocol and host (e.g. http://localhost).
+    /// Gets or sets the endpoint protocol and host (e.g. https://contoso.search.windows.net).
     /// </summary>
     [Required, Url]
     public string Endpoint { get; set; } = string.Empty;
