@@ -135,7 +135,7 @@ BEGIN SUMMARY:
 
             var repoBundle = $"{repositoryUri}/archive/refs/heads/{repositoryBranch}.zip";
 
-            this._logger.LogDebug("Downloading {repoBundle}", repoBundle);
+            this._logger.LogDebug("Downloading {RepoBundle}", repoBundle);
 
             if (context.Variables.Get(PatTokenParamName, out string patToken))
             {
