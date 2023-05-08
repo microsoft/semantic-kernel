@@ -169,7 +169,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
 
-        if (openApiSkillsAuthHeaders.JiraAuthentication != null)
+        if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.JiraAuthentication))
         {
             this._logger.LogInformation("Registering Jira Skill");
             var authenticationProvider = new BasicAuthenticationProvider(() => { return Task.FromResult(openApiSkillsAuthHeaders.JiraAuthentication); });
