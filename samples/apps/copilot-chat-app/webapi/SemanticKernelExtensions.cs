@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -22,7 +23,7 @@ internal static class SemanticKernelExtensions
     /// </summary>
     internal static IServiceCollection AddSemanticKernelServices(this IServiceCollection services)
     {
-        // The chat skill's prompts are stored in a separate file.
+        // Load the chat skill's prompts from the prompt configuration file.
         services.AddSingleton<PromptsConfig>(sp =>
         {
             string promptsConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "prompts.json");
@@ -34,38 +35,7 @@ internal static class SemanticKernelExtensions
         services.AddSingleton<PromptSettings>();
 
         // Add the semantic memory with backing memory store.
-        services.AddSingleton<IMemoryStore>(serviceProvider =>
-        {
-            MemoriesStoreOptions config = serviceProvider.GetRequiredService<IOptions<MemoriesStoreOptions>>().Value;
-
-            switch (config.Type)
-            {
-                case MemoriesStoreOptions.MemoriesStoreType.Volatile:
-                    return new VolatileMemoryStore();
-
-                case MemoriesStoreOptions.MemoriesStoreType.Qdrant:
-                    if (config.Qdrant is null)
-                    {
-                        throw new InvalidOperationException(
-                            $"MemoriesStore:Qdrant is required when MemoriesStore:Type is '{MemoriesStoreOptions.MemoriesStoreType.Qdrant}'");
-                    }
-
-                    return new QdrantMemoryStore(
-                        host: config.Qdrant.Host,
-                        port: config.Qdrant.Port,
-                        vectorSize: config.Qdrant.VectorSize,
-                        logger: serviceProvider.GetRequiredService<ILogger<QdrantMemoryStore>>());
-
-                default:
-                    throw new InvalidOperationException($"Invalid 'MemoriesStore' type '{config.Type}'.");
-            }
-        });
-
-        services.AddScoped<ISemanticTextMemory>(serviceProvider
-            => new SemanticTextMemory(
-                serviceProvider.GetRequiredService<IMemoryStore>(),
-                serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
-                    .ToTextEmbeddingsService(logger: serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>())));
+        services.AddScoped<ISemanticTextMemory>(CreateSemanticTextMemory);
 
         // Add the planner.
         services.AddScoped<CopilotChatPlanner>(sp =>
@@ -97,9 +67,37 @@ internal static class SemanticKernelExtensions
     }
 
     /// <summary>
+    /// Create the semantic memory with backing memory store.
+    /// </summary>
+    private static ISemanticTextMemory CreateSemanticTextMemory(this IServiceProvider serviceProvider)
+    {
+        MemoriesStoreOptions config = serviceProvider.GetRequiredService<IOptions<MemoriesStoreOptions>>().Value;
+        switch (config.Type)
+        {
+            case MemoriesStoreOptions.MemoriesStoreType.Volatile:
+                return new SemanticTextMemory(
+                    new VolatileMemoryStore(),
+                    serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
+                        .ToTextEmbeddingsService(logger: serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>()));
+
+            case MemoriesStoreOptions.MemoriesStoreType.Qdrant:
+                return new SemanticTextMemory(
+                    new QdrantMemoryStore(config.Qdrant!.Host, config.Qdrant.Port, config.Qdrant.VectorSize, serviceProvider.GetRequiredService<ILogger<QdrantMemoryStore>>()),
+                    serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
+                        .ToTextEmbeddingsService(logger: serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>()));
+
+            case MemoriesStoreOptions.MemoriesStoreType.AzureCognitiveSearch:
+                return new AzureCognitiveSearchMemory(config.AzureCognitiveSearch!.Endpoint, config.AzureCognitiveSearch.Key);
+
+            default:
+                throw new InvalidOperationException($"Invalid 'MemoriesStore' type '{config.Type}'.");
+        }
+    }
+
+    /// <summary>
     /// Add the completion backend to the kernel config
     /// </summary>
-    internal static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
+    private static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
     {
         switch (aiServiceOptions.AIService)
         {
@@ -126,7 +124,7 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Add the embedding backend to the kernel config
     /// </summary>
-    internal static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
+    private static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
     {
         switch (aiServiceOptions.AIService)
         {
@@ -158,7 +156,7 @@ internal static class SemanticKernelExtensions
     /// <param name="serviceConfig">The service configuration</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
-    internal static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
+    private static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
