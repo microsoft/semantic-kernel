@@ -57,7 +57,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -75,8 +75,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             }
         };
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("payload", System.Text.Json.JsonSerializer.Serialize(payload));
+        var arguments = new Dictionary<string, string>
+        {
+            { "payload", System.Text.Json.JsonSerializer.Serialize(payload) }
+        };
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
@@ -130,7 +132,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -139,8 +141,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             payload
         );
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("payload", "fake-input-value");
+        var arguments = new Dictionary<string, string>
+        {
+            { "payload", "fake-input-value" }
+        };
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
@@ -178,12 +182,14 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldAddHeadersToHttpRequestAsync()
     {
         // Arrange
-        var headers = new Dictionary<string, string>();
-        headers.Add("fake-header", string.Empty);
+        var headers = new Dictionary<string, string>
+        {
+            { "fake-header", string.Empty }
+        };
 
         var operation = new RestApiOperation(
             "fake-id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",
@@ -191,8 +197,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             headers
         );
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("fake-header", "fake-header-value");
+        var arguments = new Dictionary<string, string>
+        {
+            { "fake-header", "fake-header-value" }
+        };
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
@@ -210,12 +218,14 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldAddUserAgentHeaderToHttpRequestIfConfiguredAsync()
     {
         // Arrange
-        var headers = new Dictionary<string, string>();
-        headers.Add("fake-header", string.Empty);
+        var headers = new Dictionary<string, string>
+        {
+            { "fake-header", string.Empty }
+        };
 
         var operation = new RestApiOperation(
             "fake-id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Get,
             "fake-description",
@@ -223,8 +233,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             headers
         );
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("fake-header", "fake-header-value");
+        var arguments = new Dictionary<string, string>
+        {
+            { "fake-header", "fake-header-value" }
+        };
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, "fake-user-agent");
 
@@ -247,7 +259,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var operation = new RestApiOperation(
             "fake-id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "fake-path",
             HttpMethod.Post,
             "fake-description",
@@ -264,9 +276,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             }
         };
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("payload", System.Text.Json.JsonSerializer.Serialize(payload));
-        arguments.Add("content-type", "application/json");
+        var arguments = new Dictionary<string, string>
+        {
+            { "payload", System.Text.Json.JsonSerializer.Serialize(payload) },
+            { "content-type", "application/json" }
+        };
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
@@ -321,8 +335,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         public HttpMessageHandlerStub()
         {
-            this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-            this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
+            this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
+            };
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
