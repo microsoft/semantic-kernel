@@ -3,7 +3,7 @@ name = "semantic-kernel"
 version = "0.2.6.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
-readme = "README.md"
+readme = "pip/README.md"
 packages = [{include = "semantic_kernel"}]
 
 [tool.poetry.dependencies]
