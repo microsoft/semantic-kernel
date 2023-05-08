@@ -11,10 +11,6 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    raises=AssertionError,
-    reason="OpenAI may throttle requests, preventing this test from passing",
-)
 async def test_oai_chat_service_with_skills():
     kernel = sk.Kernel()
 
@@ -24,6 +20,10 @@ async def test_oai_chat_service_with_skills():
     else:
         # Load credentials from .env file
         api_key, org_id = sk.openai_settings_from_dot_env()
+
+    print("* Service: OpenAI Chat Completion")
+    print("* Endpoint: OpenAI")
+    print("* Model: gpt-3.5-turbo")
 
     kernel.add_chat_service(
         "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
