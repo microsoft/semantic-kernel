@@ -14,7 +14,7 @@ Serving the OpenAPI definition from the repo is a workaround for Klarna's ChatGP
 
 ## JiraSkill
 The Power Platform Connector/OpenAPI spec at `./JiraSkill/openapi.json` defines the APIs for Jira's operations.
-This definition was retrieved using Jira's official OpenAPI description, version 2.0 (not version 3.0), hosted at https://github.com/microsoft/PowerPlatformConnectors/blob/dev/certified-connectors/JIRA/apiDefinition.swagger.json .
+This definition was retrieved using the Jira Power Platform Certified Connector OpenAPI definition, version 2.0 (not version 3.0), hosted at https://github.com/microsoft/PowerPlatformConnectors/blob/dev/certified-connectors/JIRA/apiDefinition.swagger.json .
 Serving the OpenAPI definition from the repo is a workaround to use version 2.0 for the swagger document which is the version currently supported by the semantic kernel. 
 This version however doesn't follow OpenAPI specification for all of its operations. 
 For example CreateIssueV2, its body param does not describe properties and so we can't build the body automatically.
