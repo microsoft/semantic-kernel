@@ -115,14 +115,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
             catch (AIException ex)
             {
-                const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
-                log?.LogError(ex, message, skillName, functionName, ex.Message, ex.Detail);
+                const string Message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
+                log?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
                 context.Fail(ex.Message, ex);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
-                log?.LogError(ex, message, skillName, functionName, ex.Message);
+                const string Message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
+                log?.LogError(ex, Message, skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
 
@@ -159,23 +159,22 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKContext? context = null,
         CompleteRequestSettings? settings = null,
         ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
         if (context == null)
         {
-            var cToken = cancel ?? default;
             log ??= NullLogger.Instance;
             context = new SKContext(
                 new ContextVariables(""),
                 NullMemory.Instance,
                 this._skillCollection,
                 log,
-                cToken);
+                cancellationToken);
         }
 
         context.Variables.Update(input);
 
-        return this.InvokeAsync(context, settings, log, cancel);
+        return this.InvokeAsync(context, settings, log, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -183,13 +182,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKContext? context = null,
         CompleteRequestSettings? settings = null,
         ILogger? log = null,
-        CancellationToken? cancel = null)
+        CancellationToken cancellationToken = default)
     {
         if (context == null)
         {
-            var cToken = cancel ?? default;
             log ??= NullLogger.Instance;
-            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cToken);
+            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cancellationToken);
         }
 
         return this.IsSemantic
@@ -515,7 +513,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (!result.HasSkFunctionAttribute || skFunctionAttribute == null)
         {
-            log?.LogTrace("Method {0} doesn't have SKFunctionAttribute", result.Name);
+            log?.LogTrace("Method '{0}' doesn't have '{1}' attribute.", result.Name, typeof(SKFunctionAttribute).Name);
             return result;
         }
 
@@ -556,9 +554,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
         else if (skMainParam != null)
         {
             // The developer used [SKFunctionInput] on a function that doesn't support a string input
-            throw new KernelException(
-                KernelException.ErrorCodes.InvalidFunctionDescription,
-                "The function doesn't have a string parameter, do not use " + typeof(SKFunctionInputAttribute));
+            var message = $"The method '{result.Name}' doesn't have a string parameter, do not use '{typeof(SKFunctionInputAttribute).Name}' attribute.";
+            throw new KernelException(KernelException.ErrorCodes.InvalidFunctionDescription, message);
         }
 
         // Handle named arg passed via the SKContext object
@@ -572,7 +569,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         result.Description = skFunctionAttribute.Description ?? "";
 
-        log?.LogTrace("Method {0} found", result.Name);
+        log?.LogTrace("Method '{0}' found.", result.Name);
 
         return result;
     }
@@ -680,13 +677,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             throw new KernelException(
                 KernelException.ErrorCodes.FunctionTypeNotSupported,
-                $"Function {method.Name} has an invalid signature 'Func<SKContext, SKContext>'. " +
+                $"Function '{method.Name}' has an invalid signature 'Func<SKContext, SKContext>'. " +
                 "Please use 'Func<SKContext, Task<SKContext>>' instead.");
         }
 
         throw new KernelException(
             KernelException.ErrorCodes.FunctionTypeNotSupported,
-            $"Function {method.Name} has an invalid signature not supported by the kernel");
+            $"Function '{method.Name}' has an invalid signature not supported by the kernel.");
     }
 
     [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate result can be null")]

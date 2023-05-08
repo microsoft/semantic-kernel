@@ -3,10 +3,8 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-#pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of SKContext
 namespace Microsoft.SemanticKernel.Orchestration;
-#pragma warning restore IDE0130
 
 internal static class SKContextExtensions
 {
@@ -21,26 +19,9 @@ internal static class SKContextExtensions
     {
         context.ThrowIfSkillCollectionNotSet();
 
-        if (context.Skills!.HasNativeFunction(skillName, functionName))
-        {
-            registeredFunction = context.Skills.GetNativeFunction(skillName, functionName);
-            return true;
-        }
-
-        if (context.Skills.HasNativeFunction(functionName))
-        {
-            registeredFunction = context.Skills.GetNativeFunction(functionName);
-            return true;
-        }
-
-        if (context.Skills.HasSemanticFunction(skillName, functionName))
-        {
-            registeredFunction = context.Skills.GetSemanticFunction(skillName, functionName);
-            return true;
-        }
-
-        registeredFunction = null;
-        return false;
+        return context.Skills!.TryGetNativeFunction(skillName, functionName, out registeredFunction) ||
+               context.Skills.TryGetNativeFunction(functionName, out registeredFunction) ||
+               context.Skills.TryGetSemanticFunction(skillName, functionName, out registeredFunction);
     }
 
     /// <summary>

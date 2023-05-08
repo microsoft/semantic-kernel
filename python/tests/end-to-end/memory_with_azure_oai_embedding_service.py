@@ -12,7 +12,7 @@ kernel = sk.Kernel()
 # Load credentials from .env file
 deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 
-kernel.config.add_embedding_service(
+kernel.add_embedding_service(
     "ada", sk_oai.AzureTextEmbedding("text-embedding-ada-002", endpoint, api_key)
 )
 kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())

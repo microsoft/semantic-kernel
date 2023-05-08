@@ -7,92 +7,110 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// <summary>
 /// Read-only skill collection interface.
 /// </summary>
-[SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "It is a collection")]
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "It is a collection")]
 public interface IReadOnlySkillCollection
 {
     /// <summary>
-    /// Check if the collection contains the specified function in the global skill, regardless of the function type
+    /// Gets the function stored in the collection.
     /// </summary>
-    /// <param name="skillName">Skill name</param>
-    /// <param name="functionName">Function name</param>
-    /// <returns>True if the function exists, false otherwise</returns>
-    bool HasFunction(string skillName, string functionName);
-
-    /// <summary>
-    /// Check if the collection contains the specified function, regardless of the function type
-    /// </summary>
-    /// <param name="functionName">Function name</param>
-    /// <returns>True if the function exists, false otherwise</returns>
-    bool HasFunction(string functionName);
-
-    /// <summary>
-    /// Check if a semantic function is registered
-    /// </summary>
-    /// <param name="functionName">Function name</param>
-    /// <param name="skillName">Skill name</param>
-    /// <returns>True if the function exists</returns>
-    bool HasSemanticFunction(string skillName, string functionName);
-
-    /// <summary>
-    /// Check if a native function is registered
-    /// </summary>
-    /// <param name="functionName">Function name</param>
-    /// <param name="skillName">Skill name</param>
-    /// <returns>True if the function exists</returns>
-    bool HasNativeFunction(string skillName, string functionName);
-
-    /// <summary>
-    /// Check if a native function is registered in the global skill
-    /// </summary>
-    /// <param name="functionName">Function name</param>
-    /// <returns>True if the function exists</returns>
-    bool HasNativeFunction(string functionName);
-
-    /// <summary>
-    /// Return the function delegate stored in the collection, regardless of the function type
-    /// </summary>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Function delegate</returns>
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <returns>The function retrieved from the collection.</returns>
+    /// <exception cref="KernelException">The specified function could not be found in the collection.</exception>
     ISKFunction GetFunction(string functionName);
 
     /// <summary>
-    /// Return the function delegate stored in the collection, regardless of the function type
+    /// Gets the function stored in the collection.
     /// </summary>
-    /// <param name="functionName">Function name</param>
-    /// <param name="skillName">Skill name</param>
-    /// <returns>Function delegate</returns>
+    /// <param name="skillName">The name of the skill with which the function is associated.</param>
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <returns>The function retrieved from the collection.</returns>
+    /// <exception cref="KernelException">The specified function could not be found in the collection.</exception>
     ISKFunction GetFunction(string skillName, string functionName);
 
     /// <summary>
-    /// Return the semantic function delegate stored in the collection
+    /// Gets the function stored in the collection.
     /// </summary>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Semantic function delegate</returns>
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <param name="functionInstance">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
+    bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance);
+
+    /// <summary>
+    /// Gets the function stored in the collection.
+    /// </summary>
+    /// <param name="skillName">The name of the skill with which the function is associated.</param>
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <param name="functionInstance">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
+    bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance);
+
+    /// <summary>
+    /// Gets the semantic function stored in the collection.
+    /// </summary>
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <returns>The function retrieved from the collection.</returns>
+    /// <exception cref="KernelException">The specified function could not be found in the collection.</exception>
     ISKFunction GetSemanticFunction(string functionName);
 
     /// <summary>
-    /// Return the semantic function delegate stored in the collection
+    /// Gets the semantic function stored in the collection.
     /// </summary>
-    /// <param name="functionName">Function name</param>
-    /// <param name="skillName">Skill name</param>
-    /// <returns>Semantic function delegate</returns>
+    /// <param name="skillName">The name of the skill with which the function is associated.</param>
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <returns>The function retrieved from the collection.</returns>
+    /// <exception cref="KernelException">The specified function could not be found in the collection.</exception>
     ISKFunction GetSemanticFunction(string skillName, string functionName);
 
     /// <summary>
-    /// Return the native function delegate stored in the collection
+    /// Gets the semantic function stored in the collection.
     /// </summary>
-    /// <param name="functionName">Function name</param>
-    /// <param name="skillName">Skill name</param>
-    /// <returns>Native function delegate</returns>
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <param name="functionInstance">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
+    bool TryGetSemanticFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance);
+
+    /// <summary>
+    /// Gets the semantic function stored in the collection.
+    /// </summary>
+    /// <param name="skillName">The name of the skill with which the function is associated.</param>
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <param name="functionInstance">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
+    bool TryGetSemanticFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance);
+
+    /// <summary>
+    /// Gets the native function stored in the collection.
+    /// </summary>
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <returns>The function retrieved from the collection.</returns>
+    /// <exception cref="KernelException">The specified function could not be found in the collection.</exception>
+    ISKFunction GetNativeFunction(string functionName);
+
+    /// <summary>
+    /// Gets the native function stored in the collection.
+    /// </summary>
+    /// <param name="skillName">The name of the skill with which the function is associated.</param>
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <returns>The function retrieved from the collection.</returns>
+    /// <exception cref="KernelException">The specified function could not be found in the collection.</exception>
     ISKFunction GetNativeFunction(string skillName, string functionName);
 
     /// <summary>
-    /// Return the native function delegate stored in the collection
+    /// Gets the native function stored in the collection.
     /// </summary>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Native function delegate</returns>
-    ISKFunction GetNativeFunction(string functionName);
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <param name="functionInstance">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
+    bool TryGetNativeFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance);
+
+    /// <summary>
+    /// Gets the native function stored in the collection.
+    /// </summary>
+    /// <param name="skillName">The name of the skill with which the function is associated.</param>
+    /// <param name="functionName">The name of the function to retrieve.</param>
+    /// <param name="functionInstance">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
+    bool TryGetNativeFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance);
 
     /// <summary>
     /// Get all registered functions details, minus the delegates

@@ -12,7 +12,7 @@ kernel = sk.Kernel()
 # Load credentials from .env file
 api_key, org_id = sk.openai_settings_from_dot_env()
 
-kernel.config.add_embedding_service(
+kernel.add_embedding_service(
     "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
 )
 kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())

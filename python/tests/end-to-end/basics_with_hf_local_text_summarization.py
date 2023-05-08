@@ -10,7 +10,7 @@ import semantic_kernel.connectors.ai.hugging_face as sk_hf
 kernel = sk.Kernel()
 
 # Configure LLM service
-kernel.config.add_text_service(
+kernel.add_text_service(
     "facebook/bart-large-cnn",
     sk_hf.HuggingFaceTextCompletion("facebook/bart-large-cnn", task="summarization"),
 )

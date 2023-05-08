@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
 /// </summary>
 public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
 {
-    private const string HttpUserAgent = "Microsoft Semantic Kernel";
+    private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
     private const string HuggingFaceApiEndpoint = "https://api-inference.huggingface.co/models";
 
     private readonly string _model;
@@ -35,7 +35,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public HuggingFaceTextCompletion(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
         Verify.NotNull(endpoint);
-        Verify.NotEmpty(model, "Model cannot be empty.");
+        Verify.NotNullOrWhiteSpace(model);
 
         this._endpoint = endpoint;
         this._model = model;
@@ -54,7 +54,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public HuggingFaceTextCompletion(Uri endpoint, string model)
     {
         Verify.NotNull(endpoint);
-        Verify.NotEmpty(model, "Model cannot be empty.");
+        Verify.NotNullOrWhiteSpace(model);
 
         this._endpoint = endpoint;
         this._model = model;
@@ -76,7 +76,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public HuggingFaceTextCompletion(string apiKey, string model, HttpClientHandler httpClientHandler, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model, httpClientHandler)
     {
-        Verify.NotEmpty(apiKey, "HuggingFace API key cannot be empty.");
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
     }
@@ -92,7 +92,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public HuggingFaceTextCompletion(string apiKey, string model, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model)
     {
-        Verify.NotEmpty(apiKey, "HuggingFace API key cannot be empty.");
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
     }
@@ -101,6 +101,14 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     public async Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
         return await this.ExecuteCompleteRequestAsync(text, cancellationToken).ConfigureAwait(false);
+    }
+
+    public IAsyncEnumerable<string> CompleteStreamAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        return this.ExecuteCompleteRequestAsync(text, cancellationToken).ToAsyncEnumerable();
     }
 
     /// <inheritdoc/>
@@ -116,7 +124,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// Performs HTTP request to given endpoint for text completion.
     /// </summary>
     /// <param name="text">Text to complete.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Completed text.</returns>
     /// <exception cref="AIException">Exception when backend didn't respond with completed text.</exception>
     private async Task<string> ExecuteCompleteRequestAsync(string text, CancellationToken cancellationToken = default)

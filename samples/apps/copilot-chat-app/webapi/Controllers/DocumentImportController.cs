@@ -35,9 +35,9 @@ public class DocumentImportController : ControllerBase
         Pdf,
     };
 
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _serviceProvider; // TODO: unused
     private readonly ILogger<DocumentImportController> _logger;
-    private readonly PromptSettings _promptSettings;
+    private readonly PromptSettings _promptSettings; // TODO: unused
     private readonly DocumentMemoryOptions _options;
 
     /// <summary>
@@ -155,8 +155,6 @@ public class DocumentImportController : ControllerBase
             fileContent += text;
         }
 
-        Console.WriteLine(fileContent);
-
         return fileContent;
     }
 
@@ -183,11 +181,21 @@ public class DocumentImportController : ControllerBase
 
         foreach (var paragraph in paragraphs)
         {
-            await kernel.Memory.SaveInformationAsync(
+            var memories = kernel.Memory.SearchAsync(
                 collection: targetCollectionName,
-                text: paragraph,
-                id: Guid.NewGuid().ToString(),
-                description: $"Document: {documentName}");
+                query: paragraph,
+                limit: 1,
+                minRelevanceScore: this._options.DeduplicationSimilarityThreshold
+            ).ToEnumerable();
+
+            if (!memories.Any())
+            {
+                await kernel.Memory.SaveInformationAsync(
+                    collection: targetCollectionName,
+                    text: paragraph,
+                    id: Guid.NewGuid().ToString(),
+                    description: $"Document: {documentName}");
+            }
         }
 
         this._logger.LogInformation(

@@ -35,11 +35,9 @@ public class SequentialPlanParserTests
             .Configure(config =>
             {
                 config.AddAzureTextCompletionService(
-                    serviceId: azureOpenAIConfiguration.ServiceId,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
-                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
             })
             .Build();
         kernel.ImportSkill(new EmailSkillFake(), "email");
@@ -72,22 +70,22 @@ public class SequentialPlanParserTests
             {
                 Assert.Equal("WriterSkill", step.SkillName);
                 Assert.Equal("Translate", step.Name);
-                Assert.Equal("French", step.NamedParameters["language"]);
-                Assert.True(step.NamedOutputs.ContainsKey("TRANSLATED_SUMMARY"));
+                Assert.Equal("French", step.Parameters["language"]);
+                Assert.True(step.Outputs.Contains("TRANSLATED_SUMMARY"));
             },
             step =>
             {
                 Assert.Equal("email", step.SkillName);
                 Assert.Equal("GetEmailAddressAsync", step.Name);
-                Assert.Equal("John Doe", step.NamedParameters["input"]);
-                Assert.True(step.NamedOutputs.ContainsKey("EMAIL_ADDRESS"));
+                Assert.Equal("John Doe", step.Parameters["input"]);
+                Assert.True(step.Outputs.Contains("EMAIL_ADDRESS"));
             },
             step =>
             {
                 Assert.Equal("email", step.SkillName);
                 Assert.Equal("SendEmailAsync", step.Name);
-                Assert.Equal("$TRANSLATED_SUMMARY", step.NamedParameters["input"]);
-                Assert.Equal("$EMAIL_ADDRESS", step.NamedParameters["email_address"]);
+                Assert.Equal("$TRANSLATED_SUMMARY", step.Parameters["input"]);
+                Assert.Equal("$EMAIL_ADDRESS", step.Parameters["email_address"]);
             }
         );
     }

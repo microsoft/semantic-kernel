@@ -90,7 +90,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
 
         embedding = await self._embeddings_generator.generate_embeddings_async([text])
         data = MemoryRecord.reference_record(
-            id=external_id,
+            external_id=external_id,
             source_name=external_source_name,
             description=description,
             embedding=embedding,

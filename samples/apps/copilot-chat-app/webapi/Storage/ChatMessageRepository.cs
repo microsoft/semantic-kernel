@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using SemanticKernel.Service.Skills;
+using SemanticKernel.Service.Model;
 
 namespace SemanticKernel.Service.Storage;
 
@@ -28,12 +28,13 @@ public class ChatMessageRepository : Repository<ChatMessage>
 
     public async Task<ChatMessage> FindLastByChatIdAsync(string chatId)
     {
-        var messages = await this.FindByChatIdAsync(chatId);
-        if (!messages.Any())
+        var chatMessages = await this.FindByChatIdAsync(chatId);
+        var first = chatMessages.MaxBy(e => e.Timestamp);
+        if (first is null)
         {
-            throw new KeyNotFoundException($"No messages found for chat {chatId}.");
+            throw new KeyNotFoundException($"No messages found for chat '{chatId}'.");
         }
 
-        return messages.OrderByDescending(e => e.Timestamp).First();
+        return first;
     }
 }

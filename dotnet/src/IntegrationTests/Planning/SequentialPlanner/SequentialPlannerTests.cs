@@ -71,7 +71,7 @@ public sealed class SequentialPlannerTests : IDisposable
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
                 step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase) &&
-                step.NamedParameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
+                step.Parameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]
@@ -111,7 +111,6 @@ public sealed class SequentialPlannerTests : IDisposable
             .Configure(config =>
             {
                 config.AddAzureTextCompletionService(
-                    serviceId: azureOpenAIConfiguration.ServiceId,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
@@ -119,13 +118,10 @@ public sealed class SequentialPlannerTests : IDisposable
                 if (useEmbeddings)
                 {
                     config.AddAzureTextEmbeddingGenerationService(
-                        serviceId: azureOpenAIEmbeddingsConfiguration.ServiceId,
                         deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                         endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                         apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
                 }
-
-                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
             });
 
         if (useEmbeddings)
