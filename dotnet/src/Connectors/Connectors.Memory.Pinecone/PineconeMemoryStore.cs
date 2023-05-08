@@ -557,7 +557,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    { 
+    {
         IAsyncEnumerable<(PineconeDocument, double)> results = this._pineconeClient.GetMostRelevantAsync(
             indexName,
             embedding.Vector,
