@@ -128,9 +128,7 @@ export const initialState: PluginsState = {
         description:
             'Search and compare prices from thousands of online shops.',
         enabled: false,
-        authRequirements: {
-            
-        },
+        authRequirements: { },
         icon: KlarnaIcon,
         headerTag: AuthHeaderTags.Klarna,
     },
