@@ -2,6 +2,7 @@
 
 from logging import Logger
 from typing import List, Optional
+
 from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -37,11 +38,13 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         self._log = log if log is not None else NullLogger()
 
         try:
-            import torch
             import sentence_transformers
-        except (ImportError):
-            raise ImportError("Please ensure that torch and sentence-transformers are installed to use HuggingFaceTextEmbedding")
-        
+            import torch
+        except ImportError:
+            raise ImportError(
+                "Please ensure that torch and sentence-transformers are installed to use HuggingFaceTextEmbedding"
+            )
+
         self.device = (
             "cuda:" + device if device >= 0 and torch.cuda.is_available() else "cpu"
         )
