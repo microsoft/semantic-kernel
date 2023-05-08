@@ -28,7 +28,7 @@ public class MyTextCompletionService : ITextCompletion
         var result = "...output from your custom model...";
 
         // Forcing a 2 sec delay (Simulating custom LLM lag)
-        await Task.Delay(2000, cancellationToken).ConfigureAwait(false);
+        await Task.Delay(2000, cancellationToken);
 
         return result;
     }
