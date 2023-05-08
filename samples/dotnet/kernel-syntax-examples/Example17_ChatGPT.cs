@@ -119,69 +119,75 @@ public static class Example17_ChatGPT
         Console.WriteLine("------------------------");
 
         var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");
-        await UserMessageOutputAsync(chatHistory.Messages.Last());
+        await MessageOutputAsync(chatHistory);
 
+        // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
-        await UserMessageOutputAsync(chatHistory.Messages.Last());
-        await AssistantMessageOutputAsync(chatGPT, chatHistory);
+        await MessageOutputAsync(chatHistory);
 
+        // First bot assistant message
+        await StreamMessageOutputAsync(chatGPT, chatHistory);
+
+        // Second user message
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
-        await UserMessageOutputAsync(chatHistory.Messages.Last());
-        await AssistantMessageOutputAsync(chatGPT, chatHistory);
+        await MessageOutputAsync(chatHistory);
+
+        // Second bot assistant message
+        await StreamMessageOutputAsync(chatGPT, chatHistory);
     }
 
     private static async Task StartChatAsync(IChatCompletion chatGPT)
     {
-        OpenAIChatHistory chatHistory = await PrepareChatHistoryAsync(chatGPT);
-
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
-        foreach (var message in chatHistory.Messages)
-        {
-            Console.WriteLine($"{message.AuthorRole}: {message.Content}");
-            Console.WriteLine("------------------------");
-        }
+
+        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");
+
+        // First user message
+        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
+        await MessageOutputAsync(chatHistory);
+
+        // First bot assistant message
+        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        chatHistory.AddAssistantMessage(reply);
+        await MessageOutputAsync(chatHistory);
+
+        // Second user message
+        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
+        await MessageOutputAsync(chatHistory);
+
+        // Second bot assistant message
+        reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        chatHistory.AddAssistantMessage(reply);
+        await MessageOutputAsync(chatHistory);
     }
 
-    private static Task UserMessageOutputAsync(ChatHistory.Message message)
+    /// <summary>
+    /// Outputs the last message of the chat history
+    /// </summary>
+    private static Task MessageOutputAsync(ChatHistory chatHistory)
     {
+        var message = chatHistory.Messages.Last();
+
         Console.WriteLine($"{message.AuthorRole}: {message.Content}");
         Console.WriteLine("------------------------");
 
         return Task.CompletedTask;
     }
 
-    private static async Task AssistantMessageOutputAsync(IChatCompletion chatGPT, OpenAIChatHistory chatHistory)
+    private static async Task StreamMessageOutputAsync(IChatCompletion chatGPT, ChatHistory chatHistory,
+        ChatHistory.AuthorRoles authorRole = ChatHistory.AuthorRoles.Assistant)
     {
-        Console.Write("Assistant: ");
-        string assistantMessage = string.Empty;
+        Console.Write($"{authorRole}: ");
+        string fullMessage = string.Empty;
+
         await foreach (string message in chatGPT.GenerateMessageStreamAsync(chatHistory))
         {
-            assistantMessage += message;
+            fullMessage += message;
             Console.Write(message);
         }
 
         Console.WriteLine("\n------------------------");
-        chatHistory.AddAssistantMessage(assistantMessage);
-    }
-
-    private static async Task<OpenAIChatHistory> PrepareChatHistoryAsync(IChatCompletion chatGPT)
-    {
-        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");
-
-        // First user message
-        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
-
-        // First bot message
-        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
-
-        // Second user message
-        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
-
-        // Second bot message
-        reply = await chatGPT.GenerateMessageAsync(chatHistory);
-        chatHistory.AddAssistantMessage(reply);
-        return chatHistory;
+        chatHistory.AddMessage(authorRole, fullMessage);
     }
 }
