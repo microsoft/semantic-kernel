@@ -22,7 +22,12 @@ public class MemoriesStoreOptions
         /// <summary>
         /// Qdrant based persistent memories store.
         /// </summary>
-        Qdrant
+        Qdrant,
+
+        /// <summary>
+        /// Azure Cognitive Search persistent memories store.
+        /// </summary>
+        AzureCognitiveSearch
     }
 
     /// <summary>
@@ -35,4 +40,10 @@ public class MemoriesStoreOptions
     /// </summary>
     [RequiredOnPropertyValue(nameof(Type), MemoriesStoreType.Qdrant)]
     public QdrantOptions? Qdrant { get; set; }
+
+    /// <summary>
+    /// Gets or sets the configuration for the Azure Cognitive Search memories store.
+    /// </summary>
+    [RequiredOnPropertyValue(nameof(Type), MemoriesStoreType.AzureCognitiveSearch)]
+    public AzureCognitiveSearchOptions? AzureCognitiveSearch { get; set; }
 }
