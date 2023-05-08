@@ -58,7 +58,7 @@ public abstract class ClientBase
     }
 
     /// <summary>
-    /// Creates a completion stream for the pormpt and settings.
+    /// Creates a completion stream for the prompt and settings.
     /// </summary>
     /// <param name="text">The prompt to complete.</param>
     /// <param name="requestSettings">Request settings for the completion API</param>
