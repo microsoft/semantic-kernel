@@ -49,8 +49,7 @@ public class DocumentMemoryOptions
 
     /// <summary>
     /// Similarity threshold to avoid document memory duplication when importing documents to memory.
-    /// The higher the value, the more similar document memories will be allowed.
-    /// The lower the value, the more unique document memories will be allowed.
+    /// The higher the value, the more document memories can be similar without being eliminated as duplicates.
     /// </summary>
     [Range(0.0, 1.0)]
     public double DeduplicationSimilarityThreshold { get; set; } = 0.8;
