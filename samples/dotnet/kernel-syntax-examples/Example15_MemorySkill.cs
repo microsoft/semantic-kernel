@@ -16,8 +16,8 @@ public static class Example15_MemorySkill
     {
         var kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
-            .AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 

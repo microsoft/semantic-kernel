@@ -16,9 +16,9 @@ public static class ChatCompletionServiceExtensions
     /// <param name="serviceId">Optional identifier of the desired service.</param>
     /// <returns>The completion service id matching the given id or the default.</returns>
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
-    public static IChatCompletion GetChatCompletionServiceOrDefault(
+    public static IChatCompletion GetChatCompletionService(
         this IAIServiceProvider services,
-        string? serviceId = null) => services.GetNamedServiceOrDefault<IChatCompletion>(serviceId)
+        string? serviceId = null) => services.GetService<IChatCompletion>(serviceId)
             ?? throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Chat completion service not found");
 
     /// <summary>

@@ -66,7 +66,7 @@ var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, conf
 var kernel4 = Kernel.Builder
     .WithLogger(NullLogger.Instance)
     .WithMemory(memory)
-    .AddAzureTextCompletionService("deploymentName", "https://...", "apiKey")
+    .WithAzureTextCompletionService("deploymentName", "https://...", "apiKey")
     .Build();
 
 // Example: how to use a custom memory storage and custom embedding generator
@@ -79,15 +79,15 @@ var kernel5 = Kernel.Builder
 var kernel6 = Kernel.Builder
     .WithLogger(NullLogger.Instance)
     .WithMemoryStorage(memoryStorage) // Custom memory storage
-    .AddAzureTextCompletionService("myName1", "completionDeploymentName", "https://...", "apiKey") // This will be used when using AI completions
-    .AddAzureTextEmbeddingGenerationService("myName2", "embeddingsDeploymentName", "https://...", "apiKey") // This will be used when indexing memory records
+    .WithAzureTextCompletionService("myName1", "completionDeploymentName", "https://...", "apiKey") // This will be used when using AI completions
+    .WithAzureTextEmbeddingGenerationService("myName2", "embeddingsDeploymentName", "https://...", "apiKey") // This will be used when indexing memory records
     .Build();
 
 // ==========================================================================================================
 // The AI services are defined with the builder
 
 var kernel7 = Kernel.Builder
-    .AddAzureTextCompletionService("myName1", "completionDeploymentName", "https://...", "apiKey", true)
+    .WithAzureTextCompletionService("myName1", "completionDeploymentName", "https://...", "apiKey", true)
     .Build();
 
 // ==========================================================================================================

@@ -94,7 +94,7 @@ internal static class SemanticKernelExtensions
         switch (config.AIService)
         {
             case AIServiceOptions.AIServiceType.AzureOpenAI:
-                kernelBuilder.AddAzureChatCompletionService(
+                kernelBuilder.WithAzureChatCompletionService(
                     serviceId: config.Label,
                     deploymentName: config.DeploymentOrModelId,
                     endpoint: config.Endpoint,
@@ -103,7 +103,7 @@ internal static class SemanticKernelExtensions
                 break;
 
             case AIServiceOptions.AIServiceType.OpenAI:
-                kernelBuilder.AddOpenAIChatCompletionService(
+                kernelBuilder.WithOpenAIChatCompletionService(
                    serviceId: config.Label,
                    modelId: config.DeploymentOrModelId,
                    apiKey: config.Key,
@@ -127,7 +127,7 @@ internal static class SemanticKernelExtensions
         switch (config.AIService)
         {
             case AIServiceOptions.AIServiceType.AzureOpenAI:
-                kernelBuilder.AddAzureTextEmbeddingGenerationService(
+                kernelBuilder.WithAzureTextEmbeddingGenerationService(
                     serviceId: config.Label,
                     deploymentName: config.DeploymentOrModelId,
                     endpoint: config.Endpoint,
@@ -135,7 +135,7 @@ internal static class SemanticKernelExtensions
                 break;
 
             case AIServiceOptions.AIServiceType.OpenAI:
-                kernelBuilder.AddOpenAITextEmbeddingGenerationService(
+                kernelBuilder.WithOpenAITextEmbeddingGenerationService(
                     serviceId: config.Label,
                     modelId: config.DeploymentOrModelId,
                     apiKey: config.Key);

@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
-public static class OpenAKernelBuilderExtensions
+public static class OpenAIKernelBuilderExtensions
 {
     #region Text Completion
 
@@ -33,7 +33,7 @@ public static class OpenAKernelBuilderExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder AddAzureTextCompletionService(this KernelBuilder builder,
+    public static KernelBuilder WithAzureTextCompletionService(this KernelBuilder builder,
         string deploymentName,
         string endpoint,
         string apiKey,
@@ -67,7 +67,7 @@ public static class OpenAKernelBuilderExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder AddAzureTextCompletionService(this KernelBuilder builder,
+    public static KernelBuilder WithAzureTextCompletionService(this KernelBuilder builder,
         string deploymentName,
         string endpoint,
         TokenCredential credentials,
@@ -101,7 +101,7 @@ public static class OpenAKernelBuilderExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder AddOpenAITextCompletionService(this KernelBuilder builder,
+    public static KernelBuilder WithOpenAITextCompletionService(this KernelBuilder builder,
         string modelId,
         string apiKey,
         string? orgId = null,
@@ -138,7 +138,7 @@ public static class OpenAKernelBuilderExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder AddAzureTextEmbeddingGenerationService(this KernelBuilder builder,
+    public static KernelBuilder WithAzureTextEmbeddingGenerationService(this KernelBuilder builder,
         string deploymentName,
         string endpoint,
         string apiKey,
@@ -171,7 +171,7 @@ public static class OpenAKernelBuilderExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder AddAzureTextEmbeddingGenerationService(this KernelBuilder builder,
+    public static KernelBuilder WithAzureTextEmbeddingGenerationService(this KernelBuilder builder,
         string deploymentName,
         string endpoint,
         TokenCredential credential,
@@ -204,7 +204,7 @@ public static class OpenAKernelBuilderExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder AddOpenAITextEmbeddingGenerationService(this KernelBuilder builder,
+    public static KernelBuilder WithOpenAITextEmbeddingGenerationService(this KernelBuilder builder,
         string modelId,
         string apiKey,
         string? orgId = null,
@@ -242,7 +242,7 @@ public static class OpenAKernelBuilderExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder AddAzureChatCompletionService(this KernelBuilder builder,
+    public static KernelBuilder WithAzureChatCompletionService(this KernelBuilder builder,
         string deploymentName,
         string endpoint,
         string apiKey,
@@ -284,7 +284,7 @@ public static class OpenAKernelBuilderExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder AddAzureChatCompletionService(this KernelBuilder builder,
+    public static KernelBuilder WithAzureChatCompletionService(this KernelBuilder builder,
         string deploymentName,
         string endpoint,
         TokenCredential credentials,
@@ -326,7 +326,7 @@ public static class OpenAKernelBuilderExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder AddOpenAIChatCompletionService(this KernelBuilder builder,
+    public static KernelBuilder WithOpenAIChatCompletionService(this KernelBuilder builder,
         string modelId,
         string apiKey,
         string? orgId = null,
@@ -369,7 +369,7 @@ public static class OpenAKernelBuilderExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder AddOpenAIImageGenerationService(this KernelBuilder builder,
+    public static KernelBuilder WithOpenAIImageGenerationService(this KernelBuilder builder,
         string apiKey,
         string? orgId = null,
         string? serviceId = null,

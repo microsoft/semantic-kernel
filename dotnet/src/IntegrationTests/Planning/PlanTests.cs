@@ -458,7 +458,7 @@ public sealed class PlanTests : IDisposable
 
         var builder = Kernel.Builder
             .WithLogger(this._logger)
-            .AddAzureTextCompletionService(
+            .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey,
@@ -468,7 +468,7 @@ public sealed class PlanTests : IDisposable
         if (useEmbeddings)
         {
             builder
-                .AddAzureTextEmbeddingGenerationService(
+                .WithAzureTextEmbeddingGenerationService(
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)

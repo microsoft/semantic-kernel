@@ -44,7 +44,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = Kernel.Builder
             .WithLogger(this._logger)
-            .AddOpenAITextCompletionService(
+            .WithOpenAITextCompletionService(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: openAIConfiguration.ApiKey,
@@ -70,7 +70,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = Kernel.Builder
             .WithLogger(this._logger)
-            .AddAzureTextCompletionService(
+            .WithAzureTextCompletionService(
                 serviceId: azureOpenAIConfiguration.ServiceId,
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
@@ -99,7 +99,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration);
 
         IKernel target = Kernel.Builder
-            .AddOpenAITextCompletionService(
+            .WithOpenAITextCompletionService(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
@@ -123,7 +123,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Use an invalid API key to force a 401 Unauthorized response
         IKernel target = Kernel.Builder
-            .AddOpenAITextCompletionService(
+            .WithOpenAITextCompletionService(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY",
                 serviceId: openAIConfiguration.ServiceId)
@@ -149,7 +149,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = Kernel.Builder
             .WithLogger(this._testOutputHelper)
-            .AddAzureTextCompletionService(
+            .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: "INVALID_KEY",
@@ -176,7 +176,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         IKernel target = Kernel.Builder
             .WithLogger(this._testOutputHelper)
-            .AddAzureTextCompletionService(
+            .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey,
