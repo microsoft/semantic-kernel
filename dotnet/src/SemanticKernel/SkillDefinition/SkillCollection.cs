@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// The list is used by the planner and when executing pipelines of function compositions.
 /// </summary>
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "It is a collection")]
-public class SkillCollection : ISkillCollection
+public sealed class SkillCollection : ISkillCollection, IDisposable
 {
     internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
 
@@ -159,6 +159,20 @@ public class SkillCollection : ISkillCollection
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Dispose of skills.
+    /// </summary>
+    public void Dispose()
+    {
+        foreach (var pair in this._skillCollection)
+        {
+            if (pair.Value is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
     }
 
     #region private ================================================================================
