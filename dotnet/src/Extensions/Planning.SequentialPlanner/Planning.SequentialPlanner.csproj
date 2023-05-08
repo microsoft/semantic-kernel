@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StongNamePublicKey)"/>
-    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StrongNamePublicKey)"/>
+    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
   </ItemGroup>
 
   <ItemGroup>

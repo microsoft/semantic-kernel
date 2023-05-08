@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
-using SemanticKernel.Service.Skills.OpenApiSkills;
+using SemanticKernel.Service.Skills.OpenApiSkills.GitHubSkill.Model;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Skills;
@@ -156,7 +156,7 @@ public class ChatSkill
                 SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName),
                 latestMessage.ToString(),
                 limit: 100,
-                minRelevanceScore: 0.8);
+                minRelevanceScore: this._promptSettings.SemanticMemoryMinRelevance);
             await foreach (var memory in results)
             {
                 relevantMemories.Add(memory);
@@ -483,7 +483,7 @@ public class ChatSkill
 
         return itemList.Count > 0
             ? JsonSerializer.Serialize(itemList)
-            : String.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
+            : string.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
     }
 
     /// <summary>
@@ -563,7 +563,7 @@ public class ChatSkill
             collection: memoryCollectionName,
             query: item.ToFormattedString(),
             limit: 1,
-            minRelevanceScore: 0.8,
+            minRelevanceScore: this._promptSettings.SemanticMemoryMinRelevance,
             cancellationToken: context.CancellationToken
         ).ToEnumerable();
 

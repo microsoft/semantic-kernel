@@ -15,9 +15,6 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.UnitTests.TemplateEngine;
 
-#pragma warning disable VSTHRD103 // ok to use WriteLine synchronously
-#pragma warning disable CA1849 // ok to use WriteLine synchronously
-
 public sealed class PromptTemplateEngineTests
 {
     private readonly PromptTemplateEngine _target;
@@ -231,5 +228,3 @@ public sealed class PromptTemplateEngineTests
             TestConsoleLogger.Log);
     }
 }
-#pragma warning restore VSTHRD103
-#pragma warning restore CA1849
