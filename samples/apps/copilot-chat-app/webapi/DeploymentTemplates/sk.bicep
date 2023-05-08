@@ -155,7 +155,7 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'MemoriesStore:Qdrant:Host'
-          value: 'http://${aci.properties.ipAddress.ip}'
+          value: 'http://${aci.properties.ipAddress.fqdn}'
         }
         {
           name: 'Kestrel:Endpoints:Https:Url'

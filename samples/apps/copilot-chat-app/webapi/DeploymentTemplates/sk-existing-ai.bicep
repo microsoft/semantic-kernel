@@ -5,11 +5,9 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 Bicep template for deploying Semantic Kernel to Azure as a web app service without creating a new Azure OpenAI instance.
 
 Resources to add:
-- Qdrant
 - CosmosDB
 - AzureSpeech
 - vNet + Network security group
-- Key Vault
 */
 
 @description('Name for the deployment')
@@ -145,7 +143,7 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'MemoriesStore:Qdrant:Host'
-          value: 'http://${aci.properties.ipAddress.ip}'
+          value: 'http://${aci.properties.ipAddress.fqdn}'
         }
         {
           name: 'Kestrel:Endpoints:Https:Url'
@@ -262,10 +260,6 @@ resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = 
           image: 'qdrant/qdrant:latest'
           ports: [
             {
-              port: 80
-              protocol: 'TCP'
-            }
-            {
               port: 6333
               protocol: 'TCP'
             }
@@ -289,10 +283,6 @@ resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = 
     restartPolicy: 'OnFailure'
     ipAddress: {
       ports: [
-        {
-          port: 80
-          protocol: 'TCP'
-        }
         {
           port: 6333
           protocol: 'TCP'

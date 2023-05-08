@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "11180244446532696359"
+      "templateHash": "13622094074985985653"
     }
   },
   "parameters": {
@@ -178,7 +178,7 @@
             },
             {
               "name": "MemoriesStore:Qdrant:Host",
-              "value": "[format('http://{0}', reference(resourceId('Microsoft.ContainerInstance/containerGroups', format('ci-{0}', variables('uniqueName'))), '2022-10-01-preview').ipAddress.ip)]"
+              "value": "[format('http://{0}', reference(resourceId('Microsoft.ContainerInstance/containerGroups', format('ci-{0}', variables('uniqueName'))), '2022-10-01-preview').ipAddress.fqdn)]"
             },
             {
               "name": "Kestrel:Endpoints:Https:Url",
