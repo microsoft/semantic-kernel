@@ -7,7 +7,7 @@ namespace SemanticKernel.Service.Skills.OpenApiSkills.JiraSkill.Model;
 public class CommentAuthor
 {
     /// <summary>
-    /// Gets or sets the ID of the label.
+    /// Gets or sets the Comment Author's display name.
     /// </summary>
     [JsonPropertyName("displayName")]
     public string displayName { get; set; }

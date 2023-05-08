@@ -37,7 +37,7 @@ public class IssueResponseFields
     /// <param name="statuscategorychangedate">The date time the issue was last changed.</param>
     /// <param name="summary">The summary of the issue.</param>
     /// <param name="parent">The parent of the issue.</param>
-    /// <param name="commentResponse">List of comments.</param>
+    /// <param name="commentResponse">List of all comments on the issue.</param>
     public IssueResponseFields(string statuscategorychangedate, string summary, IssueResponse parent, CommentResponse commentResponse)
     {
         this.statuscategorychangedate = statuscategorychangedate;

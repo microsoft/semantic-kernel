@@ -8,7 +8,7 @@ namespace SemanticKernel.Service.Skills.OpenApiSkills.JiraSkill.Model;
 public class CommentResponse
 {
     /// <summary>
-    /// Gets or sets the ID of the label.
+    /// Gets or sets the list of all comments contained in this comment response.
     /// </summary>
     [JsonPropertyName("comments")]
     public List<IndividualComments> allcomments { get; set; }

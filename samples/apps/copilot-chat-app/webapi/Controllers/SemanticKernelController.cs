@@ -168,7 +168,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
                 filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
-        
+
         if (openApiSkillsAuthHeaders.JiraAuthentication != null)
         {
             this._logger.LogInformation("Registering Jira Skill");

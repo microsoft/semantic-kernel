@@ -21,7 +21,7 @@ public class IndividualComments
     /// <summary>
     /// Initializes a new instance of the <see cref="IndividualComments"/> class.
     /// </summary>
-    /// <param name="body">List of all comments on the Issue.</param>
+    /// <param name="body">The actual content of the comment.</param>
     /// <param name="author">Author of the comment.</param>
     public IndividualComments(string body, CommentAuthor author)
     {
