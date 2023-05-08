@@ -28,7 +28,7 @@ async def test_azure_chat_completion_with_skills():
         deployment_name = "gpt-4"
 
     # Configure LLM service
-    kernel.config.add_chat_service(
+    kernel.add_chat_service(
         "chat_completion",
         sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
     )
