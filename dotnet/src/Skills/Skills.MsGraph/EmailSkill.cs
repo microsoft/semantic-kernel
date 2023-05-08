@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.MsGraph.Diagnostics;
+using Microsoft.SemanticKernel.Skills.MsGraph.Models;
 
 namespace Microsoft.SemanticKernel.Skills.MsGraph;
 
@@ -127,11 +128,11 @@ public class EmailSkill
             }
         }
 
-        IEnumerable<Models.EmailMessage> messages = await this._connector.GetMessagesAsync(
-            top: top,
-            skip: skip,
-            select: selectString,
-            context.CancellationToken)
+        IEnumerable<EmailMessage> messages = await this._connector.GetMessagesAsync(
+                top: top,
+                skip: skip,
+                select: selectString,
+                context.CancellationToken)
             .ConfigureAwait(false);
 
         return JsonSerializer.Serialize(
