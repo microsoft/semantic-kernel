@@ -371,7 +371,6 @@ public class SqliteMemoryStoreTests : IDisposable
         // Act
         var collections = await db.GetCollectionsAsync().ToListAsync();
 
-#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         // Assert
         foreach (var collection in testCollections)
         {
@@ -388,7 +387,6 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.True(collections.Contains(testCollections[2]),
             $"Collections does not contain the newly-created collection {testCollections[2]}");
     }
-#pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
     [Fact]
     public async Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
