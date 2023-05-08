@@ -38,9 +38,9 @@ public class CalendarSkillTests : IDisposable
         DateTimeOffset anyEndTime = DateTimeOffset.Now + TimeSpan.FromDays(1.1);
         string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
 
-        CalendarEvent expected = new(anySubject, anyStartTime, anyEndTime)
+        CalendarEvent expected = new()
         {
-            Content = anyContent,
+            Subject = anySubject,
             Location = anyLocation,
             Attendees = anyAttendees
         };
@@ -75,10 +75,13 @@ public class CalendarSkillTests : IDisposable
         DateTimeOffset anyEndTime = DateTimeOffset.Now + TimeSpan.FromDays(1.1);
         string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
 
-        CalendarEvent expected = new(anySubject, anyStartTime, anyEndTime)
+        CalendarEvent expected = new()
         {
             Content = anyContent,
-            Attendees = anyAttendees
+            Subject = anySubject,
+            Attendees = anyAttendees,
+            Start = anyStartTime,
+            End = anyEndTime
         };
 
         Mock<ICalendarConnector> connectorMock = new();
@@ -110,8 +113,11 @@ public class CalendarSkillTests : IDisposable
         DateTimeOffset anyEndTime = DateTimeOffset.Now + TimeSpan.FromDays(1.1);
         string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
 
-        CalendarEvent expected = new(anySubject, anyStartTime, anyEndTime)
+        CalendarEvent expected = new()
         {
+            Subject = anySubject,
+            Start = anyStartTime,
+            End = anyEndTime,
             Location = anyLocation,
             Attendees = anyAttendees
         };
@@ -145,8 +151,11 @@ public class CalendarSkillTests : IDisposable
         DateTimeOffset anyStartTime = DateTimeOffset.Now + TimeSpan.FromDays(1);
         DateTimeOffset anyEndTime = DateTimeOffset.Now + TimeSpan.FromDays(1.1);
 
-        CalendarEvent expected = new(anySubject, anyStartTime, anyEndTime)
+        CalendarEvent expected = new()
         {
+            Subject = anySubject,
+            Start = anyStartTime,
+            End = anyEndTime,
             Content = anyContent,
             Location = anyLocation
         };
