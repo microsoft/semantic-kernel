@@ -4,6 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace SemanticKernel.Service.Skills.OpenApiSkills.JiraSkill.Model;
 
+/// <summary>
+/// Represents a the trimmed down response for retrieving an issue from jira.
+/// </summary>
 public class IssueResponse
 {
     /// <summary>
@@ -16,19 +19,19 @@ public class IssueResponse
     /// Gets or sets the issue key, which is a readable id different from the GUID above.
     /// </summary>
     [JsonPropertyName("key")]
-    public string key { get; set; }
+    public string Key { get; set; }
 
     /// <summary>
     /// Gets or sets the url of the issue.
     /// </summary>
     [JsonPropertyName("self")]
-    public string self { get; set; }
+    public string Self { get; set; }
 
     /// <summary>
     /// Gets or sets the Fields describing the IssueResponse.
     /// </summary>
     [JsonPropertyName("fields")]
-    public IssueResponseFields fields { get; set; }
+    public IssueResponseFields Fields { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IssueResponse"/> class.
@@ -36,12 +39,12 @@ public class IssueResponse
     /// <param name="id">The GUID of the Issue.</param>
     /// <param name="key">The readable id of the Issue.</param>
     /// <param name="self">The url of the Issue.</param>
-    /// <param name="fields">The fields that make up the response body.</param>
+    /// <param name="fields">The Fields that make up the response body.</param>
     public IssueResponse(string id, string key, string self, IssueResponseFields fields)
     {
         this.Id = id;
-        this.key = key;
-        this.self = self;
-        this.fields = fields;
+        this.Key = key;
+        this.Self = self;
+        this.Fields = fields;
     }
 }

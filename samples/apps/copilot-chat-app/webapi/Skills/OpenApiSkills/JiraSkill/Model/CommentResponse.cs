@@ -5,20 +5,23 @@ using SharpYaml.Tokens;
 
 namespace SemanticKernel.Service.Skills.OpenApiSkills.JiraSkill.Model;
 
+/// <summary>
+/// Represents a the list of comments that make up a CommentResponse.
+/// </summary>
 public class CommentResponse
 {
     /// <summary>
     /// Gets or sets the list of all comments contained in this comment response.
     /// </summary>
     [JsonPropertyName("comments")]
-    public List<IndividualComments> allcomments { get; set; }
+    public IEnumerable<IndividualComments> AllComments { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CommentResponse"/> class.
     /// </summary>
     /// <param name="allcomments">List of all comments on the Issue.</param>
-    public CommentResponse(List<IndividualComments> allcomments)
+    public CommentResponse(IEnumerable<IndividualComments> allcomments)
     {
-        this.allcomments = allcomments;
+        this.AllComments = allcomments;
     }
 }

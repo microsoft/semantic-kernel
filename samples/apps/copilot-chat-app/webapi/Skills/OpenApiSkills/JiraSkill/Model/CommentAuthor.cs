@@ -4,13 +4,16 @@ using System.Text.Json.Serialization;
 
 namespace SemanticKernel.Service.Skills.OpenApiSkills.JiraSkill.Model;
 
+/// <summary>
+/// Represents the Author of a comment.
+/// </summary>
 public class CommentAuthor
 {
     /// <summary>
     /// Gets or sets the Comment Author's display name.
     /// </summary>
     [JsonPropertyName("displayName")]
-    public string displayName { get; set; }
+    public string DisplayName { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CommentAuthor"/> class.
@@ -18,6 +21,6 @@ public class CommentAuthor
     /// <param name="displayName">Name of Author</param>
     public CommentAuthor(string displayName)
     {
-        this.displayName = displayName;
+        this.DisplayName = displayName;
     }
 }
