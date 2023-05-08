@@ -126,13 +126,10 @@ export const initialState: PluginsState = {
         name: Plugins.Klarna,
         publisher: 'Klarna',
         description:
-            'TODO.',
+            'Search and compare prices from thousands of online shops.',
         enabled: false,
         authRequirements: {
-            personalAccessToken: true,
-            scopes: ['Read and Write access to pull requests'],
-            helpLink:
-                'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token',
+            
         },
         icon: KlarnaIcon,
         headerTag: AuthHeaderTags.Klarna,

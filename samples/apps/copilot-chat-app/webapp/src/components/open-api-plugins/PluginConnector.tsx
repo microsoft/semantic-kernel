@@ -271,7 +271,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                 <Button appearance="secondary">Cancel</Button>
                             </DialogTrigger>
                             <Button type="submit" appearance="primary" disabled={!!errorMessage}>
-                                Sign In
+                                Enable
                             </Button>
                         </DialogActions>
                     </DialogBody>

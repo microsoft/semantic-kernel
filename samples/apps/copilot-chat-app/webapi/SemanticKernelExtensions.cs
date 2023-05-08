@@ -72,6 +72,9 @@ internal static class SemanticKernelExtensions
     private static ISemanticTextMemory CreateSemanticTextMemory(this IServiceProvider serviceProvider)
     {
         MemoriesStoreOptions config = serviceProvider.GetRequiredService<IOptions<MemoriesStoreOptions>>().Value;
+
+        var foo = serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName);
+
         switch (config.Type)
         {
             case MemoriesStoreOptions.MemoriesStoreType.Volatile:
