@@ -173,7 +173,7 @@ FileIOSkill.ReadAsync
 Parameter ""path"": Source file.
 // Write a file.
 FileIOSkill.WriteAsync
-Parameter ""path"": Destination file.
+Parameter ""path"": Destination file. (default value: sample.txt)
 Parameter ""content"": File content.
 // Get the current time.
 TimeSkill.Time
@@ -208,7 +208,7 @@ TimeSkill.Time
 No parameters.
 // Write a file.
 FileIOSkill.WriteAsync
-Parameter ""path"": Destination file.
+Parameter ""path"": Destination file. (default value: sample.txt)
 Parameter ""content"": File content.
 // Makes a POST request to a uri.
 HttpSkill.PostAsync
@@ -254,7 +254,8 @@ Goal: tell me a joke.
                 foreach (var p in func.Parameters)
                 {
                     var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description;
-                    list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)}");
+                    var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $" (default value: {p.DefaultValue})";
+                    list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)} {defaultValueString}");
                 }
             }
         }

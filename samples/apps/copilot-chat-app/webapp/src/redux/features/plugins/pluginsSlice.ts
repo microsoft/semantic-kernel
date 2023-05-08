@@ -33,7 +33,7 @@ export const pluginsState = createSlice({
 
             plugin.enabled = true;
             plugin.authData = authData;
-            plugin.apiRequirements = action.payload.apiRequirements;
+            plugin.apiProperties = action.payload.apiProperties;
         },
         disconnectPlugin: (state: PluginsState, action: PayloadAction<Plugins>) => {
             var plugin: Plugin;

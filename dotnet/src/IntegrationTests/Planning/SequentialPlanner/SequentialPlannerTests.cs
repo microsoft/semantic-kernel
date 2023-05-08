@@ -71,7 +71,7 @@ public sealed class SequentialPlannerTests : IDisposable
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
                 step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase) &&
-                step.NamedParameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
+                step.Parameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]

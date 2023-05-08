@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of SKContext
+
 namespace Microsoft.SemanticKernel.Orchestration;
-#pragma warning restore IDE0130
 
 /// <summary>
 /// Class that holds extension methods for ContextVariables.

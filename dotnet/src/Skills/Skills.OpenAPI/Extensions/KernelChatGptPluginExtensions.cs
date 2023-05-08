@@ -56,7 +56,7 @@ public static class KernelChatGptPluginExtensions
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
         return await kernel
-            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken)
+            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -95,7 +95,7 @@ public static class KernelChatGptPluginExtensions
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
         return await kernel
-            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken)
+            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 

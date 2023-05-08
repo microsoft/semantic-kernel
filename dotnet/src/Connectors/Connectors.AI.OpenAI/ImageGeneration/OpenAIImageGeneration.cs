@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq;
+using System;
+using System.Diagnostics;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -16,8 +15,20 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 
 public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
-    // 3P OpenAI REST API endpoint
+    /// <summary>
+    /// OpenAI REST API endpoint
+    /// </summary>
     private const string OpenAIEndpoint = "https://api.openai.com/v1/images/generations";
+
+    /// <summary>
+    /// Optional value for the OpenAI-Organization header.
+    /// </summary>
+    private readonly string? _organizationHeaderValue;
+
+    /// <summary>
+    /// Value for the authorization header.
+    /// </summary>
+    private readonly string _authorizationHeaderValue;
 
     /// <summary>
     /// Create a new instance of OpenAI image generation service
@@ -34,50 +45,54 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     ) : base(httpClient, logger)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
-        this.HTTPClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+        this._authorizationHeaderValue = $"Bearer {apiKey}";
+        this._organizationHeaderValue = organization;
+    }
 
-        if (!string.IsNullOrEmpty(organization))
+    /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
+    private protected override void AddRequestHeaders(HttpRequestMessage request)
+    {
+        base.AddRequestHeaders(request);
+
+        request.Headers.Add("Authorization", this._authorizationHeaderValue);
+        if (!string.IsNullOrEmpty(this._organizationHeaderValue))
         {
-            this.HTTPClient.DefaultRequestHeaders.Add("OpenAI-Organization", organization);
+            request.Headers.Add("OpenAI-Organization", this._organizationHeaderValue);
         }
     }
 
     /// <inheritdoc/>
     public Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(description);
         if (width != height || (width != 256 && width != 512 && width != 1024))
         {
-            throw new AIException(AIException.ErrorCodes.InvalidRequest, "OpenAI can generate only square images 256x256, 512x512, 1024x1024");
+            throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
 
-        return this.GenerateImageUrlAsync(description, width, height, cancellationToken);
+        return this.GenerateImageAsync(description, width, height, "url", x => x.Url, cancellationToken);
     }
 
-    private async Task<string> GenerateImageUrlAsync(string description, int width, int height, CancellationToken cancellationToken = default)
+    private async Task<string> GenerateImageAsync(
+        string description,
+        int width, int height,
+        string format, Func<ImageGenerationResponse.Image, string> extractResponse,
+        CancellationToken cancellationToken)
     {
+        Debug.Assert(width == height);
+        Debug.Assert(width is 256 or 512 or 1024);
+        Debug.Assert(format is "url" or "b64_json");
+        Debug.Assert(extractResponse is not null);
+
         var requestBody = Json.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",
             Count = 1,
-            Format = "url",
+            Format = format,
         });
 
-        var list = await this.ExecuteImageUrlGenerationRequestAsync(OpenAIEndpoint, requestBody, cancellationToken).ConfigureAwait(false);
-        return list.First();
-    }
-
-    private async Task<string> GenerateImageBase64Async(string description, int width, int height, CancellationToken cancellationToken = default)
-    {
-        var requestBody = Json.Serialize(new ImageGenerationRequest
-        {
-            Prompt = description,
-            Size = $"{width}x{height}",
-            Count = 1,
-            Format = "b64_json",
-        });
-
-        var list = await this.ExecuteImageBase64GenerationRequestAsync(OpenAIEndpoint, requestBody, cancellationToken).ConfigureAwait(false);
-        return list.First();
+        var list = await this.ExecuteImageGenerationRequestAsync(OpenAIEndpoint, requestBody, extractResponse!, cancellationToken).ConfigureAwait(false);
+        return list[0];
     }
 }

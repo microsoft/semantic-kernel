@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
-using SemanticKernel.Service.Skills.OpenApiSkills;
+using SemanticKernel.Service.Skills.OpenApiSkills.GitHubSkill.Model;
 using SemanticKernel.Service.Skills.OpenApiSkills.JiraSkill.Model;
 using SemanticKernel.Service.Storage;
 
@@ -157,7 +157,7 @@ public class ChatSkill
                 SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName),
                 latestMessage.ToString(),
                 limit: 100,
-                minRelevanceScore: 0.8);
+                minRelevanceScore: this._promptSettings.SemanticMemoryMinRelevance);
             await foreach (var memory in results)
             {
                 relevantMemories.Add(memory);
@@ -497,6 +497,83 @@ public class ChatSkill
     }
 
     /// <summary>
+    /// Try to optimize json from the planner response
+    /// based on token limit
+    /// </summary>
+    private string OptimizeOpenApiSkillJson(string jsonContent, int tokenLimit, Plan plan)
+    {
+        int jsonTokenLimit = (int)(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
+
+        // Remove all new line characters + leading and trailing white space
+        jsonContent = Regex.Replace(jsonContent.Trim(), @"[\n\r]", string.Empty);
+        var document = JsonDocument.Parse(jsonContent);
+        string lastSkillInvoked = plan.Steps[^1].SkillName;
+
+        // Check if the last skill invoked was GitHubSkill and deserialize the JSON content accordingly
+        if (string.Equals(lastSkillInvoked, "GitHubSkill", StringComparison.Ordinal))
+        {
+            var pullRequestType = document.RootElement.ValueKind == JsonValueKind.Array ? typeof(PullRequest[]) : typeof(PullRequest);
+
+            // Deserializing limits the json content to only the fields defined in the GitHubSkill/Model classes
+            var pullRequest = JsonSerializer.Deserialize(jsonContent, pullRequestType);
+            jsonContent = pullRequest != null ? JsonSerializer.Serialize(pullRequest) : string.Empty;
+            document = JsonDocument.Parse(jsonContent);
+        }
+
+        int jsonContentTokenCount = Utilities.TokenCount(jsonContent);
+
+        // Return the JSON content if it does not exceed the token limit
+        if (jsonContentTokenCount < jsonTokenLimit)
+        {
+            return jsonContent;
+        }
+
+        List<object> itemList = new();
+
+        // Summary (List) Object
+        if (document.RootElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement item in document.RootElement.EnumerateArray())
+            {
+                int itemTokenCount = Utilities.TokenCount(item.ToString());
+
+                if (jsonTokenLimit - itemTokenCount > 0)
+                {
+                    itemList.Add(item);
+                    jsonTokenLimit -= itemTokenCount;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        // Detail Object
+        if (document.RootElement.ValueKind == JsonValueKind.Object)
+        {
+            foreach (JsonProperty property in document.RootElement.EnumerateObject())
+            {
+                int propertyTokenCount = Utilities.TokenCount(property.ToString());
+
+                if (jsonTokenLimit - propertyTokenCount > 0)
+                {
+                    itemList.Add(property);
+                    jsonTokenLimit -= propertyTokenCount;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        return itemList.Count > 0
+            ? JsonSerializer.Serialize(itemList)
+            : string.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
+    }
+
+    /// <summary>
     /// Save a new message to the chat history.
     /// </summary>
     /// <param name="message">The message</param>
@@ -573,7 +650,7 @@ public class ChatSkill
             collection: memoryCollectionName,
             query: item.ToFormattedString(),
             limit: 1,
-            minRelevanceScore: 0.8,
+            minRelevanceScore: this._promptSettings.SemanticMemoryMinRelevance,
             cancellationToken: context.CancellationToken
         ).ToEnumerable();
 
