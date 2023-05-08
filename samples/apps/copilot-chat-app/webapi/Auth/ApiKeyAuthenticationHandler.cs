@@ -16,29 +16,26 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
     public const string AuthenticationScheme = "ApiKey";
     public const string ApiKeyHeaderName = "x-api-key";
 
-    private readonly ILogger<ApiKeyAuthenticationHandler> _logger;
-
     /// <summary>
     /// Constructor
     /// </summary>
     public ApiKeyAuthenticationHandler(
         IOptionsMonitor<ApiKeyAuthenticationSchemeOptions> options,
-        ILoggerFactory logger,
+        ILoggerFactory loggerFactory,
         UrlEncoder encoder,
-        ISystemClock clock) : base(options, logger, encoder, clock)
+        ISystemClock clock) : base(options, loggerFactory, encoder, clock)
     {
-        this._logger = logger.CreateLogger<ApiKeyAuthenticationHandler>();
     }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        this._logger.LogInformation("Checking API key");
+        this.Logger.LogInformation("Checking API key");
 
         if (string.IsNullOrWhiteSpace(this.Options.ApiKey))
         {
             const string ErrorMessage = "API key not configured on server";
 
-            this._logger.LogError(ErrorMessage);
+            this.Logger.LogError(ErrorMessage);
 
             return Task.FromResult(AuthenticateResult.Fail(ErrorMessage));
         }
@@ -47,7 +44,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
         {
             const string InformationMessage = "No API key provided";
 
-            this._logger.LogWarning(InformationMessage);
+            this.Logger.LogWarning(InformationMessage);
 
             return Task.FromResult(AuthenticateResult.Fail(InformationMessage));
         }
@@ -56,7 +53,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
         {
             const string WarningMessage = "Incorrect API key";
 
-            this._logger.LogWarning(WarningMessage);
+            this.Logger.LogWarning(WarningMessage);
 
             return Task.FromResult(AuthenticateResult.Fail(WarningMessage));
         }
@@ -64,7 +61,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
         var principal = new ClaimsPrincipal(new ClaimsIdentity(AuthenticationScheme));
         var ticket = new AuthenticationTicket(principal, this.Scheme.Name);
 
-        this._logger.LogInformation("Request authorized by API key");
+        this.Logger.LogInformation("Request authorized by API key");
 
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
