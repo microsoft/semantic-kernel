@@ -458,25 +458,21 @@ public sealed class PlanTests : IDisposable
 
         var builder = Kernel.Builder
             .WithLogger(this._logger)
-            .Configure(config =>
-            {
-                config.AddAzureTextCompletionService(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
+            .AddAzureTextCompletionService(
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey,
+                setAsDefault: true);
 
-                if (useEmbeddings)
-                {
-                    config.AddAzureTextEmbeddingGenerationService(
-                        deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                        endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                        apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-                }
-            });
 
         if (useEmbeddings)
         {
-            builder = builder.WithMemoryStorage(new VolatileMemoryStore());
+            builder
+                .AddAzureTextEmbeddingGenerationService(
+                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
+                .WithMemoryStorage(new VolatileMemoryStore());
         }
 
         var kernel = builder.Build();

@@ -71,12 +71,13 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("======== Custom LLM - Text Completion - SKFunction ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        ITextCompletion Factory(IKernel k) => new MyTextCompletionService();
-
-        // Add your text completion service
-        kernel.Config.AddTextCompletionService(Factory);
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            // Add your text completion service as a singleton instance
+            .WithAIService<ITextCompletion>("myService1", new MyTextCompletionService())
+            // Add your text completion service as a factory method
+            .WithAIService<ITextCompletion>("myService2", () => new MyTextCompletionService())
+            .Build();
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
 

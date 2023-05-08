@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -23,16 +24,7 @@ public sealed class KernelBuilder
     private ILogger _log = NullLogger.Instance;
     private IMemoryStore? _memoryStorage = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
-
-    /// <summary>
-    /// Create a new kernel instance
-    /// </summary>
-    /// <returns>New kernel instance</returns>
-    public static IKernel Create()
-    {
-        var builder = new KernelBuilder();
-        return builder.Build();
-    }
+    private readonly AIServiceCollection _aiServices = new();
 
     /// <summary>
     /// Build a new kernel instance using the settings passed so far.
@@ -47,10 +39,11 @@ public sealed class KernelBuilder
 
         var instance = new Kernel(
             new SkillCollection(this._log),
+            this._aiServices.Build(),
             new PromptTemplateEngine(this._log),
             this._memory,
             this._config,
-            this._log
+            this._log ?? NullLogger<Kernel>.Instance
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -105,7 +98,7 @@ public sealed class KernelBuilder
     /// <param name="embeddingGenerator">Embedding generator to add.</param>
     /// <returns>Updated kernel builder including the memory storage and embedding generator.</returns>
     public KernelBuilder WithMemoryStorageAndTextEmbeddingGeneration(
-        IMemoryStore storage, IEmbeddingGeneration<string, float> embeddingGenerator)
+        IMemoryStore storage, ITextEmbeddingGeneration embeddingGenerator)
     {
         Verify.NotNull(storage);
         Verify.NotNull(embeddingGenerator);
@@ -146,6 +139,62 @@ public sealed class KernelBuilder
     {
         Verify.NotNull(configure);
         configure.Invoke(this._config);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a <typeparamref name="TService"/> instance to the services collection
+    /// </summary>
+    /// <param name="instance">The <typeparamref name="TService"/> instance.</param>
+    /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
+    public KernelBuilder WithDefaultAIService<TService>(
+        TService instance,
+        bool setAsDefault = false) where TService : IAIService
+    {
+        this._aiServices.SetService<TService>(instance);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a <typeparamref name="TService"/> instance to the services collection
+    /// </summary>
+    /// <param name="serviceId">The service ID</param>
+    /// <param name="instance">The <typeparamref name="TService"/> instance.</param>
+    /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
+    public KernelBuilder WithAIService<TService>(
+        string? serviceId,
+        TService instance,
+        bool setAsDefault = false) where TService : IAIService
+    {
+        this._aiServices.SetService<TService>(serviceId, instance, setAsDefault);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a <typeparamref name="TService"/> factory method to the services collection
+    /// </summary>
+    /// <param name="factory">The factory method that creates the AI service instances of type <typeparamref name="TService"/>.</param>
+    /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
+    public KernelBuilder WithDefaultAIService<TService>(
+        Func<TService> factory,
+        bool setAsDefault = false) where TService : IAIService
+    {
+        this._aiServices.SetService<TService>(factory);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a <typeparamref name="TService"/> factory method to the services collection
+    /// </summary>
+    /// <param name="serviceId">The service ID</param>
+    /// <param name="factory">The factory method that creates the AI service instances of type <typeparamref name="TService"/>.</param>
+    /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
+    public KernelBuilder WithAIService<TService>(
+        string? serviceId,
+        Func<TService> factory,
+        bool setAsDefault = false) where TService : IAIService
+    {
+        this._aiServices.SetService<TService>(serviceId, factory, setAsDefault);
         return this;
     }
 }

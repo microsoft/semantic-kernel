@@ -39,7 +39,7 @@ public class HttpSkillTests : IDisposable
     public void ItCanBeImported()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        var kernel = Kernel.Builder.Build();
         using var skill = new HttpSkill();
 
         // Act - Assert no exception occurs e.g. due to reflection

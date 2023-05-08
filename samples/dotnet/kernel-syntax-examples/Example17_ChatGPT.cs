@@ -19,10 +19,10 @@ public static class Example17_ChatGPT
     {
         Console.WriteLine("======== SK with ChatGPT ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        // Add your chat completion service
-        kernel.Config.AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"))
+            .Build();
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
         var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");

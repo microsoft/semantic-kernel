@@ -51,7 +51,7 @@ public class SKContextTests
     public async Task ItHasHelpersForSkillCollectionAsync()
     {
         // Arrange
-        IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportSkill(new Parrot(), "test");
+        IDictionary<string, ISKFunction> skill = Kernel.Builder.Build().ImportSkill(new Parrot(), "test");
         this._skills.Setup(x => x.GetNativeFunction("func")).Returns(skill["say"]);
         var target = new SKContext(new ContextVariables(), NullMemory.Instance, this._skills.Object, this._log.Object);
         Assert.NotNull(target.Skills);

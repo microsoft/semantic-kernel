@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 /// <summary>
 /// OpenAI text embedding service.
 /// </summary>
-public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, IEmbeddingGeneration<string, float>
+public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbeddingGeneration
 {
     /// <summary>
     /// Create an instance of the OpenAI text embedding connector

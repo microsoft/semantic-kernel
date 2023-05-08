@@ -20,7 +20,7 @@ public class TimeSkillTests
     public void ItCanBeImported()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
         kernel.ImportSkill(new TimeSkill(), "time");

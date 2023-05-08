@@ -74,26 +74,4 @@ public class KernelConfigTests
         // Assert
         Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
     }
-
-    [Fact]
-    public void ItFailsWhenSetNonExistentTextCompletionService()
-    {
-        var target = new KernelConfig();
-        var exception = Assert.Throws<KernelException>(() =>
-        {
-            target.SetDefaultTextCompletionService("azure");
-        });
-        Assert.Equal(KernelException.ErrorCodes.ServiceNotFound, exception.ErrorCode);
-    }
-
-    [Fact]
-    public void ItFailsWhenSetNonExistentEmbeddingService()
-    {
-        var target = new KernelConfig();
-        var exception = Assert.Throws<KernelException>(() =>
-        {
-            target.SetDefaultTextEmbeddingGenerationService("azure");
-        });
-        Assert.Equal(KernelException.ErrorCodes.ServiceNotFound, exception.ErrorCode);
-    }
 }

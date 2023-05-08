@@ -7,14 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -58,12 +56,14 @@ public sealed class Kernel : IKernel, IDisposable
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
     /// <param name="skillCollection"></param>
+    /// <param name="aiServiceProvider"></param>
     /// <param name="promptTemplateEngine"></param>
     /// <param name="memory"></param>
     /// <param name="config"></param>
     /// <param name="log"></param>
     public Kernel(
         ISkillCollection skillCollection,
+        IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
         KernelConfig config,
@@ -72,6 +72,7 @@ public sealed class Kernel : IKernel, IDisposable
         this._log = log;
         this._config = config;
         this._memory = memory;
+        this._aiServiceProvider = aiServiceProvider;
         this._promptTemplateEngine = promptTemplateEngine;
         this._skillCollection = skillCollection;
     }
@@ -221,64 +222,11 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public T GetService<T>(string? name = null)
+    public T GetService<T>(string? name = null) where T : IAIService
     {
-        // TODO: use .NET ServiceCollection (will require a lot of changes)
-        // TODO: support Connectors, IHttpFactory and IDelegatingHandlerFactory
-
-        if (typeof(T) == typeof(ITextCompletion))
-        {
-            name ??= this.Config.DefaultServiceId;
-
-            if (!this.Config.TextCompletionServices.TryGetValue(name, out Func<IKernel, ITextCompletion> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' text completion service not available");
-            }
-
-            var service = factory.Invoke(this);
-            return (T)service;
-        }
-
-        if (typeof(T) == typeof(IEmbeddingGeneration<string, float>))
-        {
-            name ??= this.Config.DefaultServiceId;
-
-            if (!this.Config.TextEmbeddingGenerationServices.TryGetValue(name, out Func<IKernel, IEmbeddingGeneration<string, float>> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' text embedding service not available");
-            }
-
-            var service = factory.Invoke(this);
-            return (T)service;
-        }
-
-        if (typeof(T) == typeof(IChatCompletion))
-        {
-            name ??= this.Config.DefaultServiceId;
-
-            if (!this.Config.ChatCompletionServices.TryGetValue(name, out Func<IKernel, IChatCompletion> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' chat completion service not available");
-            }
-
-            var service = factory.Invoke(this);
-            return (T)service;
-        }
-
-        if (typeof(T) == typeof(IImageGeneration))
-        {
-            name ??= this.Config.DefaultServiceId;
-
-            if (!this.Config.ImageGenerationServices.TryGetValue(name, out Func<IKernel, IImageGeneration> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' image generation service not available");
-            }
-
-            var service = factory.Invoke(this);
-            return (T)service;
-        }
-
-        throw new NotSupportedException("The kernel service collection doesn't support the type " + typeof(T).FullName);
+        return this._aiServiceProvider.GetService<T>(name) ??
+            throw new KernelException(KernelException.ErrorCodes.ServiceNotFound,
+            $"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
     }
 
     /// <summary>
@@ -300,6 +248,7 @@ public sealed class Kernel : IKernel, IDisposable
     private readonly ISkillCollection _skillCollection;
     private ISemanticTextMemory _memory;
     private readonly IPromptTemplateEngine _promptTemplateEngine;
+    private readonly IAIServiceProvider _aiServiceProvider;
 
     private ISKFunction CreateSemanticFunction(
         string skillName,
