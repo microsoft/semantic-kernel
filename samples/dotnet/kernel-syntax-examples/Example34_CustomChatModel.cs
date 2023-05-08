@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using RepoUtils;
 
 /**
- * The following example shows how to plug use a custom chat completion model.
+ * The following example shows how to plug use a custom chat model.
  *
  * This might be useful in a few scenarios, for example:
  * - You are not using OpenAI or Azure OpenAI models
@@ -57,7 +57,7 @@ public sealed class MyChatCompletionService : IChatCompletion
 }
 
 // ReSharper disable once InconsistentNaming
-public static class Example33_CustomChat
+public static class Example34_CustomChatModel
 {
     public static async Task RunAsync()
     {
