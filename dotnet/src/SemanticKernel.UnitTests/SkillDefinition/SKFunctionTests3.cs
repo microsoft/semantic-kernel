@@ -20,7 +20,7 @@ public sealed class SKFunctionTests3
         var skillInstance = new LocalExampleSkill();
         MethodInfo[] methods = skillInstance.GetType()
             .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name != "GetType" && m.Name != "Equals" && m.Name != "GetHashCode" && m.Name != "ToString")
+            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
         IEnumerable<ISKFunction> functions = from method in methods select SKFunction.FromNativeMethod(method, skillInstance, "skill");
@@ -43,7 +43,7 @@ public sealed class SKFunctionTests3
         var instance = new InvalidSkill();
         MethodInfo[] methods = instance.GetType()
             .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name != "GetType" && m.Name != "Equals" && m.Name != "GetHashCode")
+            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode")
             .ToArray();
 
         // Act - Assert that no exception occurs

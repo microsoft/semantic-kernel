@@ -261,7 +261,7 @@ public class CosmosMemoryStore : IMemoryStore
 
         var response = await container.UpsertItemAsync(entity, cancellationToken: cancel).ConfigureAwait(false);
 
-        if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
+        if (response.StatusCode is HttpStatusCode.OK or HttpStatusCode.Created)
         {
             this._log.LogInformation("Upserted item to collection {0}", collectionName);
         }

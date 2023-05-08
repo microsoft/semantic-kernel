@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Graph;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.MsGraph.Diagnostics;
@@ -29,6 +33,16 @@ public class EmailSkill
         /// Email subject.
         /// </summary>
         public const string Subject = "subject";
+
+        /// <summary>
+        /// The name of the top parameter used to limit the number of results returned in the response.
+        /// </summary>
+        public const string MaxResults = "maxResults";
+
+        /// <summary>
+        /// The name of the skip parameter used to skip a certain number of results in the response.
+        /// </summary>
+        public const string Skip = "skip";
     }
 
     private readonly IEmailConnector _connector;
@@ -78,5 +92,55 @@ public class EmailSkill
         this._logger.LogInformation("Sending email to '{0}' with subject '{1}'", recipients, subject);
         string[] recipientList = recipients.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
         await this._connector.SendEmailAsync(subject, content, recipientList).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Get email messages with specified optional clauses used to query for messages.
+    /// </summary>
+    [SKFunction("Get email messages.")]
+    [SKFunctionContextParameter(Name = Parameters.MaxResults, Description = "Optional limit of the number of message to retrieve.",
+        DefaultValue = "10")]
+    [SKFunctionContextParameter(Name = Parameters.Skip, Description = "Optional number of message to skip before retrieving results.",
+        DefaultValue = "0")]
+    public async Task<string> GetEmailMessagesAsync(SKContext context)
+    {
+        context.Variables.Get(Parameters.MaxResults, out string maxResultsString);
+        context.Variables.Get(Parameters.Skip, out string skipString);
+        this._logger.LogInformation("Getting email messages with query options top: '{0}', skip:'{1}'.", maxResultsString, skipString);
+
+        string selectString = "subject,receivedDateTime,bodyPreview";
+
+        int? top = null;
+        if (!string.IsNullOrWhiteSpace(maxResultsString))
+        {
+            if (int.TryParse(maxResultsString, out int topValue))
+            {
+                top = topValue;
+            }
+        }
+
+        int? skip = null;
+        if (!string.IsNullOrWhiteSpace(skipString))
+        {
+            if (int.TryParse(skipString, out int skipValue))
+            {
+                skip = skipValue;
+            }
+        }
+
+        IEnumerable<Models.EmailMessage> messages = await this._connector.GetMessagesAsync(
+            top: top,
+            skip: skip,
+            select: selectString,
+            context.CancellationToken)
+            .ConfigureAwait(false);
+
+        return JsonSerializer.Serialize(
+            value: messages,
+            options: new JsonSerializerOptions
+            {
+                WriteIndented = false,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            });
     }
 }
