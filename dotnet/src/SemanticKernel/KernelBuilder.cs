@@ -146,10 +146,7 @@ public sealed class KernelBuilder
     /// Adds a <typeparamref name="TService"/> instance to the services collection
     /// </summary>
     /// <param name="instance">The <typeparamref name="TService"/> instance.</param>
-    /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
-    public KernelBuilder WithDefaultAIService<TService>(
-        TService instance,
-        bool setAsDefault = false) where TService : IAIService
+    public KernelBuilder WithDefaultAIService<TService>(TService instance) where TService : IAIService
     {
         this._aiServices.SetService<TService>(instance);
         return this;
@@ -174,10 +171,7 @@ public sealed class KernelBuilder
     /// Adds a <typeparamref name="TService"/> factory method to the services collection
     /// </summary>
     /// <param name="factory">The factory method that creates the AI service instances of type <typeparamref name="TService"/>.</param>
-    /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
-    public KernelBuilder WithDefaultAIService<TService>(
-        Func<TService> factory,
-        bool setAsDefault = false) where TService : IAIService
+    public KernelBuilder WithDefaultAIService<TService>(Func<TService> factory) where TService : IAIService
     {
         this._aiServices.SetService<TService>(factory);
         return this;

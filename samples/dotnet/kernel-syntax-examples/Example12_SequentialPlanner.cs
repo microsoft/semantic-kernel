@@ -27,7 +27,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("======== Sequential Planner - Create and Execute Poetry Plan ========");
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .AddAzureTextCompletionService(
+            .WithAzureTextCompletionService(
                 Env.Var("AZURE_OPENAI_SERVICE_ID"),
                 Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                 Env.Var("AZURE_OPENAI_ENDPOINT"),
@@ -138,11 +138,11 @@ internal static class Example12_SequentialPlanner
 
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .AddAzureTextCompletionService(
+            .WithAzureTextCompletionService(
                         Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_ENDPOINT"),
                         Env.Var("AZURE_OPENAI_KEY"))
-            .AddAzureTextEmbeddingGenerationService(
+            .WithAzureTextEmbeddingGenerationService(
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
@@ -182,7 +182,7 @@ internal static class Example12_SequentialPlanner
     {
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .AddAzureTextCompletionService(
+            .WithAzureTextCompletionService(
                 Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                 Env.Var("AZURE_OPENAI_ENDPOINT"),
                 Env.Var("AZURE_OPENAI_KEY"))

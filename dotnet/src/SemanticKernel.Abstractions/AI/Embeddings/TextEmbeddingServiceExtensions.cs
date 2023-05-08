@@ -16,10 +16,10 @@ public static class TextEmbeddingServiceExtensions
     /// <param name="serviceId">Optional identifier of the desired service.</param>
     /// <returns>The embedding service matching the given id or the default service.</returns>
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
-    public static ITextEmbeddingGeneration GetTextEmbeddingServiceOrDefault(
+    public static ITextEmbeddingGeneration GetTextEmbeddingService(
         this IAIServiceProvider services,
         string? serviceId = null)
-            => services.GetNamedServiceOrDefault<ITextEmbeddingGeneration>(serviceId)
+            => services.GetService<ITextEmbeddingGeneration>(serviceId)
                 ?? throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text embedding service not available");
 
     /// <summary>

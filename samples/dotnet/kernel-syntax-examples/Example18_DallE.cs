@@ -22,9 +22,9 @@ public static class Example18_DallE
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             // Add your image generation service
-            .AddOpenAIImageGenerationService("dallE", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAIImageGenerationService("dallE", Env.Var("OPENAI_API_KEY"))
             // Add your chat completion service 
-            .AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"))
             .Build();
 
         IImageGeneration dallE = kernel.GetService<IImageGeneration>();

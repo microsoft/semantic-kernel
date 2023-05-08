@@ -19,8 +19,8 @@ public static class Example19_Qdrant
         QdrantMemoryStore memoryStore = new QdrantMemoryStore(Env.Var("QDRANT_ENDPOINT"), qdrantPort, vectorSize: 1536, ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
-            .AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
             .WithMemoryStorage(memoryStore)
             .Build();
 

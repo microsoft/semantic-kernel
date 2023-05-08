@@ -21,7 +21,7 @@ public static class Example17_ChatGPT
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"))
             .Build();
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();

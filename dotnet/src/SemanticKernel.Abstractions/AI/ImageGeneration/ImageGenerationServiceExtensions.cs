@@ -16,9 +16,9 @@ public static class ImageGenerationServiceExtensions
     /// <param name="serviceId">Optional identifier of the desired service.</param>
     /// <returns>The <see cref="IImageGeneration"/> id matching the given id or the default.</returns>
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
-    public static IImageGeneration GetImageGenerationServiceOrDefault(
+    public static IImageGeneration GetImageGenerationService(
         this IAIServiceProvider services,
-        string? serviceId = null) => services.GetNamedServiceOrDefault<IImageGeneration>(serviceId)
+        string? serviceId = null) => services.GetService<IImageGeneration>(serviceId)
             ?? throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Image generation service not found");
 
     /// <summary>

@@ -24,7 +24,7 @@ public static class Example32_StreamingCompletion
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .AddAzureTextCompletionService(
+            .WithAzureTextCompletionService(
                 Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                 Env.Var("AZURE_OPENAI_ENDPOINT"),
                 Env.Var("AZURE_OPENAI_KEY"))
@@ -41,7 +41,7 @@ public static class Example32_StreamingCompletion
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-003")
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-003")
             .Build();
 
         ITextCompletion textCompletion = kernel.GetService<ITextCompletion>();

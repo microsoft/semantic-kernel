@@ -32,7 +32,7 @@ public class SequentialPlanParserTests
         Assert.NotNull(azureOpenAIConfiguration);
 
         IKernel kernel = Kernel.Builder
-            .AddAzureTextCompletionService(
+            .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey,
