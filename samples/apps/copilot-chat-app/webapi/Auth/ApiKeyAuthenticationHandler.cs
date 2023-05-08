@@ -44,7 +44,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
         {
             const string InformationMessage = "No API key provided";
 
-            this.Logger.LogWarning(InformationMessage);
+            this.Logger.LogInformation(InformationMessage);
 
             return Task.FromResult(AuthenticateResult.Fail(InformationMessage));
         }
