@@ -1,6 +1,8 @@
-﻿using System.Text.Json.Serialization;
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Service.Skills.OpenApiSkills;
+using System.Text.Json.Serialization;
+
+namespace SemanticKernel.Service.Skills.OpenApiSkills.GitHubSkill.Model;
 
 /// <summary>
 /// Represents a pull request label.
