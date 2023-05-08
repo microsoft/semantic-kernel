@@ -143,8 +143,9 @@ internal static class ServicesExtensions
     /// </summary>
     internal static void AddPersistentChatStore(this IServiceCollection services)
     {
-        IStorageContext<ChatSession> chatSessionInMemoryContext;
-        IStorageContext<ChatMessage> chatMessageInMemoryContext;
+        IStorageContext<ChatSession> chatSessionStorageContext;
+        IStorageContext<ChatMessage> chatMessageStorageContext;
+        IStorageContext<ChatParticipant> chatParticipantStorageContext;
 
         ChatStoreOptions chatStoreConfig = services.BuildServiceProvider().GetRequiredService<IOptions<ChatStoreOptions>>().Value;
 
@@ -152,8 +153,9 @@ internal static class ServicesExtensions
         {
             case ChatStoreOptions.ChatStoreType.Volatile:
             {
-                chatSessionInMemoryContext = new VolatileContext<ChatSession>();
-                chatMessageInMemoryContext = new VolatileContext<ChatMessage>();
+                chatSessionStorageContext = new VolatileContext<ChatSession>();
+                chatMessageStorageContext = new VolatileContext<ChatMessage>();
+                chatParticipantStorageContext = new VolatileContext<ChatParticipant>();
                 break;
             }
 
@@ -166,10 +168,12 @@ internal static class ServicesExtensions
 
                 string fullPath = Path.GetFullPath(chatStoreConfig.Filesystem.FilePath);
                 string directory = Path.GetDirectoryName(fullPath) ?? string.Empty;
-                chatSessionInMemoryContext = new FileSystemContext<ChatSession>(
+                chatSessionStorageContext = new FileSystemContext<ChatSession>(
                     new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_sessions{Path.GetExtension(fullPath)}")));
-                chatMessageInMemoryContext = new FileSystemContext<ChatMessage>(
+                chatMessageStorageContext = new FileSystemContext<ChatMessage>(
                     new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_messages{Path.GetExtension(fullPath)}")));
+                chatParticipantStorageContext = new FileSystemContext<ChatParticipant>(
+                    new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_participants{Path.GetExtension(fullPath)}")));
 
                 break;
             }
@@ -181,10 +185,12 @@ internal static class ServicesExtensions
                     throw new InvalidOperationException("ChatStore:Cosmos is required when ChatStore:Type is 'Cosmos'");
                 }
 #pragma warning disable CA2000 // Dispose objects before losing scope - objects are singletons for the duration of the process and disposed when the process exits.
-                chatSessionInMemoryContext = new CosmosDbContext<ChatSession>(
+                chatSessionStorageContext = new CosmosDbContext<ChatSession>(
                     chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.ChatSessionsContainer);
-                chatMessageInMemoryContext = new CosmosDbContext<ChatMessage>(
+                chatMessageStorageContext = new CosmosDbContext<ChatMessage>(
                     chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.ChatMessagesContainer);
+                chatParticipantStorageContext = new CosmosDbContext<ChatParticipant>(
+                    chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.ChatParticipantsContainer);
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 break;
             }
@@ -196,8 +202,9 @@ internal static class ServicesExtensions
             }
         }
 
-        services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));
-        services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
+        services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionStorageContext));
+        services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageStorageContext));
+        services.AddSingleton<ChatParticipantRepository>(new ChatParticipantRepository(chatParticipantStorageContext));
     }
 
     /// <summary>

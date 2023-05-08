@@ -17,14 +17,4 @@ public class ChatSessionRepository : Repository<ChatSession>
         : base(storageContext)
     {
     }
-
-    /// <summary>
-    /// Finds chat sessions by user id.
-    /// </summary>
-    /// <param name="userId">The user id.</param>
-    /// <returns>A list of chat sessions.</returns>
-    public Task<IEnumerable<ChatSession>> FindByUserIdAsync(string userId)
-    {
-        return base.StorageContext.QueryEntitiesAsync(e => e.UserId == userId);
-    }
 }

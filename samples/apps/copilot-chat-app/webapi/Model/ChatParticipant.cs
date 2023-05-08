@@ -8,7 +8,7 @@ namespace SemanticKernel.Service.Model;
 /// <summary>
 /// A chat session
 /// </summary>
-public class ChatSession : IStorageEntity
+public class ChatParticipant : IStorageEntity
 {
     /// <summary>
     /// Chat ID that is persistent and unique.
@@ -17,14 +17,21 @@ public class ChatSession : IStorageEntity
     public string Id { get; set; }
 
     /// <summary>
-    /// Title of the chat.
+    /// User ID that is persistent and unique.
     /// </summary>
-    [JsonPropertyName("title")]
-    public string Title { get; set; }
+    [JsonPropertyName("userId")]
+    public string UserId { get; set; }
 
-    public ChatSession(string title)
+    /// <summary>
+    /// Chat ID that this participant belongs to.
+    /// </summary>
+    [JsonPropertyName("chatId")]
+    public string ChatId { get; set; }
+
+    public ChatParticipant(string userId, string chatId)
     {
         this.Id = Guid.NewGuid().ToString();
-        this.Title = title;
+        this.UserId = userId;
+        this.ChatId = chatId;
     }
 }
