@@ -435,15 +435,16 @@ public sealed class PlanSerializationTests
             .Returns(() => Task.FromResult(returnContext));
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView()
         {
-            Parameters = new List<ParameterView>()
+            Parameters = new List<ParameterView>
             {
-                new ParameterView() { Name = "variables" }
+                new() { Name = "variables" }
             }
         });
 
         ISKFunction? outFunc = mockFunction.Object;
-        skills.Setup(x => x.TryGetNativeFunction(It.IsAny<string>(), It.IsAny<string>(), out outFunc)).Returns(true);
-        skills.Setup(x => x.GetNativeFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
+        skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), out outFunc)).Returns(true);
+        skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out outFunc)).Returns(true);
+        skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
