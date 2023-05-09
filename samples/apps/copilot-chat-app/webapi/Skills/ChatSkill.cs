@@ -423,7 +423,7 @@ public class ChatSkill
         jsonContent = Regex.Replace(jsonContent.Trim(), @"[\n\r]", string.Empty);
         var document = JsonDocument.Parse(jsonContent);
         string lastSkillInvoked = plan.Steps[^1].SkillName;
-        string lastSkillOperationInvoked = plan.Steps[^1].Name;
+        string lastSkillFunctionInvoked = plan.Steps[^1].Name;
         bool trimSkillResponse = false;
 
         // The json will be deserialized based on the response type of the particular operation that was last invoked by the planner
