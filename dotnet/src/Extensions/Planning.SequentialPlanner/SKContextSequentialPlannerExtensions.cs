@@ -54,9 +54,14 @@ public static class SKContextSequentialPlannerExtensions
         var excludedFunctions = config.ExcludedFunctions ?? new();
         var includedFunctions = config.IncludedFunctions ?? new();
 
-        context.ThrowIfSkillCollectionNotSet();
+        if (context.Skills == null)
+        {
+            throw new KernelException(
+                KernelException.ErrorCodes.SkillCollectionNotSet,
+                "Skill collection not found in the context");
+        }
 
-        var functionsView = context.Skills!.GetFunctionsView();
+        var functionsView = context.Skills.GetFunctionsView();
 
         var availableFunctions = functionsView.SemanticFunctions
             .Concat(functionsView.NativeFunctions)

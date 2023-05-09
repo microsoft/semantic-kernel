@@ -132,7 +132,7 @@ public class KernelTests
 
         // Assert
         Assert.Equal(3, skill.Count);
-        Assert.True(kernel.Skills.TryGetNativeFunction("GetAnyValue", out ISKFunction? functionInstance));
+        Assert.True(kernel.Skills.TryGetFunction("GetAnyValue", out ISKFunction? functionInstance));
         Assert.NotNull(functionInstance);
     }
 
@@ -177,9 +177,12 @@ public class KernelTests
         {
             await Task.Delay(0);
 
-            context.ThrowIfSkillCollectionNotSet();
+            if (context.Skills == null)
+            {
+                Assert.Fail("Skills collection is missing");
+            }
 
-            FunctionsView procMem = context.Skills!.GetFunctionsView();
+            FunctionsView procMem = context.Skills.GetFunctionsView();
 
             foreach (KeyValuePair<string, List<FunctionView>> list in procMem.SemanticFunctions)
             {
