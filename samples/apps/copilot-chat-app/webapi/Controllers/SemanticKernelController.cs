@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -17,7 +18,6 @@ using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
-using Directory = System.IO.Directory;
 
 namespace SemanticKernel.Service.Controllers;
 
@@ -166,18 +166,22 @@ public class SemanticKernelController : ControllerBase, IDisposable
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "GitHubSkill",
-                filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
 
         // Jira
-        if (openApiSkillsAuthHeaders.JiraAuthentication != null)
+        if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.JiraAuthentication))
         {
             this._logger.LogInformation("Registering Jira Skill");
             var authenticationProvider = new BasicAuthenticationProvider(() => { return Task.FromResult(openApiSkillsAuthHeaders.JiraAuthentication); });
             var hasServerUrlOverride = variables.Get("jira-server-url", out string serverUrlOverride);
 
-            // TODO: Import Jira OpenAPI Skill
+            await planner.Kernel.ImportOpenApiSkillFromFileAsync(
+                skillName: "JiraSkill",
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Skills/OpenApiSkills/JiraSkill/openapi.json"),
+                authCallback: authenticationProvider.AuthenticateRequestAsync,
+                serverUrlOverride: hasServerUrlOverride ? new System.Uri(serverUrlOverride) : null);
         }
 
         // Microsoft Graph
