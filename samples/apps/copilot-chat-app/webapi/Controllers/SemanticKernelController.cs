@@ -181,7 +181,8 @@ public class SemanticKernelController : ControllerBase, IDisposable
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "JiraSkill",
                 filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Skills/OpenApiSkills/JiraSkill/openapi.json"),
-                authCallback: authenticationProvider.AuthenticateRequestAsync);
+                authCallback: authenticationProvider.AuthenticateRequestAsync,
+                serverUrlOverride: hasServerUrlOverride ? new System.Uri(serverUrlOverride) : null);
         }
 
         // Microsoft Graph
