@@ -59,7 +59,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$templateFile = "$($PSScriptRoot)/sk-existing-aoai.bicep"
+$templateFile = "$($PSScriptRoot)/sk-existing-azureopenai.bicep"
 
 if (!$ResourceGroup)
 {

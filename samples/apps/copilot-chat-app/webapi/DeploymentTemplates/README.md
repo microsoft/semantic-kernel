@@ -46,26 +46,26 @@ Alternatively, you can deploy by clicking on the following button:
 
 ### PowerShell
 
-Use the [DeploySK-Existing-AOAI.ps1](DeploySK-Existing-AOAI.ps1) file found in this folder:
+Use the [DeploySK-Existing-AzureOpenAI.ps1](DeploySK-Existing-AzureOpenAI.ps1) file found in this folder:
 ```powershell
-.\DeploySK-Existing-AOAI.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -Endpoint "YOUR_AZURE_OPENAI_ENDPOINT"
+.\DeploySK-Existing-AzureOpenAI.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -Endpoint "YOUR_AZURE_OPENAI_ENDPOINT"
 ```
 
 After entering the command above, you will be prompted to enter your Azure OpenAI API key. (You can also pass in the API key using the -ApiKey parameter)
 
 ### Bash
 
-After ensuring the [DeploySK-Existing-AOAI.sh](DeploySK-Existing-AOAI.sh) file found in this folder is executable, enter the following command:
+After ensuring the [DeploySK-Existing-AzureOpenAI.sh](DeploySK-Existing-AzureOpenAI.sh) file found in this folder is executable, enter the following command:
 
 ```bash
-./DeploySK-Existing-AOAI.sh YOUR_DEPLOYMENT_NAME YOUR_API_KEY "YOUR_AZURE_OPENAI_ENDPOINT" YOUR_SUBSCRIPTION_ID
+./DeploySK-Existing-AzureOpenAI.sh YOUR_DEPLOYMENT_NAME YOUR_API_KEY "YOUR_AZURE_OPENAI_ENDPOINT" YOUR_SUBSCRIPTION_ID
 ```
 
 ### Azure Portal
 
 Alternatively, you can deploy by clicking on the following button:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fmain%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fwebapi%2FDeploymentTemplates%2Fsk-existing-aoai.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fmain%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fwebapi%2FDeploymentTemplates%2Fsk-existing-azureopenai.json)
 
 
 ## Deploying with an existing account from openai.com

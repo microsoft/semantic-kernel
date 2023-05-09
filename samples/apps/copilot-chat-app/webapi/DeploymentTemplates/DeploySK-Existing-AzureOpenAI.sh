@@ -19,7 +19,7 @@ PackageUri="${7:-https://skaasdeploy.blob.core.windows.net/api/skaas.zip}"
 AppServiceSku="${8:-B1}"
 DebugDeployment="${9:-false}"
 
-templateFile="$(dirname "$0")/sk-existing-aoai.bicep"
+templateFile="$(dirname "$0")/sk-existing-azureopenai.bicep"
 
 echo "Log into your Azure account"
 az login --use-device-code
