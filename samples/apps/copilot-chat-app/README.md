@@ -110,7 +110,7 @@ First, let’s set up and verify the back-end API server is running.
 # Troubleshooting
 
 ## 1. Unable to load chats. Details: interaction_in_progress: Interaction is currently in progress. 
-The WebApp can display this error when the application is configured for an active directory tenant, (e.g., personal/MSA accounts) and the browser attempts to use single sign-on with an account from another tenant (e.g., work or school account). Either user a private/icognito browser tab or clear your browser credentials/cookies.
+The WebApp can display this error when the application is configured for an active directory tenant, (e.g., personal/MSA accounts) and the browser attempts to use single sign-on with an account from another tenant (e.g., work or school account). Either user a private/incognito browser tab or clear your browser credentials/cookies.
 
 ## 2. Issues using text completion models, such as `text-davinci-003`
 CopilotChat supports chat completion models, such as `gpt-3.5-*` and `gpt-4-*`.
