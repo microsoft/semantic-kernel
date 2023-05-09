@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Core" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" PublicKey="$(StrongNamePublicKey)"/> <!-- Moq -->
