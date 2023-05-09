@@ -42,11 +42,11 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
 
         if (!this.Request.Headers.TryGetValue(ApiKeyHeaderName, out StringValues apiKeyFromHeader))
         {
-            const string InformationMessage = "No API key provided";
+            const string WarningMessage = "No API key provided";
 
-            this.Logger.LogInformation(InformationMessage);
+            this.Logger.LogWarning(WarningMessage);
 
-            return Task.FromResult(AuthenticateResult.Fail(InformationMessage));
+            return Task.FromResult(AuthenticateResult.Fail(WarningMessage));
         }
 
         if (!string.Equals(apiKeyFromHeader, this.Options.ApiKey, StringComparison.Ordinal))
