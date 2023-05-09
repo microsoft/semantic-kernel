@@ -21,7 +21,7 @@ public sealed class KernelBuilder
 {
     private KernelConfig _config = new();
     private ISemanticTextMemory _memory = NullMemory.Instance;
-    private ILogger _log = NullLogger.Instance;
+    private ILogger _logger = NullLogger.Instance;
     private IMemoryStore? _memoryStorage = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private readonly AIServiceCollection _aiServices = new();
@@ -38,12 +38,12 @@ public sealed class KernelBuilder
         }
 
         var instance = new Kernel(
-            new SkillCollection(this._log),
+            new SkillCollection(this._logger),
             this._aiServices.Build(),
-            new PromptTemplateEngine(this._log),
+            new PromptTemplateEngine(this._logger),
             this._memory,
             this._config,
-            this._log ?? NullLogger<Kernel>.Instance
+            this._logger ?? NullLogger<Kernel>.Instance
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -63,7 +63,7 @@ public sealed class KernelBuilder
     public KernelBuilder WithLogger(ILogger log)
     {
         Verify.NotNull(log);
-        this._log = log;
+        this._logger = log;
         return this;
     }
 
@@ -171,9 +171,9 @@ public sealed class KernelBuilder
     /// Adds a <typeparamref name="TService"/> factory method to the services collection
     /// </summary>
     /// <param name="factory">The factory method that creates the AI service instances of type <typeparamref name="TService"/>.</param>
-    public KernelBuilder WithDefaultAIService<TService>(Func<TService> factory) where TService : IAIService
+    public KernelBuilder WithDefaultAIService<TService>(Func<ILogger, TService> factory) where TService : IAIService
     {
-        this._aiServices.SetService<TService>(factory);
+        this._aiServices.SetService<TService>(() => factory(this._logger));
         return this;
     }
 
@@ -185,10 +185,10 @@ public sealed class KernelBuilder
     /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
     public KernelBuilder WithAIService<TService>(
         string? serviceId,
-        Func<TService> factory,
+        Func<ILogger, TService> factory,
         bool setAsDefault = false) where TService : IAIService
     {
-        this._aiServices.SetService<TService>(serviceId, factory, setAsDefault);
+        this._aiServices.SetService<TService>(serviceId, () => factory(this._logger), setAsDefault);
         return this;
     }
 }
