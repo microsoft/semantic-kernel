@@ -166,7 +166,7 @@ public sealed class Plan : ISKFunction
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
     public static Plan FromJson(string json, SKContext? context = null)
     {
-        var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions() { IncludeFields = true }) ?? new Plan(string.Empty);
+        var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
         if (context != null)
         {
@@ -179,9 +179,11 @@ public sealed class Plan : ISKFunction
     /// <summary>
     /// Get JSON representation of the plan.
     /// </summary>
-    public string ToJson()
+    /// <param name="indented">Whether to emit indented JSON</param>
+    /// <returns>Plan serialized using JSON format</returns>
+    public string ToJson(bool indented = false)
     {
-        return JsonSerializer.Serialize(this);
+        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
     }
 
     /// <summary>

@@ -16,40 +16,52 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
     public const string AuthenticationScheme = "ApiKey";
     public const string ApiKeyHeaderName = "x-api-key";
 
-    // TODO: not used?
-    private readonly IOptionsMonitor<ApiKeyAuthenticationSchemeOptions> _options;
-
     /// <summary>
     /// Constructor
     /// </summary>
     public ApiKeyAuthenticationHandler(
         IOptionsMonitor<ApiKeyAuthenticationSchemeOptions> options,
-        ILoggerFactory logger,
+        ILoggerFactory loggerFactory,
         UrlEncoder encoder,
-        ISystemClock clock) : base(options, logger, encoder, clock)
+        ISystemClock clock) : base(options, loggerFactory, encoder, clock)
     {
-        this._options = options;
     }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        this.Logger.LogInformation("Checking API key");
+
         if (string.IsNullOrWhiteSpace(this.Options.ApiKey))
         {
-            return Task.FromResult(AuthenticateResult.Fail("API key not configured on server"));
+            const string ErrorMessage = "API key not configured on server";
+
+            this.Logger.LogError(ErrorMessage);
+
+            return Task.FromResult(AuthenticateResult.Fail(ErrorMessage));
         }
 
         if (!this.Request.Headers.TryGetValue(ApiKeyHeaderName, out StringValues apiKeyFromHeader))
         {
-            return Task.FromResult(AuthenticateResult.Fail("No API key provided"));
+            const string WarningMessage = "No API key provided";
+
+            this.Logger.LogWarning(WarningMessage);
+
+            return Task.FromResult(AuthenticateResult.Fail(WarningMessage));
         }
 
         if (!string.Equals(apiKeyFromHeader, this.Options.ApiKey, StringComparison.Ordinal))
         {
-            return Task.FromResult(AuthenticateResult.Fail("Incorrect API key"));
+            const string WarningMessage = "Incorrect API key";
+
+            this.Logger.LogWarning(WarningMessage);
+
+            return Task.FromResult(AuthenticateResult.Fail(WarningMessage));
         }
 
         var principal = new ClaimsPrincipal(new ClaimsIdentity(AuthenticationScheme));
         var ticket = new AuthenticationTicket(principal, this.Scheme.Name);
+
+        this.Logger.LogInformation("Request authorized by API key");
 
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
