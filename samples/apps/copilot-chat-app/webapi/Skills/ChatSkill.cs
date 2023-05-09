@@ -432,7 +432,7 @@ public class ChatSkill
 
         if (trimSkillResponse)
         {
-            // Deserializing limits the json content to only the fields defined in the specific OpenApiSkill's Model classes
+            // Deserializing limits the json content to only the fields defined in the respective OpenApiSkill's Model classes
             var skillResponse = JsonSerializer.Deserialize(jsonContent, skillResponseType);
             jsonContent = skillResponse != null ? JsonSerializer.Serialize(skillResponse) : string.Empty;
             document = JsonDocument.Parse(jsonContent);
