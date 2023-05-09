@@ -318,18 +318,13 @@ public static class KernelOpenApiExtensions
             })
             .ToList();
 
-        // TODO: to be fixed later
-#pragma warning disable CA2000 // Dispose objects before losing scope.
-        var function = new SKFunction(
-            delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
-            delegateFunction: ExecuteAsync,
+        var function = SKFunction.FromCustomMethod(
+            customFunction: ExecuteAsync,
             parameters: parameters,
             description: operation.Description,
             skillName: skillName,
             functionName: operation.Id,
-            isSemantic: false,
             log: kernel.Log);
-#pragma warning restore CA2000 // Dispose objects before losing scope
 
         return kernel.RegisterCustomFunction(skillName, function);
     }
