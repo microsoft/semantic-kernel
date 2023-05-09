@@ -428,7 +428,7 @@ public class ChatSkill
 
         // The json will be deserialized based on the response type of the particular operation that was last invoked by the planner
         // The response type can be a custom trimmed down json structure, which is useful in staying within the token limit
-        Type skillResponseType = this.GetOpenApiSkillResponseType(ref document, ref lastSkillInvoked, ref lastSkillOperationInvoked, ref trimSkillResponse);
+        Type skillResponseType = this.GetOpenApiSkillResponseType(ref document, ref lastSkillInvoked, ref lastSkillFunctionInvoked, ref trimSkillResponse);
 
         if (trimSkillResponse)
         {
@@ -493,7 +493,7 @@ public class ChatSkill
             : string.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
     }
 
-    private Type GetOpenApiSkillResponseType(ref JsonDocument document, ref string lastSkillInvoked, ref string lastSkillOperationInvoked, ref bool trimSkillResponse)
+    private Type GetOpenApiSkillResponseType(ref JsonDocument document, ref string lastSkillInvoked, ref string lastSkillFunctionInvoked, ref bool trimSkillResponse)
     {
         Type skillResponseType = typeof(object); // Use a reasonable default response type
 
@@ -508,7 +508,7 @@ public class ChatSkill
         else if (string.Equals(lastSkillInvoked, "JiraSkill", StringComparison.Ordinal))
         {
             trimSkillResponse = true;
-            skillResponseType = this.GetJiraSkillResponseType(ref document, ref lastSkillOperationInvoked);
+            skillResponseType = this.GetJiraSkillResponseType(ref document, ref lastSkillFunctionInvoked);
         }
 
         return skillResponseType;
@@ -519,9 +519,9 @@ public class ChatSkill
         return document.RootElement.ValueKind == JsonValueKind.Array ? typeof(PullRequest[]) : typeof(PullRequest);
     }
 
-    private Type GetJiraSkillResponseType(ref JsonDocument document, ref string lastSkillOperationInvoked)
+    private Type GetJiraSkillResponseType(ref JsonDocument document, ref string lastSkillFunctionInvoked)
     {
-        if (lastSkillOperationInvoked == "GetIssue")
+        if (lastSkillFunctionInvoked == "GetIssue")
         {
             return document.RootElement.ValueKind == JsonValueKind.Array ? typeof(IssueResponse[]) : typeof(IssueResponse);
         }
