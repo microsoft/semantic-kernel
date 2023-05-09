@@ -305,7 +305,7 @@ public sealed class Plan : ISKFunction
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        this.State.Update(input);
+        if (input != null) { this.State.Update(input); }
 
         SKContext context = new(
             this.State,

@@ -71,6 +71,14 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Some input", result.Result);
+
+        plan = new Plan(goal);
+        // Act
+        context.Variables.Update("other input");
+        result = await plan.InvokeAsync(context);
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("other input", result.Result);
     }
 
     [Fact]
@@ -559,7 +567,8 @@ public sealed class PlanTests
         var plan = new Plan(mockFunction.Object);
 
         // Act
-        var result = await plan.InvokeAsync("Cleopatra");
+        plan.State.Set("input", "Cleopatra");
+        var result = await plan.InvokeAsync();
 
         // Assert
         Assert.NotNull(result);
