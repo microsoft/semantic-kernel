@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
+namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
 /// <summary>
 /// The REST API operation payload.
