@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 /// <summary>
 /// The REST API operation parameter style.
 /// </summary>
-internal enum RestApiOperationParameterStyle
+public enum RestApiOperationParameterStyle
 {
     /// <summary>
     /// Path-style parameters.

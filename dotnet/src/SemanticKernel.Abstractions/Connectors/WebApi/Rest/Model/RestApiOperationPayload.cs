@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 /// <summary>
 /// The REST API operation payload.
 /// </summary>
-internal record RestApiOperationPayload
+public record RestApiOperationPayload
 {
     /// <summary>
     /// The payload MediaType.
