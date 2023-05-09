@@ -22,9 +22,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.ActionPlanner" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.SequentialPlanner" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Skills.OpenAPI" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Skills.Grpc" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
