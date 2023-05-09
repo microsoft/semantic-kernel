@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
@@ -28,10 +29,10 @@ public sealed class WebSearchEngineSkillTests : IDisposable
     public async Task SearchAsyncSucceedsAsync()
     {
         // Arrange
-        string expected = Guid.NewGuid().ToString();
+        IEnumerable<string> expected = new[] { Guid.NewGuid().ToString() };
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
-        connectorMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
         WebSearchEngineSkill target = new(connectorMock.Object);

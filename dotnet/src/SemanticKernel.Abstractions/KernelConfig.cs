@@ -69,7 +69,7 @@ public sealed class KernelConfig
                 $"The service id '{serviceId}' is reserved, please use a different name");
         }
 
-        if (serviceId == null) { serviceId = this.DefaultServiceId; }
+        serviceId ??= this.DefaultServiceId;
 
         this.TextCompletionServices[serviceId] = serviceFactory;
         if (this.TextCompletionServices.Count == 1)
@@ -98,7 +98,7 @@ public sealed class KernelConfig
                 $"The service id '{serviceId}' is reserved, please use a different name");
         }
 
-        if (serviceId == null) { serviceId = this.DefaultServiceId; }
+        serviceId ??= this.DefaultServiceId;
 
         this.ChatCompletionServices[serviceId] = serviceFactory;
         if (this.ChatCompletionServices.Count == 1)
@@ -127,7 +127,7 @@ public sealed class KernelConfig
                 $"The service id '{serviceId}' is reserved, please use a different name");
         }
 
-        if (serviceId == null) { serviceId = this.DefaultServiceId; }
+        serviceId ??= this.DefaultServiceId;
 
         this.TextEmbeddingGenerationServices[serviceId] = serviceFactory;
         if (this.TextEmbeddingGenerationServices.Count == 1)
@@ -156,7 +156,7 @@ public sealed class KernelConfig
                 $"The service id '{serviceId}' is reserved, please use a different name");
         }
 
-        if (serviceId == null) { serviceId = this.DefaultServiceId; }
+        serviceId ??= this.DefaultServiceId;
 
         this.ImageGenerationServices[serviceId] = serviceFactory;
         if (this.ImageGenerationServices.Count == 1)
