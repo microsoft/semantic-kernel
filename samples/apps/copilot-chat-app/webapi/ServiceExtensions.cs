@@ -35,6 +35,11 @@ internal static class ServicesExtensions
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
+        services.AddOptions<AuthorizationOptions>()
+            .Bind(configuration.GetSection(AuthorizationOptions.PropertyName))
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
+
         // Chat log storage configuration
         services.AddOptions<ChatStoreOptions>()
             .Bind(configuration.GetSection(ChatStoreOptions.PropertyName))
