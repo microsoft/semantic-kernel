@@ -10,7 +10,7 @@ class MathSkill:
         kernel.import_skill("math", new MathSkill())
 
     Examples:
-        {{math.Add}}         => Returns the sum of FirstNumber and SecondNumber (provided in the SKContext)
+        {{math.Add}}         => Returns the sum of initial_value_text and Amount (provided in the SKContext)
     """
 
     @sk_function(
