@@ -717,14 +717,14 @@ public sealed class PlanTests
 
         planStep = new Plan(mockFunction.Object);
         plan = new Plan("A plan");
-        plan.State.Set("input", "Cleopatra");
+        planStep.Parameters.Set("input", "Medusa");
         planStep.Parameters.Set("type", "joke");
         plan.State.Set("input", "Cleopatra"); // state input will not override parameter
         plan.State.Set("type", "poem");
         plan.AddSteps(planStep);
 
         // Act
-        result = await plan.InvokeAsync("Medusa");
+        result = await plan.InvokeAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -743,7 +743,7 @@ public sealed class PlanTests
             log.Object
         );
         contextOverride.Variables.Set("type", "joke");
-        contextOverride.Variables.Update("Cleopatra"); // context input will not override parameters
+        contextOverride.Variables.Update("Medusa"); // context input will not override parameters
 
         // Act
         result = await plan.InvokeAsync(contextOverride);
