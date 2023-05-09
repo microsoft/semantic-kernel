@@ -172,17 +172,13 @@ public static class KernelGrpcExtensions
             return context;
         }
 
-#pragma warning disable CA2000 // Dispose objects before losing scope.
-        var function = new SKFunction(
-            delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
-            delegateFunction: ExecuteAsync,
+        var function = SKFunction.FromCustomMethod(
+            customFunction: ExecuteAsync,
             parameters: operationParameters.ToList(),
             description: operation.Name,
             skillName: skillName,
             functionName: operation.Name,
-            isSemantic: false,
             log: kernel.Log);
-#pragma warning restore CA2000 // Dispose objects before losing scope
 
         return kernel.RegisterCustomFunction(skillName, function);
     }
