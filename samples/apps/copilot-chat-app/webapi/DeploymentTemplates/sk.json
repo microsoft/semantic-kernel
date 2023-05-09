@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.16.2.56959",
-      "templateHash": "18287797706436579039"
+      "version": "0.17.1.54307",
+      "templateHash": "13622094074985985653"
     }
   },
   "parameters": {
@@ -33,9 +33,28 @@
   },
   "variables": {
     "location": "[resourceGroup().location]",
-    "uniqueName": "[format('{0}-{1}', parameters('name'), uniqueString(resourceGroup().id))]"
+    "rgIdHash": "[uniqueString(resourceGroup().id)]",
+    "uniqueName": "[format('{0}-{1}', parameters('name'), variables('rgIdHash'))]",
+    "storageFileShareName": "aciqdrantshare",
+    "containerVolumeMountName": "azqdrantvolume"
   },
   "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}/{2}', format('st{0}', variables('rgIdHash')), 'default', variables('storageFileShareName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/fileServices', format('st{0}', variables('rgIdHash')), 'default')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/fileServices",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}', format('st{0}', variables('rgIdHash')), 'default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', format('st{0}', variables('rgIdHash')))]"
+      ]
+    },
     {
       "type": "Microsoft.CognitiveServices/accounts",
       "apiVersion": "2022-03-01",
@@ -138,12 +157,28 @@
               "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-03-01').key1]"
             },
             {
+              "name": "Planner:AIService",
+              "value": "AzureOpenAI"
+            },
+            {
+              "name": "Planner:Endpoint",
+              "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-03-01').endpoint]"
+            },
+            {
+              "name": "Planner:Key",
+              "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-03-01').key1]"
+            },
+            {
               "name": "ChatStore:Type",
               "value": "volatile"
             },
             {
               "name": "MemoriesStore:Type",
-              "value": "volatile"
+              "value": "Qdrant"
+            },
+            {
+              "name": "MemoriesStore:Qdrant:Host",
+              "value": "[format('http://{0}', reference(resourceId('Microsoft.ContainerInstance/containerGroups', format('ci-{0}', variables('uniqueName'))), '2022-10-01-preview').ipAddress.fqdn)]"
             },
             {
               "name": "Kestrel:Endpoints:Https:Url",
@@ -177,6 +212,7 @@
         }
       },
       "dependsOn": [
+        "[resourceId('Microsoft.ContainerInstance/containerGroups', format('ci-{0}', variables('uniqueName')))]",
         "[resourceId('Microsoft.Insights/components', format('appi-{0}', variables('uniqueName')))]",
         "[resourceId('Microsoft.Web/serverfarms', format('asp-{0}', variables('uniqueName')))]",
         "[resourceId('Microsoft.OperationalInsights/workspaces', format('la-{0}', variables('uniqueName')))]",
@@ -240,6 +276,87 @@
           "enableLogAccessUsingOnlyResourcePermissions": true
         }
       }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-09-01",
+      "name": "[format('st{0}', variables('rgIdHash'))]",
+      "location": "[variables('location')]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "properties": {
+        "supportsHttpsTrafficOnly": true
+      }
+    },
+    {
+      "type": "Microsoft.ContainerInstance/containerGroups",
+      "apiVersion": "2022-10-01-preview",
+      "name": "[format('ci-{0}', variables('uniqueName'))]",
+      "location": "[variables('location')]",
+      "properties": {
+        "sku": "Standard",
+        "containers": [
+          {
+            "name": "[variables('uniqueName')]",
+            "properties": {
+              "image": "qdrant/qdrant:latest",
+              "ports": [
+                {
+                  "port": 80,
+                  "protocol": "TCP"
+                },
+                {
+                  "port": 6333,
+                  "protocol": "TCP"
+                }
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": 4,
+                  "memoryInGB": 16
+                }
+              },
+              "volumeMounts": [
+                {
+                  "name": "[variables('containerVolumeMountName')]",
+                  "mountPath": "/qdrant/storage"
+                }
+              ]
+            }
+          }
+        ],
+        "osType": "Linux",
+        "restartPolicy": "OnFailure",
+        "ipAddress": {
+          "ports": [
+            {
+              "port": 80,
+              "protocol": "TCP"
+            },
+            {
+              "port": 6333,
+              "protocol": "TCP"
+            }
+          ],
+          "type": "Public",
+          "dnsNameLabel": "[variables('uniqueName')]"
+        },
+        "volumes": [
+          {
+            "name": "[variables('containerVolumeMountName')]",
+            "azureFile": {
+              "shareName": "[variables('storageFileShareName')]",
+              "storageAccountName": "[format('st{0}', variables('rgIdHash'))]",
+              "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', format('st{0}', variables('rgIdHash'))), '2022-09-01').keys[0].value]"
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', format('st{0}', variables('rgIdHash')))]"
+      ]
     }
   ],
   "outputs": {
