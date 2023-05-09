@@ -25,6 +25,8 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// </summary>
 public sealed class SKFunction : ISKFunction, IDisposable
 {
+    public delegate Task<SKContext> CustomFunctionAsync(SKContext context);
+
     /// <inheritdoc/>
     public string Name { get; }
 
@@ -138,6 +140,37 @@ public sealed class SKFunction : ISKFunction, IDisposable
             functionName: functionName,
             isSemantic: true,
             log: log);
+    }
+
+    /// <summary>
+    /// Create a native function instance, wrapping a native object method
+    /// </summary>
+    /// <param name="customFunction">Signature of the method to invoke</param>
+    /// <param name="skillName">SK skill name</param>
+    /// <param name="functionName">SK function name</param>
+    /// <param name="description">SK function description</param>
+    /// <param name="parameters">SK function parameters</param>
+    /// <param name="log">Application logger</param>
+    /// <returns>SK function instance</returns>
+    public static ISKFunction FromCustomMethod(
+        CustomFunctionAsync customFunction,
+        string skillName,
+        string functionName,
+        string description,
+        IEnumerable<ParameterView>? parameters = null,
+        ILogger? log = null)
+    {
+        var function = new SKFunction(
+            delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
+            delegateFunction: customFunction,
+            parameters: (parameters ?? Enumerable.Empty<ParameterView>()).ToList(),
+            description: description,
+            skillName: skillName,
+            functionName: functionName,
+            isSemantic: false,
+            log: log);
+
+        return function;
     }
 
     /// <inheritdoc/>
@@ -513,7 +546,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (!result.HasSkFunctionAttribute || skFunctionAttribute == null)
         {
-            log?.LogTrace("Method {0} doesn't have SKFunctionAttribute", result.Name);
+            log?.LogTrace("Method '{0}' doesn't have '{1}' attribute.", result.Name, typeof(SKFunctionAttribute).Name);
             return result;
         }
 
@@ -554,9 +587,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
         else if (skMainParam != null)
         {
             // The developer used [SKFunctionInput] on a function that doesn't support a string input
-            throw new KernelException(
-                KernelException.ErrorCodes.InvalidFunctionDescription,
-                "The function doesn't have a string parameter, do not use " + typeof(SKFunctionInputAttribute));
+            var message = $"The method '{result.Name}' doesn't have a string parameter, do not use '{typeof(SKFunctionInputAttribute).Name}' attribute.";
+            throw new KernelException(KernelException.ErrorCodes.InvalidFunctionDescription, message);
         }
 
         // Handle named arg passed via the SKContext object
@@ -570,7 +602,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         result.Description = skFunctionAttribute.Description ?? "";
 
-        log?.LogTrace("Method {0} found", result.Name);
+        log?.LogTrace("Method '{0}' found.", result.Name);
 
         return result;
     }
@@ -678,13 +710,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             throw new KernelException(
                 KernelException.ErrorCodes.FunctionTypeNotSupported,
-                $"Function {method.Name} has an invalid signature 'Func<SKContext, SKContext>'. " +
+                $"Function '{method.Name}' has an invalid signature 'Func<SKContext, SKContext>'. " +
                 "Please use 'Func<SKContext, Task<SKContext>>' instead.");
         }
 
         throw new KernelException(
             KernelException.ErrorCodes.FunctionTypeNotSupported,
-            $"Function {method.Name} has an invalid signature not supported by the kernel");
+            $"Function '{method.Name}' has an invalid signature not supported by the kernel.");
     }
 
     [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate result can be null")]
