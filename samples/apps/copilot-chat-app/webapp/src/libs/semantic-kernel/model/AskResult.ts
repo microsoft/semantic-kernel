@@ -2,7 +2,10 @@
 
 export interface IAskResult {
     value: string;
-    variables: Variables;
+    variables: Variable[];
 }
 
-export type Variables = { [key: string]: string }[];
+export type Variable = {
+    key: string;
+    value: string;
+};

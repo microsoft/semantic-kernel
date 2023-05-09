@@ -3,6 +3,7 @@
 import { Label, makeStyles, shorthands, Text } from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 import { FC } from 'react';
+import { isPlan } from '../../../libs/semantic-kernel/sk-utilities';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { ChatListItem } from './ChatListItem';
@@ -72,7 +73,11 @@ export const ChatList: FC = () => {
                                         minute: '2-digit',
                                     })}
                                     preview={
-                                        messages.length > 0 ? messages[lastMessage].content : 'Click to start the chat'
+                                        messages.length > 0
+                                            ? isPlan(messages[lastMessage].content)
+                                                ? 'Click to view proposed plan'
+                                                : (messages[lastMessage].content as string)
+                                            : 'Click to start the chat'
                                     }
                                     botProfilePicture={convo.botProfilePicture}
                                 />

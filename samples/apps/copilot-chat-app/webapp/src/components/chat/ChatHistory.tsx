@@ -26,10 +26,15 @@ const useClasses = makeStyles({
 interface ChatHistoryProps {
     audience: SKBotAudienceMember[];
     messages: IChatMessage[];
+    onGetResponse: (
+        value: string,
+        approvedPlanJson?: string,
+        planUserIntent?: string,
+        userCancelledPlan?: boolean,
+    ) => Promise<void>;
 }
 
-export const ChatHistory: React.FC<ChatHistoryProps> = (props) => {
-    const { audience, messages } = props;
+export const ChatHistory: React.FC<ChatHistoryProps> = ({ audience, messages, onGetResponse }) => {
     const classes = useClasses();
 
     return (
@@ -38,7 +43,12 @@ export const ChatHistory: React.FC<ChatHistoryProps> = (props) => {
                 .slice()
                 .sort((a, b) => a.timestamp - b.timestamp)
                 .map((message) => (
-                    <ChatHistoryItem key={message.timestamp} audience={audience} message={message} />
+                    <ChatHistoryItem
+                        key={message.timestamp}
+                        audience={audience}
+                        message={message}
+                        getResponse={onGetResponse}
+                    />
                 ))}
             <ChatStatus />
         </div>
