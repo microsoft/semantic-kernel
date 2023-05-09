@@ -19,19 +19,23 @@ export class SKMultiUserChat {
     // Set up a SignalR connection to the specified hub URL, and actionEventMap.
     // actionEventMap should be an object mapping event names, to eventHandlers that will
     // be dispatched with the message body.
-    setupSignalRConnection = (connectionHub: any) => {
-      const options = {
+    setupSignalRConnectionToChatHub() {
+      const connectionHubUrl = (new URL('/chatHub', this.serviceUrl)).toString();
+
+      const signalRConnectionOptions = {
+        skipNegotiation: true,
+        transport: signalR.HttpTransportType.WebSockets,
         logger: signalR.LogLevel.Warning
       };
-      // create the connection instance
-      // withAutomaticReconnect will automatically try to reconnect
-      // and generate a new socket connection if needed
-      const connection = new signalR.HubConnectionBuilder()
-        .withUrl(connectionHub, options)
-        .withAutomaticReconnect()
-        .withHubProtocol(new signalR.JsonHubProtocol())
-        .configureLogging(signalR.LogLevel.Information)
-        .build();
+
+      // Create the connection instance
+      // withAutomaticReconnect will automatically try to reconnect and generate a new socket connection if needed
+      var connection = new signalR.HubConnectionBuilder()
+          .withUrl(connectionHubUrl, signalRConnectionOptions)
+          .withAutomaticReconnect()
+          .withHubProtocol(new signalR.JsonHubProtocol())
+          .configureLogging(signalR.LogLevel.Information)
+          .build();
 
       // Note: to keep the connection open the serverTimeout should be
       // larger than the KeepAlive value that is set on the server
@@ -39,7 +43,7 @@ export class SKMultiUserChat {
       // serverTimeoutInMilliseconds default is 30000 and we are using 60000 set below
       connection.serverTimeoutInMilliseconds = 60000;
 
-      // re-establish the connection if connection dropped
+      // Re-establish the connection if connection dropped
       connection.onclose((error: any) => {
         console.assert(connection.state === signalR.HubConnectionState.Disconnected);
         console.log('Connection closed due to error. Try refreshing this page to restart the connection', error);
@@ -54,7 +58,7 @@ export class SKMultiUserChat {
         console.assert(connection.state === signalR.HubConnectionState.Connected);
         console.log('Connection reestablished. Connected with connectionId', connectionId);
       });
-
+      
       this.startSignalRConnection(connection);
 
       // connection.on('OnEvent', (res: { eventType: string | number; }) => {
@@ -69,50 +73,22 @@ export class SKMultiUserChat {
       //Do nothing
     }
 
-    SendTestMessage = () => {
-
-      var tbMessageValue = "Hello World!";
-      const connectionHubUrl = (new URL('/chatHub', this.serviceUrl)).toString();
-      console.log(connectionHubUrl);
-
-      var connection = new signalR.HubConnectionBuilder()
-          .withUrl(connectionHubUrl, {
-            skipNegotiation: true,
-            transport: signalR.HttpTransportType.WebSockets
-          })
-          .withAutomaticReconnect()
-          .configureLogging(signalR.LogLevel.Information)
-          .build();
-
-
-      connection.start().then(() => {
-        console.log("SignalR hub started");
-      }).catch((err: any) => {
-        console.error("SignalR Hub Error: ", err);
-      });
-
-
+    SendTestMessage = () => {      
+      var connection = this.setupSignalRConnectionToChatHub();
+      
       connection.on("UserConnected", (connectionId) => {
         console.log(`User connected: ${connectionId}`);
-    });
+      });
 
       const receiveMessage = (message: string) => {
         console.log("Received message from client: ", message);
         // Send a message back to the client
-        connection.invoke("ReceiveMessage", "user", "Hello, client!");
+        connection.invoke("Func2Async", "user", "Hello, client!");
+        connection.invoke("SendMessageAsync", "UserA", "This is nonsense").catch(function (err) {
+          return console.error(err.toString());
+      });
       };
           
       connection.on("ReceiveMessage", receiveMessage);
-
-      function send() {
-        connection.send("newMessage", "username", tbMessageValue)
-          .then(() => (tbMessageValue = ""));
-      }
-
-      connection.invoke("SendMessage", "UserA", "This is nonsense").catch(function (err) {
-          return console.error(err.toString());
-      });
-      
-      send();
     }
 }
