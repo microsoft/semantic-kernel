@@ -41,13 +41,16 @@ $templateFile = "$($PSScriptRoot)/sk.bicep"
 
 if (!$ResourceGroup)
 {
-    $ResourceGroup = $DeploymentName + "-rg"
+    $ResourceGroup = "rg-" + $DeploymentName
 }
 
 Write-Host "Log into your Azure account"
 az login | out-null
 
 az account set -s $Subscription
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
 
 Write-Host "Creating resource group $($ResourceGroup) if it doesn't exist..."
 az group create --location $Region --name $ResourceGroup --tags Creator=$env:UserName
