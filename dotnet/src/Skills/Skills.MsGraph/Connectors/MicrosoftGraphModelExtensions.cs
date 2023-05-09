@@ -45,15 +45,19 @@ internal static class MicrosoftGraphModelExtensions
     /// Convert a calendar event to a Microsoft Graph event.
     /// </summary>
     public static Graph.Event ToGraphEvent(this CalendarEvent calendarEvent)
-       => new()
-       {
-           Subject = calendarEvent.Subject,
-           Body = new ItemBody { Content = calendarEvent.Content, ContentType = BodyType.Html },
-           Start = calendarEvent.Start.HasValue ? DateTimeTimeZone.FromDateTimeOffset(calendarEvent.Start.Value) : DateTimeTimeZone.FromDateTime(System.DateTime.Now),
-           End = calendarEvent.End.HasValue ? DateTimeTimeZone.FromDateTimeOffset(calendarEvent.End.Value) : DateTimeTimeZone.FromDateTime(System.DateTime.Now + TimeSpan.FromHours(1)),
-           Location = new Location { DisplayName = calendarEvent.Location },
-           Attendees = calendarEvent.Attendees?.Select(a => new Attendee { EmailAddress = new Microsoft.Graph.EmailAddress { Address = a } })
-       };
+        => new()
+        {
+            Subject = calendarEvent.Subject,
+            Body = new ItemBody { Content = calendarEvent.Content, ContentType = BodyType.Html },
+            Start = calendarEvent.Start.HasValue
+                ? DateTimeTimeZone.FromDateTimeOffset(calendarEvent.Start.Value)
+                : DateTimeTimeZone.FromDateTime(System.DateTime.Now),
+            End = calendarEvent.End.HasValue
+                ? DateTimeTimeZone.FromDateTimeOffset(calendarEvent.End.Value)
+                : DateTimeTimeZone.FromDateTime(System.DateTime.Now + TimeSpan.FromHours(1)),
+            Location = new Location { DisplayName = calendarEvent.Location },
+            Attendees = calendarEvent.Attendees?.Select(a => new Attendee { EmailAddress = new Microsoft.Graph.EmailAddress { Address = a } })
+        };
 
     /// <summary>
     /// Convert a Microsoft Graph event to a calendar event.
@@ -69,4 +73,3 @@ internal static class MicrosoftGraphModelExtensions
             Attendees = msGraphEvent.Attendees?.Select(a => a.EmailAddress.Address)
         };
 }
-

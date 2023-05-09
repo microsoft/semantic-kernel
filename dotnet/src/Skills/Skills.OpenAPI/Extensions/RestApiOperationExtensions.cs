@@ -36,7 +36,6 @@ internal static class RestApiOperationExtensions
                 defaultValue: serverUrlOverride?.AbsoluteUri ?? operation.ServerUrl?.AbsoluteUri)
         };
 
-
         // Register the "payload" parameter to be advertised for Put and Post operations.
         if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)
         {

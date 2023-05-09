@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace SemanticKernel.Service.Skills.OpenApiSkills;
+namespace SemanticKernel.Service.Skills.OpenApiSkills.GitHubSkill.Model;
 
 /// <summary>
 /// Represents a pull request label.
