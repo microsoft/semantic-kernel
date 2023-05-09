@@ -495,7 +495,7 @@ public class ChatSkill
 
     private Type GetOpenApiSkillResponseType(ref JsonDocument document, ref string lastSkillInvoked, ref string lastSkillOperationInvoked, ref bool trimSkillResponse)
     {
-        Type skillResponseType = typeof(PullRequest); // Use a reasonable default response type
+        Type skillResponseType = typeof(object); // Use a reasonable default response type
 
         // Different operations under the skill will return responses as json structures;
         // Prune each operation response according to the most important/contextual fields only to avoid going over the token limit
