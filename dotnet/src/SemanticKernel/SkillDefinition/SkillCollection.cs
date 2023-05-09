@@ -38,7 +38,7 @@ public class SkillCollection : ISkillCollection
         Verify.NotNull(functionInstance, "The function is NULL");
 
         ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.SkillName, static _ => new(StringComparer.OrdinalIgnoreCase));
-        skill.TryAdd(functionInstance.Name, functionInstance);
+        skill[functionInstance.Name] = functionInstance;
 
         return this;
     }
