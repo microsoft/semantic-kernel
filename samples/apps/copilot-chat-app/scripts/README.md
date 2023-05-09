@@ -45,4 +45,4 @@ Then run the following command:
 ```bash
 ./Start.sh YOUR_CLIENT_ID YOUR_TENANT_ID YOUR_API_KEY
 ```
-Note that this script starts `CopilotChatApi.exe` as a background process. Be sure to clean it up when you are finished.
+Note that this script starts `CopilotChatApi.exe` as a background process. Be sure to terminate it when you are finished.
