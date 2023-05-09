@@ -29,6 +29,7 @@
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.SequentialPlanner" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Skills.OpenAPI" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Memory.CosmosDB" PublicKey="$(StrongNamePublicKey)"/>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Skills.Grpc" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StrongNamePublicKey)"/>
