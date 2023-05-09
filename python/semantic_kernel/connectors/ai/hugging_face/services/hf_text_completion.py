@@ -3,7 +3,6 @@
 from logging import Logger
 from typing import Optional
 
-
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
@@ -48,11 +47,13 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self._log = log if log is not None else NullLogger()
 
         try:
-            import transformers
             import torch
+            import transformers
         except (ImportError, ModuleNotFoundError):
-            raise ImportError("Please ensure that torch and transformers are installed to use HuggingFaceTextCompletion")
-        
+            raise ImportError(
+                "Please ensure that torch and transformers are installed to use HuggingFaceTextCompletion"
+            )
+
         self.device = (
             "cuda:" + device if device >= 0 and torch.cuda.is_available() else "cpu"
         )
@@ -75,6 +76,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         """
         try:
             import transformers
+
             generation_config = transformers.GenerationConfig(
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,

@@ -16,16 +16,9 @@ public interface ISkillCollection : IReadOnlySkillCollection
     IReadOnlySkillCollection ReadOnlySkillCollection { get; }
 
     /// <summary>
-    /// Add a semantic function to the collection
+    /// Add a function to the collection
     /// </summary>
     /// <param name="functionInstance">Function delegate</param>
     /// <returns>Self instance</returns>
-    ISkillCollection AddSemanticFunction(ISKFunction functionInstance);
-
-    /// <summary>
-    /// Add a native function to the collection
-    /// </summary>
-    /// <param name="functionInstance">Wrapped function delegate</param>
-    /// <returns>Self instance</returns>
-    ISkillCollection AddNativeFunction(ISKFunction functionInstance);
+    ISkillCollection AddFunction(ISKFunction functionInstance);
 }
