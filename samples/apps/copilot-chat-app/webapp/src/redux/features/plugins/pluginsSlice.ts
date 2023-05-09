@@ -29,6 +29,10 @@ export const pluginsState = createSlice({
                 case Plugins.GitHub:
                     plugin = state.GitHub;
                     break;
+                case Plugins.Klarna:
+                    plugin = state.Klarna;
+                    authData = "klarna-auth-data";
+                    break;
             }
 
             plugin.enabled = true;
@@ -47,6 +51,9 @@ export const pluginsState = createSlice({
                     break;
                 case Plugins.GitHub:
                     plugin = state.GitHub;
+                    break;
+                case Plugins.Klarna:
+                    plugin = state.Klarna;
                     break;
             }
 
