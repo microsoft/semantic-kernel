@@ -156,7 +156,7 @@ internal sealed class RestApiOperation
 
             //Getting metadata for the header
             var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName)
-                ?? throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
+                                 ?? throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
 
             //If parameter is required it's value should always be provided.
             if (headerMetadata.IsRequired)
