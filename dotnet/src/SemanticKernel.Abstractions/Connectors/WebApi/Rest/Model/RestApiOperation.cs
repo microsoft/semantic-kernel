@@ -12,22 +12,22 @@ namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 /// <summary>
 /// The REST API operation.
 /// </summary>
-internal sealed class RestApiOperation
+public sealed class RestApiOperation
 {
     /// <summary>
     /// An artificial parameter that is added to be able to override RESP API operation server url.
     /// </summary>
-    internal const string ServerUrlArgumentName = "server-url";
+    public const string ServerUrlArgumentName = "server-url";
 
     /// <summary>
     /// An artificial parameter to be used for operation having "text/plain" payload media type.
     /// </summary>
-    internal const string PayloadArgumentName = "payload";
+    public const string PayloadArgumentName = "payload";
 
     /// <summary>
     /// An artificial parameter to be used for indicate payload media-type if it's missing in payload metadata.
     /// </summary>
-    internal const string ContentTypeArgumentName = "content-type";
+    public const string ContentTypeArgumentName = "content-type";
 
     /// <summary>
     /// The operation identifier.
@@ -156,7 +156,7 @@ internal sealed class RestApiOperation
 
             //Getting metadata for the header
             var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName)
-                ?? throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
+                                 ?? throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
 
             //If parameter is required it's value should always be provided.
             if (headerMetadata.IsRequired)

@@ -76,8 +76,8 @@ location **value** hardcoded in the prompt template.
 ## Design Principles
 
 The template language is designed to be simple and fast to render, allowing
-to create functions with a simple text editor, reducing special syntax to a
-minimum, and minimizing edge cases.
+to create functions with a simple text editor, using natural language, reducing
+special syntax to a minimum, and minimizing edge cases.
 
 The template language uses the **«`$`»** symbol on purpose, to clearly distinguish
 between function calls that retrieve content executing some code, from variables,
