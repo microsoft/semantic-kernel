@@ -158,6 +158,7 @@ public sealed class Plan : ISKFunction
 
     /// <summary>
     /// Deserialize a JSON string into a Plan object.
+    /// TODO: the context should never be null, it's required internally
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
     /// <param name="context">The context to use for function registrations.</param>
@@ -169,7 +170,7 @@ public sealed class Plan : ISKFunction
 
         if (context != null)
         {
-            plan = SetRegisteredFunctions(plan, context);
+            plan = SetAvailableFunctions(plan, context);
         }
 
         return plan;
@@ -401,11 +402,18 @@ public sealed class Plan : ISKFunction
     /// <param name="plan">Plan to set functions for.</param>
     /// <param name="context">Context to use.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetRegisteredFunctions(Plan plan, SKContext context)
+    private static Plan SetAvailableFunctions(Plan plan, SKContext context)
     {
         if (plan.Steps.Count == 0)
         {
-            if (context.IsFunctionRegistered(plan.SkillName, plan.Name, out var skillFunction))
+            if (context.Skills == null)
+            {
+                throw new KernelException(
+                    KernelException.ErrorCodes.SkillCollectionNotSet,
+                    "Skill collection not found in the context");
+            }
+
+            if (context.Skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
             {
                 plan.SetFunction(skillFunction);
             }
@@ -414,7 +422,7 @@ public sealed class Plan : ISKFunction
         {
             foreach (var step in plan.Steps)
             {
-                SetRegisteredFunctions(step, context);
+                SetAvailableFunctions(step, context);
             }
         }
 
@@ -470,26 +478,53 @@ public sealed class Plan : ISKFunction
     /// <returns>The context variables for the next step in the plan.</returns>
     private ContextVariables GetNextStepVariables(ContextVariables variables, Plan step)
     {
-        // If the current step is passing to another plan, we set the default input to an empty string.
-        // Otherwise, we use the description from the current plan as the default input.
-        // We then set the input to the value from the SKContext, or the input from the Plan.State, or the default input.
-        var defaultInput = step.Steps.Count > 0 ? string.Empty : this.Description ?? string.Empty;
-        var planInput = string.IsNullOrEmpty(variables.Input) ? this.State.Input : variables.Input;
-        var stepInput = string.IsNullOrEmpty(planInput) ? defaultInput : planInput;
-        var stepVariables = new ContextVariables(stepInput);
+        // Priority for Input
+        // - Parameters (expand from variables if needed)
+        // - SKContext.Variables
+        // - Plan.State
+        // - Empty if sending to another plan
+        // - Plan.Description
+
+        var input = string.Empty;
+        if (!string.IsNullOrEmpty(step.Parameters.Input))
+        {
+            input = this.ExpandFromVariables(variables, step.Parameters.Input);
+        }
+        else if (!string.IsNullOrEmpty(variables.Input))
+        {
+            input = variables.Input;
+        }
+        else if (!string.IsNullOrEmpty(this.State.Input))
+        {
+            input = this.State.Input;
+        }
+        else if (step.Steps.Count > 0)
+        {
+            input = string.Empty;
+        }
+        else if (!string.IsNullOrEmpty(this.Description))
+        {
+            input = this.Description;
+        }
+
+        var stepVariables = new ContextVariables(input);
 
         // Priority for remaining stepVariables is:
-        // - Parameters (pull from State by a key value)
-        // - Parameters (from context)
-        // - Parameters (from State)
+        // - Function Parameters (pull from variables or state by a key value)
+        // - Step Parameters (pull from variables or state by a key value)
         var functionParameters = step.Describe();
         foreach (var param in functionParameters.Parameters)
         {
-            if (variables.Get(param.Name, out var value) && !string.IsNullOrEmpty(value))
+            if (param.Name.Equals(ContextVariables.MainKey, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (variables.Get(param.Name, out var value))
             {
                 stepVariables.Set(param.Name, value);
             }
-            else if (this.State.Get(param.Name, out value) && !string.IsNullOrEmpty(value))
+            else if (this.State.Get(param.Name, out value))
             {
                 stepVariables.Set(param.Name, value);
             }
@@ -497,18 +532,28 @@ public sealed class Plan : ISKFunction
 
         foreach (var item in step.Parameters)
         {
-            if (!string.IsNullOrEmpty(item.Value))
+            // Don't overwrite variable values that are already set
+            if (stepVariables.Get(item.Key, out _))
             {
-                var value = this.ExpandFromVariables(variables, item.Value);
+                continue;
+            }
+
+            var expandedValue = this.ExpandFromVariables(variables, item.Value);
+            if (!expandedValue.Equals(item.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                stepVariables.Set(item.Key, expandedValue);
+            }
+            else if (variables.Get(item.Key, out var value))
+            {
                 stepVariables.Set(item.Key, value);
             }
-            else if (variables.Get(item.Key, out var value) && !string.IsNullOrEmpty(value))
+            else if (this.State.Get(item.Key, out value))
             {
                 stepVariables.Set(item.Key, value);
             }
-            else if (this.State.Get(item.Key, out value) && !string.IsNullOrEmpty(value))
+            else
             {
-                stepVariables.Set(item.Key, value);
+                stepVariables.Set(item.Key, expandedValue);
             }
         }
 

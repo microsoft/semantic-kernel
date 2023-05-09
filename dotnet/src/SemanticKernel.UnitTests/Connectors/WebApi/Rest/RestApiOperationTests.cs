@@ -17,7 +17,7 @@ public class RestApiOperationTests
         // Arrange
         var sut = new RestApiOperation(
             "fake_id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "/",
             HttpMethod.Get,
             "fake_description",
@@ -40,7 +40,7 @@ public class RestApiOperationTests
         // Arrange
         var sut = new RestApiOperation(
             "fake_id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "/",
             HttpMethod.Get,
             "fake_description",
@@ -48,8 +48,10 @@ public class RestApiOperationTests
             new Dictionary<string, string>()
         );
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("server-url", "https://fake-random-test-host-override");
+        var arguments = new Dictionary<string, string>
+        {
+            { "server-url", "https://fake-random-test-host-override" }
+        };
 
         // Act
         var url = sut.BuildOperationUrl(arguments);
@@ -64,7 +66,7 @@ public class RestApiOperationTests
         // Arrange
         var sut = new RestApiOperation(
             "fake_id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "/{fake-path-parameter}/other_fake_path_section",
             HttpMethod.Get,
             "fake_description",
@@ -72,8 +74,10 @@ public class RestApiOperationTests
             new Dictionary<string, string>()
         );
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("fake-path-parameter", "fake-path-value");
+        var arguments = new Dictionary<string, string>
+        {
+            { "fake-path-parameter", "fake-path-value" }
+        };
 
         // Act
         var url = sut.BuildOperationUrl(arguments);
@@ -95,7 +99,7 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "/{fake-path-parameter}/other_fake_path_section",
             HttpMethod.Get,
             "fake_description",
@@ -129,16 +133,18 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "/",
             HttpMethod.Get,
             "fake_description",
             new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
             new Dictionary<string, string>());
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("p1", "v1");
-        arguments.Add("p2", "v2");
+        var arguments = new Dictionary<string, string>
+        {
+            { "p1", "v1" },
+            { "p2", "v2" }
+        };
 
         // Act
         var url = sut.BuildOperationUrl(arguments);
@@ -167,7 +173,7 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "/",
             HttpMethod.Get,
             "fake_description",
@@ -201,15 +207,17 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "/",
             HttpMethod.Get,
             "fake_description",
             new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
             new Dictionary<string, string>());
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("p2", "v2");
+        var arguments = new Dictionary<string, string>
+        {
+            { "p2", "v2" }
+        };
 
         // Act
         var url = sut.BuildOperationUrl(arguments);
@@ -236,15 +244,17 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "/",
             HttpMethod.Get,
             "fake_description",
             new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
             new Dictionary<string, string>());
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("p2", "v2");
+        var arguments = new Dictionary<string, string>
+        {
+            { "p2", "v2" }
+        };
 
         //Act and assert
         Assert.Throws<RestApiOperationException>(() => sut.BuildOperationUrl(arguments));
@@ -258,13 +268,17 @@ public class RestApiOperationTests
     public void ItShouldEncodeSpecialSymbolsInQueryStringValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var metadata = new List<RestApiOperationParameter>();
-        metadata.Add(new RestApiOperationParameter("fake_query_param", "string", false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple));
+        var metadata = new List<RestApiOperationParameter>
+        {
+            new RestApiOperationParameter("fake_query_param", "string", false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple)
+        };
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("fake_query_param", $"fake_query_param_value{specialSymbol}");
+        var arguments = new Dictionary<string, string>
+        {
+            { "fake_query_param", $"fake_query_param_value{specialSymbol}" }
+        };
 
-        var sut = new RestApiOperation("fake_id", "https://fake-random-test-host", "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
         var url = sut.BuildOperationUrl(arguments);
@@ -294,17 +308,19 @@ public class RestApiOperationTests
 
         var sut = new RestApiOperation(
             "fake_id",
-            "https://fake-random-test-host",
+            new Uri("https://fake-random-test-host"),
             "{fake-path}/",
             HttpMethod.Get,
             "fake_description",
             new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
             new Dictionary<string, string>());
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("server-url", "https://fake-random-test-host-override");
-        arguments.Add("fake-path", "fake-path-value");
-        arguments.Add("p2", "v2");
+        var arguments = new Dictionary<string, string>
+        {
+            { "server-url", "https://fake-random-test-host-override" },
+            { "fake-path", "fake-path-value" },
+            { "p2", "v2" }
+        };
 
         // Act
         var url = sut.BuildOperationUrl(arguments);
@@ -317,15 +333,19 @@ public class RestApiOperationTests
     public void ItShouldRenderHeaderValuesFromArguments()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>();
-        rawHeaders.Add("fake_header_one", string.Empty);
-        rawHeaders.Add("fake_header_two", string.Empty);
+        var rawHeaders = new Dictionary<string, string>
+        {
+            { "fake_header_one", string.Empty },
+            { "fake_header_two", string.Empty }
+        };
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("fake_header_one", "fake_header_one_value");
-        arguments.Add("fake_header_two", "fake_header_two_value");
+        var arguments = new Dictionary<string, string>
+        {
+            { "fake_header_one", "fake_header_one_value" },
+            { "fake_header_two", "fake_header_two_value" }
+        };
 
-        var sut = new RestApiOperation("fake_id", "fake_url", "fake_path", HttpMethod.Get, "fake_description", new List<RestApiOperationParameter>(), rawHeaders);
+        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", new List<RestApiOperationParameter>(), rawHeaders);
 
         // Act
         var headers = sut.RenderHeaders(arguments);
@@ -344,11 +364,13 @@ public class RestApiOperationTests
     public void ItShouldUseHeaderValuesIfTheyAreAlreadyProvided()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>();
-        rawHeaders.Add("fake_header_one", "fake_header_one_value");
-        rawHeaders.Add("fake_header_two", "fake_header_two_value");
+        var rawHeaders = new Dictionary<string, string>
+        {
+            { "fake_header_one", "fake_header_one_value" },
+            { "fake_header_two", "fake_header_two_value" }
+        };
 
-        var sut = new RestApiOperation("fake_id", "fake_url", "fake_path", HttpMethod.Get, "fake_description", new List<RestApiOperationParameter>(),
+        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", new List<RestApiOperationParameter>(),
             rawHeaders);
 
         // Act
@@ -368,13 +390,15 @@ public class RestApiOperationTests
     public void ItShouldThrowExceptionIfHeadersHaveNoValuesAndHeadersMetadataNotSupplied()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>();
-        rawHeaders.Add("fake_header_one", string.Empty);
-        rawHeaders.Add("fake_header_two", string.Empty);
+        var rawHeaders = new Dictionary<string, string>
+        {
+            { "fake_header_one", string.Empty },
+            { "fake_header_two", string.Empty }
+        };
 
         var metadata = new List<RestApiOperationParameter>();
 
-        var sut = new RestApiOperation("fake_id", "fake_url", "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
+        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
 
         // Act
         void Act() => sut.RenderHeaders(new Dictionary<string, string>());
@@ -387,15 +411,19 @@ public class RestApiOperationTests
     public void ShouldThrowExceptionIfNoValueProvidedForRequiredHeader()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>();
-        rawHeaders.Add("fake_header_one", string.Empty);
-        rawHeaders.Add("fake_header_two", string.Empty);
+        var rawHeaders = new Dictionary<string, string>
+        {
+            { "fake_header_one", string.Empty },
+            { "fake_header_two", string.Empty }
+        };
 
-        var metadata = new List<RestApiOperationParameter>();
-        metadata.Add(new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple));
-        metadata.Add(new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple));
+        var metadata = new List<RestApiOperationParameter>
+        {
+            new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple),
+            new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple)
+        };
 
-        var sut = new RestApiOperation("fake_id", "fake_url", "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
+        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
 
         // Act
         void Act() => sut.RenderHeaders(new Dictionary<string, string>());
@@ -408,20 +436,24 @@ public class RestApiOperationTests
     public void ItShouldSkipOptionalHeaderHavingNeitherValueNorDefaultValue()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>();
-        rawHeaders.Add("fake_header_one", string.Empty);
-        rawHeaders.Add("fake_header_two", string.Empty);
+        var rawHeaders = new Dictionary<string, string>
+        {
+            { "fake_header_one", string.Empty },
+            { "fake_header_two", string.Empty }
+        };
 
-        var metadata = new List<RestApiOperationParameter>();
-        metadata.Add(new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header,
-            RestApiOperationParameterStyle.Simple));
-        metadata.Add(new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header,
-            RestApiOperationParameterStyle.Simple));
+        var metadata = new List<RestApiOperationParameter>
+        {
+            new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple),
+            new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple)
+        };
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("fake_header_one", "fake_header_one_value");
+        var arguments = new Dictionary<string, string>
+        {
+            { "fake_header_one", "fake_header_one_value" }
+        };
 
-        var sut = new RestApiOperation("fake_id", "fake_url", "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
+        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
 
         // Act
         var headers = sut.RenderHeaders(arguments);
@@ -437,18 +469,24 @@ public class RestApiOperationTests
     public void ShouldUseDefaultValueForOptionalHeaderIfNoValueProvided()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>();
-        rawHeaders.Add("fake_header_one", string.Empty);
-        rawHeaders.Add("fake_header_two", string.Empty);
+        var rawHeaders = new Dictionary<string, string>
+        {
+            { "fake_header_one", string.Empty },
+            { "fake_header_two", string.Empty }
+        };
 
-        var metadata = new List<RestApiOperationParameter>();
-        metadata.Add(new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple));
-        metadata.Add(new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple, defaultValue: "fake_header_two_default_value"));
+        var metadata = new List<RestApiOperationParameter>
+        {
+            new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple),
+            new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple, defaultValue: "fake_header_two_default_value")
+        };
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("fake_header_one", "fake_header_one_value"); //Argument is only provided for the first parameter and not for the second one
+        var arguments = new Dictionary<string, string>
+        {
+            { "fake_header_one", "fake_header_one_value" } //Argument is only provided for the first parameter and not for the second one
+        };
 
-        var sut = new RestApiOperation("fake_id", "fake_url", "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
+        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
 
         // Act
         var headers = sut.RenderHeaders(arguments);
@@ -467,13 +505,17 @@ public class RestApiOperationTests
     public void ItShouldNotWrapQueryStringValuesOfStringTypeIntoSingleQuotes()
     {
         // Arrange
-        var metadata = new List<RestApiOperationParameter>();
-        metadata.Add(new RestApiOperationParameter("fake_query_string_param", "string", false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple));
+        var metadata = new List<RestApiOperationParameter>
+        {
+            new RestApiOperationParameter("fake_query_string_param", "string", false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple)
+        };
 
-        var arguments = new Dictionary<string, string>();
-        arguments.Add("fake_query_string_param", "fake_query_string_param_value");
+        var arguments = new Dictionary<string, string>
+        {
+            { "fake_query_string_param", "fake_query_string_param_value" }
+        };
 
-        var sut = new RestApiOperation("fake_id", "https://fake-random-test-host", "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
         var url = sut.BuildOperationUrl(arguments);

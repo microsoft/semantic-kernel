@@ -241,7 +241,7 @@ public class AzureCognitiveSearchMemory : ISemanticTextMemory
     /// </summary>
     /// <param name="indexName">Index name</param>
     /// <param name="cancellationToken">Task cancellation token</param>
-    private Task CreateIndexAsync(
+    private Task<Response<SearchIndex>> CreateIndexAsync(
         string indexName,
         CancellationToken cancellationToken = default)
     {
