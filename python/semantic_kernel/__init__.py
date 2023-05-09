@@ -2,7 +2,6 @@
 
 from semantic_kernel import core_skills, memory
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
@@ -22,7 +21,6 @@ from semantic_kernel.utils.settings import (
 
 __all__ = [
     "Kernel",
-    "KernelConfig",
     "NullLogger",
     "openai_settings_from_dot_env",
     "azure_openai_settings_from_dot_env",

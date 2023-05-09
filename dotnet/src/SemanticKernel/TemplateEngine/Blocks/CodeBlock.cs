@@ -48,7 +48,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
                 return false;
             }
 
-            if (this._tokens[1].Type != BlockTypes.Value && this._tokens[1].Type != BlockTypes.Variable)
+            if (this._tokens[1].Type is not BlockTypes.Value and not BlockTypes.Variable)
             {
                 errorMsg = "Functions support only one parameter";
                 this.Log.LogError(errorMsg);
@@ -98,7 +98,13 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
     private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, SKContext context)
     {
-        context.ThrowIfSkillCollectionNotSet();
+        if (context.Skills == null)
+        {
+            throw new KernelException(
+                KernelException.ErrorCodes.SkillCollectionNotSet,
+                "Skill collection not found in the context");
+        }
+
         if (!this.GetFunctionFromSkillCollection(context.Skills!, fBlock, out ISKFunction? function))
         {
             var errorMsg = $"Function `{fBlock.Content}` not found";

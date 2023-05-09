@@ -578,6 +578,185 @@ public sealed class PlanTests
     }
 
     [Fact]
+    public async Task CanExecutePlanWithStateAsync()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var log = new Mock<ILogger>();
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+
+        var returnContext = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+
+        var mockFunction = new Mock<ISKFunction>();
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            {
+                c.Variables.Get("type", out var t);
+                returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
+            })
+            .Returns(() => Task.FromResult(returnContext));
+
+        var planStep = new Plan(mockFunction.Object);
+        planStep.Parameters.Set("type", string.Empty);
+        var plan = new Plan(string.Empty);
+        plan.AddSteps(planStep);
+        plan.State.Set("input", "Cleopatra");
+        plan.State.Set("type", "poem");
+
+        // Act
+        var result = await plan.InvokeAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a poem about Cleopatra", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Once);
+    }
+
+    [Fact]
+    public async Task CanExecutePlanWithCustomContextAsync()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var log = new Mock<ILogger>();
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+
+        var returnContext = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+
+        var mockFunction = new Mock<ISKFunction>();
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            {
+                c.Variables.Get("type", out var t);
+                returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
+            })
+            .Returns(() => Task.FromResult(returnContext));
+
+        var plan = new Plan(mockFunction.Object);
+        plan.State.Set("input", "Cleopatra");
+        plan.State.Set("type", "poem");
+
+        // Act
+        var result = await plan.InvokeAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a poem about Cleopatra", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Once);
+
+        plan = new Plan(mockFunction.Object);
+        plan.State.Set("input", "Cleopatra");
+        plan.State.Set("type", "poem");
+
+        var contextOverride = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+        contextOverride.Variables.Set("type", "joke");
+        contextOverride.Variables.Update("Medusa");
+
+        // Act
+        result = await plan.InvokeAsync(contextOverride);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a joke about Medusa", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task CanExecutePlanWithCustomStateAsync()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var log = new Mock<ILogger>();
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+
+        var returnContext = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+
+        var mockFunction = new Mock<ISKFunction>();
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            {
+                c.Variables.Get("type", out var t);
+                returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
+            })
+            .Returns(() => Task.FromResult(returnContext));
+
+        var planStep = new Plan(mockFunction.Object);
+        planStep.Parameters.Set("type", string.Empty);
+        var plan = new Plan("A plan");
+        plan.State.Set("input", "Medusa");
+        plan.State.Set("type", "joke");
+        plan.AddSteps(planStep);
+
+        // Act
+        var result = await plan.InvokeAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a joke about Medusa", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Once);
+
+        planStep = new Plan(mockFunction.Object);
+        plan = new Plan("A plan");
+        planStep.Parameters.Set("input", "Medusa");
+        planStep.Parameters.Set("type", "joke");
+        plan.State.Set("input", "Cleopatra"); // state input will not override parameter
+        plan.State.Set("type", "poem");
+        plan.AddSteps(planStep);
+
+        // Act
+        result = await plan.InvokeAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a poem about Medusa", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Exactly(2));
+
+        planStep = new Plan(mockFunction.Object);
+        plan = new Plan("A plan");
+        planStep.Parameters.Set("input", "Cleopatra");
+        planStep.Parameters.Set("type", "poem");
+        plan.AddSteps(planStep);
+        var contextOverride = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+        contextOverride.Variables.Set("type", "joke");
+        contextOverride.Variables.Update("Medusa"); // context input will not override parameters
+
+        // Act
+        result = await plan.InvokeAsync(contextOverride);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a joke about Cleopatra", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Exactly(3));
+    }
+
+    [Fact]
     public async Task CanExecutePlanWithJoinedResultAsync()
     {
         // Arrange

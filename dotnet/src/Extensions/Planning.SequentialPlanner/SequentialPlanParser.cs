@@ -15,6 +15,7 @@ internal static class SequentialPlanParser
 {
     /// <summary>
     /// The tag name used in the plan xml for the user's goal/ask.
+    /// TODO: never used
     /// </summary>
     internal const string GoalTag = "goal";
 
@@ -87,7 +88,7 @@ internal static class SequentialPlanParser
                         var skillFunctionName = childNode.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
                         GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
 
-                        if (!string.IsNullOrEmpty(functionName) && context.IsFunctionRegistered(skillName, functionName, out var skillFunction))
+                        if (!string.IsNullOrEmpty(functionName) && context.Skills!.TryGetFunction(skillName, functionName, out var skillFunction))
                         {
                             var planStep = new Plan(skillFunction);
 
