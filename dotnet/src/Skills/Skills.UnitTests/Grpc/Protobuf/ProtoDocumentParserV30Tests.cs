@@ -98,11 +98,11 @@ public sealed class ProtoDocumentParserV30Tests
         Assert.Equal("greet.HelloReply", response.Name);
         Assert.NotNull(response.Fields);
 
-        var messageFeld = response.Fields.SingleOrDefault(f => f.Name == "message");
-        Assert.NotNull(messageFeld);
+        var messageField = response.Fields.SingleOrDefault(f => f.Name == "message");
+        Assert.NotNull(messageField);
 
-        Assert.Equal(1, messageFeld.Number);
-        Assert.Equal("TYPE_STRING", messageFeld.TypeName);
+        Assert.Equal(1, messageField.Number);
+        Assert.Equal("TYPE_STRING", messageField.TypeName);
     }
 }
 
