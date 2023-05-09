@@ -22,4 +22,5 @@ export interface IChatMessage {
     id?: string;
     authorRole: AuthorRoles;
     debug?: string;
+    planApprovalRequired?: boolean; // if plan needs approval
 }
