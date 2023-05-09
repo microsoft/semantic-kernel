@@ -38,6 +38,7 @@ public sealed class KernelBuilder
     /// Build a new kernel instance using the settings passed so far.
     /// </summary>
     /// <returns>Kernel instance</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The SkillCollection is disposed by the Kernel Dispose method.")]
     public IKernel Build()
     {
         if (this._httpHandlerFactory != null)
