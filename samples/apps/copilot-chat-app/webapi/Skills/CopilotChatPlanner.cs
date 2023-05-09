@@ -3,6 +3,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Config;
 
 namespace SemanticKernel.Service.Skills;
@@ -38,5 +39,14 @@ public class CopilotChatPlanner
     /// </summary>
     /// <param name="goal">The goal to create a plan for.</param>
     /// <returns>The plan.</returns>
-    public Task<Plan> CreatePlanAsync(string goal) => new ActionPlanner(this.Kernel).CreatePlanAsync(goal);
+    public Task<Plan> CreatePlanAsync(string goal)
+    {
+        FunctionsView plannerFunctionsView = this.Kernel.Skills.GetFunctionsView(true, true);
+        if (plannerFunctionsView.NativeFunctions.IsEmpty && plannerFunctionsView.SemanticFunctions.IsEmpty)
+        {
+            // No functions are available - return an empty plan.
+            return Task.FromResult(new Plan(goal));
+        }
+        return new ActionPlanner(this.Kernel).CreatePlanAsync(goal);
+    }
 }
