@@ -197,8 +197,11 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
     public async Task<string> AcquireExternalInformationAsync(SKContext context)
     {
-        if (!this._plannerOptions.Enabled)
+        FunctionsView plannerFunctionsView = this._planner.Kernel.Skills.GetFunctionsView(true, true);
+        if (!this._plannerOptions.Enabled ||
+            (plannerFunctionsView.NativeFunctions.IsEmpty && plannerFunctionsView.SemanticFunctions.IsEmpty))
         {
+            // Planner is disabled or there are no SK functions registered with the planner.
             return string.Empty;
         }
 
