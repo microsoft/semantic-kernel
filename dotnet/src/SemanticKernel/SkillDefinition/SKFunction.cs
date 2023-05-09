@@ -25,6 +25,8 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// </summary>
 public sealed class SKFunction : ISKFunction, IDisposable
 {
+    public delegate Task<SKContext> CustomFunctionAsync(SKContext context);
+
     /// <inheritdoc/>
     public string Name { get; }
 
@@ -138,6 +140,37 @@ public sealed class SKFunction : ISKFunction, IDisposable
             functionName: functionName,
             isSemantic: true,
             log: log);
+    }
+
+    /// <summary>
+    /// Create a native function instance, wrapping a native object method
+    /// </summary>
+    /// <param name="customFunction">Signature of the method to invoke</param>
+    /// <param name="skillName">SK skill name</param>
+    /// <param name="functionName">SK function name</param>
+    /// <param name="description">SK function description</param>
+    /// <param name="parameters">SK function parameters</param>
+    /// <param name="log">Application logger</param>
+    /// <returns>SK function instance</returns>
+    public static ISKFunction FromCustomMethod(
+        CustomFunctionAsync customFunction,
+        string skillName,
+        string functionName,
+        string description,
+        IEnumerable<ParameterView>? parameters = null,
+        ILogger? log = null)
+    {
+        var function = new SKFunction(
+            delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
+            delegateFunction: customFunction,
+            parameters: (parameters ?? Enumerable.Empty<ParameterView>()).ToList(),
+            description: description,
+            skillName: skillName,
+            functionName: functionName,
+            isSemantic: false,
+            log: log);
+
+        return function;
     }
 
     /// <inheritdoc/>
@@ -256,7 +289,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         public string Description { get; set; }
     }
 
-    public enum DelegateTypes
+    internal enum DelegateTypes
     {
         Unknown = 0,
         Void = 1,
@@ -279,7 +312,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         OutTask = 18
     }
 
-    public SKFunction(
+    internal SKFunction(
         DelegateTypes delegateType,
         Delegate delegateFunction,
         IList<ParameterView> parameters,
