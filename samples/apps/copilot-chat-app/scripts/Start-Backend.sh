@@ -8,7 +8,7 @@ ScriptDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ScriptDir/../WebApi"
 
 # Parameters
-Key="$1"
+AzureOpenAIOrOpenAIKey="$1"
 
 case "$OSTYPE" in
   darwin*)
@@ -22,10 +22,10 @@ case "$OSTYPE" in
 esac
 
 # If key provided, store it in user secrets
-if [ "$Key" != "" ]; then
-    dotnet user-secrets set "Completion:Key" "$Key"
-    dotnet user-secrets set "Embedding:Key" "$Key"
-    dotnet user-secrets set "Planner:AIService:Key" "$Key"
+if [ "$AzureOpenAIOrOpenAIKey" != "" ]; then
+    dotnet user-secrets set "Completion:Key" "$AzureOpenAIOrOpenAIKey"
+    dotnet user-secrets set "Embedding:Key" "$AzureOpenAIOrOpenAIKey"
+    dotnet user-secrets set "Planner:AIService:Key" "$AzureOpenAIOrOpenAIKey"
 fi
 
 # Build and run the backend API server

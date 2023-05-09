@@ -3,15 +3,14 @@
 Initializes and runs both the backend and frontend for Copilot Chat.
 
 .PARAMETER ClientId
-The client (application) ID for your AAD app registration.
+The client (application) ID associated with your AAD app registration.
 
-.PARAMETER TenantId
-The tenant (directory) ID for your AAD app registration.
-If you are using a personal MSA account, enter 'msa' here.
-Defaults to the 'common' endpoint.
+.PARAMETER Tenant
+The tenant or audience associated with your AAD app registration.
+Defaults to 'common'.
 
-.PARAMETER Key
-Your OpenAI or Azure OpenAI API key.
+.PARAMETER AzureOpenAIOrOpenAIKey
+Your Azure OpenAI or OpenAI API key.
 #>
 
 #Requires -Version 6
@@ -20,13 +19,13 @@ param (
     [Parameter(Mandatory)]
     [string] $ClientId,
 
-    [string] $TenantId = 'common',
+    [string] $Tenant = 'common',
 
-    [string] $Key
+    [string] $AzureOpenAIOrOpenAIKey
 )
 
 # Start backend (in new PS process)
-if ($Key -eq '')
+if ($AzureOpenAIOrOpenAIKey -eq '')
 {
     # no key
     Start-Process pwsh -ArgumentList "-noexit", "-command $PSScriptRoot/Start-Backend.ps1"
@@ -34,8 +33,8 @@ if ($Key -eq '')
 else
 {
     # with key
-    Start-Process pwsh -ArgumentList "-noexit", "-command $PSScriptRoot/Start-Backend.ps1 -Key $Key"
+    Start-Process pwsh -ArgumentList "-noexit", "-command $PSScriptRoot/Start-Backend.ps1 -AzureOpenAIOrOpenAIKey $AzureOpenAIOrOpenAIKey"
 }
 
 # Start frontend (in current PS process)
-& "$PSScriptRoot/Start-Frontend.ps1" -ClientId $ClientId -TenantId $TenantId
+& "$PSScriptRoot/Start-Frontend.ps1" -ClientId $ClientId -Tenant $Tenant
