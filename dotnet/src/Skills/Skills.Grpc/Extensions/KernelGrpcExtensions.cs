@@ -86,7 +86,7 @@ public static class KernelGrpcExtensions
         Stream documentStream,
         string skillName)
     {
-        Verify.NotNull(kernel, nameof(kernel));
+        Verify.NotNull(kernel);
         Verify.ValidSkillName(skillName);
 
         // Parse
