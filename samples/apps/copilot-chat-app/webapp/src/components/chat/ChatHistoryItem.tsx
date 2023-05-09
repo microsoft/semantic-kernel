@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Label, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
+import { useAccount, useMsal } from '@azure/msal-react';
+import { Label, Persona, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
 import { SKBotAudienceMember } from '../../libs/semantic-kernel/bot-agent/models/SKBotAudienceMember';
@@ -63,6 +64,8 @@ const createCommandLink = (command: string) => {
 
 export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
     const { message } = props;
+    const { accounts } = useMsal();
+    const account = useAccount(accounts[0] || {});
     const chat = useChat();
     const classes = useClasses();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
@@ -94,7 +97,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = (props) => {
             time;
     }
 
-    const isMe = message.authorRole === AuthorRoles.User;
+    const isMe = message.authorRole === AuthorRoles.User && message.userId === account!.homeAccountId!;
     const member = chat.getAudienceMemberForId(message.userName, selectedId, conversations[selectedId].audience);
     const avatar = isMe
         ? member?.photo
