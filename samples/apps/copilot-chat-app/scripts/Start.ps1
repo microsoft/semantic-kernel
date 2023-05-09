@@ -6,7 +6,7 @@ Initializes and runs both the backend and frontend for Copilot Chat.
 The client (application) ID associated with your AAD app registration.
 
 .PARAMETER Tenant
-The tenant or audience associated with your AAD app registration.
+The tenant associated with your AAD app registration.
 Defaults to 'common'.
 
 .PARAMETER AzureOpenAIOrOpenAIKey

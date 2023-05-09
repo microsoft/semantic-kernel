@@ -7,8 +7,8 @@ To run these scripts, you will need the following:
 - *REACT_APP_CLIENT_ID*
   - This is the client ID (also known as application ID) associated with your Azure Active Directory (AAD) application registration, which you can find in the Azure portal.
 - *REACT_APP_TENANT*
-  - This is the tenant or audience associated with your AAD app registration.
-  [Learn more about possible values for this parameter](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#how-to-specify-the-audience-in-your-codeconfiguration).
+  - This is the tenant associated with your AAD app registration.
+  [Learn more about possible values for this parameter](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority).
 - *MY_AZUREOPENAI_OR_OPENAI_KEY*
   - This is your API key for Azure OpenAI or OpenAI
 
