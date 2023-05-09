@@ -12,6 +12,18 @@ public class ChatHub : Hub
         Console.WriteLine("Log SendMessage: {0}", message);
     }
 
+    public async Task SendMessageToAllUsersExceptSelfAsync(string ClientSideCallBackName, string message)
+    {
+        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync(ClientSideCallBackName, message);
+        Console.WriteLine("Log SendMessageToAllUsersExceptSelfAsync: {0}", message);
+    }
+
+    public async Task SendMessageToAllUsersAsync(string message)
+    {
+        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync("ReceiveMessage", message);
+        Console.WriteLine("Log SendMessageToAllUsersAsync: {0}", message);
+    }
+
     public async Task Func2Async(string user, string message)
     {
         await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync("ReceiveMessage", user, message);

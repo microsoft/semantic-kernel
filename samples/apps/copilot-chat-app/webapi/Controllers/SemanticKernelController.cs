@@ -20,7 +20,7 @@ using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
-using SemanticKernel.Service.SignalR;
+using SemanticKernel.Service.SignalR.Hubs;
 
 namespace SemanticKernel.Service.Controllers;
 
@@ -141,8 +141,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
         }
 
         // SignalR broadcasting
-        await chatHubContext.Clients.All.SendAsync("ReceiveMessage", $"Home page loaded at: {DateTime.Now}");
-
+        await chatHubContext.Clients.All.SendAsync("ReceiveMessageFromBackend", result.Result);
 
         return this.Ok(new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) });
     }

@@ -77,6 +77,14 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const documentFileRef = useRef<HTMLInputElement | null>(null);
 
     React.useEffect(() => {
+        // This code will run once, when the component is mounted
+        console.log('SignalR setup called');
+        chatRelay.setupSignalRConnectionToChatHub();
+    // Disabling warning so that we can use empty dependency array to invoke this setup call just once 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    React.useEffect(() => {
         if (recognizer) return;
         void (async () => {
             var response = await speechService.validSpeechKeyAsync();
@@ -128,8 +136,6 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
             if (data.trim() === '') {
                 return; // only submit if data is not empty
             }
-
-            chatRelay.SendTestMessage();
 
             onSubmit(data);
             setPreviousValue(data);
