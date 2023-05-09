@@ -67,13 +67,13 @@ public static class Example17_ChatGPT
     {
         Console.WriteLine("======== Azure Open AI - ChatGPT ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        // Add your chat completion service
-        kernel.Config.AddAzureChatCompletionService(
-            Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-            Env.Var("AZURE_OPENAI_ENDPOINT"),
-            Env.Var("AZURE_OPENAI_KEY"));
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithAzureChatCompletionService(
+                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_KEY")) // Add your chat completion service
+            .Build();
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
 

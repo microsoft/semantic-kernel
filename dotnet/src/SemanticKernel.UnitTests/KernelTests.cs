@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
@@ -21,7 +22,7 @@ public class KernelTests
     public void ItProvidesAccessToFunctionsViaSkillCollection()
     {
         // Arrange
-        var factory = new Mock<Func<ITextCompletion>>();
+        var factory = new Mock<Func<ILogger, ITextCompletion>>();
         var kernel = Kernel.Builder
             .WithDefaultAIService<ITextCompletion>(factory.Object)
             .Build();
@@ -50,7 +51,7 @@ public class KernelTests
     public async Task ItProvidesAccessToFunctionsViaSKContextAsync()
     {
         // Arrange
-        var factory = new Mock<Func<ITextCompletion>>();
+        var factory = new Mock<Func<ILogger, ITextCompletion>>();
         var kernel = Kernel.Builder
             .WithAIService<ITextCompletion>("x", factory.Object)
             .Build();

@@ -20,7 +20,7 @@ public static class Example20_HuggingFace
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             // Add HuggingFace text completion service as a factory methods
-            .WithDefaultAIService(() => new HuggingFaceTextCompletion(Env.Var("HF_API_KEY"), "gpt2"))
+            .WithDefaultAIService((_) => new HuggingFaceTextCompletion(Env.Var("HF_API_KEY"), "gpt2"))
             .Build();
 
         const string FunctionDefinition = "Question: {{$input}}; Answer:";
