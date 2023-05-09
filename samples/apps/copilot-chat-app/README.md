@@ -73,7 +73,7 @@ First, let’s set up and verify the back-end API server is running.
 
 # Start the WebApp FrontEnd application 
 1. Build and start the front-end application
-   1. You will  need an Azure Active Directory (AAD) application registration. 
+   1. You will need an Azure Active Directory (AAD) application registration. 
       > For more details on creating an application registration, go [here](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
       - Select `Single-page application (SPA)` as platform type, and set the Web redirect URI to `https://localhost:3000`
       - Select `Accounts in any organizational directory and personal Microsoft Accounts` as supported account types for this sample.
