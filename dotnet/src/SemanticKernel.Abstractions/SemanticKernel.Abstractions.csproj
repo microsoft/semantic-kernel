@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/InternalUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -24,13 +25,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Core" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.ActionPlanner" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.SequentialPlanner" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Skills.OpenAPI" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Memory.CosmosDB" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Skills.Grpc" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StrongNamePublicKey)"/>
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" PublicKey="$(StrongNamePublicKey)"/> <!-- Moq -->
