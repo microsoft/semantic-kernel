@@ -12,6 +12,8 @@ import { RootState } from '../../redux/app/store';
 import { updateConversation } from '../../redux/features/conversations/conversationsSlice';
 import { ChatHistory } from './ChatHistory';
 import { ChatInput } from './ChatInput';
+import { UserAsk, UserAskResult } from './../../libs/semantic-kernel/skMultiUserChat';
+import { useSKMultiUserChat } from './../../libs/semantic-kernel/useSKMultiUserChat';
 
 const log = debug(Constants.debug.root).extend('chat-room');
 
@@ -38,6 +40,26 @@ const useClasses = makeStyles({
     },
 });
 
+// const EventSendConversationToOtherUsers = (userAsk: UserAsk) => {
+//     console.log("Received User Ask from backend: ", userAsk);
+// }
+
+// const EventSendChatSkillAskResultToOtherUsers = (userAskResult: UserAskResult) => {
+//     const dispatch = useAppDispatch();
+//     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
+
+//     const messageResult = {
+//         timestamp: new Date().getTime(),
+//         userName: 'bot',
+//         userId: 'bot',
+//         content: userAskResult.value,
+//         authorRole: AuthorRoles.Bot,
+//     };
+
+//     dispatch(updateConversation({ message: messageResult, chatId: selectedId }));
+//     console.log("Received Chatbot Ask Result from backend: ", userAskResult);
+// }
+
 export const ChatRoom: React.FC = () => {
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { audience } = conversations[selectedId];
@@ -56,6 +78,40 @@ export const ChatRoom: React.FC = () => {
     const [isBotTyping, setIsBotTyping] = React.useState(false);
 
     const chat = useChat();
+
+    var hubConnection;
+    const chatRelay = useSKMultiUserChat(process.env.REACT_APP_BACKEND_URI as string);
+
+    React.useEffect(() => {
+        // This code will run once, when the component is mounted
+        console.log('SignalR setup called');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        hubConnection = chatRelay.setupSignalRConnectionToChatHub();
+        
+        const EventSendConversationToOtherUsers = (userAsk: UserAsk) => {
+            console.log("Received User Ask from backend: ", userAsk);
+        }
+        
+        const EventSendChatSkillAskResultToOtherUsers = (userAskResult: UserAskResult) => {
+            const dispatch = useAppDispatch();
+            const { selectedId } = useAppSelector((state: RootState) => state.conversations);
+        
+            const messageResult = {
+                timestamp: new Date().getTime(),
+                userName: 'bot',
+                userId: 'bot',
+                content: userAskResult.value,
+                authorRole: AuthorRoles.Bot,
+            };
+        
+            dispatch(updateConversation({ message: messageResult, chatId: selectedId }));
+            console.log("Received Chatbot Ask Result from backend: ", userAskResult);
+        }
+
+        hubConnection.on("SendConversationToOtherUsersFrontEnd", EventSendConversationToOtherUsers);
+        hubConnection.on("SendChatSkillAskResultToOtherUsersFrontEnd", EventSendChatSkillAskResultToOtherUsers);
+    // Disabling warning so that we can use empty dependency array to invoke this setup call just once 
+    }, []);
 
     React.useEffect(() => {
         if (!shouldAutoScroll) return;
