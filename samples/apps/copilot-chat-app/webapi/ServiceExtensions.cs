@@ -35,6 +35,7 @@ internal static class ServicesExtensions
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
+        // Authorization configuration
         services.AddOptions<AuthorizationOptions>()
             .Bind(configuration.GetSection(AuthorizationOptions.PropertyName))
             .ValidateOnStart()
