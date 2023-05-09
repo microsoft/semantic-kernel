@@ -11,7 +11,6 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 @pytest.mark.asyncio
-# @pytest.mark.xfail(raises=AssertionError, reason="OpenAI may throttle requests, preventing this test from passing")
 async def test_oai_embedding_service_with_memories():
     kernel = sk.Kernel()
 

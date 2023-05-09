@@ -19,7 +19,7 @@ using RepoUtils;
  */
 public class MyTextCompletionService : ITextCompletion
 {
-    public Task<string> CompleteAsync(
+    public async Task<string> CompleteAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
@@ -27,7 +27,10 @@ public class MyTextCompletionService : ITextCompletion
         // Your model logic here
         var result = "...output from your custom model...";
 
-        return Task.FromResult(result);
+        // Forcing a 2 sec delay (Simulating custom LLM lag)
+        await Task.Delay(2000, cancellationToken);
+
+        return result;
     }
 
     public async IAsyncEnumerable<string> CompleteStreamAsync(
@@ -89,7 +92,7 @@ public static class Example16_CustomLLM
     private static async Task CustomTextCompletionAsync()
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw ========");
-        ITextCompletion completionService = new MyTextCompletionService();
+        var completionService = new MyTextCompletionService();
 
         var result = await completionService.CompleteAsync("I missed the training sesion this morning", new CompleteRequestSettings());
 
