@@ -177,7 +177,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
             this._logger.LogInformation("Registering Jira Skill");
             var authenticationProvider = new BasicAuthenticationProvider(() => { return Task.FromResult(openApiSkillsAuthHeaders.JiraAuthentication); });
             var hasServerUrlOverride = variables.Get("jira-server-url", out string serverUrlOverride);
-            
+
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "JiraSkill",
                 filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Skills/OpenApiSkills/JiraSkill/openapi.json"),
