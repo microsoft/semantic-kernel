@@ -33,43 +33,13 @@ export const Constants = {
             defaultDefinition: 'int',
         },
     },
-    // This is not a comprehensive list, see https://learn.microsoft.com/en-us/graph/permissions-reference.
-    // Uncomment the ones you need and pass into invokeSkillWithMsalToken (./connectors/useConnectors.ts)
-    // Your application will need to be granted these permissions in Azure AD.
+    // For a list of Microsoft Graph permissions, see https://learn.microsoft.com/en-us/graph/permissions-reference.
+    // Your application registration will need to be granted these permissions in Azure Active Directory.
     msGraphScopes: [
-        'Calendars.Read', // Get Schedule Availability
-        // 'Calendars.ReadWrite',
-        // 'Calendars.Read.Shared',
-        // 'ChannelMessage.Read.All',
-        // 'Chat.Read',
-        // 'Contacts.Read',
-        // 'Contacts.Read.Shared',
-        // 'Files.Read',
-        // 'Files.Read.All',
-        // 'Files.Read.Selected',
-        // 'Files.ReadWrite', // Upload Files to OneDrive, Create a Share link
-        // 'Group.Read.All',
+        'Calendars.Read',
         'Mail.Read',
-        // 'Mail.Read.Shared',
-        // 'Mail.Send', // Send Email
-        // 'MailboxSettings.Read',
-        // 'Notes.Read',
-        // 'Notes.Read.All',
-        // 'offline_access',
-        // 'OnlineMeetingArtifact.Read.All',
-        // 'OnlineMeetings.Read',
-        // 'OnlineMeetings.ReadWrite', // Create Meeting
-        // 'OnlineMeetings.ReadWrite.All',
-        // 'People.Read',
-        // 'Presence.Read.All',
-        // 'Sites.Read.All', // List Trending SharePoint Documents
-        // 'Tasks.Read',
-        // 'Tasks.Read.Shared',
-        'Tasks.ReadWrite', // Manage Task or To Do Task list
-        // 'TeamSettings.Read.All',
+        'Tasks.ReadWrite',
         'User.Read',
-        // 'User.Read.All', // Get Manager (requires admin consent)
-        // 'User.ReadBasic.All',
     ],
     adoScopes: ['vso.work'],
 };
