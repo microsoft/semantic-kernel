@@ -30,20 +30,20 @@ public static class KernelGrpcExtensions
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static IDictionary<string, ISKFunction> ImportGrpcSkillFromDirectory(this IKernel kernel, string parentDirectory, string skillDirectoryName)
     {
-        const string PROTO_FILE = "grpc.proto";
+        const string ProtoFile = "grpc.proto";
 
         Verify.ValidSkillName(skillDirectoryName);
 
         var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
         Verify.DirectoryExists(skillDir);
 
-        var filePath = Path.Combine(skillDir, PROTO_FILE);
+        var filePath = Path.Combine(skillDir, ProtoFile);
         if (!File.Exists(filePath))
         {
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering gRPC functions from {0} .proto document.", filePath);
+        kernel.Log.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
@@ -67,7 +67,7 @@ public static class KernelGrpcExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering gRPC functions from {0} .proto document.", filePath);
+        kernel.Log.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
