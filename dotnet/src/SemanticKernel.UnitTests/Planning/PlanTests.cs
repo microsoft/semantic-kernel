@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -543,7 +542,7 @@ public sealed class PlanTests
     }
 
     [Fact]
-    public async Task CanExecutePlanWithOneStepAsync()
+    public async Task CanExecutePlanWithOneStepAndStateAsync()
     {
         // Arrange
         var kernel = new Mock<IKernel>();
@@ -565,9 +564,9 @@ public sealed class PlanTests
             .Returns(() => Task.FromResult(returnContext));
 
         var plan = new Plan(mockFunction.Object);
+        plan.State.Set("input", "Cleopatra");
 
         // Act
-        plan.State.Set("input", "Cleopatra");
         var result = await plan.InvokeAsync();
 
         // Assert
@@ -605,10 +604,11 @@ public sealed class PlanTests
         planStep.Parameters.Set("type", string.Empty);
         var plan = new Plan(string.Empty);
         plan.AddSteps(planStep);
+        plan.State.Set("input", "Cleopatra");
         plan.State.Set("type", "poem");
 
         // Act
-        var result = await plan.InvokeAsync("Cleopatra");
+        var result = await plan.InvokeAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -642,10 +642,11 @@ public sealed class PlanTests
             .Returns(() => Task.FromResult(returnContext));
 
         var plan = new Plan(mockFunction.Object);
+        plan.State.Set("input", "Cleopatra");
         plan.State.Set("type", "poem");
 
         // Act
-        var result = await plan.InvokeAsync("Cleopatra");
+        var result = await plan.InvokeAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -653,10 +654,11 @@ public sealed class PlanTests
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Once);
 
         plan = new Plan(mockFunction.Object);
+        plan.State.Set("input", "Cleopatra");
         plan.State.Set("type", "poem");
 
         var contextOverride = new SKContext(
-            new ContextVariables("Cleopatra"),
+            new ContextVariables(),
             memory.Object,
             skills.Object,
             log.Object
@@ -701,11 +703,12 @@ public sealed class PlanTests
         var planStep = new Plan(mockFunction.Object);
         planStep.Parameters.Set("type", string.Empty);
         var plan = new Plan("A plan");
+        plan.State.Set("input", "Medusa");
         plan.State.Set("type", "joke");
         plan.AddSteps(planStep);
 
         // Act
-        var result = await plan.InvokeAsync("Medusa");
+        var result = await plan.InvokeAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -714,7 +717,9 @@ public sealed class PlanTests
 
         planStep = new Plan(mockFunction.Object);
         plan = new Plan("A plan");
+        plan.State.Set("input", "Cleopatra");
         planStep.Parameters.Set("type", "joke");
+        plan.State.Set("input", "Cleopatra"); // state input will not override parameter
         plan.State.Set("type", "poem");
         plan.AddSteps(planStep);
 
@@ -728,16 +733,17 @@ public sealed class PlanTests
 
         planStep = new Plan(mockFunction.Object);
         plan = new Plan("A plan");
+        planStep.Parameters.Set("input", "Cleopatra");
         planStep.Parameters.Set("type", "poem");
         plan.AddSteps(planStep);
         var contextOverride = new SKContext(
-            new ContextVariables("Medusa"),
+            new ContextVariables(),
             memory.Object,
             skills.Object,
             log.Object
         );
         contextOverride.Variables.Set("type", "joke");
-        contextOverride.Variables.Update("Cleopatra");
+        contextOverride.Variables.Update("Cleopatra"); // context input will not override parameters
 
         // Act
         result = await plan.InvokeAsync(contextOverride);
