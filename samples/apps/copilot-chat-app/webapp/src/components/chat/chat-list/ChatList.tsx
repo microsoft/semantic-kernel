@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { makeStyles, shorthands, Text } from '@fluentui/react-components';
+import { makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 import { FC } from 'react';
 import { useAppSelector } from '../../../redux/app/hooks';
@@ -59,7 +59,7 @@ export const ChatList: FC = () => {
                                 leaf
                                 style={
                                     id === selectedId
-                                        ? { background: '#FFFFFF' }
+                                        ? { background: tokens.colorNeutralBackground1 }
                                         : undefined
                                 }
                             >
