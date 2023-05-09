@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Skills.Grpc.Model;
 using Xunit;
 
 namespace SemanticKernel.Skills.UnitTests.Grpc.Extensions;
+
 public class GrpcOperationExtensionsTests
 {
     private readonly GrpcOperationDataContractType _request;
@@ -49,8 +50,8 @@ public class GrpcOperationExtensionsTests
         Assert.NotNull(parameters);
         Assert.True(parameters.Any());
 
-        var payloadPrameter = parameters.SingleOrDefault(p => p.Name == "payload");
-        Assert.NotNull(payloadPrameter);
-        Assert.Equal("gRPC request message.", payloadPrameter.Description);
+        var payloadParameter = parameters.SingleOrDefault(p => p.Name == "payload");
+        Assert.NotNull(payloadParameter);
+        Assert.Equal("gRPC request message.", payloadParameter.Description);
     }
 }
