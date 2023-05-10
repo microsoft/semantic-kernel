@@ -18,9 +18,9 @@ using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
+using SemanticKernel.Service.SignalR.Hubs;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
-using SemanticKernel.Service.SignalR.Hubs;
 
 namespace SemanticKernel.Service.Controllers;
 

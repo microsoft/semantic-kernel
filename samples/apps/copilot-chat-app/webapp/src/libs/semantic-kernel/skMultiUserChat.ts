@@ -70,13 +70,6 @@ export class SKMultiUserChat {
       this.hubConnection.on("UserConnected", (connectionId: any) => {
         console.log(`User connected: ${connectionId}`);
       });
-
-      // const receiveMessageFromBackend = (message: string) => {
-      //   this.hubConnection.invoke("SendMessageToAllUsersExceptSelfAsync", "EventReceiveMessageFrontend", message);
-      // //   this.hubConnection.invoke("SendMessageAsync", "UserA", "This is nonsense").catch(function (err) {
-      // //     return console.error(err.toString());
-      // // });
-      // };
           
       this.hubConnection.on("ReceiveMessageFromBackend", this.EventReceiveMessageFromBackend);
       this.hubConnection.on("EventReceiveMessageFrontend", this.EventCallBackendFunctionThatInvokesTheFrontend);
