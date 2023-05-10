@@ -11,12 +11,13 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
+using Microsoft.SemanticKernel.Skills.OpenAPI;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Connectors.WebApi.Rest;
+namespace SemanticKernel.Skills.UnitTests.Connectors.WebApi.Rest;
 
 public sealed class RestApiOperationRunnerTests : IDisposable
 {
