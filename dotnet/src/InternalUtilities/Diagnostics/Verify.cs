@@ -17,7 +17,7 @@ internal static class Verify
 
     // Equivalent of ArgumentNullException.ThrowIfNull
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNull([NotNull] object? obj, string? paramName = null)
+    internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression("obj")] string? paramName = null)
     {
         if (obj is null)
         {
@@ -26,7 +26,7 @@ internal static class Verify
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNullOrWhiteSpace([NotNull] string? str, string? paramName = null)
+    internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression("str")] string? paramName = null)
     {
         NotNull(str, paramName);
         if (string.IsNullOrWhiteSpace(str))
@@ -37,7 +37,7 @@ internal static class Verify
 
     internal static void ValidSkillName([NotNull] string? skillName)
     {
-        NotNullOrWhiteSpace(skillName, nameof(skillName));
+        NotNullOrWhiteSpace(skillName);
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(skillName))
         {
             ThrowInvalidName("skill name", skillName);
@@ -46,7 +46,7 @@ internal static class Verify
 
     internal static void ValidFunctionName([NotNull] string? functionName)
     {
-        NotNullOrWhiteSpace(functionName, nameof(functionName));
+        NotNullOrWhiteSpace(functionName);
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionName))
         {
             ThrowInvalidName("function name", functionName);
@@ -55,14 +55,14 @@ internal static class Verify
 
     internal static void ValidFunctionParamName([NotNull] string? functionParamName)
     {
-        NotNullOrWhiteSpace(functionParamName, nameof(functionParamName));
+        NotNullOrWhiteSpace(functionParamName);
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionParamName))
         {
             ThrowInvalidName("function parameter name", functionParamName);
         }
     }
 
-    internal static void StartsWith(string text, string prefix, string message, string? textParamName = null)
+    internal static void StartsWith(string text, string prefix, string message, [CallerArgumentExpression("text")] string? textParamName = null)
     {
         Debug.Assert(prefix is not null);
 
