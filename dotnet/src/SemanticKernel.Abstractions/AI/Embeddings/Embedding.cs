@@ -42,7 +42,7 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     [JsonConstructor]
     public Embedding(IEnumerable<TEmbedding> vector)
     {
-        Verify.NotNull(vector);
+        Verify.NotNull(vector, nameof(vector));
 
         if (!IsSupported)
         {

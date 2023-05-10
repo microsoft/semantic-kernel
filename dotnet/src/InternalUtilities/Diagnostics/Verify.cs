@@ -37,7 +37,7 @@ internal static class Verify
 
     internal static void ValidSkillName([NotNull] string? skillName)
     {
-        NotNullOrWhiteSpace(skillName);
+        NotNullOrWhiteSpace(skillName, nameof(skillName));
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(skillName))
         {
             ThrowInvalidName("skill name", skillName);
@@ -46,7 +46,7 @@ internal static class Verify
 
     internal static void ValidFunctionName([NotNull] string? functionName)
     {
-        NotNullOrWhiteSpace(functionName);
+        NotNullOrWhiteSpace(functionName, nameof(functionName));
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionName))
         {
             ThrowInvalidName("function name", functionName);
@@ -55,7 +55,7 @@ internal static class Verify
 
     internal static void ValidFunctionParamName([NotNull] string? functionParamName)
     {
-        NotNullOrWhiteSpace(functionParamName);
+        NotNullOrWhiteSpace(functionParamName, nameof(functionParamName));
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionParamName))
         {
             ThrowInvalidName("function parameter name", functionParamName);

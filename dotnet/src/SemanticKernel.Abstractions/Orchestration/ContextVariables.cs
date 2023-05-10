@@ -70,7 +70,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// TODO: support for more complex data types, and plan for rendering these values into prompt templates.
     public void Set(string name, string? value)
     {
-        Verify.NotNullOrWhiteSpace(name);
+        Verify.NotNullOrWhiteSpace(name, nameof(name));
         if (value != null)
         {
             this._variables[name] = value;
