@@ -50,7 +50,9 @@ class KernelServer:
                 status_code=500,
             )
 
-        states = [AskInput(key=k, value=v) for k, v in result.variables._variables.items()]
+        states = [
+            AskInput(key=k, value=v) for k, v in result.variables._variables.items()
+        ]
         response = AskResult(value=result.result, state=states)
         return func.HttpResponse(body=response.to_json(), mimetype="application/json")
 
