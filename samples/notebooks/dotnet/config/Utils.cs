@@ -22,5 +22,4 @@ public static class Utils
 
         return result.ToString();
     }
-
 }
