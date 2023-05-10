@@ -47,6 +47,7 @@ public class CopilotChatPlanner
             // No functions are available - return an empty plan.
             return Task.FromResult(new Plan(goal));
         }
+
         return new ActionPlanner(this.Kernel).CreatePlanAsync(goal);
     }
 }
