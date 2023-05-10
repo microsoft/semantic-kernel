@@ -21,7 +21,7 @@ public class SKContextExtensionsTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var skills = new SkillCollection();
+        using var skills = new SkillCollection();
         var logger = TestConsoleLogger.Log;
         var cancellationToken = default(CancellationToken);
 
@@ -202,7 +202,7 @@ public class SKContextExtensionsTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var skills = new SkillCollection();
+        using var skills = new SkillCollection();
         var logger = TestConsoleLogger.Log;
         var cancellationToken = default(CancellationToken);
 
