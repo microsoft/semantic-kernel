@@ -87,6 +87,7 @@ internal static class SemanticKernelExtensions
                 {
                     throw new InvalidOperationException("MemoriesStore type is Qdrant and Qdrant configuration is null.");
                 }
+
                 services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
                     config.Qdrant.Host, config.Qdrant.Port, config.Qdrant.VectorSize, sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
                 services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
@@ -100,6 +101,7 @@ internal static class SemanticKernelExtensions
                 {
                     throw new InvalidOperationException("MemoriesStore type is AzureCognitiveSearch and AzureCognitiveSearch configuration is null.");
                 }
+
                 services.AddSingleton<ISemanticTextMemory>(sp => new AzureCognitiveSearchMemory(config.AzureCognitiveSearch.Endpoint, config.AzureCognitiveSearch.Key));
                 break;
 
