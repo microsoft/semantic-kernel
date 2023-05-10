@@ -9,12 +9,12 @@ using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.OpenAPI;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
@@ -318,18 +318,13 @@ public static class KernelOpenApiExtensions
             })
             .ToList();
 
-        // TODO: to be fixed later
-#pragma warning disable CA2000 // Dispose objects before losing scope.
-        var function = new SKFunction(
-            delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
-            delegateFunction: ExecuteAsync,
+        var function = SKFunction.FromCustomMethod(
+            customFunction: ExecuteAsync,
             parameters: parameters,
             description: operation.Description,
             skillName: skillName,
             functionName: operation.Id,
-            isSemantic: false,
             log: kernel.Log);
-#pragma warning restore CA2000 // Dispose objects before losing scope
 
         return kernel.RegisterCustomFunction(skillName, function);
     }

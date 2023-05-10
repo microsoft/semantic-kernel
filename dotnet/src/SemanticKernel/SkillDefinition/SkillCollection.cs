@@ -36,10 +36,10 @@ public sealed class SkillCollection : ISkillCollection, IDisposable
 
     public ISkillCollection AddFunction(ISKFunction functionInstance)
     {
-        Verify.NotNull(functionInstance, "The function is NULL");
+        Verify.NotNull(functionInstance);
 
         ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.SkillName, static _ => new(StringComparer.OrdinalIgnoreCase));
-        skill.TryAdd(functionInstance.Name, functionInstance);
+        skill[functionInstance.Name] = functionInstance;
 
         return this;
     }
@@ -66,8 +66,8 @@ public sealed class SkillCollection : ISkillCollection, IDisposable
     /// <inheritdoc/>
     public bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
     {
-        Verify.NotNull(skillName, nameof(skillName));
-        Verify.NotNull(functionName, nameof(functionName));
+        Verify.NotNull(skillName);
+        Verify.NotNull(functionName);
 
         if (this._skillCollection.TryGetValue(skillName, out ConcurrentDictionary<string, ISKFunction>? skill))
         {
