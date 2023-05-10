@@ -5,8 +5,6 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 Bicep template for deploying Semantic Kernel to Azure as a web app service.
 
 Resources to add:
-- CosmosDB
-- AzureSpeech
 - vNet + Network security group
 */
 
@@ -25,7 +23,7 @@ param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.z
 #disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
 var location = resourceGroup().location       // more intelligible deployment experience at the cost of some flexibility
 
-@description('Name for the deployment - Made unique')
+@description('Hash of the resource group ID')
 var rgIdHash = uniqueString(resourceGroup().id)
 
 @description('Name for the deployment - Made unique')
@@ -145,7 +143,23 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'ChatStore:Type'
-          value: 'volatile'
+          value: 'cosmos'
+        }
+        {
+          name: 'ChatStore:Cosmos:Database'
+          value: 'CopilotChat'
+        }
+        {
+          name: 'ChatStore:Cosmos:ChatSessionsContainer'
+          value: 'chatsessions'
+        }
+        {
+          name: 'ChatStore:Cosmos:ChatMessagesContainer'
+          value: 'chatmessages'
+        }
+        {
+          name: 'ChatStore:Cosmos:ConnectionString'
+          value: cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
         }
         {
           name: 'MemoriesStore:Type'
@@ -154,6 +168,14 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'MemoriesStore:Qdrant:Host'
           value: 'http://${aci.properties.ipAddress.fqdn}'
+        }
+        {
+          name: 'AzureSpeech:Region'
+          value: location
+        }
+        {
+          name: 'AzureSpeech:Key'
+          value: speechAccount.listKeys().key1
         }
         {
           name: 'Kestrel:Endpoints:Https:Url'
@@ -270,10 +292,6 @@ resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = 
           image: 'qdrant/qdrant:latest'
           ports: [
             {
-              port: 80
-              protocol: 'TCP'
-            }
-            {
               port: 6333
               protocol: 'TCP'
             }
@@ -298,10 +316,6 @@ resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = 
     ipAddress: {
       ports: [
         {
-          port: 80
-          protocol: 'TCP'
-        }
-        {
           port: 6333
           protocol: 'TCP'
         }
@@ -319,6 +333,113 @@ resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = 
         }
       }
     ]
+  }
+}
+
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
+  name: toLower('cosmos-${uniqueName}')
+  location: location
+  kind: 'GlobalDocumentDB'
+  properties: {
+    consistencyPolicy: { defaultConsistencyLevel: 'Session' }
+    locations: [ {
+      locationName: location
+      failoverPriority: 0
+      isZoneRedundant: false
+      }
+    ]
+    databaseAccountOfferType: 'Standard'
+  }
+}
+
+resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15' = {
+  parent: cosmosAccount
+  name: 'CopilotChat'
+  properties: {
+    resource: {
+      id: 'CopilotChat'
+    }
+  }
+}
+
+resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = {
+  parent: cosmosDatabase
+  name: 'chatmessages'
+  properties: {
+    resource: {
+      id: 'chatmessages'
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+        excludedPaths: [
+          {
+            path: '/"_etag"/?'
+          }
+        ]
+      }
+      partitionKey: {
+        paths: [
+          '/id'
+        ]
+        kind: 'Hash'
+        version: 2
+      }
+    }
+  }
+}
+
+resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = {
+  parent: cosmosDatabase
+  name: 'chatsessions'
+  properties: {
+    resource: {
+      id: 'chatsessions'
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+        excludedPaths: [
+          {
+            path: '/"_etag"/?'
+          }
+        ]
+      }
+      partitionKey: {
+        paths: [
+          '/id'
+        ]
+        kind: 'Hash'
+        version: 2
+      }
+    }
+  }
+}
+
+resource speechAccount 'Microsoft.CognitiveServices/accounts@2022-12-01' = {
+  name: 'cog-${uniqueName}'
+  location: location
+  sku: {
+    name: 'S0'
+  }
+  kind: 'SpeechServices'
+  identity: {
+    type: 'None'
+  }
+  properties: {
+    customSubDomainName: 'cog-${uniqueName}'
+    networkAcls: {
+      defaultAction: 'Allow'
+    }
+    publicNetworkAccess: 'Enabled'
   }
 }
 

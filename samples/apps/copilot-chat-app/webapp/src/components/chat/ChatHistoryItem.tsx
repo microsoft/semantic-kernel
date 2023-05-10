@@ -47,7 +47,6 @@ const useClasses = makeStyles({
     },
     content: {
         wordBreak: 'break-word',
-        minWidth: '260px',
     },
     canvas: {
         width: '100%',
