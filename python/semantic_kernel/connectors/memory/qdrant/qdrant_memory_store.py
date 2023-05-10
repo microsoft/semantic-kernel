@@ -224,12 +224,12 @@ class QdrantMemoryStore(MemoryStoreBase):
 
         qdrant_records = self._qdrantclient.retrieve(
             collection_name=collection_name,
-            ids=search_id,
+            ids=search_ids,
             with_payload=with_payload,
-            with_vectors=with_embedding
+            with_vectors=with_embeddings
         )
 
-        return results
+        return qdrant_records
 
     async def remove_async(self, collection_name: str, key: str) -> None:
         """Removes a record.
@@ -322,46 +322,28 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
-        if collection_name not in self._store:
-            return []
+        
+        collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
 
-        # Get all the records in the collection
-        memory_records = list(self._store[collection_name].values())
+        if not collection_info.status == CollectionStatus.GREEN:
+            raise Exception(f"Collection '{collection_name}' does not exist")
 
-        # Convert the collection of embeddings into a numpy array (stacked)
-        embeddings = array([x._embedding for x in memory_records], dtype=float)
-        embeddings = embeddings.reshape(embeddings.shape[0], -1)
-
-        # If the query embedding has shape (1, embedding_size),
-        # reshape it to (embedding_size,)
-        if len(embedding.shape) == 2:
-            embedding = embedding.reshape(
-                embedding.shape[1],
-            )
-
-        # Use numpy to get the cosine similarity between the query
-        # embedding and all the embeddings in the collection
-        similarity_scores = self.compute_similarity_scores(embedding, embeddings)
-
-        # Then, sort the results by the similarity score
-        sorted_results = sorted(
-            zip(memory_records, similarity_scores),
-            key=lambda x: x[1],
-            reverse=True,
+        # Search for the nearest matches, qdrant already provides results sorted by relevance score
+        matches = self._qdrantclient.search(
+            collection_name=collection_name,
+            search_params=models.SearchParams(
+                hnsw_ef=0,
+                exact=False,
+                quantization=None,
+            ),
+            query_vector=embedding,
+            limit=limit,
+            score_threshold=min_relevance_score,
+            with_vectors=with_embeddings,
+            with_payload=True,
         )
 
-        # Then, filter out the results that are below the minimum relevance score
-        filtered_results = [x for x in sorted_results if x[1] >= min_relevance_score]
-
-        # Then, take the top N results
-        top_results = filtered_results[:limit]
-
-        if not with_embeddings:
-            # create copy of results without embeddings
-            for result in top_results:
-                result = deepcopy(result)
-                result[0]._embedding = None
-        return top_results
+        # Convert the results to MemoryRecords
 
     def compute_similarity_scores(
         self, embedding: ndarray, embedding_array: ndarray
