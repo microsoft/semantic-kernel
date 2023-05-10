@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Label, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
+import { useAccount, useMsal } from '@azure/msal-react';
+import { Label, Persona, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
@@ -72,6 +73,8 @@ const createCommandLink = (command: string) => {
 };
 
 export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getResponse, messageIndex }) => {
+    const { accounts } = useMsal();
+    const account = useAccount(accounts[0] || {});
     const chat = useChat();
     const classes = useClasses();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
@@ -139,7 +142,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
             time;
     }
 
-    const isMe = message.authorRole === AuthorRoles.User;
+    const isMe = message.authorRole === AuthorRoles.User && message.userId === account!.homeAccountId!;
     const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
     const avatar = isMe
         ? user?.photo

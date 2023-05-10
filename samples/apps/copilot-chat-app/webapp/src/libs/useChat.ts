@@ -62,7 +62,6 @@ export const useChat = () => {
             await chatService
                 .createChatAsync(
                     account?.homeAccountId!,
-                    account?.name!,
                     chatTitle,
                     await AuthHelper.getSKaaSAccessToken(instance),
                 )
