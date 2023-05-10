@@ -42,21 +42,16 @@ public class PromptSettings
     internal double RelatedInformationContextWeight { get; } = 0.75;
 
     /// <summary>
-    /// Maximum number of tokens per line that will be used to split a document into lines.
-    /// Setting this to a low value will result in higher context granularity, but
-    /// takes longer to process the entire document into embeddings.
-    /// Default to 30 tokens as suggested by OpenAI:
-    /// https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
+    /// Minimum relevance of a semantic memory to be included in the final prompt.
+    /// The higher the value, the answer will be more relevant to the user intent.
     /// </summary>
-    internal int DocumentLineSplitMaxTokens { get; } = 30;
+    internal double SemanticMemoryMinRelevance { get; } = 0.8;
 
     /// <summary>
-    /// Maximum number of tokens per paragraph that will be used to combine lines into paragraphs.
-    /// Setting this to a low value will result in higher context granularity, but
-    /// takes longer to process the entire document into embeddings.
-    /// Default to 100 tokens as suggested by OpenAI:
-    /// https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them    /// </summary>
-    internal int DocumentParagraphSplitMaxLines { get; } = 100;
+    /// Minimum relevance of a document memory to be included in the final prompt.
+    /// The higher the value, the answer will be more relevant to the user intent.
+    /// </summary>
+    internal double DocumentMemoryMinRelevance { get; } = 0.8;
 
     internal string KnowledgeCutoffDate => this._promptsConfig.KnowledgeCutoffDate;
     internal string InitialBotMessage => this._promptsConfig.InitialBotMessage;

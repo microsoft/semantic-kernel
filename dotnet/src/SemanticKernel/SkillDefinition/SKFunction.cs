@@ -64,7 +64,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         if (string.IsNullOrWhiteSpace(skillName)) { skillName = SkillCollection.GlobalSkill; }
 
-        MethodDetails methodDetails = GetMethodDetails(methodSignature, methodContainerInstance, log);
+        MethodDetails methodDetails = GetMethodDetails(methodSignature, methodContainerInstance, true, log);
 
         // If the given method is not a valid SK function
         if (!methodDetails.HasSkFunctionAttribute)
@@ -79,6 +79,37 @@ public sealed class SKFunction : ISKFunction, IDisposable
             skillName: skillName,
             functionName: methodDetails.Name,
             description: methodDetails.Description,
+            isSemantic: false,
+            log: log);
+    }
+
+    /// <summary>
+    /// Create a native function instance, wrapping a delegate function
+    /// </summary>
+    /// <param name="nativeFunction">Function to invoke</param>
+    /// <param name="skillName">SK skill name</param>
+    /// <param name="functionName">SK function name</param>
+    /// <param name="description">SK function description</param>
+    /// <param name="parameters">SK function parameters</param>
+    /// <param name="log">Application logger</param>
+    /// <returns>SK function instance</returns>
+    public static ISKFunction FromNativeFunction(
+        Delegate nativeFunction,
+        string skillName,
+        string functionName,
+        string description,
+        IEnumerable<ParameterView>? parameters = null,
+        ILogger? log = null)
+    {
+        MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, null, false, log);
+
+        return new SKFunction(
+            delegateType: methodDetails.Type,
+            delegateFunction: methodDetails.Function,
+            parameters: (parameters ?? Enumerable.Empty<ParameterView>()).ToList(),
+            description: description,
+            skillName: skillName,
+            functionName: functionName,
             isSemantic: false,
             log: log);
     }
@@ -115,13 +146,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
             catch (AIException ex)
             {
-                const string Message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
+                const string Message = "Something went wrong while rendering the semantic function" +
+                                       " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
                 log?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
                 context.Fail(ex.Message, ex);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                const string Message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
+                const string Message = "Something went wrong while rendering the semantic function" +
+                                       " or while executing the text completion. Function: {0}.{1}. Error: {2}";
                 log?.LogError(ex, Message, skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
@@ -493,7 +526,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
         context.Skills ??= this._skillCollection;
     }
 
-    private static MethodDetails GetMethodDetails(MethodInfo methodSignature, object? methodContainerInstance, ILogger? log = null)
+    private static MethodDetails GetMethodDetails(
+        MethodInfo methodSignature,
+        object? methodContainerInstance,
+        bool skAttributesRequired = true,
+        ILogger? log = null)
     {
         Verify.NotNull(methodSignature);
 
@@ -513,11 +550,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (!result.HasSkFunctionAttribute || skFunctionAttribute == null)
         {
-            log?.LogTrace("Method {0} doesn't have SKFunctionAttribute", result.Name);
-            return result;
+            log?.LogTrace("Method '{0}' doesn't have '{1}' attribute", result.Name, typeof(SKFunctionAttribute).Name);
+            if (skAttributesRequired) { return result; }
         }
-
-        result.HasSkFunctionAttribute = true;
+        else
+        {
+            result.HasSkFunctionAttribute = true;
+        }
 
         (result.Type, result.Function, bool hasStringParam) = GetDelegateInfo(methodContainerInstance, methodSignature);
 
@@ -554,9 +593,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
         else if (skMainParam != null)
         {
             // The developer used [SKFunctionInput] on a function that doesn't support a string input
-            throw new KernelException(
-                KernelException.ErrorCodes.InvalidFunctionDescription,
-                "The function doesn't have a string parameter, do not use " + typeof(SKFunctionInputAttribute));
+            var message = $"The method '{result.Name}' doesn't have a string parameter, do not use '{typeof(SKFunctionInputAttribute).Name}' attribute.";
+            throw new KernelException(KernelException.ErrorCodes.InvalidFunctionDescription, message);
         }
 
         // Handle named arg passed via the SKContext object
@@ -568,9 +606,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
         // Note: the name "input" is reserved for the main parameter
         Verify.ParametersUniqueness(result.Parameters);
 
-        result.Description = skFunctionAttribute.Description ?? "";
+        result.Description = skFunctionAttribute?.Description ?? "";
 
-        log?.LogTrace("Method {0} found", result.Name);
+        log?.LogTrace("Method '{0}' found, type `{1}`", result.Name, result.Type.ToString("G"));
 
         return result;
     }
@@ -678,13 +716,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             throw new KernelException(
                 KernelException.ErrorCodes.FunctionTypeNotSupported,
-                $"Function {method.Name} has an invalid signature 'Func<SKContext, SKContext>'. " +
+                $"Function '{method.Name}' has an invalid signature 'Func<SKContext, SKContext>'. " +
                 "Please use 'Func<SKContext, Task<SKContext>>' instead.");
         }
 
         throw new KernelException(
             KernelException.ErrorCodes.FunctionTypeNotSupported,
-            $"Function {method.Name} has an invalid signature not supported by the kernel");
+            $"Function '{method.Name}' has an invalid signature not supported by the kernel.");
     }
 
     [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate result can be null")]

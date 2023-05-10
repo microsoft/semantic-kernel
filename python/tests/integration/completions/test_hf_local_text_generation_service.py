@@ -14,7 +14,7 @@ async def test_hf_local_text_generation_service_with_skills():
     kernel = sk.Kernel()
 
     # Configure LLM service
-    kernel.config.add_text_completion_service(
+    kernel.add_text_completion_service(
         "gpt2", sk_hf.HuggingFaceTextCompletion("gpt2", task="text-generation")
     )
 

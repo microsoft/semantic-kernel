@@ -103,6 +103,14 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         return await this.ExecuteCompleteRequestAsync(text, cancellationToken).ConfigureAwait(false);
     }
 
+    public IAsyncEnumerable<string> CompleteStreamAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        return this.ExecuteCompleteRequestAsync(text, cancellationToken).ToAsyncEnumerable();
+    }
+
     /// <inheritdoc/>
     public void Dispose()
     {

@@ -100,5 +100,17 @@ public static class Program
 
         await Example31_CustomPlanner.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example32_StreamingCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example33_StreamingChat.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example34_CustomChatModel.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example35_GrpcSkills.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
