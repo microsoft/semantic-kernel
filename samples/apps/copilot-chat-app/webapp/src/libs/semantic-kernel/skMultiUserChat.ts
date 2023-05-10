@@ -1,11 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 import * as signalR from "@microsoft/signalr";
-// import {
-//   updateConversation,
-// } from '../../redux/features/conversations/conversationsSlice';
-// import { AuthorRoles } from './../models/ChatMessage';
-// import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
-// import { RootState } from '../../redux/app/store';
 
 export interface UserAsk {
   input: string;
@@ -52,9 +46,8 @@ export class SKMultiUserChat {
       // serverTimeoutInMilliseconds default is 30000 and we are using 60000 set below
       this.hubConnection.serverTimeoutInMilliseconds = 60000;
 
-      this.registerSignalReconnectionEvents();
+      this.registerCommonSignalReconnectionEvents();
       this.startSignalRConnection(this.hubConnection);
-      this.registerSignalEvents();
 
       return this.hubConnection;
     };
@@ -71,7 +64,7 @@ export class SKMultiUserChat {
       }
     };
 
-    registerSignalReconnectionEvents() {
+    registerCommonSignalReconnectionEvents() {
       // Re-establish the connection if connection dropped
       this.hubConnection.onclose((error: any) => {
         console.assert(this.hubConnection.state === signalR.HubConnectionState.Disconnected);
@@ -87,50 +80,9 @@ export class SKMultiUserChat {
         console.assert(this.hubConnection.state === signalR.HubConnectionState.Connected);
         console.log('Connection reestablished. Connected with connectionId', connectionId);
       });
-    }
 
-    registerSignalEvents() {
       this.hubConnection.on("UserConnected", (connectionId: any) => {
         console.log(`User connected: ${connectionId}`);
       });
-          
-      // this.hubConnection.on("ReceiveMessageFromBackend", this.EventReceiveMessageFromBackend);
-      // this.hubConnection.on("EventReceiveMessageFrontend", this.EventCallBackendFunctionThatInvokesTheFrontend);
-
-      // this.hubConnection.on("SendConversationToOtherUsersFrontEnd", this.EventSendConversationToOtherUsers);
-      // this.hubConnection.on("SendChatSkillAskResultToOtherUsersFrontEnd", this.EventSendChatSkillAskResultToOtherUsers);
     }
-
-    // EventReceiveMessageFromBackend = (message: object) => {
-    //   console.log("Received message from backend: ", message);
-    // }
-
-    // EventReceiveMessageFrontend = (message: string) => {
-    //   console.log("Received message back on frontend client: ", message);
-    // }
-
-    // EventCallBackendFunctionThatInvokesTheFrontend = (message: string) => {
-    //   // message is passed along to the backend and then broadcasted to all the clients except the caller
-    //   this.hubConnection.invoke("SendMessageToAllUsersExceptSelfAsync", "EventReceiveMessageFrontend", message);
-    // }
-
-    // EventSendConversationToOtherUsers = (userAsk: UserAsk) => {
-    //   console.log("Received User Ask from backend: ", userAsk);
-    // }
-
-    // EventSendChatSkillAskResultToOtherUsers = (userAskResult: UserAskResult) => {
-    //   const dispatch = useAppDispatch();
-    //   const { selectedId } = useAppSelector((state: RootState) => state.conversations);
-
-    //   const messageResult = {
-    //       timestamp: new Date().getTime(),
-    //       userName: 'bot',
-    //       userId: 'bot',
-    //       content: userAskResult.value,
-    //       authorRole: AuthorRoles.Bot,
-    //   };
-
-    //   dispatch(updateConversation({ message: messageResult, chatId: selectedId }));
-    //   console.log("Received Chatbot Ask Result from backend: ", userAskResult);
-    // }
 }

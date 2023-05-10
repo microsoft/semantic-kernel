@@ -140,10 +140,6 @@ export const ChatRoom: React.FC = () => {
         return null;
     }
 
-    // const handleNewMessageFromOtherUsers = async () => {
-    //     skmultiuserchat
-    // }
-
     const handleSubmit = async (value: string) => {
         log('submitting user chat message');
         const chatInput = {
