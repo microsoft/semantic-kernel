@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,9 +62,18 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     }
 
     /// <inheritdoc/>
+    public IAsyncEnumerable<string> GenerateMessageStreamAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalGenerateChatMessageStreamAsync(chat, requestSettings ?? new(), cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public ChatHistory CreateNewChat(string instructions = "")
     {
-        return this.InternalCreateNewChat(instructions);
+        return InternalCreateNewChat(instructions);
     }
 
     /// <inheritdoc/>
@@ -73,5 +83,13 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         CancellationToken cancellationToken = default)
     {
         return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string> CompleteStreamAsync(string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalCompleteTextUsingChatStreamAsync(text, requestSettings, cancellationToken);
     }
 }

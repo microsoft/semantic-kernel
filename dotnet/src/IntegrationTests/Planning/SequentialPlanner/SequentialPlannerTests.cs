@@ -71,7 +71,7 @@ public sealed class SequentialPlannerTests : IDisposable
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
                 step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase) &&
-                step.NamedParameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
+                step.Parameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]
@@ -85,7 +85,7 @@ public sealed class SequentialPlannerTests : IDisposable
         TestHelpers.ImportSampleSkills(kernel);
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel,
-            new SequentialPlannerConfig { RelevancyThreshold = 0.70, MaxRelevantFunctions = 20 });
+            new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30 });
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);

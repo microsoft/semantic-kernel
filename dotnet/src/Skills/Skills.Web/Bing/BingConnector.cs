@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
@@ -16,7 +17,7 @@ namespace Microsoft.SemanticKernel.Skills.Web.Bing;
 /// <summary>
 /// Bing API connector.
 /// </summary>
-public class BingConnector : IWebSearchEngineConnector, IDisposable
+public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
 {
     private readonly ILogger _logger;
     private readonly HttpClientHandler _httpClientHandler;
@@ -31,9 +32,15 @@ public class BingConnector : IWebSearchEngineConnector, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<string> SearchAsync(string query, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
     {
-        Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count=1");
+        if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
+
+        if (count >= 50) { throw new ArgumentOutOfRangeException(nameof(count), $"{nameof(count)} value must be less than 50."); }
+
+        if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
+
+        Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count={count}&offset={offset}");
 
         this._logger.LogDebug("Sending request: {0}", uri);
         HttpResponseMessage response = await this._httpClient.GetAsync(uri, cancellationToken).ConfigureAwait(false);
@@ -44,17 +51,12 @@ public class BingConnector : IWebSearchEngineConnector, IDisposable
         this._logger.LogTrace("Response content received: {0}", json);
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
-        WebPage? firstResult = data?.WebPages?.Value?.FirstOrDefault();
+        WebPage[]? results = data?.WebPages?.Value;
 
-        this._logger.LogDebug("Result: {0}, {1}, {2}",
-            firstResult?.Name,
-            firstResult?.Url,
-            firstResult?.Snippet);
-
-        return firstResult?.Snippet ?? string.Empty;
+        return results == null ? Enumerable.Empty<string>() : results.Select(x => x.Snippet);
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (disposing)
         {
