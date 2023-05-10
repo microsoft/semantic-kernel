@@ -21,7 +21,7 @@ public class OrganizationHierarchySkill
 
         this._connector = connector;
     }
-    
+
     /// <summary>
     /// Get the emails of the direct reports of the current user.
     /// </summary>
