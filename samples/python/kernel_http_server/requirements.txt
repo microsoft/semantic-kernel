@@ -4,3 +4,4 @@
 
 azure-functions
 semantic-kernel
+dataclasses_json

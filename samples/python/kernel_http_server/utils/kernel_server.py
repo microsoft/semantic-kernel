@@ -7,7 +7,7 @@ from semantic_kernel.memory import VolatileMemoryStore
 from semantic_kernel.planning.basic_planner import BasicPlanner
 from semantic_kernel.planning.plan import Plan
 from utils.kernel_utils import create_kernel_for_request
-from utils.ask import Ask
+from utils.ask import Ask, AskResult, AskInput
 
 
 class GeneratedPlan:
@@ -50,8 +50,9 @@ class KernelServer:
                 status_code=500,
             )
 
-        response = {"value": result.result}
-        return func.HttpResponse(body=json.dumps(response), mimetype="application/json")
+        states = [AskInput(key=k, value=v) for k, v in result.variables._variables.items()]
+        response = AskResult(value=result.result, state=states)
+        return func.HttpResponse(body=response.to_json(), mimetype="application/json")
 
     async def create_plan(self, req: func.HttpRequest):
         logging.info("planner request")
@@ -69,30 +70,45 @@ class KernelServer:
         generated_plan["prompt"] = original_plan.prompt
         response = {"state": [generated_plan]}
         logging.info("response: %s", original_plan.generated_plan.result)
-        return func.HttpResponse(body=json.dumps(response), mimetype="application/json")
+
+        states = [AskInput(key=k, value=v) for k, v in generated_plan.items()]
+        response = AskResult(value=original_plan.goal, state=states)
+        logging.info("response: %s", response.to_json())
+        return func.HttpResponse(body=response.to_json(), mimetype="application/json")
 
     async def execute_plan(self, req: func.HttpRequest, max_steps: int):
         logging.info("planner request")
         planner_data = json.loads(req.get_body())
-        data = planner_data["inputs"][0]
+        data_inputs = planner_data["inputs"]
 
-        goal = data["goal"]
-        prompt = data["prompt"]
-        data["input"] = goal
+        subtasks = []
+        goal = None
+        prompt = None
 
-        for subtask in data["subtasks"]:
+        for data in data_inputs:
+            if data["key"] == "goal":
+                goal = data["value"]
+            elif data["key"] == "prompt":
+                prompt = data["value"]
+            elif data["key"] == "subtasks":
+                subtasks = data["value"]
+
+        # Converting int args to string
+        for subtask in subtasks:
             args = subtask.get("args", None)
             if args:
                 args = {k: str(v) for k, v in args.items()}
                 subtask["args"] = args
 
-        generated_plan = GeneratedPlan(json.dumps(data))
+        plan_dict = {"input": goal, "prompt": prompt, "subtasks": subtasks}
+        generated_plan = GeneratedPlan(json.dumps(plan_dict))
         plan = Plan(goal=goal, prompt=prompt, plan=generated_plan)
 
         kernel = create_kernel_for_request(req, None, None)
         planner = BasicPlanner()
 
         result = await planner.execute_plan_async(plan, kernel)
+
         response = {"value": result}
-        logging.info("response: %s", result)
+        logging.info("response: %s", response)
         return func.HttpResponse(body=json.dumps(response), mimetype="application/json")
