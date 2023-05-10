@@ -35,7 +35,7 @@ internal static class SemanticKernelExtensions
         services.AddSingleton<PromptSettings>();
 
         // Add the semantic memory with backing memory store.
-        services.AddScoped<ISemanticTextMemory>(CreateSemanticTextMemory);
+        services.AddSemanticTextMemory();
 
         // Add the planner.
         services.AddScoped<CopilotChatPlanner>(sp =>
@@ -67,27 +67,41 @@ internal static class SemanticKernelExtensions
     }
 
     /// <summary>
-    /// Create the semantic memory with backing memory store.
+    /// Add the semantic memory.
     /// </summary>
-    private static ISemanticTextMemory CreateSemanticTextMemory(this IServiceProvider serviceProvider)
+    private static void AddSemanticTextMemory(this IServiceCollection services)
     {
-        MemoriesStoreOptions config = serviceProvider.GetRequiredService<IOptions<MemoriesStoreOptions>>().Value;
+        MemoriesStoreOptions config = services.BuildServiceProvider().GetRequiredService<IOptions<MemoriesStoreOptions>>().Value;
         switch (config.Type)
         {
             case MemoriesStoreOptions.MemoriesStoreType.Volatile:
-                return new SemanticTextMemory(
-                    new VolatileMemoryStore(),
-                    serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
-                        .ToTextEmbeddingsService(logger: serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>()));
+                services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
+                services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
+                    sp.GetRequiredService<IMemoryStore>(),
+                    sp.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
+                        .ToTextEmbeddingsService(logger: sp.GetRequiredService<ILogger<AIServiceOptions>>())));
+                break;
 
             case MemoriesStoreOptions.MemoriesStoreType.Qdrant:
-                return new SemanticTextMemory(
-                    new QdrantMemoryStore(config.Qdrant!.Host, config.Qdrant.Port, config.Qdrant.VectorSize, serviceProvider.GetRequiredService<ILogger<QdrantMemoryStore>>()),
-                    serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
-                        .ToTextEmbeddingsService(logger: serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>()));
+                if (config.Qdrant == null)
+                {
+                    throw new InvalidOperationException("MemoriesStore type is Qdrant and Qdrant configuration is null.");
+                }
+                services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
+                    config.Qdrant.Host, config.Qdrant.Port, config.Qdrant.VectorSize, sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
+                services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
+                    sp.GetRequiredService<IMemoryStore>(),
+                    sp.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
+                        .ToTextEmbeddingsService(logger: sp.GetRequiredService<ILogger<AIServiceOptions>>())));
+                break;
 
             case MemoriesStoreOptions.MemoriesStoreType.AzureCognitiveSearch:
-                return new AzureCognitiveSearchMemory(config.AzureCognitiveSearch!.Endpoint, config.AzureCognitiveSearch.Key);
+                if (config.AzureCognitiveSearch == null)
+                {
+                    throw new InvalidOperationException("MemoriesStore type is AzureCognitiveSearch and AzureCognitiveSearch configuration is null.");
+                }
+                services.AddSingleton<ISemanticTextMemory>(sp => new AzureCognitiveSearchMemory(config.AzureCognitiveSearch.Endpoint, config.AzureCognitiveSearch.Key));
+                break;
 
             default:
                 throw new InvalidOperationException($"Invalid 'MemoriesStore' type '{config.Type}'.");
