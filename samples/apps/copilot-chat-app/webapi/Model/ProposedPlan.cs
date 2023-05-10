@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Planning;
 
 namespace SemanticKernel.Service.Model;

@@ -63,7 +63,7 @@ public class ChatSkill
     /// <summary>
     /// Proposed plan to return for approval.
     /// </summary>
-    private Plan? proposedPlan;
+    private Plan? _proposedPlan;
 
     /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
@@ -252,7 +252,7 @@ public class ChatSkill
             Plan plan = await this._planner.CreatePlanAsync(plannerContext.Variables.Input);
             if (plan.Steps.Count > 0)
             {
-                this.proposedPlan = plan;
+                this._proposedPlan = plan;
             }
         }
 
@@ -396,9 +396,9 @@ public class ChatSkill
             response = chatContext.Result;
 
             // If plan is suggested, send back to user for approval before running
-            if (this.proposedPlan != null)
+            if (this._proposedPlan != null)
             {
-                var proposedPlanJson = JsonSerializer.Serialize<ProposedPlan>(new ProposedPlan(this.proposedPlan));
+                var proposedPlanJson = JsonSerializer.Serialize<ProposedPlan>(new ProposedPlan(this._proposedPlan));
 
                 // Override generated response with plan object to show user for approval
                 response = proposedPlanJson;
