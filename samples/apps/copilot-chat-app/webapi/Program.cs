@@ -1,7 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.SemanticKernel.Diagnostics;
+using SemanticKernel.Service.Services;
 
 namespace SemanticKernel.Service;
 
@@ -30,10 +34,20 @@ public sealed class Program
             .AddSemanticKernelServices()
             .AddPersistentChatStore();
 
+        // Add AppInsights telemetry
+        builder.Services
+            .AddHttpContextAccessor()
+            .AddApplicationInsightsTelemetry( options => { options.ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]; })
+            .AddSingleton<ITelemetryInitializer, AppInsightsUserTelemetryInitializerService>()
+            .AddLogging(logBuilder => logBuilder.AddApplicationInsights())
+            .AddSingleton<ITelemetryService, AppInsightsTelemetryService>();
+
+#if DEBUG
+        TelemetryDebugWriter.IsTracingDisabled = false;
+#endif
+
         // Add in the rest of the services.
         builder.Services
-            .AddApplicationInsightsTelemetry()
-            .AddLogging(logBuilder => logBuilder.AddApplicationInsights())
             .AddAuthorization(builder.Configuration)
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()

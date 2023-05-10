@@ -2,12 +2,14 @@
 // Licensed under the MIT License.
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -27,17 +29,20 @@ public class SemanticKernelController : ControllerBase, IDisposable
 {
     private readonly ILogger<SemanticKernelController> _logger;
     private readonly PromptSettings _promptSettings;
+    private readonly ITelemetryService _telemetryService;
     private readonly ServiceOptions _options;
     private readonly List<IDisposable> _disposables;
 
     public SemanticKernelController(
         IOptions<ServiceOptions> options,
         PromptSettings promptSettings,
+        ITelemetryService telemetryService,
         ILogger<SemanticKernelController> logger)
     {
         this._logger = logger;
         this._options = options.Value;
         this._promptSettings = promptSettings;
+        this._telemetryService = telemetryService;
         this._disposables = new List<IDisposable>();
     }
 
@@ -124,8 +129,18 @@ public class SemanticKernelController : ControllerBase, IDisposable
             return this.NotFound($"Failed to find {skillName}/{functionName} on server");
         }
 
-        // Run the function.
-        SKContext result = await kernel.RunAsync(contextVariables, function!);
+        SKContext? result = null;
+        try
+        {
+            // Run the function.
+           result = await kernel.RunAsync(contextVariables, function!);
+        }
+        finally
+        {
+
+            this._telemetryService.TrackSkillEvent(skillName, functionName, (!result?.ErrorOccurred) ?? false);
+        }
+
         if (result.ErrorOccurred)
         {
             if (result.LastException is AIException aiException && aiException.Detail is not null)
