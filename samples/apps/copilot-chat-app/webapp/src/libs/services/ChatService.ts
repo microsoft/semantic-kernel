@@ -1,25 +1,23 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { IChatMessage } from '../models/ChatMessage';
+import { IChatParticipant } from '../models/ChatParticipant';
 import { IChatSession } from '../models/ChatSession';
 import { BaseService } from './BaseService';
 
 export class ChatService extends BaseService {
     public createChatAsync = async (
         userId: string,
-        userName: string,
         title: string,
         accessToken: string,
     ): Promise<IChatSession> => {
         const body = {
-            userId: userId,
-            userName: userName,
             title: title,
         };
 
         const result = await this.getResponseAsync<IChatSession>(
             {
-                commandPath: 'chatSession/create',
+                commandPath: `chatSession/create/${userId}`,
                 method: 'POST',
                 body: body,
             },
@@ -72,13 +70,30 @@ export class ChatService extends BaseService {
     public editChatAsync = async (chatId: string, title: string, accessToken: string): Promise<any> => {
         const body: IChatSession = {
             id: chatId,
-            userId: '',
             title: title,
         };
 
         const result = await this.getResponseAsync<any>(
             {
                 commandPath: `chatSession/edit`,
+                method: 'POST',
+                body: body,
+            },
+            accessToken,
+        );
+
+        return result;
+    };
+
+    public joinChatAsync = async (userId: string, chatId: string, accessToken: string): Promise<any> => {
+        const body: IChatParticipant = {
+            userId: userId,
+            chatId: chatId,
+        };
+
+        const result = await this.getResponseAsync<any>(
+            {
+                commandPath: `chatParticipant/join`,
                 method: 'POST',
                 body: body,
             },
