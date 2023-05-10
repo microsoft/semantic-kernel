@@ -113,6 +113,8 @@ public class ChatHistoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAllChatSessionsAsync(string userId)
     {
+        // Get all participants that belong to the user.
+        // Then get all the chats from the list of participants.
         var chatParticipants = await this._chatParticipantRepository.FindByUserIdAsync(userId);
 
         var chats = new List<ChatSession>();

@@ -20,6 +20,7 @@ public class ChatParticipantRepository : Repository<ChatParticipant>
 
     /// <summary>
     /// Finds chat participants by user id.
+    /// A user can be part of multiple chats, thus a user can have multiple chat participants.
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <returns>A list of chat participants of the same user id in different chat sessions.</returns>

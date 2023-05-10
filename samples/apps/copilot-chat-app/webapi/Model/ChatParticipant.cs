@@ -6,12 +6,13 @@ using SemanticKernel.Service.Storage;
 namespace SemanticKernel.Service.Model;
 
 /// <summary>
-/// A chat session
+/// A chat participant is a user that is part of a chat.
+/// A user can be part of multiple chats, thus a user can have multiple chat participants.
 /// </summary>
 public class ChatParticipant : IStorageEntity
 {
     /// <summary>
-    /// Chat ID that is persistent and unique.
+    /// Participant ID that is persistent and unique.
     /// </summary>
     [JsonPropertyName("id")]
     public string Id { get; set; }
