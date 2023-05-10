@@ -5,6 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 Bicep template for deploying Semantic Kernel to Azure as a web app service without creating a new Azure OpenAI instance.
 
 Resources to add:
+- CosmosDB
 - vNet + Network security group
 */
 
