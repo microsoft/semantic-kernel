@@ -1,13 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.MsGraph;
+using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
+using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
@@ -17,11 +23,12 @@ using SemanticKernel.Service.Storage;
 namespace SemanticKernel.Service.Controllers;
 
 [ApiController]
-public class SemanticKernelController : ControllerBase
+public class SemanticKernelController : ControllerBase, IDisposable
 {
     private readonly ILogger<SemanticKernelController> _logger;
     private readonly PromptSettings _promptSettings;
     private readonly ServiceOptions _options;
+    private readonly List<IDisposable> _disposables;
 
     public SemanticKernelController(
         IOptions<ServiceOptions> options,
@@ -31,6 +38,7 @@ public class SemanticKernelController : ControllerBase
         this._logger = logger;
         this._options = options.Value;
         this._promptSettings = promptSettings;
+        this._disposables = new List<IDisposable>();
     }
 
     /// <summary>
@@ -76,6 +84,13 @@ public class SemanticKernelController : ControllerBase
             return this.BadRequest("Input is required.");
         }
 
+        // Put ask's variables in the context we will use.
+        var contextVariables = new ContextVariables(ask.Input);
+        foreach (var input in ask.Variables)
+        {
+            contextVariables.Set(input.Key, input.Value);
+        }
+
         // Not required for Copilot Chat, but this is how to register additional skills for the service to provide.
         if (!string.IsNullOrWhiteSpace(this._options.SemanticSkillsDirectory))
         {
@@ -85,7 +100,7 @@ public class SemanticKernelController : ControllerBase
         // Register skills with the planner if enabled.
         if (plannerOptions.Value.Enabled)
         {
-            await this.RegisterPlannerSkillsAsync(planner, plannerOptions.Value, openApiSkillsAuthHeaders);
+            await this.RegisterPlannerSkillsAsync(planner, plannerOptions.Value, openApiSkillsAuthHeaders, contextVariables);
         }
 
         // Register native skills with the chat's kernel
@@ -109,13 +124,6 @@ public class SemanticKernelController : ControllerBase
             return this.NotFound($"Failed to find {skillName}/{functionName} on server");
         }
 
-        // Put ask's variables in the context we will use.
-        var contextVariables = new ContextVariables(ask.Input);
-        foreach (var input in ask.Variables)
-        {
-            contextVariables.Set(input.Key, input.Value);
-        }
-
         // Run the function.
         SKContext result = await kernel.RunAsync(contextVariables, function!);
         if (result.ErrorOccurred)
@@ -134,29 +142,101 @@ public class SemanticKernelController : ControllerBase
     /// <summary>
     /// Register skills with the planner's kernel.
     /// </summary>
-    private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
+    private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders, ContextVariables variables)
     {
-        await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShopping", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
+        // Register authenticated skills with the planner's kernel only if the request includes an auth header for the skill.
 
-        // Register authenticated OpenAPI skills with the planner's kernel
-        // if the request includes an auth header for an OpenAPI skill.
-        // Else, don't register the skill as it'll fail on auth.
-        if (openApiSkillsAuthHeaders.GithubAuthentication != null)
+        // Klarna Shopping
+        if (openApiSkillsAuthHeaders.KlarnaAuthentication != null)
         {
-            var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication); });
-            this._logger.LogInformation("Registering GitHub Skill");
-
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json");
-            var skill = await planner.Kernel.ImportOpenApiSkillFromFileAsync("GitHubSkill", filePath, authenticationProvider.AuthenticateRequestAsync);
+            // Register the Klarna shopping ChatGPT plugin with the planner's kernel.
+            using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger)
+            {
+                InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true }
+            };
+            using HttpClient importHttpClient = new HttpClient(retryHandler, false);
+            importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
+            await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"),
+                importHttpClient);
         }
 
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "text");
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TimeSkill(), "time");
-        planner.Kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.MathSkill(), "math");
-
-        if (!string.IsNullOrWhiteSpace(options.SemanticSkillsDirectory))
+        // GitHub
+        if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.GithubAuthentication))
         {
-            planner.Kernel.RegisterSemanticSkills(options.SemanticSkillsDirectory, this._logger);
+            this._logger.LogInformation("Enabling GitHub skill.");
+            BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
+            await planner.Kernel.ImportOpenApiSkillFromFileAsync(
+                skillName: "GitHubSkill",
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
+                authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
+
+        // Jira
+        if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.JiraAuthentication))
+        {
+            this._logger.LogInformation("Registering Jira Skill");
+            var authenticationProvider = new BasicAuthenticationProvider(() => { return Task.FromResult(openApiSkillsAuthHeaders.JiraAuthentication); });
+            var hasServerUrlOverride = variables.Get("jira-server-url", out string serverUrlOverride);
+
+            await planner.Kernel.ImportOpenApiSkillFromFileAsync(
+                skillName: "JiraSkill",
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Skills/OpenApiSkills/JiraSkill/openapi.json"),
+                authCallback: authenticationProvider.AuthenticateRequestAsync,
+                serverUrlOverride: hasServerUrlOverride ? new System.Uri(serverUrlOverride) : null);
+        }
+
+        // Microsoft Graph
+        if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.GraphAuthentication))
+        {
+            this._logger.LogInformation("Enabling Microsoft Graph skill(s).");
+            BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GraphAuthentication));
+            GraphServiceClient graphServiceClient = this.CreateGraphServiceClient(authenticationProvider.AuthenticateRequestAsync);
+
+            planner.Kernel.ImportSkill(new TaskListSkill(new MicrosoftToDoConnector(graphServiceClient)), "todo");
+            planner.Kernel.ImportSkill(new CalendarSkill(new OutlookCalendarConnector(graphServiceClient)), "calendar");
+            planner.Kernel.ImportSkill(new EmailSkill(new OutlookMailConnector(graphServiceClient)), "email");
+        }
+    }
+
+    /// <summary>
+    /// Create a Microsoft Graph service client.
+    /// </summary>
+    /// <param name="authenticateRequestAsyncDelegate">The delegate to authenticate the request.</param>
+    private GraphServiceClient CreateGraphServiceClient(AuthenticateRequestAsyncDelegate authenticateRequestAsyncDelegate)
+    {
+        MsGraphClientLoggingHandler graphLoggingHandler = new(this._logger);
+        this._disposables.Add(graphLoggingHandler);
+
+        IList<DelegatingHandler> graphMiddlewareHandlers =
+            GraphClientFactory.CreateDefaultHandlers(new DelegateAuthenticationProvider(authenticateRequestAsyncDelegate));
+        graphMiddlewareHandlers.Add(graphLoggingHandler);
+
+        HttpClient graphHttpClient = GraphClientFactory.Create(graphMiddlewareHandlers);
+        this._disposables.Add(graphHttpClient);
+
+        GraphServiceClient graphServiceClient = new(graphHttpClient);
+        return graphServiceClient;
+    }
+
+    /// <summary>
+    /// Dispose of the object.
+    /// </summary>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            foreach (IDisposable disposable in this._disposables)
+            {
+                disposable.Dispose();
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

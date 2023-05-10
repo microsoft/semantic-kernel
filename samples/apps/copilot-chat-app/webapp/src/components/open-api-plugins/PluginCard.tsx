@@ -41,7 +41,7 @@ interface PluginCardProps {
 }
 
 export const PluginCard: React.FC<PluginCardProps> = ({ plugin }) => {
-    const { name, publisher, enabled, authRequirements, apiRequirements, icon, description } = plugin;
+    const { name, publisher, enabled, authRequirements, apiProperties, icon, description } = plugin;
 
     const styles = useStyles();
     const dispatch = useAppDispatch();
@@ -60,7 +60,7 @@ export const PluginCard: React.FC<PluginCardProps> = ({ plugin }) => {
                 action={
                     enabled ? (
                         <Button aria-label="Disconnect plugin" appearance="secondary" onClick={onDisconnectClick}>
-                            Disconnect
+                            Disable
                         </Button>
                     ) : (
                         <PluginConnector
@@ -68,7 +68,7 @@ export const PluginCard: React.FC<PluginCardProps> = ({ plugin }) => {
                             icon={icon}
                             publisher={publisher}
                             authRequirements={authRequirements}
-                            apiRequirements={apiRequirements}
+                            apiProperties={apiProperties}
                         />
                     )
                 }

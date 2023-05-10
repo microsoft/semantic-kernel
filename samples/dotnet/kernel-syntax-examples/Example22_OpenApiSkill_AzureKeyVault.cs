@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
@@ -22,14 +23,16 @@ public static class Example22_OpenApiSkill_AzureKeyVault
             new[] { "https://vault.azure.net/.default" },
             new Uri("http://localhost"));
 
-        await GetSecretFromAzureKeyVaultAsync(authenticationProvider);
+        await GetSecretFromAzureKeyVaultWithRetryAsync(authenticationProvider);
 
         await AddSecretToAzureKeyVaultAsync(authenticationProvider);
     }
 
-    public static async Task GetSecretFromAzureKeyVaultAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
+    public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+
+        var retryConfig = new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true };
 
         // Import a OpenApi skill using one of the following Kernel extension methods
         // kernel.ImportOpenApiSkillFromResource
@@ -38,7 +41,8 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         // kernel.ImportOpenApiSkillFromUrlAsync
         // kernel.RegisterOpenApiSkill
         var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault,
-            authenticationProvider.AuthenticateRequestAsync);
+            authCallback: authenticationProvider.AuthenticateRequestAsync,
+            retryConfiguration: retryConfig);
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();

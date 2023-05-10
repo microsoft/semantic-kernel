@@ -106,12 +106,22 @@ public class AzureCognitiveSearchMemory : ISemanticTextMemory
     {
         collection = NormalizeIndexName(collection);
 
-        var client = await this.GetSearchClientAsync(collection, cancellationToken).ConfigureAwait(false);
+        var client = this.GetSearchClient(collection);
 
-        Response<AzureCognitiveSearchRecord>? result = await client.GetDocumentAsync<AzureCognitiveSearchRecord>(
-            EncodeId(key), cancellationToken: cancellationToken).ConfigureAwait(false);
+        Response<AzureCognitiveSearchRecord>? result;
+        try
+        {
+            result = await client
+                .GetDocumentAsync<AzureCognitiveSearchRecord>(EncodeId(key), cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            // Index not found, no data to return
+            return null;
+        }
 
-        if (result == null || result.Value == null)
+        if (result?.Value == null)
         {
             throw new AzureCognitiveSearchMemoryException("Memory read returned null");
         }
@@ -130,25 +140,37 @@ public class AzureCognitiveSearchMemory : ISemanticTextMemory
     {
         collection = NormalizeIndexName(collection);
 
-        var client = await this.GetSearchClientAsync(collection, cancellationToken).ConfigureAwait(false);
+        var client = this.GetSearchClient(collection);
 
+        // TODO: use vectors
         var options = new SearchOptions
         {
             QueryType = SearchQueryType.Semantic,
             SemanticConfigurationName = "default",
-            QueryLanguage = "en-us", // TODO: this shouldn't be required
+            QueryLanguage = "en-us",
             Size = limit,
         };
 
-        Response<SearchResults<AzureCognitiveSearchRecord>>? searchResult = await client
-            .SearchAsync<AzureCognitiveSearchRecord>(query, options, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-
-        await foreach (SearchResult<AzureCognitiveSearchRecord>? doc in searchResult.Value.GetResultsAsync())
+        Response<SearchResults<AzureCognitiveSearchRecord>>? searchResult = null;
+        try
         {
-            if (doc.RerankerScore < minRelevanceScore) { break; }
+            searchResult = await client
+                .SearchAsync<AzureCognitiveSearchRecord>(query, options, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            // Index not found, no data to return
+        }
 
-            yield return new MemoryQueryResult(ToMemoryRecordMetadata(doc.Document), doc.RerankerScore ?? 1, null);
+        if (searchResult != null)
+        {
+            await foreach (SearchResult<AzureCognitiveSearchRecord>? doc in searchResult.Value.GetResultsAsync())
+            {
+                if (doc.RerankerScore < minRelevanceScore) { break; }
+
+                yield return new MemoryQueryResult(ToMemoryRecordMetadata(doc.Document), doc.RerankerScore ?? 1, null);
+            }
         }
     }
 
@@ -159,9 +181,15 @@ public class AzureCognitiveSearchMemory : ISemanticTextMemory
 
         var records = new List<AzureCognitiveSearchRecord> { new() { Id = EncodeId(key) } };
 
-        var client = await this.GetSearchClientAsync(collection, cancellationToken).ConfigureAwait(false);
-
-        await client.DeleteDocumentsAsync(records, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var client = this.GetSearchClient(collection);
+        try
+        {
+            await client.DeleteDocumentsAsync(records, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            // Index not found, no data to delete
+        }
     }
 
     /// <inheritdoc />
@@ -192,30 +220,12 @@ public class AzureCognitiveSearchMemory : ISemanticTextMemory
 
     /// <summary>
     /// Get a search client for the index specified.
+    /// Note: the index might not exist, but we avoid checking everytime and the extra latency.
     /// </summary>
     /// <param name="indexName">Index name</param>
-    /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>Search client ready to read/write</returns>
-    private async Task<SearchClient> GetSearchClientAsync(
-        string indexName,
-        CancellationToken cancellationToken = default)
+    private SearchClient GetSearchClient(string indexName)
     {
-        Response<SearchIndex>? existingIndex = null;
-        try
-        {
-            // Search the index
-            existingIndex = await this._adminClient.GetIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
-        }
-        catch (RequestFailedException e) when (e.Status == 404)
-        {
-        }
-
-        // Create the index if it doesn't exist
-        if (existingIndex == null || existingIndex.Value == null)
-        {
-            await this.CreateIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
-        }
-
         // Search an available client from the local cache
         if (!this._clientsByIndex.TryGetValue(indexName, out SearchClient client))
         {
@@ -231,7 +241,7 @@ public class AzureCognitiveSearchMemory : ISemanticTextMemory
     /// </summary>
     /// <param name="indexName">Index name</param>
     /// <param name="cancellationToken">Task cancellation token</param>
-    private Task CreateIndexAsync(
+    private Task<Response<SearchIndex>> CreateIndexAsync(
         string indexName,
         CancellationToken cancellationToken = default)
     {
@@ -243,6 +253,7 @@ public class AzureCognitiveSearchMemory : ISemanticTextMemory
             {
                 Configurations =
                 {
+                    // TODO: replace with vector search
                     new SemanticConfiguration("default", new PrioritizedFields
                     {
                         TitleField = new SemanticField { FieldName = "Description" },
@@ -264,12 +275,23 @@ public class AzureCognitiveSearchMemory : ISemanticTextMemory
         AzureCognitiveSearchRecord record,
         CancellationToken cancellationToken = default)
     {
-        var client = await this.GetSearchClientAsync(indexName, cancellationToken).ConfigureAwait(false);
+        var client = this.GetSearchClient(indexName);
 
-        Response<IndexDocumentsResult>? result = await client.MergeOrUploadDocumentsAsync(
-            new List<AzureCognitiveSearchRecord> { record },
-            new IndexDocumentsOptions { ThrowOnAnyError = true },
-            cancellationToken).ConfigureAwait(false);
+        Task<Response<IndexDocumentsResult>> UpsertCode() => client
+            .MergeOrUploadDocumentsAsync(new List<AzureCognitiveSearchRecord> { record },
+                new IndexDocumentsOptions { ThrowOnAnyError = true },
+                cancellationToken);
+
+        Response<IndexDocumentsResult>? result;
+        try
+        {
+            result = await UpsertCode().ConfigureAwait(false);
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            await this.CreateIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
+            result = await UpsertCode().ConfigureAwait(false);
+        }
 
         if (result == null || result.Value.Results.Count == 0)
         {

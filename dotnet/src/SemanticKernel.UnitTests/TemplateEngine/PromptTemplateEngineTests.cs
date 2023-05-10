@@ -15,9 +15,6 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.UnitTests.TemplateEngine;
 
-#pragma warning disable VSTHRD103 // ok to use WriteLine synchronously
-#pragma warning disable CA1849 // ok to use WriteLine synchronously
-
 public sealed class PromptTemplateEngineTests
 {
     private readonly PromptTemplateEngine _target;
@@ -139,7 +136,10 @@ public sealed class PromptTemplateEngineTests
 
         this._variables.Update("INPUT-BAR");
         var template = "foo-{{function}}-baz";
-        this._skills.Setup(x => x.HasFunction("function")).Returns(true);
+        {
+            ISKFunction? outFunc = func;
+            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+        }
         this._skills.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
@@ -167,7 +167,10 @@ public sealed class PromptTemplateEngineTests
 
         this._variables.Set("myVar", "BAR");
         var template = "foo-{{function $myVar}}-baz";
-        this._skills.Setup(x => x.HasFunction("function")).Returns(true);
+        {
+            ISKFunction? outFunc = func;
+            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+        }
         this._skills.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
@@ -197,7 +200,10 @@ public sealed class PromptTemplateEngineTests
         this._variables.Set("myVar", "BAR");
 
         var template = "foo-{{function $myVar}}-baz";
-        this._skills.Setup(x => x.HasFunction("function")).Returns(true);
+        {
+            ISKFunction? outFunc = func;
+            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+        }
         this._skills.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
@@ -222,5 +228,3 @@ public sealed class PromptTemplateEngineTests
             TestConsoleLogger.Log);
     }
 }
-#pragma warning restore VSTHRD103
-#pragma warning restore CA1849

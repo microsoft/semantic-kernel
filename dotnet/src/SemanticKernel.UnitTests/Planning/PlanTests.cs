@@ -576,4 +576,310 @@ public sealed class PlanTests
         Assert.Equal($"Here is a poem about Cleopatra", result.Result);
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Once);
     }
+
+    [Fact]
+    public async Task CanExecutePlanWithStateAsync()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var log = new Mock<ILogger>();
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+
+        var returnContext = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+
+        var mockFunction = new Mock<ISKFunction>();
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            {
+                c.Variables.Get("type", out var t);
+                returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
+            })
+            .Returns(() => Task.FromResult(returnContext));
+
+        var planStep = new Plan(mockFunction.Object);
+        planStep.Parameters.Set("type", string.Empty);
+        var plan = new Plan(string.Empty);
+        plan.AddSteps(planStep);
+        plan.State.Set("input", "Cleopatra");
+        plan.State.Set("type", "poem");
+
+        // Act
+        var result = await plan.InvokeAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a poem about Cleopatra", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Once);
+    }
+
+    [Fact]
+    public async Task CanExecutePlanWithCustomContextAsync()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var log = new Mock<ILogger>();
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+
+        var returnContext = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+
+        var mockFunction = new Mock<ISKFunction>();
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            {
+                c.Variables.Get("type", out var t);
+                returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
+            })
+            .Returns(() => Task.FromResult(returnContext));
+
+        var plan = new Plan(mockFunction.Object);
+        plan.State.Set("input", "Cleopatra");
+        plan.State.Set("type", "poem");
+
+        // Act
+        var result = await plan.InvokeAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a poem about Cleopatra", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Once);
+
+        plan = new Plan(mockFunction.Object);
+        plan.State.Set("input", "Cleopatra");
+        plan.State.Set("type", "poem");
+
+        var contextOverride = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+        contextOverride.Variables.Set("type", "joke");
+        contextOverride.Variables.Update("Medusa");
+
+        // Act
+        result = await plan.InvokeAsync(contextOverride);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a joke about Medusa", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task CanExecutePlanWithCustomStateAsync()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var log = new Mock<ILogger>();
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+
+        var returnContext = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+
+        var mockFunction = new Mock<ISKFunction>();
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            {
+                c.Variables.Get("type", out var t);
+                returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
+            })
+            .Returns(() => Task.FromResult(returnContext));
+
+        var planStep = new Plan(mockFunction.Object);
+        planStep.Parameters.Set("type", string.Empty);
+        var plan = new Plan("A plan");
+        plan.State.Set("input", "Medusa");
+        plan.State.Set("type", "joke");
+        plan.AddSteps(planStep);
+
+        // Act
+        var result = await plan.InvokeAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a joke about Medusa", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Once);
+
+        planStep = new Plan(mockFunction.Object);
+        plan = new Plan("A plan");
+        planStep.Parameters.Set("input", "Medusa");
+        planStep.Parameters.Set("type", "joke");
+        plan.State.Set("input", "Cleopatra"); // state input will not override parameter
+        plan.State.Set("type", "poem");
+        plan.AddSteps(planStep);
+
+        // Act
+        result = await plan.InvokeAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a poem about Medusa", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Exactly(2));
+
+        planStep = new Plan(mockFunction.Object);
+        plan = new Plan("A plan");
+        planStep.Parameters.Set("input", "Cleopatra");
+        planStep.Parameters.Set("type", "poem");
+        plan.AddSteps(planStep);
+        var contextOverride = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+        contextOverride.Variables.Set("type", "joke");
+        contextOverride.Variables.Update("Medusa"); // context input will not override parameters
+
+        // Act
+        result = await plan.InvokeAsync(contextOverride);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Here is a joke about Cleopatra", result.Result);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Exactly(3));
+    }
+
+    [Fact]
+    public async Task CanExecutePlanWithJoinedResultAsync()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var log = new Mock<ILogger>();
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+
+        var returnContext = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+
+        var outlineMock = new Mock<ISKFunction>();
+        outlineMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+                returnContext.Variables.Update($"Here is a {c.Variables["chapterCount"]} chapter outline about " + c.Variables.Input))
+            .Returns(() => Task.FromResult(returnContext));
+
+        var elementAtIndexMock = new Mock<ISKFunction>();
+        elementAtIndexMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            {
+                returnContext.Variables.Update($"Outline section #{c.Variables["index"]} of {c.Variables["count"]}: " + c.Variables.Input);
+            })
+            .Returns(() => Task.FromResult(returnContext));
+
+        var novelChapterMock = new Mock<ISKFunction>();
+        novelChapterMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+            {
+                returnContext.Variables.Update(
+                    $"Chapter #{c.Variables["chapterIndex"]}: {c.Variables.Input}\nTheme:{c.Variables["theme"]}\nPreviously:{c.Variables["previousChapter"]}");
+            })
+            .Returns(() => Task.FromResult(returnContext));
+
+        var plan = new Plan("A plan with steps that alternate appending to the plan result.");
+
+        // Steps:
+        // - WriterSkill.NovelOutline chapterCount='3' INPUT='A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic.' endMarker='<!--===ENDPART===-->' => OUTLINE
+        // - MiscSkill.ElementAtIndex count='3' INPUT='$OUTLINE' index='0' => CHAPTER_1_SYNOPSIS
+        // - WriterSkill.NovelChapter chapterIndex='1' previousChapter='' INPUT='$CHAPTER_1_SYNOPSIS' theme='Children's mystery' => RESULT__CHAPTER_1
+        // - MiscSkill.ElementAtIndex count='3' INPUT='$OUTLINE' index='1' => CHAPTER_2_SYNOPSIS
+        // - WriterSkill.NovelChapter chapterIndex='2' previousChapter='$CHAPTER_1_SYNOPSIS' INPUT='$CHAPTER_2_SYNOPSIS' theme='Children's mystery' => RESULT__CHAPTER_2
+        // - MiscSkill.ElementAtIndex count='3' INPUT='$OUTLINE' index='2' => CHAPTER_3_SYNOPSIS
+        // - WriterSkill.NovelChapter chapterIndex='3' previousChapter='$CHAPTER_2_SYNOPSIS' INPUT='$CHAPTER_3_SYNOPSIS' theme='Children's mystery' => RESULT__CHAPTER_3
+        var planStep = new Plan(outlineMock.Object);
+        planStep.Parameters.Set("input",
+            "NovelOutline function input.");
+        planStep.Parameters.Set("chapterCount", "3");
+        planStep.Outputs.Add("OUTLINE");
+        plan.AddSteps(planStep);
+
+        planStep = new Plan(elementAtIndexMock.Object);
+        planStep.Parameters.Set("count", "3");
+        planStep.Parameters.Set("INPUT", "$OUTLINE");
+        planStep.Parameters.Set("index", "0");
+        planStep.Outputs.Add("CHAPTER_1_SYNOPSIS");
+        plan.AddSteps(planStep);
+
+        planStep = new Plan(novelChapterMock.Object);
+        planStep.Parameters.Set("chapterIndex", "1");
+        planStep.Parameters.Set("previousChapter", " ");
+        planStep.Parameters.Set("INPUT", "$CHAPTER_1_SYNOPSIS");
+        planStep.Parameters.Set("theme", "Children's mystery");
+        planStep.Outputs.Add("RESULT__CHAPTER_1");
+        plan.Outputs.Add("RESULT__CHAPTER_1");
+        plan.AddSteps(planStep);
+
+        planStep = new Plan(elementAtIndexMock.Object);
+        planStep.Parameters.Set("count", "3");
+        planStep.Parameters.Set("INPUT", "$OUTLINE");
+        planStep.Parameters.Set("index", "1");
+        planStep.Outputs.Add("CHAPTER_2_SYNOPSIS");
+        plan.AddSteps(planStep);
+
+        planStep = new Plan(novelChapterMock.Object);
+        planStep.Parameters.Set("chapterIndex", "2");
+        planStep.Parameters.Set("previousChapter", "$CHAPTER_1_SYNOPSIS");
+        planStep.Parameters.Set("INPUT", "$CHAPTER_2_SYNOPSIS");
+        planStep.Parameters.Set("theme", "Children's mystery");
+        planStep.Outputs.Add("RESULT__CHAPTER_2");
+        plan.Outputs.Add("RESULT__CHAPTER_2");
+        plan.AddSteps(planStep);
+
+        planStep = new Plan(elementAtIndexMock.Object);
+        planStep.Parameters.Set("count", "3");
+        planStep.Parameters.Set("INPUT", "$OUTLINE");
+        planStep.Parameters.Set("index", "2");
+        planStep.Outputs.Add("CHAPTER_3_SYNOPSIS");
+        plan.AddSteps(planStep);
+
+        planStep = new Plan(novelChapterMock.Object);
+        planStep.Parameters.Set("chapterIndex", "3");
+        planStep.Parameters.Set("previousChapter", "$CHAPTER_2_SYNOPSIS");
+        planStep.Parameters.Set("INPUT", "$CHAPTER_3_SYNOPSIS");
+        planStep.Parameters.Set("theme", "Children's mystery");
+        planStep.Outputs.Add("CHAPTER_3");
+        plan.Outputs.Add("CHAPTER_3");
+        plan.AddSteps(planStep);
+
+        // Act
+        var result = await plan.InvokeAsync(new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        ));
+
+        var expected =
+            @"Chapter #1: Outline section #0 of 3: Here is a 3 chapter outline about NovelOutline function input.
+Theme:Children's mystery
+Previously:
+Chapter #2: Outline section #1 of 3: Here is a 3 chapter outline about NovelOutline function input.
+Theme:Children's mystery
+Previously:Outline section #0 of 3: Here is a 3 chapter outline about NovelOutline function input.
+Chapter #3: Outline section #2 of 3: Here is a 3 chapter outline about NovelOutline function input.
+Theme:Children's mystery
+Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutline function input.";
+
+        // Assert
+        Assert.Equal(expected, result.Result);
+    }
 }

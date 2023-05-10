@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -34,6 +35,8 @@ public static class Example24_OpenApiSkill_Jira
             return Task.FromResult(s);
         });
 
+        using HttpClient httpClient = new HttpClient();
+
         // The bool useLocalFile can be used to toggle the ingestion method for the openapi schema between a file path and a URL
         bool useLocalFile = true;
         if (useLocalFile)
@@ -44,7 +47,7 @@ public static class Example24_OpenApiSkill_Jira
         else
         {
             var apiSkillRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
-            jiraSkills = await kernel.ImportOpenApiSkillFromUrlAsync("jiraSkills", apiSkillRawFileURL, null, tokenProvider.AuthenticateRequestAsync);
+            jiraSkills = await kernel.ImportOpenApiSkillFromUrlAsync("jiraSkills", apiSkillRawFileURL, httpClient, tokenProvider.AuthenticateRequestAsync);
         }
 
         // GetIssue Skill

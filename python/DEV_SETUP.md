@@ -68,8 +68,12 @@ Note: SK requires at least Poetry 1.2.0.
 # Install poetry package
 pip3 install poetry
 
-# Use poetry to install project deps
+# Use poetry to install base project dependencies
 poetry install
+
+# If you want to use connectors such as hugging face
+# poetry install --with <connector group name>
+# example: poetry install --with hugging_face
 
 # Use poetry to activate project venv
 poetry shell
@@ -98,6 +102,12 @@ You can run the integration tests under the [tests/integration](tests/integratio
     cd python
     poetry install
     poetry run pytest tests/integration
+
+You can also run all the tests together under the [tests](tests/) folder.
+
+    cd python
+    poetry install
+    poetry run pytest tests
 
 # Tools and scripts
 
