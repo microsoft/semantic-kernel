@@ -1,51 +1,46 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
+using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Controllers;
 
 namespace SemanticKernel.Service.SignalR.Hubs;
 
 public class ChatHub : Hub
 {
+    private readonly ILogger<ChatHub> _logger;
+    public ChatHub(ILogger<ChatHub> logger)
+    {
+        this._logger = logger;
+    }
     public async Task SendMessageAsync(string user, string message)
     {
         await this.Clients.All.SendAsync("SendMessage", user, message);
-        Console.WriteLine("Log SendMessage: {0}", message);
+        this._logger.LogInformation("Called SendMessageAsync");
     }
 
     public async Task SendMessageToAllUsersExceptSelfAsync(string ClientSideCallBackName, string message)
     {
         await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync(ClientSideCallBackName, message);
-        Console.WriteLine("Log SendMessageToAllUsersExceptSelfAsync: {0}", message);
+        this._logger.LogInformation("Called SendMessageToAllUsersExceptSelfAsync");
     }
 
     public async Task SendMessageToAllUsersAsync(string message)
     {
         await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync("ReceiveMessage", message);
-        Console.WriteLine("Log SendMessageToAllUsersAsync: {0}", message);
-    }
-
-    public async Task Func2Async(string user, string message)
-    {
-        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync("ReceiveMessage", user, message);
-        Console.WriteLine("Log ReceiveMessage: {0}", message);
+        this._logger.LogInformation("Called SendMessageToAllUsersAsync");
     }
 
     public async Task ReceiveMessageAsync(string user, string message)
     {
         await this.Clients.All.SendAsync("ReceiveMessage", user, message);
-        Console.WriteLine("Log ReceiveMessage: {0}", message);
+        this._logger.LogInformation("Called ReceiveMessage");
     }
 
     public override async Task OnConnectedAsync()
     {
         await this.Clients.All.SendAsync("UserConnected", this.Context.ConnectionId);
-        Console.WriteLine("Log UserConnected");
+        this._logger.LogInformation("Log UserConnected");
     }
-
-    public async Task NewMessageAsync(long username, string message)
-    {
-        await this.Clients.All.SendAsync("messageReceived", username, message);
-        Console.WriteLine("Log messageReceived: {0}", message);
-    }
-
 }
