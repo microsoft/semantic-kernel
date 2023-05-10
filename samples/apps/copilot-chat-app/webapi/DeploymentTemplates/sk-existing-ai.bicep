@@ -5,7 +5,6 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 Bicep template for deploying Semantic Kernel to Azure as a web app service without creating a new Azure OpenAI instance.
 
 Resources to add:
-- AzureSpeech
 - vNet + Network security group
 */
 
@@ -159,6 +158,14 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'MemoriesStore:Qdrant:Host'
           value: 'http://${aci.properties.ipAddress.fqdn}'
+        }
+        {
+          name: 'AzureSpeech:Region'
+          value: location
+        }
+        {
+          name: 'AzureSpeech:Key'
+          value: speechAccount.listKeys().key1
         }
         {
           name: 'Kestrel:Endpoints:Https:Url'
@@ -404,6 +411,25 @@ resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
         version: 2
       }
     }
+  }
+}
+
+resource speechAccount 'Microsoft.CognitiveServices/accounts@2022-12-01' = {
+  name: 'cog-${uniqueName}'
+  location: location
+  sku: {
+    name: 'S0'
+  }
+  kind: 'SpeechServices'
+  identity: {
+    type: 'None'
+  }
+  properties: {
+    customSubDomainName: 'cog-${uniqueName}'
+    networkAcls: {
+      defaultAction: 'Allow'
+    }
+    publicNetworkAccess: 'Enabled'
   }
 }
 
