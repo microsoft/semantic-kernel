@@ -44,7 +44,7 @@ public class ChatParticipantController : ControllerBase
     /// <param name="chatParticipantParam">Contains the user id and chat id.</param>
     [HttpPost]
     [Route("chatParticipant/join")]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> JoinChatAsync([FromBody] ChatParticipant chatParticipantParam)
     {
@@ -70,6 +70,6 @@ public class ChatParticipantController : ControllerBase
         var chatParticipant = new ChatParticipant(userId, chatId);
         await this._chatParticipantRepository.CreateAsync(chatParticipant);
 
-        return this.Accepted();
+        return this.Ok(chatParticipant);
     }
 }
