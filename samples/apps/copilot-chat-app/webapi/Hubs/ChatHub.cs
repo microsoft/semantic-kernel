@@ -1,48 +1,53 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Options;
-using SemanticKernel.Service.Config;
-using SemanticKernel.Service.Controllers;
 
 namespace SemanticKernel.Service.SignalR.Hubs;
 
+/// <summary>
+/// Represents a chat hub for real-time communication.
+/// </summary>
 public class ChatHub : Hub
 {
     private readonly ILogger<ChatHub> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatHub"/> class.
+    /// </summary>
+    /// <param name="logger">The logger.</param>
     public ChatHub(ILogger<ChatHub> logger)
     {
         this._logger = logger;
     }
 
-    public async Task SendConversationToOtherUsersAsync(object message)
-    {
-        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync("SendMessage", message);
-        this._logger.LogInformation("Called SendConversationToOtherUsersAsync");
-    }
-
-    public async Task SendMessageToAllUsersExceptSelfAsync(string ClientSideCallBackName, string message)
-    {
-        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync(ClientSideCallBackName, message);
-        this._logger.LogInformation("Called SendMessageToAllUsersExceptSelfAsync");
-    }
-
-    public async Task SendMessageToAllUsersAsync(string message)
-    {
-        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync("ReceiveMessage", message);
-        this._logger.LogInformation("Called SendMessageToAllUsersAsync");
-    }
-
-    public async Task ReceiveMessageAsync(string user, string message)
-    {
-        await this.Clients.All.SendAsync("ReceiveMessage", user, message);
-        this._logger.LogInformation("Called ReceiveMessage");
-    }
-
+    /// <summary>
+    /// Called when a client connects to the hub.
+    /// </summary>
     public override async Task OnConnectedAsync()
     {
         await this.Clients.All.SendAsync("UserConnected", this.Context.ConnectionId);
-        this._logger.LogInformation("Log UserConnected");
+        this._logger.LogInformation("Log UserConnected with connection id: {0}", this.Context.ConnectionId);
+    }
+
+    /// <summary>
+    /// Sends a conversation message to all other users except the sender.
+    /// </summary>
+    /// <param name="message">The message to send.</param>
+    public async Task SendConversationToOtherUsersAsync(object message)
+    {
+        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync("SendMessage", message);
+        this._logger.LogDebug("Called SendConversationToOtherUsersAsync");
+    }
+
+    /// <summary>
+    /// Sends a message to all users except the sender.
+    /// </summary>
+    /// <param name="ClientSideCallBackName">The name of the client-side callback function.</param>
+    /// <param name="message">The message to send.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public async Task SendMessageToAllUsersExceptSelfAsync(string ClientSideCallBackName, string message)
+    {
+        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync(ClientSideCallBackName, message);
+        this._logger.LogDebug("Called SendMessageToAllUsersExceptSelfAsync");
     }
 }

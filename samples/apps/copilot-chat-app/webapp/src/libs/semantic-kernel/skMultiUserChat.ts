@@ -1,23 +1,23 @@
 // Copyright (c) Microsoft. All rights reserved.
 import * as signalR from "@microsoft/signalr";
-import {
-  updateConversation,
-} from '../../redux/features/conversations/conversationsSlice';
-import { AuthorRoles } from './../models/ChatMessage';
-import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
-import { RootState } from '../../redux/app/store';
+// import {
+//   updateConversation,
+// } from '../../redux/features/conversations/conversationsSlice';
+// import { AuthorRoles } from './../models/ChatMessage';
+// import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
+// import { RootState } from '../../redux/app/store';
 
-interface UserAsk {
+export interface UserAsk {
   input: string;
   variables: KeyValuePair<string, string>[];
 }
 
-interface UserAskResult {
+export interface UserAskResult {
   value: string;
   variables?: KeyValuePair<string, string>[];
 }
 
-interface KeyValuePair<K, V> {
+export interface KeyValuePair<K, V> {
   key: K;
   value: V;
 }
@@ -55,6 +55,8 @@ export class SKMultiUserChat {
       this.registerSignalReconnectionEvents();
       this.startSignalRConnection(this.hubConnection);
       this.registerSignalEvents();
+
+      return this.hubConnection;
     };
 
     startSignalRConnection = async (connection: { start: () => any; state: signalR.HubConnectionState; }) => {
@@ -95,8 +97,8 @@ export class SKMultiUserChat {
       // this.hubConnection.on("ReceiveMessageFromBackend", this.EventReceiveMessageFromBackend);
       // this.hubConnection.on("EventReceiveMessageFrontend", this.EventCallBackendFunctionThatInvokesTheFrontend);
 
-      this.hubConnection.on("SendConversationToOtherUsersFrontEnd", this.EventSendConversationToOtherUsers);
-      this.hubConnection.on("SendChatSkillAskResultToOtherUsersFrontEnd", this.EventSendChatSkillAskResultToOtherUsers);
+      // this.hubConnection.on("SendConversationToOtherUsersFrontEnd", this.EventSendConversationToOtherUsers);
+      // this.hubConnection.on("SendChatSkillAskResultToOtherUsersFrontEnd", this.EventSendChatSkillAskResultToOtherUsers);
     }
 
     // EventReceiveMessageFromBackend = (message: object) => {
@@ -112,23 +114,23 @@ export class SKMultiUserChat {
     //   this.hubConnection.invoke("SendMessageToAllUsersExceptSelfAsync", "EventReceiveMessageFrontend", message);
     // }
 
-    EventSendConversationToOtherUsers = (userAsk: UserAsk) => {
-      console.log("Received User Ask from backend: ", userAsk);
-    }
+    // EventSendConversationToOtherUsers = (userAsk: UserAsk) => {
+    //   console.log("Received User Ask from backend: ", userAsk);
+    // }
 
-    EventSendChatSkillAskResultToOtherUsers = (userAskResult: UserAskResult) => {
-      const dispatch = useAppDispatch();
-      const { selectedId } = useAppSelector((state: RootState) => state.conversations);
+    // EventSendChatSkillAskResultToOtherUsers = (userAskResult: UserAskResult) => {
+    //   const dispatch = useAppDispatch();
+    //   const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
-      const messageResult = {
-          timestamp: new Date().getTime(),
-          userName: 'bot',
-          userId: 'bot',
-          content: userAskResult.value,
-          authorRole: AuthorRoles.Bot,
-      };
+    //   const messageResult = {
+    //       timestamp: new Date().getTime(),
+    //       userName: 'bot',
+    //       userId: 'bot',
+    //       content: userAskResult.value,
+    //       authorRole: AuthorRoles.Bot,
+    //   };
 
-      dispatch(updateConversation({ message: messageResult, chatId: selectedId }));
-      console.log("Received Chatbot Ask Result from backend: ", userAskResult);
-    }
+    //   dispatch(updateConversation({ message: messageResult, chatId: selectedId }));
+    //   console.log("Received Chatbot Ask Result from backend: ", userAskResult);
+    // }
 }

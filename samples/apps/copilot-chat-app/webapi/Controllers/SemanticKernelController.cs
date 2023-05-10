@@ -129,10 +129,9 @@ public class SemanticKernelController : ControllerBase, IDisposable
             return this.NotFound($"Failed to find {skillName}/{functionName} on server");
         }
 
-        //broadcast user message to all other users
-        //chatHubContext.Clients
+        // Broadcast user Ask to all other users
         await chatHubContext.Clients.All.SendAsync("SendConversationToOtherUsersFrontEnd", ask);
-        //await chatHubContext.Clients.AllExcept(chatHubContext.User.Identity.Name).SendAsync("UpdateConversationBasedOnOtherUsers", message);
+        //await chatHubContext.Clients.AllExcept(chatHubContext.User.Identity.Name).SendAsync();
 
         // Run the function.
         SKContext result = await kernel.RunAsync(contextVariables, function!);
@@ -148,8 +147,8 @@ public class SemanticKernelController : ControllerBase, IDisposable
 
         AskResult chatSkillAskResult = new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) };
 
-        // SignalR broadcasting
-        await chatHubContext.Clients.All.SendAsync("SendChatSkillAskResultToOtherUsersFrontEnd", chatSkillAskResult); //broadcast askresult
+        // Broadcast Chatbot AskResult to all users
+        await chatHubContext.Clients.All.SendAsync("SendChatSkillAskResultToOtherUsersFrontEnd", chatSkillAskResult);
 
         return this.Ok(chatSkillAskResult);
     }

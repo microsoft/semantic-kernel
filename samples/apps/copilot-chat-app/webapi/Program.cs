@@ -46,12 +46,10 @@ public sealed class Program
 
         // Configure middleware and endpoints
         WebApplication app = builder.Build();
-
         app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
-
         app.MapHub<ChatHub>("/chatHub");
 
         // Enable Swagger for development environments.
