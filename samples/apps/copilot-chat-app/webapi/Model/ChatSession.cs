@@ -28,10 +28,17 @@ public class ChatSession : IStorageEntity
     [JsonPropertyName("title")]
     public string Title { get; set; }
 
+    /// <summary>
+    /// Timestamp of the message.
+    /// </summary>
+    [JsonPropertyName("timestamp")]
+    public DateTimeOffset Timestamp { get; set; }
+
     public ChatSession(string userId, string title)
     {
         this.Id = Guid.NewGuid().ToString();
         this.UserId = userId;
         this.Title = title;
+        this.Timestamp = DateTimeOffset.Now;
     }
 }
