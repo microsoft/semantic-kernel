@@ -119,6 +119,10 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
             }
             SetDocumentImporting(false);
         }
+
+        // Reset the file input so that the onChange event will
+        // be triggered even if the same file is selected again.
+        documentFileRef.current!.value = '';
     };
 
     const handleSubmit = (data: string) => {
