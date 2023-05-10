@@ -40,10 +40,5 @@ The service API will need to be run or running for each sample app you want to t
 
 Sample app learning examples:
 
--   [Simple chat summary](../../apps/chat-summary-webapp-react/README.md) (**Recommended**) – learn how basic
-    semantic functions can be added to an app
 -   [Book creator](../../apps/book-creator-webapp-react/README.md) – learn how Planner and chaining of
     semantic functions can be used in your app
--   [Authentication and APIs](../../apps/auth-api-webapp-react/README.md) – learn how to connect to external
-    API's with authentication while using Semantic Kernel
--   GitHub Repo Q&A (coming soon) – learn how Memories and Embeddings can be used in your app
