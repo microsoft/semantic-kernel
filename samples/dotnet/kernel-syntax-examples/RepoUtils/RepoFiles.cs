@@ -5,13 +5,13 @@ using System.Reflection;
 
 namespace RepoUtils;
 
-internal static class RepoFiles
+public static class RepoFiles
 {
     /// <summary>
     /// Scan the local folders from the repo, looking for "samples/skills" folder.
     /// </summary>
     /// <returns>The full path to samples/skills</returns>
-    internal static string SampleSkillsPath()
+    public static string SampleSkillsPath()
     {
         const string Parent = "samples";
         const string Folder = "skills";
