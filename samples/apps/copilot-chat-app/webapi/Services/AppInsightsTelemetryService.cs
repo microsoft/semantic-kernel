@@ -54,10 +54,9 @@ public class AppInsightsTelemetryService : ITelemetryService
         return userId;
     }
 
-    public static string GetUnknownUserId()
+    private static string GetUnknownUserId()
     {
-
-        return $"unauthenticated_{Guid.NewGuid()}";
+        return $"unauthenticated";
     }
 
     private Dictionary<string, string> BuildDefaultProperties()
