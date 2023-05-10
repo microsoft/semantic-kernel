@@ -25,8 +25,6 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// </summary>
 public sealed class SKFunction : ISKFunction, IDisposable
 {
-    public delegate Task<SKContext> CustomFunctionAsync(SKContext context);
-
     /// <inheritdoc/>
     public string Name { get; }
 
@@ -153,7 +151,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromCustomMethod(
-        CustomFunctionAsync customFunction,
+        Func<SKContext, Task<SKContext>> customFunction,
         string skillName,
         string functionName,
         string description,

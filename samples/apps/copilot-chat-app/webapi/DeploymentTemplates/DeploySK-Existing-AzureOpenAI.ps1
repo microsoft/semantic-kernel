@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Creates a Semantic Kernel service deployment using an existing OpenAI or Azure OpenAI instance.
+Creates a Semantic Kernel service deployment using an existing Azure OpenAI account.
 #>
 
 param(
@@ -10,18 +10,14 @@ param(
     $DeploymentName,
 
     [Parameter(Mandatory)]
-    [SecureString]
-    # Azure OpenAI or OpenAI API key
-    $ApiKey,
-
     [string]
-    # Azure OpenAI endpoint to use (ignored when AI service is not AzureOpenAI
+    # Azure OpenAI endpoint to use
     $Endpoint = "",
-
-    [ValidateSet("AzureOpenAI", "OpenAI")]
+    
+    [Parameter(Mandatory)]
     [string]
-    # Underlying AI service (AzureOpenAI or OpenAI)
-    $AIService = "AzureOpenAI",
+    # Azure OpenAI API key
+    $ApiKey,
 
     [string]
     # Model to use for chat completions
@@ -63,11 +59,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$templateFile = "$($PSScriptRoot)/sk-existing-ai.bicep"
+$templateFile = "$($PSScriptRoot)/sk-existing-azureopenai.bicep"
 
 if (!$ResourceGroup)
 {
-    $ResourceGroup = $DeploymentName + "-rg"
+    $ResourceGroup = "rg-" + $DeploymentName
 }
 
 Write-Host "Log into your Azure account"
@@ -82,15 +78,15 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Validating template file..."
-az deployment group validate --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
+az deployment group validate --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
 Write-Host "Deploying..."
 if ($DebugDeployment) {
-    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --debug --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
+    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --debug --parameters name=$DeploymentName packageUri=$PackageUri completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
 }
 else {
-    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri aiService=$AIService completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
+    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel endpoint=$Endpoint apiKey=$ApiKey appServiceSku=$AppServiceSku
 }
