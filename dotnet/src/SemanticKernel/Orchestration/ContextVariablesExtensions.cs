@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 // ReSharper disable once CheckNamespace - Using NS of SKContext
+
 namespace Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>

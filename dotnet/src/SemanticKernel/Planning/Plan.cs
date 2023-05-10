@@ -158,6 +158,7 @@ public sealed class Plan : ISKFunction
 
     /// <summary>
     /// Deserialize a JSON string into a Plan object.
+    /// TODO: the context should never be null, it's required internally
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
     /// <param name="context">The context to use for function registrations.</param>
@@ -165,11 +166,11 @@ public sealed class Plan : ISKFunction
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
     public static Plan FromJson(string json, SKContext? context = null)
     {
-        var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions() { IncludeFields = true }) ?? new Plan(string.Empty);
+        var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
         if (context != null)
         {
-            plan = SetRegisteredFunctions(plan, context);
+            plan = SetAvailableFunctions(plan, context);
         }
 
         return plan;
@@ -178,9 +179,11 @@ public sealed class Plan : ISKFunction
     /// <summary>
     /// Get JSON representation of the plan.
     /// </summary>
-    public string ToJson()
+    /// <param name="indented">Whether to emit indented JSON</param>
+    /// <returns>Plan serialized using JSON format</returns>
+    public string ToJson(bool indented = false)
     {
-        return JsonSerializer.Serialize(this);
+        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
     }
 
     /// <summary>
@@ -401,11 +404,18 @@ public sealed class Plan : ISKFunction
     /// <param name="plan">Plan to set functions for.</param>
     /// <param name="context">Context to use.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetRegisteredFunctions(Plan plan, SKContext context)
+    private static Plan SetAvailableFunctions(Plan plan, SKContext context)
     {
         if (plan.Steps.Count == 0)
         {
-            if (context.IsFunctionRegistered(plan.SkillName, plan.Name, out var skillFunction))
+            if (context.Skills == null)
+            {
+                throw new KernelException(
+                    KernelException.ErrorCodes.SkillCollectionNotSet,
+                    "Skill collection not found in the context");
+            }
+
+            if (context.Skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
             {
                 plan.SetFunction(skillFunction);
             }
@@ -414,7 +424,7 @@ public sealed class Plan : ISKFunction
         {
             foreach (var step in plan.Steps)
             {
-                SetRegisteredFunctions(step, context);
+                SetAvailableFunctions(step, context);
             }
         }
 

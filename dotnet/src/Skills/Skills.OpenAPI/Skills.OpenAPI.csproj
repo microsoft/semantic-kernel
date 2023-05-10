@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/InternalUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -21,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" PublicKey="$(StongNamePublicKey)"/>
+    <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" PublicKey="$(StrongNamePublicKey)" />
   </ItemGroup>
 
   <ItemGroup>

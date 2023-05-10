@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
-using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace
@@ -36,7 +34,6 @@ internal static class RestApiOperationExtensions
                 RestApiOperationParameterStyle.Simple,
                 defaultValue: serverUrlOverride?.AbsoluteUri ?? operation.ServerUrl?.AbsoluteUri)
         };
-
 
         // Register the "payload" parameter to be advertised for Put and Post operations.
         if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)
