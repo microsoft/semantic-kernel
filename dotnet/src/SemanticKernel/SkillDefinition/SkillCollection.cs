@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -166,9 +167,11 @@ public sealed class SkillCollection : ISkillCollection, IDisposable
     /// </summary>
     public void Dispose()
     {
-        foreach (var pair in this._skillCollection)
+        var functions = this._skillCollection.Values.SelectMany(s => s.Values);
+
+        foreach (var function in functions)
         {
-            if (pair.Value is IDisposable disposable)
+            if (function is IDisposable disposable)
             {
                 disposable.Dispose();
             }
