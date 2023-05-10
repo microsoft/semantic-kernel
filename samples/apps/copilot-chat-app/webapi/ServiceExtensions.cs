@@ -19,7 +19,7 @@ internal static class ServicesExtensions
     /// </summary>
     internal static IServiceCollection AddOptions(this IServiceCollection services, ConfigurationManager configuration)
     {
-        // General  configuration
+        // General configuration
         services.AddOptions<ServiceOptions>()
             .Bind(configuration.GetSection(ServiceOptions.PropertyName))
             .ValidateOnStart()
@@ -28,10 +28,17 @@ internal static class ServicesExtensions
         // AI service configurations
         services.AddOptions<AIServiceOptions>(AIServiceOptions.CompletionPropertyName)
             .Bind(configuration.GetSection(AIServiceOptions.CompletionPropertyName))
-            .ValidateOnStart().PostConfigure(TrimStringProperties);
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         services.AddOptions<AIServiceOptions>(AIServiceOptions.EmbeddingPropertyName)
             .Bind(configuration.GetSection(AIServiceOptions.EmbeddingPropertyName))
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
+
+        // Authorization configuration
+        services.AddOptions<AuthorizationOptions>()
+            .Bind(configuration.GetSection(AuthorizationOptions.PropertyName))
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Buffer } from 'buffer';
 import { EnablePluginPayload, initialState, Plugin, Plugins, PluginsState } from './PluginsState';
 
 export const pluginsState = createSlice({
@@ -17,17 +16,15 @@ export const pluginsState = createSlice({
                     plugin = state.MsGraph;
                     break;
                 case Plugins.Jira:
-                    plugin = state.Jira;
-
-                    // TODO: Aman to change with Jira integration
-                    const encodedData = Buffer.from(
-                        `${action.payload.username}:${action.payload.accessToken}`,
-                    ).toString('base64');
-                    authData = encodedData;
-
+                    plugin = state.Jira;                    
+                    authData = `${action.payload.username}:${action.payload.accessToken}`;
                     break;
                 case Plugins.GitHub:
                     plugin = state.GitHub;
+                    break;
+                case Plugins.Klarna:
+                    plugin = state.Klarna;
+                    authData = "klarna-auth-data";
                     break;
             }
 
@@ -47,6 +44,9 @@ export const pluginsState = createSlice({
                     break;
                 case Plugins.GitHub:
                     plugin = state.GitHub;
+                    break;
+                case Plugins.Klarna:
+                    plugin = state.Klarna;
                     break;
             }
 

@@ -125,8 +125,8 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
             modalType="alert"
         >
             <DialogTrigger>
-                <Button aria-label="Connect to plugin" appearance="primary">
-                    Connect
+                <Button aria-label="Enable plugin" appearance="primary">
+                    Enable
                 </Button>
             </DialogTrigger>
             <DialogSurface>
@@ -153,7 +153,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                         </DialogTitle>
                         <DialogContent className={classes.content}>
                             {errorMessage && <Body1 className={classes.error}>{errorMessage}</Body1>}
-                            You are about to connect to {name}.{' '}
+                            You are about to enable {name}.{' '}
                             {authRequirements.scopes && (
                                 <>
                                     To continue, you will authorize the following:{' '}
@@ -271,7 +271,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                 <Button appearance="secondary">Cancel</Button>
                             </DialogTrigger>
                             <Button type="submit" appearance="primary" disabled={!!errorMessage}>
-                                Sign In
+                                Enable
                             </Button>
                         </DialogActions>
                     </DialogBody>

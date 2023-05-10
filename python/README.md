@@ -97,6 +97,7 @@ Python notebooks:
 * [Running AI prompts from file](../samples/notebooks/python/02-running-prompts-from-file.ipynb)
 * [Creating Semantic Functions at runtime (i.e. inline functions)](../samples/notebooks/python/03-semantic-function-inline.ipynb)
 * [Using Context Variables to Build a Chat Experience](../samples/notebooks/python/04-context-variables-chat.ipynb)
+* [Introduction to planners](../samples/notebooks/python/05-using-the-planner.ipynb)
 * [Building Memory with Embeddings](../samples/notebooks/python/06-memory-and-embeddings.ipynb)
 
 # SK Frequently Asked Questions
