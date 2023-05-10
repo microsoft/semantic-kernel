@@ -10,10 +10,12 @@ namespace SemanticKernel.Service.SignalR.Hubs;
 public class ChatHub : Hub
 {
     private readonly ILogger<ChatHub> _logger;
+
     public ChatHub(ILogger<ChatHub> logger)
     {
         this._logger = logger;
     }
+
     public async Task SendMessageAsync(string user, string message)
     {
         await this.Clients.All.SendAsync("SendMessage", user, message);
