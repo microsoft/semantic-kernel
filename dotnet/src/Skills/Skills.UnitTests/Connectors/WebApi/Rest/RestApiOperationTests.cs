@@ -4,10 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Connectors.WebApi.Rest;
+namespace SemanticKernel.Skills.UnitTests.Connectors.WebApi.Rest;
 
 public class RestApiOperationTests
 {
