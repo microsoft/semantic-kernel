@@ -46,11 +46,4 @@ public class DocumentMemoryOptions
     /// </summary>
     [Range(0, int.MaxValue)]
     public int FileSizeLimit { get; set; } = 1000000;
-
-    /// <summary>
-    /// Similarity threshold to avoid document memory duplication when importing documents to memory.
-    /// The higher the value, the more document memories can be similar without being eliminated as duplicates.
-    /// </summary>
-    [Range(0.0, 1.0)]
-    public double DeduplicationSimilarityThreshold { get; set; } = 0.8;
 }
