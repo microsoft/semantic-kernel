@@ -3,10 +3,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Moq;
+using SemanticKernel.UnitTests.XunitHelpers;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.SkillDefinition;
@@ -62,6 +66,43 @@ public sealed class SKFunctionTests3
 
         // Assert
         Assert.Equal(3, count);
+    }
+
+    [Fact]
+    public async Task ItCanImportNativeFunctionsAsync()
+    {
+        // Arrange
+        var variables = new ContextVariables();
+        var skills = new SkillCollection();
+        var logger = TestConsoleLogger.Log;
+        var cancellationToken = default(CancellationToken);
+        var memory = new Mock<ISemanticTextMemory>();
+        var context = new SKContext(variables, memory.Object, skills.ReadOnlySkillCollection, logger, cancellationToken);
+
+        // Note: the function doesn't have any SK attributes
+        async Task<SKContext> ExecuteAsync(SKContext contextIn)
+        {
+            Assert.Equal("NO", contextIn["done"]);
+            contextIn["canary"] = "YES";
+
+            await Task.Delay(0);
+            return contextIn;
+        }
+
+        // Act
+        context["done"] = "NO";
+        ISKFunction function = SKFunction.FromNativeFunction(
+            nativeFunction: ExecuteAsync,
+            parameters: null,
+            description: "description",
+            skillName: "skillName",
+            functionName: "functionName");
+
+        SKContext result = await function.InvokeAsync(context, cancellationToken: cancellationToken);
+
+        // Assert
+        Assert.Equal("YES", context["canary"]);
+        Assert.Equal("YES", result["canary"]);
     }
 
     private sealed class InvalidSkill
