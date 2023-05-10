@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 
 /// <summary>
-/// Interface for OpenApi document classes.
+/// Interface for OpenApi document parser classes.
 /// </summary>
 internal interface IOpenApiDocumentParser
 {
