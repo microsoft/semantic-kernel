@@ -32,6 +32,19 @@ def test_now():
         dt.now.return_value = test_mock_now
         assert skill.now() == "Sunday, January 12, 2031 12:24 PM"
 
+def test_days_ago():
+    skill = TimeSkill()
+
+    with mock.patch("datetime.datetime", wraps=datetime.datetime) as dt:
+        dt.now.return_value = test_mock_now
+        assert skill.days_ago(1) == "Saturday, January 11, 2031"
+
+def test_last_matching_day():
+    skill = TimeSkill()
+
+    with mock.patch("datetime.datetime", wraps=datetime.datetime) as dt:
+        dt.now.return_value = test_mock_now
+        assert skill.last_matching_day("Friday") == "Friday, January 10, 2031"
 
 def test_utc_now():
     skill = TimeSkill()
