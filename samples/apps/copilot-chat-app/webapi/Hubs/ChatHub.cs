@@ -16,10 +16,10 @@ public class ChatHub : Hub
         this._logger = logger;
     }
 
-    public async Task SendMessageAsync(string user, string message)
+    public async Task SendConversationToOtherUsersAsync(object message)
     {
-        await this.Clients.All.SendAsync("SendMessage", user, message);
-        this._logger.LogInformation("Called SendMessageAsync");
+        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync("SendMessage", message);
+        this._logger.LogInformation("Called SendConversationToOtherUsersAsync");
     }
 
     public async Task SendMessageToAllUsersExceptSelfAsync(string ClientSideCallBackName, string message)
