@@ -37,7 +37,7 @@ public sealed class Program
         // Add AppInsights telemetry
         builder.Services
             .AddHttpContextAccessor()
-            .AddApplicationInsightsTelemetry( options => { options.ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]; })
+            .AddApplicationInsightsTelemetry(options => { options.ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]; })
             .AddSingleton<ITelemetryInitializer, AppInsightsUserTelemetryInitializerService>()
             .AddLogging(logBuilder => logBuilder.AddApplicationInsights())
             .AddSingleton<ITelemetryService, AppInsightsTelemetryService>();
