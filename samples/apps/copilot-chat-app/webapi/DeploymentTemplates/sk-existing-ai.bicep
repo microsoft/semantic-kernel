@@ -6,7 +6,6 @@ Bicep template for deploying Semantic Kernel to Azure as a web app service witho
 
 Resources to add:
 - CosmosDB
-- AzureSpeech
 - vNet + Network security group
 */
 
@@ -48,7 +47,7 @@ param apiKey string = ''
 #disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
 var location = resourceGroup().location       // more intelligible deployment experience at the cost of some flexibility
 
-@description('Name for the deployment - Made unique')
+@description('Hash of the resource group ID')
 var rgIdHash = uniqueString(resourceGroup().id)
 
 @description('Name for the deployment - Made unique')
@@ -144,6 +143,14 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'MemoriesStore:Qdrant:Host'
           value: 'http://${aci.properties.ipAddress.fqdn}'
+        }
+        {
+          name: 'AzureSpeech:Region'
+          value: location
+        }
+        {
+          name: 'AzureSpeech:Key'
+          value: speechAccount.listKeys().key1
         }
         {
           name: 'Kestrel:Endpoints:Https:Url'
@@ -301,6 +308,25 @@ resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = 
         }
       }
     ]
+  }
+}
+
+resource speechAccount 'Microsoft.CognitiveServices/accounts@2022-12-01' = {
+  name: 'cog-${uniqueName}'
+  location: location
+  sku: {
+    name: 'S0'
+  }
+  kind: 'SpeechServices'
+  identity: {
+    type: 'None'
+  }
+  properties: {
+    customSubDomainName: 'cog-${uniqueName}'
+    networkAcls: {
+      defaultAction: 'Allow'
+    }
+    publicNetworkAccess: 'Enabled'
   }
 }
 

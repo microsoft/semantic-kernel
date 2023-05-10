@@ -7,14 +7,15 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
-namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest;
+namespace Microsoft.SemanticKernel.Skills.OpenAPI;
 
 /// <summary>
 /// Runs REST API operation represented by RestApiOperation model class.
 /// </summary>
-public sealed class RestApiOperationRunner : IRestApiOperationRunner
+internal sealed class RestApiOperationRunner
 {
     private const string MediaTypeApplicationJson = "application/json";
     private const string MediaTypeTextPlain = "text/plain";

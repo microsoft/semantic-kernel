@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace
