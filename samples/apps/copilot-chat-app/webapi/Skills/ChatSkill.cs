@@ -250,8 +250,27 @@ public class ChatSkill
         {
             // Create a plan and set it in context for approval.
             Plan plan = await this._planner.CreatePlanAsync(plannerContext.Variables.Input);
+
             if (plan.Steps.Count > 0)
             {
+                SKContext planContext = await plan.InvokeAsync(plannerContext);
+
+                // Merge any variables from the context into plan's state 
+                // as these will be used on plan execution
+                var variables = context.Variables;
+                foreach (var param in plan.State)
+                {
+                    if (param.Key.Equals("INPUT", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (variables.Get(param.Key, out var value))
+                    {
+                        plan.State.Set(param.Key, value);
+                    }
+                }
+
                 this._proposedPlan = plan;
             }
         }

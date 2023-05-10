@@ -9,16 +9,20 @@ export const isPlan = (object: string) => {
 
 export const parsePlan = (response: string): IPlan | null => {
     if (isPlan(response)) {
-        const parsedResponse = JSON.parse(response);
-        const plan = parsedResponse.proposedPlan;
-        const userIntentPrefix = 'User intent: ';
-        const index = plan.description.indexOf(userIntentPrefix);
+        try {
+            const parsedResponse = JSON.parse(response);
+            const plan = parsedResponse.proposedPlan;
+            const userIntentPrefix = 'User intent: ';
+            const index = plan.description.indexOf(userIntentPrefix);
 
-        return {
-            userIntent: plan.description,
-            description: index !== -1 ? plan.description.substring(index + userIntentPrefix.length).trim() : '',
-            steps: extractPlanSteps(plan),
-        };
+            return {
+                userIntent: plan.description,
+                description: index !== -1 ? plan.description.substring(index + userIntentPrefix.length).trim() : '',
+                steps: extractPlanSteps(plan),
+            };
+        } catch (e: any) {
+            console.error('Error parsing plan: ' + response);
+        }
     }
     return null;
 };
