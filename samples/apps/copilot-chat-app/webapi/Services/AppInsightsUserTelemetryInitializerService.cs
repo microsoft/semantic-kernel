@@ -21,7 +21,7 @@ public class AppInsightsUserTelemetryInitializerService : ITelemetryInitializer
         }
 
         var userId = AppInsightsTelemetryService.GetUserIdFromHttpContext(this._contextAccessor);
-        
+
         telemetry.Context.User.Id = userId;
         requestTelemetry.Properties["userId"] = userId;
     }

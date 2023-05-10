@@ -133,7 +133,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
         try
         {
             // Run the function.
-           result = await kernel.RunAsync(contextVariables, function!);
+            result = await kernel.RunAsync(contextVariables, function!);
         }
         finally
         {
