@@ -26,6 +26,10 @@ torch = "^2.0.0"
 transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
 
+
+[tool.poetry.group.weaviate.dependencies]
+weaviate-client = "^3.18.0"
+
 [tool.isort]
 profile = "black"
 
