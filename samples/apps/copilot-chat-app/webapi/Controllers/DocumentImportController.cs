@@ -170,9 +170,9 @@ public class DocumentImportController : ControllerBase
         var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
         var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global
             ? this._options.GlobalDocumentCollectionName
-            : string.IsNullOrEmpty(documentImportForm.UserId)
+            : string.IsNullOrEmpty(documentImportForm.ChatId)
                 ? this._options.GlobalDocumentCollectionName
-                : this._options.UserDocumentCollectionNamePrefix + documentImportForm.UserId;
+                : this._options.ChatDocumentCollectionNamePrefix + documentImportForm.ChatId;
 
         // Split the document into lines of text and then combine them into paragraphs.
         // Note that this is only one of many strategies to chunk documents. Feel free to experiment with other strategies.

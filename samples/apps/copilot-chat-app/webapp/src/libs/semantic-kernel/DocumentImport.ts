@@ -4,10 +4,12 @@ export class DocumentImportService {
     constructor(private readonly serviceUrl: string) { }
 
     importDocumentAsync = async (
+        chatId: string,
         document: File,
         accessToken: string,
     ) => {
         const formData = new FormData();
+        formData.append('chatId', chatId);
         formData.append('formFile', document);
         
         const commandPath = `importDocument`;

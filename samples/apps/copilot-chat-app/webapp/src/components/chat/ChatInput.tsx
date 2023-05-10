@@ -10,7 +10,8 @@ import { Constants } from '../../Constants';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
 import { useDocumentImportService } from '../../libs/semantic-kernel/useDocumentImport';
-import { useAppDispatch } from '../../redux/app/hooks';
+import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
+import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { useSKSpeechService } from './../../libs/semantic-kernel/useSKSpeech';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
@@ -73,6 +74,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const [documentImporting, SetDocumentImporting] = React.useState(false);
     const documentImportService = useDocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
+    const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     React.useEffect(() => {
         if (recognizer) return;
@@ -109,6 +111,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
             try {
                 SetDocumentImporting(true);
                 await documentImportService.importDocumentAsync(
+                    selectedId,
                     documentFile,
                     await AuthHelper.getSKaaSAccessToken(instance)
                 );
