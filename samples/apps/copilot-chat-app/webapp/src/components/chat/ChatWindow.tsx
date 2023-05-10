@@ -128,7 +128,7 @@ export const ChatWindow: React.FC = () => {
                         <Persona
                             key={'SK Bot'}
                             size="medium"
-                            avatar={{ image: { src: conversations[selectedId].botProfilePicture } }}
+                            avatar={{ image: { src: conversations[selectedId].botProfilePicture }}}
                             presence={{ status: 'available' }}
                         />
                         {isEditing ? (
@@ -138,7 +138,7 @@ export const ChatWindow: React.FC = () => {
                                 {chatName}
                             </Label>
                         )}
-                        <Tooltip content="Name the chat" relationship="label">
+                        <Tooltip content={isEditing ? "Save conversation name" : "Edit conversation name"} relationship="label">
                             <Button
                                 icon={isEditing ? <Save24Regular /> : <EditRegular />}
                                 appearance="transparent"
