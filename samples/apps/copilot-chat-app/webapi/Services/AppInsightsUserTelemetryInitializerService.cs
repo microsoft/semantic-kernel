@@ -6,6 +6,10 @@ using Microsoft.ApplicationInsights.Extensibility;
 
 namespace SemanticKernel.Service.Services;
 
+/// <summary>
+/// A telemetry initializer used by the TelemetryClient to fill in data for requests.
+/// This implementation injects the id of the current authenticated user (if there is one).
+/// </summary>
 public class AppInsightsUserTelemetryInitializerService : ITelemetryInitializer
 {
     public AppInsightsUserTelemetryInitializerService(IHttpContextAccessor httpContextAccessor)
@@ -13,6 +17,7 @@ public class AppInsightsUserTelemetryInitializerService : ITelemetryInitializer
         this._contextAccessor = httpContextAccessor;
     }
 
+    /// <inheritdoc/>
     public void Initialize(ITelemetry telemetry)
     {
         if (telemetry is not RequestTelemetry requestTelemetry)
