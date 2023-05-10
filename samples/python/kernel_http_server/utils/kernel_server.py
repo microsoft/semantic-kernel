@@ -45,7 +45,9 @@ class KernelServer:
         if result.error_occurred:
             logging.error("Error occurred: %s", result.error)
             return func.HttpResponse(
-                body=json.dumps({"error": result.error}), mimetype="application/json", status_code=500
+                body=json.dumps({"error": result.error}),
+                mimetype="application/json",
+                status_code=500,
             )
 
         response = {"value": result.result}
