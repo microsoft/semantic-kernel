@@ -46,7 +46,6 @@ public sealed class Program
 
         // Configure middleware and endpoints
         WebApplication app = builder.Build();
-        app.UseDefaultFiles();
 
         app.UseCors();
         app.UseAuthentication();
