@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
@@ -23,6 +24,28 @@ public class OrganizationHierarchySkillTests : IDisposable
     {
         this._logger = new XunitLogger<SKContext>(output);
         this._context = new SKContext(new ContextVariables(), NullMemory.Instance, null, this._logger, CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task GetMyDirectReportsEmailAsyncSucceedsAsync()
+    {
+        // Arrange
+        string[] anyDirectReportsEmail = { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+        Mock<IOrganizationHierarchyConnector> connectorMock = new Mock<IOrganizationHierarchyConnector>();
+        connectorMock.Setup(c => c.GetDirectReportsEmailAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyDirectReportsEmail);
+        OrganizationHierarchySkill target = new OrganizationHierarchySkill(connectorMock.Object);
+
+        // Act
+        IEnumerable<string> actual = await target.GetMyDirectReportsEmailAsync(this._context);
+
+        // Assert
+        var set = new HashSet<string>(actual);
+        foreach (string directReportEmail in anyDirectReportsEmail)
+        {
+            Assert.Contains(directReportEmail, set);
+        }
+
+        connectorMock.VerifyAll();
     }
 
     [Fact]
