@@ -14,6 +14,7 @@ const useClasses = makeStyles({
     inputs: {
         display: 'flex',
         ...shorthands.gap('8px'),
+        flexWrap: 'wrap',
     },
     bar: {
         ...shorthands.borderRadius(tokens.borderRadiusMedium),
