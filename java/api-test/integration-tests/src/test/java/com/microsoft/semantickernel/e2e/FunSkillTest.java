@@ -22,10 +22,12 @@ public class FunSkillTest extends AbstractKernelTest {
     public void tellAJoke() throws IOException {
         Mono<CompletionSKContext> result =
                 buildTextCompletionKernel()
-                    .importSkills("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
-                        "../../samples/skills", "FunSkill"))
-                    .getFunction("joke", CompletionSKFunction.class)
-                    .invokeAsync("time travel to dinosaur age");
+                        .importSkills(
+                                "FunSkill",
+                                KernelExtensions.importSemanticSkillFromDirectory(
+                                        "../../samples/skills", "FunSkill"))
+                        .getFunction("joke", CompletionSKFunction.class)
+                        .invokeAsync("time travel to dinosaur age");
 
         if (result != null) {
             LOGGER.info(result.block().getResult());

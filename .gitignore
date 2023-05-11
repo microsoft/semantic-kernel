@@ -466,4 +466,5 @@ data/chatstore*
 
 # Java build
 java/**/target
+samples/java/**/target
 java/.mvn/wrapper/maven-wrapper.jar

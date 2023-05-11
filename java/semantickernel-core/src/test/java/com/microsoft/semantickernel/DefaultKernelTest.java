@@ -26,13 +26,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 public class DefaultKernelTest {
 
     @Test
-    void contextVariableTest() throws ExecutionException, InterruptedException, TimeoutException {
+    void contextVariableTest() {
         String model = "a-model";
 
         List<Tuple2<String, String>> responses =
@@ -93,10 +91,12 @@ public class DefaultKernelTest {
         String model = "a-model-name";
         Kernel kernel = buildKernel(model, client);
 
-        CompletionSKFunction function = kernel
-            .importSkills("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
-                "../../samples/skills", "FunSkill"))
-            .getFunction("joke", CompletionSKFunction.class);
+        CompletionSKFunction function =
+                kernel.importSkills(
+                                "FunSkill",
+                                KernelExtensions.importSemanticSkillFromDirectory(
+                                        "../../samples/skills", "FunSkill"))
+                        .getFunction("joke", CompletionSKFunction.class);
 
         Mono<CompletionSKContext> mono = function.invokeAsync("time travel to dinosaur age");
         CompletionSKContext result = mono.block();

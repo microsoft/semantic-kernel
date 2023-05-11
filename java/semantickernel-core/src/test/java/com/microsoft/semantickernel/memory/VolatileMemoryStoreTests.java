@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.memory;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 

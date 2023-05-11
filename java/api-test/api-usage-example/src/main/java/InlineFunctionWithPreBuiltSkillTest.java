@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft. All rights reserved.
-
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.openai.AzureOpenAiClient;
@@ -11,20 +10,22 @@ import com.microsoft.semantickernel.textcompletion.CompletionFunctionDefinition;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Properties;
 
 public class InlineFunctionWithPreBuiltSkillTest {
     public static final String AZURE_CONF_PROPERTIES = "conf.properties";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InlineFunctionWithPreBuiltSkillTest.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(InlineFunctionWithPreBuiltSkillTest.class);
 
     private static final String MODEL = "text-davinci-003";
 
@@ -85,27 +86,29 @@ public class InlineFunctionWithPreBuiltSkillTest {
     public static void main(String[] args) throws IOException {
         String apiKey = getToken(AZURE_CONF_PROPERTIES);
 
-        OpenAIAsyncClient client = new AzureOpenAiClient(new OpenAIClientBuilder()
-                .endpoint(getEndpoint(AZURE_CONF_PROPERTIES))
-                .credential(new AzureKeyCredential(apiKey))
-                .buildAsyncClient());
+        OpenAIAsyncClient client =
+                new AzureOpenAiClient(
+                        new OpenAIClientBuilder()
+                                .endpoint(getEndpoint(AZURE_CONF_PROPERTIES))
+                                .credential(new AzureKeyCredential(apiKey))
+                                .buildAsyncClient());
 
-        TextCompletion textCompletion = SKBuilders.textCompletionService()
-                .build(client, MODEL);
+        TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, MODEL);
 
         String prompt = "{{$input}}\nSummarize the content above.";
-        CompletionFunctionDefinition summarizeDefinition = SKBuilders.completionFunctions()
-                .createFunction(
-                        prompt,
-                        "summarize",
-                        null,
-                        null,
-                        2000,
-                        0.2,
-                        0.5,
-                        0,
-                        0,
-                        new ArrayList<>());
+        CompletionFunctionDefinition summarizeDefinition =
+                SKBuilders.completionFunctions()
+                        .createFunction(
+                                prompt,
+                                "summarize",
+                                null,
+                                null,
+                                2000,
+                                0.2,
+                                0.5,
+                                0,
+                                0,
+                                new ArrayList<>());
 
         KernelConfig kernelConfig =
                 new KernelConfig.Builder()
@@ -113,14 +116,21 @@ public class InlineFunctionWithPreBuiltSkillTest {
                         .addSkill(summarizeDefinition)
                         .build();
 
-        Kernel kernel = SKBuilders.kernel()
-                .setKernelConfig(kernelConfig)
-                .build();
+        Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
 
-        CompletionSKFunction summarize = kernel.getSkillCollection().getFunction("summarize", CompletionSKFunction.class);
+        CompletionSKFunction summarize =
+                kernel.getSkillCollection().getFunction("summarize", CompletionSKFunction.class);
 
-        Mono<CompletionSKContext> result = summarize.invokeAsync(TEXT_TO_SUMMARIZE);
+        if (summarize == null) {
+            throw new RemoteException("No function");
+        }
 
-        LOGGER.info("Result: " + result.block().getResult());
+        CompletionSKContext context = summarize.invokeAsync(TEXT_TO_SUMMARIZE).block();
+
+        if (context != null) {
+            LOGGER.info("Result: " + context.getResult());
+        } else {
+            LOGGER.error("Null result");
+        }
     }
 }

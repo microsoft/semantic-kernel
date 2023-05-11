@@ -5,51 +5,21 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.microsoft.semantickernel</groupId>
-        <artifactId>semantickernel-parent</artifactId>
+        <groupId>com.microsoft.semantickernel.test</groupId>
+        <artifactId>api-test</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>semantickernel-core</artifactId>
+    <artifactId>integration-tests</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
-            <artifactId>semantickernel-api</artifactId>
+            <artifactId>semantickernel-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
-            <artifactId>openai-sdk</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-core-http-netty</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-ai-openai</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
-            <artifactId>openai-sdk</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
 
 
         <dependency>

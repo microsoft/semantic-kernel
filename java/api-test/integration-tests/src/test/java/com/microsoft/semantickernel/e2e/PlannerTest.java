@@ -21,10 +21,14 @@ public class PlannerTest extends AbstractKernelTest {
     @EnabledIf("isAzureTestEnabled")
     public void executeInlineFunction() throws IOException {
         Kernel kernel = buildTextCompletionKernel();
-        kernel.importSkills("SummarizeSkill", KernelExtensions.importSemanticSkillFromDirectory(
-          "../../samples/skills", "SummarizeSkill"));
-        kernel.importSkills("WriterSkill", KernelExtensions.importSemanticSkillFromDirectory(
-            "../../samples/skills", "WriterSkill"));
+        kernel.importSkills(
+                "SummarizeSkill",
+                KernelExtensions.importSemanticSkillFromDirectory(
+                        "../../samples/skills", "SummarizeSkill"));
+        kernel.importSkills(
+                "WriterSkill",
+                KernelExtensions.importSemanticSkillFromDirectory(
+                        "../../samples/skills", "WriterSkill"));
 
         SequentialPlanner planner = new SequentialPlanner(kernel, null, null);
 

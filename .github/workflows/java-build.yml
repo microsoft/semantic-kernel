@@ -19,5 +19,6 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           cache: maven
+
       - name: Build with Maven
         run: cd java && ./mvnw -B -Pbug-check clean install --file pom.xml

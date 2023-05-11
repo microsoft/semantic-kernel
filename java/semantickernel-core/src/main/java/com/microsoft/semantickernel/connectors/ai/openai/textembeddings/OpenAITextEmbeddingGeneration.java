@@ -30,8 +30,7 @@ public class OpenAITextEmbeddingGeneration extends ClientBase
         return Flux.fromIterable(data)
                 .flatMap(
                         text -> {
-
-                            EmbeddingsOptions options =null;
+                            EmbeddingsOptions options = null;
 
                             return getClient()
                                     .getEmbeddings(getModelId(), options)

@@ -51,8 +51,7 @@ public enum BuildersSingleton {
                             FALLBACK_SKILL_COLLECTION_BUILDER_CLASS);
             promptTemplate =
                     ServiceLoadUtil.findServiceLoader(
-                        PromptTemplate.Builder.class,
-                        FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS);
+                            PromptTemplate.Builder.class, FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS);
         } catch (Throwable e) {
             Logger LOGGER = LoggerFactory.getLogger(BuildersSingleton.class);
             LOGGER.error("Failed to discover Semantic Kernel Builders", e);
@@ -94,5 +93,7 @@ public enum BuildersSingleton {
         return readOnlySkillCollection;
     }
 
-    public PromptTemplate.Builder getPromptTemplateBuilder() { return promptTemplate; }
+    public PromptTemplate.Builder getPromptTemplateBuilder() {
+        return promptTemplate;
+    }
 }

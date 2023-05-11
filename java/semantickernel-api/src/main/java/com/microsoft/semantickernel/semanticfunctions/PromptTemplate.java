@@ -30,6 +30,6 @@ public interface PromptTemplate {
             ReadOnlySKContext executionContext, PromptTemplateEngine promptTemplateEngine);
 
     public interface Builder {
-      public PromptTemplate build(String promptTemplate, PromptTemplateConfig config);
+        public PromptTemplate build(String promptTemplate, PromptTemplateConfig config);
     }
 }

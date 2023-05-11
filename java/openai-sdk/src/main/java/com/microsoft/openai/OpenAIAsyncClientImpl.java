@@ -69,7 +69,8 @@ class OpenAIAsyncClientImpl implements OpenAIAsyncClient {
                                         BinaryData.fromObject(embeddingsOptions),
                                         new RequestOptions()
                                                 .addHeader(
-                                                        HttpHeaderName.AUTHORIZATION, "Bearer " + this.apiKey),
+                                                        HttpHeaderName.AUTHORIZATION,
+                                                        "Bearer " + this.apiKey),
                                         context))
                 .flatMap(FluxUtil::toMono)
                 .map(protocolMethodData -> protocolMethodData.toObject(Embeddings.class));
@@ -87,7 +88,8 @@ class OpenAIAsyncClientImpl implements OpenAIAsyncClient {
                                         BinaryData.fromObject(completionsOptions),
                                         new RequestOptions()
                                                 .addHeader(
-                                                        HttpHeaderName.AUTHORIZATION, "Bearer " + this.apiKey),
+                                                        HttpHeaderName.AUTHORIZATION,
+                                                        "Bearer " + this.apiKey),
                                         context))
                 .flatMap(FluxUtil::toMono)
                 .map(protocolMethodData -> protocolMethodData.toObject(Completions.class));
@@ -105,7 +107,8 @@ class OpenAIAsyncClientImpl implements OpenAIAsyncClient {
                                         BinaryData.fromObject(chatCompletionsOptions),
                                         new RequestOptions()
                                                 .addHeader(
-                                                        HttpHeaderName.AUTHORIZATION, "Bearer " + this.apiKey),
+                                                        HttpHeaderName.AUTHORIZATION,
+                                                        "Bearer " + this.apiKey),
                                         context))
                 .flatMap(FluxUtil::toMono)
                 .map(protocolMethodData -> protocolMethodData.toObject(ChatCompletions.class));

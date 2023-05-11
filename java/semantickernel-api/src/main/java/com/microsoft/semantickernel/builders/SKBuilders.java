@@ -35,7 +35,7 @@ public class SKBuilders {
         return BuildersSingleton.INST.getReadOnlySkillCollection();
     }
 
-    public static PromptTemplate.Builder promptTemplate () {
+    public static PromptTemplate.Builder promptTemplate() {
         return BuildersSingleton.INST.getPromptTemplateBuilder();
     }
 }

@@ -24,7 +24,6 @@
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
         <module>semantickernel-core</module>
-        <module>external-api-test</module>
     </modules>
 
     <dependencyManagement>
