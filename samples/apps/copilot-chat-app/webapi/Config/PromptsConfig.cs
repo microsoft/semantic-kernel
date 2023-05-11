@@ -54,6 +54,11 @@ public class PromptsConfig
             throw new ArgumentOutOfRangeException(nameof(this.ResponseTokenLimit), $"{nameof(this.ResponseTokenLimit)} is not valid: '{this.ResponseTokenLimit}' is not greater than 0.");
         }
 
+        if (this.ResponseTokenLimit > this.CompletionTokenLimit)
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.ResponseTokenLimit), $"{nameof(this.ResponseTokenLimit)} is not valid: '{this.ResponseTokenLimit}' is greater than '{this.CompletionTokenLimit}'.");
+        }
+
         Validate(this.KnowledgeCutoffDate, nameof(this.KnowledgeCutoffDate));
         Validate(this.InitialBotMessage, nameof(this.InitialBotMessage));
         Validate(this.SystemDescription, nameof(this.SystemDescription));
