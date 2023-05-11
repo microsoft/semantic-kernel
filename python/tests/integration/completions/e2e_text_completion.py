@@ -368,3 +368,4 @@ async def summarize_conversation_using_skill(kernel: sk.Kernel):
     output = str(summary).strip().lower()
     print(output)
     assert ("john" in output and "jane" in output)
+    assert (len(output) < len(ChatTranscript))
