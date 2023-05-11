@@ -19,8 +19,16 @@ public class PromptSettings
         this._promptsConfig = promptsConfig;
     }
 
-    internal int ResponseTokenLimit { get; } = 1024;
-    internal int CompletionTokenLimit { get; } = 8192;
+    /// <summary>
+    /// The token count left for the model to generate text after the prompt.
+    /// </summary>
+    internal int ResponseTokenLimit => this._promptsConfig.ResponseTokenLimit;
+
+    /// <summary>
+    /// Token limit of the chat model.
+    /// </summary>
+    /// <remarks>https://platform.openai.com/docs/models/overview for token limits.</remarks>
+    internal int CompletionTokenLimit => this._promptsConfig.CompletionTokenLimit;
 
     /// <summary>
     /// Weight of memories in the contextual part of the final prompt.

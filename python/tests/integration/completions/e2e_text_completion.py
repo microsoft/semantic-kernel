@@ -8,6 +8,7 @@ logger = logging.getLogger()
 
 
 async def retry(func, retries=15, delay=1):
+async def retry(func, retries=15, delay=1):
     for i in range(retries):
         try:
             result = str(await func())
