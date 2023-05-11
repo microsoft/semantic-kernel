@@ -25,7 +25,16 @@ export const conversationsSlice = createSlice({
             const newId = action.payload.id ?? '';
             state.conversations = { [newId]: action.payload, ...state.conversations };
         },
-        updateConversation: (
+        updateConversationFromUser: (
+            state: ConversationsState,
+            action: PayloadAction<{ message: IChatMessage; chatId?: string }>,
+        ) => {
+            const { message, chatId } = action.payload;
+            const id = chatId ?? state.selectedId;
+            state.conversations[id].messages.push(message);
+            frontLoadChat(state, id);
+        },
+        updateConversationFromServer: (
             state: ConversationsState,
             action: PayloadAction<{ message: IChatMessage; chatId?: string }>,
         ) => {
@@ -51,7 +60,8 @@ export const {
     editConversationTitle,
     setSelectedConversation,
     addConversation,
-    updateConversation,
+    updateConversationFromUser,
+    updateConversationFromServer,
     updateMessageState,
 } = conversationsSlice.actions;
 

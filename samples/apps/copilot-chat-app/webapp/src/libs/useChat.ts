@@ -11,7 +11,7 @@ import {
     addConversation,
     setConversations,
     setSelectedConversation,
-    updateConversation,
+    updateConversationFromUser,
 } from '../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from './auth/AuthHelper';
 import { useConnectors } from './connectors/useConnectors';
@@ -153,7 +153,7 @@ export const useChat = () => {
                 state: isPlan(result.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
             };
 
-            dispatch(updateConversation({ message: messageResult, chatId: chatId }));
+            dispatch(updateConversationFromUser({ message: messageResult, chatId: chatId }));
         } catch (e: any) {
             const errorMessage = `Unable to generate bot response. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
