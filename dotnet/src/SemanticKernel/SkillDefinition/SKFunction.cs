@@ -101,7 +101,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         IEnumerable<ParameterView>? parameters = null,
         ILogger? log = null)
     {
-        MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, null, false, log);
+        MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, false, log);
 
         return new SKFunction(
             delegateType: methodDetails.Type,
@@ -725,7 +725,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
             $"Function '{method.Name}' has an invalid signature not supported by the kernel.");
     }
 
-    [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate result can be null")]
+    /// <summary>
+    /// Compare a method against the given signature type using Delegate.CreateDelegate.
+    /// </summary>
+    /// <param name="instance">Optional object containing the given method</param>
+    /// <param name="userMethod">Method to inspect</param>
+    /// <param name="delegateDefinition">Definition of the delegate, i.e. method signature</param>
+    /// <param name="result">The delegate to use, if the function returns TRUE, otherwise NULL</param>
+    /// <returns>True if the method to inspect matches the delegate type</returns>
+    [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate can return NULL")]
     private static bool EqualMethods(
         object? instance,
         MethodInfo userMethod,
