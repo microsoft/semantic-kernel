@@ -3,6 +3,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
@@ -10,6 +11,9 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Model;
+using SemanticKernel.Service.Skills.OpenApiSkills.GitHubSkill.Model;
+using SemanticKernel.Service.Skills.OpenApiSkills.JiraSkill.Model;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Skills;
@@ -47,14 +51,14 @@ public class ChatSkill
     private readonly PromptSettings _promptSettings;
 
     /// <summary>
-    /// A factory for planners that gather additional information for the user.
+    /// CopilotChat's planner to gather additional information for the chat context.
     /// </summary>
-    private readonly PlannerFactoryAsync _plannerFactoryAsync;
+    private readonly CopilotChatPlanner _planner;
 
     /// <summary>
     /// Options for the planner.
     /// </summary>
-    private readonly SequentialPlannerOptions _plannerOptions;
+    private readonly PlannerOptions _plannerOptions;
 
     /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
@@ -64,8 +68,8 @@ public class ChatSkill
         ChatMessageRepository chatMessageRepository,
         ChatSessionRepository chatSessionRepository,
         PromptSettings promptSettings,
-        PlannerFactoryAsync plannerFactory,
-        SequentialPlannerOptions plannerOptions,
+        CopilotChatPlanner planner,
+        PlannerOptions plannerOptions,
         ILogger logger)
     {
         this._logger = logger;
@@ -73,7 +77,7 @@ public class ChatSkill
         this._chatMessageRepository = chatMessageRepository;
         this._chatSessionRepository = chatSessionRepository;
         this._promptSettings = promptSettings;
-        this._plannerFactoryAsync = plannerFactory;
+        this._planner = planner;
         this._plannerOptions = plannerOptions;
     }
 
@@ -116,7 +120,8 @@ public class ChatSkill
 
         if (result.ErrorOccurred)
         {
-            context.Fail(result.LastErrorDescription, result.LastException);
+            context.Log.LogError("{0}: {1}", result.LastErrorDescription, result.LastException);
+            context.Fail(result.LastErrorDescription);
             return string.Empty;
         }
 
@@ -153,7 +158,7 @@ public class ChatSkill
                 SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName),
                 latestMessage.ToString(),
                 limit: 100,
-                minRelevanceScore: 0.8);
+                minRelevanceScore: this._promptSettings.SemanticMemoryMinRelevance);
             await foreach (var memory in results)
             {
                 relevantMemories.Add(memory);
@@ -186,7 +191,7 @@ public class ChatSkill
     }
 
     /// <summary>
-    /// Extract relevant additional knowledge using a Semantic Kernel planner.
+    /// Extract relevant additional knowledge using a planner.
     /// </summary>
     [SKFunction("Acquire external information")]
     [SKFunctionName("AcquireExternalInformation")]
@@ -199,21 +204,37 @@ public class ChatSkill
             return string.Empty;
         }
 
-        // Skills run in the planner may modify the SKContext.
-        // Clone the context to avoid modifying the original context variables.
+        // Skills run in the planner may modify the SKContext. Clone the context to avoid
+        // modifying the original context variables.
         SKContext plannerContext = Utilities.CopyContextWithVariablesClone(context);
 
         // Use the user intent message as the input to the plan.
         plannerContext.Variables.Update(plannerContext["userIntent"]);
 
         // Create a plan and run it.
-        Plan plan = await (await this._plannerFactoryAsync(this._kernel))
-            .CreatePlanAsync(plannerContext.Variables.Input);
+        Plan plan = await this._planner.CreatePlanAsync(plannerContext.Variables.Input);
+        if (plan.Steps.Count <= 0)
+        {
+            return string.Empty;
+        }
 
-        SKContext planContext = await plan.InvokeAsync(context: plannerContext);
+        SKContext planContext = await plan.InvokeAsync(plannerContext);
+        if (planContext.ErrorOccurred)
+        {
+            this._logger.LogWarning("{0}: {1}", planContext.LastErrorDescription, planContext.LastException);
+            return string.Empty;
+        }
+
+        int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
         // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
-        if (!this.TryExtractJsonFromPlanResult(planContext.Variables.Input, out string planResult))
+        bool extractJsonFromOpenApi = this.TryExtractJsonFromOpenApiPlanResult(planContext.Variables.Input, out string planResult);
+        if (extractJsonFromOpenApi)
+        {
+            int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
+            planResult = this.OptimizeOpenApiSkillJson(planResult, relatedInformationTokenLimit, plan);
+        }
+        else
         {
             // If not, use result of the plan execution result directly.
             planResult = planContext.Variables.Input;
@@ -222,7 +243,6 @@ public class ChatSkill
         string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
 
         // Adjust the token limit using the number of tokens in the information text.
-        int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
         tokenLimit -= Utilities.TokenCount(informationText);
         context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
 
@@ -280,6 +300,14 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
+        // Log exception and strip it from the context, leaving the error description.
+        SKContext RemoveExceptionFromContext(SKContext chatContext)
+        {
+            chatContext.Log.LogError("{0}: {1}", chatContext.LastErrorDescription, chatContext.LastException);
+            chatContext.Fail(chatContext.LastErrorDescription);
+            return chatContext;
+        }
+
         var tokenLimit = this._promptSettings.CompletionTokenLimit;
         var remainingToken =
             tokenLimit -
@@ -319,7 +347,7 @@ public class ChatSkill
         var userIntent = await this.ExtractUserIntentAsync(chatContext);
         if (chatContext.ErrorOccurred)
         {
-            return chatContext;
+            return RemoveExceptionFromContext(chatContext);
         }
 
         chatContext.Variables.Set("userIntent", userIntent);
@@ -341,7 +369,7 @@ public class ChatSkill
         // If the completion function failed, return the context containing the error.
         if (chatContext.ErrorOccurred)
         {
-            return chatContext;
+            return RemoveExceptionFromContext(chatContext);
         }
 
         // Save this response to memory such that subsequent chat responses can use it
@@ -352,7 +380,7 @@ public class ChatSkill
         catch (Exception ex) when (!ex.IsCriticalException())
         {
             context.Log.LogError("Unable to save new response: {0}", ex.Message);
-            context.Fail($"Unable to save new response: {ex.Message}", ex);
+            context.Fail($"Unable to save new response: {ex.Message}");
             return context;
         }
 
@@ -369,7 +397,7 @@ public class ChatSkill
     /// <summary>
     /// Try to extract json from the planner response as if it were from an OpenAPI skill.
     /// </summary>
-    private bool TryExtractJsonFromPlanResult(string openApiSkillResponse, out string json)
+    private bool TryExtractJsonFromOpenApiPlanResult(string openApiSkillResponse, out string json)
     {
         try
         {
@@ -387,12 +415,133 @@ public class ChatSkill
         }
         catch (JsonException)
         {
-            // Expected if not valid JSON.
-            this._logger.LogDebug("Unable to extract JSON from planner response. It is likely not JSON formatted.");
+            this._logger.LogDebug("Unable to extract JSON from planner response, it is likely not from an OpenAPI skill.");
+        }
+        catch (InvalidOperationException)
+        {
+            this._logger.LogDebug("Unable to extract JSON from planner response, it may already be proper JSON.");
         }
 
         json = string.Empty;
         return false;
+    }
+
+    /// <summary>
+    /// Try to optimize json from the planner response
+    /// based on token limit
+    /// </summary>
+    private string OptimizeOpenApiSkillJson(string jsonContent, int tokenLimit, Plan plan)
+    {
+        int jsonTokenLimit = (int)(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
+
+        // Remove all new line characters + leading and trailing white space
+        jsonContent = Regex.Replace(jsonContent.Trim(), @"[\n\r]", string.Empty);
+        var document = JsonDocument.Parse(jsonContent);
+        string lastSkillInvoked = plan.Steps[^1].SkillName;
+        string lastSkillFunctionInvoked = plan.Steps[^1].Name;
+        bool trimSkillResponse = false;
+
+        // The json will be deserialized based on the response type of the particular operation that was last invoked by the planner
+        // The response type can be a custom trimmed down json structure, which is useful in staying within the token limit
+        Type skillResponseType = this.GetOpenApiSkillResponseType(ref document, ref lastSkillInvoked, ref lastSkillFunctionInvoked, ref trimSkillResponse);
+
+        if (trimSkillResponse)
+        {
+            // Deserializing limits the json content to only the fields defined in the respective OpenApiSkill's Model classes
+            var skillResponse = JsonSerializer.Deserialize(jsonContent, skillResponseType);
+            jsonContent = skillResponse != null ? JsonSerializer.Serialize(skillResponse) : string.Empty;
+            document = JsonDocument.Parse(jsonContent);
+        }
+
+        int jsonContentTokenCount = Utilities.TokenCount(jsonContent);
+
+        // Return the JSON content if it does not exceed the token limit
+        if (jsonContentTokenCount < jsonTokenLimit)
+        {
+            return jsonContent;
+        }
+
+        List<object> itemList = new();
+
+        // Summary (List) Object
+        // To stay within token limits, attempt to truncate the list of results
+        if (document.RootElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement item in document.RootElement.EnumerateArray())
+            {
+                int itemTokenCount = Utilities.TokenCount(item.ToString());
+
+                if (jsonTokenLimit - itemTokenCount > 0)
+                {
+                    itemList.Add(item);
+                    jsonTokenLimit -= itemTokenCount;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        // Detail Object
+        // To stay within token limits, attempt to truncate the list of properties
+        if (document.RootElement.ValueKind == JsonValueKind.Object)
+        {
+            foreach (JsonProperty property in document.RootElement.EnumerateObject())
+            {
+                int propertyTokenCount = Utilities.TokenCount(property.ToString());
+
+                if (jsonTokenLimit - propertyTokenCount > 0)
+                {
+                    itemList.Add(property);
+                    jsonTokenLimit -= propertyTokenCount;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        return itemList.Count > 0
+            ? JsonSerializer.Serialize(itemList)
+            : string.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
+    }
+
+    private Type GetOpenApiSkillResponseType(ref JsonDocument document, ref string lastSkillInvoked, ref string lastSkillFunctionInvoked, ref bool trimSkillResponse)
+    {
+        Type skillResponseType = typeof(object); // Use a reasonable default response type
+
+        // Different operations under the skill will return responses as json structures;
+        // Prune each operation response according to the most important/contextual fields only to avoid going over the token limit
+        // Check what the last skill invoked was and deserialize the JSON content accordingly
+        if (string.Equals(lastSkillInvoked, "GitHubSkill", StringComparison.Ordinal))
+        {
+            trimSkillResponse = true;
+            skillResponseType = this.GetGithubSkillResponseType(ref document);
+        }
+        else if (string.Equals(lastSkillInvoked, "JiraSkill", StringComparison.Ordinal))
+        {
+            trimSkillResponse = true;
+            skillResponseType = this.GetJiraSkillResponseType(ref document, ref lastSkillFunctionInvoked);
+        }
+
+        return skillResponseType;
+    }
+
+    private Type GetGithubSkillResponseType(ref JsonDocument document)
+    {
+        return document.RootElement.ValueKind == JsonValueKind.Array ? typeof(PullRequest[]) : typeof(PullRequest);
+    }
+
+    private Type GetJiraSkillResponseType(ref JsonDocument document, ref string lastSkillFunctionInvoked)
+    {
+        if (lastSkillFunctionInvoked == "GetIssue")
+        {
+            return document.RootElement.ValueKind == JsonValueKind.Array ? typeof(IssueResponse[]) : typeof(IssueResponse);
+        }
+
+        return typeof(IssueResponse);
     }
 
     /// <summary>
@@ -472,8 +621,8 @@ public class ChatSkill
             collection: memoryCollectionName,
             query: item.ToFormattedString(),
             limit: 1,
-            minRelevanceScore: 0.8,
-            cancel: context.CancellationToken
+            minRelevanceScore: this._promptSettings.SemanticMemoryMinRelevance,
+            cancellationToken: context.CancellationToken
         ).ToEnumerable();
 
         if (!memories.Any())
@@ -483,7 +632,7 @@ public class ChatSkill
                 text: item.ToFormattedString(),
                 id: Guid.NewGuid().ToString(),
                 description: memoryName,
-                cancel: context.CancellationToken
+                cancellationToken: context.CancellationToken
             );
         }
     }

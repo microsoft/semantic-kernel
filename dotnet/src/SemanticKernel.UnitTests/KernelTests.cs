@@ -23,7 +23,7 @@ public class KernelTests
         // Arrange
         var kernel = KernelBuilder.Create();
         var factory = new Mock<Func<IKernel, ITextCompletion>>();
-        kernel.Config.AddTextCompletionService("x", factory.Object);
+        kernel.Config.AddTextCompletionService(factory.Object);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -51,7 +51,7 @@ public class KernelTests
         // Arrange
         var kernel = KernelBuilder.Create();
         var factory = new Mock<Func<IKernel, ITextCompletion>>();
-        kernel.Config.AddTextCompletionService("x", factory.Object);
+        kernel.Config.AddTextCompletionService(factory.Object);
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
@@ -132,7 +132,20 @@ public class KernelTests
 
         // Assert
         Assert.Equal(3, skill.Count);
-        Assert.True(kernel.Skills.HasNativeFunction("GetAnyValue"));
+        Assert.True(kernel.Skills.TryGetFunction("GetAnyValue", out ISKFunction? functionInstance));
+        Assert.NotNull(functionInstance);
+    }
+
+    [Fact]
+    public void ItAllowsToImportTheSameSkillMultipleTimes()
+    {
+        // Arrange
+        var kernel = KernelBuilder.Create();
+
+        // Act - Assert no exception occurs
+        kernel.ImportSkill(new MySkill());
+        kernel.ImportSkill(new MySkill());
+        kernel.ImportSkill(new MySkill());
     }
 
     [Fact]
@@ -164,9 +177,12 @@ public class KernelTests
         {
             await Task.Delay(0);
 
-            context.ThrowIfSkillCollectionNotSet();
+            if (context.Skills == null)
+            {
+                Assert.Fail("Skills collection is missing");
+            }
 
-            FunctionsView procMem = context.Skills!.GetFunctionsView();
+            FunctionsView procMem = context.Skills.GetFunctionsView();
 
             foreach (KeyValuePair<string, List<FunctionView>> list in procMem.SemanticFunctions)
             {

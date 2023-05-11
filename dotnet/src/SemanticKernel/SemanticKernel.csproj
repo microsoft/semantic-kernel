@@ -8,43 +8,23 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
-  
+
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel Core</Title>
-    <Description>Semantic Kernel core orchestration, runtime and skills.
-This package is automatically installed by 'Microsoft.SemanticKernel' package with other useful packages.
-Install this package manually only if you are selecting individual Semantic Kernel components.</Description>
+    <Description>
+      Semantic Kernel core orchestration, runtime and skills.
+      This package is automatically installed by 'Microsoft.SemanticKernel' package with other useful packages.
+      Install this package manually only if you are selecting individual Semantic Kernel components.
+    </Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Connectors.OpenAI</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Planning.ActionPlanner</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Planning.SequentialPlanner</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Skills.OpenAPI</_Parameter1>
-    </AssemblyAttribute>
-    <!-- Testing -->
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernel.UnitTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernel.Skills.UnitTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>IntegrationTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>DynamicProxyGenAssembly2</_Parameter1> <!-- Moq -->
-    </AssemblyAttribute>
+    <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
+    <InternalsVisibleTo Include="SemanticKernel.IntegrationTests" PublicKey="$(StrongNamePublicKey)"/>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" PublicKey="$(StrongNamePublicKey)"/> <!-- Moq -->
   </ItemGroup>
 
   <ItemGroup>

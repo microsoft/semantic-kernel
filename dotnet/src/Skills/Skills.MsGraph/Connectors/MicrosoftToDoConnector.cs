@@ -77,13 +77,19 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<TaskManagementTask>> GetTasksAsync(string listId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TaskManagementTask>> GetTasksAsync(string listId, bool includeCompleted, CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrWhitespace(listId, nameof(listId));
 
+        string filterValue = string.Empty;
+        if (!includeCompleted)
+        {
+            filterValue = "status ne 'completed'";
+        }
+
         ITodoTaskListTasksCollectionPage tasksPage = await this._graphServiceClient.Me
             .Todo.Lists[listId]
-            .Tasks.Request().GetAsync(cancellationToken).ConfigureAwait(false);
+            .Tasks.Request().Filter(filterValue).GetAsync(cancellationToken).ConfigureAwait(false);
 
         List<TodoTask> tasks = tasksPage.ToList();
 

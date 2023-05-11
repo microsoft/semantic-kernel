@@ -90,7 +90,7 @@ public sealed class Kernel : IKernel, IDisposable
         Verify.ValidFunctionName(functionName);
 
         ISKFunction function = this.CreateSemanticFunction(skillName, functionName, functionConfig);
-        this._skillCollection.AddSemanticFunction(function);
+        this._skillCollection.AddFunction(function);
 
         return function;
     }
@@ -112,7 +112,7 @@ public sealed class Kernel : IKernel, IDisposable
         foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
             f.Value.SetDefaultSkillCollection(this.Skills);
-            this._skillCollection.AddNativeFunction(f.Value);
+            this._skillCollection.AddFunction(f.Value);
         }
 
         return skill;
@@ -123,10 +123,10 @@ public sealed class Kernel : IKernel, IDisposable
     {
         // Future-proofing the name not to contain special chars
         Verify.ValidSkillName(skillName);
-        Verify.NotNull(customFunction, $"The {nameof(customFunction)} parameter is not set to an instance of an object.");
+        Verify.NotNull(customFunction);
 
         customFunction.SetDefaultSkillCollection(this.Skills);
-        this._skillCollection.AddSemanticFunction(customFunction);
+        this._skillCollection.AddFunction(customFunction);
 
         return customFunction;
     }
@@ -182,7 +182,7 @@ public sealed class Kernel : IKernel, IDisposable
 
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                context.CancellationToken.ThrowIfCancellationRequested();
                 context = await f.InvokeAsync(context).ConfigureAwait(false);
 
                 if (context.ErrorOccurred)
@@ -207,12 +207,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public ISKFunction Func(string skillName, string functionName)
     {
-        if (this.Skills.HasNativeFunction(skillName, functionName))
-        {
-            return this.Skills.GetNativeFunction(skillName, functionName);
-        }
-
-        return this.Skills.GetSemanticFunction(skillName, functionName);
+        return this.Skills.GetFunction(skillName, functionName);
     }
 
     /// <inheritdoc/>
@@ -226,17 +221,18 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public T GetService<T>(string? name = "")
+    public T GetService<T>(string? name = null)
     {
         // TODO: use .NET ServiceCollection (will require a lot of changes)
         // TODO: support Connectors, IHttpFactory and IDelegatingHandlerFactory
 
         if (typeof(T) == typeof(ITextCompletion))
         {
-            name = this.Config.GetTextCompletionServiceIdOrDefault(name);
+            name ??= this.Config.DefaultServiceId;
+
             if (!this.Config.TextCompletionServices.TryGetValue(name, out Func<IKernel, ITextCompletion> factory))
             {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No text completion service available");
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' text completion service not available");
             }
 
             var service = factory.Invoke(this);
@@ -245,10 +241,11 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (typeof(T) == typeof(IEmbeddingGeneration<string, float>))
         {
-            name = this.Config.GetTextEmbeddingGenerationServiceIdOrDefault(name);
+            name ??= this.Config.DefaultServiceId;
+
             if (!this.Config.TextEmbeddingGenerationServices.TryGetValue(name, out Func<IKernel, IEmbeddingGeneration<string, float>> factory))
             {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No text embedding service available");
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' text embedding service not available");
             }
 
             var service = factory.Invoke(this);
@@ -257,10 +254,11 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (typeof(T) == typeof(IChatCompletion))
         {
-            name = this.Config.GetChatCompletionServiceIdOrDefault(name);
+            name ??= this.Config.DefaultServiceId;
+
             if (!this.Config.ChatCompletionServices.TryGetValue(name, out Func<IKernel, IChatCompletion> factory))
             {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No chat completion service available");
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' chat completion service not available");
             }
 
             var service = factory.Invoke(this);
@@ -269,10 +267,11 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (typeof(T) == typeof(IImageGeneration))
         {
-            name = this.Config.GetImageGenerationServiceIdOrDefault(name);
+            name ??= this.Config.DefaultServiceId;
+
             if (!this.Config.ImageGenerationServices.TryGetValue(name, out Func<IKernel, IImageGeneration> factory))
             {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No image generation service available");
+                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' image generation service not available");
             }
 
             var service = factory.Invoke(this);
@@ -338,12 +337,11 @@ public sealed class Kernel : IKernel, IDisposable
     private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log)
     {
         log.LogTrace("Importing skill name: {0}", skillName);
-        MethodInfo[] methods = skillInstance.GetType()
-            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
+        MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
         log.LogTrace("Methods found {0}", methods.Length);
 
         // Filter out null functions and fail if two functions have the same name
-        Dictionary<string, ISKFunction> result = new Dictionary<string, ISKFunction>(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, ISKFunction> result = new(StringComparer.OrdinalIgnoreCase);
         foreach (MethodInfo method in methods)
         {
             if (SKFunction.FromNativeMethod(method, skillInstance, skillName, log) is ISKFunction function)

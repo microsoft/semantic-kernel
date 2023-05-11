@@ -43,8 +43,21 @@ public class TextMemorySkill
     public const string LimitParam = "limit";
 
     private const string DefaultCollection = "generic";
-    private const string DefaultRelevance = "0.75";
+    private const string DefaultRelevance = "0.0";
     private const string DefaultLimit = "1";
+
+    /// <summary>
+    /// Creates a new instance of the TextMemorySkill
+    /// </summary>
+    /// <param name="collection">The default collection for Recall. Memories collection to search.</param>
+    /// <param name="relevance">The default relevance value for Recall. The relevance score, from 0.0 to 1.0, where 1.0 means perfect match.</param>
+    /// <param name="limit">The default limit for Recall. The maximum number of relevant memories to recall.</param>
+    public TextMemorySkill(string collection = DefaultCollection, string relevance = DefaultRelevance, string limit = DefaultLimit)
+    {
+        this._collection = collection;
+        this._relevance = relevance;
+        this._limit = limit;
+    }
 
     /// <summary>
     /// Key-based lookup for a specific memory
@@ -62,10 +75,10 @@ public class TextMemorySkill
     public async Task<string> RetrieveAsync(SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
-        Verify.NotEmpty(collection, "Memory collection not defined");
+        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
 
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
-        Verify.NotEmpty(key, "Memory key not defined");
+        Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
 
         context.Log.LogTrace("Recalling memory with key '{0}' from collection '{1}'", key, collection);
 
@@ -92,21 +105,22 @@ public class TextMemorySkill
     [SKFunctionContextParameter(Name = LimitParam, Description = "The maximum number of relevant memories to recall", DefaultValue = DefaultLimit)]
     public string Recall(string text, SKContext context)
     {
-        var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
-        Verify.NotEmpty(collection, "Memories collection not defined");
+        var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : this._collection;
+        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
 
-        var relevance = context.Variables.ContainsKey(RelevanceParam) ? context[RelevanceParam] : DefaultRelevance;
+        var relevance = context.Variables.ContainsKey(RelevanceParam) ? context[RelevanceParam] : this._relevance;
         if (string.IsNullOrWhiteSpace(relevance)) { relevance = DefaultRelevance; }
 
-        var limit = context.Variables.ContainsKey(LimitParam) ? context[LimitParam] : DefaultLimit;
+        var limit = context.Variables.ContainsKey(LimitParam) ? context[LimitParam] : this._limit;
         if (string.IsNullOrWhiteSpace(limit)) { limit = DefaultLimit; }
 
         context.Log.LogTrace("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
 
         // TODO: support locales, e.g. "0.7" and "0,7" must both work
-        int limitInt = int.Parse(limit, CultureInfo.InvariantCulture);
+        var limitInt = int.Parse(limit, CultureInfo.InvariantCulture);
+        var relevanceThreshold = float.Parse(relevance, CultureInfo.InvariantCulture);
         var memories = context.Memory
-            .SearchAsync(collection, text, limitInt, minRelevanceScore: float.Parse(relevance, CultureInfo.InvariantCulture))
+            .SearchAsync(collection, text, limitInt, relevanceThreshold)
             .ToEnumerable();
 
         context.Log.LogTrace("Done looking for memories in collection '{0}')", collection);
@@ -150,10 +164,10 @@ public class TextMemorySkill
     public async Task SaveAsync(string text, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
-        Verify.NotEmpty(collection, "Memory collection not defined");
+        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
 
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
-        Verify.NotEmpty(key, "Memory key not defined");
+        Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
 
         context.Log.LogTrace("Saving memory to collection '{0}'", collection);
 
@@ -176,13 +190,19 @@ public class TextMemorySkill
     public async Task RemoveAsync(SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : DefaultCollection;
-        Verify.NotEmpty(collection, "Memory collection not defined");
+        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
 
         var key = context.Variables.ContainsKey(KeyParam) ? context[KeyParam] : string.Empty;
-        Verify.NotEmpty(key, "Memory key not defined");
+        Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
 
         context.Log.LogTrace("Removing memory from collection '{0}'", collection);
 
         await context.Memory.RemoveAsync(collection, key).ConfigureAwait(false);
     }
+
+    private readonly string _collection;
+
+    private readonly string _relevance;
+
+    private readonly string _limit;
 }

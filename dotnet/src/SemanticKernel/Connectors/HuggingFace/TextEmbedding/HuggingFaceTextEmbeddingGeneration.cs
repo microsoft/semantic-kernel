@@ -33,8 +33,8 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
     public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
-        Verify.NotEmpty(model, "Model cannot be empty.");
+        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(model);
 
         this._endpoint = endpoint;
         this._model = model;
@@ -52,8 +52,8 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// <param name="model">Model to use for service API call.</param>
     public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model)
     {
-        Verify.NotNull(endpoint, "Endpoint cannot be null.");
-        Verify.NotEmpty(model, "Model cannot be empty.");
+        Verify.NotNull(endpoint);
+        Verify.NotNullOrWhiteSpace(model);
 
         this._endpoint = endpoint;
         this._model = model;
@@ -83,7 +83,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
     /// Performs HTTP request to given endpoint for embedding generation.
     /// </summary>
     /// <param name="data">Data to embed.</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of generated embeddings.</returns>
     /// <exception cref="AIException">Exception when backend didn't respond with generated embeddings.</exception>
     private async Task<IList<Embedding<float>>> ExecuteEmbeddingRequestAsync(IList<string> data, CancellationToken cancellationToken)
