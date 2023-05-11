@@ -84,8 +84,14 @@ export const ChatRoom: React.FC = () => {
         return null;
     }
 
-    const handleSubmit = async (value: string) => {
+    const handleSubmit = async (
+        value: string,
+        approvedPlanJson?: string,
+        planUserIntent?: string,
+        userCancelledPlan?: boolean,
+    ) => {
         log('submitting user chat message');
+
         const chatInput = {
             timestamp: new Date().getTime(),
             userId: account?.homeAccountId,
@@ -93,20 +99,23 @@ export const ChatRoom: React.FC = () => {
             content: value,
             authorRole: AuthorRoles.User,
         };
+
         setIsBotTyping(true);
         dispatch(updateConversation({ message: chatInput }));
+
         try {
-            await chat.getResponse(value, selectedId);
+            await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userCancelledPlan);
         } finally {
             setIsBotTyping(false);
         }
+
         setShouldAutoScroll(true);
     };
 
     return (
         <div className={classes.root}>
             <div ref={scrollViewTargetRef} className={classes.history}>
-                <ChatHistory audience={audience} messages={messages} />
+                <ChatHistory audience={audience} messages={messages} onGetResponse={handleSubmit} />
                 <div>
                     <div ref={scrollTargetRef} />
                 </div>

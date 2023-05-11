@@ -19,17 +19,22 @@ def test_can_be_imported():
     assert kernel.skills.has_native_function("math", "subtract")
 
 
-@pytest.mark.parametrize("initial_Value, amount, expectedResult", [
-    ("10", "10", "20"),
-    ("0", "10", "10"),
-    ("0", "-10", "-10"),
-    ("10", "0", "10"),
-    ("-1", "10", "9"),
-    ("-10", "10", "0"),
-    ("-192", "13", "-179"),
-    ("-192", "-13", "-205")
-])
-def test_add_when_valid_parameters_should_succeed(initial_Value, amount, expectedResult):
+@pytest.mark.parametrize(
+    "initial_Value, amount, expectedResult",
+    [
+        ("10", "10", "20"),
+        ("0", "10", "10"),
+        ("0", "-10", "-10"),
+        ("10", "0", "10"),
+        ("-1", "10", "9"),
+        ("-10", "10", "0"),
+        ("-192", "13", "-179"),
+        ("-192", "-13", "-205"),
+    ],
+)
+def test_add_when_valid_parameters_should_succeed(
+    initial_Value, amount, expectedResult
+):
     # Arrange
     context = ContextVariables()
     context["Amount"] = amount
@@ -42,17 +47,22 @@ def test_add_when_valid_parameters_should_succeed(initial_Value, amount, expecte
     assert result == expectedResult
 
 
-@pytest.mark.parametrize("initial_Value, amount, expectedResult", [
-    ("10", "10", "0"),
-    ("0", "10", "-10"),
-    ("10", "0", "10"),
-    ("100", "-10", "110"),
-    ("100", "102", "-2"),
-    ("-1", "10", "-11"),
-    ("-10", "10", "-20"),
-    ("-192", "13", "-205")
-])
-def test_subtract_when_valid_parameters_should_succeed(initial_Value, amount, expectedResult):
+@pytest.mark.parametrize(
+    "initial_Value, amount, expectedResult",
+    [
+        ("10", "10", "0"),
+        ("0", "10", "-10"),
+        ("10", "0", "10"),
+        ("100", "-10", "110"),
+        ("100", "102", "-2"),
+        ("-1", "10", "-11"),
+        ("-10", "10", "-20"),
+        ("-192", "13", "-205"),
+    ],
+)
+def test_subtract_when_valid_parameters_should_succeed(
+    initial_Value, amount, expectedResult
+):
     # Arrange
     context = ContextVariables()
     context["Amount"] = amount
@@ -65,19 +75,22 @@ def test_subtract_when_valid_parameters_should_succeed(initial_Value, amount, ex
     assert result == expectedResult
 
 
-@pytest.mark.parametrize("initial_Value", [
-    "$0",
-    "one hundred",
-    "20..,,2,1",
-    ".2,2.1",
-    "0.1.0",
-    "00-099",
-    "¹²¹",
-    "2²",
-    "zero",
-    "-100 units",
-    "1 banana"
-])
+@pytest.mark.parametrize(
+    "initial_Value",
+    [
+        "$0",
+        "one hundred",
+        "20..,,2,1",
+        ".2,2.1",
+        "0.1.0",
+        "00-099",
+        "¹²¹",
+        "2²",
+        "zero",
+        "-100 units",
+        "1 banana",
+    ],
+)
 def test_add_when_invalid_initial_value_should_throw(initial_Value):
     # Arrange
     context = ContextVariables()
@@ -86,27 +99,32 @@ def test_add_when_invalid_initial_value_should_throw(initial_Value):
 
     # Act
     with pytest.raises(ValueError) as exception:
-        result = skill.add(initial_Value, context)
+        skill.add(initial_Value, context)
 
     # Assert
-    assert str(
-        exception.value) == f"Initial value provided is not in numeric format: {initial_Value}"
+    assert (
+        str(exception.value)
+        == f"Initial value provided is not in numeric format: {initial_Value}"
+    )
     assert exception.type == ValueError
 
 
-@pytest.mark.parametrize('amount', [
-    "$0",
-    "one hundred",
-    "20..,,2,1",
-    ".2,2.1",
-    "0.1.0",
-    "00-099",
-    "¹²¹",
-    "2²",
-    "zero",
-    "-100 units",
-    "1 banana",
-])
+@pytest.mark.parametrize(
+    "amount",
+    [
+        "$0",
+        "one hundred",
+        "20..,,2,1",
+        ".2,2.1",
+        "0.1.0",
+        "00-099",
+        "¹²¹",
+        "2²",
+        "zero",
+        "-100 units",
+        "1 banana",
+    ],
+)
 def test_add_when_invalid_amount_should_throw(amount):
     # Arrange
     context = ContextVariables()
@@ -115,26 +133,31 @@ def test_add_when_invalid_amount_should_throw(amount):
 
     # Act / Assert
     with pytest.raises(ValueError) as exception:
-        result = skill.add("1", context)
+        skill.add("1", context)
 
-    assert str(
-        exception.value) == f"Context amount provided is not in numeric format: {amount}"
+    assert (
+        str(exception.value)
+        == f"Context amount provided is not in numeric format: {amount}"
+    )
     assert exception.type == ValueError
 
 
-@pytest.mark.parametrize("initial_value", [
-    "$0",
-    "one hundred",
-    "20..,,2,1",
-    ".2,2.1",
-    "0.1.0",
-    "00-099",
-    "¹²¹",
-    "2²",
-    "zero",
-    "-100 units",
-    "1 banana",
-])
+@pytest.mark.parametrize(
+    "initial_value",
+    [
+        "$0",
+        "one hundred",
+        "20..,,2,1",
+        ".2,2.1",
+        "0.1.0",
+        "00-099",
+        "¹²¹",
+        "2²",
+        "zero",
+        "-100 units",
+        "1 banana",
+    ],
+)
 def test_subtract_when_invalid_initial_value_should_throw(initial_value):
     # Arrange
     context = ContextVariables()
@@ -143,27 +166,32 @@ def test_subtract_when_invalid_initial_value_should_throw(initial_value):
 
     # Act / Assert
     with pytest.raises(ValueError) as exception:
-        result = skill.subtract(initial_value, context)
+        skill.subtract(initial_value, context)
 
     # Assert
-    assert str(
-        exception.value) == f"Initial value provided is not in numeric format: {initial_value}"
+    assert (
+        str(exception.value)
+        == f"Initial value provided is not in numeric format: {initial_value}"
+    )
     assert exception.type == ValueError
 
 
-@pytest.mark.parametrize("amount", [
-    "$0",
-    "one hundred",
-    "20..,,2,1",
-    ".2,2.1",
-    "0.1.0",
-    "00-099",
-    "¹²¹",
-    "2²",
-    "zero",
-    "-100 units",
-    "1 banana",
-])
+@pytest.mark.parametrize(
+    "amount",
+    [
+        "$0",
+        "one hundred",
+        "20..,,2,1",
+        ".2,2.1",
+        "0.1.0",
+        "00-099",
+        "¹²¹",
+        "2²",
+        "zero",
+        "-100 units",
+        "1 banana",
+    ],
+)
 def test_subtract_when_invalid_amount_should_throw(amount):
     # Arrange
     context = ContextVariables()
@@ -172,9 +200,11 @@ def test_subtract_when_invalid_amount_should_throw(amount):
 
     # Act / Assert
     with pytest.raises(ValueError) as exception:
-        result = skill.subtract("1", context)
+        skill.subtract("1", context)
 
     # Assert
-    assert str(
-        exception.value) == f"Context amount provided is not in numeric format: {amount}"
+    assert (
+        str(exception.value)
+        == f"Context amount provided is not in numeric format: {amount}"
+    )
     assert exception.type == ValueError
