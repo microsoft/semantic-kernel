@@ -35,23 +35,17 @@ public class DocumentImportController : ControllerBase
         Pdf,
     };
 
-    private readonly IServiceProvider _serviceProvider; // TODO: unused
     private readonly ILogger<DocumentImportController> _logger;
-    private readonly PromptSettings _promptSettings; // TODO: unused
     private readonly DocumentMemoryOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
     /// </summary>
     public DocumentImportController(
-        IServiceProvider serviceProvider,
-        PromptSettings promptSettings,
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<DocumentImportController> logger)
     {
-        this._serviceProvider = serviceProvider;
         this._options = documentMemoryOptions.Value;
-        this._promptSettings = promptSettings;
         this._logger = logger;
     }
 
