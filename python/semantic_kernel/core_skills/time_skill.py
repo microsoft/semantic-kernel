@@ -190,8 +190,8 @@ class TimeSkill:
              SKContext["input"] = "3"
              {{time.days_ago $input}} => Sunday, 7 May, 2023
         """
-		d = datetime.date.today() - datetime.timedelta(days=days)
-		return d.strftime("%A, %d %B, %Y")
+        d = datetime.date.today() - datetime.timedelta(days=days)
+        return d.strftime("%A, %d %B, %Y")
 
     @sk_function(description="Get the date of the last day matching the supplied day name in English")
     def last_matching_day(self, day_name:str) -> str:
@@ -207,11 +207,11 @@ class TimeSkill:
              SKContext["input"] = "Sunday"
              {{time.last_matching_day $input}} => Sunday, 7 May, 2023
         """
-		d = datetime.date.today()
-		for i in range(1, 8):
-			d = d - datetime.timedelta(days=1)
-			if d.strftime("%A") == day_name:
-				return d.strftime("%A, %d %B, %Y")
+        d = datetime.date.today()
+        for i in range(1, 8):
+            d = d - datetime.timedelta(days=1)
+            if d.strftime("%A") == day_name:
+                return d.strftime("%A, %d %B, %Y")
         raise ValueError("day_name is not recognized")
 
     @sk_function(description="Get the seconds on the current minute")
