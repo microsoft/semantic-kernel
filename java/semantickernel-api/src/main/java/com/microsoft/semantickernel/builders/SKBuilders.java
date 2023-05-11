@@ -4,13 +4,14 @@ package com.microsoft.semantickernel.builders;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.planner.SequentialPlannerSKFunction;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-import com.microsoft.semantickernel.textcompletion.CompletionSkFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 public class SKBuilders {
 
-    public static CompletionSkFunction.Builder completionFunctions() {
+    public static CompletionSKFunction.Builder completionFunctions() {
         return FunctionBuilders.getCompletionBuilder();
     }
 
@@ -32,5 +33,9 @@ public class SKBuilders {
 
     public static ReadOnlySkillCollection.Builder skillCollection() {
         return BuildersSingleton.INST.getReadOnlySkillCollection();
+    }
+
+    public static PromptTemplate.Builder promptTemplate () {
+        return BuildersSingleton.INST.getPromptTemplateBuilder();
     }
 }

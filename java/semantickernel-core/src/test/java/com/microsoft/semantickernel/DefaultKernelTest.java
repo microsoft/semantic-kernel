@@ -7,11 +7,11 @@ import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.openai.AzureOpenAiClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
-import com.microsoft.semantickernel.kernelextensions.ImportSemanticSkillFromDirectoryExtension;
+import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.orchestration.ReadOnlyContextVariables;
 import com.microsoft.semantickernel.orchestration.ReadOnlySKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSkFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import org.junit.jupiter.api.Assertions;
@@ -44,7 +44,7 @@ public class DefaultKernelTest {
 
         String prompt = "{{$history}}user: {{$user_input}}\n";
 
-        CompletionSkFunction chat =
+        CompletionSKFunction chat =
                 SKBuilders.completionFunctions()
                         .createFunction(
                                 prompt,
@@ -93,13 +93,10 @@ public class DefaultKernelTest {
         String model = "a-model-name";
         Kernel kernel = buildKernel(model, client);
 
-        CompletionSkFunction function =
-                kernel.importSkills(
-                                "FunSkill",
-                                ImportSemanticSkillFromDirectoryExtension
-                                        .importSemanticSkillFromDirectory(
-                                                "../../samples/skills", "FunSkill"))
-                        .getFunction("joke", CompletionSkFunction.class);
+        CompletionSKFunction function = kernel
+            .importSkills("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
+                "../../samples/skills", "FunSkill"))
+            .getFunction("joke", CompletionSKFunction.class);
 
         Mono<CompletionSKContext> mono = function.invokeAsync("time travel to dinosaur age");
         CompletionSKContext result = mono.block();
@@ -200,7 +197,7 @@ public class DefaultKernelTest {
 
         String prompt = "{{$input}}\n" + "Summarize the content above.";
 
-        CompletionSkFunction summarize =
+        CompletionSKFunction summarize =
                 SKBuilders.completionFunctions()
                         .createFunction(
                                 prompt,

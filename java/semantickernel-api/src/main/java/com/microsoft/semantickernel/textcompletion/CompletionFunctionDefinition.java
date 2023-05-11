@@ -8,11 +8,11 @@ import java.util.function.Function;
 
 public abstract class CompletionFunctionDefinition
         extends SemanticFunctionDefinition<
-                CompletionRequestSettings, CompletionSKContext, CompletionSkFunction> {
-    public static CompletionFunctionDefinition of(Function<Kernel, CompletionSkFunction> func) {
+                CompletionRequestSettings, CompletionSKContext, CompletionSKFunction> {
+    public static CompletionFunctionDefinition of(Function<Kernel, CompletionSKFunction> func) {
         return new CompletionFunctionDefinition() {
             @Override
-            protected CompletionSkFunction build(Kernel kernel) {
+            protected CompletionSKFunction build(Kernel kernel) {
                 return func.apply(kernel);
             }
         };

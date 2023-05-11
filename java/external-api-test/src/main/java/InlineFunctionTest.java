@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.textcompletion.CompletionFunctionDefinition;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSkFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +87,7 @@ public class InlineFunctionTest {
                         0,
                         new ArrayList<>());
 
-        CompletionSkFunction summarize = kernel.registerSemanticFunction(summarizeDefinition);
+        CompletionSKFunction summarize = kernel.registerSemanticFunction(summarizeDefinition);
 
         String text =
                 "Demo (ancient Greek poet)\n"

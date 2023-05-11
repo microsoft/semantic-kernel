@@ -7,6 +7,7 @@ import com.azure.core.exception.ClientAuthenticationException;
 import com.azure.core.exception.HttpResponseException;
 import com.azure.core.exception.ResourceModifiedException;
 import com.azure.core.exception.ResourceNotFoundException;
+import com.azure.core.http.HttpHeaderName;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.policy.CookiePolicy;
@@ -68,7 +69,7 @@ class OpenAIAsyncClientImpl implements OpenAIAsyncClient {
                                         BinaryData.fromObject(embeddingsOptions),
                                         new RequestOptions()
                                                 .addHeader(
-                                                        "Authorization", "Bearer " + this.apiKey),
+                                                        HttpHeaderName.AUTHORIZATION, "Bearer " + this.apiKey),
                                         context))
                 .flatMap(FluxUtil::toMono)
                 .map(protocolMethodData -> protocolMethodData.toObject(Embeddings.class));
@@ -86,7 +87,7 @@ class OpenAIAsyncClientImpl implements OpenAIAsyncClient {
                                         BinaryData.fromObject(completionsOptions),
                                         new RequestOptions()
                                                 .addHeader(
-                                                        "Authorization", "Bearer " + this.apiKey),
+                                                        HttpHeaderName.AUTHORIZATION, "Bearer " + this.apiKey),
                                         context))
                 .flatMap(FluxUtil::toMono)
                 .map(protocolMethodData -> protocolMethodData.toObject(Completions.class));
@@ -104,7 +105,7 @@ class OpenAIAsyncClientImpl implements OpenAIAsyncClient {
                                         BinaryData.fromObject(chatCompletionsOptions),
                                         new RequestOptions()
                                                 .addHeader(
-                                                        "Authorization", "Bearer " + this.apiKey),
+                                                        HttpHeaderName.AUTHORIZATION, "Bearer " + this.apiKey),
                                         context))
                 .flatMap(FluxUtil::toMono)
                 .map(protocolMethodData -> protocolMethodData.toObject(ChatCompletions.class));

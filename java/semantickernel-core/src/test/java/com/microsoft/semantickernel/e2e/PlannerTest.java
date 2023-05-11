@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.e2e;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.kernelextensions.ImportSemanticSkillFromDirectoryExtension;
+import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.planner.SequentialPlannerSKContext;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 
@@ -21,14 +21,10 @@ public class PlannerTest extends AbstractKernelTest {
     @EnabledIf("isAzureTestEnabled")
     public void executeInlineFunction() throws IOException {
         Kernel kernel = buildTextCompletionKernel();
-        kernel.importSkills(
-                "SummarizeSkill",
-                ImportSemanticSkillFromDirectoryExtension.importSemanticSkillFromDirectory(
-                        "../../samples/skills", "SummarizeSkill"));
-        kernel.importSkills(
-                "WriterSkill",
-                ImportSemanticSkillFromDirectoryExtension.importSemanticSkillFromDirectory(
-                        "../../samples/skills", "WriterSkill"));
+        kernel.importSkills("SummarizeSkill", KernelExtensions.importSemanticSkillFromDirectory(
+          "../../samples/skills", "SummarizeSkill"));
+        kernel.importSkills("WriterSkill", KernelExtensions.importSemanticSkillFromDirectory(
+            "../../samples/skills", "WriterSkill"));
 
         SequentialPlanner planner = new SequentialPlanner(kernel, null, null);
 
