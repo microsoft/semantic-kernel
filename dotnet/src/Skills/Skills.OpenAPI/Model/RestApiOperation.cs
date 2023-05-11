@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Web;
 
-namespace Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
+namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
 /// <summary>
 /// The REST API operation.
@@ -121,6 +121,12 @@ public sealed class RestApiOperation
         else
         {
             serverUrl = this.ServerUrl ?? throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
+        }
+
+        // make sure base url ends with trailing slash
+        if (!serverUrl.AbsoluteUri.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+        {
+            serverUrl = new Uri(serverUrl.AbsoluteUri + "/");
         }
 
         return new Uri(serverUrl, $"{path.TrimStart('/')}");
