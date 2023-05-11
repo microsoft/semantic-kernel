@@ -120,7 +120,8 @@ public class ChatSkill
 
         if (result.ErrorOccurred)
         {
-            context.Fail(result.LastErrorDescription, result.LastException);
+            context.Log.LogError("{0}: {1}", result.LastErrorDescription, result.LastException);
+            context.Fail(result.LastErrorDescription);
             return string.Empty;
         }
 
@@ -212,34 +213,40 @@ public class ChatSkill
 
         // Create a plan and run it.
         Plan plan = await this._planner.CreatePlanAsync(plannerContext.Variables.Input);
-        if (plan.Steps.Count > 0)
+        if (plan.Steps.Count <= 0)
         {
-            SKContext planContext = await plan.InvokeAsync(plannerContext);
-            int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
-
-            // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
-            bool extractJsonFromOpenApi = this.TryExtractJsonFromOpenApiPlanResult(planContext.Variables.Input, out string planResult);
-            if (extractJsonFromOpenApi)
-            {
-                int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
-                planResult = this.OptimizeOpenApiSkillJson(planResult, relatedInformationTokenLimit, plan);
-            }
-            else
-            {
-                // If not, use result of the plan execution result directly.
-                planResult = planContext.Variables.Input;
-            }
-
-            string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
-
-            // Adjust the token limit using the number of tokens in the information text.
-            tokenLimit -= Utilities.TokenCount(informationText);
-            context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-
-            return informationText;
+            return string.Empty;
         }
 
-        return string.Empty;
+        SKContext planContext = await plan.InvokeAsync(plannerContext);
+        if (planContext.ErrorOccurred)
+        {
+            this._logger.LogWarning("{0}: {1}", planContext.LastErrorDescription, planContext.LastException);
+            return string.Empty;
+        }
+
+        int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
+
+        // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
+        bool extractJsonFromOpenApi = this.TryExtractJsonFromOpenApiPlanResult(planContext.Variables.Input, out string planResult);
+        if (extractJsonFromOpenApi)
+        {
+            int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
+            planResult = this.OptimizeOpenApiSkillJson(planResult, relatedInformationTokenLimit, plan);
+        }
+        else
+        {
+            // If not, use result of the plan execution result directly.
+            planResult = planContext.Variables.Input;
+        }
+
+        string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
+
+        // Adjust the token limit using the number of tokens in the information text.
+        tokenLimit -= Utilities.TokenCount(informationText);
+        context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
+
+        return informationText;
     }
 
     /// <summary>
@@ -293,6 +300,14 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
+        // Log exception and strip it from the context, leaving the error description.
+        SKContext RemoveExceptionFromContext(SKContext chatContext)
+        {
+            chatContext.Log.LogError("{0}: {1}", chatContext.LastErrorDescription, chatContext.LastException);
+            chatContext.Fail(chatContext.LastErrorDescription);
+            return chatContext;
+        }
+
         var tokenLimit = this._promptSettings.CompletionTokenLimit;
         var remainingToken =
             tokenLimit -
@@ -332,7 +347,7 @@ public class ChatSkill
         var userIntent = await this.ExtractUserIntentAsync(chatContext);
         if (chatContext.ErrorOccurred)
         {
-            return chatContext;
+            return RemoveExceptionFromContext(chatContext);
         }
 
         chatContext.Variables.Set("userIntent", userIntent);
@@ -354,7 +369,7 @@ public class ChatSkill
         // If the completion function failed, return the context containing the error.
         if (chatContext.ErrorOccurred)
         {
-            return chatContext;
+            return RemoveExceptionFromContext(chatContext);
         }
 
         // Save this response to memory such that subsequent chat responses can use it
@@ -365,7 +380,7 @@ public class ChatSkill
         catch (Exception ex) when (!ex.IsCriticalException())
         {
             context.Log.LogError("Unable to save new response: {0}", ex.Message);
-            context.Fail($"Unable to save new response: {ex.Message}", ex);
+            context.Fail($"Unable to save new response: {ex.Message}");
             return context;
         }
 
