@@ -20,6 +20,7 @@ import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { removeAlert } from './redux/features/app/appSlice';
+import { CopilotChatTokens } from './styles';
 
 const useClasses = makeStyles({
     container: {
@@ -32,7 +33,7 @@ const useClasses = makeStyles({
         Flex: 'auto',
     },
     header: {
-        backgroundColor: '#9c2153',
+        backgroundColor: CopilotChatTokens.backgroundColor,
         width: '100%',
         height: '5.5%',
         color: '#FFF',
