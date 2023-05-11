@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Label, makeStyles, shorthands, Text } from '@fluentui/react-components';
+import { makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 import { FC } from 'react';
 import { useAppSelector } from '../../../redux/app/hooks';
@@ -48,7 +48,6 @@ export const ChatList: FC = () => {
                     </Text>
                     <NewBotMenu />
                 </div>
-                <Label className={classes.label}>Your Bot</Label>
                 <Tree aria-label={'chat list'}>
                     {Object.keys(conversations).map((id) => {
                         const convo = conversations[id];
@@ -60,7 +59,7 @@ export const ChatList: FC = () => {
                                 leaf
                                 style={
                                     id === selectedId
-                                        ? { background: 'var(--colorNeutralBackground1Selected)' }
+                                        ? { background: tokens.colorNeutralBackground1 }
                                         : undefined
                                 }
                             >

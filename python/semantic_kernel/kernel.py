@@ -49,6 +49,7 @@ from semantic_kernel.utils.validation import validate_function_name, validate_sk
 
 T = TypeVar("T")
 
+
 class Kernel(KernelBase, KernelExtensions):
     _log: Logger
     _skill_collection: SkillCollectionBase

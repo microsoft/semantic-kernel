@@ -1,5 +1,25 @@
+import logging
+import time
+
 import semantic_kernel as sk
 from semantic_kernel.core_skills.conversation_summary_skill import ConversationSummarySkill
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
+
+
+async def retry(func, retries=15, delay=1):
+    for i in range(retries):
+        try:
+            result = str(await func())
+            if "Error" in result:
+                raise ValueError(result)
+            return result
+        except Exception as e:
+            logger.error(f"Retry {i + 1}: {e}")
+            if i == retries - 1:  # Last retry
+                raise
+            time.sleep(delay)
 
 
 async def summarize_function_test(kernel: sk.Kernel):
@@ -34,55 +54,66 @@ async def summarize_function_test(kernel: sk.Kernel):
     print()
 
     # Summarize input string and print
-    summary = await kernel.run_async(tldr_function, input_str=text_to_summarize)
-
+    summary = await retry(
+        lambda: kernel.run_async(tldr_function, input_str=text_to_summarize)
+    )
     output = str(summary).strip()
     print(f"Summary using input string: '{output}'")
-    assert len(output.split(" ")) == 5
+    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert len(output) < 100
 
     # Summarize input as context variable and print
     context_vars = sk.ContextVariables(text_to_summarize)
-    summary = await kernel.run_async(tldr_function, input_vars=context_vars)
-
+    summary = await retry(
+        lambda: kernel.run_async(tldr_function, input_vars=context_vars)
+    )
     output = str(summary).strip()
     print(f"Summary using context variables: '{output}'")
-    assert len(output.split(" ")) == 5
+    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert len(output) < 100
 
     # Summarize input context and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
-    summary = await kernel.run_async(tldr_function, input_context=context)
-
+    summary = await retry(
+        lambda: kernel.run_async(tldr_function, input_context=context)
+    )
     output = str(summary).strip()
     print(f"Summary using input context: '{output}'")
-    assert len(output.split(" ")) == 5
+    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert len(output) < 100
 
     # Summarize input context with additional variables and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
     context_vars = sk.ContextVariables("4) All birds are robots.")
-    summary = await kernel.run_async(
-        tldr_function, input_context=context, input_vars=context_vars
+    summary = await retry(
+        lambda: kernel.run_async(
+            tldr_function, input_context=context, input_vars=context_vars
+        )
     )
-
     output = str(summary).strip()
     print(f"Summary using context and additional variables: '{output}'")
-    assert len(output.split(" ")) == 5
+    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert len(output) < 100
 
     # Summarize input context with additional input string and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
-    summary = await kernel.run_async(
-        tldr_function, input_context=context, input_str="4) All birds are robots."
+    summary = await retry(
+        lambda: kernel.run_async(
+            tldr_function, input_context=context, input_str="4) All birds are robots."
+        )
     )
-
     output = str(summary).strip()
     print(f"Summary using context and additional string: '{output}'")
-    assert len(output.split(" ")) == 5
+    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert len(output) < 100
 
     # Summarize input context with additional variables and string and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
+<<<<<<< HEAD
     context_vars = sk.ContextVariables(
         variables={"input2": "4) All birds are robots."})
     summary = await kernel.run_async(
@@ -90,13 +121,23 @@ async def summarize_function_test(kernel: sk.Kernel):
         input_context=context,
         input_vars=context_vars,
         input_str="new text",
+=======
+    context_vars = sk.ContextVariables(variables={"input2": "4) All birds are robots."})
+    summary = await retry(
+        lambda: kernel.run_async(
+            tldr_function,
+            input_context=context,
+            input_vars=context_vars,
+            input_str="new text",
+        )
+>>>>>>> ab625af9dad5c1a294bde37aaa7515eccb37e22b
     )
-
     output = str(summary).strip()
     print(
         f"Summary using context, additional variables, and additional string: '{output}'"
     )
-    assert len(output.split(" ")) == 5
+    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert len(output) < 100
 
 
 async def simple_summarization(kernel: sk.Kernel):

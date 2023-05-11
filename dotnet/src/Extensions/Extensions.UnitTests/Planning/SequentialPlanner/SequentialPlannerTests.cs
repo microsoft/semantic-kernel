@@ -53,20 +53,10 @@ public sealed class SequentialPlannerTests
                     return Task.FromResult(context);
                 });
 
-            if (isSemantic)
-            {
-                skills.Setup(x => x.GetSemanticFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
-                    .Returns(mockFunction.Object);
-                ISKFunction? outFunc = mockFunction.Object;
-                skills.Setup(x => x.TryGetSemanticFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
-            }
-            else
-            {
-                skills.Setup(x => x.GetNativeFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
-                    .Returns(mockFunction.Object);
-                ISKFunction? outFunc = mockFunction.Object;
-                skills.Setup(x => x.TryGetNativeFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
-            }
+            skills.Setup(x => x.GetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
+                .Returns(mockFunction.Object);
+            ISKFunction? outFunc = mockFunction.Object;
+            skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
         }
 
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);

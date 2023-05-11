@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -18,7 +19,6 @@ using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
-using Directory = System.IO.Directory;
 
 namespace SemanticKernel.Service.Controllers;
 
@@ -144,19 +144,21 @@ public class SemanticKernelController : ControllerBase, IDisposable
     /// </summary>
     private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders, ContextVariables variables)
     {
-        // Register the Klarna shopping ChatGPT plugin with the planner's kernel.
-        using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger)
-        {
-            InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true }
-        };
-        using HttpClient importHttpClient = new HttpClient(retryHandler, false);
-        importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
-        await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"),
-            importHttpClient);
-
-        //
         // Register authenticated skills with the planner's kernel only if the request includes an auth header for the skill.
-        //
+
+        // Klarna Shopping
+        if (openApiSkillsAuthHeaders.KlarnaAuthentication != null)
+        {
+            // Register the Klarna shopping ChatGPT plugin with the planner's kernel.
+            using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger)
+            {
+                InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true }
+            };
+            using HttpClient importHttpClient = new HttpClient(retryHandler, false);
+            importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
+            await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"),
+                importHttpClient);
+        }
 
         // GitHub
         if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.GithubAuthentication))
@@ -165,17 +167,22 @@ public class SemanticKernelController : ControllerBase, IDisposable
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "GitHubSkill",
-                filePath: Path.Combine(Directory.GetCurrentDirectory(), @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
 
-        if (openApiSkillsAuthHeaders.JiraAuthentication != null)
+        // Jira
+        if (!string.IsNullOrWhiteSpace(openApiSkillsAuthHeaders.JiraAuthentication))
         {
             this._logger.LogInformation("Registering Jira Skill");
             var authenticationProvider = new BasicAuthenticationProvider(() => { return Task.FromResult(openApiSkillsAuthHeaders.JiraAuthentication); });
             var hasServerUrlOverride = variables.Get("jira-server-url", out string serverUrlOverride);
 
-            // TODO: Import Jira OpenAPI Skill
+            await planner.Kernel.ImportOpenApiSkillFromFileAsync(
+                skillName: "JiraSkill",
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Skills/OpenApiSkills/JiraSkill/openapi.json"),
+                authCallback: authenticationProvider.AuthenticateRequestAsync,
+                serverUrlOverride: hasServerUrlOverride ? new System.Uri(serverUrlOverride) : null);
         }
 
         // Microsoft Graph
