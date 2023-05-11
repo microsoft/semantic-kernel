@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -65,13 +66,6 @@ public class PromptTemplateConfig
         public string ModelId { get; set; } = string.Empty;
 
         /// <summary>
-        /// A local identifier for the given AI service. (in case Model ID is the same in two different AI service providers).
-        /// </summary>
-        [JsonPropertyName("service_id")]
-        [JsonPropertyOrder(2)]
-        public string? ServiceId { get; set; }
-
-        /// <summary>
         /// Service priority order. Kernel will check all registered services and choose one with highest priority order.
         /// </summary>
         [JsonPropertyName("order")]
@@ -83,7 +77,7 @@ public class PromptTemplateConfig
         /// </summary>
         [JsonPropertyName("settings")]
         [JsonPropertyOrder(4)]
-        public JsonObject? Settings { get; set; }
+        public JsonObject Settings { get; set; } = new();
     }
 
     /// <summary>
