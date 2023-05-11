@@ -27,8 +27,9 @@ internal static class SemanticKernelExtensions
         services.AddSingleton<PromptsConfig>(sp =>
         {
             string promptsConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "prompts.json");
-            PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(File.ReadAllText(promptsConfigPath)) ??
-                                          throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
+            PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(
+                File.ReadAllText(promptsConfigPath), new JsonSerializerOptions() { ReadCommentHandling = JsonCommentHandling.Skip })
+                ?? throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
             promptsConfig.Validate();
             return promptsConfig;
         });
@@ -87,6 +88,7 @@ internal static class SemanticKernelExtensions
                 {
                     throw new InvalidOperationException("MemoriesStore type is Qdrant and Qdrant configuration is null.");
                 }
+
                 services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
                     config.Qdrant.Host, config.Qdrant.Port, config.Qdrant.VectorSize, sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
                 services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
@@ -100,6 +102,7 @@ internal static class SemanticKernelExtensions
                 {
                     throw new InvalidOperationException("MemoriesStore type is AzureCognitiveSearch and AzureCognitiveSearch configuration is null.");
                 }
+
                 services.AddSingleton<ISemanticTextMemory>(sp => new AzureCognitiveSearchMemory(config.AzureCognitiveSearch.Endpoint, config.AzureCognitiveSearch.Key));
                 break;
 

@@ -123,6 +123,12 @@ public sealed class RestApiOperation
             serverUrl = this.ServerUrl ?? throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
         }
 
+        // make sure base url ends with trailing slash
+        if (!serverUrl.AbsoluteUri.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+        {
+            serverUrl = new Uri(serverUrl.AbsoluteUri + "/");
+        }
+
         return new Uri(serverUrl, $"{path.TrimStart('/')}");
     }
 
