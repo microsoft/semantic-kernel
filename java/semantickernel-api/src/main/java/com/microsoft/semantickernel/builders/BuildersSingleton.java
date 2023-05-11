@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.builders;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
@@ -23,10 +24,15 @@ public enum BuildersSingleton {
     private static final String FALLBACK_SKILL_COLLECTION_BUILDER_CLASS =
             "com.microsoft.semantickernel.skilldefinition.DefaultReadOnlySkillCollection.Builder";
 
+    private static final String FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS =
+            "com.microsoft.semantickernel.semanticfunctions.DefaultPromptTemplateBuilder";
+
     private final FunctionBuilders functionBuilders;
     private final Kernel.InternalBuilder kernelBuilder;
     private final TextCompletion.Builder textCompletionBuilder;
     private final ReadOnlySkillCollection.Builder readOnlySkillCollection;
+
+    private final PromptTemplate.Builder promptTemplate;
 
     BuildersSingleton() {
         try {
@@ -43,6 +49,10 @@ public enum BuildersSingleton {
                     ServiceLoadUtil.findServiceLoader(
                             ReadOnlySkillCollection.Builder.class,
                             FALLBACK_SKILL_COLLECTION_BUILDER_CLASS);
+            promptTemplate =
+                    ServiceLoadUtil.findServiceLoader(
+                        PromptTemplate.Builder.class,
+                        FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS);
         } catch (Throwable e) {
             Logger LOGGER = LoggerFactory.getLogger(BuildersSingleton.class);
             LOGGER.error("Failed to discover Semantic Kernel Builders", e);
@@ -83,4 +93,6 @@ public enum BuildersSingleton {
     public ReadOnlySkillCollection.Builder getReadOnlySkillCollection() {
         return readOnlySkillCollection;
     }
+
+    public PromptTemplate.Builder getPromptTemplateBuilder() { return promptTemplate; }
 }

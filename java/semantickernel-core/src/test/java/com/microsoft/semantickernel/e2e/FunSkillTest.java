@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.e2e;
 
-import com.microsoft.semantickernel.kernelextensions.ImportSemanticSkillFromDirectoryExtension;
+import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSkFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -22,13 +22,10 @@ public class FunSkillTest extends AbstractKernelTest {
     public void tellAJoke() throws IOException {
         Mono<CompletionSKContext> result =
                 buildTextCompletionKernel()
-                        .importSkills(
-                                "FunSkill",
-                                ImportSemanticSkillFromDirectoryExtension
-                                        .importSemanticSkillFromDirectory(
-                                                "../../samples/skills", "FunSkill"))
-                        .getFunction("joke", CompletionSkFunction.class)
-                        .invokeAsync("time travel to dinosaur age");
+                    .importSkills("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
+                        "../../samples/skills", "FunSkill"))
+                    .getFunction("joke", CompletionSKFunction.class)
+                    .invokeAsync("time travel to dinosaur age");
 
         if (result != null) {
             LOGGER.info(result.block().getResult());

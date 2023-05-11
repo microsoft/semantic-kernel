@@ -11,7 +11,7 @@ import com.microsoft.semantickernel.coreskills.TextMemorySkill;
 import com.microsoft.semantickernel.e2e.AbstractKernelTest;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSkFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -111,7 +111,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                         + "ChatBot: ";
 
         Mono<CompletionSKContext> mono =
-                memory.getFunction("retrieve", CompletionSkFunction.class).invokeAsync("");
+                memory.getFunction("retrieve", CompletionSKFunction.class).invokeAsync("");
         CompletionSKContext result = mono.block();
 
         LOGGER.info(result.getResult());

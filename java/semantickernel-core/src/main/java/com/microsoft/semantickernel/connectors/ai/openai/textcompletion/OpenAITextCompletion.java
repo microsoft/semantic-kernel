@@ -54,6 +54,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
                         .setTopP(requestSettings.getTopP())
                         .setFrequencyPenalty(requestSettings.getFrequencyPenalty())
                         .setPresencePenalty(requestSettings.getPresencePenalty())
+                        .setModel(getModelId())
                         .setUser(null);
 
         return getClient()

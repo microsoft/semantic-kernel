@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.e2e;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSkFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -26,7 +26,7 @@ public class InlineFunctionTest extends AbstractKernelTest {
         Kernel kernel = buildTextCompletionKernel();
         String prompt = "{{$input}}\n" + "Summarize the content above.";
 
-        CompletionSkFunction summarize =
+        CompletionSKFunction summarize =
                 SKBuilders.completionFunctions()
                         .createFunction(
                                 prompt,

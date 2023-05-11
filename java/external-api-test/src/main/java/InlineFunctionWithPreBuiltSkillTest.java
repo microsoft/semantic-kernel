@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.textcompletion.CompletionFunctionDefinition;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSkFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +117,7 @@ public class InlineFunctionWithPreBuiltSkillTest {
                 .setKernelConfig(kernelConfig)
                 .build();
 
-        CompletionSkFunction summarize = kernel.getSkillCollection().getFunction("summarize", CompletionSkFunction.class);
+        CompletionSKFunction summarize = kernel.getSkillCollection().getFunction("summarize", CompletionSKFunction.class);
 
         Mono<CompletionSKContext> result = summarize.invokeAsync(TEXT_TO_SUMMARIZE);
 

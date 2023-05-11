@@ -7,7 +7,7 @@ import static com.microsoft.semantickernel.e2e.AbstractKernelTest.buildTextCompl
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSkFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ public class TestGeneration {
 
         String prompt = "Generate a Java Junit 5 test for the class:\n" + "\n" + "{{$input}}";
 
-        CompletionSkFunction summarize =
+        CompletionSKFunction summarize =
                 SKBuilders.completionFunctions()
                         .createFunction(
                                 prompt,

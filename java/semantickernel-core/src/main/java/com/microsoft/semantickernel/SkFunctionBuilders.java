@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.planner.SequentialPlannerSKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionFunctionDefinition;
-import com.microsoft.semantickernel.textcompletion.CompletionSkFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import java.util.List;
 
@@ -18,8 +18,8 @@ import javax.annotation.Nullable;
 public class SkFunctionBuilders implements FunctionBuilders {
     public SkFunctionBuilders() {}
 
-    public static final CompletionSkFunction.Builder COMPLETION_BUILDERS =
-            new CompletionSkFunction.Builder() {
+    public static final CompletionSKFunction.Builder COMPLETION_BUILDERS =
+            new CompletionSKFunction.Builder() {
                 @Override
                 public CompletionFunctionDefinition createFunction(
                         String promptTemplate,
@@ -100,7 +100,7 @@ public class SkFunctionBuilders implements FunctionBuilders {
             };
 
     @Override
-    public CompletionSkFunction.Builder completionBuilders() {
+    public CompletionSKFunction.Builder completionBuilders() {
         return COMPLETION_BUILDERS;
     }
 

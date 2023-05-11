@@ -28,4 +28,8 @@ public interface PromptTemplate {
      */
     Mono<String> renderAsync(
             ReadOnlySKContext executionContext, PromptTemplateEngine promptTemplateEngine);
+
+    public interface Builder {
+      public PromptTemplate build(String promptTemplate, PromptTemplateConfig config);
+    }
 }

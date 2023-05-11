@@ -14,6 +14,7 @@ import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import java.util.Map;

@@ -7,7 +7,7 @@ import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSkFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ public class KernelTest extends AbstractKernelTest {
     }
 
     private static void executeChatCompletion(Kernel kernel) {
-        CompletionSkFunction summarize =
+        CompletionSKFunction summarize =
                 SKBuilders.completionFunctions()
                         .createFunction(
                                 "{{$input}}\n" + "\n" + "One line TLDR with the fewest words.",

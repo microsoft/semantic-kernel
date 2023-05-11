@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.e2e;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSkFunction;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -44,7 +44,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
                     + "User: {{$user_input}}\n"
                     + "ChatBot: ";
 
-        CompletionSkFunction chat =
+        CompletionSKFunction chat =
                 SKBuilders.completionFunctions()
                         .createFunction(
                                 prompt,
@@ -79,7 +79,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
     }
 
     private Function<CompletionSKContext, Mono<CompletionSKContext>> chat(
-            String input, CompletionSkFunction chat) {
+            String input, CompletionSKFunction chat) {
         return (context) -> {
             try {
                 return chat(input, chat, context);
@@ -90,7 +90,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
     }
 
     private Mono<CompletionSKContext> chat(
-            String input, CompletionSkFunction chat, CompletionSKContext context)
+            String input, CompletionSKFunction chat, CompletionSKContext context)
             throws ExecutionException, InterruptedException, TimeoutException {
         context = context.setVariable("user_input", input);
 

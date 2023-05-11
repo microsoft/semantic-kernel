@@ -10,10 +10,10 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-public interface CompletionSkFunction
+public interface CompletionSKFunction
         extends SKFunction<CompletionRequestSettings, CompletionSKContext> {
 
-    static CompletionSkFunction.Builder builder() {
+    static CompletionSKFunction.Builder builder() {
         return BuildersSingleton.INST.getFunctionBuilders().completionBuilders();
     }
 

@@ -104,6 +104,12 @@ public interface Kernel {
 
     /*
     /// <summary>
+    /// Set the semantic memory to use
+    /// </summary>
+    /// <param name="memory">Semantic memory instance</param>
+    void RegisterMemory(ISemanticTextMemory memory);
+
+    /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="pipeline">List of functions</param>

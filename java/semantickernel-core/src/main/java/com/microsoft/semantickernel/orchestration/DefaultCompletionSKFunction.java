@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 /// </summary>
 public class DefaultCompletionSKFunction
         extends DefaultSemanticSKFunction<CompletionRequestSettings, CompletionSKContext>
-        implements CompletionSkFunction {
+        implements CompletionSKFunction {
     private final SKSemanticAsyncTask<CompletionSKContext> function;
     private final CompletionRequestSettings aiRequestSettings;
     private final Supplier<TextCompletion> aiService;
