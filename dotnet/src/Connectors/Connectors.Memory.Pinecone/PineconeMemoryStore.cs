@@ -334,7 +334,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     }
 
     /// <summary>
-    /// Get a MemoryRecord from the Pinecone Vector database by a group of pointIds.
+    /// Get a MemoryRecord from the Pinecone Vector database by a group of documentIds.
     /// </summary>
     /// <param name="indexName">The name associated with the index to get the Pinecone vector records from.</param>
     /// <param name="documentIds">The unique indexed IDs associated with Pinecone vector records to get.</param>
