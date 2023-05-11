@@ -32,7 +32,7 @@ public static class Example37_MultiStreamingCompletion
             PresencePenalty = 0,
             Temperature = 1,
             TopP = 0.5,
-            ResultsPerPrompt = 2
+            ResultsPerPrompt = 3
         };
 
         var prompt = "Write one paragraph why AI is awesome";
@@ -64,7 +64,7 @@ public static class Example37_MultiStreamingCompletion
     /// </summary>
     private static void PrepareDisplay()
     {
-        for (int i = 0; i < Console.WindowHeight; i++)
+        for (int i = 0; i < Console.WindowHeight - 5; i++)
         {
             Console.WriteLine();
         }
