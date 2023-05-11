@@ -27,8 +27,9 @@ internal static class SemanticKernelExtensions
         services.AddSingleton<PromptsConfig>(sp =>
         {
             string promptsConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "prompts.json");
-            PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(File.ReadAllText(promptsConfigPath)) ??
-                                          throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
+            PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(
+                File.ReadAllText(promptsConfigPath), new JsonSerializerOptions() { ReadCommentHandling = JsonCommentHandling.Skip })
+                ?? throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
             promptsConfig.Validate();
             return promptsConfig;
         });

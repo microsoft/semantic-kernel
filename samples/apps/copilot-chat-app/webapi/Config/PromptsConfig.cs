@@ -7,6 +7,17 @@ namespace SemanticKernel.Service.Config;
 /// </summary>
 public class PromptsConfig
 {
+    /// <summary>
+    /// Token limit of the chat model.
+    /// </summary>
+    /// <remarks>https://platform.openai.com/docs/models/overview for token limits.</remarks>
+    public int CompletionTokenLimit { get; set; }
+
+    /// <summary>
+    /// The token count left for the model to generate text after the prompt.
+    /// </summary>
+    public int ResponseTokenLimit { get; set; }
+
     // System
     public string KnowledgeCutoffDate { get; set; } = string.Empty;
     public string InitialBotMessage { get; set; } = string.Empty;
@@ -33,6 +44,21 @@ public class PromptsConfig
 
     public void Validate()
     {
+        if (this.CompletionTokenLimit <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.CompletionTokenLimit), $"{nameof(this.CompletionTokenLimit)} is not valid: '{this.CompletionTokenLimit}' is not greater than 0.");
+        }
+
+        if (this.ResponseTokenLimit <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.ResponseTokenLimit), $"{nameof(this.ResponseTokenLimit)} is not valid: '{this.ResponseTokenLimit}' is not greater than 0.");
+        }
+
+        if (this.ResponseTokenLimit > this.CompletionTokenLimit)
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.ResponseTokenLimit), $"{nameof(this.ResponseTokenLimit)} is not valid: '{this.ResponseTokenLimit}' is greater than '{this.CompletionTokenLimit}'.");
+        }
+
         Validate(this.KnowledgeCutoffDate, nameof(this.KnowledgeCutoffDate));
         Validate(this.InitialBotMessage, nameof(this.InitialBotMessage));
         Validate(this.SystemDescription, nameof(this.SystemDescription));
