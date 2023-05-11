@@ -92,7 +92,7 @@ public static class Program
     /// </summary>
     /// <param name="file">The file to upload for injection.</param>
     /// <param name="config">Configuration.</param>
-    /// <param name="chatCollectionId">Save the extracted context to an isolated user collection.</param>
+    /// <param name="chatCollectionId">Save the extracted context to an isolated chat collection.</param>
     private static async Task UploadFileAsync(FileInfo file, Config config, Guid chatCollectionId)
     {
         if (!file.Exists)
