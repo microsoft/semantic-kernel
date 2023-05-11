@@ -18,14 +18,13 @@ class MathSkill:
     @sk_function(
         description="Adds value to a value",
         name="Add",
-        input_description="The value to add")
+        input_description="The value to add",
+    )
     @sk_function_context_parameter(
         name="Amount",
         description="Amount to add",
     )
-    def add(self,
-            initial_value_text: str,
-            context: SKContext) -> str:
+    def add(self, initial_value_text: str, context: SKContext) -> str:
         """
         Returns the Addition result of initial and amount values provided.
 
@@ -38,14 +37,13 @@ class MathSkill:
     @sk_function(
         description="Subtracts value to a value",
         name="Subtract",
-        input_description="The value to subtract")
+        input_description="The value to subtract",
+    )
     @sk_function_context_parameter(
         name="Amount",
         description="Amount to subtract",
     )
-    def subtract(self,
-                 initial_value_text: str,
-                 context: SKContext) -> str:
+    def subtract(self, initial_value_text: str, context: SKContext) -> str:
         """
         Returns the difference of numbers provided.
 
@@ -56,10 +54,7 @@ class MathSkill:
         return MathSkill.add_or_subtract(initial_value_text, context, add=False)
 
     @staticmethod
-    def add_or_subtract(
-            initial_value_text: str,
-            context: SKContext,
-            add: bool) -> str:
+    def add_or_subtract(initial_value_text: str, context: SKContext, add: bool) -> str:
         """
         Helper function to perform addition or subtraction based on the add flag.
 
@@ -72,7 +67,8 @@ class MathSkill:
             initial_value = int(initial_value_text)
         except ValueError:
             raise ValueError(
-                f"Initial value provided is not in numeric format: {initial_value_text}")
+                f"Initial value provided is not in numeric format: {initial_value_text}"
+            )
 
         context_amount = context["Amount"]
         if context_amount is not None:
@@ -80,7 +76,8 @@ class MathSkill:
                 amount = int(context_amount)
             except ValueError:
                 raise ValueError(
-                    f"Context amount provided is not in numeric format: {context_amount}")
+                    f"Context amount provided is not in numeric format: {context_amount}"
+                )
 
             result = initial_value + amount if add else initial_value - amount
             return str(result)
