@@ -179,7 +179,7 @@ class TimeSkill:
     @sk_function(
         description="Get the date of offset from today by a provided number of days"
     )
-    def days_ago(self, days: int) -> str:
+    def days_ago(self, days: str) -> str:
         """
         Get the date a provided number of days in the past
 
@@ -192,7 +192,7 @@ class TimeSkill:
              SKContext["input"] = "3"
              {{time.days_ago $input}} => Sunday, 7 May, 2023
         """
-        d = datetime.date.today() - datetime.timedelta(days=days)
+        d = datetime.date.today() - datetime.timedelta(days=int(days))
         return d.strftime("%A, %d %B, %Y")
 
     @sk_function(
