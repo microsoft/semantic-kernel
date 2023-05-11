@@ -113,16 +113,8 @@ async def summarize_function_test(kernel: sk.Kernel):
     # Summarize input context with additional variables and string and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
-<<<<<<< HEAD
     context_vars = sk.ContextVariables(
         variables={"input2": "4) All birds are robots."})
-    summary = await kernel.run_async(
-        tldr_function,
-        input_context=context,
-        input_vars=context_vars,
-        input_str="new text",
-=======
-    context_vars = sk.ContextVariables(variables={"input2": "4) All birds are robots."})
     summary = await retry(
         lambda: kernel.run_async(
             tldr_function,
@@ -130,7 +122,6 @@ async def summarize_function_test(kernel: sk.Kernel):
             input_vars=context_vars,
             input_str="new text",
         )
->>>>>>> ab625af9dad5c1a294bde37aaa7515eccb37e22b
     )
     output = str(summary).strip()
     print(
@@ -357,8 +348,11 @@ async def summarize_conversation_using_skill(kernel: sk.Kernel):
         John: Yeah, that's a good idea."""
 
     conversationSummarySkill = kernel.import_skill(
-        ConversationSummarySkill(kernel), "conversationSummary")
-    summary = await kernel.run_async(conversationSummarySkill["SummarizeConversation"], input_str=ChatTranscript)
+        ConversationSummarySkill(kernel),
+        "conversationSummary")
+    summary = await kernel.run_async(
+        conversationSummarySkill["SummarizeConversation"], 
+        input_str=ChatTranscript)
 
     output = str(summary).strip().lower()
     print(output)
