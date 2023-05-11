@@ -223,11 +223,12 @@ public sealed class Plan : ISKFunction
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var context = new SKContext(
-            variables,
-            kernel.Memory,
-            kernel.Skills,
-            kernel.Log,
-            cancellationToken);
+            variables
+            // kernel.Memory,
+            // kernel.Skills,
+            // kernel.Log,
+            // cancellationToken
+        );
         return this.InvokeNextStepAsync(context);
     }
 
@@ -247,7 +248,8 @@ public sealed class Plan : ISKFunction
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
+            // var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
+            var functionContext = new SKContext(functionVariables);
             var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
@@ -303,7 +305,8 @@ public sealed class Plan : ISKFunction
     public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
         CancellationToken cancellationToken = default)
     {
-        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
+        // context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
+        context ??= new SKContext(new ContextVariables());
 
         context.Variables.Update(input);
 
@@ -314,7 +317,8 @@ public sealed class Plan : ISKFunction
     public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
         CancellationToken cancellationToken = default)
     {
-        context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
+        // context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
+        context ??= new SKContext(this.State);
 
         if (this.Function is not null)
         {

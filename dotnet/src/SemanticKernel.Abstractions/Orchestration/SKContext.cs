@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Threading;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -39,10 +35,10 @@ public sealed class SKContext
     /// </summary>
     public Exception? LastException { get; private set; }
 
-    /// <summary>
-    /// The token to monitor for cancellation requests.
-    /// </summary>
-    public CancellationToken CancellationToken { get; }
+    // /// <summary>
+    // /// The token to monitor for cancellation requests.
+    // /// </summary>
+    // public CancellationToken CancellationToken { get; }
 
     /// <summary>
     /// Shortcut into user data, access variables by name
@@ -74,39 +70,39 @@ public sealed class SKContext
     /// </summary>
     public ContextVariables Variables { get; }
 
-    /// <summary>
-    /// Semantic memory
-    /// </summary>
-    public ISemanticTextMemory Memory { get; }
+    // /// <summary>
+    // /// Semantic memory
+    // /// </summary>
+    // public ISemanticTextMemory Memory { get; }
 
-    /// <summary>
-    /// Read only skills collection
-    /// </summary>
-    public IReadOnlySkillCollection? Skills { get; internal set; }
+    // /// <summary>
+    // /// Read only skills collection
+    // /// </summary>
+    // public IReadOnlySkillCollection? Skills { get; internal set; }
 
-    /// <summary>
-    /// Access registered functions by skill + name. Not case sensitive.
-    /// The function might be native or semantic, it's up to the caller handling it.
-    /// </summary>
-    /// <param name="skillName">Skill name</param>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Delegate to execute the function</returns>
-    public ISKFunction Func(string skillName, string functionName)
-    {
-        if (this.Skills is null)
-        {
-            throw new KernelException(
-                KernelException.ErrorCodes.SkillCollectionNotSet,
-                "Skill collection not found in the context");
-        }
+    // /// <summary>
+    // /// Access registered functions by skill + name. Not case sensitive.
+    // /// The function might be native or semantic, it's up to the caller handling it.
+    // /// </summary>
+    // /// <param name="skillName">Skill name</param>
+    // /// <param name="functionName">Function name</param>
+    // /// <returns>Delegate to execute the function</returns>
+    // public ISKFunction Func(string skillName, string functionName)
+    // {
+    //     if (this.Skills is null)
+    //     {
+    //         throw new KernelException(
+    //             KernelException.ErrorCodes.SkillCollectionNotSet,
+    //             "Skill collection not found in the context");
+    //     }
+    //
+    //     return this.Skills.GetFunction(skillName, functionName);
+    // }
 
-        return this.Skills.GetFunction(skillName, functionName);
-    }
-
-    /// <summary>
-    /// App logger
-    /// </summary>
-    public ILogger Log { get; }
+    // /// <summary>
+    // /// App logger
+    // /// </summary>
+    // public ILogger Log { get; }
 
     /// <summary>
     /// Constructor for the context.
@@ -117,17 +113,18 @@ public sealed class SKContext
     /// <param name="logger">Logger for operations in context.</param>
     /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
     public SKContext(
-        ContextVariables variables,
-        ISemanticTextMemory memory,
-        IReadOnlySkillCollection? skills,
-        ILogger logger,
-        CancellationToken cancellationToken = default)
+        ContextVariables variables
+        // ISemanticTextMemory memory,
+        // IReadOnlySkillCollection? skills,
+        // ILogger logger,
+        // CancellationToken cancellationToken = default
+    )
     {
         this.Variables = variables;
-        this.Memory = memory;
-        this.Skills = skills;
-        this.Log = logger;
-        this.CancellationToken = cancellationToken;
+        // this.Memory = memory;
+        // this.Skills = skills;
+        // this.Log = logger;
+        // this.CancellationToken = cancellationToken;
     }
 
     /// <summary>

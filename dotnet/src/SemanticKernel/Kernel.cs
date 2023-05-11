@@ -108,7 +108,7 @@ public sealed class Kernel : IKernel, IDisposable
             this._log.LogTrace("Importing skill {0}", skillName);
         }
 
-        Dictionary<string, ISKFunction> skill = ImportSkill(skillInstance, skillName, this._log);
+        Dictionary<string, ISKFunction> skill = this.ImportSkill(skillInstance, skillName, this._log);
         foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
             f.Value.SetDefaultSkillCollection(this.Skills);
@@ -161,11 +161,12 @@ public sealed class Kernel : IKernel, IDisposable
     public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
         var context = new SKContext(
-            variables,
-            this._memory,
-            this._skillCollection.ReadOnlySkillCollection,
-            this._log,
-            cancellationToken);
+            variables
+            // this._memory,
+            // this._skillCollection.ReadOnlySkillCollection,
+            // this._log,
+            // cancellationToken
+        );
 
         int pipelineStepCount = -1;
         foreach (ISKFunction f in pipeline)
@@ -214,10 +215,11 @@ public sealed class Kernel : IKernel, IDisposable
     public SKContext CreateNewContext()
     {
         return new SKContext(
-            new ContextVariables(),
-            this._memory,
-            this._skillCollection.ReadOnlySkillCollection,
-            this._log);
+            new ContextVariables()
+            // this._memory,
+            // this._skillCollection.ReadOnlySkillCollection,
+            // this._log
+        );
     }
 
     /// <inheritdoc/>
@@ -313,7 +315,7 @@ public sealed class Kernel : IKernel, IDisposable
                 $"Function type not supported: {functionConfig.PromptTemplateConfig}");
         }
 
-        ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig, this._log);
+        ISKFunction func = SKFunction.FromSemanticConfig(this, skillName, functionName, functionConfig, this._log);
 
         // Connect the function to the current kernel skill collection, in case the function
         // is invoked manually without a context and without a way to find other functions.
@@ -334,7 +336,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="skillName">Skill name, used to group functions under a shared namespace</param>
     /// <param name="log">Application logger</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log)
+    private Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log)
     {
         log.LogTrace("Importing skill name: {0}", skillName);
         MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
@@ -344,7 +346,7 @@ public sealed class Kernel : IKernel, IDisposable
         Dictionary<string, ISKFunction> result = new(StringComparer.OrdinalIgnoreCase);
         foreach (MethodInfo method in methods)
         {
-            if (SKFunction.FromNativeMethod(method, skillInstance, skillName, log) is ISKFunction function)
+            if (SKFunction.FromNativeMethod(this, method, skillInstance, skillName, log) is ISKFunction function)
             {
                 if (result.ContainsKey(function.Name))
                 {

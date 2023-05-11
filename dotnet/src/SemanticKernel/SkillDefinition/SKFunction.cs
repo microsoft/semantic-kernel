@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
@@ -57,6 +56,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction? FromNativeMethod(
+        IKernel kernel,
         MethodInfo methodSignature,
         object? methodContainerInstance = null,
         string skillName = "",
@@ -73,6 +73,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
 
         return new SKFunction(
+            kernel: kernel,
             delegateType: methodDetails.Type,
             delegateFunction: methodDetails.Function,
             parameters: methodDetails.Parameters,
@@ -94,6 +95,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeFunction(
+        IKernel kernel,
         Delegate nativeFunction,
         string skillName,
         string functionName,
@@ -104,6 +106,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, false, log);
 
         return new SKFunction(
+            kernel: kernel,
             delegateType: methodDetails.Type,
             delegateFunction: methodDetails.Function,
             parameters: (parameters ?? Enumerable.Empty<ParameterView>()).ToList(),
@@ -123,6 +126,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="log">Optional logger for the function.</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
+        IKernel kernel,
         string skillName,
         string functionName,
         SemanticFunctionConfig functionConfig,
@@ -130,32 +134,37 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         Verify.NotNull(functionConfig);
 
-        async Task<SKContext> LocalFunc(
+        static async Task<SKContext> LocalFunc(
+            IKernel kernel,
             ITextCompletion client,
             CompleteRequestSettings requestSettings,
-            SKContext context)
+            SKContext context,
+            IPromptTemplate promptTemplate,
+            string skillName,
+            string functionName,
+            CancellationToken cancellationToken)
         {
             Verify.NotNull(client);
 
             try
             {
-                string prompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
+                string prompt = await promptTemplate.RenderAsync(context).ConfigureAwait(false);
 
-                string completion = await client.CompleteAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
+                string completion = await client.CompleteAsync(prompt, requestSettings, cancellationToken).ConfigureAwait(false);
                 context.Variables.Update(completion);
             }
             catch (AIException ex)
             {
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
-                log?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
+                kernel.Log.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
                 context.Fail(ex.Message, ex);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}";
-                log?.LogError(ex, Message, skillName, functionName, ex.Message);
+                kernel.Log.LogError(ex, Message, skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
 
@@ -163,8 +172,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
 
         return new SKFunction(
+            kernel: kernel,
             delegateType: DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
             delegateFunction: LocalFunc,
+            promptTemplate: functionConfig.PromptTemplate,
             parameters: functionConfig.PromptTemplate.GetParameters(),
             description: functionConfig.PromptTemplateConfig.Description,
             skillName: skillName,
@@ -198,11 +209,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             log ??= NullLogger.Instance;
             context = new SKContext(
-                new ContextVariables(""),
-                NullMemory.Instance,
-                this._skillCollection,
-                log,
-                cancellationToken);
+                new ContextVariables("")
+                // NullMemory.Instance,
+                // this._skillCollection,
+                // log,
+                // cancellationToken
+            );
         }
 
         context.Variables.Update(input);
@@ -219,12 +231,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         if (context == null)
         {
-            log ??= NullLogger.Instance;
-            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cancellationToken);
+            // log ??= NullLogger.Instance;
+            // context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cancellationToken);
+            context = new SKContext(new ContextVariables(""));
         }
 
         return this.IsSemantic
-            ? this.InvokeSemanticAsync(context, settings)
+            ? this.InvokeSemanticAsync(context, settings, cancellationToken)
             : this.InvokeNativeAsync(context);
     }
 
@@ -272,12 +285,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     #region private
 
+    private IKernel _kernel;
     private readonly DelegateTypes _delegateType;
     private readonly Delegate _function;
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
     private ITextCompletion? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
+    private readonly IPromptTemplate _promptTemplate;
 
     private struct MethodDetails
     {
@@ -313,8 +328,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     internal SKFunction(
+        IKernel kernel,
         DelegateTypes delegateType,
         Delegate delegateFunction,
+        IPromptTemplate promptTemplate,
         IList<ParameterView> parameters,
         string skillName,
         string functionName,
@@ -323,15 +340,19 @@ public sealed class SKFunction : ISKFunction, IDisposable
         ILogger? log = null
     )
     {
+        Verify.NotNull(kernel);
         Verify.NotNull(delegateFunction);
         Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
         Verify.ParametersUniqueness(parameters);
 
+        this._kernel = kernel;
+
         this._log = log ?? NullLogger.Instance;
 
         this._delegateType = delegateType;
         this._function = delegateFunction;
+        this._promptTemplate = promptTemplate;
         this.Parameters = parameters;
 
         this.IsSemantic = isSemantic;
@@ -362,16 +383,42 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     // Run the semantic function
-    private async Task<SKContext> InvokeSemanticAsync(SKContext context, CompleteRequestSettings? settings)
+    private async Task<SKContext> InvokeSemanticAsync(
+        SKContext context,
+        CompleteRequestSettings? settings,
+        CancellationToken cancellationToken)
     {
         this.VerifyIsSemantic();
 
-        this.EnsureContextHasSkills(context);
+        // this.EnsureContextHasSkills(context);
 
         settings ??= this._aiRequestSettings;
 
-        var callable = (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>>)this._function;
-        context.Variables.Update((await callable(this._aiService, settings, context).ConfigureAwait(false)).Variables);
+        var callable = (Func<
+            IKernel,
+            ITextCompletion?,
+            CompleteRequestSettings?,
+            SKContext,
+            IPromptTemplate,
+            string,
+            string,
+            CancellationToken,
+            Task<SKContext>
+        >)this._function;
+
+        SKContext? result = await callable(
+            this._kernel,
+            this._aiService,
+            settings,
+            context,
+            this._promptTemplate,
+            this.SkillName,
+            this.Name,
+            cancellationToken
+        ).ConfigureAwait(false);
+
+        context.Variables.Update(result.Variables);
+
         return context;
     }
 
@@ -380,7 +427,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         TraceFunctionTypeCall(this._delegateType, this._log);
 
-        this.EnsureContextHasSkills(context);
+        // this.EnsureContextHasSkills(context);
 
         switch (this._delegateType)
         {
@@ -520,11 +567,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
     }
 
-    private void EnsureContextHasSkills(SKContext context)
-    {
-        // If the function is invoked manually, the user might have left out the skill collection
-        context.Skills ??= this._skillCollection;
-    }
+    // private void EnsureContextHasSkills(SKContext context)
+    // {
+    //     // If the function is invoked manually, the user might have left out the skill collection
+    //     context.Skills ??= this._skillCollection;
+    // }
 
     private static MethodDetails GetMethodDetails(
         MethodInfo methodSignature,

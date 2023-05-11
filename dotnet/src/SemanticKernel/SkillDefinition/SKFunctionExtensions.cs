@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -99,12 +98,14 @@ public static class SKFunctionExtensions
     /// <returns>The temporary context</returns>
     public static async Task<SKContext> InvokeWithCustomInputAsync(this ISKFunction function,
         ContextVariables input,
-        ISemanticTextMemory memory,
-        IReadOnlySkillCollection? skills,
-        ILogger log,
-        CancellationToken cancellationToken = default)
+        // ISemanticTextMemory memory,
+        // IReadOnlySkillCollection? skills,
+        ILogger log
+        // CancellationToken cancellationToken = default
+    )
     {
-        var tmpContext = new SKContext(input, memory, skills, log, cancellationToken);
+        // var tmpContext = new SKContext(input, memory, skills, log, cancellationToken);
+        var tmpContext = new SKContext(input);
         try
         {
 #pragma warning disable CA2016 // the token is passed in via the context

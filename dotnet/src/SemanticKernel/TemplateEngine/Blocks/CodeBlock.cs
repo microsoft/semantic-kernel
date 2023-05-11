@@ -126,10 +126,11 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         SKContext result = await function.InvokeWithCustomInputAsync(
             variablesClone,
-            context.Memory,
-            context.Skills,
-            this.Log,
-            context.CancellationToken).ConfigureAwait(false);
+            // context.Memory,
+            // context.Skills,
+            this.Log
+            // context.CancellationToken
+        ).ConfigureAwait(false);
 
         if (result.ErrorOccurred)
         {
