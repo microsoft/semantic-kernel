@@ -120,7 +120,7 @@ public class ChatSkill
 
         if (result.ErrorOccurred)
         {
-            this._logger.LogWarning("{0}: {1}", result.LastErrorDescription, result.LastException);
+            context.Log.LogError("{0}: {1}", result.LastErrorDescription, result.LastException);
             context.Fail(result.LastErrorDescription);
             return string.Empty;
         }
@@ -224,7 +224,7 @@ public class ChatSkill
             this._logger.LogWarning("{0}: {1}", planContext.LastErrorDescription, planContext.LastException);
             return string.Empty;
         }
-        
+
         int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
         // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
@@ -300,14 +300,14 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
-        // Log full error and strip the full exception from the context, leaving the error description.
+        // Log exception and strip it from the context, leaving the error description.
         SKContext RemoveExceptionFromContext(SKContext chatContext)
         {
             chatContext.Log.LogError("{0}: {1}", chatContext.LastErrorDescription, chatContext.LastException);
             chatContext.Fail(chatContext.LastErrorDescription);
             return chatContext;
         }
-        
+
         var tokenLimit = this._promptSettings.CompletionTokenLimit;
         var remainingToken =
             tokenLimit -
@@ -390,8 +390,6 @@ public class ChatSkill
         context.Variables.Update(chatContext.Result);
         context.Variables.Set("userId", "Bot");
         return context;
-
-        
     }
 
     #region Private
