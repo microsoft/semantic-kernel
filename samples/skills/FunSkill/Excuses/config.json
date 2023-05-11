@@ -1,8 +1,6 @@
 {
-  "schema": 1,
   "description": "Turn a scenario into a creative or humorous excuse to send your boss",
-  "type": "completion",
-  "completion": {
+  "default_settings": {
     "max_tokens": 60,
     "temperature": 0.5,
     "top_p": 0.0,

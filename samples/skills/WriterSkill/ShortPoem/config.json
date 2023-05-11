@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Turn a scenario into a short and entertaining poem.",
-  "completion": {
+  "default_settings": {
     "max_tokens": 60,
     "temperature": 0.5,
     "top_p": 0.0,

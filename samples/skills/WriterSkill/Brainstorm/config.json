@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Given a goal or topic description generate a list of ideas",
-  "completion": {
+  "default_settings": {
     "max_tokens": 2000,
     "temperature": 0.5,
     "top_p": 1.0,

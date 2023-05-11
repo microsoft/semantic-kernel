@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Tell you the urgency level of the given text",
-  "completion": {
+  "default_settings": {
     "max_tokens": 64,
     "temperature": 0.0,
     "top_p": 0.0,
