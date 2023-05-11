@@ -23,7 +23,6 @@ async def test_azure_summarize_conversation_using_skill():
         deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
         deployment_name = "text-davinci-003"
 
-    
     kernel.add_text_completion_service(
         "text_completion",
         sk_oai.AzureTextCompletion(deployment_name, endpoint, api_key),

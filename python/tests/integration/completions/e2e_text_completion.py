@@ -2,7 +2,9 @@ import logging
 import time
 
 import semantic_kernel as sk
-from semantic_kernel.core_skills.conversation_summary_skill import ConversationSummarySkill
+from semantic_kernel.core_skills.conversation_summary_skill import (
+    ConversationSummarySkill,
+)
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -359,13 +361,13 @@ async def summarize_conversation_using_skill(kernel: sk.Kernel):
         John: Yeah, that's a good idea."""
 
     conversationSummarySkill = kernel.import_skill(
-        ConversationSummarySkill(kernel),
-        "conversationSummary")
+        ConversationSummarySkill(kernel), "conversationSummary"
+    )
     summary = await kernel.run_async(
-        conversationSummarySkill["SummarizeConversation"], 
-        input_str=ChatTranscript)
+        conversationSummarySkill["SummarizeConversation"], input_str=ChatTranscript
+    )
 
     output = str(summary).strip().lower()
     print(output)
-    assert ("john" in output and "jane" in output)
-    assert (len(output) < len(ChatTranscript))
+    assert "john" in output and "jane" in output
+    assert len(output) < len(ChatTranscript)
