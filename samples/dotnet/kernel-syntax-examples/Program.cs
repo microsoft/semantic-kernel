@@ -112,5 +112,8 @@ public static class Program
 
         await Example35_GrpcSkills.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example36_Postgres.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
