@@ -40,7 +40,7 @@ public interface ISKFunction
     /// <summary>
     /// AI service settings
     /// </summary>
-    JsonObject RequestSettings { get; }
+    JsonObject ServiceSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.

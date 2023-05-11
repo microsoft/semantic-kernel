@@ -39,9 +39,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public bool IsSemantic { get; }
 
     /// <inheritdoc/>
-    public JsonObject RequestSettings
+    public JsonObject ServiceSettings
     {
-        get { return this._aiRequestSettings; }
+        get { return this._aiServiceSettings; }
     }
 
     /// <summary>
@@ -102,7 +102,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         async Task<SKContext> LocalFunc(
             ITextCompletion client,
-            JsonObject requestSettings,
+            JsonObject serviceSettings,
             SKContext context)
         {
             Verify.NotNull(client);
@@ -111,7 +111,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             {
                 string prompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
 
-                string completion = await client.CompleteAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
+                string completion = await client.CompleteAsync(prompt, serviceSettings, context.CancellationToken).ConfigureAwait(false);
                 context.Variables.Update(completion);
             }
             catch (AIException ex)
@@ -248,7 +248,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         Verify.NotNull(settings);
         this.VerifyIsSemantic();
-        this._aiRequestSettings = settings;
+        this._aiServiceSettings = settings;
         return this;
     }
 
@@ -276,7 +276,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
     private ITextCompletion? _aiService = null;
-    private JsonObject _aiRequestSettings = new();
+    private JsonObject _aiServiceSettings = new();
 
     private struct MethodDetails
     {
@@ -367,7 +367,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         this.EnsureContextHasSkills(context);
 
-        settings ??= this._aiRequestSettings;
+        settings ??= this._aiServiceSettings;
 
         var callable = (Func<ITextCompletion?, JsonObject?, SKContext, Task<SKContext>>)this._function;
         context.Variables.Update((await callable(this._aiService, settings, context).ConfigureAwait(false)).Variables);

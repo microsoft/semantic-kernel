@@ -23,7 +23,7 @@ public sealed class SKFunctionTests1
     }
 
     [Fact]
-    public void ItAllowsToUpdateRequestSettings()
+    public void ItAllowsToUpdateServiceSettings()
     {
         // Arrange
         var templateConfig = new PromptTemplateConfig();
@@ -36,24 +36,24 @@ public sealed class SKFunctionTests1
         };
 
         // Act
-        skFunction.RequestSettings["temperature"] = 1.3;
-        skFunction.RequestSettings["max_tokens"] = 130;
+        skFunction.ServiceSettings["temperature"] = 1.3;
+        skFunction.ServiceSettings["max_tokens"] = 130;
 
         // Assert
-        Assert.Equal(1.3, skFunction.RequestSettings["temperature"]?.GetValue<double>());
-        Assert.Equal(130, skFunction.RequestSettings["max_tokens"]?.GetValue<int>());
+        Assert.Equal(1.3, skFunction.ServiceSettings["temperature"]?.GetValue<double>());
+        Assert.Equal(130, skFunction.ServiceSettings["max_tokens"]?.GetValue<int>());
 
         // Act
-        skFunction.RequestSettings["temperature"] = 0.7;
+        skFunction.ServiceSettings["temperature"] = 0.7;
 
         // Assert
-        Assert.Equal(0.7, skFunction.RequestSettings["temperature"]?.GetValue<double>());
+        Assert.Equal(0.7, skFunction.ServiceSettings["temperature"]?.GetValue<double>());
 
         // Act
         skFunction.SetAIConfiguration(settings);
 
         // Assert
-        Assert.Equal(settings["temperature"], skFunction.RequestSettings["temperature"]);
-        Assert.Equal(settings["max_tokens"], skFunction.RequestSettings["max_tokens"]);
+        Assert.Equal(settings["temperature"], skFunction.ServiceSettings["temperature"]);
+        Assert.Equal(settings["max_tokens"], skFunction.ServiceSettings["max_tokens"]);
     }
 }

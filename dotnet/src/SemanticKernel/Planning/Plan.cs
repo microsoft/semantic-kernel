@@ -81,7 +81,7 @@ public sealed class Plan : ISKFunction
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public JsonObject RequestSettings { get; private set; } = new();
+    public JsonObject ServiceSettings { get; private set; } = new();
 
     #endregion ISKFunction implementation
 
@@ -570,7 +570,7 @@ public sealed class Plan : ISKFunction
         this.SkillName = function.SkillName;
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
-        this.RequestSettings = function.RequestSettings;
+        this.ServiceSettings = function.ServiceSettings;
     }
 
     private ISKFunction? Function { get; set; } = null;
