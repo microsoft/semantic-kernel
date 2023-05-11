@@ -85,7 +85,7 @@ public interface ISemanticTextMemory
         string collection,
         string query,
         int limit = 1,
-        double minRelevanceScore = 0.7,
+        double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 
