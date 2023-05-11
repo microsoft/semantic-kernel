@@ -113,8 +113,7 @@ async def summarize_function_test(kernel: sk.Kernel):
     # Summarize input context with additional variables and string and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
-    context_vars = sk.ContextVariables(
-        variables={"input2": "4) All birds are robots."})
+    context_vars = sk.ContextVariables(variables={"input2": "4) All birds are robots."})
     summary = await retry(
         lambda: kernel.run_async(
             tldr_function,
