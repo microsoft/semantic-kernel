@@ -57,7 +57,7 @@ public class DefaultKernelTest {
                                 new ArrayList<>())
                         .registerOnKernel(kernel);
 
-        ReadOnlyContextVariables variables = ReadOnlyContextVariables.build();
+        ReadOnlyContextVariables variables = SKBuilders.variables().build();
 
         CompletionSKContext readOnlySkContext =
                 chat.buildContext(variables, null, null)
@@ -121,7 +121,8 @@ public class DefaultKernelTest {
         assertTheResultEquals(result, expectedResponse);
     }
 
-    Kernel buildKernel(String model, com.azure.ai.openai.OpenAIAsyncClient openAIAsyncClient) {
+    public static Kernel buildKernel(
+            String model, com.azure.ai.openai.OpenAIAsyncClient openAIAsyncClient) {
 
         com.microsoft.openai.OpenAIAsyncClient client = new AzureOpenAiClient(openAIAsyncClient);
 
@@ -155,7 +156,7 @@ public class DefaultKernelTest {
 
           This if the client is prompted with "Tell me a joke", the mocked client would respond with "This is a joke"
     */
-    private static com.azure.ai.openai.OpenAIAsyncClient mockCompletionOpenAIAsyncClient(
+    public static com.azure.ai.openai.OpenAIAsyncClient mockCompletionOpenAIAsyncClient(
             List<Tuple2<String, String>> responses) {
         com.azure.ai.openai.OpenAIAsyncClient openAIAsyncClient =
                 Mockito.mock(com.azure.ai.openai.OpenAIAsyncClient.class);

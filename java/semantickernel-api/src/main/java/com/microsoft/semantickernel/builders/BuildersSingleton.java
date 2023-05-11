@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.builders;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.orchestration.ReadOnlyContextVariables;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
@@ -33,6 +34,7 @@ public enum BuildersSingleton {
     private final ReadOnlySkillCollection.Builder readOnlySkillCollection;
 
     private final PromptTemplate.Builder promptTemplate;
+    private final ReadOnlyContextVariables.Builder variables;
 
     BuildersSingleton() {
         try {
@@ -52,6 +54,9 @@ public enum BuildersSingleton {
             promptTemplate =
                     ServiceLoadUtil.findServiceLoader(
                             PromptTemplate.Builder.class, FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS);
+
+            variables = new ReadOnlyContextVariables.Builder();
+
         } catch (Throwable e) {
             Logger LOGGER = LoggerFactory.getLogger(BuildersSingleton.class);
             LOGGER.error("Failed to discover Semantic Kernel Builders", e);
@@ -95,5 +100,9 @@ public enum BuildersSingleton {
 
     public PromptTemplate.Builder getPromptTemplateBuilder() {
         return promptTemplate;
+    }
+
+    public ReadOnlyContextVariables.Builder variables() {
+        return variables;
     }
 }

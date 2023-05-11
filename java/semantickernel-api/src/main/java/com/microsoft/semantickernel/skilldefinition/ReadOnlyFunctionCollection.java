@@ -42,7 +42,7 @@ public class ReadOnlyFunctionCollection {
     public SKFunction<?, ?> getFunction(String functionName) {
         SKFunction<?, ?> func = functionCollection.get(functionName.toLowerCase());
         if (func == null) {
-            throw new FunctionNotFound();
+            throw new FunctionNotFound(functionName);
         }
         return func;
     }

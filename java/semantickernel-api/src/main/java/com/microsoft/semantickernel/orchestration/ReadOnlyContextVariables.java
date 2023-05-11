@@ -22,23 +22,25 @@ public interface ReadOnlyContextVariables {
     @CheckReturnValue
     ReadOnlyContextVariables copy();
 
-    /**
-     * Builds an empty instance
-     *
-     * @return an empty
-     */
-    static ReadOnlyContextVariables build() {
-        return new ImmutableContextVariables("");
-    }
+    class Builder {
+        /**
+         * Builds an empty instance
+         *
+         * @return an empty
+         */
+        public ReadOnlyContextVariables build() {
+            return new ImmutableContextVariables("");
+        }
 
-    /**
-     * Builds an instance with the given content in the default main key
-     *
-     * @param content Entry to place in the "input" slot
-     * @return an instantiation of ContextVariables
-     */
-    static ReadOnlyContextVariables build(String content) {
-        return new ImmutableContextVariables(content);
+        /**
+         * Builds an instance with the given content in the default main key
+         *
+         * @param content Entry to place in the "input" slot
+         * @return an instantiation of ContextVariables
+         */
+        public ReadOnlyContextVariables build(String content) {
+            return new ImmutableContextVariables(content);
+        }
     }
 
     /**

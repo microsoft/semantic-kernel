@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
-import com.microsoft.semantickernel.orchestration.ReadOnlySKContext;
-import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.*;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.skilldefinition.DefaultReadOnlySkillCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
@@ -16,6 +15,9 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
+import reactor.core.publisher.Mono;
+
+import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -219,7 +221,7 @@ public class KernelDefault implements Kernel {
     public ReadOnlyFunctionCollection getSkill(String funSkill) throws FunctionNotFound {
         ReadOnlyFunctionCollection functions = this.skillCollection.getFunctions(funSkill);
         if (functions == null) {
-            throw new FunctionNotFound();
+            throw new FunctionNotFound(funSkill);
         }
 
         return functions;
@@ -271,4 +273,31 @@ public class KernelDefault implements Kernel {
 
      */
 
+    @Override
+    public Mono<ReadOnlySKContext<?>> runAsync(SKFunction... pipeline) {
+        return runAsync(SKBuilders.variables().build(), pipeline);
+    }
+
+    @Override
+    public Mono<ReadOnlySKContext<?>> runAsync(String input, SKFunction... pipeline) {
+        return runAsync(SKBuilders.variables().build(input), pipeline);
+    }
+
+    public Mono<ReadOnlySKContext<?>> runAsync(
+            ReadOnlyContextVariables variables, SKFunction... pipeline) {
+        DefaultSemanticSKContext context =
+                new DefaultSemanticSKContext(variables, this.memory, () -> this.skillCollection);
+
+        Mono<ReadOnlySKContext<?>> pipelineBuilder = Mono.just(context);
+
+        for (SKFunction f : Arrays.asList(pipeline)) {
+            pipelineBuilder =
+                    pipelineBuilder.flatMap(
+                            newContext -> {
+                                return f.invokeAsync(newContext, null);
+                            });
+        }
+
+        return pipelineBuilder;
+    }
 }

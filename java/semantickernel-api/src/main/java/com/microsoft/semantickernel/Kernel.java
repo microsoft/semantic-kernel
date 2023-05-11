@@ -11,6 +11,8 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 
+import reactor.core.publisher.Mono;
+
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -103,30 +105,30 @@ public interface Kernel {
     void registerMemory(SemanticTextMemory memory);
 
     /*
-    /// <summary>
-    /// Set the semantic memory to use
-    /// </summary>
-    /// <param name="memory">Semantic memory instance</param>
-    void RegisterMemory(ISemanticTextMemory memory);
+        /// <summary>
+        /// Set the semantic memory to use
+        /// </summary>
+        /// <param name="memory">Semantic memory instance</param>
+        void RegisterMemory(ISemanticTextMemory memory);
+    */
+    /**
+     * Run a pipeline composed of synchronous and asynchronous functions.
+     *
+     * @param pipeline List of functions
+     * @return Result of the function composition
+     */
+    Mono<ReadOnlySKContext<?>> runAsync(SKFunction... pipeline);
 
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
-            params ISKFunction[] pipeline);
+    /**
+     * Run a pipeline composed of synchronous and asynchronous functions.
+     *
+     * @param input Input to process
+     * @param pipeline List of functions
+     * @return Result of the function composition
+     */
+    Mono<ReadOnlySKContext<?>> runAsync(String input, SKFunction... pipeline);
 
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="input">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
-            string input,
-            params ISKFunction[] pipeline);
-
+    /*
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>

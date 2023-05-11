@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -48,7 +49,7 @@ public abstract class AbstractSkFunction<
         if (context == null) {
             context =
                     buildContext(
-                            ReadOnlyContextVariables.build(),
+                            SKBuilders.variables().build(),
                             NullMemory.getInstance(),
                             this.skillCollection);
         }
@@ -69,8 +70,7 @@ public abstract class AbstractSkFunction<
         // return new FutureTask<SKContext>(() -> function.run(null, settings, context));
 
         if (context == null) {
-            context =
-                    buildContext(ReadOnlyContextVariables.build(), NullMemory.getInstance(), null);
+            context = buildContext(SKBuilders.variables().build(), NullMemory.getInstance(), null);
         }
 
         return this.invokeAsyncInternal(context, settings);
@@ -191,6 +191,6 @@ public abstract class AbstractSkFunction<
 
     @Override
     public ContextType buildContext() {
-        return buildContext(ReadOnlyContextVariables.build(), null, skillCollection);
+        return buildContext(SKBuilders.variables().build(), null, skillCollection);
     }
 }
