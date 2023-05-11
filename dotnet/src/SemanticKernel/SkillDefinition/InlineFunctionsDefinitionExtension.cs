@@ -3,8 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable IDE0130
@@ -49,19 +51,20 @@ public static class InlineFunctionsDefinitionExtension
     {
         functionName ??= RandomFunctionName();
 
+        var serviceSettings = new JsonObject
+        {
+            ["temperature"] = temperature,
+            ["top_p"] = topP,
+            ["presence_penalty"] = presencePenalty,
+            ["frequency_penalty"] = frequencyPenalty,
+            ["max_tokens"] = maxTokens,
+            ["stop_sequences"] = new JsonArray() { stopSequences },
+        };
+
         var config = new PromptTemplateConfig
         {
             Description = description ?? "Generic function, unknown purpose",
-            Type = "completion",
-            Completion = new PromptTemplateConfig.CompletionConfig
-            {
-                Temperature = temperature,
-                TopP = topP,
-                PresencePenalty = presencePenalty,
-                FrequencyPenalty = frequencyPenalty,
-                MaxTokens = maxTokens,
-                StopSequences = stopSequences?.ToList() ?? new List<string>()
-            }
+            DefaultSettings = serviceSettings
         };
 
         return kernel.CreateSemanticFunction(

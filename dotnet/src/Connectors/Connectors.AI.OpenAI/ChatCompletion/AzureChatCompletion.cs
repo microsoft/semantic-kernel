@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Models;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -79,17 +81,19 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     /// <inheritdoc/>
     public Task<string> CompleteAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        JsonObject requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken);
+        var settings = CompletionRequestSettings.FromJson(requestSettings);
+        return this.InternalCompleteTextUsingChatAsync(text, settings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<string> CompleteStreamAsync(string text,
-        CompleteRequestSettings requestSettings,
+        JsonObject requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextUsingChatStreamAsync(text, requestSettings, cancellationToken);
+        var settings = CompletionRequestSettings.FromJson(requestSettings);
+        return this.InternalCompleteTextUsingChatStreamAsync(text, settings, cancellationToken);
     }
 }

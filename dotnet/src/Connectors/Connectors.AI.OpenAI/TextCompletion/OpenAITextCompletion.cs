@@ -2,11 +2,13 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Models;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
@@ -37,18 +39,20 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     /// <inheritdoc/>
     public Task<string> CompleteAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        JsonObject requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextAsync(text, requestSettings, cancellationToken);
+        var settings = CompletionRequestSettings.FromJson(requestSettings);
+        return this.InternalCompleteTextAsync(text, settings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<string> CompleteStreamAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        JsonObject requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompletionStreamAsync(text, requestSettings, cancellationToken);
+        var settings = CompletionRequestSettings.FromJson(requestSettings);
+        return this.InternalCompletionStreamAsync(text, settings, cancellationToken);
     }
 }

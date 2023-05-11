@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -39,7 +40,7 @@ public interface ISKFunction
     /// <summary>
     /// AI service settings
     /// </summary>
-    CompleteRequestSettings RequestSettings { get; }
+    JsonObject RequestSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.
@@ -59,7 +60,7 @@ public interface ISKFunction
     Task<SKContext> InvokeAsync(
         string input,
         SKContext? context = null,
-        CompleteRequestSettings? settings = null,
+        JsonObject? settings = null,
         ILogger? log = null,
         CancellationToken cancellationToken = default);
 
@@ -73,7 +74,7 @@ public interface ISKFunction
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     Task<SKContext> InvokeAsync(
         SKContext? context = null,
-        CompleteRequestSettings? settings = null,
+        JsonObject? settings = null,
         ILogger? log = null,
         CancellationToken cancellationToken = default);
 
@@ -94,9 +95,9 @@ public interface ISKFunction
     ISKFunction SetAIService(Func<ITextCompletion> serviceFactory);
 
     /// <summary>
-    /// Set the AI completion settings used with LLM requests
+    /// Set the AI settings used with LLM requests
     /// </summary>
-    /// <param name="settings">LLM completion settings</param>
+    /// <param name="settings">LLM settings</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
+    ISKFunction SetAIConfiguration(JsonObject settings);
 }

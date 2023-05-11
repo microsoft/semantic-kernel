@@ -625,15 +625,15 @@ public class ChatSkill
     /// <summary>
     /// Create a completion settings object for chat response. Parameters are read from the PromptSettings class.
     /// </summary>
-    private CompleteRequestSettings CreateChatResponseCompletionSettings()
+    private JsonObject CreateChatResponseCompletionSettings()
     {
-        var completionSettings = new CompleteRequestSettings
+        var completionSettings = new JsonObject
         {
-            MaxTokens = this._promptSettings.ResponseTokenLimit,
-            Temperature = this._promptSettings.ResponseTemperature,
-            TopP = this._promptSettings.ResponseTopP,
-            FrequencyPenalty = this._promptSettings.ResponseFrequencyPenalty,
-            PresencePenalty = this._promptSettings.ResponsePresencePenalty
+            ["max_tokens"] = this._promptSettings.ResponseTokenLimit,
+            ["temperature"] = this._promptSettings.ResponseTemperature,
+            ["top_p"] = this._promptSettings.ResponseTopP,
+            ["frequency_penalty"] = this._promptSettings.ResponseFrequencyPenalty,
+            ["presence_penalty"] = this._promptSettings.ResponsePresencePenalty
         };
 
         return completionSettings;
@@ -642,16 +642,16 @@ public class ChatSkill
     /// <summary>
     /// Create a completion settings object for intent response. Parameters are read from the PromptSettings class.
     /// </summary>
-    private CompleteRequestSettings CreateIntentCompletionSettings()
+    private JsonObject CreateIntentCompletionSettings()
     {
-        var completionSettings = new CompleteRequestSettings
+        var completionSettings = new JsonObject
         {
-            MaxTokens = this._promptSettings.ResponseTokenLimit,
-            Temperature = this._promptSettings.IntentTemperature,
-            TopP = this._promptSettings.IntentTopP,
-            FrequencyPenalty = this._promptSettings.IntentFrequencyPenalty,
-            PresencePenalty = this._promptSettings.IntentPresencePenalty,
-            StopSequences = new string[] { "] bot:" }
+            ["max_tokens"] = this._promptSettings.ResponseTokenLimit,
+            ["temperature"] = this._promptSettings.IntentTemperature,
+            ["top_p"] = this._promptSettings.IntentTopP,
+            ["frequency_penalty"] = this._promptSettings.IntentFrequencyPenalty,
+            ["presence_penalty"] = this._promptSettings.IntentPresencePenalty,
+            ["stop_sequences"] = new JsonArray { "] bot:" }
         };
 
         return completionSettings;

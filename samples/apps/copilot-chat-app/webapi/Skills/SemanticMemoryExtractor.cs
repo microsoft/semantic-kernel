@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Globalization;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
@@ -51,15 +52,15 @@ internal static class SemanticMemoryExtractor
     /// <summary>
     /// Create a completion settings object for chat response. Parameters are read from the PromptSettings class.
     /// </summary>
-    private static CompleteRequestSettings CreateMemoryExtractionSettings(PromptSettings promptSettings)
+    private static JsonObject CreateMemoryExtractionSettings(PromptSettings promptSettings)
     {
-        var completionSettings = new CompleteRequestSettings
+        var completionSettings = new JsonObject
         {
-            MaxTokens = promptSettings.ResponseTokenLimit,
-            Temperature = promptSettings.ResponseTemperature,
-            TopP = promptSettings.ResponseTopP,
-            FrequencyPenalty = promptSettings.ResponseFrequencyPenalty,
-            PresencePenalty = promptSettings.ResponsePresencePenalty
+            ["max_tokens"] = promptSettings.ResponseTokenLimit,
+            ["temperature"] = promptSettings.ResponseTemperature,
+            ["top_p"] = promptSettings.ResponseTopP,
+            ["frequency_penalty"] = promptSettings.ResponseFrequencyPenalty,
+            ["presence_penalty"] = promptSettings.ResponsePresencePenalty
         };
 
         return completionSettings;

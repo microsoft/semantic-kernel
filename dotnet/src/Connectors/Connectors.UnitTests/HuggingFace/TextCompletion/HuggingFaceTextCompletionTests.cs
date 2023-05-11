@@ -3,6 +3,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -25,7 +26,7 @@ public class HuggingFaceTextCompletionTests : IDisposable
     };
 
     /// <summary>
-    /// Verifies that <see cref="HuggingFaceTextCompletion.CompleteAsync(string, CompleteRequestSettings, CancellationToken)"/>
+    /// Verifies that <see cref="HuggingFaceTextCompletion.CompleteAsync(string, JsonObject, CancellationToken)"/>
     /// returns expected completed text without errors.
     /// </summary>
     [Fact]
@@ -33,7 +34,7 @@ public class HuggingFaceTextCompletionTests : IDisposable
     {
         // Arrange
         const string Prompt = "This is test";
-        CompleteRequestSettings requestSettings = new();
+        JsonObject requestSettings = new();
 
         using var service = this.CreateService(HuggingFaceTestHelper.GetTestResponse("completion_test_response.json"));
 

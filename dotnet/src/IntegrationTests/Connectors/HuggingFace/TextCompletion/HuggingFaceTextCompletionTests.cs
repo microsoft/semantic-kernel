@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -39,8 +40,8 @@ public sealed class HuggingFaceTextCompletionTests
         using var huggingFaceRemote = new HuggingFaceTextCompletion(this.GetApiKey(), Model);
 
         // Act
-        var localResponse = await huggingFaceLocal.CompleteAsync(Input, new CompleteRequestSettings());
-        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input, new CompleteRequestSettings());
+        var localResponse = await huggingFaceLocal.CompleteAsync(Input, new JsonObject());
+        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input, new JsonObject());
 
         // Assert
         Assert.NotNull(localResponse);
