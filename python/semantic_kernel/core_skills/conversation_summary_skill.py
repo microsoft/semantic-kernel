@@ -13,9 +13,9 @@ class ConversationSummarySkill:
     """
 
     # The max tokens to process in a single semantic function call.
-    MaxTokens = 1024
+    _max_tokens = 1024
 
-    SummarizeConversationPromptTemplate = (
+    _summarize_conversation_prompt_template = (
         "BEGIN CONTENT TO SUMMARIZE:\n"
         "{{" + "$INPUT" + "}}\n"
         "END CONTENT TO SUMMARIZE.\n"
@@ -28,10 +28,10 @@ class ConversationSummarySkill:
 
     def __init__(self, kernel: Kernel):
         self._summarizeConversationFunction = kernel.create_semantic_function(
-            ConversationSummarySkill.SummarizeConversationPromptTemplate,
+            ConversationSummarySkill._summarize_conversation_prompt_template,
             skill_name=ConversationSummarySkill.__name__,
             description="Given a section of a conversation transcript, summarize the part of the conversation.",
-            max_tokens=ConversationSummarySkill.MaxTokens,
+            max_tokens=ConversationSummarySkill._max_tokens,
             temperature=0.1,
             top_p=0.5,
         )
@@ -52,10 +52,10 @@ class ConversationSummarySkill:
         :return: SKContext with the summarized conversation result.
         """
         lines = text_chunker._split_text_lines(
-            input, ConversationSummarySkill.MaxTokens, True
+            input, ConversationSummarySkill._max_tokens, True
         )
         paragraphs = text_chunker._split_text_paragraph(
-            lines, ConversationSummarySkill.MaxTokens
+            lines, ConversationSummarySkill._max_tokens
         )
 
         return await aggregate_chunked_results_async(
