@@ -9,7 +9,7 @@ import { AuthorRoles } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { updateConversation } from '../../redux/features/conversations/conversationsSlice';
+import { updateConversationFromUser } from '../../redux/features/conversations/conversationsSlice';
 import { ChatHistory } from './ChatHistory';
 import { ChatInput } from './ChatInput';
 
@@ -113,8 +113,7 @@ export const ChatRoom: React.FC = () => {
         };
 
         setIsBotTyping(true);
-        dispatch(updateConversation({ message: chatInput }));
-
+        dispatch(updateConversationFromUser({ message: chatInput }));
         try {
             await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userCancelledPlan);
         } finally {
