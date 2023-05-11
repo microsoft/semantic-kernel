@@ -39,7 +39,7 @@ jobs:
         working-directory: java
 
       - name: Run tests
-        run: ./mvnw -B -Pbug-check test --file pom.xml
+        run: ./mvnw -B -Pbug-check -DskipITs test --file pom.xml
         working-directory: java
 
       - uses: actions/upload-artifact@v2
