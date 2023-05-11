@@ -4,8 +4,12 @@ on:
   workflow_dispatch:
   push:
     branches: [ "experimental-java", "java-dev" ]
+    paths:
+      - 'java/**'
   pull_request:
     branches: [ "experimental-java", "java-dev" ]
+    paths:
+      - 'java/**'
 
 permissions:
   contents: read
