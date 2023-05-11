@@ -3,7 +3,7 @@ package com.microsoft.semantickernel;
 import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.orchestration.ReadOnlySKContext;
-import com.microsoft.semantickernel.orchestration.SemanticSKFunction;
+import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import reactor.core.publisher.Mono;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class Example03SemanticFunctionInline {
    * @param text Input to the function
    */
   public static void inlineFunction (Kernel kernel, String prompt, String functionName, String text) {
-    SemanticSKFunction summarize =
+    SKFunction summarize =
         SKBuilders.completionFunctions()
             .createFunction(
                 prompt,
