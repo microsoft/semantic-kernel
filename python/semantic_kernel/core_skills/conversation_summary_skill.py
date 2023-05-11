@@ -3,7 +3,7 @@ from semantic_kernel.skill_definition import sk_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.text import text_chunker
 
-from python.semantic_kernel.text.function_extension import aggregate_chunked_results_async
+from semantic_kernel.text.function_extension import aggregate_chunked_results_async
 
 
 class ConversationSummarySkill:
@@ -29,11 +29,11 @@ class ConversationSummarySkill:
 
         self._summarizeConversationFunction = kernel.create_semantic_function(
             ConversationSummarySkill.SummarizeConversationPromptTemplate,
-            skillName=ConversationSummarySkill.__name__,
+            skill_name=ConversationSummarySkill.__name__,
             description="Given a section of a conversation transcript, summarize the part of the conversation.",
-            maxTokens=ConversationSummarySkill.MaxTokens,
+            max_tokens=ConversationSummarySkill.MaxTokens,
             temperature=0.1,
-            topP=0.5)
+            top_p=0.5)
 
     @sk_function(
         description="Given a long conversation transcript, summarize the conversation.",
@@ -49,7 +49,7 @@ class ConversationSummarySkill:
         :return: SKContext with the summarized conversation result.
         """
         lines = text_chunker._split_text_lines(
-            input, ConversationSummarySkill.MaxTokens)
+            input, ConversationSummarySkill.MaxTokens, True)
         paragraphs = text_chunker._split_text_paragraph(
             lines, ConversationSummarySkill.MaxTokens)
 
