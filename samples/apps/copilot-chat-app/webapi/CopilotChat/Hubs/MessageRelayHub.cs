@@ -11,8 +11,7 @@ namespace SemanticKernel.Service.CopilotChat.Hubs;
 /// </summary>
 public class MessageRelayHub : Hub
 {
-    private readonly string UserConnectedClientCall = "UserConnected";
-    private readonly string ReceiveMessageClientCall = "ReceiveMessage";
+    private readonly string _userConnectedClientCall = "UserConnected";
     private readonly ILogger<MessageRelayHub> _logger;
 
     /// <summary>
@@ -29,18 +28,21 @@ public class MessageRelayHub : Hub
     /// </summary>
     public override async Task OnConnectedAsync()
     {
-        await this.Clients.All.SendAsync(UserConnectedClientCall, this.Context.ConnectionId);
+        await this.Clients.All.SendAsync(this._userConnectedClientCall, this.Context.ConnectionId);
         this._logger.LogInformation("User connected with connection id: {0}", this.Context.ConnectionId);
     }
 
     /// <summary>
-    /// Sends a conversation message to all other users except the sender.
+    /// Sends a message to all users except the sender.
     /// </summary>
+    /// <param name="clientSideCallBackName">The name of the client-side callback function.</param>
     /// <param name="message">The message to send.</param>
-    public async Task SendMessage(object message)
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public async Task SendMessageToAllUsersExceptSelfAsync(string clientSideCallBackName, object message)
     {
         this._logger.LogInformation("Receive message: {0}", message);
-        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync(ReceiveMessageClientCall, message);
-        this._logger.LogDebug("Called {0}", ReceiveMessageClientCall);
+        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync(clientSideCallBackName, message);
+        this._logger.LogDebug("Called SendMessageToAllUsersExceptSelfAsync on server");
+        this._logger.LogDebug("Called {0} on clients", clientSideCallBackName);
     }
 }

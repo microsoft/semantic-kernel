@@ -34,6 +34,12 @@ export const conversationsSlice = createSlice({
             state.conversations[id].messages.push(message);
             frontLoadChat(state, id);
         },
+        /*
+        * updateConversationFromServer() does the same thing as updateConversationFromUser(),
+        * but signalRMiddleware calls different events for both. The former broadcasting
+        * to all clients in a group and the later broadcasting to all clients except the sender.
+        * The updateConversationFromUser() triggers a updateConversationFromServer() on all other clients.
+        */
         updateConversationFromServer: (
             state: ConversationsState,
             action: PayloadAction<{ message: IChatMessage; chatId?: string }>,
