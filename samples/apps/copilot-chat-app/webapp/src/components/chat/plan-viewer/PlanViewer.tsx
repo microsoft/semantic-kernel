@@ -60,7 +60,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ plan, planState, onSubmi
             {planState === ChatMessageState.PlanApproved && (
                 <div className={mergeClasses(classes.buttons, classes.status)}>
                     <CheckmarkCircle24Regular />
-                    <Text> Plan Executed</Text>
+                    <Text className={classes.text}> Plan Executed</Text>
                 </div>
             )}
             {planState === ChatMessageState.PlanRejected && (

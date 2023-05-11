@@ -125,7 +125,8 @@ public class ChatSkill
 
         if (result.ErrorOccurred)
         {
-            context.Fail(result.LastErrorDescription, result.LastException);
+            context.Log.LogError("{0}: {1}", result.LastErrorDescription, result.LastException);
+            context.Fail(result.LastErrorDescription);
             return string.Empty;
         }
 
@@ -340,6 +341,14 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
+        // Log exception and strip it from the context, leaving the error description.
+        SKContext RemoveExceptionFromContext(SKContext chatContext)
+        {
+            chatContext.Log.LogError("{0}: {1}", chatContext.LastErrorDescription, chatContext.LastException);
+            chatContext.Fail(chatContext.LastErrorDescription);
+            return chatContext;
+        }
+
         string response;
         var chatId = context["chatId"];
 
@@ -394,7 +403,7 @@ public class ChatSkill
                 userIntent = await this.ExtractUserIntentAsync(chatContext);
                 if (chatContext.ErrorOccurred)
                 {
-                    return chatContext;
+                    return RemoveExceptionFromContext(chatContext);
                 }
             }
 
@@ -418,7 +427,7 @@ public class ChatSkill
             // If the completion function failed, return the context containing the error.
             if (chatContext.ErrorOccurred)
             {
-                return chatContext;
+                return RemoveExceptionFromContext(chatContext);
             }
 
             response = chatContext.Result;
@@ -441,12 +450,11 @@ public class ChatSkill
         catch (Exception ex) when (!ex.IsCriticalException())
         {
             context.Log.LogError("Unable to save new response: {0}", ex.Message);
-            context.Fail($"Unable to save new response: {ex.Message}", ex);
+            context.Fail($"Unable to save new response: {ex.Message}");
             return context;
         }
 
         // Extract semantic memory
-        // TODO: Ask TAO - on Plan approval response, do we need to exclude plan from semantic memory?
         await this.ExtractSemanticMemoryAsync(chatId, chatContext);
 
         context.Variables.Update(response);
