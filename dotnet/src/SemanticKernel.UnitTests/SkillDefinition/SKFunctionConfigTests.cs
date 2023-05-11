@@ -241,7 +241,9 @@ public class SKFunctionConfigTests
         return true;
     }
 
-    private class TextCompletionSettings
+#pragma warning disable CA1812 // remove class never instantiated (used by System.Text.Json)
+
+    private sealed class TextCompletionSettings
     {
         [JsonPropertyName("temperature")]
         public double Temperature { get; set; }
@@ -262,7 +264,7 @@ public class SKFunctionConfigTests
         public IList<string>? StopSequences { get; set; }
     }
 
-    private class ImageGenerationSettings
+    private sealed class ImageGenerationSettings
     {
         [JsonPropertyName("n")]
         public int Amount { get; set; }
@@ -270,6 +272,8 @@ public class SKFunctionConfigTests
         [JsonPropertyName("size")]
         public string? Size { get; set; }
     }
+
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 
     #endregion
 }
