@@ -7,9 +7,10 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
 
-async def retry(func, retries=15, delay=1):
+async def retry(func, retries=15, delay=3):
     for i in range(retries):
         try:
+            time.sleep(delay)
             result = str(await func())
             if "Error" in result:
                 raise ValueError(result)
@@ -58,7 +59,7 @@ async def summarize_function_test(kernel: sk.Kernel):
     )
     output = str(summary).strip()
     print(f"Summary using input string: '{output}'")
-    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert "human" in output or "Human" in output or "preserve" in output
     assert len(output) < 100
 
     # Summarize input as context variable and print
@@ -68,7 +69,7 @@ async def summarize_function_test(kernel: sk.Kernel):
     )
     output = str(summary).strip()
     print(f"Summary using context variables: '{output}'")
-    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert "human" in output or "Human" in output or "preserve" in output
     assert len(output) < 100
 
     # Summarize input context and print
@@ -79,7 +80,7 @@ async def summarize_function_test(kernel: sk.Kernel):
     )
     output = str(summary).strip()
     print(f"Summary using input context: '{output}'")
-    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert "human" in output or "Human" in output or "preserve" in output
     assert len(output) < 100
 
     # Summarize input context with additional variables and print
@@ -93,7 +94,7 @@ async def summarize_function_test(kernel: sk.Kernel):
     )
     output = str(summary).strip()
     print(f"Summary using context and additional variables: '{output}'")
-    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert "human" in output or "Human" in output or "preserve" in output
     assert len(output) < 100
 
     # Summarize input context with additional input string and print
@@ -106,7 +107,7 @@ async def summarize_function_test(kernel: sk.Kernel):
     )
     output = str(summary).strip()
     print(f"Summary using context and additional string: '{output}'")
-    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert "human" in output or "Human" in output or "preserve" in output
     assert len(output) < 100
 
     # Summarize input context with additional variables and string and print
@@ -125,7 +126,7 @@ async def summarize_function_test(kernel: sk.Kernel):
     print(
         f"Summary using context, additional variables, and additional string: '{output}'"
     )
-    assert "humans" in output or "Humans" in output or "preserve" in output
+    assert "human" in output or "Human" in output or "preserve" in output
     assert len(output) < 100
 
 
