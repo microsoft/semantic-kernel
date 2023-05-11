@@ -31,7 +31,7 @@
 | ConversationSummarySkill          | ✅ | ❌ | |
 | FileIOSkill                       | ✅ | ✅ | |
 | HttpSkill                         | ✅ | ✅ | |
-| MathSkill                         | ✅ | ❌ | |
+| MathSkill                         | ✅ | ✅ | |
 | TextSkill                         | ✅ | ✅ | |
 | TimeSkill                         | ✅ | ✅ | |
 
