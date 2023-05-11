@@ -61,7 +61,7 @@ public class TimeSkillTests
             date = date.AddDays(-1);
             steps++;
         }
-        bool found = date.DayOfWeek == dayName; 
+        bool found = date.DayOfWeek == dayName;
         Assert.True(found);
 
         TimeSkill skill = new TimeSkill();
