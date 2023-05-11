@@ -126,7 +126,6 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
             if (data.trim() === '') {
                 return; // only submit if data is not empty
             }
-
             onSubmit(data);
             setPreviousValue(data);
             setValue('');

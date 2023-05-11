@@ -40,26 +40,6 @@ const useClasses = makeStyles({
     },
 });
 
-// const EventSendConversationToOtherUsers = (userAsk: UserAsk) => {
-//     console.log("Received User Ask from backend: ", userAsk);
-// }
-
-// const EventSendChatSkillAskResultToOtherUsers = (userAskResult: UserAskResult) => {
-//     const dispatch = useAppDispatch();
-//     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
-
-//     const messageResult = {
-//         timestamp: new Date().getTime(),
-//         userName: 'bot',
-//         userId: 'bot',
-//         content: userAskResult.value,
-//         authorRole: AuthorRoles.Bot,
-//     };
-
-//     dispatch(updateConversation({ message: messageResult, chatId: selectedId }));
-//     console.log("Received Chatbot Ask Result from backend: ", userAskResult);
-// }
-
 export const ChatRoom: React.FC = () => {
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { audience } = conversations[selectedId];
@@ -80,6 +60,8 @@ export const ChatRoom: React.FC = () => {
     const chat = useChat();
         
     const handleReceiveConversationMessageFE = (userAsk: UserAsk) => {
+        log("Received User Ask from backend");
+
         const otherUsersAsk = {
             timestamp: new Date().getTime(),
             userId: 'otheruser',
@@ -87,21 +69,19 @@ export const ChatRoom: React.FC = () => {
             content: userAsk.input,
             authorRole: AuthorRoles.User,
         };
-
         dispatch(updateConversation({ message: otherUsersAsk, chatId: selectedId }));
-        console.log("Received User Ask from backend: ", userAsk);
     }
     const handleReceiveChatSkillAskResultFE = (userAskResult: UserAskResult) => {
+        log("Received Chatbot Ask Result from backend");
+        
         const messageResult = {
             timestamp: new Date().getTime(),
             userName: 'bot',
             userId: 'bot',
             content: userAskResult.value,
             authorRole: AuthorRoles.Bot,
-        };
-    
+        };    
         dispatch(updateConversation({ message: messageResult, chatId: selectedId }));
-        console.log("Received Chatbot Ask Result from backend: ", userAskResult);
     }
 
     const { events } = SKMultiUserChatConnector();
