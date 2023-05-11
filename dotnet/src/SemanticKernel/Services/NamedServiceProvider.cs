@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Services;
-internal class NamedServiceProvider<TService> : INamedServiceProvider<TService>
+public class NamedServiceProvider<TService> : INamedServiceProvider<TService>
 {
     // A dictionary that maps a service type to a nested dictionary of names and service instances or factories
     //private readonly Dictionary<Type, Dictionary<string, object>> _services = new();
@@ -13,7 +13,7 @@ internal class NamedServiceProvider<TService> : INamedServiceProvider<TService>
     // A dictionary that maps a service type to the name of the default service
     private readonly Dictionary<Type, string> _defaultIds;
 
-    internal NamedServiceProvider(
+    public NamedServiceProvider(
         Dictionary<Type, Dictionary<string, Func<object>>> services,
         Dictionary<Type, string> defaultIds)
     {

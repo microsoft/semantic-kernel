@@ -24,6 +24,7 @@ public sealed class KernelBuilder
     private ILogger _logger = NullLogger.Instance;
     private IMemoryStore? _memoryStorage = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
+    private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
 
     /// <summary>
@@ -40,7 +41,7 @@ public sealed class KernelBuilder
         var instance = new Kernel(
             new SkillCollection(this._logger),
             this._aiServices.Build(),
-            new PromptTemplateEngine(this._logger),
+            this._promptTemplateEngine ?? new PromptTemplateEngine(this._logger),
             this._memory,
             this._config,
             this._logger ?? NullLogger<Kernel>.Instance
@@ -88,6 +89,18 @@ public sealed class KernelBuilder
     {
         Verify.NotNull(storage);
         this._memoryStorage = storage;
+        return this;
+    }
+
+    /// <summary>
+    /// Add prompt template engine to the kernel to be built.
+    /// </summary>
+    /// <param name="promptTemplateEngine">Prompt template engine to add.</param>
+    /// <returns>Updated kernel builder including the prompt template engine.</returns>
+    public KernelBuilder WithPromptTemplateEngine(IPromptTemplateEngine promptTemplateEngine)
+    {
+        Verify.NotNull(promptTemplateEngine);
+        this._promptTemplateEngine = promptTemplateEngine;
         return this;
     }
 
