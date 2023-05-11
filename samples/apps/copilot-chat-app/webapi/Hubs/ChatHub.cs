@@ -26,7 +26,7 @@ public class ChatHub : Hub
     public override async Task OnConnectedAsync()
     {
         await this.Clients.All.SendAsync("UserConnected", this.Context.ConnectionId);
-        this._logger.LogInformation("Log UserConnected with connection id: {0}", this.Context.ConnectionId);
+        this._logger.LogInformation("User connected with connection id: {0}", this.Context.ConnectionId);
     }
 
     /// <summary>

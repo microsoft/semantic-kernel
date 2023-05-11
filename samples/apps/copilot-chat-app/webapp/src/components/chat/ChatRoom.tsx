@@ -13,7 +13,7 @@ import { updateConversation } from '../../redux/features/conversations/conversat
 import { ChatHistory } from './ChatHistory';
 import { ChatInput } from './ChatInput';
 import { UserAsk, UserAskResult } from './../../libs/semantic-kernel/skMultiUserChat';
-import { useSKMultiUserChat } from './../../libs/semantic-kernel/useSKMultiUserChat';
+import SKMultiUserChatConnector from './../../libs/semantic-kernel/skMultiUserChat';
 
 const log = debug(Constants.debug.root).extend('chat-room');
 
@@ -78,39 +78,40 @@ export const ChatRoom: React.FC = () => {
     const [isBotTyping, setIsBotTyping] = React.useState(false);
 
     const chat = useChat();
+        
+    const handleReceiveConversationMessageFE = (userAsk: UserAsk) => {
+        const otherUsersAsk = {
+            timestamp: new Date().getTime(),
+            userId: 'otheruser',
+            userName: 'otheruser',
+            content: userAsk.input,
+            authorRole: AuthorRoles.User,
+        };
 
-    var hubConnection;
-    const chatRelay = useSKMultiUserChat(process.env.REACT_APP_BACKEND_URI as string);
+        dispatch(updateConversation({ message: otherUsersAsk, chatId: selectedId }));
+        console.log("Received User Ask from backend: ", userAsk);
+    }
+    const handleReceiveChatSkillAskResultFE = (userAskResult: UserAskResult) => {
+        const messageResult = {
+            timestamp: new Date().getTime(),
+            userName: 'bot',
+            userId: 'bot',
+            content: userAskResult.value,
+            authorRole: AuthorRoles.Bot,
+        };
+    
+        dispatch(updateConversation({ message: messageResult, chatId: selectedId }));
+        console.log("Received Chatbot Ask Result from backend: ", userAskResult);
+    }
 
+    const { events } = SKMultiUserChatConnector();
     React.useEffect(() => {
         // This code will run once, when the component is mounted
         console.log('SignalR setup called');
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        hubConnection = chatRelay.setupSignalRConnectionToChatHub();
-        
-        const EventSendConversationToOtherUsers = (userAsk: UserAsk) => {
-            console.log("Received User Ask from backend: ", userAsk);
-        }
-        
-        const EventSendChatSkillAskResultToOtherUsers = (userAskResult: UserAskResult) => {
-            const dispatch = useAppDispatch();
-            const { selectedId } = useAppSelector((state: RootState) => state.conversations);
-        
-            const messageResult = {
-                timestamp: new Date().getTime(),
-                userName: 'bot',
-                userId: 'bot',
-                content: userAskResult.value,
-                authorRole: AuthorRoles.Bot,
-            };
-        
-            dispatch(updateConversation({ message: messageResult, chatId: selectedId }));
-            console.log("Received Chatbot Ask Result from backend: ", userAskResult);
-        }
+        events( handleReceiveConversationMessageFE, handleReceiveChatSkillAskResultFE );
 
-        hubConnection.on("SendConversationToOtherUsersFrontEnd", EventSendConversationToOtherUsers);
-        hubConnection.on("SendChatSkillAskResultToOtherUsersFrontEnd", EventSendChatSkillAskResultToOtherUsers);
     // Disabling warning so that we can use empty dependency array to invoke this setup call just once 
+    // eslint-disable-next-line react-hooks/exhaustive-deps   
     }, []);
 
     React.useEffect(() => {

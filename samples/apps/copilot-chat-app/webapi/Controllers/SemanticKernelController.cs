@@ -130,8 +130,11 @@ public class SemanticKernelController : ControllerBase, IDisposable
         }
 
         // Broadcast user Ask to all other users
-        await chatHubContext.Clients.All.SendAsync("SendConversationToOtherUsersFrontEnd", ask);
-        //await chatHubContext.Clients.AllExcept(chatHubContext.User.Identity.Name).SendAsync();
+        // TODO: change this to be for all users except sender It will end up being a call that looks something like this
+        // figure out how to get the connection ID of the current user. This is accessible inside the actual message hub
+        // but couldnt figure out how to access it from a controller
+        // await chatHubContext.Clients.AllExcept(ConnectionID).SendAsync();
+        await chatHubContext.Clients.All.SendAsync("receiveConversationMessageFE", ask);
 
         // Run the function.
         SKContext result = await kernel.RunAsync(contextVariables, function!);
@@ -147,8 +150,8 @@ public class SemanticKernelController : ControllerBase, IDisposable
 
         AskResult chatSkillAskResult = new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) };
 
-        // Broadcast Chatbot AskResult to all users
-        await chatHubContext.Clients.All.SendAsync("SendChatSkillAskResultToOtherUsersFrontEnd", chatSkillAskResult);
+        // Broadcast Chat skill's AskResult to all users
+        await chatHubContext.Clients.All.SendAsync("receiveChatSkillAskResultFE", chatSkillAskResult);
 
         return this.Ok(chatSkillAskResult);
     }
