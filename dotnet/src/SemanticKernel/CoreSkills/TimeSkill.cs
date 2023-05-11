@@ -233,7 +233,7 @@ public class TimeSkill
     [SKFunctionInput(Description = "The day name to match")]
     public string LastMatchingDay(string dayName)
     {
-        if (!Enum.TryParse<DayOfWeek>(dayName, ignoreCase:true, out DayOfWeek dayOfWeek))
+        if (!Enum.TryParse<DayOfWeek>(dayName, ignoreCase: true, out DayOfWeek dayOfWeek))
         {
             throw new ArgumentOutOfRangeException(nameof(dayName), "Unrecognized day name");
         }
