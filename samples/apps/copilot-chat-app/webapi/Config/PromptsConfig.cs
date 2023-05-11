@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using SemanticKernel.Service.Skills.OpenApiSkills.GitHubSkill.Model;
-
 namespace SemanticKernel.Service.Config;
 
 /// <summary>
@@ -19,7 +17,7 @@ public class PromptsConfig
     /// The token count left for the model to generate text after the prompt.
     /// </summary>
     public int ResponseTokenLimit { get; set; }
-    
+
     // System
     public string KnowledgeCutoffDate { get; set; } = string.Empty;
     public string InitialBotMessage { get; set; } = string.Empty;
@@ -55,7 +53,7 @@ public class PromptsConfig
         {
             throw new ArgumentOutOfRangeException(nameof(this.ResponseTokenLimit), $"{nameof(this.ResponseTokenLimit)} is not valid: '{this.ResponseTokenLimit}' is not greater than 0.");
         }
-        
+
         Validate(this.KnowledgeCutoffDate, nameof(this.KnowledgeCutoffDate));
         Validate(this.InitialBotMessage, nameof(this.InitialBotMessage));
         Validate(this.SystemDescription, nameof(this.SystemDescription));
