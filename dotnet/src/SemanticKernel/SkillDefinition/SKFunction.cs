@@ -64,7 +64,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         if (string.IsNullOrWhiteSpace(skillName)) { skillName = SkillCollection.GlobalSkill; }
 
-        MethodDetails methodDetails = GetMethodDetails(methodSignature, methodContainerInstance, true, log);
+        MethodDetails methodDetails = GetMethodDetails(null, methodSignature, methodContainerInstance, true, log);
 
         // If the given method is not a valid SK function
         if (!methodDetails.HasSkFunctionAttribute)
@@ -91,6 +91,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
+    /// <param name="methodContainerInstance">Optional object containing the function to invoke</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeFunction(
@@ -99,9 +100,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
         string functionName,
         string description,
         IEnumerable<ParameterView>? parameters = null,
+        object? methodContainerInstance = null,
         ILogger? log = null)
     {
-        MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, null, false, log);
+        MethodDetails methodDetails = GetMethodDetails(nativeFunction, nativeFunction.Method, methodContainerInstance, false, log);
 
         return new SKFunction(
             delegateType: methodDetails.Type,
@@ -527,6 +529,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     private static MethodDetails GetMethodDetails(
+        Delegate? originalDelegate,
         MethodInfo methodSignature,
         object? methodContainerInstance,
         bool skAttributesRequired = true,
@@ -558,7 +561,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             result.HasSkFunctionAttribute = true;
         }
 
-        (result.Type, result.Function, bool hasStringParam) = GetDelegateInfo(methodContainerInstance, methodSignature);
+        (result.Type, result.Function, bool hasStringParam) = GetDelegateInfo(methodContainerInstance, methodSignature, originalDelegate);
 
         // SKFunctionName attribute
         SKFunctionNameAttribute? skFunctionNameAttribute = methodSignature
@@ -614,105 +617,107 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     // Inspect a method and returns the corresponding delegate and related info
-    private static (DelegateTypes type, Delegate function, bool hasStringParam) GetDelegateInfo(object? instance, MethodInfo method)
+    private static (DelegateTypes type, Delegate function, bool hasStringParam) GetDelegateInfo(
+        object? instance, MethodInfo method, Delegate? originalDelegate)
     {
-        if (EqualMethods(instance, method, typeof(Action), out Delegate? funcDelegate))
+        if (EqualMethods(instance, method, typeof(Action), originalDelegate, out Delegate? funcDelegate))
         {
             return (DelegateTypes.Void, funcDelegate, false);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<string>), out funcDelegate))
+        if (EqualMethods(instance, method, typeof(Func<string>), originalDelegate, out funcDelegate))
         {
             return (DelegateTypes.OutString, funcDelegate, false);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<Task<string>>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<Task<string>>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.OutTaskString, funcDelegate, false);
         }
 
-        if (EqualMethods(instance, method, typeof(Action<SKContext>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Action<SKContext>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InSKContext, funcDelegate, false);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<SKContext, string>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<SKContext, string>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InSKContextOutString, funcDelegate, false);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<SKContext, Task<string>>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<SKContext, Task<string>>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InSKContextOutTaskString, funcDelegate, false);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<SKContext, Task<SKContext>>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<SKContext, Task<SKContext>>), originalDelegate, out funcDelegate!))
         {
+            // this
             return (DelegateTypes.ContextSwitchInSKContextOutTaskSKContext, funcDelegate, false);
         }
 
         // === string input ==
 
-        if (EqualMethods(instance, method, typeof(Action<string>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Action<string>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InString, funcDelegate, true);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<string, string>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<string, string>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InStringOutString, funcDelegate, true);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<string, Task<string>>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<string, Task<string>>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InStringOutTaskString, funcDelegate, true);
         }
 
-        if (EqualMethods(instance, method, typeof(Action<string, SKContext>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Action<string, SKContext>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InStringAndContext, funcDelegate, true);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<string, SKContext, string>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<string, SKContext, string>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InStringAndContextOutString, funcDelegate, true);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<string, SKContext, Task<string>>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<string, SKContext, Task<string>>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InStringAndContextOutTaskString, funcDelegate, true);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<string, SKContext, Task<SKContext>>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<string, SKContext, Task<SKContext>>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.ContextSwitchInStringAndContextOutTaskContext, funcDelegate, true);
         }
 
         // == Tasks without output ==
 
-        if (EqualMethods(instance, method, typeof(Func<string, Task>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<string, Task>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InStringOutTask, funcDelegate, true);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<SKContext, Task>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<SKContext, Task>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InContextOutTask, funcDelegate, false);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<string, SKContext, Task>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<string, SKContext, Task>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.InStringAndContextOutTask, funcDelegate, true);
         }
 
-        if (EqualMethods(instance, method, typeof(Func<Task>), out funcDelegate!))
+        if (EqualMethods(instance, method, typeof(Func<Task>), originalDelegate, out funcDelegate!))
         {
             return (DelegateTypes.OutTask, funcDelegate, false);
         }
 
         // [SKContext DoSomething(SKContext context)] is not supported, use the async form instead.
         // If you encounter scenarios that require to interact with the context synchronously, please let us know.
-        if (EqualMethods(instance, method, typeof(Func<SKContext, SKContext>), out _))
+        if (EqualMethods(instance, method, typeof(Func<SKContext, SKContext>), originalDelegate, out _))
         {
             throw new KernelException(
                 KernelException.ErrorCodes.FunctionTypeNotSupported,
@@ -725,11 +730,16 @@ public sealed class SKFunction : ISKFunction, IDisposable
             $"Function '{method.Name}' has an invalid signature not supported by the kernel.");
     }
 
-    [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate result can be null")]
+    /// <summary>
+    /// Compare methods with signature type using Delegate.CreateDelegate.
+    /// TODO: we need a better solution, this function is used only for specific use cases where delegates have external references.
+    /// </summary>
+    [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate can return NULL")]
     private static bool EqualMethods(
         object? instance,
         MethodInfo userMethod,
         Type delegateDefinition,
+        Delegate? originalDelegate,
         [NotNullWhen(true)] out Delegate? result)
     {
         // Instance methods
@@ -742,7 +752,42 @@ public sealed class SKFunction : ISKFunction, IDisposable
         // Static methods
         result = Delegate.CreateDelegate(delegateDefinition, userMethod, false);
 
-        return result != null;
+        // TODO: remove EqualMethodsUsingReflection (see unit test: ItCanImportNativeFunctionsWithExternalReferencesAsync)
+        // return result != null;
+        return result != null || EqualMethodsUsingReflection(userMethod, delegateDefinition, originalDelegate, out result);
+    }
+
+    /// <summary>
+    /// Compare methods with signature type using reflection.
+    /// For non static functions with external references, Delegate.CreateDelegate returns NULL,
+    /// so we use this approach to compare parameters and return type.
+    /// TODO: we need a better solution.
+    /// </summary>
+    [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate can return NULL")]
+    private static bool EqualMethodsUsingReflection(
+        MethodInfo userMethod,
+        Type delegateDefinition,
+        Delegate? originalDelegate,
+        [NotNullWhen(true)] out Delegate? result)
+    {
+        result = null;
+        if (originalDelegate == null) { return false; }
+
+        var delegateMethod = delegateDefinition.GetMethod("Invoke");
+        if (delegateMethod == null) { return false; }
+
+        // Compare the return type
+        if (delegateMethod.ReturnType != userMethod.ReturnType) { return false; }
+
+        // Compare the parameters
+        var methodParams = userMethod.GetParameters().Select(p => p.ParameterType);
+        var compareParams = delegateMethod.GetParameters().Select(p => p.ParameterType);
+
+        if (!methodParams.SequenceEqual(compareParams)) { return false; }
+
+        result = originalDelegate;
+
+        return true;
     }
 
     // Internal event to count (and test) that the correct delegates are invoked
