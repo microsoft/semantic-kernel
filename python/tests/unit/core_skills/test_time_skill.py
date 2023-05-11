@@ -35,16 +35,16 @@ def test_now():
 def test_days_ago():
     skill = TimeSkill()
 
-    with mock.patch("datetime.datetime", wraps=datetime.datetime) as dt:
-        dt.now.return_value = test_mock_now
-        assert skill.days_ago(1) == "Saturday, January 11, 2031"
+    with mock.patch("datetime.date", wraps=datetime.date) as dt:
+        dt.today.return_value = test_mock_today
+        assert skill.days_ago(1) == "Saturday, 11 January, 2031"
 
 def test_last_matching_day():
     skill = TimeSkill()
 
-    with mock.patch("datetime.date", wraps=datetime.date) as dte:
-        dte.today.return_value = test_mock_today
-        assert skill.last_matching_day("Friday") == "Friday, January 10, 2031"
+    with mock.patch("datetime.date", wraps=datetime.date) as dt:
+        dt.today.return_value = test_mock_today
+        assert skill.last_matching_day("Friday") == "Friday, 10 January, 2031"
 
 def test_utc_now():
     skill = TimeSkill()
