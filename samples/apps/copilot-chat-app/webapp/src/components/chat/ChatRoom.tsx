@@ -84,10 +84,10 @@ export const ChatRoom: React.FC = () => {
         dispatch(updateConversation({ message: messageResult, chatId: selectedId }));
     }
 
-    const { events } = SKMultiUserChatConnector();
     React.useEffect(() => {
         // This code will run once, when the component is mounted
         console.log('SignalR setup called');
+        const { events } = SKMultiUserChatConnector();
         events( handleReceiveConversationMessageFE, handleReceiveChatSkillAskResultFE );
 
     // Disabling warning so that we can use empty dependency array to invoke this setup call just once 
