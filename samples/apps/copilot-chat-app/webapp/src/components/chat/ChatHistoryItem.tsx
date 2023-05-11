@@ -2,12 +2,12 @@
 
 import { Label, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
-import { SKBotAudienceMember } from '../../libs/semantic-kernel/bot-agent/models/SKBotAudienceMember';
+import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
 import { parsePlan } from '../../libs/semantic-kernel/sk-utilities';
 import { useChat } from '../../libs/useChat';
-import { useAppSelector } from '../../redux/app/hooks';
+import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
+import { updateMessageState } from '../../redux/features/conversations/conversationsSlice';
 import { PlanViewer } from './plan-viewer/PlanViewer';
 
 const useClasses = makeStyles({
@@ -55,7 +55,6 @@ const useClasses = makeStyles({
 });
 
 interface ChatHistoryItemProps {
-    audience: SKBotAudienceMember[];
     message: IChatMessage;
     getResponse: (
         value: string,
@@ -63,6 +62,7 @@ interface ChatHistoryItemProps {
         planUserIntent?: string,
         userCancelledPlan?: boolean,
     ) => Promise<void>;
+    messageIndex: number;
 }
 
 const createCommandLink = (command: string) => {
@@ -70,23 +70,41 @@ const createCommandLink = (command: string) => {
     return `<span style="text-decoration: underline; cursor: pointer" data-command="${escapedCommand}" onclick="(function(){ let chatInput = document.getElementById('chat-input'); chatInput.value = decodeURIComponent('${escapedCommand}'); chatInput.focus(); return false; })();return false;">${command}</span>`;
 };
 
-export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getResponse }) => {
+export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getResponse, messageIndex }) => {
     const chat = useChat();
     const classes = useClasses();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const dispatch = useAppDispatch();
 
     const plan = parsePlan(message.content);
     const isPlan = plan !== null;
 
-    // Initializing Plan Action Handlers here so we don't have to drill down data components won't use otherwise
+    // Initializing Plan action handlers here so we don't have to drill down data the components won't use otherwise
     const onPlanApproval = async () => {
-        // Invoke plan
+        dispatch(
+            updateMessageState({
+                newMessageState: ChatMessageState.PlanApproved,
+                messageIndex: messageIndex,
+                chatId: selectedId,
+            }),
+        );
+
         // Extract plan from bot response
         const proposedPlan = JSON.parse(message.content).proposedPlan;
+
+        // Invoke plan
         await getResponse('Yes, proceed', JSON.stringify(proposedPlan), plan?.userIntent);
     };
 
     const onPlanCancel = async () => {
+        dispatch(
+            updateMessageState({
+                newMessageState: ChatMessageState.PlanRejected,
+                messageIndex: messageIndex,
+                chatId: selectedId,
+            }),
+        );
+
         // Bail out of plan
         await getResponse('No, cancel', undefined, undefined, true);
     };
@@ -144,7 +162,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                     {isPlan && (
                         <PlanViewer
                             plan={plan}
-                            actionRequired={message.planApprovalRequired}
+                            planState={message.state ?? ChatMessageState.NoOp}
                             onSubmit={onPlanApproval}
                             onCancel={onPlanCancel}
                         />

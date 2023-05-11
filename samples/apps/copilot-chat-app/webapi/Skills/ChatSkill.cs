@@ -217,12 +217,22 @@ public class ChatSkill
 
         // Check if plan exists in ask's context variables.
         // If plan was returned at this point, that means it was approved and should be run
-        Plan? approvedPlan = context.Variables.Get("proposedPlan", out var planJson) ? JsonSerializer.Deserialize<Plan>(planJson) : null;
+        var planApproved = context.Variables.Get("proposedPlan", out var planJson);
 
-        if (approvedPlan != null)
+        if (planApproved)
         {
+            // Reload the plan with the planner's kernel so
+            // it has full context to be executed
+            var newPlanContext = new SKContext(
+                   context.Variables,
+                   this._planner.Kernel.Memory,
+                   this._planner.Kernel.Skills,
+                   this._planner.Kernel.Log
+               );
+            var plan = Plan.FromJson(planJson, newPlanContext);
+
             // Invoke plan
-            SKContext planContext = await approvedPlan.InvokeAsync(plannerContext);
+            SKContext planContext = await plan.InvokeAsync(plannerContext);
             int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
             // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
@@ -230,7 +240,7 @@ public class ChatSkill
             if (extractJsonFromOpenApi)
             {
                 int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
-                planResult = this.OptimizeOpenApiSkillJson(planResult, relatedInformationTokenLimit, approvedPlan);
+                planResult = this.OptimizeOpenApiSkillJson(planResult, relatedInformationTokenLimit, plan);
             }
             else
             {
@@ -253,10 +263,9 @@ public class ChatSkill
 
             if (plan.Steps.Count > 0)
             {
-                SKContext planContext = await plan.InvokeAsync(plannerContext);
-
                 // Merge any variables from the context into plan's state 
-                // as these will be used on plan execution
+                // as these will be used on plan execution.
+                // These context variables come from user input, so they are prioritized.
                 var variables = context.Variables;
                 foreach (var param in plan.State)
                 {
@@ -356,7 +365,7 @@ public class ChatSkill
 
         if (chatContext.Variables.Get("userCancelledPlan", out var userCancelledPlan))
         {
-            response = "Sorry this plan didn't meet your goals. How can I help you today?";
+            response = "I am sorry the plan did not meet your goals.";
         }
         else
         {

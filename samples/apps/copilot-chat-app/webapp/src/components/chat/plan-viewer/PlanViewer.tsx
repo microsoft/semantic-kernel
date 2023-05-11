@@ -1,5 +1,6 @@
-import { Button, Text, makeStyles, shorthands } from '@fluentui/react-components';
-import { useState } from 'react';
+import { Button, Text, makeStyles, mergeClasses, shorthands } from '@fluentui/react-components';
+import { CheckmarkCircle24Regular, DismissCircle24Regular } from '@fluentui/react-icons';
+import { ChatMessageState } from '../../../libs/models/ChatMessage';
 import { IPlan, IPlanStep } from '../../../libs/models/Plan';
 import { PlanStepCard } from './PlanStepCard';
 
@@ -17,30 +18,24 @@ const useClasses = makeStyles({
         marginBottom: '12px',
         ...shorthands.gap('16px'),
     },
+    status: {
+        ...shorthands.gap('10px'),
+    },
+    text: {
+        alignSelf: 'center',
+    },
 });
 
 interface PlanViewerProps {
     plan: IPlan;
-    actionRequired?: boolean;
+    planState: ChatMessageState;
     onSubmit: () => Promise<void>;
     onCancel: () => Promise<void>;
 }
 
-export const PlanViewer: React.FC<PlanViewerProps> = ({ plan, actionRequired, onSubmit, onCancel }) => {
+export const PlanViewer: React.FC<PlanViewerProps> = ({ plan, planState, onSubmit, onCancel }) => {
     const classes = useClasses();
     var stepCount = 1;
-
-    const [showButtons, setShowButtons] = useState(actionRequired);
-
-    const onCancelClick = () => {
-        setShowButtons(false);
-        onCancel();
-    };
-
-    const onProceedClick = () => {
-        setShowButtons(false);
-        onSubmit();
-    };
 
     return (
         <div className={classes.container}>
@@ -49,18 +44,30 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ plan, actionRequired, on
             {plan.steps.map((step: IPlanStep) => (
                 <PlanStepCard index={stepCount++} step={step} />
             ))}
-            {showButtons && (
+            {planState === ChatMessageState.PlanApprovalRequired && (
                 <>
                     Would you like to proceed with the plan?
                     <div className={classes.buttons}>
-                        <Button appearance="secondary" onClick={onCancelClick}>
+                        <Button appearance="secondary" onClick={onCancel}>
                             No, cancel plan
                         </Button>
-                        <Button type="submit" appearance="primary" onClick={onProceedClick}>
+                        <Button type="submit" appearance="primary" onClick={onSubmit}>
                             Yes, proceed
                         </Button>
                     </div>
                 </>
+            )}
+            {planState === ChatMessageState.PlanApproved && (
+                <div className={mergeClasses(classes.buttons, classes.status)}>
+                    <CheckmarkCircle24Regular />
+                    <Text> Plan Executed</Text>
+                </div>
+            )}
+            {planState === ChatMessageState.PlanRejected && (
+                <div className={mergeClasses(classes.buttons, classes.status)}>
+                    <DismissCircle24Regular />
+                    <Text className={classes.text}> Plan Cancelled</Text>
+                </div>
             )}
         </div>
     );

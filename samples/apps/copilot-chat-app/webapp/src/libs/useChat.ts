@@ -16,7 +16,7 @@ import { AuthHelper } from './auth/AuthHelper';
 import { useConnectors } from './connectors/useConnectors';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
-import { AuthorRoles } from './models/ChatMessage';
+import { AuthorRoles, ChatMessageState } from './models/ChatMessage';
 import { IChatSession } from './models/ChatSession';
 import { ChatUser } from './models/ChatUser';
 import { isPlan } from './semantic-kernel/sk-utilities';
@@ -155,7 +155,7 @@ export const useChat = () => {
                 userId: 'bot',
                 content: result.value,
                 authorRole: AuthorRoles.Bot,
-                planApprovalRequired: isPlan(result.value),
+                state: isPlan(result.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
             };
 
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));

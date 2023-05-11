@@ -34,7 +34,7 @@ interface ChatHistoryProps {
     ) => Promise<void>;
 }
 
-export const ChatHistory: React.FC<ChatHistoryProps> = ({ audience, messages, onGetResponse }) => {
+export const ChatHistory: React.FC<ChatHistoryProps> = ({ messages, onGetResponse }) => {
     const classes = useClasses();
 
     return (
@@ -42,12 +42,12 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({ audience, messages, on
             {messages
                 .slice()
                 .sort((a, b) => a.timestamp - b.timestamp)
-                .map((message) => (
+                .map((message, index) => (
                     <ChatHistoryItem
                         key={message.timestamp}
-                        audience={audience}
                         message={message}
                         getResponse={onGetResponse}
+                        messageIndex={index}
                     />
                 ))}
             <ChatStatus />

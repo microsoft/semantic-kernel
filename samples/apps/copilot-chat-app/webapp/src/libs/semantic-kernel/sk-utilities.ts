@@ -1,3 +1,4 @@
+import { Constants } from '../../Constants';
 import { IPlan, IPlanInput } from '../models/Plan';
 
 export const isPlan = (object: string) => {
@@ -32,9 +33,7 @@ const extractPlanSteps = (plan: any) => {
     for (var input in plan.state) {
         if (
             // Omit reserved context variable names
-            plan.state[input].Key !== 'INPUT' &&
-            plan.state[input].Key !== 'server_url' &&
-            plan.state[input].Key !== 'server-url'
+            !Constants.sk.reservedWords.includes(plan.state[input].Key.trim())
         ) {
             planInputs.push(plan.state[input]);
         }
