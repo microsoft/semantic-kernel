@@ -36,7 +36,7 @@ public class SKFunctionConfigTests
             ["stop_sequences"] = new JsonArray { "test_stop_sequence" }
         };
 
-        var kernel = this.GetKernel(mockCompletionService.Object);
+        var kernel = this.GetKernelWithSkills(mockCompletionService.Object);
         var function = kernel.Func(SkillName, "WithDefaultSettings");
 
         // Act
@@ -65,7 +65,7 @@ public class SKFunctionConfigTests
             ["stop_sequences"] = new JsonArray { "test_stop_sequence" }
         };
 
-        var kernel = this.GetKernel(mockCompletionService.Object, "text-davinci-003");
+        var kernel = this.GetKernelWithSkills(mockCompletionService.Object, "text-davinci-003");
         var function = kernel.Func(SkillName, "WithServices");
 
         // Act
@@ -90,7 +90,7 @@ public class SKFunctionConfigTests
             ["size"] = "1024x1024"
         };
 
-        var kernel = this.GetKernel(mockCompletionService.Object, "dalle");
+        var kernel = this.GetKernelWithSkills(mockCompletionService.Object, "dalle");
         var function = kernel.Func(SkillName, "WithServices");
 
         // Act
@@ -121,10 +121,51 @@ public class SKFunctionConfigTests
             ["stop_sequences"] = new JsonArray { "test_stop_sequence" }
         };
 
-        var kernel = this.GetKernel(mockCompletionService.Object, serviceId);
+        var kernel = this.GetKernelWithSkills(mockCompletionService.Object, serviceId);
         var function = kernel.Func(SkillName, "WithServices");
 
         // Act
+        var result = await kernel.RunAsync(function);
+
+        // Assert
+        mockCompletionService.Verify(x => x.CompleteAsync(
+            It.IsAny<string>(),
+            It.Is<JsonObject>(settings => this.AssertCompletionSettingsEqual(expectedSettings, settings)),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ItUsesFunctionConfigurationUpdatedInRuntimeAsync()
+    {
+        // Arrange
+        var mockCompletionService = new Mock<ITextCompletion>();
+        var expectedSettings = new JsonObject
+        {
+            ["max_tokens"] = 123,
+            ["temperature"] = 0.9,
+            ["top_p"] = 0.5,
+            ["presence_penalty"] = 0.4,
+            ["frequency_penalty"] = 0.3,
+            ["stop_sequences"] = new JsonArray { "new_stop_sequence" }
+        };
+
+        var kernel = this.GetKernel(mockCompletionService.Object);
+        var function = kernel.CreateSemanticFunction(
+            promptTemplate: "test prompt",
+            functionName: "TestFunction",
+            skillName: "TestSkill",
+            description: "test description",
+            maxTokens: 256,
+            temperature: 0.9,
+            topP: 0.5,
+            presencePenalty: 0.4,
+            frequencyPenalty: 0.3,
+            stopSequences: new List<string> { "new_stop_sequence" });
+
+        // Act
+        function.ServiceSettings["max_tokens"] = 123;
+
         var result = await kernel.RunAsync(function);
 
         // Assert
@@ -145,6 +186,13 @@ public class SKFunctionConfigTests
                 c.AddTextCompletionService((_) => completionService, serviceId);
             })
             .Build();
+
+        return kernel;
+    }
+
+    private IKernel GetKernelWithSkills(ITextCompletion completionService, string? serviceId = null)
+    {
+        var kernel = this.GetKernel(completionService, serviceId);
 
         kernel.ImportSemanticSkillFromDirectory(this.GetParentFolder(), SkillName);
 

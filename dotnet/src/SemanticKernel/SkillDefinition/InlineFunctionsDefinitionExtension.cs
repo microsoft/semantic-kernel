@@ -51,6 +51,16 @@ public static class InlineFunctionsDefinitionExtension
     {
         functionName ??= RandomFunctionName();
 
+        JsonArray stopSequencesArray = new();
+
+        if (stopSequences != null)
+        {
+            foreach (var stopSequence in stopSequences)
+            {
+                stopSequencesArray.Add(JsonValue.Create<string>(stopSequence));
+            }
+        }
+
         var serviceSettings = new JsonObject
         {
             ["temperature"] = temperature,
@@ -58,7 +68,7 @@ public static class InlineFunctionsDefinitionExtension
             ["presence_penalty"] = presencePenalty,
             ["frequency_penalty"] = frequencyPenalty,
             ["max_tokens"] = maxTokens,
-            ["stop_sequences"] = new JsonArray() { stopSequences },
+            ["stop_sequences"] = stopSequencesArray,
         };
 
         var config = new PromptTemplateConfig
