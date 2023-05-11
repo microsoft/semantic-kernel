@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration; // Copyright (c) Microsoft. All rights reserved.
 
+import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -44,7 +45,7 @@ public abstract class DefaultSemanticSKFunction<
         if (context == null) {
             context =
                     buildContext(
-                            ReadOnlyContextVariables.build(),
+                            SKBuilders.variables().build(),
                             NullMemory.getInstance(),
                             super.skillCollection);
         }
