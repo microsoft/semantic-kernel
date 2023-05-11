@@ -15,7 +15,7 @@ jobs:
     name: Java CI
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         java: [8, 11, 17]
