@@ -86,28 +86,3 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     }
 }
 
-public interface ITextCompletionResult
-{
-    Task<string> CompleteAsync(CancellationToken cancellationToken = default);
-}
-
-public interface ITextCompletionStreamingResult : ITextCompletionResult
-{
-    IAsyncEnumerable<string> CompleteStreamAsync(CancellationToken cancellationToken = default);
-}
-
-/*
-public static class AzureTextCompletionExtensions
-{
-    public static IAsyncEnumerable<ITextCompletionStreamingResult> CompleteMultiStreamAsync(this ITextCompletion textCompletion, string text, CompleteRequestSettings settings, CancellationToken cancellationToken = default)
-    {
-        return AsyncEnumerable.Empty<ITextCompletionResult>();
-    }
-
-    public static Task<IReadOnlyList<ITextCompletionResult>> CompleteMultiAsync(this ITextCompletion textCompletion, string text,
-        CompleteRequestSettings settings, CancellationToken cancellationToken = default)
-    {
-        return AsyncEnumerable.Empty<IEnumerable<ITextCompletionResult>>();
-    }
-}*/
-
