@@ -176,8 +176,10 @@ class TimeSkill:
         now = datetime.datetime.now()
         return now.strftime("%M")
 
-    @sk_function(description="Get the date of offset from today by a provided number of days")
-    def days_ago(self, days:int) -> str:
+    @sk_function(
+        description="Get the date of offset from today by a provided number of days"
+    )
+    def days_ago(self, days: int) -> str:
         """
         Get the date a provided number of days in the past
 
@@ -193,8 +195,10 @@ class TimeSkill:
         d = datetime.date.today() - datetime.timedelta(days=days)
         return d.strftime("%A, %d %B, %Y")
 
-    @sk_function(description="Get the date of the last day matching the supplied day name in English")
-    def last_matching_day(self, day_name:str) -> str:
+    @sk_function(
+        description="Get the date of the last day matching the supplied day name in English"
+    )
+    def last_matching_day(self, day_name: str) -> str:
         """
         Get the date of the last day matching the supplied day name
 
