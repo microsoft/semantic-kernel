@@ -164,9 +164,7 @@ public class ContextVariablesConverterTests
     public void ReadFromJsonThrowsWithInvalidJson()
     {
         // Arrange
-#pragma warning disable JSON001
         string json = /*lang=json,strict*/ @"[{""Key"":""a"", ""Value"":""b""";
-#pragma warning restore JSON001
         var options = new JsonSerializerOptions();
         options.Converters.Add(new ContextVariablesConverter());
 
@@ -183,6 +181,6 @@ public class ContextVariablesConverterTests
         options.Converters.Add(new ContextVariablesConverter());
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => JsonSerializer.Deserialize<ContextVariables>(json, options));
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<ContextVariables>(json, options));
     }
 }

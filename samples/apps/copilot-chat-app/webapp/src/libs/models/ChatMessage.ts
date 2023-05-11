@@ -22,4 +22,12 @@ export interface IChatMessage {
     id?: string;
     authorRole: AuthorRoles;
     debug?: string;
+    state?: ChatMessageState; // if plan needs approval
+}
+
+export enum ChatMessageState {
+    NoOp,
+    PlanApprovalRequired,
+    PlanApproved,
+    PlanRejected,
 }
