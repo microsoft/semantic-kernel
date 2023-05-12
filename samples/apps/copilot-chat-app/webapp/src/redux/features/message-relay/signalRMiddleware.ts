@@ -91,7 +91,7 @@ export const signalRMiddleware = () => {
                 );
                 break;
             case "conversations/updateIsTypingFromUser":
-                await hubConnection.invoke("SendIsTypingStateAsync", getSelectedChatID(), action.payload).catch(
+                await hubConnection.invoke("SendTypingStateAsync", getSelectedChatID(), action.payload).catch(
                     err => console.error(err.toString())
                 );
                 break;
