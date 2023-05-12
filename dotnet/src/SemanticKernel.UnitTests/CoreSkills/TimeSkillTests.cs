@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Xunit;
@@ -29,13 +30,13 @@ public class TimeSkillTests
     }
 
     [Fact]
-    public void Days_Ago()
+    public void DaysAgo()
     {
         double interval = 2;
         DateTime expected = DateTime.Now.AddDays(-interval);
         TimeSkill skill = new TimeSkill();
-        string result = skill.DaysAgo(interval.ToString());
-        DateTime returned = DateTime.Parse(result);
+        string result = skill.DaysAgo(interval.ToString(CultureInfo.CurrentCulture));
+        DateTime returned = DateTime.Parse(result, CultureInfo.CurrentCulture);
         Assert.Equal(expected.Day, returned.Day);
         Assert.Equal(expected.Month, returned.Month);
         Assert.Equal(expected.Year, returned.Year);
@@ -66,7 +67,7 @@ public class TimeSkillTests
 
         TimeSkill skill = new TimeSkill();
         string result = skill.LastMatchingDay(dayName.ToString());
-        DateTime returned = DateTime.Parse(result);
+        DateTime returned = DateTime.Parse(result, CultureInfo.CurrentCulture);
         Assert.Equal(date.Day, returned.Day);
         Assert.Equal(date.Month, returned.Month);
         Assert.Equal(date.Year, returned.Year);
