@@ -50,9 +50,14 @@ jobs:
         run: ./mvnw -B -Pbug-check -DskipTests -X -Pcompile-${{ matrix.java-versions }} clean install --file pom.xml
         working-directory: java
 
-      - name: Run Tests
+      - name: Run integration tests
         run: ../mvnw -B -Pbug-check clean install --file pom.xml
         working-directory: java/api-test
+        env:
+          OPENAI_API_KEY: ""
+          AZURE_OPENAI_ENDPOINT: ""
+          AZURE_OPENAI_API_KEY: ""
+          AZURE_OPENAI_DEPLOYMENT_NAME: ""
 
       - name: Build samples
         run: cd java/samples && ../mvnw -B clean install --file pom.xml
