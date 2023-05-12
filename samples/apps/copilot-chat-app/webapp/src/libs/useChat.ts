@@ -144,6 +144,7 @@ export const useChat = () => {
                 connectors.getEnabledPlugins(),
             );
 
+            // TODO: Multi-user support will require a different approach to updating the conversations.
             const messageResult = {
                 timestamp: new Date().getTime(),
                 userName: 'bot',
