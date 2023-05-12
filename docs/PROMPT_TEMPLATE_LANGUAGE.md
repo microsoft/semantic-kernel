@@ -1,4 +1,4 @@
-Prompts are the inputs or queries that a user or a program gives to an Large Learning Model ([LLM](https://en.wikipedia.org/wiki/Wikipedia:Large_language_models)) AI,
+Prompts are the inputs or queries that a user or a program gives to a Large Learning Model ([LLM](https://en.wikipedia.org/wiki/Wikipedia:Large_language_models)) AI,
 in order to elicit a specific response from the model.
 
 Prompts can be natural
