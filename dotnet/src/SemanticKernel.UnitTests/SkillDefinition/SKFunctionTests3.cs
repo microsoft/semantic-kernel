@@ -3,14 +3,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Moq;
-using SemanticKernel.UnitTests.XunitHelpers;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.SkillDefinition;
@@ -72,12 +68,8 @@ public sealed class SKFunctionTests3
     public async Task ItCanImportNativeFunctionsAsync()
     {
         // Arrange
-        var variables = new ContextVariables();
-        var skills = new SkillCollection();
-        var logger = TestConsoleLogger.Log;
-        var cancellationToken = default(CancellationToken);
-        var memory = new Mock<ISemanticTextMemory>();
-        var context = new SKContext(variables, memory.Object, skills.ReadOnlySkillCollection, logger, cancellationToken);
+        var context = Kernel.Builder.Build().CreateNewContext();
+        context["done"] = "NO";
 
         // Note: the function doesn't have any SK attributes
         async Task<SKContext> ExecuteAsync(SKContext contextIn)
@@ -90,7 +82,7 @@ public sealed class SKFunctionTests3
         }
 
         // Act
-        context["done"] = "NO";
+
         ISKFunction function = SKFunction.FromNativeFunction(
             nativeFunction: ExecuteAsync,
             parameters: null,
@@ -98,10 +90,44 @@ public sealed class SKFunctionTests3
             skillName: "skillName",
             functionName: "functionName");
 
-        SKContext result = await function.InvokeAsync(context, cancellationToken: cancellationToken);
+        SKContext result = await function.InvokeAsync(context);
 
         // Assert
         Assert.Equal("YES", context["canary"]);
+        Assert.Equal("YES", result["canary"]);
+    }
+
+    [Fact]
+    public async Task ItCanImportNativeFunctionsWithExternalReferencesAsync()
+    {
+        // Arrange
+        var context = Kernel.Builder.Build().CreateNewContext();
+        context["done"] = "NO";
+
+        // Note: This is an important edge case that affects the function signature and how delegates
+        //       are handled internally: the function references an external variable and cannot be static.
+        //       This scenario is used for gRPC functions.
+        string variableOutsideTheFunction = "foo";
+
+        async Task<SKContext> ExecuteAsync(SKContext contextIn)
+        {
+            string referenceToExternalVariable = variableOutsideTheFunction;
+            contextIn["canary"] = "YES";
+
+            await Task.Delay(0);
+            return contextIn;
+        }
+
+        // Act. Note: this will throw an exception if SKFunction doesn't handle the function type.
+        ISKFunction function = SKFunction.FromNativeFunction(
+            nativeFunction: ExecuteAsync,
+            description: "description",
+            skillName: "skillName",
+            functionName: "functionName");
+
+        SKContext result = await function.InvokeAsync(context);
+
+        // Assert
         Assert.Equal("YES", result["canary"]);
     }
 

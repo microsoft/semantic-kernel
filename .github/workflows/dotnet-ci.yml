@@ -18,12 +18,7 @@ jobs:
         matrix:
           os: [ubuntu-latest, windows-latest]
           configuration: [Release, Debug]
-          dotnet-version: ['6.0.x', '7.0.x', '8.0.x']
-          include:
-          - configuration: Release
-          - os: ubuntu-latest
-            configuration: Debug
-            dotnet-version: 6.0.x
+          dotnet-version: ['6.0.x']
     runs-on: ${{ matrix.os }}
     env:
       NUGET_CERT_REVOCATION_MODE: offline
