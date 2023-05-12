@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Label, makeStyles, shorthands, Text } from '@fluentui/react-components';
+import { makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 import { FC } from 'react';
+import { isPlan } from '../../../libs/semantic-kernel/sk-utilities';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { ChatListItem } from './ChatListItem';
@@ -48,7 +49,6 @@ export const ChatList: FC = () => {
                     </Text>
                     <NewBotMenu />
                 </div>
-                <Label className={classes.label}>Your Bot</Label>
                 <Tree aria-label={'chat list'}>
                     {Object.keys(conversations).map((id) => {
                         const convo = conversations[id];
@@ -60,7 +60,7 @@ export const ChatList: FC = () => {
                                 leaf
                                 style={
                                     id === selectedId
-                                        ? { background: 'var(--colorNeutralBackground1Selected)' }
+                                        ? { background: tokens.colorNeutralBackground1 }
                                         : undefined
                                 }
                             >
@@ -72,7 +72,11 @@ export const ChatList: FC = () => {
                                         minute: '2-digit',
                                     })}
                                     preview={
-                                        messages.length > 0 ? messages[lastMessage].content : 'Click to start the chat'
+                                        messages.length > 0
+                                            ? isPlan(messages[lastMessage].content)
+                                                ? 'Click to view proposed plan'
+                                                : (messages[lastMessage].content as string)
+                                            : 'Click to start the chat'
                                     }
                                     botProfilePicture={convo.botProfilePicture}
                                 />

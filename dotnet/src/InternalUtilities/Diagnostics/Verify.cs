@@ -17,7 +17,7 @@ internal static class Verify
 
     // Equivalent of ArgumentNullException.ThrowIfNull
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression(nameof(obj))] string? paramName = null)
+    internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression("obj")] string? paramName = null)
     {
         if (obj is null)
         {
@@ -26,7 +26,7 @@ internal static class Verify
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression(nameof(str))] string? paramName = null)
+    internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression("str")] string? paramName = null)
     {
         NotNull(str, paramName);
         if (string.IsNullOrWhiteSpace(str))
@@ -62,7 +62,7 @@ internal static class Verify
         }
     }
 
-    internal static void StartsWith(string text, string prefix, string message, [CallerArgumentExpression(nameof(text))] string? textParamName = null)
+    internal static void StartsWith(string text, string prefix, string message, [CallerArgumentExpression("text")] string? textParamName = null)
     {
         Debug.Assert(prefix is not null);
 
