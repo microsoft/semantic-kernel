@@ -15,6 +15,10 @@ export const store = configureStore({
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(signalRMiddleware)
 });
 
+export const getSelectedChatID = () : string => {
+    return store.getState().conversations.selectedId;
+};
+
 // Start the signalR connection to make sure messages are
 // sent to all clients and received by all clients
 startSignalRConnection(store);

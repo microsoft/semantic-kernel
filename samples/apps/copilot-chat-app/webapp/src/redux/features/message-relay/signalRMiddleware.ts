@@ -5,9 +5,13 @@ import { AlertType } from "../../../libs/models/AlertType";
 import { IAskResult } from "../../../libs/semantic-kernel/model/AskResult";
 import { addAlert } from "../app/appSlice";
 import { AuthorRoles, IChatMessage } from './../../../libs/models/ChatMessage';
+import { ConversationTypingState } from './../conversations/ChatState';
+import { getSelectedChatID } from './../../app/store';
 
+// These have to match the callback names used in the backend
 const receiveMessageFromServerCallbackName = "ReceiveMessage" as string;
 const receiveResponseFromServerCallbackName = "ReceiveResponse" as string;
+const receiveTypingStateFromServerCallbackName = "ReceiveTypingState" as string;
 
 // Set up a SignalR connection to the messageRelayHub on the server
 const setupSignalRConnectionToChatHub = () => {
@@ -78,11 +82,16 @@ export const startSignalRConnection = async (store: any) => {
     }
 };
 
-export const signalRMiddleware = (store: any) => {
+export const signalRMiddleware = () => {
     return (next: any) => async (action: any) => {
         switch (action.type) {
             case "conversations/updateConversationFromUser":
-                await hubConnection.invoke("SendMessageAsync", getSelectedChatID(store), action.payload.message).catch(
+                await hubConnection.invoke("SendMessageAsync", getSelectedChatID(), action.payload.message).catch(
+                    err => console.error(err.toString())
+                );
+                break;
+            case "conversations/updateIsTypingFromUser":
+                await hubConnection.invoke("SendIsTypingStateAsync", getSelectedChatID(), action.payload).catch(
                     err => console.error(err.toString())
                 );
                 break;
@@ -120,8 +129,8 @@ export const registerSignalREvents = async (store: any) => {
 
         store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
     });
-};
 
-const getSelectedChatID = (store: any) => {
-    return store.getState().conversations.selectedId;
+    hubConnection.on(receiveTypingStateFromServerCallbackName, (typingState: ConversationTypingState, chatId: string) => {
+        store.dispatch({ type: "conversations/updateIsTypingFromServer", payload: { typingState, chatId } });
+    });
 };
