@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { IChatMessage } from '../../../libs/models/ChatMessage';
+import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
 import { ChatState } from './ChatState';
 import { Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
@@ -37,6 +37,15 @@ export const conversationsSlice = createSlice({
             state.conversations[id].messages.push(message);
             frontLoadChat(state, id);
         },
+        updateMessageState: (
+            state: ConversationsState,
+            action: PayloadAction<{ newMessageState: ChatMessageState; messageIndex: number; chatId?: string }>,
+        ) => {
+            const { newMessageState, messageIndex, chatId } = action.payload;
+            const id = chatId ?? state.selectedId;
+            state.conversations[id].messages[messageIndex].state = newMessageState;
+            frontLoadChat(state, id);
+        },
     },
 });
 
@@ -47,6 +56,7 @@ export const {
     setSelectedConversation,
     addConversation,
     updateConversation,
+    updateMessageState,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

@@ -21,7 +21,7 @@ async def test_azure_chat_completion_with_skills():
     else:
         # Load credentials from .env file
         deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-        deployment_name = "gpt-4"
+        deployment_name = "gpt-35-turbo"
 
     print("* Service: Azure OpenAI Chat Completion")
     print(f"* Endpoint: {endpoint}")
