@@ -1,22 +1,13 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 import * as signalR from "@microsoft/signalr";
+import { AlertType } from "../../../libs/models/AlertType";
+import { IAskResult } from "../../../libs/semantic-kernel/model/AskResult";
+import { addAlert } from "../app/appSlice";
 import { AuthorRoles, IChatMessage } from './../../../libs/models/ChatMessage';
 
-export interface UserAsk {
-    input: string;
-    variables: KeyValuePair<string, string>[];
-}
-  
-export interface UserAskResult {
-    value: string;
-    variables?: KeyValuePair<string, string>[];
-}
-  
-export interface KeyValuePair<K, V> {
-    key: K;
-    value: V;
-}
-
-const receiveMsgFromServerCallbackName = "ReceiveMessage" as string;
+const receiveMessageFromServerCallbackName = "ReceiveMessage" as string;
+const receiveResponseFromServerCallbackName = "ReceiveResponse" as string;
 
 // Set up a SignalR connection to the messageRelayHub on the server
 const setupSignalRConnectionToChatHub = () => {
@@ -41,55 +32,49 @@ const setupSignalRConnectionToChatHub = () => {
     // keepAliveIntervalInMilliseconds default is 15000 and we are using default
     // serverTimeoutInMilliseconds default is 30000 and we are using 60000 set below
     hubConnection.serverTimeoutInMilliseconds = 60000;
+
     return hubConnection;
 };
 
 const hubConnection = setupSignalRConnectionToChatHub();
 
-const registerCommonSignalConnectionEvents = async () => {
+const registerCommonSignalConnectionEvents = async (store: any) => {
     // Re-establish the connection if connection dropped
     hubConnection.onclose((error: any) => {
-        console.assert(hubConnection.state === signalR.HubConnectionState.Disconnected);
-        console.log('Connection closed due to error. Try refreshing this page to restart the connection', error);
+        if (hubConnection.state === signalR.HubConnectionState.Disconnected) {
+            const errorMessage = 'Connection closed due to error. Try refreshing this page to restart the connection';
+            store.dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            console.log(errorMessage, error);
+        }
     });
 
     hubConnection.onreconnecting((error: any) => {
-        console.assert(hubConnection.state === signalR.HubConnectionState.Reconnecting);
-        console.log('Connection lost due to error. Reconnecting.', error);
+        if (hubConnection.state === signalR.HubConnectionState.Reconnecting) {
+            const errorMessage = 'Connection lost due to error. Reconnecting...';
+            store.dispatch(addAlert({ message: errorMessage, type: AlertType.Info }));
+            console.log(errorMessage, error);
+        }
     });
 
     hubConnection.onreconnected((connectionId: any) => {
-        console.assert(hubConnection.state === signalR.HubConnectionState.Connected);
-        console.log('Connection reestablished. Connected with connectionId', connectionId);
-    });
-
-    hubConnection.on("UserConnected", (connectionId: any) => {
-        console.debug(`User connected: ${connectionId}`);
+        if (hubConnection.state === signalR.HubConnectionState.Connected) {
+            const message = 'Connection reestablished.';
+            store.dispatch(addAlert({ message: message, type: AlertType.Success }));
+            console.log(message +  ` Connected with connectionId ${connectionId}`);
+        }
     });
 }
 
-const onReceiveChatSkillAskResult = (store: any, userAskResult: UserAskResult) => {
-    const message = {
-        timestamp: new Date().getTime(),
-        userName: 'bot',
-        userId: 'bot',
-        content: userAskResult.value,
-        authorRole: AuthorRoles.Bot,
-    } as IChatMessage;
-
-    store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message } });
-}
-
-export const startSignalRConnection = async () => {
+export const startSignalRConnection = async (store: any) => {
     try {
-        registerCommonSignalConnectionEvents();
+        registerCommonSignalConnectionEvents(store);
         await hubConnection.start();
         console.assert(hubConnection.state === signalR.HubConnectionState.Connected);
         console.log('SignalR connection established');
     } catch (err) {
         console.assert(hubConnection.state === signalR.HubConnectionState.Disconnected);
         console.error('SignalR Connection Error: ', err);
-        setTimeout(() => startSignalRConnection(), 5000);
+        setTimeout(() => startSignalRConnection(store), 5000);
     }
 };
 
@@ -119,13 +104,21 @@ export const signalRMiddleware = (store: any) => {
     }
 };
 
-export const signalRRegisterEvents = async (store: any) => {
-    hubConnection.on(receiveMsgFromServerCallbackName, (message: UserAsk, chatId: string) => {
+export const registerSignalREvents = async (store: any) => {
+    hubConnection.on(receiveMessageFromServerCallbackName, (message: IChatMessage, chatId: string) => {
         store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
     });
 
-    hubConnection.on("receiveChatSkillAskResult", (userAskResult: UserAskResult) => {
-        onReceiveChatSkillAskResult(store, userAskResult);
+    hubConnection.on(receiveResponseFromServerCallbackName, (askResult: IAskResult, chatId: string) => {
+        const message = {
+            timestamp: new Date().getTime(),
+            userName: 'bot',
+            userId: 'bot',
+            content: askResult.value,
+            authorRole: AuthorRoles.Bot,
+        } as IChatMessage;
+
+        store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
     });
 };
 
