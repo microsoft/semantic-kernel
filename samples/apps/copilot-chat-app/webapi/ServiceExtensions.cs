@@ -78,6 +78,11 @@ internal static class ServicesExtensions
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
+        services.AddOptions<PromptsOptions>()
+            .Bind(configuration.GetSection(PromptsOptions.PropertyName))
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
+
         return services;
     }
 
