@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Globalization;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -16,7 +17,7 @@ public class DocumentMemorySkill
     /// <summary>
     /// Prompt settings.
     /// </summary>
-    private readonly PromptSettings _promptSettings;
+    private readonly PromptsOptions _promptOptions;
 
     /// <summary>
     /// Configuration settings for importing documents to memory.
@@ -26,9 +27,9 @@ public class DocumentMemorySkill
     /// <summary>
     /// Create a new instance of DocumentMemorySkill.
     /// </summary>
-    public DocumentMemorySkill(PromptSettings promptSettings, DocumentMemoryOptions documentImportConfig)
+    public DocumentMemorySkill(IOptions<PromptsOptions> promptOptions, DocumentMemoryOptions documentImportConfig)
     {
-        this._promptSettings = promptSettings;
+        this._promptOptions = promptOptions.Value;
         this._documentImportConfig = documentImportConfig;
     }
 
@@ -50,7 +51,7 @@ public class DocumentMemorySkill
         int contextTokenLimit = int.Parse(context.Variables["contextTokenLimit"], new NumberFormatInfo());
         var remainingToken = Math.Min(
             tokenLimit,
-            Math.Floor(contextTokenLimit * this._promptSettings.DocumentContextWeight)
+            Math.Floor(contextTokenLimit * this._promptOptions.DocumentContextWeight)
         );
 
         // Search for relevant document snippets.
@@ -67,7 +68,7 @@ public class DocumentMemorySkill
                 documentCollection,
                 query,
                 limit: 100,
-                minRelevanceScore: this._promptSettings.DocumentMemoryMinRelevance);
+                minRelevanceScore: this._promptOptions.DocumentMemoryMinRelevance);
             await foreach (var memory in results)
             {
                 relevantMemories.Add(memory);

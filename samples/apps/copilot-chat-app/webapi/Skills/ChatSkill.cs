@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
@@ -48,7 +49,7 @@ public class ChatSkill
     /// <summary>
     /// Settings containing prompt texts.
     /// </summary>
-    private readonly PromptSettings _promptSettings;
+    private readonly PromptsOptions _promptOptions;
 
     /// <summary>
     /// CopilotChat's planner to gather additional information for the chat context.
@@ -72,7 +73,7 @@ public class ChatSkill
         IKernel kernel,
         ChatMessageRepository chatMessageRepository,
         ChatSessionRepository chatSessionRepository,
-        PromptSettings promptSettings,
+        IOptions<PromptsOptions> promptOptions,
         CopilotChatPlanner planner,
         PlannerOptions plannerOptions,
         ILogger logger)
@@ -81,7 +82,7 @@ public class ChatSkill
         this._kernel = kernel;
         this._chatMessageRepository = chatMessageRepository;
         this._chatSessionRepository = chatSessionRepository;
-        this._promptSettings = promptSettings;
+        this._promptOptions = promptOptions.Value;
         this._planner = planner;
         this._plannerOptions = plannerOptions;
     }
@@ -96,25 +97,25 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "audience", Description = "The audience the chat bot is interacting with.")]
     public async Task<string> ExtractUserIntentAsync(SKContext context)
     {
-        var tokenLimit = this._promptSettings.CompletionTokenLimit;
+        var tokenLimit = this._promptOptions.CompletionTokenLimit;
         var historyTokenBudget =
             tokenLimit -
-            this._promptSettings.ResponseTokenLimit -
+            this._promptOptions.ResponseTokenLimit -
             Utilities.TokenCount(string.Join("\n", new string[]
                 {
-                    this._promptSettings.SystemDescriptionPrompt,
-                    this._promptSettings.SystemIntentPrompt,
-                    this._promptSettings.SystemIntentContinuationPrompt
+                    this._promptOptions.SystemDescription,
+                    this._promptOptions.SystemIntent,
+                    this._promptOptions.SystemIntentContinuation
                 })
             );
 
         // Clone the context to avoid modifying the original context variables.
         var intentExtractionContext = Utilities.CopyContextWithVariablesClone(context);
         intentExtractionContext.Variables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
-        intentExtractionContext.Variables.Set("knowledgeCutoff", this._promptSettings.KnowledgeCutoffDate);
+        intentExtractionContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
 
         var completionFunction = this._kernel.CreateSemanticFunction(
-            this._promptSettings.SystemIntentExtractionPrompt,
+            this._promptOptions.SystemIntentExtraction,
             skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
@@ -149,7 +150,7 @@ public class ChatSkill
         var contextTokenLimit = int.Parse(context["contextTokenLimit"], new NumberFormatInfo());
         var remainingToken = Math.Min(
             tokenLimit,
-            Math.Floor(contextTokenLimit * this._promptSettings.MemoriesResponseContextWeight)
+            Math.Floor(contextTokenLimit * this._promptOptions.MemoriesResponseContextWeight)
         );
 
         // Find the most recent message.
@@ -157,13 +158,13 @@ public class ChatSkill
 
         // Search for relevant memories.
         List<MemoryQueryResult> relevantMemories = new();
-        foreach (var memoryName in this._promptSettings.MemoryMap.Keys)
+        foreach (var memoryName in this._promptOptions.MemoryMap.Keys)
         {
             var results = context.Memory.SearchAsync(
                 SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName),
                 latestMessage.ToString(),
                 limit: 100,
-                minRelevanceScore: this._promptSettings.SemanticMemoryMinRelevance);
+                minRelevanceScore: this._promptOptions.SemanticMemoryMinRelevance);
             await foreach (var memory in results)
             {
                 relevantMemories.Add(memory);
@@ -240,7 +241,7 @@ public class ChatSkill
             bool extractJsonFromOpenApi = this.TryExtractJsonFromOpenApiPlanResult(planContext.Variables.Input, out string planResult);
             if (extractJsonFromOpenApi)
             {
-                int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
+                int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptOptions.RelatedInformationContextWeight);
                 planResult = this.OptimizeOpenApiSkillJson(planResult, relatedInformationTokenLimit, plan);
             }
             else
@@ -379,20 +380,20 @@ public class ChatSkill
         else
         {
             // Normal response generation flow
-            var tokenLimit = this._promptSettings.CompletionTokenLimit;
+            var tokenLimit = this._promptOptions.CompletionTokenLimit;
             var remainingToken =
                 tokenLimit -
-                this._promptSettings.ResponseTokenLimit -
+                this._promptOptions.ResponseTokenLimit -
                 Utilities.TokenCount(string.Join("\n", new string[]
                     {
-                        this._promptSettings.SystemDescriptionPrompt,
-                        this._promptSettings.SystemResponsePrompt,
-                        this._promptSettings.SystemChatContinuationPrompt
+                        this._promptOptions.SystemDescription,
+                        this._promptOptions.SystemResponse,
+                        this._promptOptions.SystemChatContinuation
                     })
                 );
             var contextTokenLimit = remainingToken;
 
-            chatContext.Variables.Set("knowledgeCutoff", this._promptSettings.KnowledgeCutoffDate);
+            chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
             chatContext.Variables.Set("audience", userName);
 
             // If user approved plan, use the user intent determined on initial pass
@@ -415,7 +416,7 @@ public class ChatSkill
             chatContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
 
             var completionFunction = this._kernel.CreateSemanticFunction(
-                this._promptSettings.SystemChatPrompt,
+                this._promptOptions.SystemChatPrompt,
                 skillName: nameof(ChatSkill),
                 description: "Complete the prompt.");
 
@@ -502,7 +503,7 @@ public class ChatSkill
     /// </summary>
     private string OptimizeOpenApiSkillJson(string jsonContent, int tokenLimit, Plan plan)
     {
-        int jsonTokenLimit = (int)(tokenLimit * this._promptSettings.RelatedInformationContextWeight);
+        int jsonTokenLimit = (int)(tokenLimit * this._promptOptions.RelatedInformationContextWeight);
 
         // Remove all new line characters + leading and trailing white space
         jsonContent = Regex.Replace(jsonContent.Trim(), @"[\n\r]", string.Empty);
@@ -651,7 +652,7 @@ public class ChatSkill
     /// <param name="context">The context containing the memory.</param>
     private async Task ExtractSemanticMemoryAsync(string chatId, SKContext context)
     {
-        foreach (var memoryName in this._promptSettings.MemoryMap.Keys)
+        foreach (var memoryName in this._promptOptions.MemoryMap.Keys)
         {
             try
             {
@@ -659,7 +660,7 @@ public class ChatSkill
                     memoryName,
                     this._kernel,
                     context,
-                    this._promptSettings
+                    this._promptOptions
                 );
                 foreach (var item in semanticMemory.Items)
                 {
@@ -691,7 +692,7 @@ public class ChatSkill
             collection: memoryCollectionName,
             query: item.ToFormattedString(),
             limit: 1,
-            minRelevanceScore: this._promptSettings.SemanticMemoryMinRelevance,
+            minRelevanceScore: this._promptOptions.SemanticMemoryMinRelevance,
             cancellationToken: context.CancellationToken
         ).ToEnumerable();
 
@@ -714,11 +715,11 @@ public class ChatSkill
     {
         var completionSettings = new CompleteRequestSettings
         {
-            MaxTokens = this._promptSettings.ResponseTokenLimit,
-            Temperature = this._promptSettings.ResponseTemperature,
-            TopP = this._promptSettings.ResponseTopP,
-            FrequencyPenalty = this._promptSettings.ResponseFrequencyPenalty,
-            PresencePenalty = this._promptSettings.ResponsePresencePenalty
+            MaxTokens = this._promptOptions.ResponseTokenLimit,
+            Temperature = this._promptOptions.ResponseTemperature,
+            TopP = this._promptOptions.ResponseTopP,
+            FrequencyPenalty = this._promptOptions.ResponseFrequencyPenalty,
+            PresencePenalty = this._promptOptions.ResponsePresencePenalty
         };
 
         return completionSettings;
@@ -731,11 +732,11 @@ public class ChatSkill
     {
         var completionSettings = new CompleteRequestSettings
         {
-            MaxTokens = this._promptSettings.ResponseTokenLimit,
-            Temperature = this._promptSettings.IntentTemperature,
-            TopP = this._promptSettings.IntentTopP,
-            FrequencyPenalty = this._promptSettings.IntentFrequencyPenalty,
-            PresencePenalty = this._promptSettings.IntentPresencePenalty,
+            MaxTokens = this._promptOptions.ResponseTokenLimit,
+            Temperature = this._promptOptions.IntentTemperature,
+            TopP = this._promptOptions.IntentTopP,
+            FrequencyPenalty = this._promptOptions.IntentFrequencyPenalty,
+            PresencePenalty = this._promptOptions.IntentPresencePenalty,
             StopSequences = new string[] { "] bot:" }
         };
 
