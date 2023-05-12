@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 """
-QdrantMemoryStore provides functionality to add semantic memory and ANN search to Semantic Kernel.
-The QdrantMemoryStore inherits from memory_store_base for persisting and retrieving data from a Qdrant Vector Database Implementation.
+QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
+The QdrantMemoryStore inherits from MemoryStoreBase for persisting and retrieving data from a Qdrant Vector Database Implementation.
 """
 
 from qdrant_client import QdrantClient
@@ -38,12 +38,12 @@ class QdrantMemoryStore(MemoryStoreBase):
         """
 
 
-    async def create_collection_async(self, collection_name: str, vector_size: Optional[int] = 1536, distance: Optional[str]="Cosine") -> None:
+    async def create_collection_async(self, collection_name: str, vector_size: int, distance: Optional[str]="Cosine") -> None:
         """Creates a new collection if it does not exist.
 
         Arguments:
             collection_name {str} -- The name of the collection to create.
-            vector_size {Optional[int]} -- The size of the vector. (default: {1536})
+            vector_size {int} -- The size of the vector. 
             distance {Optional[str]} -- The distance metric to use. (default: {"Cosine"})
         Returns:
             None
@@ -329,7 +329,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             raise Exception(f"Collection '{collection_name}' does not exist")
 
         # Search for the nearest matches, qdrant already provides results sorted by relevance score
-        matches = self._qdrantclient.search(
+        qdrant_matches = self._qdrantclient.search(
             collection_name=collection_name,
             search_params=models.SearchParams(
                 hnsw_ef=0,
@@ -343,7 +343,23 @@ class QdrantMemoryStore(MemoryStoreBase):
             with_payload=True,
         )
 
+        nearest_results = []
+
         # Convert the results to MemoryRecords
+        for qdrant_match in qdrant_matches:
+            vector_result = MemoryRecord(
+                is_reference=False, 
+                external_source_name="qdrant", 
+                key=str(qdrant_match.id), 
+                id=str(qdrant_match.id), 
+                embedding=qdrant_match.vector, 
+                payload=qdrant_match.payload
+            )
+            
+            nearest_results.append(tuple(vector_result, qdrant_match.score))
+        
+        return nearest_results
+        
 
     def compute_similarity_scores(
         self, embedding: ndarray, embedding_array: ndarray
