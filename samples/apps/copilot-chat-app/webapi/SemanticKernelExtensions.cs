@@ -28,7 +28,7 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Delegate to register skills with a planner.
     /// </summary>
-    public delegate Task RegisterSkillsWithPlannerKernel(IServiceProvider sp, CopilotChatPlanner planner);
+    public delegate Task RegisterSkillsWithPlanner(IServiceProvider sp, CopilotChatPlanner planner);
 
     /// <summary>
     /// Add Semantic Kernel services
