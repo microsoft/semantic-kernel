@@ -92,7 +92,7 @@ external dependencies, resulting in a fast and memory efficient processing.
 
 ## Semantic function example
 
-Semantic Function is a function expressed (written) in natural language in a text file (i.E.: "skprompt.txt") using SK's Prompt Template language. Following is a  simple example of a semantic function defined with a prompt template, using the syntax described.
+A Semantic Function is a function written in a natural language in a text file (i.e., "skprompt.txt") using SK's Prompt Template language. The following is a  simple example of a semantic function defined with a prompt template, using the syntax described.
 
 `== File: skprompt.txt ==`
 
