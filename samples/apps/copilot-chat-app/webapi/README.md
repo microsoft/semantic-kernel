@@ -6,16 +6,16 @@ Before you get started, make sure you have the following requirements in place:
 1. [.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for building and deploying .NET 6 projects.
 1. Update the properties in `./appsettings.json` to configure your Azure OpenAI resource or OpenAI account.
 1. Generate and trust a localhost developer certificate.
-   - For Windows and Mac run 
+   - For Windows and Mac run
      ```bash
      dotnet dev-certs https --trust`
      ```
      > Select `Yes` when asked if you want to install this certificate.
-   - For Linux run 
+   - For Linux run
      ```bash
      dotnet dev-certs https
      ```
-   
+
    > To verify the certificate has been installed and trusted, run `dotnet run dev-certs https --check`
 
    > To clean your system of the developer certificate, run `dotnet run dev-certs https --clean`
@@ -46,7 +46,9 @@ You can start the WebApi service using the command-line, Visual Studio Code, or 
    ```
 
 ## Visual Studio Code
-> TODO: pending the addition of `./.vscode/tasks.json`
+1. build (CopilotChatApi)
+2. run (CopilotChatApi)
+3. [optional] watch (CopilotChatApi)
 
 ## Visual Studio (2022 or newer)
 1. Open the solution file in Visual Studio 2022 or newer (`semantic-kernel/dotnet/SK-dotnet.sln`).
@@ -64,15 +66,15 @@ To enable the Qdrant memory store, you must first deploy Qdrant locally and then
 Before you get started, make sure you have the following additional requirements in place:
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) for hosting the [Qdrant](https://github.com/qdrant/qdrant) vector search engine.
 
-## 2. Deploy Qdrant VectorDB locally 
+## 2. Deploy Qdrant VectorDB locally
 1. Open a terminal and use Docker to pull down the container image.
     ```bash
     docker pull qdrant/qdrant
     ```
 
-1. Change directory to this repo and create a `./data/qdrant` directory to use as persistent storage. 
+1. Change directory to this repo and create a `./data/qdrant` directory to use as persistent storage.
     Then start the Qdrant container on port `6333` using the `./data/qdrant` folder as the persistent storage location.
-   
+
     ```bash
     cd /src/semantic-kernel
     mkdir ./data/qdrant
