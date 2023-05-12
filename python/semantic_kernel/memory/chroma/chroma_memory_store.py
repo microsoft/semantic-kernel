@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from chromadb.api.models.Collection import Collection
 
 
-class QdrantMemoryStore(MemoryStoreBase):
+class ChomaMemoryStore(MemoryStoreBase):
     _client: "chromadb.Client"
     _logger: Logger
 
@@ -26,7 +26,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         logger: Optional[Logger] = None,
     ) -> None:
         """
-        ChromaDataStore provides an interface to store and retrieve data using ChromaDB.
+        ChromaMemoryStore provides an interface to store and retrieve data using ChromaDB.
         Collection names with uppercase characters are not supported by ChromaDB, they will be automatically converted.
 
         Args:
@@ -36,10 +36,10 @@ class QdrantMemoryStore(MemoryStoreBase):
                 the ChromaDB client. Defaults to None, which means the default settings for ChromaDB will be used.
             similarity_fetch_limit (int, optional): The maximum number of results to calculate cosine-similarity.
         Example:
-            # Create a ChromaDataStore with a local specified directory for data persistence
-            chroma_local_data_store = ChromaDataStore(persist_directory='/path/to/persist/directory')
-            # Create a ChromaDataStore with a custom Settings instance
-            chroma_remote_data_store = ChromaDataStore(
+            # Create a ChromaMemoryStore with a local specified directory for data persistence
+            chroma_local_data_store = ChromaMemoryStore(persist_directory='/path/to/persist/directory')
+            # Create a ChromaMemoryStore with a custom Settings instance
+            chroma_remote_data_store = ChromaMemoryStore(
                 client_settings=Settings(
                     chroma_api_impl="rest",
                     chroma_server_host="xxx.xxx.xxx.xxx",
@@ -87,7 +87,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         self._client.create_collection(
             # Current version of ChromeDB reject camel case collection names.
             name=camel_to_snake(collection_name),
-            # ChromaDataStore will get embeddings from SemanticTextMemory. Never use this.
+            # ChromaMemoryStore will get embeddings from SemanticTextMemory. Never use this.
             embedding_function="DoNotUseChromaEmbeddingFunction",
         )
 
@@ -95,7 +95,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         self, collection_name: str
     ) -> Optional["Collection"]:
         try:
-            # Current version of ChromeDB reject camel case collection names.
+            # Current version of ChromeDB rejects camel case collection names.
             return self._client.get_collection(name=camel_to_snake(collection_name))
         except ValueError:
             return None
@@ -135,14 +135,14 @@ class QdrantMemoryStore(MemoryStoreBase):
             return True
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
-        """Upserts a batch of records.
+        """Upserts a single MemoryRecord.
 
         Arguments:
-            collection_name {str} -- The name of the collection to upsert the records into.
-            records {List[MemoryRecord]} -- The records to upsert.
+            collection_name {str} -- The name of the collection to upsert the record into.
+            records {MemoryRecord} -- The record to upsert.
 
         Returns:
-            List[str] -- The unqiue database keys of the records.
+            List[str] -- The unqiue database key of the record.
         """
         collection = self.get_collection_async(collection_name)
         if collection is None:
