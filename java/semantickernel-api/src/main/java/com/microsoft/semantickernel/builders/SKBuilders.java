@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.builders;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
+import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.orchestration.ReadOnlyContextVariables;
 import com.microsoft.semantickernel.planner.SequentialPlannerSKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -22,6 +23,10 @@ public class SKBuilders {
 
     public static TextCompletion.Builder textCompletionService() {
         return BuildersSingleton.INST.getTextCompletionBuilder();
+    }
+
+    public static EmbeddingGeneration.Builder<String, Double> textEmbeddingGenerationService() {
+      return BuildersSingleton.INST.getTextEmbeddingGenerationBuilder();
     }
 
     public static Kernel.Builder kernel() {

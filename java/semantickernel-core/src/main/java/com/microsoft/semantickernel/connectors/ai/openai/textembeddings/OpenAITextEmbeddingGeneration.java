@@ -9,7 +9,6 @@ import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -27,18 +26,13 @@ public class OpenAITextEmbeddingGeneration extends ClientBase
     }
 
     protected Mono<List<Embedding<Double>>> internalGenerateTextEmbeddingsAsync(List<String> data) {
-        return Flux.fromIterable(data)
-                .flatMap(
-                        text -> {
-                            EmbeddingsOptions options = null;
+      EmbeddingsOptions options = new EmbeddingsOptions(data).setModel(getModelId());
 
-                            return getClient()
-                                    .getEmbeddings(getModelId(), options)
-                                    .flatMapIterable(Embeddings::getData)
-                                    .elementAt(0)
-                                    .mapNotNull(EmbeddingItem::getEmbedding)
-                                    .mapNotNull(Embedding::new);
-                        })
-                .collectList();
+      return getClient()
+          .getEmbeddings(getModelId(), options)
+          .flatMapIterable(Embeddings::getData)
+          .mapNotNull(EmbeddingItem::getEmbedding)
+          .mapNotNull(Embedding::new)
+          .collectList();
     }
 }
