@@ -21,8 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # java-versions: [jdk8, jdk11, jdk17]
-        java-versions: [jdk8]
+        java-versions: [jdk8, jdk11, jdk17]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
