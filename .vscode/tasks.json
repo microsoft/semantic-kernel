@@ -262,6 +262,7 @@
         "GetSecret (Planner:Key)"
       ],
       "dependsOrder": "sequence"
+      // TODO -- add tasks for configuring environment variables
     },
     {
       "label": "GetSecret (Completion:Key)",

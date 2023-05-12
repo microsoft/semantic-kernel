@@ -34,6 +34,7 @@
       "group": "test",
       "dependsOn": ["GetSecret (Completion:Key)", "GetSecret (Embedding:Key)", "GetSecret (Planner:Key)"],
       "dependsOrder": "sequence"
+      // TODO -- add tasks for configuring environment variables
     },
     {
       "label": "GetSecret (Completion:Key)",
