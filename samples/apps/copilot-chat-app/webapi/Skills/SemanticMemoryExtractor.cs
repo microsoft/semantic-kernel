@@ -4,6 +4,7 @@ using System.Globalization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using SemanticKernel.Service.Config;
 
 namespace SemanticKernel.Service.Skills;
 
@@ -20,28 +21,28 @@ internal static class SemanticMemoryExtractor
         string memoryName,
         IKernel kernel,
         SKContext context,
-        PromptSettings promptSettings)
+        PromptsOptions options)
     {
-        if (!promptSettings.MemoryMap.TryGetValue(memoryName, out var memoryPrompt))
+        if (!options.MemoryMap.TryGetValue(memoryName, out var memoryPrompt))
         {
             throw new ArgumentException($"Memory name {memoryName} is not supported.");
         }
 
-        var tokenLimit = promptSettings.CompletionTokenLimit;
-        var remainingToken = tokenLimit - promptSettings.ResponseTokenLimit;
+        var tokenLimit = options.CompletionTokenLimit;
+        var remainingToken = tokenLimit - options.ResponseTokenLimit;
         var contextTokenLimit = remainingToken;
 
         var memoryExtractionContext = Utilities.CopyContextWithVariablesClone(context);
         memoryExtractionContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
         memoryExtractionContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
         memoryExtractionContext.Variables.Set("memoryName", memoryName);
-        memoryExtractionContext.Variables.Set("format", promptSettings.MemoryFormat);
-        memoryExtractionContext.Variables.Set("knowledgeCutoff", promptSettings.KnowledgeCutoffDate);
+        memoryExtractionContext.Variables.Set("format", options.MemoryFormat);
+        memoryExtractionContext.Variables.Set("knowledgeCutoff", options.KnowledgeCutoffDate);
 
         var completionFunction = kernel.CreateSemanticFunction(memoryPrompt);
         var result = await completionFunction.InvokeAsync(
             context: memoryExtractionContext,
-            settings: CreateMemoryExtractionSettings(promptSettings)
+            settings: CreateMemoryExtractionSettings(options)
         );
 
         SemanticChatMemory memory = SemanticChatMemory.FromJson(result.ToString());
@@ -51,15 +52,15 @@ internal static class SemanticMemoryExtractor
     /// <summary>
     /// Create a completion settings object for chat response. Parameters are read from the PromptSettings class.
     /// </summary>
-    private static CompleteRequestSettings CreateMemoryExtractionSettings(PromptSettings promptSettings)
+    private static CompleteRequestSettings CreateMemoryExtractionSettings(PromptsOptions options)
     {
         var completionSettings = new CompleteRequestSettings
         {
-            MaxTokens = promptSettings.ResponseTokenLimit,
-            Temperature = promptSettings.ResponseTemperature,
-            TopP = promptSettings.ResponseTopP,
-            FrequencyPenalty = promptSettings.ResponseFrequencyPenalty,
-            PresencePenalty = promptSettings.ResponsePresencePenalty
+            MaxTokens = options.ResponseTokenLimit,
+            Temperature = options.ResponseTemperature,
+            TopP = options.ResponseTopP,
+            FrequencyPenalty = options.ResponseFrequencyPenalty,
+            PresencePenalty = options.ResponsePresencePenalty
         };
 
         return completionSettings;
