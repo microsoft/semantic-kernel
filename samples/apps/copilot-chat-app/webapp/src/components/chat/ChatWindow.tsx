@@ -33,6 +33,7 @@ const useClasses = makeStyles({
         gridTemplateAreas: "'header' 'content'",
         width: '-webkit-fill-available',
         backgroundColor: '#F5F5F5',
+        boxShadow: 'rgb(0 0 0 / 25%) 0 0.2rem 0.4rem -0.075rem',
     },
     header: {
         ...shorthands.gridArea('header'),
@@ -40,6 +41,7 @@ const useClasses = makeStyles({
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
+        ...shorthands.borderBottom('1px', 'solid', 'rgb(0 0 0 / 10%)'),
     },
     headerContent: {
         ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalM),
@@ -97,7 +99,7 @@ export const ChatWindow: React.FC = () => {
                     await chatService.editChatAsync(
                         conversations[selectedId].id,
                         title!,
-                        await AuthHelper.getSKaaSAccessToken(instance)
+                        await AuthHelper.getSKaaSAccessToken(instance),
                     );
 
                     dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));

@@ -34,7 +34,6 @@ const useClasses = makeStyles({
     input: {
         ...shorthands.gridArea('input'),
         ...shorthands.padding(tokens.spacingVerticalM),
-        backgroundColor: tokens.colorNeutralBackground4,
     },
 });
 
