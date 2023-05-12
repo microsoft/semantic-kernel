@@ -55,5 +55,5 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: test_output_sk_jdk${{ matrix.java-versions }}u
+          name: test_output_sk_${{ matrix.java-versions }}u
           path: java/**/target/surefire-reports/*Test.txt
