@@ -27,10 +27,10 @@ var kernel = Kernel.Builder.Build();
 
 // Azure OpenAI
 kernel.Config.AddAzureTextCompletionService(
-    "davinci-azure",                     // Alias used by the kernel
     "text-davinci-003",                  // Azure OpenAI Deployment Name
     "https://contoso.openai.azure.com/", // Azure OpenAI Endpoint
-    "...your Azure OpenAI Key..."        // Azure OpenAI Key
+    "...your Azure OpenAI Key...",       // Azure OpenAI Key
+    "davinci-azure"                      // Alias used by the kernel
 );
 
 // Alternative using OpenAI
