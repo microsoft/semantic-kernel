@@ -3,7 +3,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import appReducer from '../features/app/appSlice';
 import conversationsReducer from '../features/conversations/conversationsSlice';
-import { signalRMiddleware, signalRRegisterEvents, startSignalRConnection } from '../features/message-relay/signalRMiddleware';
+import { registerSignalREvents, signalRMiddleware, startSignalRConnection } from '../features/message-relay/signalRMiddleware';
 import pluginsReducer from '../features/plugins/pluginsSlice';
 
 export const store = configureStore({
@@ -17,8 +17,8 @@ export const store = configureStore({
 
 // Start the signalR connection to make sure messages are
 // sent to all clients and received by all clients
-startSignalRConnection();
-signalRRegisterEvents(store);
+startSignalRConnection(store);
+registerSignalREvents(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

@@ -42,6 +42,7 @@ public class ChatController : ControllerBase, IDisposable
     private readonly List<IDisposable> _disposables;
     private const string ChatSkillName = "ChatSkill";
     private const string ChatFunctionName = "Chat";
+    private const string _receiveResponseClientCall = "ReceiveResponse";
 
     public ChatController(ILogger<ChatController> logger)
     {
@@ -112,9 +113,19 @@ public class ChatController : ControllerBase, IDisposable
             return this.BadRequest(result.LastErrorDescription);
         }
 
+        AskResult chatSkillAskResult = new AskResult
+        {
+            Value = result.Result,
+            Variables = result.Variables.Select(
+                v => new KeyValuePair<string, string>(v.Key, v.Value))
+        };
+
         // Broadcast AskResult to all users
-        AskResult chatSkillAskResult = new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) };
-        await messageRelayHubContext.Clients.All.SendAsync("receiveChatSkillAskResult", chatSkillAskResult);
+        if (ask.Variables.Where(v => v.Key == "chatId").Any())
+        {
+            var chatId = ask.Variables.Where(v => v.Key == "chatId").First().Value;
+            await messageRelayHubContext.Clients.All.SendAsync(_receiveResponseClientCall, chatSkillAskResult, chatId);
+        }
 
         return this.Ok(chatSkillAskResult);
     }
