@@ -46,9 +46,8 @@ export const conversationsSlice = createSlice({
             action: PayloadAction<{ message: IChatMessage; chatId: string }>,
         ) => {
             const { message, chatId } = action.payload;
-            const id = chatId;
-            state.conversations[id].messages.push(message);
-            frontLoadChat(state, id);
+            state.conversations[chatId].messages.push(message);
+            frontLoadChat(state, chatId);
         },
         updateMessageState: (
             state: ConversationsState,
@@ -63,7 +62,6 @@ export const conversationsSlice = createSlice({
             const id = action.payload.id;
             const isTyping = action.payload.isTyping;
             state.conversations[id].isTyping = isTyping;
-            frontLoadChat(state, id);
         },
         updateIsTypingFromServer: (state: ConversationsState, action: PayloadAction<ConversationTypingState>) => {
             const id = action.payload.id;

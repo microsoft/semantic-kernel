@@ -52,7 +52,7 @@ public class MessageRelayHub : Hub
     /// <param name="chatId">The ChatID used as group id for SignalR.</param>
     /// <param name="isTypingState">The typing state to send to other clients.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public async Task SendIsTypingStateAsync(string chatId, object isTypingState)
+    public async Task SendTypingStateAsync(string chatId, object isTypingState)
     {
         await this.Clients.OthersInGroup(chatId).SendAsync(this._receiveTypingStateClientCall, isTypingState, chatId);
     }
