@@ -21,21 +21,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        java: [8, 11, 17]
+        # java-versions: [jdk8, jdk11, jdk17]
+        java-versions: [jdk8]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up JDK ${{ matrix.java }}
 
-        uses: actions/setup-java@v3
+        # Need to use different JDK for JDK 8
+      - name: Set JDK
+        id: set-jdk
+        shell: bash
+        run: |
+          if [[ ${{ matrix.java-versions }} == "jdk8" ]]; then
+            echo "JDK_VERSION=11" >> $GITHUB_OUTPUT
+          else
+            version=$(echo ${{ matrix.java-versions }} | sed 's/jdk//')
+            echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/setup-java@v3
         with:
-          java-version: ${{ matrix.java }}
+          java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
           distribution: temurin
           cache: maven
 
       - name: Build with Maven
-        run: ./mvnw -DskipTests -B -Pbug-check clean install --file pom.xml
+        run: ./mvnw -B -Pbug-check -DskipTests -X -Pcompile-${{ matrix.java-versions }} clean install --file pom.xml
         working-directory: java
 
       - name: Run tests
@@ -45,5 +56,5 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: test_output_sk_jdk${{ matrix.java }}u
+          name: test_output_sk_jdk${{ matrix.java-versions }}u
           path: java/**/target/surefire-reports/*Test.txt
