@@ -44,7 +44,7 @@ public sealed class KernelBuilder
             this._promptTemplateEngine ?? new PromptTemplateEngine(this._logger),
             this._memory,
             this._config,
-            this._logger ?? NullLogger<Kernel>.Instance
+            this._logger
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
