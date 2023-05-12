@@ -1,6 +1,5 @@
 import * as signalR from "@microsoft/signalr";
-import { AuthorRoles } from './../../../libs/models/ChatMessage';
-import { IChatMessage } from './../../../libs/models/ChatMessage';
+import { AuthorRoles, IChatMessage } from './../../../libs/models/ChatMessage';
 
 export interface UserAsk {
     input: string;
@@ -17,7 +16,7 @@ export interface KeyValuePair<K, V> {
     value: V;
 }
 
-const receiveMsgFromServerCallbackName = "ReceiveMessageFromServer" as string;
+const receiveMsgFromServerCallbackName = "ReceiveMessage" as string;
 
 // Set up a SignalR connection to the messageRelayHub on the server
 const setupSignalRConnectionToChatHub = () => {
@@ -31,11 +30,11 @@ const setupSignalRConnectionToChatHub = () => {
     // Create the connection instance
     // withAutomaticReconnect will automatically try to reconnect and generate a new socket connection if needed
     var hubConnection = new signalR.HubConnectionBuilder()
-            .withUrl(connectionHubUrl.toString(), signalRConnectionOptions)
-            .withAutomaticReconnect()
-            .withHubProtocol(new signalR.JsonHubProtocol())
-            .configureLogging(signalR.LogLevel.Information)
-            .build();
+        .withUrl(connectionHubUrl.toString(), signalRConnectionOptions)
+        .withAutomaticReconnect()
+        .withHubProtocol(new signalR.JsonHubProtocol())
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
 
     // Note: to keep the connection open the serverTimeout should be
     // larger than the KeepAlive value that is set on the server
@@ -96,23 +95,40 @@ export const startSignalRConnection = async () => {
 
 export const signalRMiddleware = (store: any) => {
     return (next: any) => async (action: any) => {
-        console.debug("signalRMiddleware action", action);
-        console.debug("signalRMiddleware store", store);
-
-        if (action.type === "conversations/updateConversationFromUser") {
-            await hubConnection.invoke("SendMessageToAllUsersExceptSelfAsync", receiveMsgFromServerCallbackName, action.payload.message);
+        switch (action.type) {
+            case "conversations/updateConversationFromUser":
+                await hubConnection.invoke("SendMessageAsync", getSelectedChatID(store), action.payload.message).catch(
+                    err => console.error(err.toString())
+                );
+                break;
+            case "conversations/setConversations":
+                Object.keys(action.payload).map(async (id) => {
+                    await hubConnection.invoke("AddClientToGroupAsync", id).catch(
+                        err => console.error(err.toString())
+                    );
+                });
+                break;
+            case "conversations/addConversation":
+                await hubConnection.invoke("AddClientToGroupAsync", action.payload.id).catch(
+                    err => console.error(err.toString())
+                );
+                break;
         }
 
         return next(action);
     }
-}
+};
 
-export const signalRRegisterEvents = async ( store: any ) => {
-    hubConnection.on(receiveMsgFromServerCallbackName, (message: UserAsk) => {
-        store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message } });
+export const signalRRegisterEvents = async (store: any) => {
+    hubConnection.on(receiveMsgFromServerCallbackName, (message: UserAsk, chatId: string) => {
+        store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
     });
 
     hubConnection.on("receiveChatSkillAskResult", (userAskResult: UserAskResult) => {
         onReceiveChatSkillAskResult(store, userAskResult);
     });
-}
+};
+
+const getSelectedChatID = (store: any) => {
+    return store.getState().conversations.selectedId;
+};

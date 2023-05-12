@@ -11,7 +11,7 @@ namespace SemanticKernel.Service.CopilotChat.Hubs;
 /// </summary>
 public class MessageRelayHub : Hub
 {
-    private readonly string _userConnectedClientCall = "UserConnected";
+    private readonly string _receiveMessageClientCall = "ReceiveMessage";
     private readonly ILogger<MessageRelayHub> _logger;
 
     /// <summary>
@@ -24,25 +24,24 @@ public class MessageRelayHub : Hub
     }
 
     /// <summary>
-    /// Called when a client connects to the hub.
+    /// Adds the user to the groups that they are a member of.
+    /// Groups are identified by the chat ID.
+    /// TODO: Retrieve the user ID from the claims and call this method
+    /// from the OnConnectedAsync method instead of the frontend.
     /// </summary>
-    public override async Task OnConnectedAsync()
+    /// <param name="chatId"></param>
+    public async Task AddClientToGroupAsync(string chatId)
     {
-        await this.Clients.All.SendAsync(this._userConnectedClientCall, this.Context.ConnectionId);
-        this._logger.LogInformation("User connected with connection id: {0}", this.Context.ConnectionId);
+        await this.Groups.AddToGroupAsync(this.Context.ConnectionId, chatId);
     }
 
     /// <summary>
     /// Sends a message to all users except the sender.
     /// </summary>
-    /// <param name="clientSideCallBackName">The name of the client-side callback function.</param>
+    /// <param name="chatId">The ChatID used as group id for SignalR.</param>
     /// <param name="message">The message to send.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    public async Task SendMessageToAllUsersExceptSelfAsync(string clientSideCallBackName, object message)
+    public async Task SendMessageAsync(string chatId, object message)
     {
-        this._logger.LogInformation("Receive message: {0}", message);
-        await this.Clients.AllExcept(this.Context.ConnectionId).SendAsync(clientSideCallBackName, message);
-        this._logger.LogDebug("Called SendMessageToAllUsersExceptSelfAsync on server");
-        this._logger.LogDebug("Called {0} on clients", clientSideCallBackName);
+        await Clients.OthersInGroup(chatId).SendAsync(_receiveMessageClientCall, message, chatId);
     }
 }
