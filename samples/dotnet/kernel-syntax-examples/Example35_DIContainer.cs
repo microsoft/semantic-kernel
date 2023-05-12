@@ -15,7 +15,7 @@ using RepoUtils;
 /**
  * The following examples show how to use SK SDK in applications using DI/IoC containers.
  */
-public sealed class Example35_DIContainer
+public static class Example35_DIContainer
 {
     public static async Task RunAsync()
     {
@@ -102,7 +102,9 @@ public sealed class Example35_DIContainer
     /// <summary>
     /// Class that uses/references Kernel.
     /// </summary>
-    private class KernelClient
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class KernelClient
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
         private readonly IKernel _kernel;
         private readonly ILogger _logger;
