@@ -2,14 +2,15 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
-import java.io.IOException;
 
 public class Example06MemoryAndEmbeddings {
 
   public static Kernel getKernel(OpenAIAsyncClient client) {
     KernelConfig config = SKBuilders.kernelConfig()
-        .addTextCompletionService("davinci", kernel -> SKBuilders.textCompletionService().build(client, "text-davinci-003"))
-        .addTextCompletionService("embeddings", kernel -> SKBuilders.textCompletionService().build(client, "text-embedding-ada-002"))
+        .addTextCompletionService(
+            "davinci", kernel -> SKBuilders.textCompletionService().build(client, "text-davinci-003"))
+        .addTextEmbeddingsGenerationService(
+            "embeddings", kernel -> SKBuilders.textEmbeddingGenerationService().build(client, "text-embedding-ada-002"))
         .build();
 
     // TODO: Add Volatile memory

@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.builders;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.orchestration.ReadOnlyContextVariables;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -22,15 +23,17 @@ public enum BuildersSingleton {
     private static final String FALLBACK_TEXT_COMPLETION_BUILDER_CLASS =
             "com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletionBuilder";
 
+    private static final String FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS =
+            "com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGenerationBuilder";
     private static final String FALLBACK_SKILL_COLLECTION_BUILDER_CLASS =
             "com.microsoft.semantickernel.skilldefinition.DefaultReadOnlySkillCollection.Builder";
-
     private static final String FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS =
             "com.microsoft.semantickernel.semanticfunctions.DefaultPromptTemplateBuilder";
 
     private final FunctionBuilders functionBuilders;
     private final Kernel.InternalBuilder kernelBuilder;
     private final TextCompletion.Builder textCompletionBuilder;
+    private final EmbeddingGeneration.Builder<String, Double> textEmbeddingGenerationBuilder;
     private final ReadOnlySkillCollection.Builder readOnlySkillCollection;
 
     private final PromptTemplate.Builder promptTemplate;
@@ -47,6 +50,9 @@ public enum BuildersSingleton {
             textCompletionBuilder =
                     ServiceLoadUtil.findServiceLoader(
                             TextCompletion.Builder.class, FALLBACK_TEXT_COMPLETION_BUILDER_CLASS);
+            textEmbeddingGenerationBuilder =
+                    ServiceLoadUtil.findServiceLoader(
+                            EmbeddingGeneration.Builder.class, FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS);
             readOnlySkillCollection =
                     ServiceLoadUtil.findServiceLoader(
                             ReadOnlySkillCollection.Builder.class,
@@ -92,6 +98,9 @@ public enum BuildersSingleton {
 
     public TextCompletion.Builder getTextCompletionBuilder() {
         return textCompletionBuilder;
+    }
+    public EmbeddingGeneration.Builder<String, Double> getTextEmbeddingGenerationBuilder() {
+      return textEmbeddingGenerationBuilder;
     }
 
     public ReadOnlySkillCollection.Builder getReadOnlySkillCollection() {
