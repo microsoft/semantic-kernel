@@ -139,15 +139,15 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
           value: openAI.listKeys().key1
         }
         {
-          name: 'Planner:AIService'
+          name: 'Planner:AIService:AIService'
           value: 'AzureOpenAI'
         }
         {
-          name: 'Planner:Endpoint'
+          name: 'Planner:AIService:Endpoint'
           value: openAI.properties.endpoint
         }
         {
-          name: 'Planner:Key'
+          name: 'Planner:AIService:Key'
           value: openAI.listKeys().key1
         }
         {

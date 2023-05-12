@@ -125,19 +125,19 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
           value: apiKey
         }
         {
-          name: 'Planner:AIService'
+          name: 'Planner:AIService:AIService'
           value: aiService
         }
         {
-          name: 'Planner:DeploymentOrModelId'
+          name: 'Planner:AIService:DeploymentOrModelId'
           value: plannerModel
         }
         {
-          name: 'Planner:Endpoint'
+          name: 'Planner:AIService:Endpoint'
           value: endpoint
         }
         {
-          name: 'Planner:Key'
+          name: 'Planner:AIService:Key'
           value: apiKey
         }
         {
