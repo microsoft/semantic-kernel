@@ -10,12 +10,12 @@ namespace SemanticKernel.Service.Config;
 public class PromptsOptions
 {
     public const string PropertyName = "Prompts";
-    
+
     /// <summary>
     /// Token limit of the chat model.
     /// </summary>
     /// <remarks>https://platform.openai.com/docs/models/overview for token limits.</remarks>
-    
+
     [Required, Range(0, int.MaxValue)] public int CompletionTokenLimit { get; set; }
 
     /// <summary>
