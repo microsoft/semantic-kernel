@@ -1,3 +1,5 @@
+import botIcon1 from './assets/bot-icons/bot-icon-1.png';
+
 export const Constants = {
     app: {
         name: 'Copilot',
@@ -20,7 +22,7 @@ export const Constants = {
             id: 'bot',
             fullName: 'Copilot',
             emailAddress: '',
-            photo: '/assets/bot-icon-1.png',
+            photo: botIcon1,
         },
         fileExtension: 'skcb',
         typingIndicatorTimeoutMs: 5000,
