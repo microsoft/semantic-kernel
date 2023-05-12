@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -13,6 +14,8 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example37_MultiStreamingCompletion
 {
+    private static readonly object s_lockObject = new();
+
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Azure OpenAI - Text Completion - Multi Results Streaming ========");
@@ -40,6 +43,19 @@ public static class Example37_MultiStreamingCompletion
 
         PrepareDisplay();
 
+        List<Task> resultTasks = new();
+        int currentResult = 0;
+        await foreach (var completionResult in textCompletion.CompleteMultiStreamAsync(prompt, requestSettings))
+        {
+            resultTasks.Add(ProcessStreamAsyncEnumerableAsync(completionResult, currentResult++, consoleLinesPerResult));
+        }
+
+        Console.WriteLine();
+
+        await Task.WhenAll(resultTasks.ToArray());
+
+        /*
+        
         int position = 0;
         await foreach (ITextCompletionStreamingResult completionResult in textCompletion.CompleteMultiStreamAsync(prompt, requestSettings))
         {
@@ -54,9 +70,25 @@ public static class Example37_MultiStreamingCompletion
             }
 
             position++;
-        }
+        }*/
 
+        Console.SetCursorPosition(0, requestSettings.ResultsPerPrompt * consoleLinesPerResult);
         Console.WriteLine();
+    }
+
+    private static async Task ProcessStreamAsyncEnumerableAsync(ITextCompletionStreamingResult result, int resultNumber, int linesPerResult)
+    {
+        var fullSentence = string.Empty;
+        await foreach (var word in result.CompleteStreamAsync())
+        {
+            fullSentence += word;
+
+            lock (s_lockObject)
+            {
+                Console.SetCursorPosition(0, (resultNumber * linesPerResult));
+                Console.Write(fullSentence);
+            }
+        }
     }
 
     /// <summary>
