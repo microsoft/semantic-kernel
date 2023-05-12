@@ -31,13 +31,11 @@ $FrontendScript = Join-Path '.' 'Start-Frontend.ps1'
 # Start backend (in new PS process)
 if ($AzureOpenAIOrOpenAIKey -eq '')
 {
-    Write-Host '0'
     # no key
     Start-Process pwsh -ArgumentList "-noexit", "-command $BackendScript"
 }
 else
 {
-    Write-Host '1'
     # with key
     Start-Process pwsh -ArgumentList "-noexit", "-command $BackendScript -AzureOpenAIOrOpenAIKey $AzureOpenAIOrOpenAIKey"
 }
