@@ -17,22 +17,19 @@ const log = debug(Constants.debug.root).extend('chat-room');
 
 const useClasses = makeStyles({
     root: {
-        height: '94.5%',
+        ...shorthands.overflow('hidden'),
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        gridTemplateColumns: '1fr',
-        gridTemplateRows: '1fr auto',
-        gridTemplateAreas: "'history' 'input'",
+        height: '100%',
     },
     history: {
-        ...shorthands.gridArea('history'),
         ...shorthands.padding(tokens.spacingVerticalM),
         overflowY: 'auto',
-        display: 'grid',
+        marginLeft: '40px',
+        paddingRight: '40px',
     },
     input: {
-        ...shorthands.gridArea('input'),
         ...shorthands.padding(tokens.spacingVerticalM),
     },
 });
