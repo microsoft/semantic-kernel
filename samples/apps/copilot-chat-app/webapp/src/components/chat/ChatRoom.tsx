@@ -23,11 +23,15 @@ const useClasses = makeStyles({
         justifyContent: 'space-between',
         height: '100%',
     },
+    scroll: {
+        overflowY: 'auto',
+    },
     history: {
         ...shorthands.padding(tokens.spacingVerticalM),
-        overflowY: 'auto',
         marginLeft: '40px',
         paddingRight: '40px',
+        display: 'flex',
+        justifyContent: 'center',
     },
     input: {
         ...shorthands.padding(tokens.spacingVerticalM),
@@ -110,8 +114,10 @@ export const ChatRoom: React.FC = () => {
 
     return (
         <div className={classes.root}>
-            <div ref={scrollViewTargetRef} className={classes.history}>
-                <ChatHistory audience={audience} messages={messages} onGetResponse={handleSubmit} />
+            <div ref={scrollViewTargetRef} className={classes.scroll}>
+                <div ref={scrollViewTargetRef} className={classes.history}>
+                    <ChatHistory audience={audience} messages={messages} onGetResponse={handleSubmit} />
+                </div>
                 <div>
                     <div ref={scrollTargetRef} />
                 </div>
