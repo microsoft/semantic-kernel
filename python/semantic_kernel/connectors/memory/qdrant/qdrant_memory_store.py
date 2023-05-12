@@ -4,7 +4,7 @@
 QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
 The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
 """
-
+import qdrant_client
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.models import Distance, VectorParams
@@ -23,10 +23,12 @@ from semantic_kernel.utils.null_logger import NullLogger
 
 
 class QdrantMemoryStore(MemoryStoreBase):
-    _qdrantclient: QdrantClient
+    _qdrantclient: qdrant_client
     _logger: Logger
 
-    def __init__(self, hostip: str, port: Optional[int] = 6333, logger: Optional[Logger] = None) -> None:
+    def __init__(
+        self, hostip: str, port: Optional[int] = 6333, logger: Optional[Logger] = None
+    ) -> None:
         self._qdrantclient = QdrantClient(host=hostip, port=port)
         self._logger = logger or NullLogger()
 
@@ -44,12 +46,13 @@ class QdrantMemoryStore(MemoryStoreBase):
             )
 
     async def create_collection_async(
-            self, collection_name: str, vector_size: int, distance: Optional[str]="Cosine") -> None:
+        self, collection_name: str, vector_size: int, distance: Optional[str] = "Cosine"
+    ) -> None:
         """Creates a new collection if it does not exist.
 
         Arguments:
             collection_name {str} -- The name of the collection to create.
-            vector_size {int} -- The size of the vector. 
+            vector_size {int} -- The size of the vector.
             distance {Optional[str]} -- The distance metric to use. (default: {"Cosine"})
         Returns:
             None
@@ -58,9 +61,8 @@ class QdrantMemoryStore(MemoryStoreBase):
         self._qdrantclient.recreate_collection(
             collection_name="{collection_name}",
             vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
-            )
-    
-    
+        )
+
     async def get_collections_async(
         self,
     ) -> List[str]:
@@ -70,7 +72,6 @@ class QdrantMemoryStore(MemoryStoreBase):
             List[str] -- The list of collections.
         """
         return list(self._qdrantclient.get_collections())
-    
 
     async def delete_collection_async(self, collection_name: str) -> None:
         """Deletes a collection.
@@ -84,7 +85,6 @@ class QdrantMemoryStore(MemoryStoreBase):
 
         self._qdrantclient.delete_collection(collection_name=collection_name)
 
-
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
@@ -95,13 +95,14 @@ class QdrantMemoryStore(MemoryStoreBase):
             bool -- True if the collection exists; otherwise, False.
         """
 
-        collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
+        collection_info = self._qdrantclient.get_collection(
+            collection_name=collection_name
+        )
 
         if collection_info.status == CollectionStatus.GREEN:
             return collection_name
         else:
             return ""
-
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record.
@@ -115,7 +116,9 @@ class QdrantMemoryStore(MemoryStoreBase):
         """
         record._key = record._id
 
-        collection_info = self.does_collection_exist_async(collection_name=collection_name)
+        collection_info = self.does_collection_exist_async(
+            collection_name=collection_name
+        )
 
         if not collection_info:
             raise Exception(f"Collection '{collection_name}' does not exist")
@@ -123,14 +126,17 @@ class QdrantMemoryStore(MemoryStoreBase):
         upsert_info = self._qdrantclient.upsert(
             collection_name=collection_name,
             wait=True,
-            points=[PointStruct(id=record._id, vector=record._embedding, payload=record._payload),]
-        )   
+            points=[
+                PointStruct(
+                    id=record._id, vector=record._embedding, payload=record._payload
+                ),
+            ],
+        )
 
         if upsert_info.status == UpdateStatus.COMPLETED:
             return record._key
         else:
             return ""
-    
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -144,28 +150,30 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The unqiue database keys of the records.
         """
-        
-        collection_info = self.does_collection_exist_async(collection_name=collection_name)
+
+        collection_info = self.does_collection_exist_async(
+            collection_name=collection_name
+        )
 
         if not collection_info:
             raise Exception(f"Collection '{collection_name}' does not exist")
-        
+
         points_rec = []
 
         for record in records:
             record._key = record._id
-            pointstruct = PointStruct(id=record._id, vector=record._embedding, payload=record._payload)
+            pointstruct = PointStruct(
+                id=record._id, vector=record._embedding, payload=record._payload
+            )
             points_rec.append([pointstruct])
             upsert_info = self._qdrantclient.upsert(
-                collection_name=collection_name,
-                wait=True,
-                points=points_rec)
+                collection_name=collection_name, wait=True, points=points_rec
+            )
 
         if upsert_info.status == UpdateStatus.COMPLETED:
             return [record._key for record in records]
         else:
             return ""
-        
 
     async def get_async(
         self, collection_name: str, key: str, with_embedding: bool = False
@@ -180,8 +188,10 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord -- The record.
         """
-        
-        collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
+
+        collection_info = self._qdrantclient.get_collection(
+            collection_name=collection_name
+        )
         with_payload = True
         search_id = [key]
 
@@ -192,18 +202,19 @@ class QdrantMemoryStore(MemoryStoreBase):
             collection_name=collection_name,
             ids=search_id,
             with_payload=with_payload,
-            with_vectors=with_embedding
+            with_vectors=with_embedding,
         )
 
         result = MemoryRecord(
-            is_reference=False, 
-            external_source_name="qdrant", 
-            key=search_id, 
-            id=search_id, 
-            embedding=qdrant_record.vector, payload=qdrant_record.payload)
-        
+            is_reference=False,
+            external_source_name="qdrant",
+            key=search_id,
+            id=search_id,
+            embedding=qdrant_record.vector,
+            payload=qdrant_record.payload,
+        )
+
         return result
-        
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
@@ -218,21 +229,22 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             List[MemoryRecord] -- The records.
         """
-        
-        collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
+
+        collection_info = self._qdrantclient.get_collection(
+            collection_name=collection_name
+        )
 
         if not collection_info.status == CollectionStatus.GREEN:
             raise Exception(f"Collection '{collection_name}' does not exist")
-        
+
         with_payload = True
         search_ids = [keys]
-
 
         qdrant_records = self._qdrantclient.retrieve(
             collection_name=collection_name,
             ids=search_ids,
             with_payload=with_payload,
-            with_vectors=with_embeddings
+            with_vectors=with_embeddings,
         )
 
         return qdrant_records
@@ -247,16 +259,18 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        
-        collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
-        
+
+        collection_info = self._qdrantclient.get_collection(
+            collection_name=collection_name
+        )
+
         if not collection_info.status == CollectionStatus.GREEN:
             raise Exception(f"Collection '{collection_name}' does not exist")
 
         self._qdrantclient.delete(
             collection_name="{collection_name}",
             points_selector=models.PointIdsList(
-            points=[key],
+                points=[key],
             ),
         )
 
@@ -270,15 +284,17 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
-        
+        collection_info = self._qdrantclient.get_collection(
+            collection_name=collection_name
+        )
+
         if not collection_info.status == CollectionStatus.GREEN:
             raise Exception(f"Collection '{collection_name}' does not exist")
 
         self._qdrantclient.delete(
             collection_name="{collection_name}",
             points_selector=models.PointIdsList(
-            points=[keys],
+                points=[keys],
             ),
         )
 
@@ -328,8 +344,10 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
-        
-        collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
+
+        collection_info = self._qdrantclient.get_collection(
+            collection_name=collection_name
+        )
 
         if not collection_info.status == CollectionStatus.GREEN:
             raise Exception(f"Collection '{collection_name}' does not exist")
@@ -354,18 +372,17 @@ class QdrantMemoryStore(MemoryStoreBase):
         # Convert the results to MemoryRecords
         for qdrant_match in qdrant_matches:
             vector_result = MemoryRecord(
-                is_reference=False, 
-                external_source_name="qdrant", 
-                key=str(qdrant_match.id), 
-                id=str(qdrant_match.id), 
-                embedding=qdrant_match.vector, 
-                payload=qdrant_match.payload
+                is_reference=False,
+                external_source_name="qdrant",
+                key=str(qdrant_match.id),
+                id=str(qdrant_match.id),
+                embedding=qdrant_match.vector,
+                payload=qdrant_match.payload,
             )
-            
+
             nearest_results.append(tuple(vector_result, qdrant_match.score))
-        
+
         return nearest_results
-        
 
     def compute_similarity_scores(
         self, embedding: ndarray, embedding_array: ndarray
