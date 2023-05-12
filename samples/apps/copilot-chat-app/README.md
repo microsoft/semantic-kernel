@@ -114,7 +114,7 @@ The WebApp can display this error when the application is configured for an acti
 
 ## 2. Issues using text completion models, such as `text-davinci-003`
 CopilotChat supports chat completion models, such as `gpt-3.5-*` and `gpt-4-*`.
-See [OpenAI's model compatiblity](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
+See [OpenAI's model compatibility](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
 the complete list of current models supporting chat completions.
 
 ## 3. Localhost SSL certificate errors

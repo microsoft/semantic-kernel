@@ -247,6 +247,36 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
+    public async Task ItSupportsAsyncType7Async()
+    {
+        // Arrange
+        [SKFunction("Test")]
+        [SKFunctionName("Test")]
+        async Task<SKContext> TestAsync(SKContext cx)
+        {
+            await Task.Delay(0);
+            s_canary = s_expected;
+            cx.Variables.Update("foo");
+            cx["canary"] = s_expected;
+            return cx;
+        }
+
+        var context = this.MockContext("");
+
+        // Act
+        var function = SKFunction.FromNativeMethod(Method(TestAsync), log: this._log.Object);
+        Assert.NotNull(function);
+        SKContext result = await function.InvokeAsync(context);
+
+        // Assert
+        Assert.False(result.ErrorOccurred);
+        this.VerifyFunctionTypeMatch(7);
+        Assert.Equal(s_expected, s_canary);
+        Assert.Equal(s_expected, context["canary"]);
+        Assert.Equal("foo", context.Result);
+    }
+
+    [Fact]
     public async Task ItSupportsType8Async()
     {
         // Arrange
