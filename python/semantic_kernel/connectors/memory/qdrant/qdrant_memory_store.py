@@ -2,7 +2,7 @@
 
 """
 QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
-The QdrantMemoryStore inherits from MemoryStoreBase for persisting and retrieving data from a Qdrant Vector Database Implementation.
+The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
 """
 
 from qdrant_client import QdrantClient
@@ -12,9 +12,8 @@ from qdrant_client.http.models import CollectionStatus
 from qdrant_client.http.models import PointStruct
 from qdrant_client.http.models import UpdateStatus
 
-from copy import deepcopy
 from logging import Logger
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from numpy import array, linalg, ndarray
 
@@ -38,7 +37,8 @@ class QdrantMemoryStore(MemoryStoreBase):
         """
 
 
-    async def create_collection_async(self, collection_name: str, vector_size: int, distance: Optional[str]="Cosine") -> None:
+    async def create_collection_async(
+            self, collection_name: str, vector_size: int, distance: Optional[str]="Cosine") -> None:
         """Creates a new collection if it does not exist.
 
         Arguments:
