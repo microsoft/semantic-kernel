@@ -35,7 +35,13 @@ class QdrantMemoryStore(MemoryStoreBase):
         Arguments:
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
-
+        try:
+            from qdrant_client import QdrantClient
+        except ImportError:
+            raise ValueError(
+                "Error: Umable to import qdrant client python package."
+                "Please install qdrant client using `pip install qdrant-client`."
+            )
 
     async def create_collection_async(
             self, collection_name: str, vector_size: int, distance: Optional[str]="Cosine") -> None:
