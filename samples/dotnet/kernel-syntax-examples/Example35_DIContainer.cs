@@ -25,7 +25,8 @@ public static class Example35_DIContainer
     }
 
     /// <summary>
-    /// This example shows how to registered Kernel in DI container without registering it's dependencies and using KernelBuilder instead.
+    /// This example shows how to register a Kernel in a DI container using KernelBuilder instead of 
+    /// registering its dependencies.
     /// </summary>
     private static async Task UseKernelInDIPowerAppAsync()
     {
