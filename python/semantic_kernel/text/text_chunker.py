@@ -224,7 +224,7 @@ def _split_list(
     text: List[str], max_tokens: int, separators: List[str], trim: bool
 ) -> List[str]:
     """
-    Split list of sring into lines.
+    Split list of string into lines.
     """
     if not text:
         return []

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "13622094074985985653"
+      "templateHash": "17155058542271915855"
     }
   },
   "parameters": {
@@ -29,6 +29,27 @@
       "metadata": {
         "description": "Location of package to deploy as the web service"
       }
+    },
+    "deployCosmosDB": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether to deploy Cosmos DB for chat storage"
+      }
+    },
+    "deployQdrant": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether to deploy Qdrant (in a container) for memory storage"
+      }
+    },
+    "deploySpeechServices": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether to deploy Azure Speech Services to be able to input chat text by voice"
+      }
     }
   },
   "variables": {
@@ -40,6 +61,7 @@
   },
   "resources": [
     {
+      "condition": "[parameters('deployQdrant')]",
       "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
       "apiVersion": "2022-09-01",
       "name": "[format('{0}/{1}/{2}', format('st{0}', variables('rgIdHash')), 'default', variables('storageFileShareName'))]",
@@ -48,6 +70,7 @@
       ]
     },
     {
+      "condition": "[parameters('deployQdrant')]",
       "type": "Microsoft.Storage/storageAccounts/fileServices",
       "apiVersion": "2022-09-01",
       "name": "[format('{0}/{1}', format('st{0}', variables('rgIdHash')), 'default')]",
@@ -170,15 +193,39 @@
             },
             {
               "name": "ChatStore:Type",
-              "value": "volatile"
+              "value": "[if(parameters('deployCosmosDB'), 'cosmos', 'volatile')]"
+            },
+            {
+              "name": "ChatStore:Cosmos:Database",
+              "value": "CopilotChat"
+            },
+            {
+              "name": "ChatStore:Cosmos:ChatSessionsContainer",
+              "value": "chatsessions"
+            },
+            {
+              "name": "ChatStore:Cosmos:ChatMessagesContainer",
+              "value": "chatmessages"
+            },
+            {
+              "name": "ChatStore:Cosmos:ConnectionString",
+              "value": "[if(parameters('deployCosmosDB'), listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', toLower(format('cosmos-{0}', variables('uniqueName')))), '2022-05-15').connectionStrings[0].connectionString, '')]"
             },
             {
               "name": "MemoriesStore:Type",
-              "value": "Qdrant"
+              "value": "[if(parameters('deployQdrant'), 'Qdrant', 'Volatile')]"
             },
             {
               "name": "MemoriesStore:Qdrant:Host",
-              "value": "[format('http://{0}', reference(resourceId('Microsoft.ContainerInstance/containerGroups', format('ci-{0}', variables('uniqueName'))), '2022-10-01-preview').ipAddress.fqdn)]"
+              "value": "[if(parameters('deployQdrant'), format('http://{0}', reference(resourceId('Microsoft.ContainerInstance/containerGroups', format('ci-{0}', variables('uniqueName'))), '2022-10-01-preview').ipAddress.fqdn), '')]"
+            },
+            {
+              "name": "AzureSpeech:Region",
+              "value": "[variables('location')]"
+            },
+            {
+              "name": "AzureSpeech:Key",
+              "value": "[if(parameters('deploySpeechServices'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('cog-{0}', variables('uniqueName'))), '2022-12-01').key1, '')]"
             },
             {
               "name": "Kestrel:Endpoints:Https:Url",
@@ -215,8 +262,10 @@
         "[resourceId('Microsoft.ContainerInstance/containerGroups', format('ci-{0}', variables('uniqueName')))]",
         "[resourceId('Microsoft.Insights/components', format('appi-{0}', variables('uniqueName')))]",
         "[resourceId('Microsoft.Web/serverfarms', format('asp-{0}', variables('uniqueName')))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', toLower(format('cosmos-{0}', variables('uniqueName'))))]",
         "[resourceId('Microsoft.OperationalInsights/workspaces', format('la-{0}', variables('uniqueName')))]",
-        "[resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName')))]"
+        "[resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName')))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', format('cog-{0}', variables('uniqueName')))]"
       ]
     },
     {
@@ -278,6 +327,7 @@
       }
     },
     {
+      "condition": "[parameters('deployQdrant')]",
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2022-09-01",
       "name": "[format('st{0}', variables('rgIdHash'))]",
@@ -291,6 +341,7 @@
       }
     },
     {
+      "condition": "[parameters('deployQdrant')]",
       "type": "Microsoft.ContainerInstance/containerGroups",
       "apiVersion": "2022-10-01-preview",
       "name": "[format('ci-{0}', variables('uniqueName'))]",
@@ -303,10 +354,6 @@
             "properties": {
               "image": "qdrant/qdrant:latest",
               "ports": [
-                {
-                  "port": 80,
-                  "protocol": "TCP"
-                },
                 {
                   "port": 6333,
                   "protocol": "TCP"
@@ -332,10 +379,6 @@
         "ipAddress": {
           "ports": [
             {
-              "port": 80,
-              "protocol": "TCP"
-            },
-            {
               "port": 6333,
               "protocol": "TCP"
             }
@@ -348,8 +391,8 @@
             "name": "[variables('containerVolumeMountName')]",
             "azureFile": {
               "shareName": "[variables('storageFileShareName')]",
-              "storageAccountName": "[format('st{0}', variables('rgIdHash'))]",
-              "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', format('st{0}', variables('rgIdHash'))), '2022-09-01').keys[0].value]"
+              "storageAccountName": "[if(parameters('deployQdrant'), format('st{0}', variables('rgIdHash')), 'notdeployed')]",
+              "storageAccountKey": "[if(parameters('deployQdrant'), listKeys(resourceId('Microsoft.Storage/storageAccounts', format('st{0}', variables('rgIdHash'))), '2022-09-01').keys[0].value, '')]"
             }
           }
         ]
@@ -357,6 +400,132 @@
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', format('st{0}', variables('rgIdHash')))]"
       ]
+    },
+    {
+      "condition": "[parameters('deployCosmosDB')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2022-05-15",
+      "name": "[toLower(format('cosmos-{0}', variables('uniqueName')))]",
+      "location": "[variables('location')]",
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "Session"
+        },
+        "locations": [
+          {
+            "locationName": "[variables('location')]",
+            "failoverPriority": 0,
+            "isZoneRedundant": false
+          }
+        ],
+        "databaseAccountOfferType": "Standard"
+      }
+    },
+    {
+      "condition": "[parameters('deployCosmosDB')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
+      "apiVersion": "2022-05-15",
+      "name": "[format('{0}/{1}', toLower(format('cosmos-{0}', variables('uniqueName'))), 'CopilotChat')]",
+      "properties": {
+        "resource": {
+          "id": "CopilotChat"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', toLower(format('cosmos-{0}', variables('uniqueName'))))]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployCosmosDB')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2023-03-15",
+      "name": "[format('{0}/{1}/{2}', toLower(format('cosmos-{0}', variables('uniqueName'))), 'CopilotChat', 'chatmessages')]",
+      "properties": {
+        "resource": {
+          "id": "chatmessages",
+          "indexingPolicy": {
+            "indexingMode": "consistent",
+            "automatic": true,
+            "includedPaths": [
+              {
+                "path": "/*"
+              }
+            ],
+            "excludedPaths": [
+              {
+                "path": "/\"_etag\"/?"
+              }
+            ]
+          },
+          "partitionKey": {
+            "paths": [
+              "/id"
+            ],
+            "kind": "Hash",
+            "version": 2
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', toLower(format('cosmos-{0}', variables('uniqueName'))), 'CopilotChat')]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployCosmosDB')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2023-03-15",
+      "name": "[format('{0}/{1}/{2}', toLower(format('cosmos-{0}', variables('uniqueName'))), 'CopilotChat', 'chatsessions')]",
+      "properties": {
+        "resource": {
+          "id": "chatsessions",
+          "indexingPolicy": {
+            "indexingMode": "consistent",
+            "automatic": true,
+            "includedPaths": [
+              {
+                "path": "/*"
+              }
+            ],
+            "excludedPaths": [
+              {
+                "path": "/\"_etag\"/?"
+              }
+            ]
+          },
+          "partitionKey": {
+            "paths": [
+              "/id"
+            ],
+            "kind": "Hash",
+            "version": 2
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', toLower(format('cosmos-{0}', variables('uniqueName'))), 'CopilotChat')]"
+      ]
+    },
+    {
+      "condition": "[parameters('deploySpeechServices')]",
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2022-12-01",
+      "name": "[format('cog-{0}', variables('uniqueName'))]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "S0"
+      },
+      "kind": "SpeechServices",
+      "identity": {
+        "type": "None"
+      },
+      "properties": {
+        "customSubDomainName": "[format('cog-{0}', variables('uniqueName'))]",
+        "networkAcls": {
+          "defaultAction": "Allow"
+        },
+        "publicNetworkAccess": "Enabled"
+      }
     }
   ],
   "outputs": {

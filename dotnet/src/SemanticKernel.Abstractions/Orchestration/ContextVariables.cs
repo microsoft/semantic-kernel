@@ -23,9 +23,9 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// Constructor for context variables.
     /// </summary>
     /// <param name="content">Optional value for the main variable of the context.</param>
-    public ContextVariables(string content = "")
+    public ContextVariables(string? content = null)
     {
-        this._variables[MainKey] = content;
+        this._variables[MainKey] = content ?? string.Empty;
     }
 
     /// <summary>
@@ -34,9 +34,9 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <param name="content">The new input value, for the next function in the pipeline, or as a result for the user
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
-    public ContextVariables Update(string content)
+    public ContextVariables Update(string? content)
     {
-        this._variables[MainKey] = content;
+        this._variables[MainKey] = content ?? string.Empty;
         return this;
     }
 
@@ -49,12 +49,15 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <returns>The current instance</returns>
     public ContextVariables Update(ContextVariables newData, bool merge = true)
     {
-        // If requested, discard old data and keep only the new one.
-        if (!merge) { this._variables.Clear(); }
-
-        foreach (KeyValuePair<string, string> varData in newData._variables)
+        if (!object.ReferenceEquals(this, newData))
         {
-            this._variables[varData.Key] = varData.Value;
+            // If requested, discard old data and keep only the new one.
+            if (!merge) { this._variables.Clear(); }
+
+            foreach (KeyValuePair<string, string> varData in newData._variables)
+            {
+                this._variables[varData.Key] = varData.Value;
+            }
         }
 
         return this;

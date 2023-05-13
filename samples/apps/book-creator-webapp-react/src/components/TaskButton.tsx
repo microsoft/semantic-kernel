@@ -34,7 +34,7 @@ const TaskButton: FC<IData> = ({
     uri,
     skills,
 }) => {
-    const maxSteps = 10; //this is the maximum number of iterations planner will take while attemping to solve
+    const maxSteps = 10; //this is the maximum number of iterations planner will take while attempting to solve
     const sk = useSemanticKernel(uri);
     const taskRunner = useTaskRunner(sk, keyConfig, maxSteps);
     const [isBusy, setIsBusy] = useState<boolean>(false);
