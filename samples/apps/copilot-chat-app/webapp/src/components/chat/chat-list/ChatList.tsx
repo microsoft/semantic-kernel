@@ -11,14 +11,21 @@ import { NewBotMenu } from './NewBotMenu';
 
 const useClasses = makeStyles({
     root: {
+        ...shorthands.overflow('hidden'),
+        display: 'flex',
         width: '25%',
-        minHeight: '100%',
-        overflowX: 'hidden',
-        overflowY: 'auto',
         scrollbarWidth: 'thin',
         backgroundColor: '#F0F0F0',
+        flexDirection: 'column',
+        '@media (max-width: 25%)': {
+            display: 'none',
+        },
+    },
+    list: {
+        overflowY: 'auto',
     },
     header: {
+        ...shorthands.padding(tokens.spacingVerticalXXS, tokens.spacingHorizontalXS),
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -26,13 +33,6 @@ const useClasses = makeStyles({
         marginLeft: '1em',
         alignItems: 'center',
         height: '4.8em',
-        '& controls': {
-            ...shorthands.gap('10px'),
-            display: 'flex',
-        },
-    },
-    label: {
-        marginLeft: '1em',
     },
 });
 
@@ -41,50 +41,44 @@ export const ChatList: FC = () => {
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     return (
-        <>
-            <div className={classes.root}>
-                <div className={classes.header}>
-                    <Text weight="bold" size={500}>
-                        Conversations
-                    </Text>
-                    <NewBotMenu />
-                </div>
-                <Tree aria-label={'chat list'}>
-                    {Object.keys(conversations).map((id) => {
-                        const convo = conversations[id];
-                        const messages = convo.messages;
-                        const lastMessage = convo.messages.length - 1;
-                        return (
-                            <TreeItem
-                                key={id}
-                                leaf
-                                style={
-                                    id === selectedId
-                                        ? { background: tokens.colorNeutralBackground1 }
-                                        : undefined
-                                }
-                            >
-                                <ChatListItem
-                                    id={id}
-                                    header={convo.title}
-                                    timestamp={new Date(messages[lastMessage].timestamp).toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                    })}
-                                    preview={
-                                        messages.length > 0
-                                            ? isPlan(messages[lastMessage].content)
-                                                ? 'Click to view proposed plan'
-                                                : (messages[lastMessage].content as string)
-                                            : 'Click to start the chat'
-                                    }
-                                    botProfilePicture={convo.botProfilePicture}
-                                />
-                            </TreeItem>
-                        );
-                    })}
-                </Tree>
+        <div className={classes.root}>
+            <div className={classes.header}>
+                <Text weight="bold" size={500}>
+                    Conversations
+                </Text>
+                <NewBotMenu />
             </div>
-        </>
+            <Tree aria-label={'chat list'} className={classes.list}>
+                {Object.keys(conversations).map((id) => {
+                    const convo = conversations[id];
+                    const messages = convo.messages;
+                    const lastMessage = convo.messages.length - 1;
+                    return (
+                        <TreeItem
+                            key={id}
+                            leaf
+                            style={id === selectedId ? { background: tokens.colorNeutralBackground1 } : undefined}
+                        >
+                            <ChatListItem
+                                id={id}
+                                header={convo.title}
+                                timestamp={new Date(messages[lastMessage].timestamp).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                })}
+                                preview={
+                                    messages.length > 0
+                                        ? isPlan(messages[lastMessage].content)
+                                            ? 'Click to view proposed plan'
+                                            : (messages[lastMessage].content as string)
+                                        : 'Click to start the chat'
+                                }
+                                botProfilePicture={convo.botProfilePicture}
+                            />
+                        </TreeItem>
+                    );
+                })}
+            </Tree>
+        </div>
     );
 };
