@@ -5,7 +5,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
@@ -17,7 +16,7 @@ public static class Example09_FunctionTypes
     {
         Console.WriteLine("======== Native function types ========");
 
-        var fakeContext = new SKContext(new ContextVariables(), NullMemory.Instance, null, ConsoleLogger.Log);
+        var fakeContext = new SKContext(logger: ConsoleLogger.Log);
 
         var kernel = Kernel.Builder.WithLogger(ConsoleLogger.Log).Build();
         kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
@@ -81,26 +80,11 @@ public static class Example09_FunctionTypes
         await kernel.Func("test", "type10").InvokeAsync("");
         await test["type10"].InvokeAsync("");
 
-        await kernel.Func("test", "type11").InvokeAsync("", fakeContext);
-        await test["type11"].InvokeAsync("", fakeContext);
+        await kernel.Func("test", "type11").InvokeAsync("");
+        await test["type11"].InvokeAsync("");
 
-        await kernel.Func("test", "type12").InvokeAsync("", fakeContext);
-        await test["type12"].InvokeAsync("", fakeContext);
-
-        await kernel.Func("test", "type13").InvokeAsync("", fakeContext);
-        await test["type13"].InvokeAsync("", fakeContext);
-
-        await kernel.Func("test", "type14").InvokeAsync("", fakeContext);
-        await test["type14"].InvokeAsync("", fakeContext);
-
-        await kernel.Func("test", "type15").InvokeAsync("");
-        await test["type15"].InvokeAsync("");
-
-        await kernel.Func("test", "type16").InvokeAsync(fakeContext);
-        await test["type16"].InvokeAsync(fakeContext);
-
-        await kernel.Func("test", "type17").InvokeAsync("", fakeContext);
-        await test["type17"].InvokeAsync("", fakeContext);
+        await kernel.Func("test", "type12").InvokeAsync(fakeContext);
+        await test["type12"].InvokeAsync(fakeContext);
 
         await kernel.Func("test", "type18").InvokeAsync();
         await test["type18"].InvokeAsync();
