@@ -69,6 +69,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         self._default_query_includes = ["embeddings", "metadatas", "documents"]
 
         self._logger = logger or NullLogger()
+        self._default_embedding_function = "DisableChromaEmbeddingFunction"
 
     async def create_collection_async(self, collection_name: str) -> None:
         """Creates a new collection in Chroma if it does not exist.
@@ -86,7 +87,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             # Current version of ChromeDB reject camel case collection names.
             name=camel_to_snake(collection_name),
             # ChromaMemoryStore will get embeddings from SemanticTextMemory. Never use this.
-            embedding_function="DoNotUseChromaEmbeddingFunction",
+            embedding_function=self._default_embedding_function,
         )
 
     async def get_collection_async(
@@ -94,7 +95,7 @@ class ChromaMemoryStore(MemoryStoreBase):
     ) -> Optional["Collection"]:
         try:
             # Current version of ChromeDB rejects camel case collection names.
-            return self._client.get_collection(name=camel_to_snake(collection_name))
+            return self._client.get_collection(name=camel_to_snake(collection_name), embedding_function=self._default_embedding_function)
         except ValueError:
             return None
 
@@ -193,7 +194,10 @@ class ChromaMemoryStore(MemoryStoreBase):
             MemoryRecord -- The record.
         """
         records = await self.get_batch_async(collection_name, [key], with_embedding)
-        return records[0]
+        try:
+            return records[0]
+        except IndexError:
+            raise Exception(f"Record with key '{key}' does not exist in collection '{collection_name}'")
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool
@@ -217,8 +221,8 @@ class ChromaMemoryStore(MemoryStoreBase):
             if with_embeddings
             else ["metadatas", "documents"]
         )
-        value = collection.get(ids=keys, include=query_includes)
 
+        value = collection.get(ids=keys, include=query_includes)
         record = query_results_to_records(value)
         return record
 
@@ -244,7 +248,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        collection = await self.get_collection_async(name=collection_name)
+        collection = await self.get_collection_async(collection_name=collection_name)
         if collection is not None:
             collection.delete(ids=keys)
 
@@ -253,8 +257,8 @@ class ChromaMemoryStore(MemoryStoreBase):
         collection_name: str,
         embedding: ndarray,
         limit: int,
-        min_relevance_score: float,
-        with_embeddings: bool,
+        min_relevance_score: float = 0.0,
+        with_embeddings: bool = True,
     ) -> List[Tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
@@ -320,8 +324,8 @@ class ChromaMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         embedding: ndarray,
-        min_relevance_score: float,
-        with_embedding: bool,
+        min_relevance_score: float = 0.0,
+        with_embedding: bool = True,
     ) -> Tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
@@ -334,10 +338,48 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        return self.get_nearest_match_async(
+        results = await self.get_nearest_matches_async(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
             min_relevance_score=min_relevance_score,
-            with_embedding=with_embedding,
+            with_embeddings=with_embedding,
         )
+        return results[0]
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    import numpy as np
+
+    memory = ChromaMemoryStore()
+    memory_record1 = MemoryRecord(
+        id="test_id1",
+        text="sample text1",
+        is_reference=False,
+        embedding=np.array([0.5, 0.5]),
+        description="description",
+        external_source_name="external source",
+        timestamp="timestamp",
+    )
+    memory_record2 = MemoryRecord(
+        id="test_id2",
+        text="sample text2",
+        is_reference=False,
+        embedding=np.array([0.25, 0.75]),
+        description="description",
+        external_source_name="external source",
+        timestamp="timestamp",
+    )
+
+    asyncio.run(memory.create_collection_async("test_collection"))
+    collection = asyncio.run(memory.get_collection_async("test_collection"))
+
+    asyncio.run(memory.upsert_batch_async(collection.name, [memory_record1, memory_record2]))
+
+    result = asyncio.run(memory.get_async(collection.name, "test_id1", True))
+    results = asyncio.run(memory.get_nearest_match_async(
+        "test_collection", np.array([0.5, 0.5])
+    ))
+    print(results)

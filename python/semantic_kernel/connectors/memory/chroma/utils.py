@@ -8,16 +8,29 @@ if TYPE_CHECKING:
 
 
 def camel_to_snake(camel_str):
-    snake_str = camel_str[0].lower()
-    for char in camel_str[1:]:
+    snake_str = ""
+    for i, char in enumerate(camel_str):
         if char.isupper():
-            snake_str += "_" + char.lower()
-        else:
-            snake_str += char
+            if i != 0 and camel_str[i-1].islower():
+                snake_str += "_"
+            if i != len(camel_str)-1 and camel_str[i+1].islower():
+                snake_str += "_"
+        snake_str += char.lower()
     return snake_str
 
 
 def query_results_to_records(results: "QueryResult") -> List[MemoryRecord]:
+    # if results has only one record, it will be a list instead of a nested list
+    # this is to make sure that results is always a nested list
+    # {'ids': ['test_id1'], 'embeddings': [[...]], 'documents': ['sample text1'], 'metadatas': [{...}]}
+    # => {'ids': [['test_id1']], 'embeddings': [[[...]]], 'documents': [['sample text1']], 'metadatas': [[{...}]]}
+    try:
+        if isinstance(results["ids"][0], str):
+            for k, v in results.items():
+                results[k] = [v]
+    except IndexError:
+        return []
+
     memory_records = [
         (
             MemoryRecord(
