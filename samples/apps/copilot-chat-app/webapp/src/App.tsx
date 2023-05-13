@@ -22,20 +22,18 @@ import { RootState } from './redux/app/store';
 import { removeAlert } from './redux/features/app/appSlice';
 import { CopilotChatTokens } from './styles';
 
-const useClasses = makeStyles({
+export const useClasses = makeStyles({
     container: {
+        ...shorthands.overflow('hidden'),
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
         height: '100vh',
     },
-    content: {
-        Flex: 'auto',
-    },
     header: {
         backgroundColor: CopilotChatTokens.backgroundColor,
         width: '100%',
-        height: '5.5%',
+        height: '48px',
         color: '#FFF',
         display: 'flex',
         '& h1': {
@@ -119,37 +117,35 @@ const App: FC = () => {
                             />
                         </div>
                     </div>
-                    <div className={classes.content}>
-                        {alerts &&
-                            Object.keys(alerts).map((key) => {
-                                const alert = alerts[key];
-                                return (
-                                    <Alert
-                                        intent={alert.type}
-                                        action={{
-                                            icon: (
-                                                <Dismiss16Regular
-                                                    aria-label="dismiss message"
-                                                    onClick={() => onDismissAlert(key)}
-                                                    color="black"
-                                                />
-                                            ),
-                                        }}
-                                        key={key}
-                                    >
-                                        {alert.message}
-                                    </Alert>
-                                );
-                            })}
-                        {appState === AppState.ProbeForBackend && (
-                            <BackendProbe
-                                uri={process.env.REACT_APP_BACKEND_URI as string}
-                                onBackendFound={() => setAppState(AppState.LoadingChats)}
-                            />
-                        )}
-                        {appState === AppState.LoadingChats && <Spinner labelPosition="below" label="Loading Chats" />}
-                        {appState === AppState.Chat && <ChatView />}
-                    </div>
+                    {alerts &&
+                        Object.keys(alerts).map((key) => {
+                            const alert = alerts[key];
+                            return (
+                                <Alert
+                                    intent={alert.type}
+                                    action={{
+                                        icon: (
+                                            <Dismiss16Regular
+                                                aria-label="dismiss message"
+                                                onClick={() => onDismissAlert(key)}
+                                                color="black"
+                                            />
+                                        ),
+                                    }}
+                                    key={key}
+                                >
+                                    {alert.message}
+                                </Alert>
+                            );
+                        })}
+                    {appState === AppState.ProbeForBackend && (
+                        <BackendProbe
+                            uri={process.env.REACT_APP_BACKEND_URI as string}
+                            onBackendFound={() => setAppState(AppState.LoadingChats)}
+                        />
+                    )}
+                    {appState === AppState.LoadingChats && <Spinner labelPosition="below" label="Loading Chats" />}
+                    {appState === AppState.Chat && <ChatView />}
                 </div>
             </AuthenticatedTemplate>
         </div>

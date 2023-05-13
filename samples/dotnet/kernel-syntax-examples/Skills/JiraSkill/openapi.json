@@ -462,7 +462,7 @@
                 },
                 "name": {
                   "type": "string",
-                  "x-ms-summary": "Name fo the issue resolution"
+                  "x-ms-summary": "Name of the issue resolution"
                 }
               },
               "x-ms-summary": "Resolution",

@@ -84,5 +84,21 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     {
         return this.InternalCompleteTextAsync(text, requestSettings, cancellationToken);
     }
+
+    public IAsyncEnumerable<ITextCompletionStreamingResult> CompleteMultiStreamAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalMultiCompletionStreamAsync(text, requestSettings, cancellationToken);
+    }
+
+    public Task<IReadOnlyList<ITextCompletionResult>> CompleteMultiAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalCompleteTextMultiAsync(text, requestSettings, cancellationToken);
+    }
 }
 
