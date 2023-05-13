@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using RepoUtils;
 
 /**
@@ -18,7 +17,13 @@ public static class Example37_MultiStreamingCompletion
 
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Azure OpenAI - Text Completion - Multi Results Streaming ========");
+        await AzureOpenAIMultiTextCompletionStreamAsync();
+        await OpenAITextCompletionStreamAsync();
+    }
+
+    private static async Task AzureOpenAIMultiTextCompletionStreamAsync()
+    {
+        Console.WriteLine("======== Azure OpenAI - Multiple Text Completion - Raw Streaming ========");
 
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         kernel.Config.AddAzureTextCompletionService(
@@ -26,8 +31,25 @@ public static class Example37_MultiStreamingCompletion
             Env.Var("AZURE_OPENAI_ENDPOINT"),
             Env.Var("AZURE_OPENAI_KEY"));
 
-        var textCompletion = (AzureTextCompletion)kernel.GetService<ITextCompletion>();
+        ITextCompletion textCompletion = kernel.GetService<ITextCompletion>();
 
+        await TextCompletionStreamAsync(textCompletion);
+    }
+
+    private static async Task OpenAITextCompletionStreamAsync()
+    {
+        Console.WriteLine("======== Open AI - Multiple Text Completion - Raw Streaming ========");
+
+        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-003");
+
+        ITextCompletion textCompletion = kernel.GetService<ITextCompletion>();
+
+        await TextCompletionStreamAsync(textCompletion);
+    }
+
+    private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
+    {
         var requestSettings = new CompleteRequestSettings()
         {
             MaxTokens = 200,
@@ -45,7 +67,7 @@ public static class Example37_MultiStreamingCompletion
 
         List<Task> resultTasks = new();
         int currentResult = 0;
-        await foreach (var completionResult in textCompletion.CompleteMultiStreamAsync(prompt, requestSettings))
+        await foreach (var completionResult in textCompletion.GetStreamingCompletionsAsync(prompt, requestSettings))
         {
             resultTasks.Add(ProcessStreamAsyncEnumerableAsync(completionResult, currentResult++, consoleLinesPerResult));
         }
@@ -96,7 +118,7 @@ public static class Example37_MultiStreamingCompletion
     /// </summary>
     private static void PrepareDisplay()
     {
-        for (int i = 0; i < Console.WindowHeight - 5; i++)
+        for (int i = 0; i < Console.WindowHeight - 2; i++)
         {
             Console.WriteLine();
         }

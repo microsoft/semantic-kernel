@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -111,6 +112,25 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         return this.ExecuteCompleteRequestAsync(text, cancellationToken).ToAsyncEnumerable();
     }
 
+    public async IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        foreach (var completion in await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false))
+        {
+            yield return completion;
+        }
+    }
+
+    public async Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
+    }
+
     /// <inheritdoc/>
     public void Dispose()
     {
@@ -149,6 +169,41 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
             var completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
 
             return completionResponse.First().Text!;
+        }
+        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        {
+            throw new AIException(
+                AIException.ErrorCodes.UnknownError,
+                $"Something went wrong: {e.Message}", e);
+        }
+    }
+
+    private async Task<IReadOnlyList<ITextCompletionStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var completionRequest = new TextCompletionRequest
+            {
+                Input = text
+            };
+
+            using var httpRequestMessage = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri($"{this._endpoint}/{this._model}"),
+                Content = new StringContent(JsonSerializer.Serialize(completionRequest))
+            };
+
+            var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
+            if (completionResponse is null)
+            {
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "No completions were found");
+            }
+
+            return completionResponse.Select((completion) => new TextCompletionStreamingResult(completion.Text)).ToList();
         }
         catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {

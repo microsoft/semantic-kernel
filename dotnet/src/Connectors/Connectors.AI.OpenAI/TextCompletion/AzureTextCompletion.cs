@@ -51,7 +51,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     {
     }
 
-    /// <inheritdoc/>
+    /*/// <inheritdoc/>
     public Task<string> CompleteAsync(
         string text,
         CompleteRequestSettings requestSettings,
@@ -67,22 +67,22 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         CancellationToken cancellationToken = default)
     {
         return this.InternalCompletionStreamAsync(text, requestSettings, cancellationToken);
-    }
+    }*/
 
-    public IAsyncEnumerable<ITextCompletionStreamingResult> CompleteMultiStreamAsync(
+    public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalMultiCompletionStreamAsync(text, requestSettings, cancellationToken);
+        return this.InternalCompletionStreamAsync(text, requestSettings, cancellationToken);
     }
 
-    public Task<IReadOnlyList<ITextCompletionResult>> CompleteMultiAsync(
+    public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextMultiAsync(text, requestSettings, cancellationToken);
+        return this.InternalCompleteTextAsync(text, requestSettings, cancellationToken);
     }
 }
 

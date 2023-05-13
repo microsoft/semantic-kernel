@@ -7,17 +7,17 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal class TextCompletionResultBase : ITextCompletionResult
+internal sealed class TextCompletionResult : ITextCompletionResult
 {
     private readonly Choice _choice;
 
-    public TextCompletionResultBase(Choice choice)
+    public TextCompletionResult(Choice choice)
     {
         this._choice = choice;
     }
 
-    public async Task<string> CompleteAsync(CancellationToken cancellationToken = default)
+    public Task<string> CompleteAsync(CancellationToken cancellationToken = default)
     {
-        return this._choice.Text;
+        return Task.FromResult(this._choice.Text);
     }
 }
