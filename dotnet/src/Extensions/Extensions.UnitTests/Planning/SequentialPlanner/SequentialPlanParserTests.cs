@@ -47,7 +47,7 @@ public class SequentialPlanParserTests
         ContextVariables? variables = null,
         CancellationToken cancellationToken = default)
     {
-        return new SKContext(variables ?? new ContextVariables(), kernel.Memory, kernel.Skills, kernel.Log, cancellationToken);
+        return new SKContext(variables, kernel.Memory, kernel.Skills, kernel.Log, cancellationToken);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
@@ -77,7 +77,7 @@ public class SequentialPlanParserTests
 
             var result = this.CreateSKContext(kernel);
             result.Variables.Update(resultString);
-            mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
+            mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
                 .ReturnsAsync(result);
 
             if (string.IsNullOrEmpty(name))
