@@ -22,7 +22,7 @@ import { RootState } from './redux/app/store';
 import { removeAlert } from './redux/features/app/appSlice';
 import { CopilotChatTokens } from './styles';
 
-const useClasses = makeStyles({
+export const useClasses = makeStyles({
     container: {
         ...shorthands.overflow('hidden'),
         display: 'flex',
