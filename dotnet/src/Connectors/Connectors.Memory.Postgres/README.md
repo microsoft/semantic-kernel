@@ -6,7 +6,7 @@ This connector uses Postgres to implement Semantic Memory. It requires the [pgve
 
 [pgvector](https://github.com/pgvector/pgvector) is an open-source vector similarity search engine for Postgres. It supports exact and approximate nearest neighbor search, L2 distance, inner product, and cosine distance.
 
-How to install the pgvector extension, please refer to its [documentation](https://github.com/pgvector/pgvector#installation-notes).
+How to install the pgvector extension, please refer to its [documentation](https://github.com/pgvector/pgvector#installation).
 
 ## Quick start
 
