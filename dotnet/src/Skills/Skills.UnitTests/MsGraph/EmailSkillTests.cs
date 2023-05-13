@@ -3,8 +3,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Moq;
@@ -15,7 +13,7 @@ namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
 public class EmailSkillTests
 {
-    private readonly SKContext _context = new SKContext(new ContextVariables(), NullMemory.Instance, null, NullLogger.Instance);
+    private readonly SKContext _context = new SKContext();
 
     [Fact]
     public async Task SendEmailAsyncSucceedsAsync()

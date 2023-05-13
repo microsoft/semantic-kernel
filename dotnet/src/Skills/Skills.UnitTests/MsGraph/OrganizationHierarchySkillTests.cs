@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Moq;
@@ -23,7 +22,7 @@ public class OrganizationHierarchySkillTests : IDisposable
     public OrganizationHierarchySkillTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<SKContext>(output);
-        this._context = new SKContext(new ContextVariables(), NullMemory.Instance, null, this._logger, CancellationToken.None);
+        this._context = new SKContext(logger: this._logger, cancellationToken: CancellationToken.None);
     }
 
     [Fact]
