@@ -15,6 +15,8 @@ import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
+import { updateFileUploadedFromUser } from './../../redux/features/conversations/conversationsSlice';
+import { getSelectedChatID } from './../../redux/app/store';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -119,6 +121,14 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                     await AuthHelper.getSKaaSAccessToken(instance),
                 );
                 dispatch(addAlert({ message: 'Document uploaded successfully', type: AlertType.Success }));
+                
+                // Broadcast file uploaded alert to other users
+                const docUploadAlert = {
+                    id: getSelectedChatID(),
+                    fileOwner: "Frog",
+                    fileName: "BigBearTrading",
+                };
+                dispatch(updateFileUploadedFromUser(docUploadAlert));
             } catch (e: any) {
                 const errorMessage = `Failed to upload document. Details: ${e.message ?? e}`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));

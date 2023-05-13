@@ -2,7 +2,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
-import { ChatState, ConversationTypingState } from './ChatState';
+import { ChatState, ConversationTypingState, FileUploadedAlert } from './ChatState';
 import { Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
 export const conversationsSlice = createSlice({
@@ -68,6 +68,15 @@ export const conversationsSlice = createSlice({
             const isTyping = action.payload.isTyping;
             state.conversations[id].isTyping = isTyping;
         },
+        updateFileUploadedFromUser: (
+            state: ConversationsState,
+            action: PayloadAction<FileUploadedAlert>,
+        ) => {
+            const alert = action.payload;
+            const id = action.payload.id;
+            state.alerts[id] = alert;
+            frontLoadChat(state, id);
+        },
     },
 });
 
@@ -81,6 +90,7 @@ export const {
     updateMessageState,
     updateIsTypingFromUser,
     updateIsTypingFromServer,
+    updateFileUploadedFromUser,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;
