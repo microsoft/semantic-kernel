@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, List
 
 from numpy import array, linalg, ndarray
+
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 if TYPE_CHECKING:
@@ -11,9 +12,9 @@ def camel_to_snake(camel_str):
     snake_str = ""
     for i, char in enumerate(camel_str):
         if char.isupper():
-            if i != 0 and camel_str[i-1].islower():
+            if i != 0 and camel_str[i - 1].islower():
                 snake_str += "_"
-            if i != len(camel_str)-1 and camel_str[i+1].islower():
+            if i != len(camel_str) - 1 and camel_str[i + 1].islower():
                 snake_str += "_"
         snake_str += char.lower()
     return snake_str

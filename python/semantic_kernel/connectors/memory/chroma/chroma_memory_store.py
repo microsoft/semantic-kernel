@@ -2,8 +2,12 @@ from logging import Logger
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from numpy import array, ndarray
+
 from semantic_kernel.connectors.memory.chroma.utils import (
-    camel_to_snake, chroma_compute_similarity_scores, query_results_to_records)
+    camel_to_snake,
+    chroma_compute_similarity_scores,
+    query_results_to_records,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
@@ -95,7 +99,10 @@ class ChromaMemoryStore(MemoryStoreBase):
     ) -> Optional["Collection"]:
         try:
             # Current version of ChromeDB rejects camel case collection names.
-            return self._client.get_collection(name=camel_to_snake(collection_name), embedding_function=self._default_embedding_function)
+            return self._client.get_collection(
+                name=camel_to_snake(collection_name),
+                embedding_function=self._default_embedding_function,
+            )
         except ValueError:
             return None
 
@@ -197,7 +204,9 @@ class ChromaMemoryStore(MemoryStoreBase):
         try:
             return records[0]
         except IndexError:
-            raise Exception(f"Record with key '{key}' does not exist in collection '{collection_name}'")
+            raise Exception(
+                f"Record with key '{key}' does not exist in collection '{collection_name}'"
+            )
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool
@@ -376,10 +385,12 @@ if __name__ == "__main__":
     asyncio.run(memory.create_collection_async("test_collection"))
     collection = asyncio.run(memory.get_collection_async("test_collection"))
 
-    asyncio.run(memory.upsert_batch_async(collection.name, [memory_record1, memory_record2]))
+    asyncio.run(
+        memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
+    )
 
     result = asyncio.run(memory.get_async(collection.name, "test_id1", True))
-    results = asyncio.run(memory.get_nearest_match_async(
-        "test_collection", np.array([0.5, 0.5])
-    ))
+    results = asyncio.run(
+        memory.get_nearest_match_async("test_collection", np.array([0.5, 0.5]))
+    )
     print(results)

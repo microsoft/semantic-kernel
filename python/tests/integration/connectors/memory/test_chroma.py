@@ -2,12 +2,12 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
+
 from semantic_kernel.connectors.memory.chroma import ChromaMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
-    # pylint: disable=unused-import
-    import chromadb
+    import chromadb  # noqa: F401
 
     chromadb_installed = True
 except ImportError:
@@ -148,7 +148,9 @@ async def test_upsert_and_get_batch_async(memory_record1, memory_record2):
 
     await memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
 
-    result = await memory.get_batch_async("test_collection", ["test_id1", "test_id2"], True)
+    result = await memory.get_batch_async(
+        "test_collection", ["test_id1", "test_id2"], True
+    )
     assert len(result) == 2
     assert result[0]._id == "test_id1"
     assert result[0]._text == "sample text1"
@@ -167,7 +169,7 @@ async def test_remove_async(memory_record1):
 
     await memory.upsert_async(collection.name, memory_record1)
     await memory.remove_async(collection.name, "test_id1")
-    
+
     # memory.get_async should raise Exception if record is not found
     with pytest.raises(Exception):
         await memory.get_async(collection.name, "test_id1", True)
@@ -182,7 +184,9 @@ async def test_remove_batch_async(memory_record1, memory_record2):
     await memory.upsert_batch_async(collection.name, [memory_record1, memory_record2])
     await memory.remove_batch_async(collection.name, ["test_id1", "test_id2"])
 
-    result = await memory.get_batch_async("test_collection", ["test_id1", "test_id2"], True)
+    result = await memory.get_batch_async(
+        "test_collection", ["test_id1", "test_id2"], True
+    )
     assert result == []
 
 
