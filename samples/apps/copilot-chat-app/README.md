@@ -42,7 +42,7 @@ First, let’s set up and verify the back-end API server is running.
        dotnet user-secrets set "Embedding:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
        dotnet user-secrets set "Planner:AIService:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
        ```
-     - Update `DeploymentOrModelID` to the Azure OpenAI deployment or OpenAI models you want to use. 
+     - Update `DeploymentOrModelId` to the Azure OpenAI deployment or OpenAI models you want to use. 
        - For `Completion` and `Planner:AIService`, CopilotChat is optimized for Chat completion models, such as gpt-3.5-turbo and gpt-4.
          > **Important:** gpt-3.5-turbo is normally labelled as "`gpt-35-turbo`" (no period) in Azure OpenAI and "`gpt-3.5-turbo`" (with a period) in OpenAI.
        - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effect for generating embeddings.
