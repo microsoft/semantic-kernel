@@ -2,7 +2,7 @@ from logging import Logger
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from numpy import array, ndarray
-from semantic_kernel.memory.chroma.utils import (
+from semantic_kernel.connectors.memory.chroma.utils import (
     camel_to_snake, chroma_compute_similarity_scores, query_results_to_records)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from chromadb.api.models.Collection import Collection
 
 
-class ChomaMemoryStore(MemoryStoreBase):
+class ChromaMemoryStore(MemoryStoreBase):
     _client: "chromadb.Client"
     _logger: Logger
 
@@ -22,7 +22,6 @@ class ChomaMemoryStore(MemoryStoreBase):
         self,
         persist_directory: Optional[str] = None,
         client_settings: Optional["chromadb.config.Settings"] = None,
-        similarity_fetch_limit: int = 20,
         logger: Optional[Logger] = None,
     ) -> None:
         """
@@ -70,7 +69,6 @@ class ChomaMemoryStore(MemoryStoreBase):
         self._default_query_includes = ["embeddings", "metadatas", "documents"]
 
         self._logger = logger or NullLogger()
-        self._similarity_fetch_limit = similarity_fetch_limit
 
     async def create_collection_async(self, collection_name: str) -> None:
         """Creates a new collection in Chroma if it does not exist.
@@ -129,7 +127,7 @@ class ChomaMemoryStore(MemoryStoreBase):
         Returns:
             bool -- True if the collection exists; otherwise, False.
         """
-        if self.get_collection_async(collection_name) is None:
+        if await self.get_collection_async(collection_name) is None:
             return False
         else:
             return True
@@ -144,7 +142,7 @@ class ChomaMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The unqiue database key of the record.
         """
-        collection = self.get_collection_async(collection_name)
+        collection = await self.get_collection_async(collection_name)
         if collection is None:
             raise Exception(f"Collection '{collection_name}' does not exist")
 
@@ -210,7 +208,7 @@ class ChomaMemoryStore(MemoryStoreBase):
         Returns:
             List[MemoryRecord] -- The records.
         """
-        collection = self.get_collection_async(collection_name)
+        collection = await self.get_collection_async(collection_name)
         if collection is None:
             raise Exception(f"Collection '{collection_name}' does not exist")
 
@@ -246,7 +244,7 @@ class ChomaMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        collection = self.get_collection_async(name=collection_name)
+        collection = await self.get_collection_async(name=collection_name)
         if collection is not None:
             collection.delete(ids=keys)
 
@@ -281,7 +279,7 @@ class ChomaMemoryStore(MemoryStoreBase):
 
         query_results = collection.query(
             query_embeddings=embedding.tolist(),
-            n_results=self._similarity_fetch_limit,
+            n_results=limit,
             include=self._default_query_includes,
         )
 
