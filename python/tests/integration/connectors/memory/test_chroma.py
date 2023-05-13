@@ -1,5 +1,3 @@
-from unittest.mock import MagicMock
-
 import numpy as np
 import pytest
 
@@ -16,32 +14,6 @@ except ImportError:
 pytestmark = pytest.mark.skipif(
     not chromadb_installed, reason="chromadb is not installed"
 )
-
-
-@pytest.fixture
-def mock_collection():
-    mock_collection = MagicMock()
-    mock_collection.query.return_value = {
-        "ids": [["test_id1", "test_id2"]],
-        "embeddings": [[np.array([0.5, 0.5]), np.array([0.25, 0.75])]],
-        "metadatas": [
-            [
-                {
-                    "is_reference": False,
-                    "external_source_name": "external source",
-                    "description": "description",
-                },
-                {
-                    "is_reference": False,
-                    "external_source_name": "external source",
-                    "description": "description",
-                },
-            ]
-        ],
-        "documents": [["sample text1", "sample text2"]],
-        "distances": [[0.9, 0.6]],
-    }
-    return mock_collection
 
 
 @pytest.fixture
