@@ -114,7 +114,7 @@ public static class Example37_MultiStreamingCompletion
     }
 
     /// <summary>
-    /// Break enought lines as the current console window size to display the results
+    /// Break enough lines as the current console window size to display the results
     /// </summary>
     private static void PrepareDisplay()
     {

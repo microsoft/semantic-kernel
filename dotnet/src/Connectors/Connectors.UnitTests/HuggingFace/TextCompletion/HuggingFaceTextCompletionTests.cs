@@ -14,7 +14,7 @@ namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextCompletion;
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextCompletion"/> class.
 /// </summary>
-public class HuggingFaceTextCompletionTests : IDisposable
+public sealed class HuggingFaceTextCompletionTests : IDisposable
 {
     private const string Endpoint = "http://localhost:5000/completions";
     private const string Model = "gpt2";
@@ -25,7 +25,7 @@ public class HuggingFaceTextCompletionTests : IDisposable
     };
 
     /// <summary>
-    /// Verifies that <see cref="HuggingFaceTextCompletion.CompleteAsync(string, CompleteRequestSettings, CancellationToken)"/>
+    /// Verifies that <see cref="HuggingFaceTextCompletion.GetCompletionsAsync(string, CompleteRequestSettings, CancellationToken)"/>
     /// returns expected completed text without errors.
     /// </summary>
     [Fact]
@@ -63,7 +63,7 @@ public class HuggingFaceTextCompletionTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (disposing)
         {
