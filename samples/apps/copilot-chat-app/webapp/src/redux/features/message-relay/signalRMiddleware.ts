@@ -5,13 +5,14 @@ import { AlertType } from "../../../libs/models/AlertType";
 import { IAskResult } from "../../../libs/semantic-kernel/model/AskResult";
 import { addAlert } from "../app/appSlice";
 import { AuthorRoles, IChatMessage } from './../../../libs/models/ChatMessage';
-import { ConversationTypingState } from './../conversations/ChatState';
+import { ConversationTypingState, FileUploadedAlert } from './../conversations/ChatState';
 import { getSelectedChatID } from './../../app/store';
 
 // These have to match the callback names used in the backend
 const receiveMessageFromServerCallbackName = "ReceiveMessage" as string;
 const receiveResponseFromServerCallbackName = "ReceiveResponse" as string;
 const receiveTypingStateFromServerCallbackName = "ReceiveTypingState" as string;
+const receiveFileUploadedAlertFromServerCallbackName = "ReceiveFileUploadedEvent" as string;
 
 // Set up a SignalR connection to the messageRelayHub on the server
 const setupSignalRConnectionToChatHub = () => {
@@ -95,6 +96,11 @@ export const signalRMiddleware = () => {
                     err => console.error(err.toString())
                 );
                 break;
+            case "conversations/updateFileUploadedFromUser":
+                await hubConnection.invoke("SendFileUploadedEventAsync", getSelectedChatID(), action.payload).catch(
+                    err => console.error(err.toString())
+                );
+                break;
             case "conversations/setConversations":
                 Object.keys(action.payload).map(async (id) => {
                     await hubConnection.invoke("AddClientToGroupAsync", id).catch(
@@ -133,4 +139,9 @@ export const registerSignalREvents = async (store: any) => {
     hubConnection.on(receiveTypingStateFromServerCallbackName, (typingState: ConversationTypingState, chatId: string) => {
         store.dispatch({ type: "conversations/updateIsTypingFromServer", payload: { typingState, chatId } });
     });
+
+    hubConnection.on(receiveFileUploadedAlertFromServerCallbackName, ( docUploadedAlert: FileUploadedAlert) => {
+        const alertMessage = `${docUploadedAlert.fileOwner} uploaded ${docUploadedAlert.fileName} to the chat`;
+        store.dispatch(addAlert({ message: alertMessage, type: AlertType.Success }));
+    }); 
 };

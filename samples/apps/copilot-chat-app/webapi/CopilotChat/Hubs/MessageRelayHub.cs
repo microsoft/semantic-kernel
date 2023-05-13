@@ -13,6 +13,7 @@ public class MessageRelayHub : Hub
 {
     private readonly string _receiveMessageClientCall = "ReceiveMessage";
     private readonly string _receiveTypingStateClientCall = "ReceiveTypingState";
+    private readonly string _receiveFileUploadedEventClientCall = "ReceiveFileUploadedEvent";
     private readonly ILogger<MessageRelayHub> _logger;
 
     /// <summary>
@@ -55,5 +56,16 @@ public class MessageRelayHub : Hub
     public async Task SendTypingStateAsync(string chatId, object isTypingState)
     {
         await this.Clients.OthersInGroup(chatId).SendAsync(this._receiveTypingStateClientCall, isTypingState, chatId);
+    }
+
+    /// <summary>
+    /// Sends the information about a file that was uploade to the server. Sent to all users except the sender.
+    /// </summary>
+    /// <param name="chatId">The ChatID used as group id for SignalR.</param>
+    /// <param name="fileUploadedAlert">Information about a file that was uploaded by another user</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public async Task SendFileUploadedEventAsync(string chatId, object fileUploadedAlert)
+    {
+        await this.Clients.OthersInGroup(chatId).SendAsync(this._receiveFileUploadedEventClientCall, fileUploadedAlert, chatId);
     }
 }
