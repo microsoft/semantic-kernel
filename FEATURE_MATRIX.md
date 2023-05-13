@@ -51,6 +51,7 @@
 | Weaviate (Memory)                 | ❌ | ❌ | Vector optimized |
 | CosmosDB (Memory)                 | ✅ | ❌ | CosmosDB is not optimized for vector storage |
 | Sqlite (Memory)                   | ✅ | ❌ | Sqlite is not optimized for vector storage |
+| Postgres (Memory)                 | ✅ | ❌ | Vector optimized (required the [pgvector](https://github.com/pgvector/pgvector) extension) |
 | Azure Cognitive Search            | ❌ | ❌ | |
 | MsGraph                           | ✅ | ❌ | Contains connectors for OneDrive, Outlook, ToDos, and Organization Hierarchies |
 | Document Skills                   | ✅ | ❌ | Currently only supports Word documents |
