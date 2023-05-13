@@ -98,20 +98,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
     }
 
-    /// <inheritdoc/>
-    public async Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
-    {
-        return await this.ExecuteCompleteRequestAsync(text, cancellationToken).ConfigureAwait(false);
-    }
-
-    public IAsyncEnumerable<string> CompleteStreamAsync(
-        string text,
-        CompleteRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        return this.ExecuteCompleteRequestAsync(text, cancellationToken).ToAsyncEnumerable();
-    }
-
     public async IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
@@ -139,44 +125,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     }
 
     #region private ================================================================================
-
-    /// <summary>
-    /// Performs HTTP request to given endpoint for text completion.
-    /// </summary>
-    /// <param name="text">Text to complete.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Completed text.</returns>
-    /// <exception cref="AIException">Exception when backend didn't respond with completed text.</exception>
-    private async Task<string> ExecuteCompleteRequestAsync(string text, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var completionRequest = new TextCompletionRequest
-            {
-                Input = text
-            };
-
-            using var httpRequestMessage = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri($"{this._endpoint}/{this._model}"),
-                Content = new StringContent(JsonSerializer.Serialize(completionRequest))
-            };
-
-            var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            var completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
-
-            return completionResponse.First().Text!;
-        }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
-        }
-    }
 
     private async Task<IReadOnlyList<ITextCompletionStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {

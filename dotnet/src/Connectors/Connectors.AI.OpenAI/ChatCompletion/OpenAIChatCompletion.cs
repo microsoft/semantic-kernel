@@ -59,25 +59,6 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         return InternalCreateNewChat(instructions);
     }
 
-    /*
-    /// <inheritdoc/>
-    public Task<string> CompleteAsync(
-        string text,
-        CompleteRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<string> CompleteStreamAsync(
-        string text,
-        CompleteRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        return this.InternalCompleteTextUsingChatStreamAsync(text, requestSettings, cancellationToken);
-    }*/
-
     public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
