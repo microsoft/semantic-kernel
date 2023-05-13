@@ -48,9 +48,38 @@ param(
     $AppServiceSku = "B1",
     
     [switch]
+    # Don't deploy Qdrant for memory storage - Use volatile memory instead
+    $NoQdrant,
+
+    [switch]
+    # Don't deploy Cosmos DB for chat storage - Use volatile memory instead
+    $NoCosmosDb,
+
+    [switch]
+    # Don't deploy Speech Services to enable speech as chat input
+    $NoSpeechServices,
+
+    [switch]
     # Switches on verbose template deployment output
     $DebugDeployment
 )
+
+$jsonConfig = "
+{
+    `\`"name`\`": { `\`"value`\`": `\`"$DeploymentName`\`" },
+    `\`"apiKey`\`": { `\`"value`\`": `\`"$ApiKey`\`" },
+    `\`"completionModel`\`": { `\`"value`\`": `\`"$CompletionModel`\`" },
+    `\`"embeddingModel`\`": { `\`"value`\`": `\`"$EmbeddingModel`\`" },
+    `\`"plannerModel`\`": { `\`"value`\`": `\`"$PlannerModel`\`" },
+    `\`"packageUri`\`": { `\`"value`\`": `\`"$PackageUri`\`" },
+    `\`"appServiceSku`\`": { `\`"value`\`": `\`"$AppServiceSku`\`" },
+    `\`"deployQdrant`\`": { `\`"value`\`": $(If (!($NoQdrant)) {"true"} Else {"false"}) },
+    `\`"deployCosmosDB`\`": { `\`"value`\`": $(If (!($NoSpeechServices)) {"true"} Else {"false"}) },
+    `\`"deploySpeechServices`\`": { `\`"value`\`": $(If (!($NoSpeechServices)) {"true"} Else {"false"}) }
+}
+"
+
+$jsonConfig = $jsonConfig -replace '\s',''
 
 $ErrorActionPreference = "Stop"
 
@@ -76,15 +105,15 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Validating template file..."
-az deployment group validate --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel apiKey=$ApiKey appServiceSku=$AppServiceSku
+az deployment group validate --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters $jsonConfig
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
 Write-Host "Deploying..."
 if ($DebugDeployment) {
-    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --debug --parameters name=$DeploymentName packageUri=$PackageUri completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel apiKey=$ApiKey appServiceSku=$AppServiceSku
+    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --debug --parameters $jsonConfig
 }
 else {
-    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri completionModel=$CompletionModel embeddingModel=$EmbeddingModel plannerModel=$PlannerModel apiKey=$ApiKey appServiceSku=$AppServiceSku
+    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters $jsonConfig
 }

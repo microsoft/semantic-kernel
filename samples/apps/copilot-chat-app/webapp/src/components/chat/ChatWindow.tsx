@@ -26,58 +26,33 @@ import { ShareBotMenu } from './ShareBotMenu';
 
 const useClasses = makeStyles({
     root: {
-        height: '100%',
-        display: 'grid',
-        gridTemplateColumns: '1fr',
-        gridTemplateRows: 'auto 1fr',
-        gridTemplateAreas: "'header' 'content'",
+        display: 'flex',
+        flexDirection: 'column',
         width: '-webkit-fill-available',
         backgroundColor: '#F5F5F5',
         boxShadow: 'rgb(0 0 0 / 25%) 0 0.2rem 0.4rem -0.075rem',
     },
     header: {
-        ...shorthands.gridArea('header'),
+        ...shorthands.borderBottom('1px', 'solid', 'rgb(0 0 0 / 10%)'),
+        ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalM),
         backgroundColor: tokens.colorNeutralBackground4,
         display: 'flex',
         flexDirection: 'row',
-        justifyContent: 'center',
-        ...shorthands.borderBottom('1px', 'solid', 'rgb(0 0 0 / 10%)'),
-    },
-    headerContent: {
-        ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalM),
-        display: 'grid',
-        gridTemplateColumns: '1fr auto',
-        gridTemplateRows: '1fr',
-        gridTemplateAreas: "'title controls'",
         boxSizing: 'border-box',
         width: '100%',
+        justifyContent: 'space-between',
     },
     title: {
-        ...shorthands.gridArea('title'),
         ...shorthands.gap(tokens.spacingHorizontalM),
         alignItems: 'center',
         display: 'flex',
         flexDirection: 'row',
     },
     controls: {
-        ...shorthands.gridArea('controls'),
         ...shorthands.gap(tokens.spacingHorizontalM),
         alignItems: 'right',
         display: 'flex',
         flexDirection: 'row',
-    },
-    content: {
-        ...shorthands.gridArea('content'),
-        overflowY: 'auto',
-    },
-    contentOuter: {
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-    },
-    contentInner: {
-        width: '100%',
     },
 });
 
@@ -125,42 +100,37 @@ export const ChatWindow: React.FC = () => {
     return (
         <div className={classes.root}>
             <div className={classes.header}>
-                <div className={classes.headerContent}>
-                    <div className={classes.title}>
-                        <Persona
-                            key={'SK Bot'}
-                            size="medium"
-                            avatar={{ image: { src: conversations[selectedId].botProfilePicture }}}
-                            presence={{ status: 'available' }}
+                <div className={classes.title}>
+                    <Persona
+                        key={'SK Bot'}
+                        size="medium"
+                        avatar={{ image: { src: conversations[selectedId].botProfilePicture } }}
+                        presence={{ status: 'available' }}
+                    />
+                    {isEditing ? (
+                        <Input value={title} onChange={onTitleChange} id={title} />
+                    ) : (
+                        <Label size="large" weight="semibold">
+                            {chatName}
+                        </Label>
+                    )}
+                    <Tooltip
+                        content={isEditing ? 'Save conversation name' : 'Edit conversation name'}
+                        relationship="label"
+                    >
+                        <Button
+                            icon={isEditing ? <Save24Regular /> : <EditRegular />}
+                            appearance="transparent"
+                            onClick={onEdit}
+                            disabled={title === undefined || !title}
                         />
-                        {isEditing ? (
-                            <Input value={title} onChange={onTitleChange} id={title} />
-                        ) : (
-                            <Label size="large" weight="semibold">
-                                {chatName}
-                            </Label>
-                        )}
-                        <Tooltip content={isEditing ? "Save conversation name" : "Edit conversation name"} relationship="label">
-                            <Button
-                                icon={isEditing ? <Save24Regular /> : <EditRegular />}
-                                appearance="transparent"
-                                onClick={onEdit}
-                                disabled={title === undefined || !title}
-                            />
-                        </Tooltip>
-                    </div>
-                    <div className={classes.controls}>
-                        <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
-                    </div>
+                    </Tooltip>
+                </div>
+                <div className={classes.controls}>
+                    <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
                 </div>
             </div>
-            <div className={classes.content}>
-                <div className={classes.contentOuter}>
-                    <div className={classes.contentInner}>
-                        <ChatRoom />
-                    </div>
-                </div>
-            </div>
+            <ChatRoom />
         </div>
     );
 };
