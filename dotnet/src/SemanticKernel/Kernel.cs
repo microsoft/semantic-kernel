@@ -214,10 +214,9 @@ public sealed class Kernel : IKernel, IDisposable
     public SKContext CreateNewContext()
     {
         return new SKContext(
-            new ContextVariables(),
-            this._memory,
-            this._skillCollection.ReadOnlySkillCollection,
-            this._log);
+            memory: this._memory,
+            skills: this._skillCollection.ReadOnlySkillCollection,
+            logger: this._log);
     }
 
     /// <inheritdoc/>
