@@ -12,10 +12,10 @@ using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Postgres;
+namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
 
 /// <summary>
-/// Unit tests of <see cref="PostgresMemoryStore"/>.
+/// Integration tests of <see cref="PostgresMemoryStore"/>.
 /// </summary>
 public class PostgresMemoryStoreTests : IDisposable
 {
@@ -30,7 +30,7 @@ public class PostgresMemoryStoreTests : IDisposable
     public PostgresMemoryStoreTests()
     {
 #pragma warning disable CA5394
-        this._databaseName = $"sk_pgvector_dotnet_ut_{Random.Shared.Next(0, 1000)}";
+        this._databaseName = $"sk_pgvector_dotnet_it_{Random.Shared.Next(0, 1000)}";
 #pragma warning restore CA5394
     }
 

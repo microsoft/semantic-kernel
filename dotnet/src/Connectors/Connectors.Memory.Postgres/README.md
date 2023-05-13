@@ -13,7 +13,7 @@ How to install the pgvector extension, please refer to its [documentation](https
 1. To install pgvector using Docker:
 
 ```bash
-docker run -d --name postgres-pgvector -v 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword ankane/pgvector
+docker run -d --name postgres-pgvector -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword ankane/pgvector
 ```
 
 2. To use Postgres as a semantic memory store:
