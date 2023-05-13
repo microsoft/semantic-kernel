@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Text;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
-using SemanticKernel.Service.Skills;
+using SemanticKernel.Service.Storage;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 
@@ -35,24 +35,21 @@ public class DocumentImportController : ControllerBase
         Pdf,
     };
 
-    private readonly IServiceProvider _serviceProvider; // TODO: unused
     private readonly ILogger<DocumentImportController> _logger;
-    private readonly PromptSettings _promptSettings; // TODO: unused
     private readonly DocumentMemoryOptions _options;
+    private readonly ChatSessionRepository _chatSessionRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
     /// </summary>
     public DocumentImportController(
-        IServiceProvider serviceProvider,
-        PromptSettings promptSettings,
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
-        ILogger<DocumentImportController> logger)
+        ILogger<DocumentImportController> logger,
+        ChatSessionRepository chatSessionRepository)
     {
-        this._serviceProvider = serviceProvider;
         this._options = documentMemoryOptions.Value;
-        this._promptSettings = promptSettings;
         this._logger = logger;
+        this._chatSessionRepository = chatSessionRepository;
     }
 
     /// <summary>
@@ -81,6 +78,12 @@ public class DocumentImportController : ControllerBase
         if (formFile.Length > this._options.FileSizeLimit)
         {
             return this.BadRequest("File size exceeds the limit.");
+        }
+
+        if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat &&
+                !(await this.UserHasAccessToChatAsync(documentImportForm.UserId, documentImportForm.ChatId)))
+        {
+            return this.BadRequest("User does not have access to the chat session.");
         }
 
         this._logger.LogInformation("Importing document {0}", formFile.FileName);
@@ -170,9 +173,7 @@ public class DocumentImportController : ControllerBase
         var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
         var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global
             ? this._options.GlobalDocumentCollectionName
-            : string.IsNullOrEmpty(documentImportForm.UserId)
-                ? this._options.GlobalDocumentCollectionName
-                : this._options.UserDocumentCollectionNamePrefix + documentImportForm.UserId;
+            : this._options.ChatDocumentCollectionNamePrefix + documentImportForm.ChatId;
 
         // Split the document into lines of text and then combine them into paragraphs.
         // Note that this is only one of many strategies to chunk documents. Feel free to experiment with other strategies.
@@ -193,5 +194,17 @@ public class DocumentImportController : ControllerBase
             paragraphs.Count,
             Path.GetFileName(documentImportForm.FormFile?.FileName)
         );
+    }
+
+    /// <summary>
+    /// Check if the user has access to the chat session.
+    /// </summary>
+    /// <param name="userId">The user ID.</param>
+    /// <param name="chatId">The chat session ID.</param>
+    /// <returns>A boolean indicating whether the user has access to the chat session.</returns>
+    private async Task<bool> UserHasAccessToChatAsync(string userId, Guid chatId)
+    {
+        var chatSessions = await this._chatSessionRepository.FindByUserIdAsync(userId);
+        return chatSessions.Any(c => c.Id == chatId.ToString());
     }
 }
