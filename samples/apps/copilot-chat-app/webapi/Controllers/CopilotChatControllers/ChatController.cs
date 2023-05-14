@@ -27,18 +27,13 @@ namespace SemanticKernel.Service.Controllers;
 public class ChatController : ControllerBase, IDisposable
 {
     private readonly ILogger<ChatController> _logger;
-    private readonly ServiceOptions _options;
     private readonly List<IDisposable> _disposables;
     private readonly string _chatSkillName = "ChatSkill";
     private readonly string _chatFunctionName = "Chat";
 
-    public ChatController(
-        IOptions<ServiceOptions> options,
-        IOptions<PromptsOptions> promptOptions,
-        ILogger<ChatController> logger)
+    public ChatController(ILogger<ChatController> logger)
     {
         this._logger = logger;
-        this._options = options.Value;
         this._disposables = new List<IDisposable>();
     }
 
@@ -121,7 +116,7 @@ public class ChatController : ControllerBase, IDisposable
             {
                 InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true }
             };
-            using HttpClient importHttpClient = new HttpClient(retryHandler, false);
+            using HttpClient importHttpClient = new(retryHandler, false);
             importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
             await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"),
                 importHttpClient);

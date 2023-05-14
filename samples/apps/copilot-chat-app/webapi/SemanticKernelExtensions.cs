@@ -73,7 +73,7 @@ internal static class SemanticKernelExtensions
         services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterCopilotChatSkills);
 
         // Register Planner skills (AI plugins) here.
-        // TODO: Move planner skill registration from SemanticKernelController to here.
+        // TODO: Move planner skill registration from ChatController to here.
 
         return services;
     }
