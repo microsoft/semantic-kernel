@@ -41,6 +41,15 @@ param endpoint string = ''
 @description('Azure OpenAI or OpenAI API key')
 param apiKey string = ''
 
+@description('Whether to deploy Cosmos DB for chat storage')
+param deployCosmosDB bool = true
+
+@description('Whether to deploy Qdrant (in a container) for memory storage')
+param deployQdrant bool = true
+
+@description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
+param deploySpeechServices bool = true
+
 
 @description('Region for the resources')
 #disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
@@ -116,24 +125,24 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
           value: apiKey
         }
         {
-          name: 'Planner:AIService'
+          name: 'Planner:AIService:AIService'
           value: aiService
         }
         {
-          name: 'Planner:DeploymentOrModelId'
+          name: 'Planner:AIService:DeploymentOrModelId'
           value: plannerModel
         }
         {
-          name: 'Planner:Endpoint'
+          name: 'Planner:AIService:Endpoint'
           value: endpoint
         }
         {
-          name: 'Planner:Key'
+          name: 'Planner:AIService:Key'
           value: apiKey
         }
         {
           name: 'ChatStore:Type'
-          value: 'cosmos'
+          value: deployCosmosDB ? 'cosmos' : 'volatile'
         }
         {
           name: 'ChatStore:Cosmos:Database'
@@ -149,15 +158,15 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'ChatStore:Cosmos:ConnectionString'
-          value: cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
+          value: deployCosmosDB ? cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString : ''
         }
         {
           name: 'MemoriesStore:Type'
-          value: 'Qdrant'
+          value: deployQdrant ? 'Qdrant' : 'Volatile'
         }
         {
           name: 'MemoriesStore:Qdrant:Host'
-          value: 'http://${aci.properties.ipAddress.fqdn}'
+          value: deployQdrant ? 'http://${aci.properties.ipAddress.fqdn}' : ''
         }
         {
           name: 'AzureSpeech:Region'
@@ -165,7 +174,7 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'AzureSpeech:Key'
-          value: speechAccount.listKeys().key1
+          value: deploySpeechServices ? speechAccount.listKeys().key1 : ''
         }
         {
           name: 'Kestrel:Endpoints:Https:Url'
@@ -194,6 +203,14 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'ApplicationInsights:ConnectionString'
           value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value: '~2'
         }
       ]
     }
@@ -252,7 +269,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08
   }
 }
 
-resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = if (deployQdrant) {
   name: 'st${rgIdHash}' // Not using full unique name to avoid hitting 24 char limit
   location: location
   kind: 'StorageV2'
@@ -270,7 +287,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   }
 }
 
-resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = {
+resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = if (deployQdrant) {
   name: 'ci-${uniqueName}'
   location: location
   properties: {
@@ -318,15 +335,15 @@ resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = 
         name: containerVolumeMountName
         azureFile: {
           shareName: storageFileShareName
-          storageAccountName: storage.name
-          storageAccountKey: storage.listKeys().keys[0].value
+          storageAccountName: deployQdrant ? storage.name : 'notdeployed'
+          storageAccountKey: deployQdrant ? storage.listKeys().keys[0].value : ''
         }
       }
     ]
   }
 }
 
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = if (deployCosmosDB) {
   name: toLower('cosmos-${uniqueName}')
   location: location
   kind: 'GlobalDocumentDB'
@@ -342,7 +359,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
   }
 }
 
-resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15' = {
+resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15' = if (deployCosmosDB) {
   parent: cosmosAccount
   name: 'CopilotChat'
   properties: {
@@ -352,7 +369,7 @@ resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022
   }
 }
 
-resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = {
+resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = if (deployCosmosDB) {
   parent: cosmosDatabase
   name: 'chatmessages'
   properties: {
@@ -383,7 +400,7 @@ resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
   }
 }
 
-resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = {
+resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = if (deployCosmosDB) {
   parent: cosmosDatabase
   name: 'chatsessions'
   properties: {
@@ -414,7 +431,7 @@ resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
   }
 }
 
-resource speechAccount 'Microsoft.CognitiveServices/accounts@2022-12-01' = {
+resource speechAccount 'Microsoft.CognitiveServices/accounts@2022-12-01' = if (deploySpeechServices) {
   name: 'cog-${uniqueName}'
   location: location
   sku: {

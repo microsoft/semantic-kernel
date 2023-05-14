@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Text.Json.Serialization;
 
 namespace SemanticKernel.Service.Skills.OpenApiSkills.GitHubSkill.Model;
 

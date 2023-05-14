@@ -9,14 +9,13 @@ import { ChatStatus } from './ChatStatus';
 
 const useClasses = makeStyles({
     root: {
+        ...shorthands.gap(tokens.spacingVerticalM),
         display: 'flex',
         flexDirection: 'column',
-        ...shorthands.gap(tokens.spacingVerticalM),
         maxWidth: '900px',
         width: '100%',
         justifySelf: 'center',
     },
-    content: {},
     item: {
         display: 'flex',
         flexDirection: 'column',
