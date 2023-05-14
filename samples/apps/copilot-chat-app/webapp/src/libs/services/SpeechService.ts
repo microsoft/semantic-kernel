@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
+
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
 
 interface TokenResponse {
@@ -12,7 +13,7 @@ interface SpeechServiceRequest {
     method?: string;
 }
 
-export class SKSpeechService {
+export class SpeechService {
     constructor(private readonly serviceUrl: string) {}
 
     validSpeechKeyAsync = async () => {

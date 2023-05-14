@@ -3,8 +3,8 @@
 import { Label, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
-import { parsePlan } from '../../libs/semantic-kernel/sk-utilities';
 import { useChat } from '../../libs/useChat';
+import { parsePlan } from '../../libs/utils/PlanUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateMessageState } from '../../redux/features/conversations/conversationsSlice';

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 import { Constants } from '../../Constants';
 import { IPlan, IPlanInput } from '../models/Plan';
 

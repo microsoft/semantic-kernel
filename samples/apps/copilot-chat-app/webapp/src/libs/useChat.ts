@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 import { useAccount, useMsal } from '@azure/msal-react';
 import { Constants } from '../Constants';
 import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
@@ -18,10 +20,9 @@ import { Bot } from './models/Bot';
 import { AuthorRoles, ChatMessageState } from './models/ChatMessage';
 import { IChatSession } from './models/ChatSession';
 import { ChatUser } from './models/ChatUser';
-import { isPlan } from './semantic-kernel/sk-utilities';
-import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
 import { BotService } from './services/BotService';
 import { ChatService } from './services/ChatService';
+import { isPlan } from './utils/PlanUtils';
 
 import botIcon1 from '../assets/bot-icons/bot-icon-1.png';
 import botIcon2 from '../assets/bot-icons/bot-icon-2.png';
@@ -33,7 +34,6 @@ export const useChat = () => {
     const dispatch = useAppDispatch();
     const { instance, accounts } = useMsal();
     const account = useAccount(accounts[0] || {});
-    const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
     const connectors = useConnectors();
@@ -140,13 +140,12 @@ export const useChat = () => {
         }
 
         try {
-            var result = await sk.invokeAsync(
+            var result = await chatService.getBotResponseAsync(
                 ask,
-                'ChatSkill',
-                'Chat',
                 await AuthHelper.getSKaaSAccessToken(instance),
                 connectors.getEnabledPlugins(),
             );
+
             const messageResult = {
                 timestamp: new Date().getTime(),
                 userName: 'bot',

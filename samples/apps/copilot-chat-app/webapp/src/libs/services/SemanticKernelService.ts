@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
-import { BaseService } from '../services/BaseService';
-import { IAsk, IAskVariables } from './model/Ask';
-import { IAskResult } from './model/AskResult';
+import { IAsk, IAskVariables } from '../semantic-kernel/model/Ask';
+import { IAskResult } from '../semantic-kernel/model/AskResult';
+import { BaseService } from './BaseService';
 
-export class SemanticKernel extends BaseService {
+export class SemanticKernelService extends BaseService {
     public invokeAsync = async (
         ask: IAsk,
         skillName: string,
