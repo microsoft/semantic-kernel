@@ -23,7 +23,6 @@ const useClasses = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         ...shorthands.margin(0, '72px'),
-        alignContent: 'stretch',
     },
     typingIndicator: {
         height: '28px',
@@ -38,7 +37,7 @@ const useClasses = makeStyles({
         width: '100%',
     },
     textarea: {
-        height: '70px',
+        maxHeight: '80px',
     },
     controls: {
         display: 'flex',
@@ -52,7 +51,7 @@ const useClasses = makeStyles({
     functional: {
         display: 'flex',
         flexDirection: 'row',
-    }
+    },
 });
 
 interface ChatInputProps {
@@ -81,8 +80,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         if (recognizer) return;
         void (async () => {
             var response = await speechService.validSpeechKeyAsync();
-            if(response.isSuccess)
-            {
+            if (response.isSuccess) {
                 const newRecognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
                 setRecognizer(newRecognizer);
             }
@@ -115,7 +113,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                     account!.homeAccountId!,
                     selectedId,
                     documentFile,
-                    await AuthHelper.getSKaaSAccessToken(instance)
+                    await AuthHelper.getSKaaSAccessToken(instance),
                 );
                 dispatch(addAlert({ message: 'Document uploaded successfully', type: AlertType.Success }));
             } catch (e: any) {
@@ -191,16 +189,26 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         type="file"
                         ref={documentFileRef}
                         style={{ display: 'none' }}
-                        accept='.txt,.pdf'
+                        accept=".txt,.pdf"
                         multiple={false}
                         onChange={() => importDocument()}
                     />
-                    <Button disabled={ documentImporting } appearance="transparent" icon={<AttachRegular />} onClick={() => selectDocument()} />
+                    <Button
+                        disabled={documentImporting}
+                        appearance="transparent"
+                        icon={<AttachRegular />}
+                        onClick={() => selectDocument()}
+                    />
                     {documentImporting && <Spinner size="tiny" />}
                 </div>
                 <div className={classes.essentials}>
                     {recognizer && (
-                        <Button appearance="transparent" disabled={isListening} icon={<MicRegular />} onClick={() => handleSpeech()} />
+                        <Button
+                            appearance="transparent"
+                            disabled={isListening}
+                            icon={<MicRegular />}
+                            onClick={() => handleSpeech()}
+                        />
                     )}
                     <Button appearance="transparent" icon={<SendRegular />} onClick={() => handleSubmit(value)} />
                 </div>

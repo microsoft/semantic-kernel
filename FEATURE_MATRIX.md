@@ -28,7 +28,7 @@
 | | C# | Python | Notes |
 |---|---|---|---|
 | TextMemorySkill                   | ✅ | ✅ | |
-| ConversationSummarySkill          | ✅ | ❌ | |
+| ConversationSummarySkill          | ✅ | ✅ | |
 | FileIOSkill                       | ✅ | ✅ | |
 | HttpSkill                         | ✅ | ✅ | |
 | MathSkill                         | ✅ | ✅ | |
