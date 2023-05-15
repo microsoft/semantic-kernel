@@ -53,7 +53,6 @@ const useClasses = makeStyles({
 
 export const ChatRoom: React.FC = () => {
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { audience } = conversations[selectedId];
     const messages = conversations[selectedId].messages;
     const classes = useClasses();
 
@@ -73,7 +72,7 @@ export const ChatRoom: React.FC = () => {
     React.useEffect(() => {
         if (!shouldAutoScroll) return;
         scrollToTarget(scrollTargetRef.current);
-    }, [messages, audience, shouldAutoScroll]);
+    }, [messages, shouldAutoScroll]);
 
     React.useEffect(() => {
         const onScroll = () => {
@@ -129,7 +128,7 @@ export const ChatRoom: React.FC = () => {
         <div className={classes.root}>
             <div ref={scrollViewTargetRef} className={classes.scroll}>
                 <div ref={scrollViewTargetRef} className={classes.history}>
-                    <ChatHistory audience={audience} messages={messages} onGetResponse={handleSubmit} />
+                    <ChatHistory messages={messages} onGetResponse={handleSubmit} />
                 </div>
                 <div>
                     <div ref={scrollTargetRef} />
