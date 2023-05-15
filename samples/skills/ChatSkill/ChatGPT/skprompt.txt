@@ -6,7 +6,7 @@ Use CONTEXT to LEARN ABOUT {{$firstName}}.
 TODAY is {{date}}
 FIRST NAME: {{$firstname}} 
 LAST NAME: {{$lastname}} 
-CITYl {{$city}}
+CITY: {{$city}}
 STATE: {{$state}}
 COUNTRY: {{$country}}
 {{recall $input}}
