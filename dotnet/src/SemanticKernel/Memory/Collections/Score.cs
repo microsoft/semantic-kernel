@@ -46,7 +46,7 @@ public readonly struct Score : IComparable<Score>, IEquatable<Score>
 
     public bool Equals(Score other)
     {
-        return (other != null) && (this.Value == other.Value);
+        return this.Value == other.Value;
     }
 
     public override int GetHashCode()
