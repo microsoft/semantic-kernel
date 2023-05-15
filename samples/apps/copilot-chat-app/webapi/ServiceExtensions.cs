@@ -5,10 +5,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
+using SemanticKernel.CopilotChat.Config;
+using SemanticKernel.CopilotChat.Models;
+using SemanticKernel.CopilotChat.Storage;
 using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.Config;
-using SemanticKernel.Service.Model;
-using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service;
 
@@ -25,7 +26,7 @@ internal static class ServicesExtensions
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
-        // AI service configurations
+        // AI service configurations for Semantic Kernel
         services.AddOptions<AIServiceOptions>(AIServiceOptions.CompletionPropertyName)
             .Bind(configuration.GetSection(AIServiceOptions.CompletionPropertyName))
             .ValidateOnStart()
@@ -33,6 +34,18 @@ internal static class ServicesExtensions
 
         services.AddOptions<AIServiceOptions>(AIServiceOptions.EmbeddingPropertyName)
             .Bind(configuration.GetSection(AIServiceOptions.EmbeddingPropertyName))
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
+
+        // AI service configurations for Copilot Chat.
+        // They are using the same configuration section as Semantic Kernel.
+        services.AddOptions<CopilotChatAIServiceOptions>(CopilotChatAIServiceOptions.CompletionPropertyName)
+            .Bind(configuration.GetSection(CopilotChatAIServiceOptions.CompletionPropertyName))
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
+
+        services.AddOptions<CopilotChatAIServiceOptions>(CopilotChatAIServiceOptions.EmbeddingPropertyName)
+            .Bind(configuration.GetSection(CopilotChatAIServiceOptions.EmbeddingPropertyName))
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 

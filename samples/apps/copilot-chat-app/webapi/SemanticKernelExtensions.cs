@@ -10,8 +10,9 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
-using SemanticKernel.Service.Skills;
-using SemanticKernel.Service.Storage;
+using SemanticKernel.CopilotChat.Skills;
+using SemanticKernel.CopilotChat.Config;
+using SemanticKernel.CopilotChat.Storage;
 
 namespace SemanticKernel.Service;
 
@@ -65,7 +66,10 @@ internal static class SemanticKernelExtensions
             services.AddScoped<CopilotChatPlanner>(sp => new CopilotChatPlanner(Kernel.Builder
                 .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
                 .WithConfiguration(
-                    new KernelConfig().AddCompletionBackend(sp.GetRequiredService<IOptions<PlannerOptions>>().Value.AIService!)) // TODO verify planner has AI service configured
+                    new KernelConfig().AddCompletionBackend(
+                        CastCopilotChatServiceOptions(
+                            sp.GetRequiredService<IOptions<PlannerOptions>>().Value.AIService!)
+                    )) // TODO verify planner has AI service configured
                 .Build()));
         }
 
@@ -248,6 +252,24 @@ internal static class SemanticKernelExtensions
                 logger: logger),
 
             _ => throw new ArgumentException("Invalid AIService value in embeddings backend settings"),
+        };
+    }
+
+    /// <summary>
+    /// Cast CopilotChatAIServiceOptions to AIServiceOptions.
+    /// This is a temporary solution util we figure out where to planner should live.
+    /// </summary>
+    /// <param name="options">An CopilotChatAIServiceOptions instance</param>
+    /// <returns>An AIServiceOptions instance</returns>
+    private static AIServiceOptions CastCopilotChatServiceOptions(CopilotChatAIServiceOptions options)
+    {
+        return new AIServiceOptions()
+        {
+            Label = options.Label,
+            AIService = (AIServiceOptions.AIServiceType)options.AIService,
+            DeploymentOrModelId = options.DeploymentOrModelId,
+            Endpoint = options.Endpoint,
+            Key = options.Key
         };
     }
 }
