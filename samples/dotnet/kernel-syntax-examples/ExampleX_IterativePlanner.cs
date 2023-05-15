@@ -59,6 +59,5 @@ public static class ExampleX_IterativePlanner
         );
 
         return kernel;
-
     }
 }
