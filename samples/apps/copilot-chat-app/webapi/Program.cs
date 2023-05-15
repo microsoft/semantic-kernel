@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using SemanticKernel.CopilotChat.Extensions;
 
 namespace SemanticKernel.Service;
 
@@ -27,7 +28,9 @@ public sealed class Program
         builder.Services
             .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Program>>()) // some services require an un-templated ILogger
             .AddOptions(builder.Configuration)
+            .AddCopilotChatOptions(builder.Configuration)
             .AddSemanticKernelServices()
+            .AddCopilotChatPlannerServices()
             .AddPersistentChatStore();
 
         // Add in the rest of the services.

@@ -9,10 +9,8 @@ using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.TemplateEngine;
+using SemanticKernel.CopilotChat.Extensions;
 using SemanticKernel.Service.Config;
-using SemanticKernel.CopilotChat.Skills;
-using SemanticKernel.CopilotChat.Config;
-using SemanticKernel.CopilotChat.Storage;
 
 namespace SemanticKernel.Service;
 
@@ -25,11 +23,6 @@ internal static class SemanticKernelExtensions
     /// Delegate to register skills with a Semantic Kernel
     /// </summary>
     public delegate Task RegisterSkillsWithKernel(IServiceProvider sp, IKernel kernel);
-
-    /// <summary>
-    /// Delegate to register skills with a planner.
-    /// </summary>
-    public delegate Task RegisterSkillsWithPlanner(IServiceProvider sp, CopilotChatPlanner planner);
 
     /// <summary>
     /// Add Semantic Kernel services
@@ -59,25 +52,8 @@ internal static class SemanticKernelExtensions
             .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()
                 .Get(AIServiceOptions.EmbeddingPropertyName)));
 
-        // Planner (AI plugins) support
-        IOptions<PlannerOptions>? plannerOptions = services.BuildServiceProvider().GetService<IOptions<PlannerOptions>>();
-        if (plannerOptions != null && plannerOptions.Value.Enabled)
-        {
-            services.AddScoped<CopilotChatPlanner>(sp => new CopilotChatPlanner(Kernel.Builder
-                .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
-                .WithConfiguration(
-                    new KernelConfig().AddCompletionBackend(
-                        CastCopilotChatServiceOptions(
-                            sp.GetRequiredService<IOptions<PlannerOptions>>().Value.AIService!)
-                    )) // TODO verify planner has AI service configured
-                .Build()));
-        }
-
         // Register skills
-        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterCopilotChatSkills);
-
-        // Register Planner skills (AI plugins) here.
-        // TODO: Move planner skill registration from ChatController to here.
+        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkills);
 
         return services;
     }
@@ -85,27 +61,13 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Register the skills with the kernel.
     /// </summary>
-    private static Task RegisterCopilotChatSkills(IServiceProvider sp, IKernel kernel)
+    private static Task RegisterSkills(IServiceProvider sp, IKernel kernel)
     {
-        // Chat skill
-        kernel.ImportSkill(new ChatSkill(
-                kernel: kernel,
-                chatMessageRepository: sp.GetRequiredService<ChatMessageRepository>(),
-                chatSessionRepository: sp.GetRequiredService<ChatSessionRepository>(),
-                promptOptions: sp.GetRequiredService<IOptions<PromptsOptions>>(),
-                planner: sp.GetRequiredService<CopilotChatPlanner>(),
-                plannerOptions: sp.GetRequiredService<IOptions<PlannerOptions>>().Value,
-                logger: sp.GetRequiredService<ILogger<ChatSkill>>()),
-            nameof(ChatSkill));
+        // Copilot chat skills
+        kernel.RegisterCopilotChatSkills(sp);
 
         // Time skill
         kernel.ImportSkill(new TimeSkill(), nameof(TimeSkill));
-
-        // Document memory skill
-        kernel.ImportSkill(new DocumentMemorySkill(
-                sp.GetRequiredService<IOptions<PromptsOptions>>(),
-                sp.GetRequiredService<IOptions<DocumentMemoryOptions>>().Value),
-            nameof(DocumentMemorySkill));
 
         // Semantic skills
         ServiceOptions options = sp.GetRequiredService<IOptions<ServiceOptions>>().Value;
@@ -123,6 +85,7 @@ internal static class SemanticKernelExtensions
                 }
             }
         }
+
         return Task.CompletedTask;
     }
 
@@ -252,24 +215,6 @@ internal static class SemanticKernelExtensions
                 logger: logger),
 
             _ => throw new ArgumentException("Invalid AIService value in embeddings backend settings"),
-        };
-    }
-
-    /// <summary>
-    /// Cast CopilotChatAIServiceOptions to AIServiceOptions.
-    /// This is a temporary solution util we figure out where to planner should live.
-    /// </summary>
-    /// <param name="options">An CopilotChatAIServiceOptions instance</param>
-    /// <returns>An AIServiceOptions instance</returns>
-    private static AIServiceOptions CastCopilotChatServiceOptions(CopilotChatAIServiceOptions options)
-    {
-        return new AIServiceOptions()
-        {
-            Label = options.Label,
-            AIService = (AIServiceOptions.AIServiceType)options.AIService,
-            DeploymentOrModelId = options.DeploymentOrModelId,
-            Endpoint = options.Endpoint,
-            Key = options.Key
         };
     }
 }
