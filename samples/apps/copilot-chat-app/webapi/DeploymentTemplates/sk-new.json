@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "5276912302534852866"
+      "templateHash": "10267534410369500421"
     }
   },
   "parameters": {
@@ -32,7 +32,7 @@
     },
     "completionModel": {
       "type": "string",
-      "defaultValue": "gpt-3.5-turbo",
+      "defaultValue": "gpt-35-turbo",
       "metadata": {
         "description": "Model to use for chat completions"
       }
@@ -46,16 +46,9 @@
     },
     "plannerModel": {
       "type": "string",
-      "defaultValue": "gpt-3.5-turbo",
+      "defaultValue": "gpt-35-turbo",
       "metadata": {
         "description": "Completion model the task planner should use"
-      }
-    },
-    "apiKey": {
-      "type": "securestring",
-      "defaultValue": "",
-      "metadata": {
-        "description": "OpenAI API key"
       }
     },
     "skServerApiKey": {
@@ -108,7 +101,7 @@
             "value": "[parameters('packageUri')]"
           },
           "aiService": {
-            "value": "OpenAI"
+            "value": "AzureOpenAI"
           },
           "completionModel": {
             "value": "[parameters('completionModel')]"
@@ -118,12 +111,6 @@
           },
           "plannerModel": {
             "value": "[parameters('plannerModel')]"
-          },
-          "endpoint": {
-            "value": "not-used"
-          },
-          "apiKey": {
-            "value": "[parameters('apiKey')]"
           },
           "skServerApiKey": {
             "value": "[parameters('skServerApiKey')]"
@@ -138,7 +125,7 @@
             "value": "[parameters('deploySpeechServices')]"
           },
           "deployNewAzureOpenAI": {
-            "value": false
+            "value": true
           }
         },
         "template": {
