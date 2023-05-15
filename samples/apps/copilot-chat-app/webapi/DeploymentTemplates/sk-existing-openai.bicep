@@ -28,6 +28,9 @@ param plannerModel string = 'gpt-3.5-turbo'
 @description('OpenAI API key')
 param apiKey string = ''
 
+@description('Semantic Kernel server API key - Provide empty string to disable API key auth')
+param skServerApiKey string = newGuid()
+
 @description('Whether to deploy Cosmos DB for chat storage')
 param deployCosmosDB bool = true
 
@@ -38,7 +41,7 @@ param deployQdrant bool = true
 param deploySpeechServices bool = true
 
 
-module openAI 'sk-existing-ai.bicep' = {
+module openAI 'main.bicep' = {
   name: 'openAIDeployment'
   params: {
     name: name
@@ -50,9 +53,11 @@ module openAI 'sk-existing-ai.bicep' = {
     plannerModel: plannerModel
     endpoint: 'not-used'
     apiKey: apiKey
+    skServerApiKey: skServerApiKey
     deployCosmosDB: deployCosmosDB
     deployQdrant: deployQdrant
     deploySpeechServices: deploySpeechServices
+    deployNewAzureOpenAI: false
   }
 }
 
