@@ -77,6 +77,9 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const documentFileRef = useRef<HTMLInputElement | null>(null);
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
+    const { accounts } = useMsal();
+    const account = useAccount(accounts[0] || {});
+
     React.useEffect(() => {
         async function initSpeechRecognizer() {
             const speechService = new SpeechService(process.env.REACT_APP_BACKEND_URI as string);
@@ -125,8 +128,8 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                 // Broadcast file uploaded alert to other users
                 const docUploadAlert = {
                     id: getSelectedChatID(),
-                    fileOwner: "Frog",
-                    fileName: "BigBearTrading",
+                    fileOwner: account?.name as string,
+                    fileName: documentFile.name as string,
                 };
                 dispatch(updateFileUploadedFromUser(docUploadAlert));
             } catch (e: any) {
