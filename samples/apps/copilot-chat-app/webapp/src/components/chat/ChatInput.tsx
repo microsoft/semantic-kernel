@@ -70,34 +70,37 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const [previousValue, setPreviousValue] = React.useState('');
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
-    const speechService = new SpeechService(process.env.REACT_APP_BACKEND_URI as string);
     const [documentImporting, SetDocumentImporting] = React.useState(false);
     const documentImportService = new DocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     React.useEffect(() => {
-        if (recognizer) return;
-        void (async () => {
+        async function initSpeechRecognizer() {
+            const speechService = new SpeechService(process.env.REACT_APP_BACKEND_URI as string);
+
             var response = await speechService.validSpeechKeyAsync();
             if (response.isSuccess) {
-                const newRecognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
-                setRecognizer(newRecognizer);
+                const recognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
+                setRecognizer(recognizer);
             }
-        })();
-    }, [recognizer]);
+        }
+
+        initSpeechRecognizer();
+    }, []);
 
     const handleSpeech = () => {
         setIsListening(true);
-
-        recognizer?.recognizeOnceAsync((result) => {
-            if (result.reason === speechSdk.ResultReason.RecognizedSpeech) {
-                if (result.text && result.text.length > 0) {
-                    handleSubmit(result.text);
+        if (recognizer) {
+            recognizer.recognizeOnceAsync((result) => {
+                if (result.reason === speechSdk.ResultReason.RecognizedSpeech) {
+                    if (result.text && result.text.length > 0) {
+                        handleSubmit(result.text);
+                    }
                 }
-            }
-            setIsListening(false);
-        });
+                setIsListening(false);
+            });
+        }
     };
 
     const selectDocument = () => {
