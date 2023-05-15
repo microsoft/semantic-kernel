@@ -92,7 +92,7 @@ public static class GPT3Tokenizer
                 }
             }
 
-            // Ensure we have a sufficient Span<char> buffer to accomodate maxUtf8Length chars.
+            // Ensure we have a sufficient Span<char> buffer to accommodate maxUtf8Length chars.
             // The byte-to-char mapping scheme employed is 1:1, so we'll end up needing 1 char
             // for every 1 UTF8 byte. If we can reasonably stack-allocate the space, we do, otherwise
             // we temporarily rent a pooled array.

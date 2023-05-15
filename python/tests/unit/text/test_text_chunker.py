@@ -319,9 +319,9 @@ def test_split_paragraph_spaces():
     assert expected == split
 
 
-def test_split_paragraph_hypens():
+def test_split_paragraph_hyphens():
     """
-    a plaintext example that splits on hypens
+    a plaintext example that splits on hyphens
     """
     text = [
         "This is a test of the emergency broadcast system-This is only a test",

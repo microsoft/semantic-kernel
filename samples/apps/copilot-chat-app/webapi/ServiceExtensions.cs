@@ -36,6 +36,12 @@ internal static class ServicesExtensions
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
+        // Authorization configuration
+        services.AddOptions<AuthorizationOptions>()
+            .Bind(configuration.GetSection(AuthorizationOptions.PropertyName))
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
+
         // Chat log storage configuration
         services.AddOptions<ChatStoreOptions>()
             .Bind(configuration.GetSection(ChatStoreOptions.PropertyName))
@@ -69,6 +75,11 @@ internal static class ServicesExtensions
         // Planner options
         services.AddOptions<PlannerOptions>()
             .Bind(configuration.GetSection(PlannerOptions.PropertyName))
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
+
+        services.AddOptions<PromptsOptions>()
+            .Bind(configuration.GetSection(PromptsOptions.PropertyName))
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 

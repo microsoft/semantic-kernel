@@ -36,7 +36,7 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
     {
         if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
 
-        if (count >= 50) { throw new ArgumentOutOfRangeException(nameof(count), "{nameof(count)} value must be less than 50."); }
+        if (count >= 50) { throw new ArgumentOutOfRangeException(nameof(count), $"{nameof(count)} value must be less than 50."); }
 
         if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
 

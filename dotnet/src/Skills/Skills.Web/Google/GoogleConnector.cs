@@ -46,7 +46,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     {
         if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
 
-        if (count > 10) { throw new ArgumentOutOfRangeException(nameof(count), "{nameof(count)} value must be between 0 and 10, inclusive."); }
+        if (count > 10) { throw new ArgumentOutOfRangeException(nameof(count), $"{nameof(count)} value must be between 0 and 10, inclusive."); }
 
         if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
 

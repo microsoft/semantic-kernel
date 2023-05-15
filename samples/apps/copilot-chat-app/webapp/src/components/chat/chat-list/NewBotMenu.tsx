@@ -42,7 +42,7 @@ export const NewBotMenu: FC = () => {
     return (
         <Menu open={isNewBotMenuOpen}>
             <MenuTrigger disableButtonEnhancement>
-                <Tooltip content="Add Bot" relationship="label">
+                <Tooltip content="Create new conversation" relationship="label">
                     <Button
                         icon={<BotAdd20Regular />}
                         appearance="transparent"
