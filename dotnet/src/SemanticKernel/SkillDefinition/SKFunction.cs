@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -244,6 +245,19 @@ public sealed class SKFunction : ISKFunction, IDisposable
         this.ReleaseUnmanagedResources();
         GC.SuppressFinalize(this);
     }
+
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString()
+        => this.ToString(false);
+
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public string ToString(bool writeIndented)
+       => JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = writeIndented });
 
     /// <summary>
     /// Finalizer.

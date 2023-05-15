@@ -18,6 +18,44 @@ param appServiceSku string = 'B1'
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
 param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip'
 
+@description('Underlying AI service')
+@allowed([
+  'AzureOpenAI'
+  'OpenAI'
+])
+param aiService string = 'AzureOpenAI'
+
+@description('Model to use for chat completions')
+param completionModel string = 'gpt-35-turbo'
+
+@description('Model to use for text embeddings')
+param embeddingModel string = 'text-embedding-ada-002'
+
+@description('Completion model the task planner should use')
+param plannerModel string = 'gpt-35-turbo'
+
+@description('Azure OpenAI endpoint to use (ignored when AI service is not AzureOpenAI)')
+param endpoint string = ''
+
+@secure()
+@description('Azure OpenAI or OpenAI API key')
+param apiKey string = ''
+
+@description('Semantic Kernel server API key - Provide empty string to disable API key auth')
+param skServerApiKey string = newGuid()
+
+@description('Whether to deploy a new Azure OpenAI instance')
+param deployNewAzureOpenAI bool = true
+
+@description('Whether to deploy Cosmos DB for chat storage')
+param deployCosmosDB bool = true
+
+@description('Whether to deploy Qdrant (in a container) for memory storage')
+param deployQdrant bool = true
+
+@description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
+param deploySpeechServices bool = true
+
 
 @description('Region for the resources')
 #disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
@@ -35,17 +73,8 @@ var storageFileShareName = 'aciqdrantshare'
 @description('Name of the ACI container volume')
 var containerVolumeMountName = 'azqdrantvolume'
 
-@description('Whether to deploy Cosmos DB for chat storage')
-param deployCosmosDB bool = true
 
-@description('Whether to deploy Qdrant (in a container) for memory storage')
-param deployQdrant bool = true
-
-@description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
-param deploySpeechServices bool = true
-
-
-resource openAI 'Microsoft.CognitiveServices/accounts@2022-03-01' = {
+resource openAI 'Microsoft.CognitiveServices/accounts@2022-12-01' = if(deployNewAzureOpenAI) {
   name: 'ai-${uniqueName}'
   location: location
   kind: 'OpenAI'
@@ -57,14 +86,13 @@ resource openAI 'Microsoft.CognitiveServices/accounts@2022-03-01' = {
   }
 }
 
-resource openAI_gpt35Turbo 'Microsoft.CognitiveServices/accounts/deployments@2022-12-01' = {
+resource openAI_completionModel 'Microsoft.CognitiveServices/accounts/deployments@2022-12-01' = if(deployNewAzureOpenAI) {
   parent: openAI
-  name: 'gpt-35-turbo'
+  name: completionModel
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'gpt-35-turbo'
-      version: '0301'
+      name: completionModel
     }
     scaleSettings: {
       scaleType: 'Standard'
@@ -72,23 +100,23 @@ resource openAI_gpt35Turbo 'Microsoft.CognitiveServices/accounts/deployments@202
   }
 }
 
-resource openAI_textEmbeddingAda002 'Microsoft.CognitiveServices/accounts/deployments@2022-12-01' = {
+resource openAI_embeddingModel 'Microsoft.CognitiveServices/accounts/deployments@2022-12-01' = if(deployNewAzureOpenAI) {
   parent: openAI
-  name: 'text-embedding-ada-002'
+  name: embeddingModel
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'text-embedding-ada-002'
-      version: '1'
+      name: embeddingModel
     }
     scaleSettings: {
       scaleType: 'Standard'
     }
   }
-  dependsOn: [        // This "dependency" is to create models sequentially because the resource
-    openAI_gpt35Turbo // provider does not support parallel creation of models properly.
+  dependsOn: [             // This "dependency" is to create models sequentially because the resource
+    openAI_completionModel // provider does not support parallel creation of models properly.
   ]
 }
+
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: 'asp-${uniqueName}'
@@ -116,39 +144,59 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
       appSettings: [
         {
           name: 'Completion:AIService'
-          value: 'AzureOpenAI'
+          value: aiService
+        }
+        {
+          name: 'Completion:DeploymentOrModelId'
+          value: completionModel
         }
         {
           name: 'Completion:Endpoint'
-          value: openAI.properties.endpoint
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
         }
         {
           name: 'Completion:Key'
-          value: openAI.listKeys().key1
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
         }
         {
           name: 'Embedding:AIService'
-          value: 'AzureOpenAI'
+          value: aiService
+        }
+        {
+          name: 'Embedding:DeploymentOrModelId'
+          value: embeddingModel
         }
         {
           name: 'Embedding:Endpoint'
-          value: openAI.properties.endpoint
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
         }
         {
           name: 'Embedding:Key'
-          value: openAI.listKeys().key1
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
         }
         {
           name: 'Planner:AIService:AIService'
-          value: 'AzureOpenAI'
+          value: aiService
+        }
+        {
+          name: 'Planner:AIService:DeploymentOrModelId'
+          value: plannerModel
         }
         {
           name: 'Planner:AIService:Endpoint'
-          value: openAI.properties.endpoint
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
         }
         {
           name: 'Planner:AIService:Key'
-          value: openAI.listKeys().key1
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
+        }
+        {
+          name: 'Authorization:Type'
+          value: empty(skServerApiKey) ? 'None' : 'ApiKey'
+        }
+        {
+          name: 'Authorization:ApiKey'
+          value: skServerApiKey
         }
         {
           name: 'ChatStore:Type'
