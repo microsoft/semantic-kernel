@@ -10,7 +10,6 @@ export class ChatService extends BaseService {
         userName: string,
         title: string,
         accessToken: string,
-        connectorAccessToken?: string
     ): Promise<IChatSession> => {
         const body = {
             userId: userId,
@@ -25,51 +24,39 @@ export class ChatService extends BaseService {
                 body: body,
             },
             accessToken,
-            connectorAccessToken,
         );
 
         return result;
     };
 
-    public getChatAsync = async (
-        chatId: string,
-        accessToken: string,
-        connectorAccessToken?: string
-    ): Promise<IChatSession> => {
+    public getChatAsync = async (chatId: string, accessToken: string): Promise<IChatSession> => {
         const result = await this.getResponseAsync<IChatSession>(
             {
                 commandPath: `chatSession/getChat/${chatId}`,
                 method: 'GET',
             },
             accessToken,
-            connectorAccessToken,
         );
 
         return result;
     };
 
-    public getAllChatsAsync = async(
-        userId: string,
-        accessToken: string,
-        connectorAccessToken?: string
-    ): Promise<IChatSession[]> => {
+    public getAllChatsAsync = async (userId: string, accessToken: string): Promise<IChatSession[]> => {
         const result = await this.getResponseAsync<IChatSession[]>(
             {
                 commandPath: `chatSession/getAllChats/${userId}`,
                 method: 'GET',
             },
             accessToken,
-            connectorAccessToken,
         );
         return result;
-    }
+    };
 
-    public getChatMessagesAsync = async(
+    public getChatMessagesAsync = async (
         chatId: string,
         startIdx: number,
         count: number,
         accessToken: string,
-        connectorAccessToken?: string
     ): Promise<IChatMessage[]> => {
         const result = await this.getResponseAsync<IChatMessage[]>(
             {
@@ -77,22 +64,16 @@ export class ChatService extends BaseService {
                 method: 'GET',
             },
             accessToken,
-            connectorAccessToken,
         );
 
         return result;
-    }
+    };
 
-    public editChatAsync = async(
-        chatId: string,
-        title: string,
-        accessToken: string,
-        connectorAccessToken?: string
-    ): Promise<any> => {
-        const body : IChatSession = {
+    public editChatAsync = async (chatId: string, title: string, accessToken: string): Promise<any> => {
+        const body: IChatSession = {
             id: chatId,
             userId: '',
-            title: title
+            title: title,
         };
 
         const result = await this.getResponseAsync<any>(
@@ -102,9 +83,8 @@ export class ChatService extends BaseService {
                 body: body,
             },
             accessToken,
-            connectorAccessToken,
         );
 
         return result;
-    }
+    };
 }

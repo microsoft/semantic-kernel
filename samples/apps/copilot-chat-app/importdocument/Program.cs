@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.IO;
 using System.Linq;
@@ -30,24 +31,25 @@ public static class Program
             IsRequired = true
         };
 
-        var userCollectionOption = new Option<bool>(
-            name: "--user-collection",
-            description: "Save the extracted context to an isolated user collection.",
-            getDefaultValue: () => false
+        // TODO: UI to retrieve ChatID from the WebApp will be added in the future with multi-user support.
+        var chatCollectionOption = new Option<Guid>(
+            name: "--chat-id",
+            description: "Save the extracted context to an isolated chat collection.",
+            getDefaultValue: () => Guid.Empty
         );
 
         var rootCommand = new RootCommand(
             "This console app imports a file to the CopilotChat WebAPI's document memory store."
         )
         {
-            fileOption, userCollectionOption
+            fileOption, chatCollectionOption
         };
 
-        rootCommand.SetHandler(async (file, userCollection) =>
+        rootCommand.SetHandler(async (file, chatCollectionId) =>
             {
-                await UploadFileAsync(file, config!, userCollection);
+                await UploadFileAsync(file, config!, chatCollectionId);
             },
-            fileOption, userCollectionOption
+            fileOption, chatCollectionOption
         );
 
         rootCommand.Invoke(args);
@@ -67,16 +69,18 @@ public static class Program
                 .WithRedirectUri(config.RedirectUri)
                 .Build();
             var result = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
-            var accounts = await app.GetAccountsAsync();
-            if (!accounts.Any())
+            IEnumerable<IAccount>? accounts = await app.GetAccountsAsync();
+            IAccount? first = accounts.FirstOrDefault();
+
+            if (first is null)
             {
                 Console.WriteLine("Error: No accounts found");
                 return null;
             }
 
-            return accounts.First().HomeAccountId.Identifier;
+            return first.HomeAccountId.Identifier;
         }
-        catch (Exception ex) when (ex is MsalServiceException || ex is MsalClientException)
+        catch (Exception ex) when (ex is MsalServiceException or MsalClientException)
         {
             Console.WriteLine($"Error: {ex.Message}");
             return null;
@@ -88,8 +92,8 @@ public static class Program
     /// </summary>
     /// <param name="file">The file to upload for injection.</param>
     /// <param name="config">Configuration.</param>
-    /// <param name="toUserCollection">Save the extracted context to an isolated user collection.</param>
-    private static async Task UploadFileAsync(FileInfo file, Config config, bool toUserCollection)
+    /// <param name="chatCollectionId">Save the extracted context to an isolated chat collection.</param>
+    private static async Task UploadFileAsync(FileInfo file, Config config, Guid chatCollectionId)
     {
         if (!file.Exists)
         {
@@ -102,17 +106,20 @@ public static class Program
         {
             { fileContent, "formFile", file.Name }
         };
-        if (toUserCollection)
+        if (chatCollectionId != Guid.Empty)
         {
-            Console.WriteLine("Uploading and parsing file to user collection...");
+            Console.WriteLine($"Uploading and parsing file to chat {chatCollectionId.ToString()}...");
             var userId = await AcquireUserIdAsync(config);
 
             if (userId != null)
             {
-                using var userScopeContent = new StringContent("User");
+                Console.WriteLine($"Successfully acquired User ID. Continuing...");
+                using var chatScopeContent = new StringContent("Chat");
                 using var userIdContent = new StringContent(userId);
-                formContent.Add(userScopeContent, "documentScope");
+                using var chatCollectionIdContent = new StringContent(chatCollectionId.ToString());
+                formContent.Add(chatScopeContent, "documentScope");
                 formContent.Add(userIdContent, "userId");
+                formContent.Add(chatCollectionIdContent, "chatId");
 
                 // Calling UploadAsync here to make sure disposable objects are still in scope.
                 await UploadAsync(formContent, config);

@@ -17,6 +17,8 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
+#pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
+
 public sealed class OpenAICompletionTests : IDisposable
 {
     private readonly IConfigurationRoot _configuration;
@@ -92,7 +94,6 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Use an invalid API key to force a 401 Unauthorized response
         target.Config.AddOpenAITextCompletionService(
-            serviceId: openAIConfiguration.ServiceId,
             modelId: openAIConfiguration.ModelId,
             apiKey: "INVALID_KEY");
 
@@ -116,7 +117,6 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Use an invalid API key to force a 401 Unauthorized response
         target.Config.AddOpenAITextCompletionService(
-            serviceId: openAIConfiguration.ServiceId,
             modelId: openAIConfiguration.ModelId,
             apiKey: "INVALID_KEY");
 
@@ -128,7 +128,8 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<AIException>(context.LastException);
-        Assert.Contains("Incorrect API key provided", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(AIException.ErrorCodes.AccessDenied, ((AIException)context.LastException).ErrorCode);
+        Assert.Contains("The request is not authorized, HTTP status: 401", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -142,7 +143,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
 
         target.Config.AddAzureTextCompletionService(
-            serviceId: azureOpenAIConfiguration.ServiceId,
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
@@ -155,7 +155,8 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<AIException>(context.LastException);
-        Assert.Contains("provide a valid key", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(AIException.ErrorCodes.AccessDenied, ((AIException)context.LastException).ErrorCode);
+        Assert.Contains("The request is not authorized, HTTP status: 401", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -169,7 +170,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
 
         target.Config.AddAzureTextCompletionService(
-            serviceId: azureOpenAIConfiguration.ServiceId,
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey);
@@ -182,7 +182,9 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<AIException>(context.LastException);
-        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(AIException.ErrorCodes.InvalidRequest, ((AIException)context.LastException).ErrorCode);
+        Assert.Contains("The request is not valid, HTTP status: 400", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase); // This messasge could change in the future, comes from Azure OpenAI
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -198,7 +200,7 @@ public sealed class OpenAICompletionTests : IDisposable
             $"Put the result in between <result></result> tags{lineEnding}" +
             $"Input:{lineEnding}{{\"name\": \"John\", \"age\": 30}}{lineEnding}{lineEnding}Request:{lineEnding}name";
 
-        const string expectedAnswerContains = "<result>John</result>";
+        const string ExpectedAnswerContains = "<result>John</result>";
 
         IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
 
@@ -210,7 +212,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
 
         // Assert
-        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(ExpectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
     #region internals
@@ -247,9 +249,9 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration);
 
         kernel.Config.AddOpenAITextCompletionService(
-            serviceId: openAIConfiguration.ServiceId,
             modelId: openAIConfiguration.ModelId,
-            apiKey: openAIConfiguration.ApiKey);
+            apiKey: openAIConfiguration.ApiKey,
+            serviceId: openAIConfiguration.ServiceId);
 
         kernel.Config.SetDefaultTextCompletionService(openAIConfiguration.ServiceId);
     }
@@ -261,10 +263,10 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
 
         kernel.Config.AddAzureTextCompletionService(
-            serviceId: azureOpenAIConfiguration.ServiceId,
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey);
+            apiKey: azureOpenAIConfiguration.ApiKey,
+            serviceId: azureOpenAIConfiguration.ServiceId);
 
         kernel.Config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
     }

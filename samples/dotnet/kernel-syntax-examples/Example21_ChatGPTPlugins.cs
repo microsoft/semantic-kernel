@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -17,6 +18,8 @@ public static class Example21_ChatGptPlugins
     private static async Task RunChatGptPluginAsync()
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        using HttpClient importHttpClient = new HttpClient();
+        importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft-Semantic-Kernel");
 
         //Import a ChatGPT plugin using one of the following Kernel extension methods
         //kernel.ImportChatGptPluginSkillFromResourceAsync
@@ -24,7 +27,7 @@ public static class Example21_ChatGptPlugins
         //kernel.ImportChatGptPluginSkillSkillFromFile
         //kernel.ImportChatGptPluginSkillFromUrlAsync
 
-        var skill = await kernel.ImportChatGptPluginSkillFromUrlAsync("<skill name>", new Uri("<chatGPT-plugin>"));
+        var skill = await kernel.ImportChatGptPluginSkillFromUrlAsync("<skill name>", new Uri("<chatGPT-plugin>"), importHttpClient);
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -40,7 +43,7 @@ public static class Example21_ChatGptPlugins
 
         //var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        //var skill = await kernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
+        //var skill = await kernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), importHttpClient);
 
         //var contextVariables = new ContextVariables();
         //contextVariables.Set("q", "Laptop");     //A precise query that matches one very small category or product that needs to be searched for to find the products the user is looking for. If the user explicitly stated what they want, use that as a query. The query is as specific as possible to the product name or category mentioned by the user in its singular form, and don't contain any clarifiers like latest, newest, cheapest, budget, premium, expensive or similar. The query is always taken from the latest topic, if there is a new topic a new query is started.

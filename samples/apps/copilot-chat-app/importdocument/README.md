@@ -31,15 +31,17 @@ Importing documents enables Copilot Chat to have up-to-date knowledge of specifi
 3. Change directory to this folder root.
 4. **Run** the following command to import a document to the app under the global document collection where
    all users will have access to:
+
    `dotnet run -- --file .\sample-docs\ms10k.txt`
    
-   Or **Run** the following command to import a document to the app under a user isolated document collection where
-   only the user who uploaded the document will have access to:
-   `dotnet run -- --file .\sample-docs\ms10k.txt --user-collection`
+   Or **Run** the following command to import a document to the app under a chat isolated document collection where
+   only the chat session will have access to:
 
-   > Note that this will open a browser window for you to sign in to retrieve your user id. 
+   `dotnet run -- --file .\sample-docs\ms10k.txt --chat-id [chatId]`
 
-   > Currently only supports txt files. A sample file is provided under ./sample-docs.
+   > Note that this will open a browser window for you to sign in to retrieve your user id to make sure you have access to the chat session.
+
+   > Currently only supports txt and pdf files. A sample file is provided under ./sample-docs.
 
    Importing may take some time to generate embeddings for each piece/chunk of a document.
 5. Chat with the bot.
@@ -47,7 +49,9 @@ Importing documents enables Copilot Chat to have up-to-date knowledge of specifi
    Examples:
 
    With [ms10k.txt](./sample-docs/ms10k.txt):
+
    ![](../images/Document-Memory-Sample-1.png)
 
    With [Microsoft Responsible AI Standard v2 General Requirements.pdf](./sample-docs/Microsoft-Responsible-AI-Standard-v2-General-Requirements.pdf):
+
    ![](../images/Document-Memory-Sample-2.png)

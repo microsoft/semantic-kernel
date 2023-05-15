@@ -22,7 +22,7 @@ public static class Example07_BingAndGoogleSkills
     {
         IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
 
         // Load Bing skill
         using var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
@@ -68,7 +68,7 @@ public static class Example07_BingAndGoogleSkills
     {
         Console.WriteLine("======== Use Search Skill to answer user questions ========");
 
-        const string SEMANTIC_FUNCTION = @"Answer questions only when you know the facts or the information is provided.
+        const string SemanticFunction = @"Answer questions only when you know the facts or the information is provided.
 When you don't have sufficient information you reply with a list of commands to find the information needed.
 When answering multiple questions, use a bullet point list.
 Note: make sure single and double quotes are escaped using a backslash char.
@@ -104,11 +104,12 @@ Answer: ";
         var questions = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
         Console.WriteLine(questions);
 
-        var oracle = kernel.CreateSemanticFunction(SEMANTIC_FUNCTION, maxTokens: 200, temperature: 0, topP: 1);
+        var oracle = kernel.CreateSemanticFunction(SemanticFunction, maxTokens: 200, temperature: 0, topP: 1);
 
         var context = kernel.CreateNewContext();
         context["externalInformation"] = "";
-        var answer = await oracle.InvokeAsync(questions, context);
+        context.Variables.Update(questions);
+        var answer = await oracle.InvokeAsync(context);
 
         // If the answer contains commands, execute them using the prompt renderer.
         if (answer.Result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
@@ -125,7 +126,8 @@ Answer: ";
             context["externalInformation"] = information;
 
             // Run the semantic function again, now including information from Bing
-            answer = await oracle.InvokeAsync(questions, context);
+            context.Variables.Update(questions);
+            answer = await oracle.InvokeAsync(context);
         }
         else
         {

@@ -2,6 +2,8 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
@@ -20,7 +22,7 @@ public class ChatHistoryController : ControllerBase
     private readonly ILogger<ChatHistoryController> _logger;
     private readonly ChatSessionRepository _chatSessionRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
-    private readonly PromptSettings _promptSettings;
+    private readonly PromptsOptions _promptOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryController"/> class.
@@ -28,17 +30,17 @@ public class ChatHistoryController : ControllerBase
     /// <param name="logger">The logger.</param>
     /// <param name="chatSessionRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
-    /// <param name="promptSettings">The prompt settings.</param>
+    /// <param name="promptsOptions">The prompts options.</param>
     public ChatHistoryController(
         ILogger<ChatHistoryController> logger,
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
-        PromptSettings promptSettings)
+        IOptions<PromptsOptions> promptsOptions)
     {
         this._logger = logger;
         this._chatSessionRepository = chatSessionRepository;
         this._chatMessageRepository = chatMessageRepository;
-        this._promptSettings = promptSettings;
+        this._promptOptions = promptsOptions.Value;
     }
 
     /// <summary>
@@ -60,10 +62,10 @@ public class ChatHistoryController : ControllerBase
         var newChat = new ChatSession(userId, title);
         await this._chatSessionRepository.CreateAsync(newChat);
 
-        var initialBotMessage = this._promptSettings.InitialBotMessage;
+        var initialBotMessage = this._promptOptions.InitialBotMessage;
         await this.SaveResponseAsync(initialBotMessage, newChat.Id);
 
-        this._logger.LogDebug("Created chat session with id {0} for user {1}.", newChat.Id, userId);
+        this._logger.LogDebug("Created chat session with id {0} for user {1}", newChat.Id, userId);
         return this.CreatedAtAction(nameof(this.GetChatSessionByIdAsync), new { chatId = newChat.Id }, newChat);
     }
 
@@ -91,7 +93,7 @@ public class ChatHistoryController : ControllerBase
     /// <summary>
     /// Get all chat sessions associated with a user. Return an empty list if no chats are found.
     /// The regex pattern that is used to match the user id will match the following format:
-    ///    - 2 period separated groups of one or more hyphen-delimitated alphanumeric strings.
+    ///    - 2 period separated groups of one or more hyphen-delimited alphanumeric strings.
     /// The pattern matches two GUIDs in canonical textual representation separated by a period.
     /// </summary>
     /// <param name="userId">The user id.</param>
@@ -130,22 +132,16 @@ public class ChatHistoryController : ControllerBase
         [FromQuery] int startIdx = 0,
         [FromQuery] int count = -1)
     {
+        // TODO: the code mixes strings and Guid without being explicit about the serialization format
         var chatMessages = await this._chatMessageRepository.FindByChatIdAsync(chatId.ToString());
         if (chatMessages == null)
         {
-            return this.NotFound($"No messages found for chat of id {chatId}.");
+            return this.NotFound($"No messages found for chat id '{chatId}'.");
         }
 
-        if (startIdx >= chatMessages.Count())
-        {
-            return this.BadRequest($"Start index {startIdx} is out of range.");
-        }
-        else if (startIdx + count > chatMessages.Count() || count == -1)
-        {
-            count = chatMessages.Count() - startIdx;
-        }
+        chatMessages = chatMessages.OrderByDescending(m => m.Timestamp).Skip(startIdx);
+        if (count >= 0) { chatMessages = chatMessages.Take(count); }
 
-        chatMessages = chatMessages.OrderByDescending(m => m.Timestamp).Skip(startIdx).Take(count);
         return this.Ok(chatMessages);
     }
 
@@ -160,9 +156,9 @@ public class ChatHistoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> EditChatSessionAsync([FromBody] ChatSession chatParameters)
     {
-        var chatId = chatParameters.Id;
+        string chatId = chatParameters.Id;
 
-        var chat = await this._chatSessionRepository.FindByIdAsync(chatId.ToString());
+        ChatSession? chat = await this._chatSessionRepository.FindByIdAsync(chatId);
         if (chat == null)
         {
             return this.NotFound($"Chat of id {chatId} not found.");

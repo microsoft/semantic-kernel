@@ -3,7 +3,7 @@
 using System;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -19,11 +19,6 @@ public sealed class SKContext
     /// </summary>
     /// <returns>Processed input, aka result</returns>
     public string Result => this.Variables.ToString();
-
-    // /// <summary>
-    // /// Whether an error occurred while executing functions in the pipeline.
-    // /// </summary>
-    // public bool ErrorOccurred => this.Variables.ErrorOccurred;
 
     /// <summary>
     /// Whether an error occurred while executing functions in the pipeline.
@@ -96,15 +91,12 @@ public sealed class SKContext
     {
         if (this.Skills is null)
         {
-            Verify.ThrowValidationException(ValidationException.ErrorCodes.NullValue, nameof(this.Skills));
+            throw new KernelException(
+                KernelException.ErrorCodes.SkillCollectionNotSet,
+                "Skill collection not found in the context");
         }
 
-        if (this.Skills.HasNativeFunction(skillName, functionName))
-        {
-            return this.Skills.GetNativeFunction(skillName, functionName);
-        }
-
-        return this.Skills.GetSemanticFunction(skillName, functionName);
+        return this.Skills.GetFunction(skillName, functionName);
     }
 
     /// <summary>
@@ -121,16 +113,16 @@ public sealed class SKContext
     /// <param name="logger">Logger for operations in context.</param>
     /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
     public SKContext(
-        ContextVariables variables,
-        ISemanticTextMemory memory,
-        IReadOnlySkillCollection? skills,
-        ILogger logger,
+        ContextVariables? variables = null,
+        ISemanticTextMemory? memory = null,
+        IReadOnlySkillCollection? skills = null,
+        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        this.Variables = variables;
-        this.Memory = memory;
-        this.Skills = skills;
-        this.Log = logger;
+        this.Variables = variables ?? new();
+        this.Memory = memory ?? NullMemory.Instance;
+        this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
+        this.Log = logger ?? NullLogger.Instance;
         this.CancellationToken = cancellationToken;
     }
 

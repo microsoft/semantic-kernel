@@ -8,7 +8,7 @@ on:
   pull_request:
     branches: ["main"]
     paths:
-      - "samples/"
+      - 'samples/apps/**'
 
 jobs:
   build:

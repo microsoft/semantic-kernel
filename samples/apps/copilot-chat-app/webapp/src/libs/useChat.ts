@@ -10,18 +10,25 @@ import {
     incrementBotProfilePictureIndex,
     setConversations,
     setSelectedConversation,
-    updateConversation
+    updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from './auth/AuthHelper';
+import { useConnectors } from './connectors/useConnectors';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
-import { AuthorRoles } from './models/ChatMessage';
+import { AuthorRoles, ChatMessageState } from './models/ChatMessage';
 import { IChatSession } from './models/ChatSession';
 import { ChatUser } from './models/ChatUser';
+import { isPlan } from './semantic-kernel/sk-utilities';
 import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
 import { BotService } from './services/BotService';
 import { ChatService } from './services/ChatService';
-// import { useConnectors } from './connectors/useConnectors'; // ConnectorTokenExample
+
+import botIcon1 from '../assets/bot-icons/bot-icon-1.png';
+import botIcon2 from '../assets/bot-icons/bot-icon-2.png';
+import botIcon3 from '../assets/bot-icons/bot-icon-3.png';
+import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
+import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
@@ -30,18 +37,11 @@ export const useChat = () => {
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
     const { botProfilePictureIndex } = useAppSelector((state: RootState) => state.conversations);
 
+    const connectors = useConnectors();
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
 
-    // const connectors = useConnectors(); // ConnectorTokenExample
-
-    const botProfilePictures: string[] = [
-        '/assets/bot-icon-1.png',
-        '/assets/bot-icon-2.png',
-        '/assets/bot-icon-3.png',
-        '/assets/bot-icon-4.png',
-        '/assets/bot-icon-5.png',
-    ];
+    const botProfilePictures: string[] = [botIcon1, botIcon2, botIcon3, botIcon4, botIcon5];
 
     const loggedInUser: ChatUser = {
         id: account?.homeAccountId || '',
@@ -60,16 +60,19 @@ export const useChat = () => {
     const createChat = async () => {
         const chatTitle = `Copilot @ ${new Date().toLocaleString()}`;
         try {
-            await chatService.createChatAsync(
-                account?.homeAccountId!,
-                account?.name!,
-                chatTitle,
-                await AuthHelper.getSKaaSAccessToken(instance)).then(async (result: IChatSession) => {
+            await chatService
+                .createChatAsync(
+                    account?.homeAccountId!,
+                    account?.name!,
+                    chatTitle,
+                    await AuthHelper.getSKaaSAccessToken(instance),
+                )
+                .then(async (result: IChatSession) => {
                     const chatMessages = await chatService.getChatMessagesAsync(
                         result.id,
                         0,
                         1,
-                        await AuthHelper.getSKaaSAccessToken(instance)
+                        await AuthHelper.getSKaaSAccessToken(instance),
                     );
 
                     const newChat: ChatState = {
@@ -93,7 +96,13 @@ export const useChat = () => {
         }
     };
 
-    const getResponse = async (value: string, chatId: string) => {
+    const getResponse = async (
+        value: string,
+        chatId: string,
+        approvedPlanJson?: string,
+        planUserIntent?: string,
+        userCancelledPlan?: boolean,
+    ) => {
         const ask = {
             input: value,
             variables: [
@@ -111,17 +120,44 @@ export const useChat = () => {
                 },
             ],
         };
-        try {
-            var result = await sk.invokeAsync(ask, 'ChatSkill', 'Chat', await AuthHelper.getSKaaSAccessToken(instance));
-            // var result = await connectors.invokeSkillWithGraphToken(ask, {ConnectorSkill}, {ConnectorFunction}); // ConnectorTokenExample
 
+        if (approvedPlanJson) {
+            ask.variables.push(
+                {
+                    key: 'proposedPlan',
+                    value: approvedPlanJson,
+                },
+                {
+                    key: 'planUserIntent',
+                    value: planUserIntent!,
+                },
+            );
+        }
+
+        if (userCancelledPlan) {
+            ask.variables.push({
+                key: 'userCancelledPlan',
+                value: 'true',
+            });
+        }
+
+        try {
+            var result = await sk.invokeAsync(
+                ask,
+                'ChatSkill',
+                'Chat',
+                await AuthHelper.getSKaaSAccessToken(instance),
+                connectors.getEnabledPlugins(),
+            );
             const messageResult = {
                 timestamp: new Date().getTime(),
                 userName: 'bot',
                 userId: 'bot',
                 content: result.value,
                 authorRole: AuthorRoles.Bot,
+                state: isPlan(result.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
             };
+
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));
         } catch (e: any) {
             const errorMessage = `Unable to generate bot response. Details: ${e.message ?? e}`;
@@ -133,7 +169,8 @@ export const useChat = () => {
         try {
             const chatSessions = await chatService.getAllChatsAsync(
                 account?.homeAccountId!,
-                await AuthHelper.getSKaaSAccessToken(instance));
+                await AuthHelper.getSKaaSAccessToken(instance),
+            );
 
             if (chatSessions.length > 0) {
                 const conversations: Conversations = {};
@@ -143,7 +180,7 @@ export const useChat = () => {
                         chatSession.id,
                         0,
                         100,
-                        await AuthHelper.getSKaaSAccessToken(instance)
+                        await AuthHelper.getSKaaSAccessToken(instance),
                     );
 
                     // Messages are returned with most recent message at index 0 and oldest message at the last index,
@@ -158,6 +195,7 @@ export const useChat = () => {
                         botTypingTimestamp: 0,
                         botProfilePicture: botProfilePictures[botProfilePictureIndex],
                     };
+
                     dispatch(incrementBotProfilePictureIndex());
                 }
 
@@ -167,17 +205,23 @@ export const useChat = () => {
                 // No chats exist, create first chat window
                 await createChat();
             }
+
             return true;
         } catch (e: any) {
             const errorMessage = `Unable to load chats. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+
             return false;
         }
     };
 
     const downloadBot = async (chatId: string) => {
         try {
-            return botService.downloadAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance));
+            return botService.downloadAsync(
+                chatId,
+                account?.homeAccountId || '',
+                await AuthHelper.getSKaaSAccessToken(instance),
+            );
         } catch (e: any) {
             const errorMessage = `Unable to download the bot. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -185,7 +229,8 @@ export const useChat = () => {
     };
 
     const uploadBot = async (bot: Bot) => {
-        botService.uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
+        botService
+            .uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
             .then(() => loadChats())
             .catch((e: any) => {
                 const errorMessage = `Unable to upload the bot. Details: ${e.message ?? e}`;
