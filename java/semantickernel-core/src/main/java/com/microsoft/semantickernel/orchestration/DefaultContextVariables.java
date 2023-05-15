@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 /// Context Variables is a data structure that holds temporary data while a task is being performed.
 /// It is accessed and manipulated by functions in the pipeline.
 /// </summary>
-class ImmutableContextVariables implements ReadOnlyContextVariables {
+class DefaultContextVariables implements ContextVariables {
 
     // TODO case insensitive
     private final Map<String, String> variables;
@@ -30,29 +30,28 @@ class ImmutableContextVariables implements ReadOnlyContextVariables {
     /// Constructor for context variables.
     /// </summary>
     /// <param name="content">Optional value for the main variable of the context.</param>
-    ImmutableContextVariables(@NonNull String content) {
+    DefaultContextVariables(@NonNull String content) {
         this.variables = new HashMap<>();
         this.variables.put(MAIN_KEY, content);
     }
 
-    ImmutableContextVariables(Map<String, String> variables) {
+    DefaultContextVariables(Map<String, String> variables) {
         this.variables = new HashMap<>(variables);
     }
 
     @CheckReturnValue
-    ImmutableContextVariables setVariable(@NonNull String key, @NonNull String content) {
-        HashMap<String, String> copy = new HashMap<>(this.variables);
-        copy.put(key, content);
-        return new ImmutableContextVariables(copy);
+    public ContextVariables setVariable(@NonNull String key, @NonNull String content) {
+        this.variables.put(key, content);
+        return this;
     }
 
     @CheckReturnValue
-    ImmutableContextVariables appendToVariable(@NonNull String key, @NonNull String content) {
+    ContextVariables appendToVariable(@NonNull String key, @NonNull String content) {
         return setVariable(key, this.variables.get(key) + content);
     }
 
     @Override
-    public Map<String, String> getVariables() {
+    public Map<String, String> asMap() {
         return Collections.unmodifiableMap(variables);
     }
 
@@ -64,12 +63,12 @@ class ImmutableContextVariables implements ReadOnlyContextVariables {
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
     @CheckReturnValue
-    public ImmutableContextVariables update(@NonNull String content) {
+    public ContextVariables update(@NonNull String content) {
         return setVariable(MAIN_KEY, content);
     }
 
     @CheckReturnValue
-    public ImmutableContextVariables update(@NonNull ImmutableContextVariables newData) {
+    public DefaultContextVariables update(@NonNull DefaultContextVariables newData) {
         return update(newData, true);
     }
 
@@ -83,8 +82,7 @@ class ImmutableContextVariables implements ReadOnlyContextVariables {
     /// <returns>The current instance</returns>
 
     @CheckReturnValue
-    public ImmutableContextVariables update(
-            @NonNull ReadOnlyContextVariables newData, boolean merge) {
+    public DefaultContextVariables update(@NonNull ContextVariables newData, boolean merge) {
         /*
         // If requested, discard old data and keep only the new one.
         if (!merge) { this._variables.Clear(); }
@@ -95,25 +93,33 @@ class ImmutableContextVariables implements ReadOnlyContextVariables {
         }
 
          */
-        HashMap<String, String> clone = new HashMap<>(this.variables);
-        if (!merge) {
-            clone.clear();
-        }
-        clone.putAll(newData.getVariables());
-
-        return new ImmutableContextVariables(clone);
+        this.variables.putAll(newData.asMap());
+        return this;
     }
 
     @CheckReturnValue
     @Override
-    public ImmutableContextVariables copy() {
-        return new ImmutableContextVariables(variables);
+    public DefaultContextVariables copy() {
+        return new DefaultContextVariables(variables);
     }
 
     @Override
     @Nullable
     public String get(String key) {
         return variables.get(key);
+    }
+
+    public static class Builder implements ContextVariables.Builder {
+
+        @Override
+        public ContextVariables build() {
+            return new DefaultContextVariables("");
+        }
+
+        @Override
+        public ContextVariables build(String content) {
+            return new DefaultContextVariables(content);
+        }
     }
     /*
 

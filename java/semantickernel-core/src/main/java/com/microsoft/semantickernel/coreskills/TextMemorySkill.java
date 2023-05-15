@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.coreskills; // Copyright (c) Microsoft. All rights reserved.
 
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.ReadOnlySKContext;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 
@@ -56,7 +56,7 @@ public class TextMemorySkill {
 
     @DefineSKFunction(description = "Key-based lookup for a specific memory", name = "Retrieve")
     public Mono<String> retrieveAsync(
-            ReadOnlySKContext context,
+            SKContext context,
             @SKFunctionParameters(
                             name = collectionParam,
                             description =
@@ -98,7 +98,7 @@ public class TextMemorySkill {
     }
 
     @DefineSKFunction(description = "Save information to semantic memory", name = "Save")
-    public Mono<ReadOnlySKContext> saveAsync(
+    public Mono<SKContext> saveAsync(
             @SKFunctionParameters(
                             name = KeyParam,
                             description = "The information to save",
@@ -118,7 +118,7 @@ public class TextMemorySkill {
                             defaultValue = "",
                             type = String.class)
                     String key,
-            ReadOnlySKContext context) {
+            SKContext context) {
 
         return Mono.empty();
         /*

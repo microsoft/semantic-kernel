@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration; // Copyright (c) Microsoft. All rights reserved.
 
+import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -50,6 +51,11 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
     @Override
     public Class<Void> getType() {
         return Void.class;
+    }
+
+    @Override
+    public void registerOnKernel(Kernel kernel) {
+        // No actions needed
     }
 
     /*
@@ -264,7 +270,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
 
     @Override
     public SemanticSKContext buildContext(
-            ReadOnlyContextVariables variables,
+            ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable Supplier<ReadOnlySkillCollection> skills) {
         return new DefaultSemanticSKContext(variables, memory, skills);
@@ -540,7 +546,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
 
             return mono.map(
                     it -> {
-                        if (it instanceof ReadOnlySKContext) {
+                        if (it instanceof SKContext) {
                             return it;
                         } else {
                             return context.update((String) it);

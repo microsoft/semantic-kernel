@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.planner.sequentialplanner; // Copyright (c)
 // rights reserved.
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.planner.SequentialPlannerRequestSettings;
 import com.microsoft.semantickernel.planner.SequentialPlannerSKContext;
@@ -61,7 +61,7 @@ public class SequentialPlanner {
         }
 
         this.functionFlowFunction =
-                SKBuilders.plannerFunctions()
+                FunctionBuilders.getPlannerBuilder(kernel)
                         .createFunction(
                                 promptTemplate,
                                 null,
@@ -74,8 +74,8 @@ public class SequentialPlanner {
                                 0.0,
                                 0.0,
                                 0.0,
-                                new ArrayList<>())
-                        .registerOnKernel(kernel);
+                                new ArrayList<>());
+        ;
 
         this.context = functionFlowFunction.buildContext();
     }

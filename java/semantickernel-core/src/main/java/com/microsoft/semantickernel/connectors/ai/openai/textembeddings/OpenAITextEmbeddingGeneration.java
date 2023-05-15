@@ -26,13 +26,13 @@ public class OpenAITextEmbeddingGeneration extends ClientBase
     }
 
     protected Mono<List<Embedding<Double>>> internalGenerateTextEmbeddingsAsync(List<String> data) {
-      EmbeddingsOptions options = new EmbeddingsOptions(data).setModel(getModelId());
+        EmbeddingsOptions options = new EmbeddingsOptions(data).setModel(getModelId());
 
-      return getClient()
-          .getEmbeddings(getModelId(), options)
-          .flatMapIterable(Embeddings::getData)
-          .mapNotNull(EmbeddingItem::getEmbedding)
-          .mapNotNull(Embedding::new)
-          .collectList();
+        return getClient()
+                .getEmbeddings(getModelId(), options)
+                .flatMapIterable(Embeddings::getData)
+                .mapNotNull(EmbeddingItem::getEmbedding)
+                .mapNotNull(Embedding::new)
+                .collectList();
     }
 }

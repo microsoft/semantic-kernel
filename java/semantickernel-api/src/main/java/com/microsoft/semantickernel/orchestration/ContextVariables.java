@@ -3,6 +3,8 @@ package com.microsoft.semantickernel.orchestration;
 
 // Copyright (c) Microsoft. All rights reserved.
 
+import reactor.util.annotation.NonNull;
+
 import java.util.Map;
 
 import javax.annotation.CheckReturnValue;
@@ -13,24 +15,26 @@ import javax.annotation.Nullable;
  * It is accessed by functions in the pipeline. This is read only and write operations will return
  * an updated version of the data.
  */
-public interface ReadOnlyContextVariables {
+public interface ContextVariables {
 
     String MAIN_KEY = "input";
 
-    Map<String, String> getVariables();
+    Map<String, String> asMap();
 
     @CheckReturnValue
-    ReadOnlyContextVariables copy();
+    ContextVariables copy();
 
-    class Builder {
-        /**
-         * Builds an empty instance
-         *
-         * @return an empty
-         */
-        public ReadOnlyContextVariables build() {
-            return new ImmutableContextVariables("");
-        }
+    /**
+     * Set the value
+     *
+     * @param key variable name
+     * @param content value to set
+     * @return clone of the variables with the value set
+     */
+    ContextVariables setVariable(@NonNull String key, @NonNull String content);
+
+    interface Builder {
+        ContextVariables build();
 
         /**
          * Builds an instance with the given content in the default main key
@@ -38,9 +42,7 @@ public interface ReadOnlyContextVariables {
          * @param content Entry to place in the "input" slot
          * @return an instantiation of ContextVariables
          */
-        public ReadOnlyContextVariables build(String content) {
-            return new ImmutableContextVariables(content);
-        }
+        ContextVariables build(String content);
     }
 
     /**

@@ -11,11 +11,11 @@ import javax.annotation.Nullable;
 public interface SequentialPlannerSKFunction extends SKFunction<Void, SequentialPlannerSKContext> {
 
     static SequentialPlannerSKFunction.Builder builder() {
-        return BuildersSingleton.INST.getFunctionBuilders().plannerBuilders();
+        return BuildersSingleton.INST.getFunctionBuilders().plannerBuilders(null);
     }
 
     interface Builder {
-        SequentialPlannerFunctionDefinition createFunction(
+        SequentialPlannerSKFunction createFunction(
                 String promptTemplate,
                 @Nullable String functionName,
                 @Nullable String skillName,

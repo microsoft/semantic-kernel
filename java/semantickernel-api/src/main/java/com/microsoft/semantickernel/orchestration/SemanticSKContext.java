@@ -7,7 +7,7 @@ package com.microsoft.semantickernel.orchestration;
  *
  * <p>This is read only, write operations will return a modified result
  */
-public interface SemanticSKContext extends ReadOnlySKContext<SemanticSKContext> {
+public interface SemanticSKContext extends SKContext<SemanticSKContext> {
     /*
        static <T> NOPSKContext<T> build(
                ReadOnlyContextVariables variables,

@@ -39,7 +39,7 @@ public class KernelTest extends AbstractKernelTest {
 
     private static void executeChatCompletion(Kernel kernel) {
         CompletionSKFunction summarize =
-                SKBuilders.completionFunctions()
+                kernel.createSemanticFunction()
                         .createFunction(
                                 "{{$input}}\n" + "\n" + "One line TLDR with the fewest words.",
                                 null,
@@ -50,8 +50,7 @@ public class KernelTest extends AbstractKernelTest {
                                 0,
                                 0,
                                 0,
-                                new ArrayList<>())
-                        .registerOnKernel(kernel);
+                                new ArrayList<>());
 
         String text1 =
                 "1st Law of Thermodynamics - Energy cannot be created or destroyed.\n"

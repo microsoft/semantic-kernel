@@ -8,14 +8,14 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-public class DefaultSemanticSKContext extends ImmutableSKContext<SemanticSKContext>
+public class DefaultSemanticSKContext extends AbstractSKContext<SemanticSKContext>
         implements SemanticSKContext {
-    public DefaultSemanticSKContext(ReadOnlyContextVariables variables) {
+    public DefaultSemanticSKContext(ContextVariables variables) {
         super(variables);
     }
 
     public DefaultSemanticSKContext(
-            ReadOnlyContextVariables variables,
+            ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable Supplier<ReadOnlySkillCollection> skills) {
         super(variables, memory, skills);
@@ -23,7 +23,7 @@ public class DefaultSemanticSKContext extends ImmutableSKContext<SemanticSKConte
 
     @Override
     public SemanticSKContext build(
-            ReadOnlyContextVariables variables,
+            ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable Supplier<ReadOnlySkillCollection> skills) {
         return new DefaultSemanticSKContext(variables, memory, skills);

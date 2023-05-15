@@ -27,7 +27,7 @@ public class InlineFunctionTest extends AbstractKernelTest {
         String prompt = "{{$input}}\n" + "Summarize the content above.";
 
         CompletionSKFunction summarize =
-                SKBuilders.completionFunctions()
+                kernel.createSemanticFunction()
                         .createFunction(
                                 prompt,
                                 "summarize",
@@ -38,8 +38,7 @@ public class InlineFunctionTest extends AbstractKernelTest {
                                 0.5,
                                 0,
                                 0,
-                                new ArrayList<>())
-                        .registerOnKernel(kernel);
+                                new ArrayList<>());
 
         String text =
                 "Demo (ancient Greek poet)\n"

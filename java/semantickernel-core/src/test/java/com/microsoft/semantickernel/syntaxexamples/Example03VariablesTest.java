@@ -3,9 +3,11 @@ package com.microsoft.semantickernel.syntaxexamples;
 
 import com.microsoft.semantickernel.DefaultKernelTest;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
-import com.microsoft.semantickernel.syntaxexamples.skills.TextSkill;
+import com.microsoft.semantickernel.syntaxexamples.skills.StaticTextSkill;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -14,7 +16,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 
-public class Example02PipelineTest {
+public class Example03VariablesTest {
     @Test
     public void run() {
         com.azure.ai.openai.OpenAIAsyncClient client =
@@ -22,15 +24,18 @@ public class Example02PipelineTest {
         Kernel kernel = DefaultKernelTest.buildKernel("model", client);
 
         // Load native skill
-        ReadOnlyFunctionCollection text = kernel.importSkill(new TextSkill(), null);
+        ReadOnlyFunctionCollection functionCollection =
+                kernel.importSkill(new StaticTextSkill(), "text");
+
+        ContextVariables variables =
+                SKBuilders.variables().build("Today is: ").setVariable("day", "Monday");
 
         Mono<SKContext<?>> result =
                 kernel.runAsync(
-                        "    i n f i n i t e     s p a c e     ",
-                        text.getFunction("LStrip"),
-                        text.getFunction("RStrip"),
-                        text.getFunction("Uppercase"));
+                        variables,
+                        functionCollection.getFunction("AppendDay"),
+                        functionCollection.getFunction("Uppercase"));
 
-        Assertions.assertEquals("I N F I N I T E     S P A C E", result.block().getResult());
+        Assertions.assertEquals("TODAY IS: MONDAY", result.block().getResult());
     }
 }

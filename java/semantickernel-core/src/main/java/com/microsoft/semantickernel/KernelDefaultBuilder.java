@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.skilldefinition.DefaultReadOnlySkillCollection;
+import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
@@ -20,7 +20,7 @@ public class KernelDefaultBuilder implements Kernel.InternalBuilder {
         }
 
         if (skillCollection == null) {
-            skillCollection = new DefaultReadOnlySkillCollection();
+            skillCollection = new DefaultSkillCollection();
         }
 
         if (kernelConfig == null) {

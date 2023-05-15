@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.templateengine.blocks; // Copyright (c) Microsoft. All rights
 // reserved.
 
-import com.microsoft.semantickernel.orchestration.ReadOnlyContextVariables;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
 
 import javax.annotation.Nullable;
 
@@ -18,7 +18,7 @@ public class FunctionIdBlock extends Block implements TextRendering {
 
     @Override
     @Nullable
-    public String render(ReadOnlyContextVariables variables) {
+    public String render(ContextVariables variables) {
         return null;
     }
     /*

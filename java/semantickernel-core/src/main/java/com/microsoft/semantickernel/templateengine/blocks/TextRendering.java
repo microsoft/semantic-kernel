@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.templateengine.blocks; // Copyright (c) Microsoft. All rights
 // reserved.
 
-import com.microsoft.semantickernel.orchestration.ReadOnlyContextVariables;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
 
 import javax.annotation.Nullable;
 
@@ -16,5 +16,5 @@ public interface TextRendering {
     /// <param name="variables">Optional variables used to render the block</param>
     /// <returns>Rendered content</returns>
     @Nullable
-    String render(ReadOnlyContextVariables variables);
+    String render(ContextVariables variables);
 }

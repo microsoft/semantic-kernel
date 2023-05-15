@@ -4,11 +4,9 @@ package com.microsoft.semantickernel;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
 import com.microsoft.semantickernel.orchestration.planner.DefaultSequentialPlannerSKFunction;
-import com.microsoft.semantickernel.planner.SequentialPlannerFunctionDefinition;
 import com.microsoft.semantickernel.planner.SequentialPlannerSKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionFunctionDefinition;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import java.util.List;
@@ -19,45 +17,64 @@ public class SkFunctionBuilders implements FunctionBuilders {
     public SkFunctionBuilders() {}
 
     public static final CompletionSKFunction.Builder COMPLETION_BUILDERS =
-            new CompletionSKFunction.Builder() {
-                @Override
-                public CompletionFunctionDefinition createFunction(
-                        String promptTemplate,
-                        PromptTemplateConfig config,
-                        String functionName,
-                        @Nullable String skillName) {
-                    return DefaultCompletionSKFunction.createFunction(
-                            promptTemplate, config, functionName, skillName);
-                }
+            new InternalCompletionBuilder(null);
 
-                @Override
-                public CompletionFunctionDefinition createFunction(
-                        String functionName, SemanticFunctionConfig functionConfig) {
-                    return DefaultCompletionSKFunction.createFunction(functionName, functionConfig);
-                }
+    private static class InternalCompletionBuilder implements CompletionSKFunction.Builder {
+        private final @Nullable Kernel kernel;
 
-                @Override
-                public CompletionFunctionDefinition createFunction(
-                        @Nullable String skillNameFinal,
-                        String functionName,
-                        SemanticFunctionConfig functionConfig) {
-                    return DefaultCompletionSKFunction.createFunction(
-                            skillNameFinal, functionName, functionConfig);
-                }
+        private InternalCompletionBuilder(@Nullable Kernel kernel) {
+            this.kernel = kernel;
+        }
 
-                @Override
-                public CompletionFunctionDefinition createFunction(
-                        String promptTemplate,
-                        @Nullable String functionName,
-                        @Nullable String skillName,
-                        @Nullable String description,
-                        int maxTokens,
-                        double temperature,
-                        double topP,
-                        double presencePenalty,
-                        double frequencyPenalty,
-                        @Nullable List<String> stopSequences) {
-                    return DefaultCompletionSKFunction.createFunction(
+        private DefaultCompletionSKFunction register(DefaultCompletionSKFunction function) {
+            if (kernel != null) {
+                kernel.registerSemanticFunction(function);
+            }
+            return function;
+        }
+
+        @Override
+        public CompletionSKFunction createFunction(
+                String promptTemplate,
+                PromptTemplateConfig config,
+                String functionName,
+                @Nullable String skillName) {
+            return register(
+                    DefaultCompletionSKFunction.createFunction(
+                            promptTemplate, config, functionName, skillName));
+        }
+
+        @Override
+        public CompletionSKFunction createFunction(
+                String functionName, SemanticFunctionConfig functionConfig) {
+            return register(
+                    DefaultCompletionSKFunction.createFunction(functionName, functionConfig));
+        }
+
+        @Override
+        public CompletionSKFunction createFunction(
+                @Nullable String skillNameFinal,
+                String functionName,
+                SemanticFunctionConfig functionConfig) {
+            return register(
+                    DefaultCompletionSKFunction.createFunction(
+                            skillNameFinal, functionName, functionConfig));
+        }
+
+        @Override
+        public CompletionSKFunction createFunction(
+                String promptTemplate,
+                @Nullable String functionName,
+                @Nullable String skillName,
+                @Nullable String description,
+                int maxTokens,
+                double temperature,
+                double topP,
+                double presencePenalty,
+                double frequencyPenalty,
+                @Nullable List<String> stopSequences) {
+            return register(
+                    DefaultCompletionSKFunction.createFunction(
                             promptTemplate,
                             functionName,
                             skillName,
@@ -67,25 +84,39 @@ public class SkFunctionBuilders implements FunctionBuilders {
                             topP,
                             presencePenalty,
                             frequencyPenalty,
-                            stopSequences);
-                }
-            };
+                            stopSequences));
+        }
+    }
 
-    public static final SequentialPlannerSKFunction.Builder PANNER_BUILDERS =
-            new SequentialPlannerSKFunction.Builder() {
-                @Override
-                public SequentialPlannerFunctionDefinition createFunction(
-                        String promptTemplate,
-                        @Nullable String functionName,
-                        @Nullable String skillName,
-                        @Nullable String description,
-                        int maxTokens,
-                        double temperature,
-                        double topP,
-                        double presencePenalty,
-                        double frequencyPenalty,
-                        @Nullable List<String> stopSequences) {
-                    return DefaultSequentialPlannerSKFunction.createFunction(
+    private static class InternalSequentialPlannerSKFunctionBuilder
+            implements SequentialPlannerSKFunction.Builder {
+        private final @Nullable Kernel kernel;
+
+        private InternalSequentialPlannerSKFunctionBuilder(@Nullable Kernel kernel) {
+            this.kernel = kernel;
+        }
+
+        private SequentialPlannerSKFunction register(SequentialPlannerSKFunction function) {
+            if (kernel != null) {
+                kernel.registerSemanticFunction(function);
+            }
+            return function;
+        }
+
+        @Override
+        public SequentialPlannerSKFunction createFunction(
+                String promptTemplate,
+                @Nullable String functionName,
+                @Nullable String skillName,
+                @Nullable String description,
+                int maxTokens,
+                double temperature,
+                double topP,
+                double presencePenalty,
+                double frequencyPenalty,
+                @Nullable List<String> stopSequences) {
+            return register(
+                    DefaultSequentialPlannerSKFunction.createFunction(
                             promptTemplate,
                             functionName,
                             skillName,
@@ -95,17 +126,29 @@ public class SkFunctionBuilders implements FunctionBuilders {
                             topP,
                             presencePenalty,
                             frequencyPenalty,
-                            stopSequences);
-                }
-            };
+                            stopSequences));
+        }
+    }
+    ;
+
+    public static final SequentialPlannerSKFunction.Builder PLANNER_BUILDERS =
+            new InternalSequentialPlannerSKFunctionBuilder(null);
 
     @Override
-    public CompletionSKFunction.Builder completionBuilders() {
-        return COMPLETION_BUILDERS;
+    public CompletionSKFunction.Builder completionBuilders(@Nullable Kernel kernel) {
+        if (kernel == null) {
+            return COMPLETION_BUILDERS;
+        } else {
+            return new InternalCompletionBuilder(kernel);
+        }
     }
 
     @Override
-    public SequentialPlannerSKFunction.Builder plannerBuilders() {
-        return PANNER_BUILDERS;
+    public SequentialPlannerSKFunction.Builder plannerBuilders(@Nullable Kernel kernel) {
+        if (kernel == null) {
+            return PLANNER_BUILDERS;
+        } else {
+            return new InternalSequentialPlannerSKFunctionBuilder(kernel);
+        }
     }
 }
