@@ -3,15 +3,11 @@
 import glob
 import importlib
 import inspect
-from logging import Logger
 import os
+from logging import Logger
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import uuid4
 
-from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
-from semantic_kernel.semantic_functions.prompt_template_config import (
-    PromptTemplateConfig,
-)
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -29,6 +25,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
+from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -38,6 +35,10 @@ from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
 from semantic_kernel.reliability.retry_mechanism import RetryMechanism
+from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
+from semantic_kernel.semantic_functions.prompt_template_config import (
+    PromptTemplateConfig,
+)
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
@@ -53,12 +54,10 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.validation import validate_function_name, validate_skill_name
 
-from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
-
 T = TypeVar("T")
 
 
-class Kernel():
+class Kernel:
     _log: Logger
     _skill_collection: SkillCollectionBase
     _prompt_template_engine: PromptTemplatingEngine
@@ -215,8 +214,8 @@ class Kernel():
         if self.skills.has_native_function(skill_name, function_name):
             return self.skills.get_native_function(skill_name, function_name)
 
-        return self.skills.get_semantic_function(skill_name, function_name)    
-    
+        return self.skills.get_semantic_function(skill_name, function_name)
+
     def use_memory(
         self,
         storage: MemoryStoreBase,
@@ -227,9 +226,7 @@ class Kernel():
             if not service_id:
                 raise ValueError("The embedding service id cannot be `None` or empty")
 
-            embeddings_service = self.get_ai_service(
-                EmbeddingGeneratorBase, service_id
-            )
+            embeddings_service = self.get_ai_service(EmbeddingGeneratorBase, service_id)
             if not embeddings_service:
                 raise ValueError(f"AI configuration is missing for: {service_id}")
 
@@ -597,7 +594,7 @@ class Kernel():
             function.set_ai_service(lambda: service(self))
 
         return function
-    
+
     def import_native_skill_from_directory(
         self, parent_directory: str, skill_directory_name: str
     ) -> Dict[str, SKFunctionBase]:
@@ -684,7 +681,7 @@ class Kernel():
             )
 
         return skill
-    
+
     def create_semantic_function(
         self,
         prompt_template: str,
@@ -725,9 +722,7 @@ class Kernel():
         if skill_name is not None:
             validate_skill_name(skill_name)
 
-        template = PromptTemplate(
-            prompt_template, self.prompt_template_engine, config
-        )
+        template = PromptTemplate(prompt_template, self.prompt_template_engine, config)
         function_config = SemanticFunctionConfig(config, template)
 
         return self.register_semantic_function(
