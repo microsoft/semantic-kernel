@@ -11,7 +11,7 @@ using SemanticKernel.Service.Model;
 namespace SemanticKernel.Service.Controllers;
 
 [ApiController]
-public class SemanticKernelController : ControllerBase, IDisposable
+public class SemanticKernelController : ControllerBase
 {
     private readonly ILogger<SemanticKernelController> _logger;
     private readonly List<IDisposable> _disposables;
@@ -84,27 +84,5 @@ public class SemanticKernelController : ControllerBase, IDisposable
         }
 
         return this.Ok(new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) });
-    }
-
-    /// <summary>
-    /// Dispose of the object.
-    /// </summary>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            foreach (IDisposable disposable in this._disposables)
-            {
-                disposable.Dispose();
-            }
-        }
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }

@@ -28,8 +28,8 @@ public class ChatController : ControllerBase, IDisposable
 {
     private readonly ILogger<ChatController> _logger;
     private readonly List<IDisposable> _disposables;
-    private readonly string _chatSkillName = "ChatSkill";
-    private readonly string _chatFunctionName = "Chat";
+    private const string _chatSkillName = "ChatSkill";
+    private const string _chatFunctionName = "Chat";
 
     public ChatController(ILogger<ChatController> logger)
     {
@@ -52,7 +52,7 @@ public class ChatController : ControllerBase, IDisposable
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Chat(
+    public async Task<IActionResult> ChatAsync(
         [FromServices] IKernel kernel,
         [FromServices] CopilotChatPlanner? planner,
         [FromServices] IOptions<PlannerOptions> plannerOptions,
