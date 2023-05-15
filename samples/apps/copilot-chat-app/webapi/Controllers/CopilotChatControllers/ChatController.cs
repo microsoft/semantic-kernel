@@ -28,8 +28,8 @@ public class ChatController : ControllerBase, IDisposable
 {
     private readonly ILogger<ChatController> _logger;
     private readonly List<IDisposable> _disposables;
-    private const string _chatSkillName = "ChatSkill";
-    private const string _chatFunctionName = "Chat";
+    private const string ChatSkillName = "ChatSkill";
+    private const string ChatFunctionName = "Chat";
 
     public ChatController(ILogger<ChatController> logger)
     {
@@ -78,12 +78,12 @@ public class ChatController : ControllerBase, IDisposable
         ISKFunction? function = null;
         try
         {
-            function = kernel.Skills.GetFunction(_chatSkillName, _chatFunctionName);
+            function = kernel.Skills.GetFunction(ChatSkillName, ChatFunctionName);
         }
         catch (KernelException)
         {
-            this._logger.LogDebug("Failed to find {0}/{1} on server", _chatSkillName, _chatFunctionName);
-            return this.NotFound($"Failed to find {_chatSkillName}/{_chatFunctionName} on server");
+            this._logger.LogDebug("Failed to find {0}/{1} on server", ChatSkillName, ChatFunctionName);
+            return this.NotFound($"Failed to find {ChatSkillName}/{ChatFunctionName} on server");
         }
 
         // Run the function.
