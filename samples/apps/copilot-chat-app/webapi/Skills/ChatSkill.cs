@@ -698,7 +698,7 @@ public class ChatSkill
             .ToListAsync(context.CancellationToken)
             .ConfigureAwait(false);
 
-        if (!memories.Any())
+        if (memories.Count == 0)
         {
             await context.Memory.SaveInformationAsync(
                 collection: memoryCollectionName,
