@@ -2,7 +2,7 @@
 Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-Bicep template for deploying Semantic Kernel to Azure as a web app service with an existing Azure OpenAI account.
+Bicep template for deploying Semantic Kernel to Azure as a web app service with a new Azure OpenAI account.
 */
 
 @description('Name for the deployment')
@@ -23,13 +23,6 @@ param embeddingModel string = 'text-embedding-ada-002'
 
 @description('Completion model the task planner should use')
 param plannerModel string = 'gpt-35-turbo'
-
-@description('Azure OpenAI endpoint to use')
-param endpoint string
-
-@secure()
-@description('Azure OpenAI API key')
-param apiKey string
 
 @description('Semantic Kernel server API key - Provide empty string to disable API key auth')
 param skServerApiKey string = newGuid()
@@ -54,13 +47,11 @@ module openAI 'main.bicep' = {
     completionModel: completionModel
     embeddingModel: embeddingModel
     plannerModel: plannerModel
-    endpoint: endpoint
-    apiKey: apiKey
     skServerApiKey: skServerApiKey
     deployCosmosDB: deployCosmosDB
     deployQdrant: deployQdrant
     deploySpeechServices: deploySpeechServices
-    deployNewAzureOpenAI: false
+    deployNewAzureOpenAI: true
   }
 }
 
