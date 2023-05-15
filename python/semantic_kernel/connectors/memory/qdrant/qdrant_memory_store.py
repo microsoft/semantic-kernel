@@ -8,14 +8,13 @@ import qdrant_client
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.models import Distance, VectorParams
-from qdrant_client.http.models import CollectionStatus
-from qdrant_client.http.models import PointStruct
-from qdrant_client.http.models import UpdateStatus
+from qdrant_client.http.models import CollectionStatus, UpdateStatus, PointStruct
+from qdrant_client.http.models import ScoredPoint
 
 from logging import Logger
 from typing import List, Optional, Tuple
 
-from numpy import array, linalg, ndarray
+from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -57,9 +56,8 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-
         self._qdrantclient.recreate_collection(
-            collection_name="{collection_name}",
+            collection_name=collection_name,
             vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
         )
 
@@ -374,7 +372,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             vector_result = MemoryRecord(
                 is_reference=False,
                 external_source_name="qdrant",
-                key=str(qdrant_match.id),
+                key=None,
                 id=str(qdrant_match.id),
                 embedding=qdrant_match.vector,
                 payload=qdrant_match.payload,
@@ -383,42 +381,4 @@ class QdrantMemoryStore(MemoryStoreBase):
             nearest_results.append(tuple(vector_result, qdrant_match.score))
 
         return nearest_results
-
-    def compute_similarity_scores(
-        self, embedding: ndarray, embedding_array: ndarray
-    ) -> ndarray:
-        """Computes the cosine similarity scores between a query embedding and a group of embeddings.
-
-        Arguments:
-            embedding {ndarray} -- The query embedding.
-            embedding_array {ndarray} -- The group of embeddings.
-
-        Returns:
-            ndarray -- The cosine similarity scores.
-        """
-        query_norm = linalg.norm(embedding)
-        collection_norm = linalg.norm(embedding_array, axis=1)
-
-        # Compute indices for which the similarity scores can be computed
-        valid_indices = (query_norm != 0) & (collection_norm != 0)
-
-        # Initialize the similarity scores with -1 to distinguish the cases
-        # between zero similarity from orthogonal vectors and invalid similarity
-        similarity_scores = array([-1.0] * embedding_array.shape[0])
-
-        if valid_indices.any():
-            similarity_scores[valid_indices] = embedding.dot(
-                embedding_array[valid_indices].T
-            ) / (query_norm * collection_norm[valid_indices])
-            if not valid_indices.all():
-                self._logger.warning(
-                    "Some vectors in the embedding collection are zero vectors."
-                    "Ignoring cosine similarity score computation for those vectors."
-                )
-        else:
-            raise ValueError(
-                f"Invalid vectors, cannot compute cosine similarity scores"
-                f"for zero vectors"
-                f"{embedding_array} or {embedding}"
-            )
-        return similarity_scores
+    
