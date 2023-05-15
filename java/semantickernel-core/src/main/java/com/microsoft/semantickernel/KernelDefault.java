@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
@@ -8,11 +9,12 @@ import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.*;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
-import com.microsoft.semantickernel.skilldefinition.DefaultReadOnlySkillCollection;
+import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import reactor.core.publisher.Mono;
@@ -27,7 +29,7 @@ import javax.annotation.Nullable;
 public class KernelDefault implements Kernel {
 
     private final KernelConfig kernelConfig;
-    private ReadOnlySkillCollection skillCollection;
+    private DefaultSkillCollection defaultSkillCollection;
     private final PromptTemplateEngine promptTemplateEngine;
     @Nullable private SemanticTextMemory memory; // TODO: make this final
 
@@ -41,15 +43,10 @@ public class KernelDefault implements Kernel {
 
         this.kernelConfig = kernelConfig;
         this.promptTemplateEngine = promptTemplateEngine;
-        this.skillCollection = skillCollection;
+        this.defaultSkillCollection = new DefaultSkillCollection(skillCollection);
 
-        if (kernelConfig.getSkillDefinitions() != null) {
-            kernelConfig
-                    .getSkillDefinitions()
-                    .forEach(
-                            semanticFunctionBuilder -> {
-                                semanticFunctionBuilder.registerOnKernel(this);
-                            });
+        if (kernelConfig.getSkills() != null) {
+            kernelConfig.getSkills().forEach(this::registerSemanticFunction);
         }
     }
 
@@ -74,36 +71,22 @@ public class KernelDefault implements Kernel {
     }
 
     @Override
-    public <
-                    RequestConfiguration,
-                    ContextType extends ReadOnlySKContext<ContextType>,
-                    Result extends SKFunction<RequestConfiguration, ContextType>>
-            Result registerSemanticFunction(
-                    SemanticFunctionDefinition<RequestConfiguration, ContextType, Result>
-                            semanticFunctionDefinition) {
-        Result func = (Result) semanticFunctionDefinition.build(this);
-        registerSemanticFunction(func);
-        return func;
-    }
-    /*
-       @Override
-       public <RequestConfiguration, ContextType extends ReadOnlySKContext<ContextType>> SemanticSKFunction<RequestConfiguration, ContextType> registerSemanticFunction(
-               SemanticFunctionBuilder<RequestConfiguration, ContextType> semanticFunctionBuilder) {
-           SemanticSKFunction<RequestConfiguration, ContextType> func = semanticFunctionBuilder.build(this);
-           registerSemanticFunction(func);
-           return func;
-       }
-
-    */
-
-    @Override
     public KernelConfig getConfig() {
         return kernelConfig;
     }
 
-    private <RequestConfiguration, ContextType extends ReadOnlySKContext<ContextType>>
-            void registerSemanticFunction(SKFunction<RequestConfiguration, ContextType> func) {
-        skillCollection = skillCollection.addSemanticFunction(func);
+    @Override
+    public <
+                    RequestConfiguration,
+                    ContextType extends SKContext<ContextType>,
+                    FunctionType extends SKFunction<RequestConfiguration, ContextType>>
+            FunctionType registerSemanticFunction(FunctionType func) {
+        if (!(func instanceof RegistrableSkFunction)) {
+            throw new RuntimeException("This function does not implement RegistrableSkFunction");
+        }
+        ((RegistrableSkFunction) func).registerOnKernel(this);
+        defaultSkillCollection = defaultSkillCollection.addSemanticFunction(func);
+        return func;
     }
 
     /*
@@ -160,34 +143,28 @@ public class KernelDefault implements Kernel {
 
         // skill = new Dictionary<string, ISKFunction>(StringComparer.OrdinalIgnoreCase);
         ReadOnlyFunctionCollection functions =
-                SkillImporter.importSkill(skillInstance, skillName, () -> skillCollection);
+                SkillImporter.importSkill(skillInstance, skillName, () -> defaultSkillCollection);
 
-        ReadOnlySkillCollection newSkills =
+        DefaultSkillCollection newSkills =
                 functions.getAll().stream()
                         .reduce(
-                                new DefaultReadOnlySkillCollection(),
-                                ReadOnlySkillCollection::addNativeFunction,
-                                ReadOnlySkillCollection::merge);
+                                new DefaultSkillCollection(),
+                                DefaultSkillCollection::addNativeFunction,
+                                DefaultSkillCollection::merge);
 
-        this.skillCollection = this.skillCollection.merge(newSkills);
+        this.defaultSkillCollection = this.defaultSkillCollection.merge(newSkills);
 
-        /*
-           foreach (ISKFunction f in functions)
-           {
-             f.SetDefaultSkillCollection(this.Skills);
-             this._skillCollection.AddNativeFunction(f);
-             skill.Add(f.Name, f);
-           }
-
-           return skill;
-
-        */
         return functions;
     }
 
     @Override
     public ReadOnlySkillCollection getSkillCollection() {
-        return skillCollection;
+        return defaultSkillCollection;
+    }
+
+    @Override
+    public CompletionSKFunction.Builder createSemanticFunction() {
+        return FunctionBuilders.getCompletionBuilder(this);
     }
     /*
       private static FunctionCollection importSkill(Object skillInstance, String skillName) {
@@ -219,7 +196,7 @@ public class KernelDefault implements Kernel {
 
     @Override
     public ReadOnlyFunctionCollection getSkill(String funSkill) throws FunctionNotFound {
-        ReadOnlyFunctionCollection functions = this.skillCollection.getFunctions(funSkill);
+        ReadOnlyFunctionCollection functions = this.defaultSkillCollection.getFunctions(funSkill);
         if (functions == null) {
             throw new FunctionNotFound(funSkill);
         }
@@ -274,21 +251,21 @@ public class KernelDefault implements Kernel {
      */
 
     @Override
-    public Mono<ReadOnlySKContext<?>> runAsync(SKFunction... pipeline) {
+    public Mono<SKContext<?>> runAsync(SKFunction... pipeline) {
         return runAsync(SKBuilders.variables().build(), pipeline);
     }
 
     @Override
-    public Mono<ReadOnlySKContext<?>> runAsync(String input, SKFunction... pipeline) {
+    public Mono<SKContext<?>> runAsync(String input, SKFunction... pipeline) {
         return runAsync(SKBuilders.variables().build(input), pipeline);
     }
 
-    public Mono<ReadOnlySKContext<?>> runAsync(
-            ReadOnlyContextVariables variables, SKFunction... pipeline) {
+    public Mono<SKContext<?>> runAsync(ContextVariables variables, SKFunction... pipeline) {
         DefaultSemanticSKContext context =
-                new DefaultSemanticSKContext(variables, this.memory, () -> this.skillCollection);
+                new DefaultSemanticSKContext(
+                        variables, this.memory, () -> this.defaultSkillCollection);
 
-        Mono<ReadOnlySKContext<?>> pipelineBuilder = Mono.just(context);
+        Mono<SKContext<?>> pipelineBuilder = Mono.just(context);
 
         for (SKFunction f : Arrays.asList(pipeline)) {
             pipelineBuilder =

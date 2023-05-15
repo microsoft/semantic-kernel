@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.templateengine; // Copyright (c) Microsoft. All rights
 // reserved.
 
-import com.microsoft.semantickernel.orchestration.ReadOnlySKContext;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.templateengine.blocks.Block;
 import com.microsoft.semantickernel.templateengine.blocks.CodeRendering;
 import com.microsoft.semantickernel.templateengine.blocks.TextRendering;
@@ -57,7 +57,7 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
 
     /// <inheritdoc/>
     @Override
-    public Mono<String> renderAsync(String templateText, ReadOnlySKContext context) {
+    public Mono<String> renderAsync(String templateText, SKContext context) {
         // TODO
         // this._log.LogTrace("Rendering string template: {0}", templateText);
         List<Block> blocks = this.extractBlocks(templateText);
@@ -65,7 +65,7 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
     }
 
     /// <inheritdoc/>
-    public Mono<String> renderAsync(List<Block> blocks, ReadOnlySKContext context) {
+    public Mono<String> renderAsync(List<Block> blocks, SKContext context) {
         return Flux.fromIterable(blocks)
                 .map(
                         block -> {

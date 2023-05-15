@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.templateengine.blocks; // Copyright (c) Microsoft. All rights
 // reserved.
 
-import com.microsoft.semantickernel.orchestration.ReadOnlySKContext;
+import com.microsoft.semantickernel.orchestration.SKContext;
 
 import java.util.concurrent.FutureTask;
 
@@ -18,5 +18,5 @@ public interface CodeRendering {
     /// <param name="context">SK execution context</param>
     /// <returns>Rendered content</returns>
     @Nullable
-    FutureTask<String> renderCodeAsync(ReadOnlySKContext context);
+    FutureTask<String> renderCodeAsync(SKContext context);
 }

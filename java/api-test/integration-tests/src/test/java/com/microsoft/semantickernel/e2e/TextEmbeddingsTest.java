@@ -1,22 +1,20 @@
-// Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel;
+package com.microsoft.semantickernel.e2e;// Copyright (c) Microsoft. All rights reserved.
 
 import com.microsoft.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.TextMemorySkill;
-import com.microsoft.semantickernel.e2e.AbstractKernelTest;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;

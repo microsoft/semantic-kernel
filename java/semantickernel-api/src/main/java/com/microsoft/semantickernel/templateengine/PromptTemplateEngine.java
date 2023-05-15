@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.templateengine; // Copyright (c) Microsoft. All rights
 // reserved.
 
-import com.microsoft.semantickernel.orchestration.ReadOnlySKContext;
+import com.microsoft.semantickernel.orchestration.SKContext;
 
 import reactor.core.publisher.Mono;
 
@@ -29,7 +29,7 @@ public interface PromptTemplateEngine {
      * @param context Access into the current kernel execution context
      * @return The prompt template ready to be used for an AI request
      */
-    Mono<String> renderAsync(String templateText, ReadOnlySKContext context);
+    Mono<String> renderAsync(String templateText, SKContext context);
     /*
     /// <summary>
     /// Given a list of blocks render each block and compose the final result

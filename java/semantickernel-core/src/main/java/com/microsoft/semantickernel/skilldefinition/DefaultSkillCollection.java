@@ -21,37 +21,53 @@ import javax.annotation.Nullable;
 // correct suffix", Justification = "It is a collection")]
 // [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have
 // incorrect suffix", Justification = "It is a collection")]
-public class DefaultReadOnlySkillCollection implements ReadOnlySkillCollection {
+public class DefaultSkillCollection implements ReadOnlySkillCollection {
+
+    private final CaseInsensitiveMap<FunctionCollection> skillCollection;
 
     public static class Builder implements ReadOnlySkillCollection.Builder {
         @Override
         public ReadOnlySkillCollection build() {
-            return new DefaultReadOnlySkillCollection();
+            return new DefaultSkillCollection();
         }
     }
 
-    private final Map<String, ReadOnlyFunctionCollection> skillCollection;
-
-    public DefaultReadOnlySkillCollection(Map<String, ReadOnlyFunctionCollection> skillCollection) {
-        this.skillCollection =
-                Collections.unmodifiableMap(
-                        skillCollection.entrySet().stream()
-                                .collect(
-                                        Collectors.toMap(
-                                                Map.Entry::getKey, it -> it.getValue().copy())));
+    protected Map<String, FunctionCollection> getSkillCollection() {
+        return skillCollection;
     }
 
-    public DefaultReadOnlySkillCollection() {
-        this.skillCollection = Collections.unmodifiableMap(new HashMap<>());
+    public DefaultSkillCollection(ReadOnlySkillCollection skillCollection) {
+        this(skillCollection.asMap());
     }
 
-    @Override
+    public DefaultSkillCollection(
+            Map<String, ? extends ReadOnlyFunctionCollection> skillCollection) {
+
+        Map<String, FunctionCollection> cloned =
+                skillCollection.entrySet().stream()
+                        .collect(
+                                Collectors
+                                        .<Map.Entry<String, ? extends ReadOnlyFunctionCollection>,
+                                                String, FunctionCollection>
+                                                toMap(
+                                                        Map.Entry::getKey,
+                                                        it ->
+                                                                new FunctionCollection(
+                                                                        it.getValue())));
+
+        this.skillCollection = new CaseInsensitiveMap<>(cloned);
+    }
+
+    public DefaultSkillCollection() {
+        this.skillCollection = new CaseInsensitiveMap<>();
+    }
+
     @CheckReturnValue
-    public ReadOnlySkillCollection addSemanticFunction(SKFunction functionInstance) {
-        ReadOnlyFunctionCollection existingFunctionCollection;
+    public DefaultSkillCollection addSemanticFunction(SKFunction functionInstance) {
+        FunctionCollection existingFunctionCollection;
         if (!skillCollection.containsKey(functionInstance.getSkillName().toLowerCase())) {
             existingFunctionCollection =
-                    new ReadOnlyFunctionCollection(functionInstance.getSkillName().toLowerCase());
+                    new FunctionCollection(functionInstance.getSkillName().toLowerCase());
         } else {
             existingFunctionCollection =
                     skillCollection.get(functionInstance.getSkillName().toLowerCase());
@@ -61,13 +77,12 @@ public class DefaultReadOnlySkillCollection implements ReadOnlySkillCollection {
                 existingFunctionCollection.put(
                         functionInstance.getName().toLowerCase(), functionInstance);
 
-        HashMap<String, ReadOnlyFunctionCollection> clonedSkillCollection =
-                new HashMap<>(skillCollection);
+        HashMap<String, FunctionCollection> clonedSkillCollection = new HashMap<>(skillCollection);
 
         clonedSkillCollection.put(
                 functionInstance.getSkillName().toLowerCase(), existingFunctionCollection);
 
-        return new DefaultReadOnlySkillCollection(clonedSkillCollection);
+        return new DefaultSkillCollection(clonedSkillCollection);
     }
 
     @Override
@@ -80,7 +95,7 @@ public class DefaultReadOnlySkillCollection implements ReadOnlySkillCollection {
     @Nullable
     public <T extends SKFunction<?, ?>> T getFunction(
             String skillName, String funName, Class<T> functionClazz) {
-        ReadOnlyFunctionCollection skills = skillCollection.get(skillName.toLowerCase());
+        FunctionCollection skills = skillCollection.get(skillName.toLowerCase());
         if (skills == null) {
             return null;
         }
@@ -89,42 +104,41 @@ public class DefaultReadOnlySkillCollection implements ReadOnlySkillCollection {
 
     @Nullable
     @Override
-    public ReadOnlyFunctionCollection getFunctions(String skillName) {
+    public FunctionCollection getFunctions(String skillName) {
         return skillCollection.get(skillName.toLowerCase());
     }
 
     @Override
     @CheckReturnValue
     public ReadOnlySkillCollection copy() {
-        return new DefaultReadOnlySkillCollection(skillCollection);
+        return new DefaultSkillCollection(skillCollection);
     }
 
-    @Override
-    public ReadOnlySkillCollection addNativeFunction(SKFunction functionInstance) {
+    public DefaultSkillCollection addNativeFunction(SKFunction functionInstance) {
         // TODO is there any difference here?
         return addSemanticFunction(functionInstance);
     }
 
-    @Override
-    public ReadOnlySkillCollection merge(ReadOnlySkillCollection in) {
-        HashMap<String, ReadOnlyFunctionCollection> clone = new HashMap<>(skillCollection);
+    public DefaultSkillCollection merge(DefaultSkillCollection in) {
+        HashMap<String, FunctionCollection> clone = new HashMap<>(skillCollection);
 
         in.asMap()
                 .entrySet()
                 .forEach(
                         entry -> {
-                            ReadOnlyFunctionCollection existing =
-                                    clone.get(entry.getKey().toLowerCase());
+                            FunctionCollection existing = clone.get(entry.getKey().toLowerCase());
                             if (existing == null) {
-                                clone.put(entry.getKey().toLowerCase(), entry.getValue());
+                                clone.put(
+                                        entry.getKey().toLowerCase(),
+                                        new FunctionCollection(entry.getValue()));
                             } else {
                                 clone.put(
                                         entry.getKey().toLowerCase(),
-                                        existing.merge(entry.getValue()));
+                                        existing.merge(new FunctionCollection(entry.getValue())));
                             }
                         });
 
-        return new DefaultReadOnlySkillCollection(clone);
+        return new DefaultSkillCollection(clone);
     }
 
     @Override
@@ -133,9 +147,9 @@ public class DefaultReadOnlySkillCollection implements ReadOnlySkillCollection {
     }
 
     @Override
-    public ReadOnlyFunctionCollection getAllFunctions() {
+    public FunctionCollection getAllFunctions() {
         return skillCollection.values().stream()
-                .reduce(new ReadOnlyFunctionCollection(""), ReadOnlyFunctionCollection::merge);
+                .reduce(new FunctionCollection(""), FunctionCollection::merge);
     }
     /*
     internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";

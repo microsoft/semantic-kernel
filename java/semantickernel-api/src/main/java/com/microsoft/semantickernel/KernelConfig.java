@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
-import com.microsoft.semantickernel.textcompletion.CompletionFunctionDefinition;
+import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import java.util.*;
@@ -18,7 +18,7 @@ public class KernelConfig {
 
     private final Map<String, Function<Kernel, EmbeddingGeneration<String, Double>>>
             textEmbeddingGenerationServices;
-    private final ArrayList<SemanticFunctionDefinition> skillDefinitions;
+    private final ArrayList<SKFunction<?, ?>> skills;
 
     public KernelConfig(
             @Nullable String defaultTextCompletionServiceId,
@@ -26,13 +26,13 @@ public class KernelConfig {
             @Nullable String defaultTextEmbeddingGenerationServiceId,
             Map<String, Function<Kernel, EmbeddingGeneration<String, Double>>>
                     textEmbeddingGenerationServices,
-            List<SemanticFunctionDefinition> skillDefinitions) {
+            List<SKFunction<?, ?>> skills) {
         this.defaultTextCompletionServiceId = defaultTextCompletionServiceId;
         this.textCompletionServices = new HashMap<>();
         this.textCompletionServices.putAll(textCompletionServices);
         this.defaultTextEmbeddingGenerationServiceId = defaultTextEmbeddingGenerationServiceId;
         this.textEmbeddingGenerationServices = new HashMap<>(textEmbeddingGenerationServices);
-        this.skillDefinitions = new ArrayList<>(skillDefinitions);
+        this.skills = new ArrayList<>(skills);
     }
 
     @Nullable
@@ -40,8 +40,8 @@ public class KernelConfig {
         return textCompletionServices.get(name);
     }
 
-    public List<SemanticFunctionDefinition> getSkillDefinitions() {
-        return Collections.unmodifiableList(skillDefinitions);
+    public List<SKFunction<?, ?>> getSkills() {
+        return Collections.unmodifiableList(skills);
     }
 
     public static class Builder {
@@ -50,12 +50,12 @@ public class KernelConfig {
                 new HashMap<>();
         @Nullable private String defaultTextEmbeddingGenerationServiceId = null;
 
-        private List<SemanticFunctionDefinition> skillBuilders = new ArrayList<>();
+        private List<SKFunction<?, ?>> skillBuilders = new ArrayList<>();
 
         private Map<String, Function<Kernel, EmbeddingGeneration<String, Double>>>
                 textEmbeddingGenerationServices = new HashMap<>();
 
-        public Builder addSkill(CompletionFunctionDefinition functionDefinition) {
+        public Builder addSkill(SKFunction<?, ?> functionDefinition) {
             skillBuilders.add(functionDefinition);
             return this;
         }
@@ -100,6 +100,11 @@ public class KernelConfig {
             if (defaultTextCompletionServiceId == null) {
                 defaultTextCompletionServiceId = serviceId;
             }
+            return this;
+        }
+
+        public Builder setDefaultTextCompletionService(String serviceId) {
+            this.defaultTextCompletionServiceId = serviceId;
             return this;
         }
 

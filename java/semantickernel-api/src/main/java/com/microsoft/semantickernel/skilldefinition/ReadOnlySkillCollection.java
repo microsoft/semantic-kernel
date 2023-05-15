@@ -18,15 +18,6 @@ public interface ReadOnlySkillCollection {
 
     String GlobalSkill = "_GLOBAL_FUNCTIONS_";
 
-    /**
-     * Add a semantic function to the collection
-     *
-     * @param functionInstance function to add
-     * @return Modified clone of this collection with function added
-     */
-    @CheckReturnValue
-    ReadOnlySkillCollection addSemanticFunction(SKFunction<?, ?> functionInstance);
-
     @CheckReturnValue
     ReadOnlySkillCollection copy();
 
@@ -38,19 +29,6 @@ public interface ReadOnlySkillCollection {
       /// <returns>Self instance</returns>
     */
 
-    /**
-     * Add a native function to the collection
-     *
-     * @param functionInstance function to add
-     * @return Modified clone of this collection with function added
-     */
-    @CheckReturnValue
-    ReadOnlySkillCollection addNativeFunction(SKFunction functionInstance);
-
-    /** Merge in the collection, the function collections of duplicate keys are concatenated */
-    @CheckReturnValue
-    ReadOnlySkillCollection merge(ReadOnlySkillCollection in);
-
     /** Get this collection as an unmodifiable map */
     Map<String, ReadOnlyFunctionCollection> asMap();
 
@@ -58,7 +36,8 @@ public interface ReadOnlySkillCollection {
 
     /** Get function with name from the global scope */
     @Nullable
-    <T extends SKFunction<?, ?>> T getFunction(String functionName, Class<T> functionType);
+    <T extends SKFunction<?, ?>> T getFunction(
+            String functionName, @Nullable Class<T> functionType);
 
     @Nullable
     <T extends SKFunction<?, ?>> T getFunction(

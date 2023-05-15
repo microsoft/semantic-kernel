@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.templateengine.blocks; // Copyright (c) Microsoft. All rights
 // reserved.
 
-import com.microsoft.semantickernel.orchestration.ReadOnlyContextVariables;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
 
 public class TextBlock extends Block implements TextRendering {
 
@@ -18,7 +18,7 @@ public class TextBlock extends Block implements TextRendering {
     }
 
     @Override
-    public String render(ReadOnlyContextVariables variables) {
+    public String render(ContextVariables variables) {
         return super.getContent();
     }
 

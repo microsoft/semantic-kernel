@@ -24,8 +24,8 @@ public class Example02RunnningPromptsFromFile {
    */
   public static CompletionSKFunction getJokeFunction(Kernel kernel) {
     ReadOnlyFunctionCollection skill = kernel
-        .importSkills("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
-            "samples/skills", "FunSkill"));
+            .importSkills("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
+                    "samples/skills", "FunSkill"));
 
     return skill.getFunction("Joke", CompletionSKFunction.class);
   }

@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.coreskills;
 
 import com.microsoft.semantickernel.orchestration.NativeSKFunction;
-import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
+import com.microsoft.semantickernel.skilldefinition.FunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class SkillImporter {
 
-    public static ReadOnlyFunctionCollection importSkill(
+    public static FunctionCollection importSkill(
             Object skillInstance,
             String skillName,
             Supplier<ReadOnlySkillCollection> skillCollectionSupplier) {
@@ -35,6 +35,6 @@ public class SkillImporter {
                                 })
                         .collect(Collectors.toList());
 
-        return new ReadOnlyFunctionCollection(skillName, methods);
+        return new FunctionCollection(skillName, methods);
     }
 }

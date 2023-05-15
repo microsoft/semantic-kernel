@@ -18,11 +18,10 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-public class DefaultSequentialPlannerSKContext
-        extends ImmutableSKContext<SequentialPlannerSKContext>
+public class DefaultSequentialPlannerSKContext extends AbstractSKContext<SequentialPlannerSKContext>
         implements SequentialPlannerSKContext {
     public DefaultSequentialPlannerSKContext(
-            ReadOnlyContextVariables variables,
+            ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable Supplier<ReadOnlySkillCollection> skills) {
         super(variables, memory, skills);
@@ -30,7 +29,7 @@ public class DefaultSequentialPlannerSKContext
 
     @Override
     public SequentialPlannerSKContext build(
-            ReadOnlyContextVariables variables,
+            ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable Supplier<ReadOnlySkillCollection> skills) {
         return new DefaultSequentialPlannerSKContext(variables, memory, skills);
@@ -289,7 +288,7 @@ public class DefaultSequentialPlannerSKContext
     Mono<DefaultSequentialPlannerSKContext> rememberFunctionsAsync(
             List<SKFunction<?, ?>> availableFunctions) {
         // Check if the functions have already been saved to memory.
-        if (getVariables().getVariables().containsKey(PlanSKFunctionsAreRemembered)) {
+        if (getVariables().asMap().containsKey(PlanSKFunctionsAreRemembered)) {
             return Mono.just(this);
         }
 
@@ -298,8 +297,7 @@ public class DefaultSequentialPlannerSKContext
         if (memory == null) {
             return Mono.just(
                     new DefaultSequentialPlannerSKContext(
-                            (ReadOnlyContextVariables)
-                                    setVariable(PlanSKFunctionsAreRemembered, "true"),
+                            (ContextVariables) setVariable(PlanSKFunctionsAreRemembered, "true"),
                             null,
                             this::getSkills));
         }
@@ -346,7 +344,7 @@ public class DefaultSequentialPlannerSKContext
                 .map(
                         newMemory -> {
                             return new DefaultSequentialPlannerSKContext(
-                                    (ReadOnlyContextVariables)
+                                    (ContextVariables)
                                             setVariable(PlanSKFunctionsAreRemembered, "true"),
                                     newMemory,
                                     this::getSkills);

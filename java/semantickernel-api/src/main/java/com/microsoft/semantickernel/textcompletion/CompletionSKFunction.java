@@ -14,25 +14,25 @@ public interface CompletionSKFunction
         extends SKFunction<CompletionRequestSettings, CompletionSKContext> {
 
     static CompletionSKFunction.Builder builder() {
-        return BuildersSingleton.INST.getFunctionBuilders().completionBuilders();
+        return BuildersSingleton.INST.getFunctionBuilders().completionBuilders(null);
     }
 
     interface Builder {
-        CompletionFunctionDefinition createFunction(
+        CompletionSKFunction createFunction(
                 String promptTemplate,
                 PromptTemplateConfig config,
                 String functionName,
                 @Nullable String skillName);
 
-        CompletionFunctionDefinition createFunction(
+        CompletionSKFunction createFunction(
                 String functionName, SemanticFunctionConfig functionConfig);
 
-        CompletionFunctionDefinition createFunction(
+        CompletionSKFunction createFunction(
                 @Nullable String skillNameFinal,
                 String functionName,
                 SemanticFunctionConfig functionConfig);
 
-        CompletionFunctionDefinition createFunction(
+        CompletionSKFunction createFunction(
                 String promptTemplate,
                 @Nullable String functionName,
                 @Nullable String skillName,

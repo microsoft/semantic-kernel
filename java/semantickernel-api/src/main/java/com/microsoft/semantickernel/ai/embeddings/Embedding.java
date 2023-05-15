@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @param <EmbeddingType>
  */
-public class Embedding<EmbeddingType> {
+public class Embedding<EmbeddingType extends Number> {
 
     public List<EmbeddingType> getVector() {
         return Collections.unmodifiableList(vector);
@@ -26,7 +26,7 @@ public class Embedding<EmbeddingType> {
     //    public static Embedding<TEmbedding> Empty { get; } = new
     // Embedding<TEmbedding>(Array.Empty<TEmbedding>());
 
-    private static final Embedding<?> EMPTY =
+    private static final Embedding<Number> EMPTY =
             new Embedding(Collections.unmodifiableList(new ArrayList<>()));
 
     @SuppressWarnings("unchecked")
@@ -66,7 +66,7 @@ public class Embedding<EmbeddingType> {
         //        }
         //
         //      // Create a local, protected copy
-        this.vector = new ArrayList<>(vector);
+        this.vector = Collections.unmodifiableList(vector);
     }
     //
     //    /// <summary>

@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
+
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.openai.AzureOpenAiClient;
@@ -6,11 +7,9 @@ import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
-import com.microsoft.semantickernel.textcompletion.CompletionFunctionDefinition;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +95,7 @@ public class InlineFunctionWithPreBuiltSkillTest {
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, MODEL);
 
         String prompt = "{{$input}}\nSummarize the content above.";
-        CompletionFunctionDefinition summarizeDefinition =
+        CompletionSKFunction summarizeFunc =
                 SKBuilders.completionFunctions()
                         .createFunction(
                                 prompt,
@@ -113,7 +112,7 @@ public class InlineFunctionWithPreBuiltSkillTest {
         KernelConfig kernelConfig =
                 new KernelConfig.Builder()
                         .addTextCompletionService(MODEL, kernel -> textCompletion)
-                        .addSkill(summarizeDefinition)
+                        .addSkill(summarizeFunc)
                         .build();
 
         Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();

@@ -65,9 +65,10 @@ public class Example00GettingStarted {
    * @param kernel Kernel with Text Completion.
    */
   public static void joke (Kernel kernel) {
+
     ReadOnlyFunctionCollection skill = kernel
-        .importSkills("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
-            "samples/skills", "FunSkill"));
+            .importSkills("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
+                    "samples/skills", "FunSkill"));
 
     CompletionSKFunction function = skill.getFunction("Joke",
         CompletionSKFunction.class);

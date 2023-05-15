@@ -1,10 +1,10 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import reactor.core.publisher.Mono;
+
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -27,20 +27,19 @@ public class Example04ContextVariablesChat {
         User: {{$user_input}}
         ChatBot: """;
 
-    CompletionSKFunction chat =
-        SKBuilders.completionFunctions()
+    CompletionSKFunction chat = kernel
+            .createSemanticFunction()
             .createFunction(
-                prompt,
-                "ChatBot",
-                null,
-                null,
-                2000,
-                0.7,
-                0.5,
-                0,
-                0,
-                new ArrayList<>())
-            .registerOnKernel(kernel);
+                    prompt,
+                    "ChatBot",
+                    null,
+                    null,
+                    2000,
+                    0.7,
+                    0.5,
+                    0,
+                    0,
+                    new ArrayList<>());
 
     CompletionSKContext readOnlySkContext = chat.buildContext();
 
@@ -75,7 +74,7 @@ public class Example04ContextVariablesChat {
               System.out.println("Bot: " + result.getResult() + "\n");
 
               String existingHistoy =
-                  finalContext.getVariables().getVariables().get("history");
+                  finalContext.getVariables().asMap().get("history");
               if (existingHistoy == null) {
                 existingHistoy = "";
               }

@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.builders;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
-import com.microsoft.semantickernel.orchestration.ReadOnlyContextVariables;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.planner.SequentialPlannerSKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -26,7 +26,7 @@ public class SKBuilders {
     }
 
     public static EmbeddingGeneration.Builder<String, Double> textEmbeddingGenerationService() {
-      return BuildersSingleton.INST.getTextEmbeddingGenerationBuilder();
+        return BuildersSingleton.INST.getTextEmbeddingGenerationBuilder();
     }
 
     public static Kernel.Builder kernel() {
@@ -45,7 +45,7 @@ public class SKBuilders {
         return BuildersSingleton.INST.getPromptTemplateBuilder();
     }
 
-    public static ReadOnlyContextVariables.Builder variables() {
+    public static ContextVariables.Builder variables() {
         return BuildersSingleton.INST.variables();
     }
 }

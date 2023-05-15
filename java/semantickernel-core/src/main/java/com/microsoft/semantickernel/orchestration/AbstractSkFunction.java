@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 public abstract class AbstractSkFunction<
-                RequestConfiguration, ContextType extends ReadOnlySKContext<ContextType>>
-        implements SKFunction<RequestConfiguration, ContextType> {
+                RequestConfiguration, ContextType extends SKContext<ContextType>>
+        implements SKFunction<RequestConfiguration, ContextType>, RegistrableSkFunction {
 
     private final DelegateTypes delegateType;
     private final List<ParameterView> parameters;

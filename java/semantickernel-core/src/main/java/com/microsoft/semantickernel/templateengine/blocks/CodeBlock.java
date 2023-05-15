@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.templateengine.blocks; // Copyright (c) Microsoft. All rights
 // reserved.
 
-import com.microsoft.semantickernel.orchestration.ReadOnlySKContext;
+import com.microsoft.semantickernel.orchestration.SKContext;
 
 import reactor.util.annotation.Nullable;
 
@@ -27,7 +27,7 @@ public class CodeBlock extends Block implements CodeRendering {
 
     @Override
     @Nullable
-    public FutureTask<String> renderCodeAsync(ReadOnlySKContext context) {
+    public FutureTask<String> renderCodeAsync(SKContext context) {
         return null;
     }
     /*

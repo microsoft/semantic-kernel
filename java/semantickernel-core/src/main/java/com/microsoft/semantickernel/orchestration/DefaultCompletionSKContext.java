@@ -9,15 +9,15 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-public class DefaultCompletionSKContext extends ImmutableSKContext<CompletionSKContext>
+public class DefaultCompletionSKContext extends AbstractSKContext<CompletionSKContext>
         implements CompletionSKContext {
 
-    DefaultCompletionSKContext(ReadOnlyContextVariables variables) {
+    DefaultCompletionSKContext(ContextVariables variables) {
         super(variables);
     }
 
     public DefaultCompletionSKContext(
-            ReadOnlyContextVariables variables,
+            ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable Supplier<ReadOnlySkillCollection> skills) {
         super(variables, memory, skills);
@@ -25,7 +25,7 @@ public class DefaultCompletionSKContext extends ImmutableSKContext<CompletionSKC
 
     @Override
     public CompletionSKContext build(
-            ReadOnlyContextVariables variables,
+            ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable Supplier<ReadOnlySkillCollection> skills) {
         return new DefaultCompletionSKContext(variables, memory, skills);

@@ -8,6 +8,7 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import reactor.util.annotation.NonNull;
 import reactor.util.annotation.Nullable;
 
+import java.util.Collections;
 import java.util.function.Supplier;
 
 import javax.annotation.CheckReturnValue;
@@ -15,10 +16,9 @@ import javax.annotation.CheckReturnValue;
 /// <summary>
 /// Semantic Kernel context.
 /// </summary>memory
-public abstract class ImmutableSKContext<T extends ReadOnlySKContext<T>>
-        implements ReadOnlySKContext<T> {
+public abstract class AbstractSKContext<T extends SKContext<T>> implements SKContext<T> {
     @Nullable private final Supplier<ReadOnlySkillCollection> skills;
-    private final ImmutableContextVariables variables;
+    private final DefaultContextVariables variables;
     @Nullable private final SemanticTextMemory memory;
     /*
     public <T> ImmutableReadOnlySKContext<T> build(
@@ -39,7 +39,7 @@ public abstract class ImmutableSKContext<T extends ReadOnlySKContext<T>>
     @Nullable
     @Override
     public String getResult() {
-        return getVariables().getVariables().get(ReadOnlyContextVariables.MAIN_KEY);
+        return getVariables().asMap().get(ContextVariables.MAIN_KEY);
     }
 
     /*
@@ -103,8 +103,8 @@ public abstract class ImmutableSKContext<T extends ReadOnlySKContext<T>>
     /// User variables
     /// </summary>
     @Override
-    public ReadOnlyContextVariables getVariables() {
-        return variables;
+    public ContextVariables getVariables() {
+        return new DefaultContextVariables(Collections.unmodifiableMap(variables.asMap()));
     }
 
     /*
@@ -143,7 +143,7 @@ public abstract class ImmutableSKContext<T extends ReadOnlySKContext<T>>
         public ILogger Log { get; }
     */
 
-    ImmutableSKContext(ReadOnlyContextVariables variables) {
+    AbstractSKContext(ContextVariables variables) {
         this(variables, null, null);
     }
 
@@ -156,11 +156,11 @@ public abstract class ImmutableSKContext<T extends ReadOnlySKContext<T>>
     /// <param name="logger">Logger for operations in context.</param>
     /// <param name="cancellationToken">Optional cancellation token for operations in
     // context.</param>
-    protected ImmutableSKContext(
-            ReadOnlyContextVariables variables,
+    protected AbstractSKContext(
+            ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable Supplier<ReadOnlySkillCollection> skills) {
-        this.variables = new ImmutableContextVariables(variables.getVariables());
+        this.variables = new DefaultContextVariables(variables.asMap());
 
         if (memory != null) {
             this.memory = memory.copy();
@@ -230,7 +230,7 @@ public abstract class ImmutableSKContext<T extends ReadOnlySKContext<T>>
 
     @CheckReturnValue
     @Override
-    public T update(@NonNull ReadOnlyContextVariables newData) {
+    public T update(@NonNull ContextVariables newData) {
         return build(variables.update(newData, true), memory, skills);
     }
 

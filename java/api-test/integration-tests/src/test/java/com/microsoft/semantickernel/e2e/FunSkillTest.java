@@ -25,7 +25,7 @@ public class FunSkillTest extends AbstractKernelTest {
                         .importSkills(
                                 "FunSkill",
                                 KernelExtensions.importSemanticSkillFromDirectory(
-                                        "../../samples/skills", "FunSkill"))
+                                        "../../../samples/skills", "FunSkill"))
                         .getFunction("joke", CompletionSKFunction.class)
                         .invokeAsync("time travel to dinosaur age");
 

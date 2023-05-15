@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 /// with additional methods required by the kernel.
 /// </summary>
 public abstract class DefaultSemanticSKFunction<
-                RequestConfiguration, ContextType extends ReadOnlySKContext<ContextType>>
+                RequestConfiguration, ContextType extends SKContext<ContextType>>
         extends AbstractSkFunction<RequestConfiguration, ContextType>
         implements SKFunction<RequestConfiguration, ContextType> {
 

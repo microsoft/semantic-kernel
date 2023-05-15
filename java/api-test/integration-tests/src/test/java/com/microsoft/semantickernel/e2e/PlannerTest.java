@@ -24,11 +24,11 @@ public class PlannerTest extends AbstractKernelTest {
         kernel.importSkills(
                 "SummarizeSkill",
                 KernelExtensions.importSemanticSkillFromDirectory(
-                        "../../samples/skills", "SummarizeSkill"));
+                        "../../../samples/skills", "SummarizeSkill"));
         kernel.importSkills(
                 "WriterSkill",
                 KernelExtensions.importSemanticSkillFromDirectory(
-                        "../../samples/skills", "WriterSkill"));
+                        "../../../samples/skills", "WriterSkill"));
 
         SequentialPlanner planner = new SequentialPlanner(kernel, null, null);
 

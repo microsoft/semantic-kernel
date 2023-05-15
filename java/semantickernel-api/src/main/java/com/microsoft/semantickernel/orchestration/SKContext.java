@@ -17,10 +17,10 @@ import javax.annotation.CheckReturnValue;
  *
  * <p>This is read only, write operations will return a modified result
  */
-public interface ReadOnlySKContext<Type extends ReadOnlySKContext<Type>> {
+public interface SKContext<Type extends SKContext<Type>> {
 
     Type build(
-            ReadOnlyContextVariables variables,
+            ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable Supplier<ReadOnlySkillCollection> skills);
 
@@ -123,7 +123,7 @@ public interface ReadOnlySKContext<Type extends ReadOnlySKContext<Type>> {
      *
      * @return a clone of the variables
      */
-    ReadOnlyContextVariables getVariables();
+    ContextVariables getVariables();
 
     /*
         /// <summary>
@@ -230,7 +230,7 @@ public interface ReadOnlySKContext<Type extends ReadOnlySKContext<Type>> {
      * @return A clone of this context with the variable modified
      */
     @CheckReturnValue
-    Type update(@NonNull ReadOnlyContextVariables newData);
+    Type update(@NonNull ContextVariables newData);
 
     /// <summary>
     /// Updates all the local data with new data, merging the two datasets.
