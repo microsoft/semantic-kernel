@@ -534,7 +534,8 @@ public class ChatSkill
 
         List<object> itemList = new();
 
-        // Some APIs will return a JSON response with one property key representing an embedded answer
+        // Some APIs will return a JSON response with one property key representing an embedded answer.
+        // Extract this value for further processing
         string resultsDescriptor = "";
 
         if (document.RootElement.ValueKind == JsonValueKind.Object)
