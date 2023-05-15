@@ -2,6 +2,8 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Model;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
@@ -20,7 +22,7 @@ public class ChatHistoryController : ControllerBase
     private readonly ILogger<ChatHistoryController> _logger;
     private readonly ChatSessionRepository _chatSessionRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
-    private readonly PromptSettings _promptSettings;
+    private readonly PromptsOptions _promptOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryController"/> class.
@@ -28,17 +30,17 @@ public class ChatHistoryController : ControllerBase
     /// <param name="logger">The logger.</param>
     /// <param name="chatSessionRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
-    /// <param name="promptSettings">The prompt settings.</param>
+    /// <param name="promptsOptions">The prompts options.</param>
     public ChatHistoryController(
         ILogger<ChatHistoryController> logger,
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
-        PromptSettings promptSettings)
+        IOptions<PromptsOptions> promptsOptions)
     {
         this._logger = logger;
         this._chatSessionRepository = chatSessionRepository;
         this._chatMessageRepository = chatMessageRepository;
-        this._promptSettings = promptSettings;
+        this._promptOptions = promptsOptions.Value;
     }
 
     /// <summary>
@@ -60,7 +62,7 @@ public class ChatHistoryController : ControllerBase
         var newChat = new ChatSession(userId, title);
         await this._chatSessionRepository.CreateAsync(newChat);
 
-        var initialBotMessage = this._promptSettings.InitialBotMessage;
+        var initialBotMessage = this._promptOptions.InitialBotMessage;
         await this.SaveResponseAsync(initialBotMessage, newChat.Id);
 
         this._logger.LogDebug("Created chat session with id {0} for user {1}", newChat.Id, userId);

@@ -125,25 +125,20 @@ public class BotController : ControllerBase
     /// </summary>
     /// <param name="kernel">The Semantic Kernel instance.</param>
     /// <param name="chatId">The chat id to be downloaded.</param>
-    /// <param name="userId">The id of the current user and its home tenant.</param>
     /// <returns>The serialized Bot object of the chat id.</returns>
     [Authorize]
     [HttpGet]
-    [Route("bot/download/{chatId:guid}/{userId:regex(([[a-z0-9]]+-)+[[a-z0-9]]+\\.([[a-z0-9]]+-)+[[a-z0-9]]+)}")]
+    [Route("bot/download/{chatId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<string>> DownloadAsync(
         [FromServices] IKernel kernel,
-        Guid chatId,
-        string userId)
+        Guid chatId)
     {
         // TODO: get thh userId from the AAD token/claim.
         this._logger.LogDebug("Received call to download a bot");
-        var memory = await this.CreateBotAsync(
-            kernel: kernel,
-            chatId: chatId,
-            userId: userId);
+        var memory = await this.CreateBotAsync(kernel: kernel, chatId: chatId);
 
         return JsonSerializer.Serialize(memory);
     }
@@ -179,7 +174,9 @@ public class BotController : ControllerBase
     /// <param name="kernel">The Semantic Kernel instance.</param>
     /// <param name="collectionName">The current collection name. Used to query the memory storage.</param>
     /// <param name="embeddings">The embeddings list where we will append the fetched memory records.</param>
-    /// <param name="newCollectionName">The new collection name when appends to the embeddings list.</param>
+    /// <param name="newCollectionName">
+    /// The new collection name when appends to the embeddings list. Will use the old collection name if not provided.
+    /// </param>
     private static async Task GetMemoryRecordsAndAppendToEmbeddingsAsync(
         IKernel kernel,
         string collectionName,
@@ -205,12 +202,8 @@ public class BotController : ControllerBase
     /// </summary>
     /// <param name="kernel">The semantic kernel object.</param>
     /// <param name="chatId">The chat id of the bot</param>
-    /// <param name="userId">The id of the current user and its home tenant.</param>
     /// <returns>A Bot object that represents the chat session.</returns>
-    private async Task<Bot> CreateBotAsync(
-        IKernel kernel,
-        Guid chatId,
-        string userId)
+    private async Task<Bot> CreateBotAsync(IKernel kernel, Guid chatId)
     {
         var chatIdString = chatId.ToString();
         var bot = new Bot
@@ -252,11 +245,8 @@ public class BotController : ControllerBase
         // get the document memory collection names (user scope)
         await GetMemoryRecordsAndAppendToEmbeddingsAsync(
             kernel: kernel,
-            collectionName: this._documentMemoryOptions.UserDocumentCollectionNamePrefix + userId,
-            embeddings: bot.DocumentEmbeddings,
-            // replace userId with chat id.
-            // Note: workaround solution: doc memory will become chat session scope during export, until we make doc memory a chat session scope by default.
-            newCollectionName: this._documentMemoryOptions.UserDocumentCollectionNamePrefix + chatIdString);
+            collectionName: this._documentMemoryOptions.ChatDocumentCollectionNamePrefix + chatIdString,
+            embeddings: bot.DocumentEmbeddings);
 
         return bot;
     }
