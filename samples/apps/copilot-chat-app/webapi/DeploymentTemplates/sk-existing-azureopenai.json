@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "269253518249143801"
+      "templateHash": "7938609552624669912"
     }
   },
   "parameters": {
@@ -61,6 +61,13 @@
       "type": "securestring",
       "metadata": {
         "description": "Azure OpenAI API key"
+      }
+    },
+    "skServerApiKey": {
+      "type": "string",
+      "defaultValue": "[newGuid()]",
+      "metadata": {
+        "description": "Semantic Kernel server API key - Provide empty string to disable API key auth"
       }
     },
     "deployCosmosDB": {
@@ -123,6 +130,9 @@
           "apiKey": {
             "value": "[parameters('apiKey')]"
           },
+          "skServerApiKey": {
+            "value": "[parameters('skServerApiKey')]"
+          },
           "deployCosmosDB": {
             "value": "[parameters('deployCosmosDB')]"
           },
@@ -131,6 +141,9 @@
           },
           "deploySpeechServices": {
             "value": "[parameters('deploySpeechServices')]"
+          },
+          "deployNewAzureOpenAI": {
+            "value": false
           }
         },
         "template": {
@@ -140,7 +153,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "12831000757219333768"
+              "templateHash": "14734235123073662514"
             }
           },
           "parameters": {
@@ -211,6 +224,20 @@
                 "description": "Azure OpenAI or OpenAI API key"
               }
             },
+            "skServerApiKey": {
+              "type": "string",
+              "defaultValue": "[newGuid()]",
+              "metadata": {
+                "description": "Semantic Kernel server API key - Provide empty string to disable API key auth"
+              }
+            },
+            "deployNewAzureOpenAI": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether to deploy a new Azure OpenAI instance"
+              }
+            },
             "deployCosmosDB": {
               "type": "bool",
               "defaultValue": true,
@@ -260,6 +287,57 @@
               ]
             },
             {
+              "condition": "[parameters('deployNewAzureOpenAI')]",
+              "type": "Microsoft.CognitiveServices/accounts",
+              "apiVersion": "2022-12-01",
+              "name": "[format('ai-{0}', variables('uniqueName'))]",
+              "location": "[variables('location')]",
+              "kind": "OpenAI",
+              "sku": {
+                "name": "S0"
+              },
+              "properties": {
+                "customSubDomainName": "[toLower(variables('uniqueName'))]"
+              }
+            },
+            {
+              "condition": "[parameters('deployNewAzureOpenAI')]",
+              "type": "Microsoft.CognitiveServices/accounts/deployments",
+              "apiVersion": "2022-12-01",
+              "name": "[format('{0}/{1}', format('ai-{0}', variables('uniqueName')), parameters('completionModel'))]",
+              "properties": {
+                "model": {
+                  "format": "OpenAI",
+                  "name": "[parameters('completionModel')]"
+                },
+                "scaleSettings": {
+                  "scaleType": "Standard"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('deployNewAzureOpenAI')]",
+              "type": "Microsoft.CognitiveServices/accounts/deployments",
+              "apiVersion": "2022-12-01",
+              "name": "[format('{0}/{1}', format('ai-{0}', variables('uniqueName')), parameters('embeddingModel'))]",
+              "properties": {
+                "model": {
+                  "format": "OpenAI",
+                  "name": "[parameters('embeddingModel')]"
+                },
+                "scaleSettings": {
+                  "scaleType": "Standard"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName')))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts/deployments', format('ai-{0}', variables('uniqueName')), parameters('completionModel'))]"
+              ]
+            },
+            {
               "type": "Microsoft.Web/serverfarms",
               "apiVersion": "2022-03-01",
               "name": "[format('asp-{0}', variables('uniqueName'))]",
@@ -296,11 +374,11 @@
                     },
                     {
                       "name": "Completion:Endpoint",
-                      "value": "[parameters('endpoint')]"
+                      "value": "[if(parameters('deployNewAzureOpenAI'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').endpoint, parameters('endpoint'))]"
                     },
                     {
                       "name": "Completion:Key",
-                      "value": "[parameters('apiKey')]"
+                      "value": "[if(parameters('deployNewAzureOpenAI'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').key1, parameters('apiKey'))]"
                     },
                     {
                       "name": "Embedding:AIService",
@@ -312,27 +390,35 @@
                     },
                     {
                       "name": "Embedding:Endpoint",
-                      "value": "[parameters('endpoint')]"
+                      "value": "[if(parameters('deployNewAzureOpenAI'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').endpoint, parameters('endpoint'))]"
                     },
                     {
                       "name": "Embedding:Key",
-                      "value": "[parameters('apiKey')]"
+                      "value": "[if(parameters('deployNewAzureOpenAI'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').key1, parameters('apiKey'))]"
                     },
                     {
-                      "name": "Planner:AIService",
+                      "name": "Planner:AIService:AIService",
                       "value": "[parameters('aiService')]"
                     },
                     {
-                      "name": "Planner:DeploymentOrModelId",
+                      "name": "Planner:AIService:DeploymentOrModelId",
                       "value": "[parameters('plannerModel')]"
                     },
                     {
-                      "name": "Planner:Endpoint",
-                      "value": "[parameters('endpoint')]"
+                      "name": "Planner:AIService:Endpoint",
+                      "value": "[if(parameters('deployNewAzureOpenAI'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').endpoint, parameters('endpoint'))]"
                     },
                     {
-                      "name": "Planner:Key",
-                      "value": "[parameters('apiKey')]"
+                      "name": "Planner:AIService:Key",
+                      "value": "[if(parameters('deployNewAzureOpenAI'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').key1, parameters('apiKey'))]"
+                    },
+                    {
+                      "name": "Authorization:Type",
+                      "value": "[if(empty(parameters('skServerApiKey')), 'None', 'ApiKey')]"
+                    },
+                    {
+                      "name": "Authorization:ApiKey",
+                      "value": "[parameters('skServerApiKey')]"
                     },
                     {
                       "name": "ChatStore:Type",
@@ -415,6 +501,7 @@
                 "[resourceId('Microsoft.Web/serverfarms', format('asp-{0}', variables('uniqueName')))]",
                 "[resourceId('Microsoft.DocumentDB/databaseAccounts', toLower(format('cosmos-{0}', variables('uniqueName'))))]",
                 "[resourceId('Microsoft.OperationalInsights/workspaces', format('la-{0}', variables('uniqueName')))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName')))]",
                 "[resourceId('Microsoft.CognitiveServices/accounts', format('cog-{0}', variables('uniqueName')))]"
               ]
             },
