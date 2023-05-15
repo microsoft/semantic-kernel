@@ -226,11 +226,11 @@ public class ChatSkill
             // Reload the plan with the planner's kernel so
             // it has full context to be executed
             var newPlanContext = new SKContext(
-                   context.Variables,
-                   this._planner.Kernel.Memory,
-                   this._planner.Kernel.Skills,
-                   this._planner.Kernel.Log
-               );
+                context.Variables,
+                this._planner.Kernel.Memory,
+                this._planner.Kernel.Skills,
+                this._planner.Kernel.Log
+            );
             var plan = Plan.FromJson(planJson, newPlanContext);
 
             // Invoke plan
@@ -688,13 +688,15 @@ public class ChatSkill
     {
         var memoryCollectionName = SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName);
 
-        var memories = context.Memory.SearchAsync(
-            collection: memoryCollectionName,
-            query: item.ToFormattedString(),
-            limit: 1,
-            minRelevanceScore: this._promptOptions.SemanticMemoryMinRelevance,
-            cancellationToken: context.CancellationToken
-        ).ToEnumerable();
+        var memories = await context.Memory.SearchAsync(
+                collection: memoryCollectionName,
+                query: item.ToFormattedString(),
+                limit: 1,
+                minRelevanceScore: this._promptOptions.SemanticMemoryMinRelevance,
+                cancellationToken: context.CancellationToken
+            )
+            .ToListAsync(context.CancellationToken)
+            .ConfigureAwait(false);
 
         if (!memories.Any())
         {
