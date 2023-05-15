@@ -22,7 +22,7 @@ public sealed class IterativePlannerTests : IDisposable
 {
     public IterativePlannerTests(ITestOutputHelper output)
     {
-        this._logger = NullLogger.Instance; 
+        this._logger = NullLogger.Instance;
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
@@ -43,17 +43,33 @@ public sealed class IterativePlannerTests : IDisposable
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
-        var plan = new IterativePlanner(kernel, 1);
+        //lets limit it to only 2 steps, which should be 2 searches
+        var plan = new IterativePlanner(kernel, 2);
         var goal = "Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?";
 
         // Act
         var result = await plan.ExecutePlanAsync(goal);
+        this._testOutputHelper.WriteLine(result);
 
-        //// Assert
-        //Assert.NotNull(result);
-        //Assert.Equal(
-        //    $"Sent email to: something@email.com. Body: Roses are red, violets are blue, Roses are red, violets are blue, Roses are red, violets are blue, PlanInput is hard, so is this test. is hard, so is this test. is hard, so is this test.",
-        //    result.Result);
+        // Debug and show all the steps and actions
+        foreach (var step in plan.Steps)
+        {
+            this._testOutputHelper.WriteLine("a: " + step.Action);
+            this._testOutputHelper.WriteLine("ai: " + step.ActionInput);
+            this._testOutputHelper.WriteLine("t: " + step.Thought);
+            this._testOutputHelper.WriteLine("o: " + step.Observation);
+        }
+
+        // Assert
+        // first step should be a search for girlfriend
+        var firstStep = plan.Steps[0];
+        Assert.Equal("Search", firstStep.Action);
+        Assert.Contains("girlfriend", firstStep.Thought);
+
+        // second step should be a search for age of the girlfriend
+        var secondStep = plan.Steps[1];
+        Assert.Equal("Search", secondStep.Action);
+        Assert.Contains("age", secondStep.Thought);
     }
 
     private IKernel InitializeKernel(bool useEmbeddings = false)
@@ -91,7 +107,7 @@ public sealed class IterativePlannerTests : IDisposable
 
         _ = kernel.ImportSkill(new EmailSkillFake());
 
-        using BingConnector connector = new(this._bingApiKey);
+        BingConnector connector = new(this._bingApiKey);
 
         var webSearchEngineSkill = new WebSearchEngineSkill(connector);
 

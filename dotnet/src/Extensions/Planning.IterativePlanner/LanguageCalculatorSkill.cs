@@ -101,7 +101,19 @@ Question: {{ $input }}.
             };
         };
 
-        var result = expr.Evaluate();
-        return "Answer:" + result.ToString();
+        try
+        {
+            if (expr.HasErrors())
+            {
+                return "Error:" + expr.Error + " could not evaluate " + textExpressions;
+            }
+
+            var result = expr.Evaluate();
+            return "Answer:" + result.ToString();
+        }
+        catch (Exception e)
+        {
+            throw new ApplicationException("could not evaluate " + textExpressions, e);
+        }
     }
 }
