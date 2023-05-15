@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -103,7 +105,7 @@ public class TextMemorySkill
     [SKFunctionContextParameter(Name = RelevanceParam, Description = "The relevance score, from 0.0 to 1.0, where 1.0 means perfect match",
         DefaultValue = DefaultRelevance)]
     [SKFunctionContextParameter(Name = LimitParam, Description = "The maximum number of relevant memories to recall", DefaultValue = DefaultLimit)]
-    public string Recall(string text, SKContext context)
+    public async Task<string> RecallAsync(string text, SKContext context)
     {
         var collection = context.Variables.ContainsKey(CollectionParam) ? context[CollectionParam] : this._collection;
         Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
@@ -119,30 +121,21 @@ public class TextMemorySkill
         // TODO: support locales, e.g. "0.7" and "0,7" must both work
         var limitInt = int.Parse(limit, CultureInfo.InvariantCulture);
         var relevanceThreshold = float.Parse(relevance, CultureInfo.InvariantCulture);
-        var memories = context.Memory
-            .SearchAsync(collection, text, limitInt, relevanceThreshold)
-            .ToEnumerable();
 
-        context.Log.LogTrace("Done looking for memories in collection '{0}')", collection);
+        // Search memory
+        List<MemoryQueryResult> memories = await context.Memory
+            .SearchAsync(collection, text, limitInt, relevanceThreshold, cancellationToken: context.CancellationToken)
+            .ToListAsync(context.CancellationToken)
+            .ConfigureAwait(false);
 
-        string resultString;
-
-        if (limitInt == 1)
-        {
-            var memory = memories.FirstOrDefault();
-            resultString = (memory != null) ? memory.Metadata.Text : string.Empty;
-        }
-        else
-        {
-            resultString = JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
-        }
-
-        if (resultString.Length == 0)
+        if (memories.Count == 0)
         {
             context.Log.LogWarning("Memories not found in collection: {0}", collection);
+            return string.Empty;
         }
 
-        return resultString;
+        context.Log.LogTrace("Done looking for memories in collection '{0}')", collection);
+        return limitInt == 1 ? memories[0].Metadata.Text : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
     }
 
     /// <summary>
