@@ -6,7 +6,7 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Text;
 
 /// <summary>
-/// Unit tests for <see cref="StringExtensions"/>
+/// Unit tests for StringExtensions
 /// </summary>
 public class StringExtensionsTests
 {

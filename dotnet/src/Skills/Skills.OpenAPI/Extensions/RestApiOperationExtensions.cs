@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace
@@ -18,21 +18,24 @@ internal static class RestApiOperationExtensions
     /// <summary>
     /// Returns list of REST API operation parameters.
     /// </summary>
+    /// <param name="operation">The REST API operation.</param>
+    /// <param name="serverUrlOverride">The server URL override.</param>
     /// <returns>The list of parameters.</returns>
-    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation)
+    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation, Uri? serverUrlOverride = null)
     {
-        var parameters = new List<RestApiOperationParameter>(operation.Parameters);
+        var parameters = new List<RestApiOperationParameter>(operation.Parameters)
+        {
+            // Register the "server-url" parameter if override is provided
+            new RestApiOperationParameter(
+                RestApiOperation.ServerUrlArgumentName,
+                "string",
+                false,
+                RestApiOperationParameterLocation.Path,
+                RestApiOperationParameterStyle.Simple,
+                defaultValue: serverUrlOverride?.AbsoluteUri ?? operation.ServerUrl?.AbsoluteUri)
+        };
 
-        //Register the "server-url" parameter so that it's possible to override it if needed.
-        parameters.Add(new RestApiOperationParameter(
-            RestApiOperation.ServerUrlArgumentName,
-            "string",
-            false,
-            RestApiOperationParameterLocation.Path,
-            RestApiOperationParameterStyle.Simple,
-            defaultValue: operation.ServerUrl));
-
-        //Register the "payload" parameter to be advertised for Put and Post operations.
+        // Register the "payload" parameter to be advertised for Put and Post operations.
         if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)
         {
             var type = operation.Payload?.MediaType == MediaTypeTextPlain ? "string" : "object";
@@ -54,7 +57,7 @@ internal static class RestApiOperationExtensions
                 description: "Content type of REST API request body."));
         }
 
-        //Create a property alternative name without special symbols that are not supported by SK template language.
+        // Create a property alternative name without special symbols that are not supported by SK template language.
         foreach (var parameter in parameters)
         {
             parameter.AlternativeName = s_invalidSymbolsRegex.Replace(parameter.Name, "_");

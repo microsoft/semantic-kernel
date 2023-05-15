@@ -1,4 +1,31 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import logging
+import time
+
 import semantic_kernel as sk
+from semantic_kernel.core_skills.conversation_summary_skill import (
+    ConversationSummarySkill,
+)
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
+
+
+async def retry(func, retries=20):
+    min_delay = 2
+    max_delay = 7
+    for i in range(retries):
+        try:
+            result = str(await func())
+            if "Error" in result:
+                raise ValueError(result)
+            return result
+        except Exception as e:
+            logger.error(f"Retry {i + 1}: {e}")
+            if i == retries - 1:  # Last retry
+                raise
+            time.sleep(max(min(i, max_delay), min_delay))
 
 
 async def summarize_function_test(kernel: sk.Kernel):
@@ -33,68 +60,92 @@ async def summarize_function_test(kernel: sk.Kernel):
     print()
 
     # Summarize input string and print
-    summary = await kernel.run_async(tldr_function, input_str=text_to_summarize)
-
+    summary = await retry(
+        lambda: kernel.run_async(tldr_function, input_str=text_to_summarize)
+    )
     output = str(summary).strip()
     print(f"Summary using input string: '{output}'")
-    assert len(output.split(" ")) == 5
+    assert "First Law" not in output and (
+        "human" in output or "Human" in output or "preserve" in output
+    )
+    assert len(output) < 100
 
     # Summarize input as context variable and print
     context_vars = sk.ContextVariables(text_to_summarize)
-    summary = await kernel.run_async(tldr_function, input_vars=context_vars)
-
+    summary = await retry(
+        lambda: kernel.run_async(tldr_function, input_vars=context_vars)
+    )
     output = str(summary).strip()
     print(f"Summary using context variables: '{output}'")
-    assert len(output.split(" ")) == 5
+    assert "First Law" not in output and (
+        "human" in output or "Human" in output or "preserve" in output
+    )
+    assert len(output) < 100
 
     # Summarize input context and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
-    summary = await kernel.run_async(tldr_function, input_context=context)
-
+    summary = await retry(
+        lambda: kernel.run_async(tldr_function, input_context=context)
+    )
     output = str(summary).strip()
     print(f"Summary using input context: '{output}'")
-    assert len(output.split(" ")) == 5
+    assert "First Law" not in output and (
+        "human" in output or "Human" in output or "preserve" in output
+    )
+    assert len(output) < 100
 
     # Summarize input context with additional variables and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
     context_vars = sk.ContextVariables("4) All birds are robots.")
-    summary = await kernel.run_async(
-        tldr_function, input_context=context, input_vars=context_vars
+    summary = await retry(
+        lambda: kernel.run_async(
+            tldr_function, input_context=context, input_vars=context_vars
+        )
     )
-
     output = str(summary).strip()
     print(f"Summary using context and additional variables: '{output}'")
-    assert len(output.split(" ")) == 5
+    assert "First Law" not in output and (
+        "human" in output or "Human" in output or "preserve" in output
+    )
+    assert len(output) < 100
 
     # Summarize input context with additional input string and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
-    summary = await kernel.run_async(
-        tldr_function, input_context=context, input_str="4) All birds are robots."
+    summary = await retry(
+        lambda: kernel.run_async(
+            tldr_function, input_context=context, input_str="4) All birds are robots."
+        )
     )
-
     output = str(summary).strip()
     print(f"Summary using context and additional string: '{output}'")
-    assert len(output.split(" ")) == 5
+    assert "First Law" not in output and (
+        "human" in output or "Human" in output or "preserve" in output
+    )
+    assert len(output) < 100
 
     # Summarize input context with additional variables and string and print
     context = kernel.create_new_context()
     context["input"] = text_to_summarize
     context_vars = sk.ContextVariables(variables={"input2": "4) All birds are robots."})
-    summary = await kernel.run_async(
-        tldr_function,
-        input_context=context,
-        input_vars=context_vars,
-        input_str="new text",
+    summary = await retry(
+        lambda: kernel.run_async(
+            tldr_function,
+            input_context=context,
+            input_vars=context_vars,
+            input_str="new text",
+        )
     )
-
     output = str(summary).strip()
     print(
         f"Summary using context, additional variables, and additional string: '{output}'"
     )
-    assert len(output.split(" ")) == 5
+    assert "First Law" not in output and (
+        "human" in output or "Human" in output or "preserve" in output
+    )
+    assert len(output) < 100
 
 
 async def simple_summarization(kernel: sk.Kernel):
@@ -272,3 +323,55 @@ async def simple_completion(kernel: sk.Kernel):
         f"Completion using context, additional variables, and additional string: '{output}'"
     )
     assert len(output) > 0
+
+
+async def summarize_conversation_using_skill(kernel: sk.Kernel):
+    ChatTranscript = """John: Hello, how are you?
+        Jane: I'm fine, thanks. How are you?
+        John: I'm doing well, writing some example code.
+        Jane: That's great! I'm writing some example code too.
+        John: What are you writing?
+        Jane: I'm writing a chatbot.
+        John: That's cool. I'm writing a chatbot too.
+        Jane: What language are you writing it in?
+        John: I'm writing it in C#.
+        Jane: I'm writing it in Python.
+        John: That's cool. I need to learn Python.
+        Jane: I need to learn C#.
+        John: Can I try out your chatbot?
+        Jane: Sure, here's the link.
+        John: Thanks!
+        Jane: You're welcome.
+        Jane: Look at this poem my chatbot wrote:
+        Jane: Roses are red
+        Jane: Violets are blue
+        Jane: I'm writing a chatbot
+        Jane: What about you?
+        John: That's cool. Let me see if mine will write a poem, too.
+        John: Here's a poem my chatbot wrote:
+        John: The singularity of the universe is a mystery.
+        Jane: You might want to try using a different model.
+        John: I'm using the GPT-2 model. That makes sense.
+        John: Here is a new poem after updating the model.
+        John: The universe is a mystery.
+        John: The universe is a mystery.
+        John: The universe is a mystery.
+        Jane: Sure, what's the problem?
+        John: Thanks for the help!
+        Jane: I'm now writing a bot to summarize conversations.
+        Jane: I have some bad news, we're only half way there.
+        John: Maybe there is a large piece of text we can use to generate a long conversation.
+        Jane: That's a good idea. Let me see if I can find one. Maybe Lorem Ipsum?
+        John: Yeah, that's a good idea."""
+
+    conversationSummarySkill = kernel.import_skill(
+        ConversationSummarySkill(kernel), "conversationSummary"
+    )
+    summary = await kernel.run_async(
+        conversationSummarySkill["SummarizeConversation"], input_str=ChatTranscript
+    )
+
+    output = str(summary).strip().lower()
+    print(output)
+    assert "john" in output and "jane" in output
+    assert len(output) < len(ChatTranscript)

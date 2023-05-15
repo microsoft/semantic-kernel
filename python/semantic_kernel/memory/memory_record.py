@@ -50,7 +50,7 @@ class MemoryRecord:
 
     @property
     def embedding(self) -> ndarray:
-        return self.embedding
+        return self._embedding
 
     @staticmethod
     def reference_record(

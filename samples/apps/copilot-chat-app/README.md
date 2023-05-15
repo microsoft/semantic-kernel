@@ -14,11 +14,11 @@ functions that work together to construct each response.
 
 # Configure your environment
 Before you get started, make sure you have the following requirements in place:
-- [.NET 6.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
-- [Node.js](https://nodejs.org/en/download)
-- [Yarn](https://classic.yarnpkg.com/lang/en/docs/install)
-- [Visual Studio Code](https://code.visualstudio.com/Download) **(Optional)** 
+- [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
+- [Node.js](https://nodejs.org/)
+- [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) - After installation, run `yarn --version` in a terminal window to ensure you are running v1.22.19.
 - [Azure OpenAI](https://aka.ms/oai/access) resource or an account with [OpenAI](https://platform.openai.com).
+- [Visual Studio Code](https://code.visualstudio.com/Download) **(Optional)** 
 
 # Start the WebApi Backend Server
 The sample uses two applications, a front-end web UI, and a back-end API server.
@@ -42,7 +42,7 @@ First, let’s set up and verify the back-end API server is running.
        dotnet user-secrets set "Embedding:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
        dotnet user-secrets set "Planner:AIService:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
        ```
-     - Update `DeploymentOrModelID` to the Azure OpenAI deployment or OpenAI models you want to use. 
+     - Update `DeploymentOrModelId` to the Azure OpenAI deployment or OpenAI models you want to use. 
        - For `Completion` and `Planner:AIService`, CopilotChat is optimized for Chat completion models, such as gpt-3.5-turbo and gpt-4.
          > **Important:** gpt-3.5-turbo is normally labelled as "`gpt-35-turbo`" (no period) in Azure OpenAI and "`gpt-3.5-turbo`" (with a period) in OpenAI.
        - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effect for generating embeddings.
@@ -70,9 +70,10 @@ First, let’s set up and verify the back-end API server is running.
          It is important to do this, as your browser may need to accept the certificate before allowing the frontend to communicate with the backend.
 
       > You may also need to acknowledge the Windows Defender Firewall, and allow the app to communicate over private or public networks as appropriate.
- 
+
+# Start the WebApp FrontEnd application 
 1. Build and start the front-end application
-   1. You will also need an Azure Active Directory (AAD) application registration. 
+   1. You will need an Azure Active Directory (AAD) application registration. 
       > For more details on creating an application registration, go [here](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
       - Select `Single-page application (SPA)` as platform type, and set the Web redirect URI to `https://localhost:3000`
       - Select `Accounts in any organizational directory and personal Microsoft Accounts` as supported account types for this sample.
@@ -83,10 +84,11 @@ First, let’s set up and verify the back-end API server is running.
       For example:
       ```bash
       REACT_APP_BACKEND_URI=https://localhost:40443/
-      REACT_APP_AAD_CLIENT_ID=00000000-0000-0000-0000-000000000000
+      REACT_APP_AAD_CLIENT_ID={Your Application (client) ID}
       REACT_APP_AAD_AUTHORITY=https://login.microsoftonline.com/common
       ```
-   
+      > For more detail on AAD authorities, see [Client Application Configuration Authorities](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority).
+
    1. To build and run the front-end application
       ```bash
       yarn install
@@ -105,8 +107,17 @@ First, let’s set up and verify the back-end API server is running.
 1. Have fun! 
    > **Note:** Each chat interaction will call Azure OpenAI/OpenAI which will use tokens that you may be billed for.
 
-## Troubleshooting
-### 1. Localhost SSL certificate errors
+# Troubleshooting
+
+## 1. Unable to load chats. Details: interaction_in_progress: Interaction is currently in progress. 
+The WebApp can display this error when the application is configured for an active directory tenant, (e.g., personal/MSA accounts) and the browser attempts to use single sign-on with an account from another tenant (e.g., work or school account). Either user a private/incognito browser tab or clear your browser credentials/cookies.
+
+## 2. Issues using text completion models, such as `text-davinci-003`
+CopilotChat supports chat completion models, such as `gpt-3.5-*` and `gpt-4-*`.
+See [OpenAI's model compatibility](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
+the complete list of current models supporting chat completions.
+
+## 3. Localhost SSL certificate errors
 ![](images/Cert-Issue.png)
 
 If you are stopped at an error message similar to the one above, your browser may be blocking the front-end access 
@@ -117,13 +128,9 @@ to the back end while waiting for your permission to connect. To resolve this, t
 1. If your browser asks you to acknowledge the risks of visiting an insecurewebsite, you must acknowledge the 
    message before the front end will be allowed to connect to the back-end server. 
    - Acknowledge, continue, and navigate until you see the message Semantic Kernel service is up and running
-1. Navigate to `https://localhost:3000` or refresh the page to use the Copilot Chat application.
+1. Navigate to `http://localhost:3000` or refresh the page to use the Copilot Chat application.
 
-### 2. Issues using text completion models, such as `text-davinci-003`
-As of [PR #499](https://github.com/microsoft/semantic-kernel/pull/499), CopilotChat now focuses support on chat completion models, such as `gpt-3.5-*` and `gpt-4-*`
-See [OpenAI's model compatiblity](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
-the complete list of current models supporting chat completions.
 
-## Additional resources
+# Additional resources
 
 1. [Import Document Application](./importdocument/README.md): Import a document to the memory store.

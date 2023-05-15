@@ -90,7 +90,7 @@ public sealed class Kernel : IKernel, IDisposable
         Verify.ValidFunctionName(functionName);
 
         ISKFunction function = this.CreateSemanticFunction(skillName, functionName, functionConfig);
-        this._skillCollection.AddSemanticFunction(function);
+        this._skillCollection.AddFunction(function);
 
         return function;
     }
@@ -112,7 +112,7 @@ public sealed class Kernel : IKernel, IDisposable
         foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
             f.Value.SetDefaultSkillCollection(this.Skills);
-            this._skillCollection.AddNativeFunction(f.Value);
+            this._skillCollection.AddFunction(f.Value);
         }
 
         return skill;
@@ -126,7 +126,7 @@ public sealed class Kernel : IKernel, IDisposable
         Verify.NotNull(customFunction);
 
         customFunction.SetDefaultSkillCollection(this.Skills);
-        this._skillCollection.AddSemanticFunction(customFunction);
+        this._skillCollection.AddFunction(customFunction);
 
         return customFunction;
     }
@@ -214,10 +214,9 @@ public sealed class Kernel : IKernel, IDisposable
     public SKContext CreateNewContext()
     {
         return new SKContext(
-            new ContextVariables(),
-            this._memory,
-            this._skillCollection.ReadOnlySkillCollection,
-            this._log);
+            memory: this._memory,
+            skills: this._skillCollection.ReadOnlySkillCollection,
+            logger: this._log);
     }
 
     /// <inheritdoc/>
@@ -228,7 +227,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (typeof(T) == typeof(ITextCompletion))
         {
-            if (name == null) { name = this.Config.DefaultServiceId; }
+            name ??= this.Config.DefaultServiceId;
 
             if (!this.Config.TextCompletionServices.TryGetValue(name, out Func<IKernel, ITextCompletion> factory))
             {
@@ -241,7 +240,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (typeof(T) == typeof(IEmbeddingGeneration<string, float>))
         {
-            if (name == null) { name = this.Config.DefaultServiceId; }
+            name ??= this.Config.DefaultServiceId;
 
             if (!this.Config.TextEmbeddingGenerationServices.TryGetValue(name, out Func<IKernel, IEmbeddingGeneration<string, float>> factory))
             {
@@ -254,7 +253,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (typeof(T) == typeof(IChatCompletion))
         {
-            if (name == null) { name = this.Config.DefaultServiceId; }
+            name ??= this.Config.DefaultServiceId;
 
             if (!this.Config.ChatCompletionServices.TryGetValue(name, out Func<IKernel, IChatCompletion> factory))
             {
@@ -267,7 +266,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (typeof(T) == typeof(IImageGeneration))
         {
-            if (name == null) { name = this.Config.DefaultServiceId; }
+            name ??= this.Config.DefaultServiceId;
 
             if (!this.Config.ImageGenerationServices.TryGetValue(name, out Func<IKernel, IImageGeneration> factory))
             {

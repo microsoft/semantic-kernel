@@ -2,7 +2,7 @@
 
 
 from logging import Logger
-from typing import Any, Optional
+from typing import Optional
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
@@ -55,18 +55,14 @@ class AzureTextEmbedding(OpenAITextEmbedding):
         if not endpoint.startswith("https://"):
             raise ValueError("The Azure endpoint must start with https://")
 
-        self._endpoint = endpoint
-        self._api_version = api_version
         self._api_type = "azure_ad" if ad_auth else "azure"
 
-        super().__init__(deployment_name, api_key, org_id=None, log=logger)
-
-    def _setup_open_ai(self) -> Any:
-        import openai
-
-        openai.api_type = self._api_type
-        openai.api_key = self._api_key
-        openai.api_base = self._endpoint
-        openai.api_version = self._api_version
-
-        return openai
+        super().__init__(
+            deployment_name,
+            api_key,
+            api_type=self._api_type,
+            api_version=api_version,
+            endpoint=endpoint,
+            org_id=None,
+            log=logger,
+        )

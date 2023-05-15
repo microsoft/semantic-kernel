@@ -16,7 +16,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>
-    protected override OpenAIClient Client { get; }
+    private protected override OpenAIClient Client { get; }
 
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using API Key auth
@@ -26,7 +26,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
-    protected AzureOpenAIClientBase(
+    private protected AzureOpenAIClientBase(
         string modelId,
         string endpoint,
         string apiKey,
@@ -57,7 +57,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="log">Application logger</param>
-    protected AzureOpenAIClientBase(
+    private protected AzureOpenAIClientBase(
         string modelId,
         string endpoint,
         TokenCredential credential,

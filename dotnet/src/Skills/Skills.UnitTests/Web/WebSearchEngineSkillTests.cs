@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.Web;
 using Moq;
@@ -21,17 +21,17 @@ public sealed class WebSearchEngineSkillTests : IDisposable
     public WebSearchEngineSkillTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<SKContext>(output);
-        this._context = new SKContext(new ContextVariables(), NullMemory.Instance, null, this._logger);
+        this._context = new SKContext(logger: this._logger);
     }
 
     [Fact]
     public async Task SearchAsyncSucceedsAsync()
     {
         // Arrange
-        string expected = Guid.NewGuid().ToString();
+        IEnumerable<string> expected = new[] { Guid.NewGuid().ToString() };
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
-        connectorMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
         WebSearchEngineSkill target = new(connectorMock.Object);

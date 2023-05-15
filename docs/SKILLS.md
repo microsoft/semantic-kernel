@@ -69,7 +69,7 @@ Skills are stored in one of three places:
 
 1. Core Skills: these are skills available at any time to the kernel that embody
    a few standard capabilities like working with time, text, files, http requests,
-   and the [Planner](PLANNER.md). The core skills can be found
+   and the [Planners](PLANNERS.md). The core skills can be found
    [here](../dotnet/src/SemanticKernel/CoreSkills).
 
 2. Semantic Skills: these skills are managed by you in a directory of your choice.

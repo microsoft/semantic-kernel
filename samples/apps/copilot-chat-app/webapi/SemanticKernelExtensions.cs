@@ -1,105 +1,175 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Reflection;
-using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
 using SemanticKernel.Service.Skills;
+using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service;
 
+/// <summary>
+/// Extension methods for registering Semantic Kernel related services.
+/// </summary>
 internal static class SemanticKernelExtensions
 {
+    /// <summary>
+    /// Delegate to register skills with a Semantic Kernel
+    /// </summary>
+    public delegate Task RegisterSkillsWithKernel(IServiceProvider sp, IKernel kernel);
+
+    /// <summary>
+    /// Delegate to register skills with a planner.
+    /// </summary>
+    public delegate Task RegisterSkillsWithPlanner(IServiceProvider sp, CopilotChatPlanner planner);
+
     /// <summary>
     /// Add Semantic Kernel services
     /// </summary>
     internal static IServiceCollection AddSemanticKernelServices(this IServiceCollection services)
     {
-        // The chat skill's prompts are stored in a separate file.
-        services.AddSingleton<PromptsConfig>(sp =>
+        // Semantic Kernel
+        services.AddScoped<IKernel>(sp =>
         {
-            string promptsConfigPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "prompts.json");
-            PromptsConfig promptsConfig = JsonSerializer.Deserialize<PromptsConfig>(File.ReadAllText(promptsConfigPath)) ??
-                                          throw new InvalidOperationException($"Failed to load '{promptsConfigPath}'.");
-            promptsConfig.Validate();
-            return promptsConfig;
-        });
-        services.AddSingleton<PromptSettings>();
+            IKernel kernel = Kernel.Builder
+                .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
+                .WithMemory(sp.GetRequiredService<ISemanticTextMemory>())
+                .WithConfiguration(sp.GetRequiredService<KernelConfig>())
+                .Build();
 
-        // Add the semantic memory with backing memory store.
-        services.AddSingleton<IMemoryStore>(serviceProvider =>
-        {
-            MemoriesStoreOptions config = serviceProvider.GetRequiredService<IOptions<MemoriesStoreOptions>>().Value;
-
-            switch (config.Type)
-            {
-                case MemoriesStoreOptions.MemoriesStoreType.Volatile:
-                    return new VolatileMemoryStore();
-
-                case MemoriesStoreOptions.MemoriesStoreType.Qdrant:
-                    if (config.Qdrant is null)
-                    {
-                        throw new InvalidOperationException(
-                            $"MemoriesStore:Qdrant is required when MemoriesStore:Type is '{MemoriesStoreOptions.MemoriesStoreType.Qdrant}'");
-                    }
-
-                    return new QdrantMemoryStore(
-                        host: config.Qdrant.Host,
-                        port: config.Qdrant.Port,
-                        vectorSize: config.Qdrant.VectorSize,
-                        logger: serviceProvider.GetRequiredService<ILogger<QdrantMemoryStore>>());
-
-                default:
-                    throw new InvalidOperationException($"Invalid 'MemoriesStore' type '{config.Type}'.");
-            }
+            sp.GetRequiredService<RegisterSkillsWithKernel>()(sp, kernel);
+            return kernel;
         });
 
-        services.AddScoped<ISemanticTextMemory>(serviceProvider
-            => new SemanticTextMemory(
-                serviceProvider.GetRequiredService<IMemoryStore>(),
-                serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
-                    .ToTextEmbeddingsService(logger: serviceProvider.GetRequiredService<ILogger<AIServiceOptions>>())));
+        // Semantic memory
+        services.AddSemanticTextMemory();
 
-        // Add the planner.
-        services.AddScoped<CopilotChatPlanner>(sp =>
-        {
-            // Create a kernel for the planner with the same contexts as the chat's kernel except with no skills and its own completion backend.
-            // This allows the planner to use only the skills that are available at call time.
-            IKernel chatKernel = sp.GetRequiredService<IKernel>();
-            IOptions<PlannerOptions> plannerOptions = sp.GetRequiredService<IOptions<PlannerOptions>>();
-            IKernel plannerKernel = new Kernel(
-                new SkillCollection(),
-                chatKernel.PromptTemplateEngine,
-                chatKernel.Memory,
-                new KernelConfig().AddCompletionBackend(plannerOptions.Value.AIService!),
-                sp.GetRequiredService<ILogger<CopilotChatPlanner>>());
-            return new CopilotChatPlanner(plannerKernel, plannerOptions);
-        });
-
-        // Add the Semantic Kernel
-        services.AddSingleton<IPromptTemplateEngine, PromptTemplateEngine>();
-        services.AddScoped<ISkillCollection, SkillCollection>();
+        // AI backends
         services.AddScoped<KernelConfig>(serviceProvider => new KernelConfig()
             .AddCompletionBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()
                 .Get(AIServiceOptions.CompletionPropertyName))
             .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()
                 .Get(AIServiceOptions.EmbeddingPropertyName)));
-        services.AddScoped<IKernel, Kernel>();
+
+        // Planner (AI plugins) support
+        IOptions<PlannerOptions>? plannerOptions = services.BuildServiceProvider().GetService<IOptions<PlannerOptions>>();
+        if (plannerOptions != null && plannerOptions.Value.Enabled)
+        {
+            services.AddScoped<CopilotChatPlanner>(sp => new CopilotChatPlanner(Kernel.Builder
+                .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
+                .WithConfiguration(
+                    new KernelConfig().AddCompletionBackend(sp.GetRequiredService<IOptions<PlannerOptions>>().Value.AIService!)) // TODO verify planner has AI service configured
+                .Build()));
+        }
+
+        // Register skills
+        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterCopilotChatSkills);
+
+        // Register Planner skills (AI plugins) here.
+        // TODO: Move planner skill registration from SemanticKernelController to here.
 
         return services;
     }
 
     /// <summary>
+    /// Register the skills with the kernel.
+    /// </summary>
+    private static Task RegisterCopilotChatSkills(IServiceProvider sp, IKernel kernel)
+    {
+        // Chat skill
+        kernel.ImportSkill(new ChatSkill(
+                kernel: kernel,
+                chatMessageRepository: sp.GetRequiredService<ChatMessageRepository>(),
+                chatSessionRepository: sp.GetRequiredService<ChatSessionRepository>(),
+                promptOptions: sp.GetRequiredService<IOptions<PromptsOptions>>(),
+                planner: sp.GetRequiredService<CopilotChatPlanner>(),
+                plannerOptions: sp.GetRequiredService<IOptions<PlannerOptions>>().Value,
+                logger: sp.GetRequiredService<ILogger<ChatSkill>>()),
+            nameof(ChatSkill));
+
+        // Time skill
+        kernel.ImportSkill(new TimeSkill(), nameof(TimeSkill));
+
+        // Document memory skill
+        kernel.ImportSkill(new DocumentMemorySkill(
+                sp.GetRequiredService<IOptions<PromptsOptions>>(),
+                sp.GetRequiredService<IOptions<DocumentMemoryOptions>>().Value),
+            nameof(DocumentMemorySkill));
+
+        // Semantic skills
+        ServiceOptions options = sp.GetRequiredService<IOptions<ServiceOptions>>().Value;
+        if (!string.IsNullOrWhiteSpace(options.SemanticSkillsDirectory))
+        {
+            foreach (string subDir in Directory.GetDirectories(options.SemanticSkillsDirectory))
+            {
+                try
+                {
+                    kernel.ImportSemanticSkillFromDirectory(options.SemanticSkillsDirectory, Path.GetFileName(subDir)!);
+                }
+                catch (TemplateException e)
+                {
+                    kernel.Log.LogError("Could not load skill from {Directory}: {Message}", subDir, e.Message);
+                }
+            }
+        }
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Add the semantic memory.
+    /// </summary>
+    private static void AddSemanticTextMemory(this IServiceCollection services)
+    {
+        MemoriesStoreOptions config = services.BuildServiceProvider().GetRequiredService<IOptions<MemoriesStoreOptions>>().Value;
+        switch (config.Type)
+        {
+            case MemoriesStoreOptions.MemoriesStoreType.Volatile:
+                services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
+                services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
+                    sp.GetRequiredService<IMemoryStore>(),
+                    sp.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
+                        .ToTextEmbeddingsService(logger: sp.GetRequiredService<ILogger<AIServiceOptions>>())));
+                break;
+
+            case MemoriesStoreOptions.MemoriesStoreType.Qdrant:
+                if (config.Qdrant == null)
+                {
+                    throw new InvalidOperationException("MemoriesStore type is Qdrant and Qdrant configuration is null.");
+                }
+
+                services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
+                    config.Qdrant.Host, config.Qdrant.Port, config.Qdrant.VectorSize, sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
+                services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
+                    sp.GetRequiredService<IMemoryStore>(),
+                    sp.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
+                        .ToTextEmbeddingsService(logger: sp.GetRequiredService<ILogger<AIServiceOptions>>())));
+                break;
+
+            case MemoriesStoreOptions.MemoriesStoreType.AzureCognitiveSearch:
+                if (config.AzureCognitiveSearch == null)
+                {
+                    throw new InvalidOperationException("MemoriesStore type is AzureCognitiveSearch and AzureCognitiveSearch configuration is null.");
+                }
+
+                services.AddSingleton<ISemanticTextMemory>(sp => new AzureCognitiveSearchMemory(config.AzureCognitiveSearch.Endpoint, config.AzureCognitiveSearch.Key));
+                break;
+
+            default:
+                throw new InvalidOperationException($"Invalid 'MemoriesStore' type '{config.Type}'.");
+        }
+    }
+
+    /// <summary>
     /// Add the completion backend to the kernel config
     /// </summary>
-    internal static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
+    private static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
     {
         switch (aiServiceOptions.AIService)
         {
@@ -126,7 +196,7 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Add the embedding backend to the kernel config
     /// </summary>
-    internal static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
+    private static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
     {
         switch (aiServiceOptions.AIService)
         {
@@ -158,7 +228,7 @@ internal static class SemanticKernelExtensions
     /// <param name="serviceConfig">The service configuration</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
-    internal static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
+    private static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {

@@ -8,7 +8,7 @@ from semantic_kernel.text import aggregate_chunked_results_async
 @pytest.mark.asyncio
 async def test_aggregate_results():
     kernel = Kernel()
-    kernel.config.add_text_completion_service(
+    kernel.add_text_completion_service(
         "davinci-002", sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none")
     )
     sk_prompt = """

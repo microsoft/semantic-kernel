@@ -51,6 +51,7 @@ steps:
     scanType: 'Register'
     verbosity: 'Verbose'
     alertWarningLevel: 'High'
+    failOnAlert: true
 
 - task: PublishSecurityAnalysisLogs@3
   inputs:

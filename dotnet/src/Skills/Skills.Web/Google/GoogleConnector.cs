@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Microsoft.SemanticKernel.Skills.Web.Google;
 /// <summary>
 /// Google search connector.
 /// </summary>
-public class GoogleConnector : IWebSearchEngineConnector, IDisposable
+public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 {
     private readonly ILogger _logger;
     private readonly CustomSearchAPIService _search;
@@ -37,21 +38,30 @@ public class GoogleConnector : IWebSearchEngineConnector, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<string> SearchAsync(string query, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<string>> SearchAsync(
+        string query,
+        int count,
+        int offset,
+        CancellationToken cancellationToken)
     {
+        if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
+
+        if (count > 10) { throw new ArgumentOutOfRangeException(nameof(count), $"{nameof(count)} value must be between 0 and 10, inclusive."); }
+
+        if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
+
         var search = this._search.Cse.List();
         search.Cx = this._searchEngineId;
         search.Q = query;
+        search.Num = count;
+        search.Start = offset;
 
         var results = await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
-        var first = results.Items?.FirstOrDefault();
-        this._logger.LogDebug("Result: {Title}, {Link}, {Snippet}", first?.Title, first?.Link, first?.Snippet);
-
-        return first?.Snippet ?? string.Empty;
+        return results.Items.Select(item => item.Snippet);
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (disposing)
         {

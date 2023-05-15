@@ -60,7 +60,7 @@ export const PluginCard: React.FC<PluginCardProps> = ({ plugin }) => {
                 action={
                     enabled ? (
                         <Button aria-label="Disconnect plugin" appearance="secondary" onClick={onDisconnectClick}>
-                            Disconnect
+                            Disable
                         </Button>
                     ) : (
                         <PluginConnector

@@ -17,24 +17,24 @@ const log = debug(Constants.debug.root).extend('chat-room');
 
 const useClasses = makeStyles({
     root: {
-        height: '94.5%',
+        ...shorthands.overflow('hidden'),
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        gridTemplateColumns: '1fr',
-        gridTemplateRows: '1fr auto',
-        gridTemplateAreas: "'history' 'input'",
+        height: '100%',
+    },
+    scroll: {
+        overflowY: 'auto',
     },
     history: {
-        ...shorthands.gridArea('history'),
         ...shorthands.padding(tokens.spacingVerticalM),
-        overflowY: 'auto',
-        display: 'grid',
+        marginLeft: '40px',
+        paddingRight: '40px',
+        display: 'flex',
+        justifyContent: 'center',
     },
     input: {
-        ...shorthands.gridArea('input'),
         ...shorthands.padding(tokens.spacingVerticalM),
-        backgroundColor: tokens.colorNeutralBackground4,
     },
 });
 
@@ -84,8 +84,14 @@ export const ChatRoom: React.FC = () => {
         return null;
     }
 
-    const handleSubmit = async (value: string) => {
+    const handleSubmit = async (
+        value: string,
+        approvedPlanJson?: string,
+        planUserIntent?: string,
+        userCancelledPlan?: boolean,
+    ) => {
         log('submitting user chat message');
+
         const chatInput = {
             timestamp: new Date().getTime(),
             userId: account?.homeAccountId,
@@ -93,20 +99,25 @@ export const ChatRoom: React.FC = () => {
             content: value,
             authorRole: AuthorRoles.User,
         };
+
         setIsBotTyping(true);
         dispatch(updateConversation({ message: chatInput }));
+
         try {
-            await chat.getResponse(value, selectedId);
+            await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userCancelledPlan);
         } finally {
             setIsBotTyping(false);
         }
+
         setShouldAutoScroll(true);
     };
 
     return (
         <div className={classes.root}>
-            <div ref={scrollViewTargetRef} className={classes.history}>
-                <ChatHistory audience={audience} messages={messages} />
+            <div ref={scrollViewTargetRef} className={classes.scroll}>
+                <div ref={scrollViewTargetRef} className={classes.history}>
+                    <ChatHistory audience={audience} messages={messages} onGetResponse={handleSubmit} />
+                </div>
                 <div>
                     <div ref={scrollTargetRef} />
                 </div>

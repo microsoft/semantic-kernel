@@ -220,9 +220,7 @@ public abstract class OpenAIClientBase : IDisposable
             var result = Json.Deserialize<T>(responseJson);
             if (result is null)
             {
-                throw new AIException(
-                AIException.ErrorCodes.InvalidResponseContent,
-                "Response JSON parse error");
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response JSON parse error");
             }
 
             return result;

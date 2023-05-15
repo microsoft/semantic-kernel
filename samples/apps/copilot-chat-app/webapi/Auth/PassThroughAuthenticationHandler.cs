@@ -19,14 +19,16 @@ public class PassThroughAuthenticationHandler : AuthenticationHandler<Authentica
     /// </summary>
     public PassThroughAuthenticationHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
-        ILoggerFactory logger,
+        ILoggerFactory loggerFactory,
         UrlEncoder encoder,
-        ISystemClock clock) : base(options, logger, encoder, clock)
+        ISystemClock clock) : base(options, loggerFactory, encoder, clock)
     {
     }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        this.Logger.LogInformation("Allowing request to pass through");
+
         var principal = new ClaimsPrincipal(new ClaimsIdentity(AuthenticationScheme));
         var ticket = new AuthenticationTicket(principal, this.Scheme.Name);
 

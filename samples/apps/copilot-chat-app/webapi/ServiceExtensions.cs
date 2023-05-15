@@ -19,7 +19,7 @@ internal static class ServicesExtensions
     /// </summary>
     internal static IServiceCollection AddOptions(this IServiceCollection services, ConfigurationManager configuration)
     {
-        // General  configuration
+        // General configuration
         services.AddOptions<ServiceOptions>()
             .Bind(configuration.GetSection(ServiceOptions.PropertyName))
             .ValidateOnStart()
@@ -28,10 +28,17 @@ internal static class ServicesExtensions
         // AI service configurations
         services.AddOptions<AIServiceOptions>(AIServiceOptions.CompletionPropertyName)
             .Bind(configuration.GetSection(AIServiceOptions.CompletionPropertyName))
-            .ValidateOnStart().PostConfigure(TrimStringProperties);
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         services.AddOptions<AIServiceOptions>(AIServiceOptions.EmbeddingPropertyName)
             .Bind(configuration.GetSection(AIServiceOptions.EmbeddingPropertyName))
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
+
+        // Authorization configuration
+        services.AddOptions<AuthorizationOptions>()
+            .Bind(configuration.GetSection(AuthorizationOptions.PropertyName))
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
@@ -68,6 +75,11 @@ internal static class ServicesExtensions
         // Planner options
         services.AddOptions<PlannerOptions>()
             .Bind(configuration.GetSection(PlannerOptions.PropertyName))
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
+
+        services.AddOptions<PromptsOptions>()
+            .Bind(configuration.GetSection(PromptsOptions.PropertyName))
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
@@ -198,7 +210,7 @@ internal static class ServicesExtensions
     /// </summary>
     private static void TrimStringProperties<T>(T options) where T : class
     {
-        Queue<object> targets = new Queue<object>();
+        Queue<object> targets = new();
         targets.Enqueue(options);
 
         while (targets.Count > 0)

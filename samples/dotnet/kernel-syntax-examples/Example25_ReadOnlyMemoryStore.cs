@@ -43,8 +43,8 @@ public static class Example25_ReadOnlyMemoryStore
 
     private sealed class ReadOnlyMemoryStore : IMemoryStore
     {
-        private IEnumerable<MemoryRecord>? _memoryRecords = null;
-        private int _vectorSize = 3;
+        private readonly IEnumerable<MemoryRecord>? _memoryRecords = null;
+        private readonly int _vectorSize = 3;
 
         public ReadOnlyMemoryStore(string valueString)
         {

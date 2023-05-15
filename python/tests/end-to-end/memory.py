@@ -108,10 +108,10 @@ async def main() -> None:
     kernel = sk.Kernel()
 
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.config.add_text_completion_service(
+    kernel.add_text_completion_service(
         "dv", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
     )
-    kernel.config.add_text_embedding_generation_service(
+    kernel.add_text_embedding_generation_service(
         "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
     )
 

@@ -23,8 +23,12 @@ async def test_azure_text_completion_with_skills():
         deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
         deployment_name = "text-davinci-003"
 
+    print("* Service: Azure OpenAI Text Completion")
+    print(f"* Endpoint: {endpoint}")
+    print(f"* Deployment: {deployment_name}")
+
     # Configure LLM service
-    kernel.config.add_text_completion_service(
+    kernel.add_text_completion_service(
         "text_completion",
         sk_oai.AzureTextCompletion(deployment_name, endpoint, api_key),
     )

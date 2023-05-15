@@ -1,6 +1,8 @@
-﻿using System.Text.Json.Serialization;
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Service.Skills.OpenApiSkills;
+using System.Text.Json.Serialization;
+
+namespace SemanticKernel.Service.Skills.OpenApiSkills.GitHubSkill.Model;
 
 /// <summary>
 /// Represents a GitHub Repo.
@@ -18,7 +20,6 @@ public class Repo
     /// </summary>
     [JsonPropertyName("full_name")]
     public string FullName { get; set; }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Repo"/>.

@@ -55,8 +55,8 @@ jobs:
       matrix:
         python-version: ["3.8"]
     runs-on: ubuntu-latest
-    needs: paths-filter
-    if: needs.paths-filter.outputs.output1 == 'true'
+    needs: check-for-python-changes
+    if: needs.check-for-python-changes.outputs.output1 == 'true'
     timeout-minutes: 5
     steps:
       - run: echo "/root/.local/bin" >> $GITHUB_PATH

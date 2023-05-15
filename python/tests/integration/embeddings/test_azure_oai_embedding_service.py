@@ -23,7 +23,7 @@ async def test_azure_text_embeddings_with_memories():
         deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
         deployment_name = "text-embedding-ada-002"
 
-    kernel.config.add_text_embedding_generation_service(
+    kernel.add_text_embedding_generation_service(
         "aoai-ada", sk_oai.AzureTextEmbedding(deployment_name, endpoint, api_key)
     )
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())

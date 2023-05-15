@@ -14,7 +14,7 @@ async def test_hf_local_summarization_service_with_skills():
     kernel = sk.Kernel()
 
     # Configure LLM service
-    kernel.config.add_text_completion_service(
+    kernel.add_text_completion_service(
         "facebook/bart-large-cnn",
         sk_hf.HuggingFaceTextCompletion(
             "facebook/bart-large-cnn", task="summarization"

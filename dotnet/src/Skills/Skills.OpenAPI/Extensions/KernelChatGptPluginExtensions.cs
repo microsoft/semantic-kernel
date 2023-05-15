@@ -9,10 +9,10 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 
 #pragma warning disable IDE0130
@@ -56,7 +56,7 @@ public static class KernelChatGptPluginExtensions
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
         return await kernel
-            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken)
+            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -95,7 +95,7 @@ public static class KernelChatGptPluginExtensions
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
         return await kernel
-            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken)
+            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 

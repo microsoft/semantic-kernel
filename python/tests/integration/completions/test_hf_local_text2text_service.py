@@ -14,7 +14,7 @@ async def test_hf_local_text2text_generation_service_with_skills():
     kernel = sk.Kernel()
 
     # Configure LLM service
-    kernel.config.add_text_completion_service(
+    kernel.add_text_completion_service(
         "google/flan-t5-base",
         sk_hf.HuggingFaceTextCompletion(
             "google/flan-t5-base", task="text2text-generation"

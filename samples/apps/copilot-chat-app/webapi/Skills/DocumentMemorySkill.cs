@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Globalization;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -16,7 +17,7 @@ public class DocumentMemorySkill
     /// <summary>
     /// Prompt settings.
     /// </summary>
-    private readonly PromptSettings _promptSettings;
+    private readonly PromptsOptions _promptOptions;
 
     /// <summary>
     /// Configuration settings for importing documents to memory.
@@ -26,9 +27,9 @@ public class DocumentMemorySkill
     /// <summary>
     /// Create a new instance of DocumentMemorySkill.
     /// </summary>
-    public DocumentMemorySkill(PromptSettings promptSettings, DocumentMemoryOptions documentImportConfig)
+    public DocumentMemorySkill(IOptions<PromptsOptions> promptOptions, DocumentMemoryOptions documentImportConfig)
     {
-        this._promptSettings = promptSettings;
+        this._promptOptions = promptOptions.Value;
         this._documentImportConfig = documentImportConfig;
     }
 
@@ -40,23 +41,23 @@ public class DocumentMemorySkill
     [SKFunction("Query documents in the memory given a user message")]
     [SKFunctionName("QueryDocuments")]
     [SKFunctionInput(Description = "Query to match.")]
-    [SKFunctionContextParameter(Name = "userId", Description = "ID of the user who owns the documents")]
+    [SKFunctionContextParameter(Name = "chatId", Description = "ID of the chat that owns the documents")]
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
     [SKFunctionContextParameter(Name = "contextTokenLimit", Description = "Maximum number of context tokens")]
     public async Task<string> QueryDocumentsAsync(string query, SKContext context)
     {
-        string userId = context.Variables["userId"];
+        string chatId = context.Variables["chatId"];
         int tokenLimit = int.Parse(context.Variables["tokenLimit"], new NumberFormatInfo());
         int contextTokenLimit = int.Parse(context.Variables["contextTokenLimit"], new NumberFormatInfo());
         var remainingToken = Math.Min(
             tokenLimit,
-            Math.Floor(contextTokenLimit * this._promptSettings.DocumentContextWeight)
+            Math.Floor(contextTokenLimit * this._promptOptions.DocumentContextWeight)
         );
 
         // Search for relevant document snippets.
         string[] documentCollections = new string[]
         {
-            this._documentImportConfig.UserDocumentCollectionNamePrefix + userId,
+            this._documentImportConfig.ChatDocumentCollectionNamePrefix + chatId,
             this._documentImportConfig.GlobalDocumentCollectionName
         };
 
@@ -67,7 +68,7 @@ public class DocumentMemorySkill
                 documentCollection,
                 query,
                 limit: 100,
-                minRelevanceScore: 0.8);
+                minRelevanceScore: this._promptOptions.DocumentMemoryMinRelevance);
             await foreach (var memory in results)
             {
                 relevantMemories.Add(memory);

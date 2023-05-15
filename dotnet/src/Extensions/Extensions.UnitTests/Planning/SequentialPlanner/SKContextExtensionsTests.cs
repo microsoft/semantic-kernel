@@ -66,8 +66,7 @@ public class SKContextExtensionsTests
         var cancellationToken = default(CancellationToken);
 
         // Arrange FunctionView
-        var mockSemanticFunction = new Mock<ISKFunction>();
-        var mockNativeFunction = new Mock<ISKFunction>();
+        var functionMock = new Mock<ISKFunction>();
         var functionsView = new FunctionsView();
         var functionView = new FunctionView("functionName", "skillName", "description", new List<ParameterView>(), true, false);
         var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description", new List<ParameterView>(), false, false);
@@ -94,10 +93,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
-        skills.Setup(x => x.TryGetSemanticFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
-        skills.Setup(x => x.TryGetNativeFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
-        skills.Setup(x => x.GetSemanticFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockSemanticFunction.Object);
-        skills.Setup(x => x.GetNativeFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockNativeFunction.Object);
+        skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
         skills.SetupGet(x => x.ReadOnlySkillCollection).Returns(skills.Object);
 
@@ -136,8 +132,7 @@ public class SKContextExtensionsTests
         var cancellationToken = default(CancellationToken);
 
         // Arrange FunctionView
-        var mockSemanticFunction = new Mock<ISKFunction>();
-        var mockNativeFunction = new Mock<ISKFunction>();
+        var functionMock = new Mock<ISKFunction>();
         var functionsView = new FunctionsView();
         var functionView = new FunctionView("functionName", "skillName", "description", new List<ParameterView>(), true, false);
         var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description", new List<ParameterView>(), false, false);
@@ -164,10 +159,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
-        skills.Setup(x => x.TryGetSemanticFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
-        skills.Setup(x => x.TryGetNativeFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
-        skills.Setup(x => x.GetSemanticFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockSemanticFunction.Object);
-        skills.Setup(x => x.GetNativeFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockNativeFunction.Object);
+        skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
         skills.SetupGet(x => x.ReadOnlySkillCollection).Returns(skills.Object);
 

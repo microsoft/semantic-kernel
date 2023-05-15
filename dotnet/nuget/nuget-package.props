@@ -3,7 +3,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
     <!-- Central version prefix - applies to all nuget packages -->
-    <Version>0.13</Version>
+    <Version>0.14</Version>
   </PropertyGroup>
 
   <PropertyGroup>

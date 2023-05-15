@@ -14,7 +14,7 @@ async def test_hf_embeddings_with_memories():
     kernel = sk.Kernel()
 
     # Configure LLM service
-    kernel.config.add_text_embedding_generation_service(
+    kernel.add_text_embedding_generation_service(
         "sentence-transformers/all-MiniLM-L6-v2",
         sk_hf.HuggingFaceTextEmbedding("sentence-transformers/all-MiniLM-L6-v2"),
     )

@@ -68,8 +68,12 @@ Note: SK requires at least Poetry 1.2.0.
 # Install poetry package
 pip3 install poetry
 
-# Use poetry to install project deps
+# Use poetry to install base project dependencies
 poetry install
+
+# If you want to use connectors such as hugging face
+# poetry install --with <connector group name>
+# example: poetry install --with hugging_face
 
 # Use poetry to activate project venv
 poetry shell

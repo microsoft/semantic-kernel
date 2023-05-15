@@ -41,8 +41,8 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         // kernel.ImportOpenApiSkillFromUrlAsync
         // kernel.RegisterOpenApiSkill
         var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault,
-            authenticationProvider.AuthenticateRequestAsync,
-            retryConfig);
+            authCallback: authenticationProvider.AuthenticateRequestAsync,
+            retryConfiguration: retryConfig);
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();

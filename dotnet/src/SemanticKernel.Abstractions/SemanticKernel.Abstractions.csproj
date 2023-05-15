@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/InternalUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -15,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--Setting version overrides to miniumum supported version, to maximize compatability.-->
+    <!--Setting version overrides to minimum supported version, to maximize compatibility.-->
     <PackageReference Include="Microsoft.Bcl.HashCode" VersionOverride="[1.1.0, )" />
     <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="[6.0.0, )" />
     <PackageReference Include="System.Linq.Async" VersionOverride="[6.0.1, )" />
@@ -23,15 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Core" PublicKey="$(StongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" PublicKey="$(StongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.ActionPlanner" PublicKey="$(StongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planning.SequentialPlanner" PublicKey="$(StongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Skills.OpenAPI" PublicKey="$(StongNamePublicKey)"/>
-    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Memory.CosmosDB" PublicKey="$(StongNamePublicKey)"/>
-    <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" PublicKey="$(StongNamePublicKey)"/>
-    <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StongNamePublicKey)"/>
-    <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StongNamePublicKey)"/>
-    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" PublicKey="$(StongNamePublicKey)"/> <!-- Moq -->
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Core" PublicKey="$(StrongNamePublicKey)"/>
+    <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
+    <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StrongNamePublicKey)"/>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" PublicKey="$(StrongNamePublicKey)"/> <!-- Moq -->
   </ItemGroup>
 </Project>
