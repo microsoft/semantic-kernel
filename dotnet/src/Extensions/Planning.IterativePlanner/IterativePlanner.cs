@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Attempt to implement MRKL systems as described in hhtsp://arxiv.org/pdf/2205.00445.pdf
+// Attempt to implement MRKL systems as described in https://arxiv.org/pdf/2205.00445.pdf
 // strongly inspired by https://github.com/hwchase17/langchain/tree/master/langchain/agents/mrkl
 
 using System.Text;
