@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -246,15 +247,17 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <summary>
-    /// Returns the name and description of the function.
+    /// JSON serialized string representation of the function.
     /// </summary>
     /// <returns></returns>
     public override string ToString()
-    {
-        string s = this.IsSemantic ? "Semantic" : "Native";
+        => this.ToString(false);
 
-        return $"{this.Name} \t {s} \t- {this.Description}";
-    }
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public string ToString(bool writeIndented)
+       => JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = writeIndented });
 
     /// <summary>
     /// Finalizer.
