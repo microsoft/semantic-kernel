@@ -325,9 +325,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     private void ReleaseUnmanagedResources()
     {
-        if (this._aiService?.Value is not IDisposable disposable) { return; }
+        if (this._aiService == null || !this._aiService.IsValueCreated)
+        {
+            return;
+        }
 
-        disposable.Dispose();
+        if (this._aiService.Value is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
     }
 
     /// <summary>
