@@ -8,7 +8,7 @@ from numpy import ndarray
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
-class MemoryStoreBase():
+class MemoryStoreBase:
     @abstractmethod
     async def create_collection_async(self, collection_name: str) -> None:
         pass
