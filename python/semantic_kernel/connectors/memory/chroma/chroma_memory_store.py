@@ -148,7 +148,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             records {MemoryRecord} -- The record to upsert.
 
         Returns:
-            List[str] -- The unqiue database key of the record.
+            List[str] -- The unique database key of the record.
         """
         collection = await self.get_collection_async(collection_name)
         if collection is None:
@@ -182,7 +182,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             records {List[MemoryRecord]} -- The records to upsert.
 
         Returns:
-            List[str] -- The unqiue database keys of the records. In Pinecone, these are the record IDs.
+            List[str] -- The unique database keys of the records. In Pinecone, these are the record IDs.
         """
         # upsert_async is checking collection existence
         return [await self.upsert_async(collection_name, record) for record in records]
