@@ -13,7 +13,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -23,15 +22,20 @@ public class DefaultSequentialPlannerSKContext extends AbstractSKContext<Sequent
     public DefaultSequentialPlannerSKContext(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
-            @Nullable Supplier<ReadOnlySkillCollection> skills) {
+            @Nullable ReadOnlySkillCollection skills) {
         super(variables, memory, skills);
+    }
+
+    @Override
+    protected SequentialPlannerSKContext getThis() {
+        return this;
     }
 
     @Override
     public SequentialPlannerSKContext build(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
-            @Nullable Supplier<ReadOnlySkillCollection> skills) {
+            @Nullable ReadOnlySkillCollection skills) {
         return new DefaultSequentialPlannerSKContext(variables, memory, skills);
     }
 
@@ -299,7 +303,7 @@ public class DefaultSequentialPlannerSKContext extends AbstractSKContext<Sequent
                     new DefaultSequentialPlannerSKContext(
                             (ContextVariables) setVariable(PlanSKFunctionsAreRemembered, "true"),
                             null,
-                            this::getSkills));
+                            getSkills()));
         }
 
         return Flux.fromIterable(availableFunctions)
@@ -347,7 +351,7 @@ public class DefaultSequentialPlannerSKContext extends AbstractSKContext<Sequent
                                     (ContextVariables)
                                             setVariable(PlanSKFunctionsAreRemembered, "true"),
                                     newMemory,
-                                    this::getSkills);
+                                    getSkills());
                         });
     }
 }

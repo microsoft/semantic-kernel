@@ -260,10 +260,10 @@ public class KernelDefault implements Kernel {
         return runAsync(SKBuilders.variables().build(input), pipeline);
     }
 
+    @Override
     public Mono<SKContext<?>> runAsync(ContextVariables variables, SKFunction... pipeline) {
         DefaultSemanticSKContext context =
-                new DefaultSemanticSKContext(
-                        variables, this.memory, () -> this.defaultSkillCollection);
+                new DefaultSemanticSKContext(variables, this.memory, this.defaultSkillCollection);
 
         Mono<SKContext<?>> pipelineBuilder = Mono.just(context);
 

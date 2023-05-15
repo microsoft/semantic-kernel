@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.builders;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -8,7 +11,9 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 class ServiceLoadUtil {
-    public static <T> T findServiceLoader(Class<T> clazz, String alternativeClassName) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceLoadUtil.class);
+
+    static <T> T findServiceLoader(Class<T> clazz, String alternativeClassName) {
         List<T> services = findAllServiceLoaders(clazz);
         if (services.size() > 0) {
             return services.get(0);
@@ -27,13 +32,13 @@ class ServiceLoadUtil {
                 | IllegalAccessException
                 | NoSuchMethodException
                 | RuntimeException e) {
-            // ignore
+            LOGGER.error("Unable to load service " + clazz.getName() + " ", e);
         }
 
         throw new RuntimeException("Service not found: " + clazz.getName());
     }
 
-    public static <T> List<T> findAllServiceLoaders(Class<T> clazz) {
+    static <T> List<T> findAllServiceLoaders(Class<T> clazz) {
         List<T> serviceLoaders = new ArrayList<T>();
 
         ServiceLoader<T> factory = ServiceLoader.load(clazz);

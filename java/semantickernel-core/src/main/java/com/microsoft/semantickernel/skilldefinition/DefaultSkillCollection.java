@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /// <summary>
@@ -87,7 +88,8 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
 
     @Override
     @Nullable
-    public <T extends SKFunction<?, ?>> T getFunction(String funName, Class<T> functionClazz) {
+    public <T extends SKFunction<?, ?>> T getFunction(
+            String funName, @Nonnull Class<T> functionClazz) {
         return getFunction(GlobalSkill, funName, functionClazz);
     }
 

@@ -218,10 +218,7 @@ public class CodeTokenizer {
     }
 
     private static boolean IsBlankSpace(char c) {
-        return c == Symbols.Space
-                || c == Symbols.NewLine
-                || c == Symbols.CarriageReturn
-                || c == Symbols.Tab;
+        return Character.isWhitespace(c);
     }
 
     private static boolean isQuote(char c) {

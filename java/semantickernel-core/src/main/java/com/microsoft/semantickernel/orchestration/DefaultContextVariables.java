@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
 /// <summary>
@@ -39,13 +38,12 @@ class DefaultContextVariables implements ContextVariables {
         this.variables = new HashMap<>(variables);
     }
 
-    @CheckReturnValue
+    @Override
     public ContextVariables setVariable(@NonNull String key, @NonNull String content) {
         this.variables.put(key, content);
         return this;
     }
 
-    @CheckReturnValue
     ContextVariables appendToVariable(@NonNull String key, @NonNull String content) {
         return setVariable(key, this.variables.get(key) + content);
     }
@@ -62,12 +60,10 @@ class DefaultContextVariables implements ContextVariables {
     // result for the user
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
-    @CheckReturnValue
     public ContextVariables update(@NonNull String content) {
         return setVariable(MAIN_KEY, content);
     }
 
-    @CheckReturnValue
     public DefaultContextVariables update(@NonNull DefaultContextVariables newData) {
         return update(newData, true);
     }
@@ -81,7 +77,6 @@ class DefaultContextVariables implements ContextVariables {
     // data.</param>
     /// <returns>The current instance</returns>
 
-    @CheckReturnValue
     public DefaultContextVariables update(@NonNull ContextVariables newData, boolean merge) {
         /*
         // If requested, discard old data and keep only the new one.
@@ -97,7 +92,6 @@ class DefaultContextVariables implements ContextVariables {
         return this;
     }
 
-    @CheckReturnValue
     @Override
     public DefaultContextVariables copy() {
         return new DefaultContextVariables(variables);

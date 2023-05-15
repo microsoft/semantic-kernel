@@ -24,7 +24,7 @@ public interface MemoryStore {
     /**
      * Gets all collection names in the data store.
      *
-     * @return A group of collection names.
+     * @return An unmodifiable group of collection names.
      */
     Mono<Collection<String>> getCollectionsAsync();
 

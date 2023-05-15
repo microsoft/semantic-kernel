@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.semanticfunctions.DefaultPromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
+import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
@@ -19,7 +20,6 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -35,7 +35,8 @@ public class DefaultCompletionSKFunction
     private final SemanticFunctionConfig functionConfig;
     private SKSemanticAsyncTask<CompletionSKContext> function;
     private final CompletionRequestSettings requestSettings;
-    private Supplier<TextCompletion> aiService;
+
+    @Nullable private DefaultTextCompletionSupplier aiService;
 
     public DefaultCompletionSKFunction(
             DelegateTypes delegateTypes,
@@ -44,8 +45,15 @@ public class DefaultCompletionSKFunction
             String functionName,
             String description,
             CompletionRequestSettings requestSettings,
-            SemanticFunctionConfig functionConfig) {
-        super(delegateTypes, parameters, skillName, functionName, description, null);
+            SemanticFunctionConfig functionConfig,
+            @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
+        super(
+                delegateTypes,
+                parameters,
+                skillName,
+                functionName,
+                description,
+                kernelSkillsSupplier);
         // TODO
         // Verify.NotNull(delegateFunction, "The function delegate is empty");
         // Verify.ValidSkillName(skillName);
@@ -93,7 +101,7 @@ public class DefaultCompletionSKFunction
     public CompletionSKContext buildContext(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
-            @Nullable Supplier<ReadOnlySkillCollection> skills) {
+            @Nullable ReadOnlySkillCollection skills) {
         return new DefaultCompletionSKContext(variables, memory, skills);
     }
 
@@ -106,11 +114,7 @@ public class DefaultCompletionSKFunction
         // this.ensureContextHasSkills(context);
 
         if (function == null) {
-            throw new RuntimeException(
-                    "It does not appear this function has been registered on a kernel.\n"
-                            + "Register it on a kernel either by passing it to"
-                            + " KernelConfig.Builder().addSkill() when building the kernel, or\n"
-                            + "passing it to Kernel.registerSemanticFunction");
+            throw new FunctionNotRegisteredException(this.getName());
         }
 
         if (settings == null) {
@@ -130,11 +134,13 @@ public class DefaultCompletionSKFunction
                         });
     }
 
+    @Override
     public void registerOnKernel(Kernel kernel) {
         this.function =
                 (TextCompletion client,
                         CompletionRequestSettings requestSettings,
-                        CompletionSKContext context) -> {
+                        CompletionSKContext contextInput) -> {
+                    CompletionSKContext context = contextInput.copy();
                     // TODO
                     // Verify.NotNull(client, "AI LLM backed is empty");
                     return functionConfig
@@ -163,7 +169,7 @@ public class DefaultCompletionSKFunction
                                     });
                 };
 
-        this.skillCollection = kernel::getSkillCollection;
+        this.setSkillsSupplier(kernel::getSkillCollection);
         this.aiService = () -> kernel.getService(null, TextCompletion.class);
     }
 
@@ -272,6 +278,7 @@ public class DefaultCompletionSKFunction
                 functionName,
                 functionConfig.getConfig().getDescription(),
                 requestSettings,
-                functionConfig);
+                functionConfig,
+                null);
     }
 }

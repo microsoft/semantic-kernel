@@ -6,8 +6,6 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
 import reactor.core.publisher.Mono;
 
-import java.util.function.Supplier;
-
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
@@ -146,7 +144,7 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
     ContextType buildContext(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
-            @Nullable Supplier<ReadOnlySkillCollection> skills);
+            @Nullable ReadOnlySkillCollection skills);
 
     ContextType buildContext();
 }

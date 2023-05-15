@@ -4,8 +4,6 @@ package com.microsoft.semantickernel.orchestration;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
-import java.util.function.Supplier;
-
 import javax.annotation.Nullable;
 
 public class DefaultSemanticSKContext extends AbstractSKContext<SemanticSKContext>
@@ -17,15 +15,20 @@ public class DefaultSemanticSKContext extends AbstractSKContext<SemanticSKContex
     public DefaultSemanticSKContext(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
-            @Nullable Supplier<ReadOnlySkillCollection> skills) {
-        super(variables, memory, skills);
+            @Nullable ReadOnlySkillCollection skillCollection) {
+        super(variables, memory, skillCollection);
+    }
+
+    @Override
+    protected SemanticSKContext getThis() {
+        return this;
     }
 
     @Override
     public SemanticSKContext build(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
-            @Nullable Supplier<ReadOnlySkillCollection> skills) {
-        return new DefaultSemanticSKContext(variables, memory, skills);
+            @Nullable ReadOnlySkillCollection skillCollection) {
+        return new DefaultSemanticSKContext(variables, memory, skillCollection);
     }
 }
