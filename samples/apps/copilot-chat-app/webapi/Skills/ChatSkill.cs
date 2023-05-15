@@ -534,6 +534,61 @@ public class ChatSkill
 
         List<object> itemList = new();
 
+        // Some APIs will return a JSON response with one property key representing an embedded answer
+        string resultsDescriptor = "";
+
+        if (document.RootElement.ValueKind == JsonValueKind.Object)
+        {
+            int propertyCount = 0;
+            foreach (JsonProperty property in document.RootElement.EnumerateObject())
+            {
+                propertyCount++;
+            }
+
+            if (propertyCount == 1)
+            {
+                // Save property name for result interpolation
+                JsonProperty firstProperty = document.RootElement.EnumerateObject().First();
+                jsonTokenLimit -= Utilities.TokenCount(firstProperty.Name);
+                resultsDescriptor = string.Format(CultureInfo.InvariantCulture, "{0}: ", firstProperty.Name);
+
+                // Extract object to be truncated
+                JsonElement value = firstProperty.Value;
+                document = JsonDocument.Parse(value.GetRawText());
+            }
+        }
+
+        // START Truncation
+
+        // Detail Object
+        // To stay within token limits, attempt to truncate the list of properties
+        if (document.RootElement.ValueKind == JsonValueKind.Object)
+        {
+            int propertyCount = 0;
+            foreach (JsonProperty property in document.RootElement.EnumerateObject())
+            {
+                propertyCount++;
+                int propertyTokenCount = Utilities.TokenCount(property.ToString());
+
+                if (jsonTokenLimit - propertyTokenCount > 0)
+                {
+                    itemList.Add(property);
+                    jsonTokenLimit -= propertyTokenCount;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            // Some APIs will return a JSON response with a property key containing the response layer 
+            if (itemList.Count == 0 && propertyCount == 1)
+            {
+                JsonElement value = document.RootElement.EnumerateObject().First().Value;
+                document = JsonDocument.Parse(value.GetRawText());
+            }
+        }
+
         // Summary (List) Object
         // To stay within token limits, attempt to truncate the list of results
         if (document.RootElement.ValueKind == JsonValueKind.Array)
@@ -554,28 +609,8 @@ public class ChatSkill
             }
         }
 
-        // Detail Object
-        // To stay within token limits, attempt to truncate the list of properties
-        if (document.RootElement.ValueKind == JsonValueKind.Object)
-        {
-            foreach (JsonProperty property in document.RootElement.EnumerateObject())
-            {
-                int propertyTokenCount = Utilities.TokenCount(property.ToString());
-
-                if (jsonTokenLimit - propertyTokenCount > 0)
-                {
-                    itemList.Add(property);
-                    jsonTokenLimit -= propertyTokenCount;
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-
         return itemList.Count > 0
-            ? JsonSerializer.Serialize(itemList)
+            ? string.Format(CultureInfo.InvariantCulture, "{0}{1}", resultsDescriptor, JsonSerializer.Serialize(itemList))
             : string.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
     }
 
