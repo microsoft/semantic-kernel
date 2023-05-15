@@ -558,8 +558,6 @@ public class ChatSkill
             }
         }
 
-        // START Truncation
-
         // Detail Object
         // To stay within token limits, attempt to truncate the list of properties
         if (document.RootElement.ValueKind == JsonValueKind.Object)
