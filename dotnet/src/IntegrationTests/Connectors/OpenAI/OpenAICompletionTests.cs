@@ -15,6 +15,8 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
+#pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
+
 public sealed class OpenAICompletionTests : IDisposable
 {
     private readonly IConfigurationRoot _configuration;
@@ -137,7 +139,8 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<AIException>(context.LastException);
-        Assert.Contains("Incorrect API key provided", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(AIException.ErrorCodes.AccessDenied, ((AIException)context.LastException).ErrorCode);
+        Assert.Contains("The request is not authorized, HTTP status: 401", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -164,7 +167,8 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<AIException>(context.LastException);
-        Assert.Contains("provide a valid key", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(AIException.ErrorCodes.AccessDenied, ((AIException)context.LastException).ErrorCode);
+        Assert.Contains("The request is not authorized, HTTP status: 401", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -191,7 +195,9 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<AIException>(context.LastException);
-        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(AIException.ErrorCodes.InvalidRequest, ((AIException)context.LastException).ErrorCode);
+        Assert.Contains("The request is not valid, HTTP status: 400", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase); // This messasge could change in the future, comes from Azure OpenAI
     }
 
     [Theory(Skip = "This test is for manual verification.")]

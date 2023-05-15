@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -46,27 +45,17 @@ public sealed class SequentialPlannerTests
             functionsView.AddFunction(functionView);
 
             mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, CompleteRequestSettings, ILogger, CancellationToken>((context, settings, log, cancel) =>
+                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>()))
+                .Returns<SKContext, CompleteRequestSettings>((context, settings) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(context);
                 });
 
-            if (isSemantic)
-            {
-                skills.Setup(x => x.GetSemanticFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
-                    .Returns(mockFunction.Object);
-                ISKFunction? outFunc = mockFunction.Object;
-                skills.Setup(x => x.TryGetSemanticFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
-            }
-            else
-            {
-                skills.Setup(x => x.GetNativeFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
-                    .Returns(mockFunction.Object);
-                ISKFunction? outFunc = mockFunction.Object;
-                skills.Setup(x => x.TryGetNativeFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
-            }
+            skills.Setup(x => x.GetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
+                .Returns(mockFunction.Object);
+            ISKFunction? outFunc = mockFunction.Object;
+            skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
         }
 
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
@@ -101,11 +90,9 @@ public sealed class SequentialPlannerTests
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
-            null,
-            null,
-            default
-        )).Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken>(
-            (c, s, l, ct) => c.Variables.Update("Hello world!")
+            null
+        )).Callback<SKContext, CompleteRequestSettings>(
+            (c, s) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills
@@ -191,11 +178,9 @@ public sealed class SequentialPlannerTests
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
-            null,
-            null,
-            default
-        )).Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>(
-            (c, s, l, ct) => c.Variables.Update("Hello world!")
+            null
+        )).Callback<SKContext, CompleteRequestSettings>(
+            (c, s) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills

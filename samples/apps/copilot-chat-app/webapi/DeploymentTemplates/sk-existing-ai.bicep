@@ -5,11 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 Bicep template for deploying Semantic Kernel to Azure as a web app service without creating a new Azure OpenAI instance.
 
 Resources to add:
-- Qdrant
-- CosmosDB
-- AzureSpeech
 - vNet + Network security group
-- Key Vault
 */
 
 @description('Name for the deployment')
@@ -45,13 +41,31 @@ param endpoint string = ''
 @description('Azure OpenAI or OpenAI API key')
 param apiKey string = ''
 
+@description('Whether to deploy Cosmos DB for chat storage')
+param deployCosmosDB bool = true
+
+@description('Whether to deploy Qdrant (in a container) for memory storage')
+param deployQdrant bool = true
+
+@description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
+param deploySpeechServices bool = true
+
 
 @description('Region for the resources')
 #disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
 var location = resourceGroup().location       // more intelligible deployment experience at the cost of some flexibility
 
+@description('Hash of the resource group ID')
+var rgIdHash = uniqueString(resourceGroup().id)
+
 @description('Name for the deployment - Made unique')
-var uniqueName = '${name}-${uniqueString(resourceGroup().id)}'
+var uniqueName = '${name}-${rgIdHash}'
+
+@description('Name of the Azure Storage file share to create')
+var storageFileShareName = 'aciqdrantshare'
+
+@description('Name of the ACI container volume')
+var containerVolumeMountName = 'azqdrantvolume'
 
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
@@ -111,28 +125,56 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
           value: apiKey
         }
         {
-          name: 'Planner:AIService'
+          name: 'Planner:AIService:AIService'
           value: aiService
         }
         {
-          name: 'Planner:DeploymentOrModelId'
+          name: 'Planner:AIService:DeploymentOrModelId'
           value: plannerModel
         }
         {
-          name: 'Planner:Endpoint'
+          name: 'Planner:AIService:Endpoint'
           value: endpoint
         }
         {
-          name: 'Planner:Key'
+          name: 'Planner:AIService:Key'
           value: apiKey
         }
         {
           name: 'ChatStore:Type'
-          value: 'volatile'
+          value: deployCosmosDB ? 'cosmos' : 'volatile'
+        }
+        {
+          name: 'ChatStore:Cosmos:Database'
+          value: 'CopilotChat'
+        }
+        {
+          name: 'ChatStore:Cosmos:ChatSessionsContainer'
+          value: 'chatsessions'
+        }
+        {
+          name: 'ChatStore:Cosmos:ChatMessagesContainer'
+          value: 'chatmessages'
+        }
+        {
+          name: 'ChatStore:Cosmos:ConnectionString'
+          value: deployCosmosDB ? cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString : ''
         }
         {
           name: 'MemoriesStore:Type'
-          value: 'volatile'
+          value: deployQdrant ? 'Qdrant' : 'Volatile'
+        }
+        {
+          name: 'MemoriesStore:Qdrant:Host'
+          value: deployQdrant ? 'http://${aci.properties.ipAddress.fqdn}' : ''
+        }
+        {
+          name: 'AzureSpeech:Region'
+          value: location
+        }
+        {
+          name: 'AzureSpeech:Key'
+          value: deploySpeechServices ? speechAccount.listKeys().key1 : ''
         }
         {
           name: 'Kestrel:Endpoints:Https:Url'
@@ -161,6 +203,14 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'ApplicationInsights:ConnectionString'
           value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value: '~2'
         }
       ]
     }
@@ -218,5 +268,187 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08
     }
   }
 }
+
+resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = if (deployQdrant) {
+  name: 'st${rgIdHash}' // Not using full unique name to avoid hitting 24 char limit
+  location: location
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+  properties: {
+    supportsHttpsTrafficOnly: true
+  }
+  resource fileservices 'fileServices' = {
+    name: 'default'
+    resource share 'shares' = {
+      name: storageFileShareName
+    }
+  }
+}
+
+resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = if (deployQdrant) {
+  name: 'ci-${uniqueName}'
+  location: location
+  properties: {
+    sku: 'Standard'
+    containers: [
+      {
+        name: uniqueName
+        properties: {
+          image: 'qdrant/qdrant:latest'
+          ports: [
+            {
+              port: 6333
+              protocol: 'TCP'
+            }
+          ]
+          resources: {
+            requests: {
+              cpu: 4
+              memoryInGB: 16
+            }
+          }
+          volumeMounts: [
+            {
+              name: containerVolumeMountName
+              mountPath: '/qdrant/storage'
+            }
+          ]
+        }
+      }
+    ]
+    osType: 'Linux'
+    restartPolicy: 'OnFailure'
+    ipAddress: {
+      ports: [
+        {
+          port: 6333
+          protocol: 'TCP'
+        }
+      ]
+      type: 'Public'
+      dnsNameLabel: uniqueName
+    }
+    volumes: [
+      {
+        name: containerVolumeMountName
+        azureFile: {
+          shareName: storageFileShareName
+          storageAccountName: deployQdrant ? storage.name : 'notdeployed'
+          storageAccountKey: deployQdrant ? storage.listKeys().keys[0].value : ''
+        }
+      }
+    ]
+  }
+}
+
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = if (deployCosmosDB) {
+  name: toLower('cosmos-${uniqueName}')
+  location: location
+  kind: 'GlobalDocumentDB'
+  properties: {
+    consistencyPolicy: { defaultConsistencyLevel: 'Session' }
+    locations: [ {
+      locationName: location
+      failoverPriority: 0
+      isZoneRedundant: false
+      }
+    ]
+    databaseAccountOfferType: 'Standard'
+  }
+}
+
+resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15' = if (deployCosmosDB) {
+  parent: cosmosAccount
+  name: 'CopilotChat'
+  properties: {
+    resource: {
+      id: 'CopilotChat'
+    }
+  }
+}
+
+resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = if (deployCosmosDB) {
+  parent: cosmosDatabase
+  name: 'chatmessages'
+  properties: {
+    resource: {
+      id: 'chatmessages'
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+        excludedPaths: [
+          {
+            path: '/"_etag"/?'
+          }
+        ]
+      }
+      partitionKey: {
+        paths: [
+          '/id'
+        ]
+        kind: 'Hash'
+        version: 2
+      }
+    }
+  }
+}
+
+resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = if (deployCosmosDB) {
+  parent: cosmosDatabase
+  name: 'chatsessions'
+  properties: {
+    resource: {
+      id: 'chatsessions'
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+        excludedPaths: [
+          {
+            path: '/"_etag"/?'
+          }
+        ]
+      }
+      partitionKey: {
+        paths: [
+          '/id'
+        ]
+        kind: 'Hash'
+        version: 2
+      }
+    }
+  }
+}
+
+resource speechAccount 'Microsoft.CognitiveServices/accounts@2022-12-01' = if (deploySpeechServices) {
+  name: 'cog-${uniqueName}'
+  location: location
+  sku: {
+    name: 'S0'
+  }
+  kind: 'SpeechServices'
+  identity: {
+    type: 'None'
+  }
+  properties: {
+    customSubDomainName: 'cog-${uniqueName}'
+    networkAcls: {
+      defaultAction: 'Allow'
+    }
+    publicNetworkAccess: 'Enabled'
+  }
+}
+
 
 output deployedUrl string = appServiceWeb.properties.defaultHostName

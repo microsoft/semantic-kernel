@@ -9,7 +9,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -158,6 +157,7 @@ public sealed class Plan : ISKFunction
 
     /// <summary>
     /// Deserialize a JSON string into a Plan object.
+    /// TODO: the context should never be null, it's required internally
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
     /// <param name="context">The context to use for function registrations.</param>
@@ -165,11 +165,11 @@ public sealed class Plan : ISKFunction
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
     public static Plan FromJson(string json, SKContext? context = null)
     {
-        var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions() { IncludeFields = true }) ?? new Plan(string.Empty);
+        var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
         if (context != null)
         {
-            plan = SetRegisteredFunctions(plan, context);
+            plan = SetAvailableFunctions(plan, context);
         }
 
         return plan;
@@ -178,9 +178,11 @@ public sealed class Plan : ISKFunction
     /// <summary>
     /// Get JSON representation of the plan.
     /// </summary>
-    public string ToJson()
+    /// <param name="indented">Whether to emit indented JSON</param>
+    /// <returns>Plan serialized using JSON format</returns>
+    public string ToJson(bool indented = false)
     {
-        return JsonSerializer.Serialize(this);
+        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
     }
 
     /// <summary>
@@ -292,30 +294,33 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        // TODO - Eventually, we should be able to describe a plan and it's expected inputs/outputs
+        // TODO - Eventually, we should be able to describe a plan and its expected inputs/outputs
         return this.Function?.Describe() ?? new();
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+    public Task<SKContext> InvokeAsync(
+        string? input = null,
+        CompleteRequestSettings? settings = null,
+        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
+        if (input != null) { this.State.Update(input); }
 
-        context.Variables.Update(input);
+        SKContext context = new(
+            this.State,
+            logger: logger,
+            cancellationToken: cancellationToken);
 
-        return this.InvokeAsync(context, settings, log, cancellationToken);
+        return this.InvokeAsync(context, settings);
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
-        CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null)
     {
-        context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
-
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings, log, cancellationToken).ConfigureAwait(false);
+            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -401,11 +406,18 @@ public sealed class Plan : ISKFunction
     /// <param name="plan">Plan to set functions for.</param>
     /// <param name="context">Context to use.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetRegisteredFunctions(Plan plan, SKContext context)
+    private static Plan SetAvailableFunctions(Plan plan, SKContext context)
     {
         if (plan.Steps.Count == 0)
         {
-            if (context.IsFunctionRegistered(plan.SkillName, plan.Name, out var skillFunction))
+            if (context.Skills == null)
+            {
+                throw new KernelException(
+                    KernelException.ErrorCodes.SkillCollectionNotSet,
+                    "Skill collection not found in the context");
+            }
+
+            if (context.Skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
             {
                 plan.SetFunction(skillFunction);
             }
@@ -414,7 +426,7 @@ public sealed class Plan : ISKFunction
         {
             foreach (var step in plan.Steps)
             {
-                SetRegisteredFunctions(step, context);
+                SetAvailableFunctions(step, context);
             }
         }
 
@@ -516,7 +528,7 @@ public sealed class Plan : ISKFunction
             {
                 stepVariables.Set(param.Name, value);
             }
-            else if (this.State.Get(param.Name, out value))
+            else if (this.State.Get(param.Name, out value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(param.Name, value);
             }

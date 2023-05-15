@@ -93,7 +93,7 @@ public static class Example16_CustomLLM
     private static async Task CustomTextCompletionAsync()
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw ========");
-        ITextCompletion completionService = new MyTextCompletionService();
+        var completionService = new MyTextCompletionService();
 
         var result = await completionService.CompleteAsync("I missed the training sesion this morning", new CompleteRequestSettings());
 

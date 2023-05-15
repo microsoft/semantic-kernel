@@ -28,6 +28,16 @@ public sealed class KernelBuilder
     private readonly AIServiceCollection _aiServices = new();
 
     /// <summary>
+    /// Create a new kernel instance
+    /// </summary>
+    /// <returns>New kernel instance</returns>
+    public static IKernel Create()
+    {
+        var builder = new KernelBuilder();
+        return builder.Build();
+    }
+
+    /// <summary>
     /// Build a new kernel instance using the settings passed so far.
     /// </summary>
     /// <returns>Kernel instance</returns>
