@@ -21,6 +21,7 @@
     - Select **`Single-page application (SPA)`** as platform type, and the Redirect URI will be **`http://localhost:3000`**
     - Select **`Personal Microsoft accounts only`** as supported account types for this sample
 4. Copy **[.env.example](.env.example)** into a new file with name "**.env**".
+   > **Note**: Samples are configured to use chat completion AI models (e.g., gpt-3.5-turbo, gpt-4, etc.). See https://platform.openai.com/docs/models/model-endpoint-compatibility for chat completion model options.
 5. Once registered, copy the **Application (client) ID** from the Azure Portal and paste
    the GUID into the **.env** file next to `REACT_APP_GRAPH_CLIENT_ID=` (first line of the .env file).
 6. **Run** the following command `yarn install` (if you have never run the sample before)
