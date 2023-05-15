@@ -347,7 +347,7 @@ async def summarize_conversation_using_skill(kernel: sk.Kernel):
         Jane: What about you?
         John: That's cool. Let me see if mine will write a poem, too.
         John: Here's a poem my chatbot wrote:
-        John: The signularity of the universe is a mystery.
+        John: The singularity of the universe is a mystery.
         Jane: You might want to try using a different model.
         John: I'm using the GPT-2 model. That makes sense.
         John: Here is a new poem after updating the model.
