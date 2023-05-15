@@ -12,7 +12,9 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
 
-async def retry(func, retries=15, delay=1):
+async def retry(func, retries=20):
+    min_delay = 2
+    max_delay = 7
     for i in range(retries):
         try:
             result = str(await func())
@@ -23,7 +25,7 @@ async def retry(func, retries=15, delay=1):
             logger.error(f"Retry {i + 1}: {e}")
             if i == retries - 1:  # Last retry
                 raise
-            time.sleep(delay)
+            time.sleep(max(min(i, max_delay), min_delay))
 
 
 async def summarize_function_test(kernel: sk.Kernel):
