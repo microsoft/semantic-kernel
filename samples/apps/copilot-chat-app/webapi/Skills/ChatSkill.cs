@@ -564,10 +564,8 @@ public class ChatSkill
         // To stay within token limits, attempt to truncate the list of properties
         if (document.RootElement.ValueKind == JsonValueKind.Object)
         {
-            int propertyCount = 0;
             foreach (JsonProperty property in document.RootElement.EnumerateObject())
             {
-                propertyCount++;
                 int propertyTokenCount = Utilities.TokenCount(property.ToString());
 
                 if (jsonTokenLimit - propertyTokenCount > 0)
@@ -579,13 +577,6 @@ public class ChatSkill
                 {
                     break;
                 }
-            }
-
-            // Some APIs will return a JSON response with a property key containing the response layer 
-            if (itemList.Count == 0 && propertyCount == 1)
-            {
-                JsonElement value = document.RootElement.EnumerateObject().First().Value;
-                document = JsonDocument.Parse(value.GetRawText());
             }
         }
 
