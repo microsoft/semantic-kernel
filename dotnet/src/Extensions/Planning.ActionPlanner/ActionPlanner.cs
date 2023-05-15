@@ -77,7 +77,9 @@ public sealed class ActionPlanner
             throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
         }
 
-        SKContext result = await this._plannerFunction.InvokeAsync(goal, this._context).ConfigureAwait(false);
+        this._context.Variables.Update(goal);
+
+        SKContext result = await this._plannerFunction.InvokeAsync(this._context).ConfigureAwait(false);
 
         ActionPlanResponse? planData;
         try

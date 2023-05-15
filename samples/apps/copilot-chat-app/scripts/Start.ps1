@@ -24,17 +24,21 @@ param (
     [string] $AzureOpenAIOrOpenAIKey
 )
 
+Set-Location "$PSScriptRoot"
+$BackendScript = Join-Path '.' 'Start-Backend.ps1'
+$FrontendScript = Join-Path '.' 'Start-Frontend.ps1'
+
 # Start backend (in new PS process)
 if ($AzureOpenAIOrOpenAIKey -eq '')
 {
     # no key
-    Start-Process pwsh -ArgumentList "-noexit", "-command $PSScriptRoot/Start-Backend.ps1"
+    Start-Process pwsh -ArgumentList "-noexit", "-command $BackendScript"
 }
 else
 {
     # with key
-    Start-Process pwsh -ArgumentList "-noexit", "-command $PSScriptRoot/Start-Backend.ps1 -AzureOpenAIOrOpenAIKey $AzureOpenAIOrOpenAIKey"
+    Start-Process pwsh -ArgumentList "-noexit", "-command $BackendScript -AzureOpenAIOrOpenAIKey $AzureOpenAIOrOpenAIKey"
 }
 
 # Start frontend (in current PS process)
-& "$PSScriptRoot/Start-Frontend.ps1" -ClientId $ClientId -Tenant $Tenant
+& $FrontendScript -ClientId $ClientId -Tenant $Tenant

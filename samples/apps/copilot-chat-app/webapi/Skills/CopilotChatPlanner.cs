@@ -19,19 +19,12 @@ public class CopilotChatPlanner
     public IKernel Kernel { get; }
 
     /// <summary>
-    /// The planner's options.
-    /// </summary>
-    private readonly PlannerOptions _options;
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="CopilotChatPlanner"/> class.
     /// </summary>
     /// <param name="plannerKernel">The planner's kernel.</param>
-    /// <param name="options">The planner's options.</param>
-    public CopilotChatPlanner(IKernel plannerKernel, IOptions<PlannerOptions> options)
+    public CopilotChatPlanner(IKernel plannerKernel)
     {
         this.Kernel = plannerKernel;
-        this._options = options.Value;
     }
 
     /// <summary>
