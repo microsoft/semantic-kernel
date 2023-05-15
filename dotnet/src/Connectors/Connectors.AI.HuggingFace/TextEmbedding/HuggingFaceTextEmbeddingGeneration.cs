@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
 /// <summary>
 /// HuggingFace embedding generation service.

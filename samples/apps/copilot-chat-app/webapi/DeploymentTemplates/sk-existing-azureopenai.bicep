@@ -31,8 +31,20 @@ param endpoint string
 @description('Azure OpenAI API key')
 param apiKey string
 
+@description('Semantic Kernel server API key - Provide empty string to disable API key auth')
+param skServerApiKey string = newGuid()
 
-module openAI 'sk-existing-ai.bicep' = {
+@description('Whether to deploy Cosmos DB for chat storage')
+param deployCosmosDB bool = true
+
+@description('Whether to deploy Qdrant (in a container) for memory storage')
+param deployQdrant bool = true
+
+@description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
+param deploySpeechServices bool = true
+
+
+module openAI 'main.bicep' = {
   name: 'openAIDeployment'
   params: {
     name: name
@@ -44,6 +56,11 @@ module openAI 'sk-existing-ai.bicep' = {
     plannerModel: plannerModel
     endpoint: endpoint
     apiKey: apiKey
+    skServerApiKey: skServerApiKey
+    deployCosmosDB: deployCosmosDB
+    deployQdrant: deployQdrant
+    deploySpeechServices: deploySpeechServices
+    deployNewAzureOpenAI: false
   }
 }
 

@@ -42,7 +42,7 @@ First, let’s set up and verify the back-end API server is running.
        dotnet user-secrets set "Embedding:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
        dotnet user-secrets set "Planner:AIService:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
        ```
-     - Update `DeploymentOrModelID` to the Azure OpenAI deployment or OpenAI models you want to use. 
+     - Update `DeploymentOrModelId` to the Azure OpenAI deployment or OpenAI models you want to use. 
        - For `Completion` and `Planner:AIService`, CopilotChat is optimized for Chat completion models, such as gpt-3.5-turbo and gpt-4.
          > **Important:** gpt-3.5-turbo is normally labelled as "`gpt-35-turbo`" (no period) in Azure OpenAI and "`gpt-3.5-turbo`" (with a period) in OpenAI.
        - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effect for generating embeddings.
@@ -114,7 +114,7 @@ The WebApp can display this error when the application is configured for an acti
 
 ## 2. Issues using text completion models, such as `text-davinci-003`
 CopilotChat supports chat completion models, such as `gpt-3.5-*` and `gpt-4-*`.
-See [OpenAI's model compatiblity](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
+See [OpenAI's model compatibility](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
 the complete list of current models supporting chat completions.
 
 ## 3. Localhost SSL certificate errors

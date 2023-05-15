@@ -2,7 +2,7 @@
 Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-Bicep template for deploying Semantic Kernel to Azure as a web app service without creating a new Azure OpenAI instance.
+Bicep template for deploying Semantic Kernel to Azure as a web app service.
 
 Resources to add:
 - vNet + Network security group
@@ -41,6 +41,21 @@ param endpoint string = ''
 @description('Azure OpenAI or OpenAI API key')
 param apiKey string = ''
 
+@description('Semantic Kernel server API key - Provide empty string to disable API key auth')
+param skServerApiKey string = newGuid()
+
+@description('Whether to deploy a new Azure OpenAI instance')
+param deployNewAzureOpenAI bool = true
+
+@description('Whether to deploy Cosmos DB for chat storage')
+param deployCosmosDB bool = true
+
+@description('Whether to deploy Qdrant (in a container) for memory storage')
+param deployQdrant bool = true
+
+@description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
+param deploySpeechServices bool = true
+
 
 @description('Region for the resources')
 #disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
@@ -57,6 +72,50 @@ var storageFileShareName = 'aciqdrantshare'
 
 @description('Name of the ACI container volume')
 var containerVolumeMountName = 'azqdrantvolume'
+
+
+resource openAI 'Microsoft.CognitiveServices/accounts@2022-12-01' = if(deployNewAzureOpenAI) {
+  name: 'ai-${uniqueName}'
+  location: location
+  kind: 'OpenAI'
+  sku: {
+    name: 'S0'
+  }
+  properties: {
+    customSubDomainName: toLower(uniqueName)
+  }
+}
+
+resource openAI_completionModel 'Microsoft.CognitiveServices/accounts/deployments@2022-12-01' = if(deployNewAzureOpenAI) {
+  parent: openAI
+  name: completionModel
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: completionModel
+    }
+    scaleSettings: {
+      scaleType: 'Standard'
+    }
+  }
+}
+
+resource openAI_embeddingModel 'Microsoft.CognitiveServices/accounts/deployments@2022-12-01' = if(deployNewAzureOpenAI) {
+  parent: openAI
+  name: embeddingModel
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: embeddingModel
+    }
+    scaleSettings: {
+      scaleType: 'Standard'
+    }
+  }
+  dependsOn: [             // This "dependency" is to create models sequentially because the resource
+    openAI_completionModel // provider does not support parallel creation of models properly.
+  ]
+}
 
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
@@ -93,11 +152,11 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'Completion:Endpoint'
-          value: endpoint
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
         }
         {
           name: 'Completion:Key'
-          value: apiKey
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
         }
         {
           name: 'Embedding:AIService'
@@ -109,31 +168,39 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'Embedding:Endpoint'
-          value: endpoint
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
         }
         {
           name: 'Embedding:Key'
-          value: apiKey
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
         }
         {
-          name: 'Planner:AIService'
+          name: 'Planner:AIService:AIService'
           value: aiService
         }
         {
-          name: 'Planner:DeploymentOrModelId'
+          name: 'Planner:AIService:DeploymentOrModelId'
           value: plannerModel
         }
         {
-          name: 'Planner:Endpoint'
-          value: endpoint
+          name: 'Planner:AIService:Endpoint'
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
         }
         {
-          name: 'Planner:Key'
-          value: apiKey
+          name: 'Planner:AIService:Key'
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
+        }
+        {
+          name: 'Authorization:Type'
+          value: empty(skServerApiKey) ? 'None' : 'ApiKey'
+        }
+        {
+          name: 'Authorization:ApiKey'
+          value: skServerApiKey
         }
         {
           name: 'ChatStore:Type'
-          value: 'cosmos'
+          value: deployCosmosDB ? 'cosmos' : 'volatile'
         }
         {
           name: 'ChatStore:Cosmos:Database'
@@ -149,15 +216,15 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'ChatStore:Cosmos:ConnectionString'
-          value: cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
+          value: deployCosmosDB ? cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString : ''
         }
         {
           name: 'MemoriesStore:Type'
-          value: 'Qdrant'
+          value: deployQdrant ? 'Qdrant' : 'Volatile'
         }
         {
           name: 'MemoriesStore:Qdrant:Host'
-          value: 'http://${aci.properties.ipAddress.fqdn}'
+          value: deployQdrant ? 'http://${aci.properties.ipAddress.fqdn}' : ''
         }
         {
           name: 'AzureSpeech:Region'
@@ -165,7 +232,7 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'AzureSpeech:Key'
-          value: speechAccount.listKeys().key1
+          value: deploySpeechServices ? speechAccount.listKeys().key1 : ''
         }
         {
           name: 'Kestrel:Endpoints:Https:Url'
@@ -194,6 +261,14 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'ApplicationInsights:ConnectionString'
           value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value: '~2'
         }
       ]
     }
@@ -252,7 +327,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08
   }
 }
 
-resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = if (deployQdrant) {
   name: 'st${rgIdHash}' // Not using full unique name to avoid hitting 24 char limit
   location: location
   kind: 'StorageV2'
@@ -270,7 +345,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   }
 }
 
-resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = {
+resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = if (deployQdrant) {
   name: 'ci-${uniqueName}'
   location: location
   properties: {
@@ -318,15 +393,15 @@ resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = 
         name: containerVolumeMountName
         azureFile: {
           shareName: storageFileShareName
-          storageAccountName: storage.name
-          storageAccountKey: storage.listKeys().keys[0].value
+          storageAccountName: deployQdrant ? storage.name : 'notdeployed'
+          storageAccountKey: deployQdrant ? storage.listKeys().keys[0].value : ''
         }
       }
     ]
   }
 }
 
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = if (deployCosmosDB) {
   name: toLower('cosmos-${uniqueName}')
   location: location
   kind: 'GlobalDocumentDB'
@@ -342,7 +417,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
   }
 }
 
-resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15' = {
+resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15' = if (deployCosmosDB) {
   parent: cosmosAccount
   name: 'CopilotChat'
   properties: {
@@ -352,7 +427,7 @@ resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022
   }
 }
 
-resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = {
+resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = if (deployCosmosDB) {
   parent: cosmosDatabase
   name: 'chatmessages'
   properties: {
@@ -383,7 +458,7 @@ resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
   }
 }
 
-resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = {
+resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = if (deployCosmosDB) {
   parent: cosmosDatabase
   name: 'chatsessions'
   properties: {
@@ -414,7 +489,7 @@ resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
   }
 }
 
-resource speechAccount 'Microsoft.CognitiveServices/accounts@2022-12-01' = {
+resource speechAccount 'Microsoft.CognitiveServices/accounts@2022-12-01' = if (deploySpeechServices) {
   name: 'cog-${uniqueName}'
   location: location
   sku: {

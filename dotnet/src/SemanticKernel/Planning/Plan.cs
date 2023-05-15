@@ -9,7 +9,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -295,30 +294,33 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        // TODO - Eventually, we should be able to describe a plan and it's expected inputs/outputs
+        // TODO - Eventually, we should be able to describe a plan and its expected inputs/outputs
         return this.Function?.Describe() ?? new();
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+    public Task<SKContext> InvokeAsync(
+        string? input = null,
+        CompleteRequestSettings? settings = null,
+        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
+        if (input != null) { this.State.Update(input); }
 
-        context.Variables.Update(input);
+        SKContext context = new(
+            this.State,
+            logger: logger,
+            cancellationToken: cancellationToken);
 
-        return this.InvokeAsync(context, settings, log, cancellationToken);
+        return this.InvokeAsync(context, settings);
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
-        CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null)
     {
-        context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
-
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings, log, cancellationToken).ConfigureAwait(false);
+            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -526,7 +528,7 @@ public sealed class Plan : ISKFunction
             {
                 stepVariables.Set(param.Name, value);
             }
-            else if (this.State.Get(param.Name, out value))
+            else if (this.State.Get(param.Name, out value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(param.Name, value);
             }

@@ -48,17 +48,19 @@ internal static class SemanticKernelFactory
             switch (config.CompletionConfig.AIService)
             {
                 case AIService.OpenAI:
-                    c.AddOpenAITextCompletionService(
-                        config.CompletionConfig.DeploymentOrModelId,
-                        config.CompletionConfig.Key,
-                        serviceId: config.CompletionConfig.ServiceId);
+                    c.AddOpenAIChatCompletionService(
+                        modelId: config.CompletionConfig.DeploymentOrModelId,
+                        apiKey: config.CompletionConfig.Key,
+                        serviceId: config.CompletionConfig.ServiceId,
+                        alsoAsTextCompletion: true);
                     break;
                 case AIService.AzureOpenAI:
-                    c.AddAzureTextCompletionService(
-                        config.CompletionConfig.DeploymentOrModelId,
-                        config.CompletionConfig.Endpoint,
-                        config.CompletionConfig.Key,
-                        serviceId: config.CompletionConfig.ServiceId);
+                    c.AddAzureChatCompletionService(
+                        deploymentName: config.CompletionConfig.DeploymentOrModelId,
+                        endpoint: config.CompletionConfig.Endpoint,
+                        apiKey: config.CompletionConfig.Key,
+                        serviceId: config.CompletionConfig.ServiceId,
+                        alsoAsTextCompletion: true);
                     break;
                 default:
                     break;
