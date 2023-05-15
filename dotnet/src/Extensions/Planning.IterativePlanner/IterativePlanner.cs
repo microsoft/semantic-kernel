@@ -77,10 +77,10 @@ public sealed class IterativePlanner
         this._context.Variables.Set("toolDescriptions", toolDescriptions);
         this._context.Variables.Set("question", goal);
 
-        List<NextStep> steps = new List<NextStep>();
+        this.Steps = new List<NextStep>();
         for (int i = 0; i < this._maxIterations; i++)
         {
-            var scratchPad = this.CreateScratchPad(steps, goal);
+            var scratchPad = this.CreateScratchPad(this.Steps, goal);
             Thread.Sleep(1000);
             PrintColored(scratchPad);
             this._context.Variables.Set("agentScratchPad", scratchPad);
@@ -90,7 +90,7 @@ public sealed class IterativePlanner
             PrintColored(actionText);
             
             var nextStep = this.ParseResult(actionText);
-            steps.Add(nextStep);
+            this.Steps.Add(nextStep);
 
             if (!String.IsNullOrEmpty(nextStep.FinalAnswer))
             {
@@ -211,6 +211,7 @@ public sealed class IterativePlanner
     private readonly ISKFunction _functionFlowFunction;
 
     private readonly IKernel _kernel;
+    public List<NextStep> Steps { get; set; }
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation

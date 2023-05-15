@@ -43,18 +43,11 @@ public sealed class IterativePlannerTests : IDisposable
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
-        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var plan = new IterativePlanner(kernel, 1);
-        
-        //// Arrange
-        //var returnContext = target.CreateNewContext();
+        var goal = "Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?";
 
-        //subPlan.AddSteps(emailSkill["WritePoemAsync"], emailSkill["WritePoemAsync"], emailSkill["WritePoemAsync"]);
-        //plan.AddSteps(subPlan, emailSkill["SendEmailAsync"]);
-        //plan.State.Set("email_address", "something@email.com");
-
-        //// Act
-        //var result = await target.RunAsync("PlanInput", plan);
+        // Act
+        var result = await plan.ExecutePlanAsync(goal);
 
         //// Assert
         //Assert.NotNull(result);
