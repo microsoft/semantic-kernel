@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import numpy as np
 import numpy.testing as npt
 import pytest
