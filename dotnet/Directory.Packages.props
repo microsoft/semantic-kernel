@@ -35,6 +35,7 @@
     <PackageVersion Include="Microsoft.OpenApi" Version="[1.6.3, )" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="[1.6.3, )" />
     <PackageVersion Include="Newtonsoft.Json" Version="[13.0.3, )" />
+    <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.52.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.16" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />

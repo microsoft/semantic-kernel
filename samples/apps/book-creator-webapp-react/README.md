@@ -15,6 +15,7 @@
 2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps
    to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. Copy **[.env.example](.env.example)** into a new file with name "**.env**".
+   > **Note**: Samples are configured to use chat completion AI models (e.g., gpt-3.5-turbo, gpt-4, etc.). See https://platform.openai.com/docs/models/model-endpoint-compatibility for chat completion model options.
 4. You will also need to **Run** the following command `yarn install` (if you have never run the sample before)
    and/or `yarn start` from the command line.
 5. A browser will automatically open, otherwise you can navigate to `http://localhost:3000` to use the sample.
