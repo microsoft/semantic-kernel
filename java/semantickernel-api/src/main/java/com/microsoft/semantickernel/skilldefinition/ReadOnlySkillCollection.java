@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 /**
  * Skill collection interface.
  *
- * <p>This is read only, write operations will return a modified result
+ * <p>This is read only
  */
 public interface ReadOnlySkillCollection {
 

@@ -3,15 +3,14 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
+import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
-import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -25,7 +24,7 @@ public abstract class AbstractSkFunction<
     private final String skillName;
     private final String functionName;
     private final String description;
-    @Nullable protected Supplier<ReadOnlySkillCollection> skillCollection;
+    @Nullable private KernelSkillsSupplier skillsSupplier;
 
     public AbstractSkFunction(
             AbstractSkFunction.DelegateTypes delegateType,
@@ -33,25 +32,43 @@ public abstract class AbstractSkFunction<
             String skillName,
             String functionName,
             String description,
-            @Nullable Supplier<ReadOnlySkillCollection> skillCollection) {
+            @Nullable KernelSkillsSupplier skillsSupplier) {
 
         this.delegateType = delegateType;
         this.parameters = new ArrayList<>(parameters);
         this.skillName = skillName;
         this.functionName = functionName;
         this.description = description;
-        this.skillCollection = skillCollection;
+        this.skillsSupplier = skillsSupplier;
+    }
+
+    protected void assertSkillSupplierRegistered() {
+        if (skillsSupplier == null) {
+            throw new FunctionNotRegisteredException(getName());
+        }
+    }
+
+    protected void setSkillsSupplier(@Nullable KernelSkillsSupplier skillsSupplier) {
+        this.skillsSupplier = skillsSupplier;
+    }
+
+    @Nullable
+    public KernelSkillsSupplier getSkillsSupplier() {
+        return skillsSupplier;
     }
 
     @Override
     public Mono<ContextType> invokeAsync(
             String input, @Nullable ContextType context, @Nullable RequestConfiguration settings) {
         if (context == null) {
+            assertSkillSupplierRegistered();
             context =
                     buildContext(
                             SKBuilders.variables().build(),
                             NullMemory.getInstance(),
-                            this.skillCollection);
+                            skillsSupplier.get());
+        } else {
+            context = context.copy();
         }
 
         context = context.update(input);
@@ -71,6 +88,8 @@ public abstract class AbstractSkFunction<
 
         if (context == null) {
             context = buildContext(SKBuilders.variables().build(), NullMemory.getInstance(), null);
+        } else {
+            context = context.copy();
         }
 
         return this.invokeAsyncInternal(context, settings);
@@ -95,11 +114,6 @@ public abstract class AbstractSkFunction<
 
     public List<ParameterView> getParameters() {
         return Collections.unmodifiableList(parameters);
-    }
-
-    @Nullable
-    public Supplier<ReadOnlySkillCollection> getSkillCollection() {
-        return skillCollection;
     }
 
     public enum DelegateTypes {
@@ -191,6 +205,7 @@ public abstract class AbstractSkFunction<
 
     @Override
     public ContextType buildContext() {
-        return buildContext(SKBuilders.variables().build(), null, skillCollection);
+        assertSkillSupplierRegistered();
+        return buildContext(SKBuilders.variables().build(), null, getSkillsSupplier().get());
     }
 }

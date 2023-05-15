@@ -12,8 +12,7 @@ import javax.annotation.Nullable;
 
 /**
  * Context Variables is a data structure that holds temporary data while a task is being performed.
- * It is accessed by functions in the pipeline. This is read only and write operations will return
- * an updated version of the data.
+ * It is accessed by functions in the pipeline.
  */
 public interface ContextVariables {
 
@@ -29,7 +28,7 @@ public interface ContextVariables {
      *
      * @param key variable name
      * @param content value to set
-     * @return clone of the variables with the value set
+     * @return Contect for fluent calls
      */
     ContextVariables setVariable(@NonNull String key, @NonNull String content);
 

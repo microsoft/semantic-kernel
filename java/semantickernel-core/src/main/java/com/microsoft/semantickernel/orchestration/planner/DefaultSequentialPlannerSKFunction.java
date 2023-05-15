@@ -15,7 +15,6 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -39,7 +38,7 @@ public class DefaultSequentialPlannerSKFunction
                 func.getSkillName(),
                 func.getName(),
                 func.getDescription(),
-                func.getSkillCollection());
+                func.getSkillsSupplier());
 
         this.delegate = func;
     }
@@ -80,7 +79,7 @@ public class DefaultSequentialPlannerSKFunction
     public SequentialPlannerSKContext buildContext(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
-            @Nullable Supplier<ReadOnlySkillCollection> skills) {
+            @Nullable ReadOnlySkillCollection skills) {
         return new DefaultSequentialPlannerSKContext(variables, memory, skills);
     }
 
@@ -99,12 +98,12 @@ public class DefaultSequentialPlannerSKFunction
                         new DefaultCompletionSKContext(
                                 context.getVariables(),
                                 context.getSemanticMemory(),
-                                context::getSkills),
+                                context.getSkills()),
                         null)
                 .map(
                         res -> {
                             return new DefaultSequentialPlannerSKContext(
-                                    res.getVariables(), res.getSemanticMemory(), res::getSkills);
+                                    res.getVariables(), res.getSemanticMemory(), res.getSkills());
                         });
     }
 

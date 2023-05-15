@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.orchestration; // Copyright (c) Microsoft. 
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
@@ -15,7 +16,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -37,7 +37,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
             String skillName,
             String functionName,
             String description,
-            Supplier<ReadOnlySkillCollection> skillCollection) {
+            KernelSkillsSupplier skillCollection) {
         super(delegateType, parameters, skillName, functionName, description, skillCollection);
         // TODO
         // Verify.NotNull(delegateFunction, "The function delegate is empty");
@@ -120,7 +120,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
             Method methodSignature,
             Object methodContainerInstance,
             String skillName,
-            Supplier<ReadOnlySkillCollection> skillCollectionSupplier) {
+            KernelSkillsSupplier kernelSkillsSupplier) {
         if (skillName == null || skillName.isEmpty()) {
             skillName = ReadOnlySkillCollection.GlobalSkill;
         }
@@ -139,7 +139,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
                 skillName,
                 methodDetails.name,
                 methodDetails.description,
-                skillCollectionSupplier);
+                kernelSkillsSupplier);
     }
 
     /*
@@ -272,7 +272,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
     public SemanticSKContext buildContext(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
-            @Nullable Supplier<ReadOnlySkillCollection> skills) {
+            @Nullable ReadOnlySkillCollection skills) {
         return new DefaultSemanticSKContext(variables, memory, skills);
     }
 
@@ -503,7 +503,9 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
     }
 
     private static SKNativeTask<SemanticSKContext> getFunction(Method method, Object instance) {
-        return (context) -> {
+        return (contextInput) -> {
+            SemanticSKContext context = contextInput.copy();
+
             List<Object> args =
                     Arrays.stream(method.getParameters())
                             .map(

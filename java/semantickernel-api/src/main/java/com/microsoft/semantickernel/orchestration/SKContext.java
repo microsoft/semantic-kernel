@@ -8,45 +8,15 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import reactor.util.annotation.NonNull;
 import reactor.util.annotation.Nullable;
 
-import java.util.function.Supplier;
-
 import javax.annotation.CheckReturnValue;
 
-/**
- * Semantic Kernel context.
- *
- * <p>This is read only, write operations will return a modified result
- */
+/** Semantic Kernel context. */
 public interface SKContext<Type extends SKContext<Type>> {
 
     Type build(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
-            @Nullable Supplier<ReadOnlySkillCollection> skills);
-
-    /** Build a context with the given arguments. */
-    /*
-        static <T extends ReadOnlySKContext<T>> ReadOnlySKContext<T> build(
-                ReadOnlyContextVariables variables,
-                @Nullable SemanticTextMemory memory,
-                @Nullable Supplier<ReadOnlySkillCollection> skills) {
-            return new ImmutableReadOnlySKContext<T>(variables, memory, skills);
-        }
-    */
-    /** Build a context with the given arguments. */
-    /*
-    static <T extends ReadOnlySKContext<T>> ReadOnlySKContext<T> build(ReadOnlyContextVariables variables) {
-        return new ImmutableReadOnlySKContext<T>(variables);
-    }
-
-     */
-    /** Build a default context. */
-    /*
-    static <T extends ReadOnlySKContext<T>> ReadOnlySKContext<T> build() {
-        return new ImmutableReadOnlySKContext<T>(ReadOnlyContextVariables.build());
-    }
-
-     */
+            @Nullable ReadOnlySkillCollection skills);
 
     /**
      * Obtain the result of the execution that produced this context. This will be the "input" entry
@@ -170,16 +140,6 @@ public interface SKContext<Type extends SKContext<Type>> {
     /// <param name="logger">Logger for operations in context.</param>
     /// <param name="cancellationToken">Optional cancellation token for operations in
     // context.</param>
-    /**
-     * Clones the current context
-     *
-     * @return a copy of this context
-     */
-    /*
-    @CheckReturnValue
-    Type copy();
-
-     */
 
     /** Provides access to the contexts semantic memory */
     @Nullable
@@ -198,9 +158,8 @@ public interface SKContext<Type extends SKContext<Type>> {
      *
      * @param key if null defaults to the "input" key
      * @param content
-     * @return A clone of this context with the variable modified
+     * @return Context for fluent calls
      */
-    @CheckReturnValue
     Type setVariable(@NonNull String key, @NonNull String content);
 
     /**
@@ -208,16 +167,15 @@ public interface SKContext<Type extends SKContext<Type>> {
      *
      * @param key
      * @param content
-     * @return A clone of this context with the variable modified
+     * @return Context for fluent calls
      */
-    @CheckReturnValue
     Type appendToVariable(@NonNull String key, @NonNull String content);
 
     /**
      * Updates the input entry with the given data
      *
      * @param content
-     * @return A clone of this context with the variable modified
+     * @return Context for fluent calls
      */
     @CheckReturnValue
     Type update(@NonNull String content);
@@ -227,10 +185,12 @@ public interface SKContext<Type extends SKContext<Type>> {
      * entries.
      *
      * @param newData
-     * @return A clone of this context with the variable modified
+     * @return Context for fluent calls
      */
     @CheckReturnValue
     Type update(@NonNull ContextVariables newData);
+
+    Type copy();
 
     /// <summary>
     /// Updates all the local data with new data, merging the two datasets.

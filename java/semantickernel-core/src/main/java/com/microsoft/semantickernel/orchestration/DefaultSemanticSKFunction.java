@@ -3,13 +3,12 @@ package com.microsoft.semantickernel.orchestration; // Copyright (c) Microsoft. 
 
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
+import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
-import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -30,8 +29,8 @@ public abstract class DefaultSemanticSKFunction<
             String skillName,
             String functionName,
             String description,
-            @Nullable Supplier<ReadOnlySkillCollection> skillCollection) {
-        super(delegateType, parameters, skillName, functionName, description, skillCollection);
+            @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
+        super(delegateType, parameters, skillName, functionName, description, kernelSkillsSupplier);
         // TODO
         // Verify.NotNull(delegateFunction, "The function delegate is empty");
         // Verify.ValidSkillName(skillName);
@@ -43,11 +42,14 @@ public abstract class DefaultSemanticSKFunction<
     public Mono<ContextType> invokeAsync(
             String input, @Nullable ContextType context, @Nullable RequestConfiguration settings) {
         if (context == null) {
+            assertSkillSupplierRegistered();
             context =
                     buildContext(
                             SKBuilders.variables().build(),
                             NullMemory.getInstance(),
-                            super.skillCollection);
+                            super.getSkillsSupplier().get());
+        } else {
+            context = context.copy();
         }
 
         context = context.update(input);

@@ -16,4 +16,10 @@
     <Bug pattern="EI_EXPOSE_REP2"/>
   </Match>
 
+  <Match>
+    <Class name="com.microsoft.semantickernel.orchestration.planner.DefaultSequentialPlannerSKFunction"/>
+    <Field name="delegate"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
 </FindBugsFilter>

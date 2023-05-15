@@ -9,9 +9,7 @@ import java.util.stream.Collectors;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
-/**
- * A collection of functions. This is read only, write operations return a clone of the collection
- */
+/** A collection of functions. */
 public class FunctionCollection implements ReadOnlyFunctionCollection {
     private final CaseInsensitiveMap<SKFunction<?, ?>> functionCollection;
 
@@ -44,10 +42,12 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
                                         .collect(Collectors.toMap(SKFunction::getName, it -> it))));
     }
 
+    @Override
     public String getSkillName() {
         return skillName;
     }
 
+    @Override
     public SKFunction<?, ?> getFunction(String functionName) {
         SKFunction<?, ?> func = functionCollection.get(functionName.toLowerCase());
         if (func == null) {
@@ -65,6 +65,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      * @return The given function
      * @throws RuntimeException if the given entry is not of the expected type
      */
+    @Override
     public <T extends SKFunction> T getFunction(String functionName, @Nullable Class<T> clazz) {
         SKFunction<?, ?> func = getFunction(functionName);
         if (clazz == null) {
@@ -80,6 +81,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
     /**
      * @return A clone of this collection
      */
+    @Override
     @CheckReturnValue
     public FunctionCollection copy() {
         return new FunctionCollection(skillName, functionCollection);
@@ -88,6 +90,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
     /**
      * @return An unmodifiable list of all functions
      */
+    @Override
     public List<SKFunction<?, ?>> getAll() {
         return Collections.unmodifiableList(new ArrayList<>(functionCollection.values()));
     }
@@ -97,7 +100,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      *
      * @param functionName
      * @param functionInstance
-     * @return A clone of this collection with the function added
+     * @return Collection for fluent callse
      */
     @CheckReturnValue
     public FunctionCollection put(String functionName, SKFunction<?, ?> functionInstance) {
@@ -112,7 +115,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      * Merge in the given collection to this one, duplicate function names will overwrite
      *
      * @param value
-     * @return a clone of this collection with the new entries added
+     * @return Collection for fluent calls
      */
     public FunctionCollection merge(FunctionCollection value) {
         HashMap<String, SKFunction<?, ?>> mutable = new HashMap<>(functionCollection);

@@ -9,7 +9,6 @@ import reactor.util.annotation.NonNull;
 import reactor.util.annotation.Nullable;
 
 import java.util.Collections;
-import java.util.function.Supplier;
 
 import javax.annotation.CheckReturnValue;
 
@@ -17,7 +16,7 @@ import javax.annotation.CheckReturnValue;
 /// Semantic Kernel context.
 /// </summary>memory
 public abstract class AbstractSKContext<T extends SKContext<T>> implements SKContext<T> {
-    @Nullable private final Supplier<ReadOnlySkillCollection> skills;
+    @Nullable private final ReadOnlySkillCollection skills;
     private final DefaultContextVariables variables;
     @Nullable private final SemanticTextMemory memory;
     /*
@@ -159,7 +158,7 @@ public abstract class AbstractSKContext<T extends SKContext<T>> implements SKCon
     protected AbstractSKContext(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
-            @Nullable Supplier<ReadOnlySkillCollection> skills) {
+            @Nullable ReadOnlySkillCollection skills) {
         this.variables = new DefaultContextVariables(variables.asMap());
 
         if (memory != null) {
@@ -171,13 +170,18 @@ public abstract class AbstractSKContext<T extends SKContext<T>> implements SKCon
         this.skills = skills;
     }
 
-    /*
-        @CheckReturnValue
-        @Override
-        public T copy() {
-            return new ImmutableReadOnlySKContext(variables, memory, skills);
+    @CheckReturnValue
+    @Override
+    public T copy() {
+        ReadOnlySkillCollection clonedSkill;
+        if (skills == null) {
+            clonedSkill = skills;
+        } else {
+            clonedSkill = skills.copy();
         }
-    */
+        return build(variables.copy(), memory, clonedSkill);
+    }
+
     @Nullable
     @Override
     public SemanticTextMemory getSemanticMemory() {
@@ -187,10 +191,7 @@ public abstract class AbstractSKContext<T extends SKContext<T>> implements SKCon
     @Nullable
     @Override
     public ReadOnlySkillCollection getSkills() {
-        if (skills == null) {
-            return null;
-        }
-        return skills.get();
+        return skills;
     }
 
     /*
@@ -203,16 +204,16 @@ public abstract class AbstractSKContext<T extends SKContext<T>> implements SKCon
 
      */
 
-    @CheckReturnValue
     @Override
     public T setVariable(@NonNull String key, @NonNull String content) {
-        return build(variables.setVariable(key, content), memory, skills);
+        variables.setVariable(key, content);
+        return getThis();
     }
 
-    @CheckReturnValue
     @Override
     public T appendToVariable(@NonNull String key, @NonNull String content) {
-        return build(variables.appendToVariable(key, content), memory, skills);
+        variables.appendToVariable(key, content);
+        return getThis();
     }
 
     /// <summary>
@@ -222,17 +223,19 @@ public abstract class AbstractSKContext<T extends SKContext<T>> implements SKCon
     // result for the user
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
-    @CheckReturnValue
     @Override
     public T update(@NonNull String content) {
-        return build(variables.update(content), memory, skills);
+        variables.update(content);
+        return getThis();
     }
 
-    @CheckReturnValue
     @Override
     public T update(@NonNull ContextVariables newData) {
-        return build(variables.update(newData, true), memory, skills);
+        variables.update(newData, true);
+        return getThis();
     }
+
+    protected abstract T getThis();
 
     /// <summary>
     /// Updates all the local data with new data, merging the two datasets.
