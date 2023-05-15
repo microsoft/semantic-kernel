@@ -146,7 +146,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             records {List[MemoryRecord]} -- The records to upsert.
 
         Returns:
-            List[str] -- The unqiue database keys of the records.
+            List[str] -- The unique database keys of the records.
         """
 
         collection_info = self.does_collection_exist_async(
