@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Attempt to implement MRKL systems as described in arxiv.org/pdf/2205.00445.pdf
+// Attempt to implement MRKL systems as described in hhtsp://arxiv.org/pdf/2205.00445.pdf
 // strongly inspired by https://github.com/hwchase17/langchain/tree/master/langchain/agents/mrkl
 
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Planning.IterativePlanner;
 
-// namespace Planning.IterativePlanner;
+
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
@@ -37,7 +37,7 @@ public sealed class IterativePlanner
         IterativePlannerConfig? config = null,
         string? prompt = null)
     {
-        _maxIterations = maxIterations;
+        this._maxIterations = maxIterations;
         Verify.NotNull(kernel);
         this.Config = config ?? new();
 
@@ -53,7 +53,7 @@ public sealed class IterativePlanner
             maxTokens: this.Config.MaxTokens,
             temperature: 0.0,
             stopSequences: new[] { StopSequence }
-            );
+        );
 
         this._context = kernel.CreateNewContext();
         this._kernel = kernel;
@@ -71,18 +71,16 @@ public sealed class IterativePlanner
             throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
         }
 
-        (string toolNames, string toolDescriptions) = await GetToolNamesAndDescriptionsAsync();
-       
-       
+        (string toolNames, string toolDescriptions) = await this.GetToolNamesAndDescriptionsAsync().ConfigureAwait(false);
+
         this._context.Variables.Set("toolNames", toolNames);
         this._context.Variables.Set("toolDescriptions", toolDescriptions);
         this._context.Variables.Set("question", goal);
 
         List<NextStep> steps = new List<NextStep>();
-        for (int i = 0; i < _maxIterations; i++)
+        for (int i = 0; i < this._maxIterations; i++)
         {
-
-            var scratchPad = CreateScratchPad(steps, goal);
+            var scratchPad = this.CreateScratchPad(steps, goal);
             Thread.Sleep(1000);
             PrintColored(scratchPad);
             this._context.Variables.Set("agentScratchPad", scratchPad);
@@ -91,42 +89,33 @@ public sealed class IterativePlanner
             Thread.Sleep(1000);
             PrintColored(actionText);
             
-            var nextStep = ParseResult(actionText);
+            var nextStep = this.ParseResult(actionText);
             steps.Add(nextStep);
 
             if (!String.IsNullOrEmpty(nextStep.FinalAnswer))
+            {
                 return nextStep.FinalAnswer;
+            }
 
-            nextStep.Observation = await  InvokeActionAsync(nextStep.Action, nextStep.ActionInput);
-
-          
-
+            nextStep.Observation = await this.InvokeActionAsync(nextStep.Action, nextStep.ActionInput).ConfigureAwait(false);
         }
 
-        
-        return "buha";
-        //try
-        //{
-        //    var plan = planResultString.ToPlanFromXml(goal, this._context);
-        //    //return plan;
-        //}
-        //catch (Exception e)
-        //{
-        //    throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Plan parsing error, invalid XML", e);
-        //}
+        return "Result Not found";
     }
 
     private string CreateScratchPad(List<NextStep> steps, string goal)
     {
-        if(steps.Count==0)
+        if (steps.Count == 0)
+        {
             return string.Empty;
+        }
 
         var result = new StringBuilder("This was your previous work (but I haven't seen any of it! I only see what you return as final answer):");
         result.AppendLine();
         result.AppendLine("Question: " + goal);
         foreach (var step in steps)
         {
-            result.AppendLine("Thought: "+ step.OriginalResponse);
+            result.AppendLine("Thought: " + step.OriginalResponse);
             //result.AppendLine("Action: " + step.Action);
             //result.AppendLine("Input: " + step.ActionInput);
             result.AppendLine("Observation: " + step.Observation);
@@ -141,9 +130,11 @@ public sealed class IterativePlanner
         //ugly hack - fix later
         var theFunction = availableFunctions.FirstOrDefault(x => x.Name == actionName);
         if (theFunction == null)
+        {
             throw new Exception("no such function" + actionName);
+        }
 
-        var func = _kernel.Func(theFunction.SkillName, theFunction.Name);
+        var func = this._kernel.Func(theFunction.SkillName, theFunction.Name);
         var result = await func.InvokeAsync(actionActionInput).ConfigureAwait(false);
         PrintColored(result.Result);
         return result.Result;
@@ -177,9 +168,7 @@ public sealed class IterativePlanner
             result.Thought = untilActionMatch.Value;
         }
 
-        //                                   @"```(.*?)```"
-         Regex actionRegex = new Regex(@"```(.*?)```", RegexOptions.Singleline);
-        //Regex actionRegex = new Regex(@"(?<=```).+?(?=```)", RegexOptions.Singleline);
+        Regex actionRegex = new Regex(@"```(.*?)```", RegexOptions.Singleline);
 
         Match actionMatch = actionRegex.Match(input);
         if (actionMatch.Success)
@@ -194,24 +183,23 @@ public sealed class IterativePlanner
             throw new Exception("no action found");
         }
         
-        if(result.Action== "Final Answer")
+        if (result.Action == "Final Answer")
+        {
             result.FinalAnswer = result.ActionInput;
+        }
 
         return result;
     }
 
     private async Task<(string, string)> GetToolNamesAndDescriptionsAsync()
     {
-        var avaialbleFunctions = await this._context.GetAvailableFunctionsAsync(this.Config).ConfigureAwait(false);
+        var availableFunctions = await this._context.GetAvailableFunctionsAsync(this.Config).ConfigureAwait(false);
         //ugly hack - fix later
-        var filtered = avaialbleFunctions.Where(x => !x.Name.StartsWith("func")).ToList();
-        string toolNames = String.Join(", ", filtered.Select(x=>x.Name));
-        string toolDescriptions = ">"+ String.Join("\n>", filtered.Select(x => x.Name + ": " + x.Description)); 
+        var filtered = availableFunctions.Where(x => !x.Name.StartsWith("func")).ToList();
+        string toolNames = String.Join(", ", filtered.Select(x => x.Name));
+        string toolDescriptions = ">" + String.Join("\n>", filtered.Select(x => x.Name + ": " + x.Description)); 
         return (toolNames, toolDescriptions);
-
     }
-
-  
 
     private IterativePlannerConfig Config { get; }
 
@@ -228,10 +216,10 @@ public sealed class IterativePlanner
     /// The name to use when creating semantic functions that are restricted from plan creation
     /// </summary>
     //private const string RestrictedSkillName = "SequentialPlanner_Excluded";
-
     private const string Prefix =
         @"Answer the following questions as best you can. You have access to the following tools:
 {tool_descriptions}";
+
     private const string ToolFormatInstructions = @"the way you use the tools is by specifying a json blob.
 Specifically, this json should have a `action` key (with the name of the tool to use) and a `action_input` key (with the input to the tool going here).
 
@@ -259,9 +247,7 @@ Observation: the result of the action
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question";
 
-
     private const string ToolSuffix = @"Begin! Reminder to always use the exact characters `Final Answer` when responding.";
-
 
     private const string FormatInstructions = @"Use the following format:
 
@@ -278,7 +264,6 @@ Final Answer: the final answer to the original input question";
 
 Question: {input}
 Thought:{agent_scratchpad}";
-
 
     private const string ToolPrefix =
         "Answer the following questions as best you can. You have access to the following tools:";

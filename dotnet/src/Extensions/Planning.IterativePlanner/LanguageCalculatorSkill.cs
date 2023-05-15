@@ -4,8 +4,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using NCalc;
 
-namespace Experiments;
-
+namespace Planning.IterativePlanner;
 
 // usage :
 //var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
@@ -68,9 +67,7 @@ Question: {{ $input }}.
     [SKFunctionName("Calculator")]
     public async Task<String> CalculateAsync(string input, SKContext context)
     {
-        
-      
-        var answer = await _mathTranslator.InvokeAsync(input);
+        var answer = await this._mathTranslator.InvokeAsync(input).ConfigureAwait(false);
         //Console.WriteLine(answer.Result);
 
         string pattern = @"```\s*(.*?)\s*```";
@@ -86,9 +83,8 @@ Question: {{ $input }}.
             Console.WriteLine(input);
             var e = new ArgumentException(
                 $"Input value [{input}] could not be understood, received following {answer.Result} ", nameof(input));
-            return await Task.FromException<string>(e);
+            return await Task.FromException<string>(e).ConfigureAwait(false);
         }
-        
     }
 
     private static string EvaluateMathExpression(Match match)
@@ -106,6 +102,6 @@ Question: {{ $input }}.
         };
 
         var result = expr.Evaluate();
-        return "Answer:"+ result.ToString();
+        return "Answer:" + result.ToString();
     }
 }
