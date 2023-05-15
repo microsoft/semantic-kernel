@@ -1,14 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import uuid
-from numpy import ndarray, zeros
+from numpy import array, linalg, ndarray, zeros
 from qdrant_client import QdrantClient
-from qdrant_client.models import ScoredPoint, Filter, FieldCondition, MatchValue, SearchParams
+from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-from typing import List, Optional, Tuple
-from numpy import array, linalg, ndarray, zeros
+from typing import Optional
 
 """
 Utility function(s) for Qdrant vector database to support Qdrant Semantic Kernel memory implementation.
@@ -22,7 +21,7 @@ def guid_comb_generator() -> str:
         str: A GUID-comb identifier.
     """
     
-    return str(uuid.uuid1())
+    return str(uuid.uuid4())
 
 def compute_similarity_scores(
         self, embedding: ndarray, embedding_array: ndarray

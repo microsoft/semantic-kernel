@@ -9,7 +9,6 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.models import Distance, VectorParams
 from qdrant_client.http.models import CollectionStatus, UpdateStatus, PointStruct
-from qdrant_client.http.models import ScoredPoint
 
 from logging import Logger
 from typing import List, Optional, Tuple
@@ -56,6 +55,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
+
         self._qdrantclient.recreate_collection(
             collection_name=collection_name,
             vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
@@ -110,7 +110,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             record {MemoryRecord} -- The record to upsert.
 
         Returns:
-            str -- The unqiue database key of the record.
+            str -- The unique database key of the record.
         """
         record._key = record._id
 
@@ -266,7 +266,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             raise Exception(f"Collection '{collection_name}' does not exist")
 
         self._qdrantclient.delete(
-            collection_name="{collection_name}",
+            collection_name=collection_name,
             points_selector=models.PointIdsList(
                 points=[key],
             ),
@@ -290,7 +290,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             raise Exception(f"Collection '{collection_name}' does not exist")
 
         self._qdrantclient.delete(
-            collection_name="{collection_name}",
+            collection_name=collection_name,
             points_selector=models.PointIdsList(
                 points=[keys],
             ),
