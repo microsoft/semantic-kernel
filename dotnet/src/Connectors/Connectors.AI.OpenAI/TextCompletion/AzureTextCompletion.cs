@@ -51,6 +51,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     {
     }
 
+    /// <inheritdoc/>
     public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
@@ -59,6 +60,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         return this.InternalCompletionStreamAsync(text, requestSettings, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,

@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,18 +28,14 @@ public static class TextCompletionExtensions
     {
         var completions = await textCompletion.GetCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
 
-        if (completions.Count == 0)
+        StringBuilder completionResult = new();
+
+        foreach (ITextCompletionResult result in completions)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "No completion result");
+            completionResult.Append(await result.CompleteAsync(cancellationToken).ConfigureAwait(false));
         }
 
-        if (completions.Count > 1)
-        {
-            throw new NotSupportedException($"{nameof(CompleteAsync)} don't support multiple completions results. Use {nameof(ITextCompletion.GetCompletionsAsync)} instead.");
-        }
-
-        // Returns the first completion result
-        return await completions[0].CompleteAsync(cancellationToken).ConfigureAwait(false);
+        return completionResult.ToString();
     }
 
     /// <summary>
@@ -63,8 +59,6 @@ public static class TextCompletionExtensions
             {
                 yield return word;
             }
-
-            yield return Environment.NewLine;
         }
     }
 }

@@ -76,6 +76,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         return InternalCreateNewChat(instructions);
     }
 
+    /// <inheritdoc/>
     public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
@@ -84,6 +85,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         return this.InternalCompletionStreamAsync(text, requestSettings, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,

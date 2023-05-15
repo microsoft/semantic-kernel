@@ -34,25 +34,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     {
     }
 
-    /*
     /// <inheritdoc/>
-    public Task<string> CompleteAsync(
-        string text,
-        CompleteRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        return this.InternalCompleteTextAsync(text, requestSettings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<string> CompleteStreamAsync(
-        string text,
-        CompleteRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        return this.InternalCompletionStreamAsync(text, requestSettings, cancellationToken);
-    }*/
-
     public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
@@ -61,6 +43,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         return this.InternalCompletionStreamAsync(text, requestSettings, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,

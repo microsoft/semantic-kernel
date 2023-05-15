@@ -253,6 +253,13 @@ public abstract class ClientBase
 
     private static CompletionsOptions CreateCompletionsOptions(string text, CompleteRequestSettings requestSettings)
     {
+        if (requestSettings.ResultsPerPrompt < 1 ||
+            requestSettings.ResultsPerPrompt > 128)
+        {
+            // <see cref="CompletionsOptions.ChoicesPerPrompt"/> must be in range between 1 and 128.
+            throw new ArgumentException($"{nameof(requestSettings.ResultsPerPrompt)} invalid. The value must be in range between 1 and 128.");
+        }
+
         var options = new CompletionsOptions
         {
             Prompts = { text.NormalizeLineEndings() },

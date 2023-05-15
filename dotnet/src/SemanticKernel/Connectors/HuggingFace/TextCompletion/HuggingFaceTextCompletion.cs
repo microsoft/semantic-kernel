@@ -98,6 +98,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
@@ -109,6 +110,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         }
     }
 
+    /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
