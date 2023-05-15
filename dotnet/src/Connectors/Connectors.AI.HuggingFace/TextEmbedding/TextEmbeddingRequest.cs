@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
 /// <summary>
 /// HTTP schema to perform embedding request.
