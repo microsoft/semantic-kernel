@@ -212,7 +212,6 @@ export const useChat = () => {
         try {
             return botService.downloadAsync(
                 chatId,
-                account?.homeAccountId || '',
                 await AuthHelper.getSKaaSAccessToken(instance),
             );
         } catch (e: any) {
