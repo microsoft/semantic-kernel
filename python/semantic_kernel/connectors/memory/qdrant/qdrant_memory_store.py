@@ -39,7 +39,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             from qdrant_client import QdrantClient
         except ImportError:
             raise ValueError(
-                "Error: Umable to import qdrant client python package."
+                "Error: Unable to import qdrant client python package."
                 "Please install qdrant client using `pip install qdrant-client`."
             )
 
@@ -381,4 +381,3 @@ class QdrantMemoryStore(MemoryStoreBase):
             nearest_results.append(tuple(vector_result, qdrant_match.score))
 
         return nearest_results
-    
