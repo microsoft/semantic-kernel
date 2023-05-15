@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Write an email from the given bullet points",
-  "completion": {
+  "default_settings": {
     "max_tokens": 256,
     "temperature": 0.0,
     "top_p": 0.0,

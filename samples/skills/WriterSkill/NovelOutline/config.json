@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Generate a list of chapter synopsis for a novel or novella",
-  "completion": {
+  "default_settings": {
     "max_tokens": 2048,
     "temperature": 0.1,
     "top_p": 0.5,

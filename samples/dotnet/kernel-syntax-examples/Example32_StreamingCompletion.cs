@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -47,13 +48,13 @@ public static class Example32_StreamingCompletion
 
     private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
     {
-        var requestSettings = new CompleteRequestSettings()
+        var requestSettings = new JsonObject()
         {
-            MaxTokens = 100,
-            FrequencyPenalty = 0,
-            PresencePenalty = 0,
-            Temperature = 1,
-            TopP = 0.5
+            ["max_tokens"] = 100,
+            ["frequency_penalty"] = 0,
+            ["presence_penalty"] = 0,
+            ["temperature"] = 1,
+            ["top_p"] = 0.5
         };
 
         var prompt = "Write one paragraph why AI is awesome";

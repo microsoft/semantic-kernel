@@ -1,8 +1,6 @@
 {
-  "schema": 1,
   "description": "Generate a funny limerick about a person",
-  "type": "completion",
-  "completion": {
+  "default_settings": {
     "max_tokens": 100,
     "temperature": 0.7,
     "top_p": 0.0,

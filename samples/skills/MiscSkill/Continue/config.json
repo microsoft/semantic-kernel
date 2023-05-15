@@ -1,8 +1,6 @@
 {
-  "schema": 1,
   "description": "Given a text input, continue it with additional text.",
-  "type": "completion",
-  "completion": {
+  "default_settings": {
     "max_tokens": 4000,
     "temperature": 0.3,
     "top_p": 0.5,

@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Generate an acronym for the given concept or phrase",
-  "completion": {
+  "default_settings": {
     "max_tokens": 100,
     "temperature": 0.5,
     "top_p": 0.0,

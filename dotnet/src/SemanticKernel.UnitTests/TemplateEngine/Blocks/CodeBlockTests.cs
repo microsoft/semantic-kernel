@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -50,7 +51,7 @@ public class CodeBlockTests
         var context = new SKContext(new ContextVariables(), NullMemory.Instance, this._skills.Object, this._log.Object);
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<ILogger?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext?>(), It.IsAny<JsonObject?>(), It.IsAny<ILogger?>(), It.IsAny<CancellationToken>()))
             .Throws(new RuntimeWrappedException("error"));
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction("functionName", out outFunc)).Returns(true);
@@ -198,8 +199,8 @@ public class CodeBlockTests
         var canary2 = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<ILogger?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext?, CompleteRequestSettings?, ILogger?, CancellationToken>((ctx, _, _, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext?>(), It.IsAny<JsonObject?>(), It.IsAny<ILogger?>(), It.IsAny<CancellationToken>()))
+            .Callback<SKContext?, JsonObject?, ILogger?, CancellationToken>((ctx, _, _, _) =>
             {
                 canary0 = ctx!["input"];
                 canary1 = ctx["var1"];
@@ -245,8 +246,8 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<ILogger?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext?, CompleteRequestSettings?, ILogger?, CancellationToken>((ctx, _, _, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext?>(), It.IsAny<JsonObject?>(), It.IsAny<ILogger?>(), It.IsAny<CancellationToken>()))
+            .Callback<SKContext?, JsonObject?, ILogger?, CancellationToken>((ctx, _, _, _) =>
             {
                 canary = ctx!["input"];
             });
@@ -278,8 +279,8 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext?>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<ILogger?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext?, CompleteRequestSettings?, ILogger?, CancellationToken>((ctx, _, _, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext?>(), It.IsAny<JsonObject?>(), It.IsAny<ILogger?>(), It.IsAny<CancellationToken>()))
+            .Callback<SKContext?, JsonObject?, ILogger?, CancellationToken>((ctx, _, _, _) =>
             {
                 canary = ctx!["input"];
             });

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -21,7 +22,7 @@ public class MyTextCompletionService : ITextCompletion
 {
     public async Task<string> CompleteAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        JsonObject requestSettings,
         CancellationToken cancellationToken = default)
     {
         // Your model logic here
@@ -35,7 +36,7 @@ public class MyTextCompletionService : ITextCompletion
 
     public async IAsyncEnumerable<string> CompleteStreamAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        JsonObject requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return Environment.NewLine;
@@ -94,7 +95,7 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw ========");
         var completionService = new MyTextCompletionService();
 
-        var result = await completionService.CompleteAsync("I missed the training sesion this morning", new CompleteRequestSettings());
+        var result = await completionService.CompleteAsync("I missed the training sesion this morning", new JsonObject());
 
         Console.WriteLine(result);
     }
@@ -112,13 +113,13 @@ public static class Example16_CustomLLM
 
     private static async Task TextCompletionStreamAsync(string prompt, ITextCompletion textCompletion)
     {
-        var requestSettings = new CompleteRequestSettings()
+        var requestSettings = new JsonObject()
         {
-            MaxTokens = 100,
-            FrequencyPenalty = 0,
-            PresencePenalty = 0,
-            Temperature = 1,
-            TopP = 0.5
+            ["max_tokens"] = 100,
+            ["frequency_penalty"] = 0,
+            ["presence_penalty"] = 0,
+            ["temperature"] = 1,
+            ["top_p"] = 0.5
         };
 
         Console.WriteLine("Prompt: " + prompt);

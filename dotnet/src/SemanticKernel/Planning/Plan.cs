@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -80,7 +81,7 @@ public sealed class Plan : ISKFunction
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+    public JsonObject ServiceSettings { get; private set; } = new();
 
     #endregion ISKFunction implementation
 
@@ -300,7 +301,7 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, JsonObject? settings = null, ILogger? log = null,
         CancellationToken cancellationToken = default)
     {
         context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
@@ -311,7 +312,7 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+    public async Task<SKContext> InvokeAsync(SKContext? context = null, JsonObject? settings = null, ILogger? log = null,
         CancellationToken cancellationToken = default)
     {
         context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
@@ -365,7 +366,7 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(JsonObject settings)
     {
         return this.Function is null
             ? throw new NotImplementedException()
@@ -569,7 +570,7 @@ public sealed class Plan : ISKFunction
         this.SkillName = function.SkillName;
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
-        this.RequestSettings = function.RequestSettings;
+        this.ServiceSettings = function.ServiceSettings;
     }
 
     private ISKFunction? Function { get; set; } = null;

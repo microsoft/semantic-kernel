@@ -1,8 +1,6 @@
 {
-  "schema": 1,
   "description": "Get an element from an array at a specified index",
-  "type": "completion",
-  "completion": {
+  "default_settings": {
     "max_tokens": 1024,
     "temperature": 0.0,
     "top_p": 0.0,

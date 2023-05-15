@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -38,9 +39,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public bool IsSemantic { get; }
 
     /// <inheritdoc/>
-    public CompleteRequestSettings RequestSettings
+    public JsonObject ServiceSettings
     {
-        get { return this._aiRequestSettings; }
+        get { return this._aiServiceSettings; }
     }
 
     /// <summary>
@@ -132,7 +133,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         async Task<SKContext> LocalFunc(
             ITextCompletion client,
-            CompleteRequestSettings requestSettings,
+            JsonObject serviceSettings,
             SKContext context)
         {
             Verify.NotNull(client);
@@ -141,7 +142,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             {
                 string prompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
 
-                string completion = await client.CompleteAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
+                string completion = await client.CompleteAsync(prompt, serviceSettings, context.CancellationToken).ConfigureAwait(false);
                 context.Variables.Update(completion);
             }
             catch (AIException ex)
@@ -190,7 +191,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public Task<SKContext> InvokeAsync(
         string input,
         SKContext? context = null,
-        CompleteRequestSettings? settings = null,
+        JsonObject? settings = null,
         ILogger? log = null,
         CancellationToken cancellationToken = default)
     {
@@ -213,7 +214,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
         SKContext? context = null,
-        CompleteRequestSettings? settings = null,
+        JsonObject? settings = null,
         ILogger? log = null,
         CancellationToken cancellationToken = default)
     {
@@ -245,11 +246,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(JsonObject settings)
     {
         Verify.NotNull(settings);
         this.VerifyIsSemantic();
-        this._aiRequestSettings = settings;
+        this._aiServiceSettings = settings;
         return this;
     }
 
@@ -277,7 +278,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
     private ITextCompletion? _aiService = null;
-    private CompleteRequestSettings _aiRequestSettings = new();
+    private JsonObject _aiServiceSettings = new();
 
     private struct MethodDetails
     {
@@ -362,15 +363,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     // Run the semantic function
-    private async Task<SKContext> InvokeSemanticAsync(SKContext context, CompleteRequestSettings? settings)
+    private async Task<SKContext> InvokeSemanticAsync(SKContext context, JsonObject? settings)
     {
         this.VerifyIsSemantic();
 
         this.EnsureContextHasSkills(context);
 
-        settings ??= this._aiRequestSettings;
+        settings ??= this._aiServiceSettings;
 
-        var callable = (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>>)this._function;
+        var callable = (Func<ITextCompletion?, JsonObject?, SKContext, Task<SKContext>>)this._function;
         context.Variables.Update((await callable(this._aiService, settings, context).ConfigureAwait(false)).Variables);
         return context;
     }

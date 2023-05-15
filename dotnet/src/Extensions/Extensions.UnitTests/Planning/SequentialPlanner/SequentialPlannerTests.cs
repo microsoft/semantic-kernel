@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -46,8 +47,8 @@ public sealed class SequentialPlannerTests
             functionsView.AddFunction(functionView);
 
             mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, CompleteRequestSettings, ILogger, CancellationToken>((context, settings, log, cancel) =>
+                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<JsonObject>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+                .Returns<SKContext, JsonObject, ILogger, CancellationToken>((context, settings, log, cancel) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(context);
@@ -94,7 +95,7 @@ public sealed class SequentialPlannerTests
             null,
             null,
             default
-        )).Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken>(
+        )).Callback<SKContext, JsonObject, ILogger, CancellationToken>(
             (c, s, l, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
@@ -184,7 +185,7 @@ public sealed class SequentialPlannerTests
             null,
             null,
             default
-        )).Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>(
+        )).Callback<SKContext, JsonObject, ILogger, CancellationToken?>(
             (c, s, l, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 

@@ -1,8 +1,6 @@
 {
-  "schema": 1,
   "description": "",
-  "type": "completion",
-  "completion": {
+  "default_settings": {
     "max_tokens": 1024,
     "temperature": 0.8,
     "top_p": 0.0,
