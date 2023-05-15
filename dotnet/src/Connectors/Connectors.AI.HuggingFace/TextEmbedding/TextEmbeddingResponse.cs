@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
 /// <summary>
 /// HTTP Schema for embedding response.
