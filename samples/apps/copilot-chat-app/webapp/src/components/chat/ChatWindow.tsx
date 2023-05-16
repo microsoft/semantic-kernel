@@ -120,6 +120,12 @@ export const ChatWindow: React.FC = () => {
         setTitle(data.value);
     };
 
+    const handleKeyDown = (event: any) => {
+        if (event.key === 'Enter') {
+            onSave();
+        }
+    };
+
     useEffect(() => {
         setTitle(chatName);
         setIsEditing(false);
@@ -155,7 +161,13 @@ export const ChatWindow: React.FC = () => {
                         </PopoverTrigger>
                         <PopoverSurface className={classes.popover}>
                             <h3 className={classes.popoverHeader}>Bot name</h3>
-                            <Input value={title} onChange={onTitleChange} id={title} className={classes.input} />
+                            <Input
+                                value={title}
+                                onChange={onTitleChange}
+                                id={title}
+                                className={classes.input}
+                                onKeyDown={handleKeyDown}
+                            />
                             <div className={classes.buttons}>
                                 <Button appearance="secondary" onClick={onClose}>
                                     Cancel
