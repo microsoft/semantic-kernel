@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--Setting version overrides to miniumum supported version, to maximize compatability.-->
+    <!--Setting version overrides to minimum supported version, to maximize compatibility.-->
     <PackageReference Include="Microsoft.Bcl.HashCode" VersionOverride="[1.1.0, )" />
     <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="[6.0.0, )" />
     <PackageReference Include="System.Linq.Async" VersionOverride="[6.0.1, )" />

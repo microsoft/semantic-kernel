@@ -318,8 +318,8 @@ public static class KernelOpenApiExtensions
             })
             .ToList();
 
-        var function = SKFunction.FromCustomMethod(
-            customFunction: ExecuteAsync,
+        var function = SKFunction.FromNativeFunction(
+            nativeFunction: ExecuteAsync,
             parameters: parameters,
             description: operation.Description,
             skillName: skillName,

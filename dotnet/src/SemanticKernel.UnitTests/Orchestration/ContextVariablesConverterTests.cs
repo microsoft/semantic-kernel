@@ -164,7 +164,9 @@ public class ContextVariablesConverterTests
     public void ReadFromJsonThrowsWithInvalidJson()
     {
         // Arrange
+#pragma warning disable JSON001 // Invalid JSON pattern
         string json = /*lang=json,strict*/ @"[{""Key"":""a"", ""Value"":""b""";
+#pragma warning restore JSON001 // Invalid JSON pattern
         var options = new JsonSerializerOptions();
         options.Converters.Add(new ContextVariablesConverter());
 

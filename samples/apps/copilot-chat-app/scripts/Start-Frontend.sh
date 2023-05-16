@@ -6,7 +6,7 @@ set -e
 
 ScriptDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ScriptDir/../WebApp"
-EnvFilePath="$ScriptDir/../WebApp/.env"
+EnvFilePath='.env'
 
 # Parameters
 ClientId="$1"

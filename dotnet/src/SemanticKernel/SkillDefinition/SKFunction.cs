@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
@@ -64,7 +64,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         if (string.IsNullOrWhiteSpace(skillName)) { skillName = SkillCollection.GlobalSkill; }
 
-        MethodDetails methodDetails = GetMethodDetails(methodSignature, methodContainerInstance, log);
+        MethodDetails methodDetails = GetMethodDetails(methodSignature, methodContainerInstance, true, log);
 
         // If the given method is not a valid SK function
         if (!methodDetails.HasSkFunctionAttribute)
@@ -79,6 +79,37 @@ public sealed class SKFunction : ISKFunction, IDisposable
             skillName: skillName,
             functionName: methodDetails.Name,
             description: methodDetails.Description,
+            isSemantic: false,
+            log: log);
+    }
+
+    /// <summary>
+    /// Create a native function instance, wrapping a delegate function
+    /// </summary>
+    /// <param name="nativeFunction">Function to invoke</param>
+    /// <param name="skillName">SK skill name</param>
+    /// <param name="functionName">SK function name</param>
+    /// <param name="description">SK function description</param>
+    /// <param name="parameters">SK function parameters</param>
+    /// <param name="log">Application logger</param>
+    /// <returns>SK function instance</returns>
+    public static ISKFunction FromNativeFunction(
+        Delegate nativeFunction,
+        string skillName,
+        string functionName,
+        string description,
+        IEnumerable<ParameterView>? parameters = null,
+        ILogger? log = null)
+    {
+        MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, false, log);
+
+        return new SKFunction(
+            delegateType: methodDetails.Type,
+            delegateFunction: methodDetails.Function,
+            parameters: (parameters ?? Enumerable.Empty<ParameterView>()).ToList(),
+            description: description,
+            skillName: skillName,
+            functionName: functionName,
             isSemantic: false,
             log: log);
     }
@@ -115,13 +146,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
             catch (AIException ex)
             {
-                const string Message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
+                const string Message = "Something went wrong while rendering the semantic function" +
+                                       " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
                 log?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
                 context.Fail(ex.Message, ex);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                const string Message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
+                const string Message = "Something went wrong while rendering the semantic function" +
+                                       " or while executing the text completion. Function: {0}.{1}. Error: {2}";
                 log?.LogError(ex, Message, skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
@@ -140,37 +173,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
             log: log);
     }
 
-    /// <summary>
-    /// Create a native function instance, wrapping a native object method
-    /// </summary>
-    /// <param name="customFunction">Signature of the method to invoke</param>
-    /// <param name="skillName">SK skill name</param>
-    /// <param name="functionName">SK function name</param>
-    /// <param name="description">SK function description</param>
-    /// <param name="parameters">SK function parameters</param>
-    /// <param name="log">Application logger</param>
-    /// <returns>SK function instance</returns>
-    public static ISKFunction FromCustomMethod(
-        Func<SKContext, Task<SKContext>> customFunction,
-        string skillName,
-        string functionName,
-        string description,
-        IEnumerable<ParameterView>? parameters = null,
-        ILogger? log = null)
-    {
-        var function = new SKFunction(
-            delegateType: SKFunction.DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
-            delegateFunction: customFunction,
-            parameters: (parameters ?? Enumerable.Empty<ParameterView>()).ToList(),
-            description: description,
-            skillName: skillName,
-            functionName: functionName,
-            isSemantic: false,
-            log: log);
-
-        return function;
-    }
-
     /// <inheritdoc/>
     public FunctionView Describe()
     {
@@ -186,44 +188,28 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
-        string input,
-        SKContext? context = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? log = null,
-        CancellationToken cancellationToken = default)
+        SKContext context,
+        CompleteRequestSettings? settings = null)
     {
-        if (context == null)
-        {
-            log ??= NullLogger.Instance;
-            context = new SKContext(
-                new ContextVariables(""),
-                NullMemory.Instance,
-                this._skillCollection,
-                log,
-                cancellationToken);
-        }
-
-        context.Variables.Update(input);
-
-        return this.InvokeAsync(context, settings, log, cancellationToken);
+        return this.IsSemantic
+            ? this.InvokeSemanticAsync(context, settings)
+            : this.InvokeNativeAsync(context);
     }
 
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
-        SKContext? context = null,
+        string? input = null,
         CompleteRequestSettings? settings = null,
-        ILogger? log = null,
+        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        if (context == null)
-        {
-            log ??= NullLogger.Instance;
-            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cancellationToken);
-        }
+        SKContext context = new(
+            new ContextVariables(input),
+            skills: this._skillCollection,
+            logger: logger,
+            cancellationToken: cancellationToken);
 
-        return this.IsSemantic
-            ? this.InvokeSemanticAsync(context, settings)
-            : this.InvokeNativeAsync(context);
+        return this.InvokeAsync(context, settings);
     }
 
     /// <inheritdoc/>
@@ -259,6 +245,19 @@ public sealed class SKFunction : ISKFunction, IDisposable
         this.ReleaseUnmanagedResources();
         GC.SuppressFinalize(this);
     }
+
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString()
+        => this.ToString(false);
+
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public string ToString(bool writeIndented)
+       => JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = writeIndented });
 
     /// <summary>
     /// Finalizer.
@@ -524,7 +523,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
         context.Skills ??= this._skillCollection;
     }
 
-    private static MethodDetails GetMethodDetails(MethodInfo methodSignature, object? methodContainerInstance, ILogger? log = null)
+    private static MethodDetails GetMethodDetails(
+        MethodInfo methodSignature,
+        object? methodContainerInstance,
+        bool skAttributesRequired = true,
+        ILogger? log = null)
     {
         Verify.NotNull(methodSignature);
 
@@ -544,11 +547,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (!result.HasSkFunctionAttribute || skFunctionAttribute == null)
         {
-            log?.LogTrace("Method '{0}' doesn't have '{1}' attribute.", result.Name, typeof(SKFunctionAttribute).Name);
-            return result;
+            log?.LogTrace("Method '{0}' doesn't have '{1}' attribute", result.Name, typeof(SKFunctionAttribute).Name);
+            if (skAttributesRequired) { return result; }
         }
-
-        result.HasSkFunctionAttribute = true;
+        else
+        {
+            result.HasSkFunctionAttribute = true;
+        }
 
         (result.Type, result.Function, bool hasStringParam) = GetDelegateInfo(methodContainerInstance, methodSignature);
 
@@ -598,9 +603,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
         // Note: the name "input" is reserved for the main parameter
         Verify.ParametersUniqueness(result.Parameters);
 
-        result.Description = skFunctionAttribute.Description ?? "";
+        result.Description = skFunctionAttribute?.Description ?? "";
 
-        log?.LogTrace("Method '{0}' found.", result.Name);
+        log?.LogTrace("Method '{0}' found, type `{1}`", result.Name, result.Type.ToString("G"));
 
         return result;
     }
@@ -717,7 +722,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
             $"Function '{method.Name}' has an invalid signature not supported by the kernel.");
     }
 
-    [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate result can be null")]
+    /// <summary>
+    /// Compare a method against the given signature type using Delegate.CreateDelegate.
+    /// </summary>
+    /// <param name="instance">Optional object containing the given method</param>
+    /// <param name="userMethod">Method to inspect</param>
+    /// <param name="delegateDefinition">Definition of the delegate, i.e. method signature</param>
+    /// <param name="result">The delegate to use, if the function returns TRUE, otherwise NULL</param>
+    /// <returns>True if the method to inspect matches the delegate type</returns>
+    [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate can return NULL")]
     private static bool EqualMethods(
         object? instance,
         MethodInfo userMethod,

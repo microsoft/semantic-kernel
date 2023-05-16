@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,7 +52,14 @@ public class FileIOSkill
     public async Task WriteAsync(SKContext context)
     {
         byte[] text = Encoding.UTF8.GetBytes(context["content"]);
-        using var writer = File.OpenWrite(context["path"]);
+        string path = context["path"];
+        if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
+        {
+            // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
+            throw new UnauthorizedAccessException($"File is read-only: {path}");
+        }
+
+        using var writer = File.OpenWrite(path);
         await writer.WriteAsync(text, 0, text.Length).ConfigureAwait(false);
     }
 }
