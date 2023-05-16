@@ -8,7 +8,7 @@ export function convertToAnchorTags(htmlString: string) {
     var linkRegex = /(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-/]))?(?=(<br|<p|<div|<span)\s*\/>|$)/g;
 
     var result = htmlString.replace(linkRegex, function (link) {
-        // Parse URL first  URL class handles cybersecurity concerns related to URL parsing and manipulation
+        // Parse URL first -- URL class handles cybersecurity concerns related to URL parsing and manipulation
         const safeHref = new URL(link).toString();
 
         // Replace each link with anchor tags
