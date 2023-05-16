@@ -1,7 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
@@ -14,12 +19,10 @@ namespace SemanticKernel.Service.Controllers;
 public class SemanticKernelController : ControllerBase
 {
     private readonly ILogger<SemanticKernelController> _logger;
-    private readonly List<IDisposable> _disposables;
 
     public SemanticKernelController(ILogger<SemanticKernelController> logger)
     {
         this._logger = logger;
-        this._disposables = new List<IDisposable>();
     }
 
     /// <summary>
