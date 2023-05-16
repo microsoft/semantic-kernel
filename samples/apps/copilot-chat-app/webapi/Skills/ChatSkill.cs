@@ -226,11 +226,11 @@ public class ChatSkill
             // Reload the plan with the planner's kernel so
             // it has full context to be executed
             var newPlanContext = new SKContext(
-                   context.Variables,
-                   this._planner.Kernel.Memory,
-                   this._planner.Kernel.Skills,
-                   this._planner.Kernel.Log
-               );
+                context.Variables,
+                this._planner.Kernel.Memory,
+                this._planner.Kernel.Skills,
+                this._planner.Kernel.Log
+            );
             var plan = Plan.FromJson(planJson, newPlanContext);
 
             // Invoke plan
@@ -534,23 +534,28 @@ public class ChatSkill
 
         List<object> itemList = new();
 
-        // Summary (List) Object
-        // To stay within token limits, attempt to truncate the list of results
-        if (document.RootElement.ValueKind == JsonValueKind.Array)
-        {
-            foreach (JsonElement item in document.RootElement.EnumerateArray())
-            {
-                int itemTokenCount = Utilities.TokenCount(item.ToString());
+        // Some APIs will return a JSON response with one property key representing an embedded answer.
+        // Extract this value for further processing
+        string resultsDescriptor = "";
 
-                if (jsonTokenLimit - itemTokenCount > 0)
-                {
-                    itemList.Add(item);
-                    jsonTokenLimit -= itemTokenCount;
-                }
-                else
-                {
-                    break;
-                }
+        if (document.RootElement.ValueKind == JsonValueKind.Object)
+        {
+            int propertyCount = 0;
+            foreach (JsonProperty property in document.RootElement.EnumerateObject())
+            {
+                propertyCount++;
+            }
+
+            if (propertyCount == 1)
+            {
+                // Save property name for result interpolation
+                JsonProperty firstProperty = document.RootElement.EnumerateObject().First();
+                jsonTokenLimit -= Utilities.TokenCount(firstProperty.Name);
+                resultsDescriptor = string.Format(CultureInfo.InvariantCulture, "{0}: ", firstProperty.Name);
+
+                // Extract object to be truncated
+                JsonElement value = firstProperty.Value;
+                document = JsonDocument.Parse(value.GetRawText());
             }
         }
 
@@ -574,8 +579,28 @@ public class ChatSkill
             }
         }
 
+        // Summary (List) Object
+        // To stay within token limits, attempt to truncate the list of results
+        if (document.RootElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement item in document.RootElement.EnumerateArray())
+            {
+                int itemTokenCount = Utilities.TokenCount(item.ToString());
+
+                if (jsonTokenLimit - itemTokenCount > 0)
+                {
+                    itemList.Add(item);
+                    jsonTokenLimit -= itemTokenCount;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
         return itemList.Count > 0
-            ? JsonSerializer.Serialize(itemList)
+            ? string.Format(CultureInfo.InvariantCulture, "{0}{1}", resultsDescriptor, JsonSerializer.Serialize(itemList))
             : string.Format(CultureInfo.InvariantCulture, "JSON response for {0} is too large to be consumed at this time.", lastSkillInvoked);
     }
 
@@ -688,15 +713,17 @@ public class ChatSkill
     {
         var memoryCollectionName = SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName);
 
-        var memories = context.Memory.SearchAsync(
-            collection: memoryCollectionName,
-            query: item.ToFormattedString(),
-            limit: 1,
-            minRelevanceScore: this._promptOptions.SemanticMemoryMinRelevance,
-            cancellationToken: context.CancellationToken
-        ).ToEnumerable();
+        var memories = await context.Memory.SearchAsync(
+                collection: memoryCollectionName,
+                query: item.ToFormattedString(),
+                limit: 1,
+                minRelevanceScore: this._promptOptions.SemanticMemoryMinRelevance,
+                cancellationToken: context.CancellationToken
+            )
+            .ToListAsync(context.CancellationToken)
+            .ConfigureAwait(false);
 
-        if (!memories.Any())
+        if (memories.Count == 0)
         {
             await context.Memory.SaveInformationAsync(
                 collection: memoryCollectionName,
