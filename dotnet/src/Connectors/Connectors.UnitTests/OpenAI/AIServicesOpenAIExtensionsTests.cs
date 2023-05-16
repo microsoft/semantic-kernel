@@ -3,6 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI;
@@ -50,11 +51,35 @@ public class AIServicesOpenAIExtensionsTests
         // Act - Assert no exception occurs
         targetBuilder.WithAzureTextCompletionService("dep", "https://localhost", "key", serviceId: "one");
         targetBuilder.WithAzureTextCompletionService("dep", "https://localhost", "key", serviceId: "one");
-        targetBuilder.WithOpenAITextCompletionService("model", "key, serviceId: \"one\"");
+
         targetBuilder.WithOpenAITextCompletionService("model", "key", serviceId: "one");
+        targetBuilder.WithOpenAITextCompletionService("model", "key", serviceId: "one");
+
         targetBuilder.WithAzureTextEmbeddingGenerationService("dep", "https://localhost", "key", serviceId: "one");
         targetBuilder.WithAzureTextEmbeddingGenerationService("dep", "https://localhost", "key", serviceId: "one");
+
         targetBuilder.WithOpenAITextEmbeddingGenerationService("model", "key", serviceId: "one");
         targetBuilder.WithOpenAITextEmbeddingGenerationService("model", "key", serviceId: "one");
+
+        targetBuilder.WithAzureChatCompletionService("dep", "https://localhost", "key", serviceId: "one");
+        targetBuilder.WithAzureChatCompletionService("dep", "https://localhost", "key", serviceId: "one");
+
+        targetBuilder.WithOpenAIChatCompletionService("model", "key", serviceId: "one");
+        targetBuilder.WithOpenAIChatCompletionService("model", "key", serviceId: "one");
+
+        targetBuilder.WithOpenAIImageGenerationService("model", "key", serviceId: "one");
+        targetBuilder.WithOpenAIImageGenerationService("model", "key", serviceId: "one");
+
+        targetBuilder.WithDefaultAIService(new OpenAITextCompletion("model", "key"));
+        targetBuilder.WithDefaultAIService(new OpenAITextCompletion("model", "key"));
+
+        targetBuilder.WithDefaultAIService((_) => new OpenAITextCompletion("model", "key"));
+        targetBuilder.WithDefaultAIService((_) => new OpenAITextCompletion("model", "key"));
+
+        targetBuilder.WithAIService<ITextCompletion>("one", new OpenAITextCompletion("model", "key"));
+        targetBuilder.WithAIService<ITextCompletion>("one", new OpenAITextCompletion("model", "key"));
+
+        targetBuilder.WithAIService<ITextCompletion>("one", (_) => new OpenAITextCompletion("model", "key"));
+        targetBuilder.WithAIService<ITextCompletion>("one", (_) => new OpenAITextCompletion("model", "key"));
     }
 }

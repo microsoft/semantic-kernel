@@ -51,7 +51,7 @@ public class KernelTests
     public async Task ItProvidesAccessToFunctionsViaSKContextAsync()
     {
         // Arrange
-        var factory = new Mock<Func<ILogger, ITextCompletion>>();
+        var factory = new Mock<Func<(ILogger, KernelConfig), ITextCompletion>>();
         var kernel = Kernel.Builder
             .WithAIService<ITextCompletion>("x", factory.Object)
             .Build();

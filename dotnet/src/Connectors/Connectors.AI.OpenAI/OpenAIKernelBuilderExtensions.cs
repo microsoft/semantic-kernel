@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Reliability;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
@@ -40,13 +41,13 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (logger) =>
+        builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
             new AzureTextCompletion(
                 deploymentName,
                 endpoint,
                 apiKey,
-                httpClient,
-                logger),
+                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                parameters.Logger),
             setAsDefault);
 
         return builder;
@@ -72,13 +73,13 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (logger) =>
+        builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
             new AzureTextCompletion(
                 deploymentName,
                 endpoint,
                 credentials,
-                httpClient,
-                logger),
+                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                parameters.Logger),
             setAsDefault);
 
         return builder;
@@ -104,13 +105,13 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (logger) =>
+        builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
             new OpenAITextCompletion(
                 modelId,
                 apiKey,
                 orgId,
-                httpClient,
-                logger),
+                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                parameters.Logger),
             setAsDefault);
         return builder;
     }
@@ -139,13 +140,13 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (logger) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
             new AzureTextEmbeddingGeneration(
                 deploymentName,
                 endpoint,
                 apiKey,
-                httpClient,
-                logger),
+                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                parameters.Logger),
             setAsDefault);
         return builder;
     }
@@ -170,13 +171,13 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (logger) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
             new AzureTextEmbeddingGeneration(
                 deploymentName,
                 endpoint,
                 credential,
-                httpClient,
-                logger),
+                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                parameters.Logger),
             setAsDefault);
         return builder;
     }
@@ -201,13 +202,13 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (logger) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
             new OpenAITextEmbeddingGeneration(
                 modelId,
                 apiKey,
                 orgId,
-                httpClient,
-                logger),
+                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                parameters.Logger),
             setAsDefault);
         return builder;
     }
@@ -238,12 +239,12 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory(ILogger logger) => new AzureChatCompletion(
+        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new AzureChatCompletion(
             deploymentName,
             endpoint,
             apiKey,
-            httpClient,
-            logger);
+            httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+            parameters.Logger);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
@@ -278,12 +279,12 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory(ILogger logger) => new AzureChatCompletion(
+        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new AzureChatCompletion(
             deploymentName,
             endpoint,
             credentials,
-            httpClient,
-            logger);
+            httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+            parameters.Logger);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
@@ -318,12 +319,12 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        OpenAIChatCompletion Factory(ILogger logger) => new OpenAIChatCompletion(
+        OpenAIChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new OpenAIChatCompletion(
             modelId,
             apiKey,
             orgId,
-            httpClient,
-            logger);
+            httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+            parameters.Logger);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
@@ -334,6 +335,13 @@ public static class OpenAIKernelBuilderExtensions
         }
 
         return builder;
+    }
+
+    private static HttpClient CreateHttpClient(this IDelegatingHandlerFactory handlerFactory, ILogger? logger)
+    {
+        var retryHandler = handlerFactory.Create(logger);
+        retryHandler.InnerHandler = new HttpClientHandler { CheckCertificateRevocationList = true };
+        return new HttpClient(retryHandler);
     }
 
     #endregion
@@ -357,12 +365,12 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService(serviceId, (logger) =>
+        builder.WithAIService(serviceId, ((ILogger Logger, KernelConfig Config) parameters) =>
             new OpenAIImageGeneration(
                 apiKey,
                 orgId,
-                httpClient,
-                logger),
+                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                parameters.Logger),
             setAsDefault);
 
         return builder;

@@ -208,10 +208,10 @@ public sealed class KernelBuilder
     /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
     public KernelBuilder WithAIService<TService>(
         string? serviceId,
-        Func<ILogger, TService> factory,
+        Func<(ILogger Logger, KernelConfig Config), TService> factory,
         bool setAsDefault = false) where TService : IAIService
     {
-        this._aiServices.SetService<TService>(serviceId, () => factory(this._logger), setAsDefault);
+        this._aiServices.SetService<TService>(serviceId, () => factory((this._logger, this._config)), setAsDefault);
         return this;
     }
 }
