@@ -119,7 +119,7 @@ public class QdrantMemoryStoreTests
         mockQdrantClient
             .Setup<Task>(x => x.DoesCollectionExistAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.FromResult(true));
-        
+
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
