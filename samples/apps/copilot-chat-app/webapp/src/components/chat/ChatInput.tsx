@@ -25,7 +25,7 @@ const useClasses = makeStyles({
         ...shorthands.margin(0, '72px'),
     },
     typingIndicator: {
-        height: '28px',
+        maxHeight: '28px',
     },
     content: {
         ...shorthands.gap(tokens.spacingHorizontalM),
