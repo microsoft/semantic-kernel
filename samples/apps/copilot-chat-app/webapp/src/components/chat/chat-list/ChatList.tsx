@@ -14,7 +14,6 @@ const useClasses = makeStyles({
         ...shorthands.overflow('hidden'),
         display: 'flex',
         width: '25%',
-        scrollbarWidth: 'thin',
         backgroundColor: '#F0F0F0',
         flexDirection: 'column',
         '@media (max-width: 25%)': {
@@ -22,7 +21,18 @@ const useClasses = makeStyles({
         },
     },
     list: {
-        overflowY: 'auto',
+        overflowY: 'scroll',
+        overflowX: 'hidden',
+        '&:hover': {
+            '&::-webkit-scrollbar-thumb': {
+                backgroundColor: tokens.colorScrollbarOverlay,
+                visibility: 'visible',
+            },
+        },
+        ...shorthands.margin('4px'),
+        '&::-webkit-scrollbar-track': {
+            backgroundColor: 'transparent',
+        },
     },
     header: {
         ...shorthands.padding(tokens.spacingVerticalXXS, tokens.spacingHorizontalXS),
