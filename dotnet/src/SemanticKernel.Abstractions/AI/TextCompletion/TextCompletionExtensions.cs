@@ -51,11 +51,11 @@ public static class TextCompletionExtensions
         CompleteRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var completionResults = textCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
+        var completionResults = textCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
 
-        await foreach (var completionResult in completionResults)
+        await foreach (var completionResult in completionResults.ConfigureAwait(false))
         {
-            await foreach (var word in completionResult.GetCompletionStreamingAsync(cancellationToken))
+            await foreach (var word in completionResult.GetCompletionStreamingAsync(cancellationToken).ConfigureAwait(false))
             {
                 yield return word;
             }

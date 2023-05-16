@@ -144,7 +144,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
                 Content = new StringContent(JsonSerializer.Serialize(completionRequest))
             };
 
-            var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -159,7 +159,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
                 };
             }
 
-            return completionResponse.Select((completion) => new TextCompletionStreamingResult(completion.Text)).ToList();
+            return completionResponse.ConvertAll(c=> new TextCompletionStreamingResult(c.Text));
         }
         catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {

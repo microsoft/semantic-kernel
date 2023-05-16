@@ -257,7 +257,7 @@ public abstract class ClientBase
             requestSettings.ResultsPerPrompt > 128)
         {
             // <see cref="CompletionsOptions.ChoicesPerPrompt"/> must be in range between 1 and 128.
-            throw new ArgumentException($"{nameof(requestSettings.ResultsPerPrompt)} invalid. The value must be in range between 1 and 128.");
+            throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, "The value must be in range between 1 and 128, inclusive.");
         }
 
         var options = new CompletionsOptions
