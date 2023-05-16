@@ -8,7 +8,7 @@ namespace SemanticKernel.Service.Config;
 /// If the string is set, it must not be empty or whitespace.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public sealed class NotEmptyOrWhitespaceAttribute : ValidationAttribute
+internal sealed class NotEmptyOrWhitespaceAttribute : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {

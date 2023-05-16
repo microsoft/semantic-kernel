@@ -9,7 +9,7 @@ namespace SemanticKernel.Service.Config;
 /// If the other property is set to the expected value, then this property is required.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public sealed class RequiredOnPropertyValueAttribute : ValidationAttribute
+internal sealed class RequiredOnPropertyValueAttribute : ValidationAttribute
 {
     /// <summary>
     /// Name of the other property.

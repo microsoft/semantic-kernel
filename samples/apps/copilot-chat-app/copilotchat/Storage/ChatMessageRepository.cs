@@ -33,6 +33,6 @@ public class ChatMessageRepository : Repository<ChatMessage>
     {
         var chatMessages = await this.FindByChatIdAsync(chatId);
         var first = chatMessages.MaxBy(e => e.Timestamp);
-        return first is null ? throw new KeyNotFoundException($"No messages found for chat '{chatId}'.") : first;
+        return first ?? throw new KeyNotFoundException($"No messages found for chat '{chatId}'.");
     }
 }

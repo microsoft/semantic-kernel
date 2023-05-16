@@ -71,7 +71,6 @@ public static class CopilotChatServiceExtensions
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
-
         return services;
     }
 

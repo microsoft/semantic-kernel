@@ -28,8 +28,11 @@ public sealed class Program
         builder.Services
             .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Program>>()) // some services require an un-templated ILogger
             .AddOptions(builder.Configuration)
+            .AddSemanticKernelServices();
+
+        // Add CopilotChat services.
+        builder.Services
             .AddCopilotChatOptions(builder.Configuration)
-            .AddSemanticKernelServices()
             .AddCopilotChatPlannerServices()
             .AddPersistentChatStore();
 
