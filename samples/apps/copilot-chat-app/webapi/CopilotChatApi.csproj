@@ -30,7 +30,7 @@
     <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.28.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.33.0" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="2.10.0" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="2.11.0" />
     <PackageReference Include="PdfPig" Version="0.1.8-alpha-20230423-3898f" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
