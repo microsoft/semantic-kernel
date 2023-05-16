@@ -35,7 +35,8 @@
     <PackageVersion Include="Microsoft.OpenApi" Version="[1.6.3, )" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="[1.6.3, )" />
     <PackageVersion Include="Newtonsoft.Json" Version="[13.0.3, )" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.52.0" />
+    <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.53.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.16" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <!-- Symbols -->
@@ -55,6 +56,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     -->
+
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
 
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">

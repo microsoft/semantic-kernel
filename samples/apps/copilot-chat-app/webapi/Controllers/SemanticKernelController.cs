@@ -135,7 +135,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
             {
                 InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true }
             };
-            using HttpClient importHttpClient = new HttpClient(retryHandler, false);
+            using HttpClient importHttpClient = new(retryHandler, false);
             importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
             await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"),
                 importHttpClient);
