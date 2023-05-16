@@ -159,7 +159,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
                 };
             }
 
-            return completionResponse.ConvertAll(c=> new TextCompletionStreamingResult(c.Text));
+            return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c.Text));
         }
         catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {

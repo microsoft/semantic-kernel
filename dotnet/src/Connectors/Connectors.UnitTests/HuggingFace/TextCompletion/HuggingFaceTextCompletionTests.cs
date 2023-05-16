@@ -57,17 +57,5 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         return new HuggingFaceTextCompletion(new Uri(Endpoint), Model, httpClientHandler);
     }
 
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._response.Dispose();
-        }
-    }
+    public void Dispose() => this._response.Dispose();
 }
