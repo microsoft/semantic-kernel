@@ -11,6 +11,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\InternalUtilities\Diagnostics\CompilerServicesAttributes.cs" Link="Diagnostics\CompilerServicesAttributes.cs" />
+    <Compile Include="..\..\InternalUtilities\Diagnostics\ExceptionExtensions.cs" Link="Diagnostics\ExceptionExtensions.cs" />
+    <Compile Include="..\..\InternalUtilities\Diagnostics\HttpStatusCodeType.cs" Link="Diagnostics\HttpStatusCodeType.cs" />
+    <Compile Include="..\..\InternalUtilities\Diagnostics\NullableAttributes.cs" Link="Diagnostics\NullableAttributes.cs" />
+    <Compile Include="..\..\InternalUtilities\Diagnostics\Verify.cs" Link="Diagnostics\Verify.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="skprompt.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>

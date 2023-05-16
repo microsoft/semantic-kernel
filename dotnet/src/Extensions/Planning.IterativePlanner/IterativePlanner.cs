@@ -83,13 +83,11 @@ public sealed class IterativePlanner
         for (int i = 0; i < this._maxIterations; i++)
         {
             var scratchPad = this.CreateScratchPad(goal);
-            Thread.Sleep(1000);
-            PrintColored(scratchPad);
+            //PrintColored(scratchPad);
             this._context.Variables.Set("agentScratchPad", scratchPad);
             var llmResponse = await this._functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
             string actionText = llmResponse.Result.Trim();
-            Thread.Sleep(1000);
-            PrintColored(actionText);
+            //PrintColored(actionText);
             
             var nextStep = this.ParseResult(actionText);
             this.Steps.Add(nextStep);
@@ -167,7 +165,7 @@ public sealed class IterativePlanner
 
         if (untilActionMatch.Success)
         {
-            result.Thought = untilActionMatch.Value;
+            result.Thought = untilActionMatch.Value.Trim();
         }
 
         Regex actionRegex = new Regex(@"```(.*?)```", RegexOptions.Singleline);
