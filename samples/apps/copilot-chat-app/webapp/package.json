@@ -23,7 +23,6 @@
     "@fluentui/react-icons": "^2.0.193",
     "@fluentui/react-northstar": "^0.66.4",
     "@reduxjs/toolkit": "^1.9.1",
-    "buffer": "^6.0.3",
     "debug": "^4.3.4",
     "microsoft-cognitiveservices-speech-sdk": "^1.27.0",
     "react": "^18.2.0",

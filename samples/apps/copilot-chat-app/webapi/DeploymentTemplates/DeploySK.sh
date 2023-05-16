@@ -16,7 +16,7 @@ DebugDeployment="$7"
 templateFile="$(dirname "$0")/sk.bicep"
 
 if [ -z "$ResourceGroup" ]; then
-    ResourceGroup="${DeploymentName}-rg"
+    ResourceGroup="$rg-{DeploymentName}"
 fi
 
 az login --use-device-code

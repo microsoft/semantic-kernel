@@ -108,7 +108,8 @@ Answer: ";
 
         var context = kernel.CreateNewContext();
         context["externalInformation"] = "";
-        var answer = await oracle.InvokeAsync(questions, context);
+        context.Variables.Update(questions);
+        var answer = await oracle.InvokeAsync(context);
 
         // If the answer contains commands, execute them using the prompt renderer.
         if (answer.Result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
@@ -125,7 +126,8 @@ Answer: ";
             context["externalInformation"] = information;
 
             // Run the semantic function again, now including information from Bing
-            answer = await oracle.InvokeAsync(questions, context);
+            context.Variables.Update(questions);
+            answer = await oracle.InvokeAsync(context);
         }
         else
         {

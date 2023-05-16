@@ -18,6 +18,7 @@ jobs:
         matrix:
           os: [ubuntu-latest, windows-latest]
           configuration: [Release, Debug]
+          dotnet-version: ['6.0.x']
     runs-on: ${{ matrix.os }}
     env:
       NUGET_CERT_REVOCATION_MODE: offline
@@ -26,10 +27,10 @@ jobs:
       with:
         clean: true
 
-    - name: Setup .NET
+    - name: Setup .NET SDK ${{ matrix.dotnet-version }}
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: ${{ matrix.dotnet-version }}
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.GPR_READ_TOKEN }}
 

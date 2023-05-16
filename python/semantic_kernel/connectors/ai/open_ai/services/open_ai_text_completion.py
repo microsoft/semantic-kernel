@@ -3,6 +3,8 @@
 from logging import Logger
 from typing import Any, Optional
 
+import openai
+
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
@@ -16,6 +18,9 @@ from semantic_kernel.utils.null_logger import NullLogger
 class OpenAITextCompletion(TextCompletionClientBase):
     _model_id: str
     _api_key: str
+    _api_type: Optional[str] = None
+    _api_version: Optional[str] = None
+    _endpoint: Optional[str] = None
     _org_id: Optional[str] = None
     _log: Logger
 
@@ -24,6 +29,9 @@ class OpenAITextCompletion(TextCompletionClientBase):
         model_id: str,
         api_key: str,
         org_id: Optional[str] = None,
+        api_type: Optional[str] = None,
+        api_version: Optional[str] = None,
+        endpoint: Optional[str] = None,
         log: Optional[Logger] = None,
     ) -> None:
         """
@@ -40,19 +48,11 @@ class OpenAITextCompletion(TextCompletionClientBase):
         """
         self._model_id = model_id
         self._api_key = api_key
+        self._api_type = api_type
+        self._api_version = api_version
+        self._endpoint = endpoint
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
-
-        self.open_ai_instance = self._setup_open_ai()
-
-    def _setup_open_ai(self) -> Any:
-        import openai
-
-        openai.api_key = self._api_key
-        if self._org_id is not None:
-            openai.organization = self._org_id
-
-        return openai
 
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
@@ -95,14 +95,19 @@ class OpenAITextCompletion(TextCompletionClientBase):
             )
 
         model_args = {}
-        if self.open_ai_instance.api_type in ["azure", "azure_ad"]:
+        if self._api_type in ["azure", "azure_ad"]:
             model_args["engine"] = self._model_id
         else:
             model_args["model"] = self._model_id
 
         try:
-            response: Any = await self.open_ai_instance.Completion.acreate(
+            response: Any = await openai.Completion.acreate(
                 **model_args,
+                api_key=self._api_key,
+                api_type=self._api_type,
+                api_base=self._endpoint,
+                api_version=self._api_version,
+                organization=self._org_id,
                 prompt=prompt,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,

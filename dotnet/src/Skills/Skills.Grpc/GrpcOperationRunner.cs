@@ -47,8 +47,8 @@ internal class GrpcOperationRunner
     /// <returns>The result of the operation run.</returns>
     public async Task<JsonObject> RunAsync(GrpcOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(operation, $"No operation was provided for {nameof(GrpcOperationRunner)} to run.");
-        Verify.NotNull(arguments, $"No arguments were provided for {operation.Name} gRPC operation.");
+        Verify.NotNull(operation);
+        Verify.NotNull(arguments);
 
         var address = this.GetAddress(operation, arguments);
 
@@ -175,7 +175,7 @@ internal class GrpcOperationRunner
     /// </summary>
     /// <param name="dataContractMetadata">The data contract type metadata.</param>
     /// <returns>.NET type representing the data contract type.</returns>
-    private static Type BuildGrpcOperationDataContractType(GrpcOperationDataContractType dataContractMetadata)
+    private static TypeInfo BuildGrpcOperationDataContractType(GrpcOperationDataContractType dataContractMetadata)
     {
         var assemblyName = new AssemblyName($"{dataContractMetadata.Name}Assembly");
 

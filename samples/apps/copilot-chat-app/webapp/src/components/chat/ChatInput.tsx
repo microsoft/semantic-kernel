@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useMsal } from '@azure/msal-react';
+import { useAccount, useMsal } from '@azure/msal-react';
 import { Button, Spinner, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
@@ -10,7 +10,8 @@ import { Constants } from '../../Constants';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
 import { useDocumentImportService } from '../../libs/semantic-kernel/useDocumentImport';
-import { useAppDispatch } from '../../redux/app/hooks';
+import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
+import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { useSKSpeechService } from './../../libs/semantic-kernel/useSKSpeech';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
@@ -22,10 +23,9 @@ const useClasses = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         ...shorthands.margin(0, '72px'),
-        alignContent: 'stretch',
     },
     typingIndicator: {
-        height: '28px',
+        maxHeight: '28px',
     },
     content: {
         ...shorthands.gap(tokens.spacingHorizontalM),
@@ -37,7 +37,7 @@ const useClasses = makeStyles({
         width: '100%',
     },
     textarea: {
-        height: '70px',
+        maxHeight: '80px',
     },
     controls: {
         display: 'flex',
@@ -51,7 +51,7 @@ const useClasses = makeStyles({
     functional: {
         display: 'flex',
         flexDirection: 'row',
-    }
+    },
 });
 
 interface ChatInputProps {
@@ -63,7 +63,8 @@ interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const { isTyping, onSubmit } = props;
     const classes = useClasses();
-    const { instance } = useMsal();
+    const { instance, accounts } = useMsal();
+    const account = useAccount(accounts[0] || {});
     const dispatch = useAppDispatch();
     const [value, setValue] = React.useState('');
     const [previousValue, setPreviousValue] = React.useState('');
@@ -73,13 +74,13 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const [documentImporting, SetDocumentImporting] = React.useState(false);
     const documentImportService = useDocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
+    const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     React.useEffect(() => {
         if (recognizer) return;
         void (async () => {
             var response = await speechService.validSpeechKeyAsync();
-            if(response.isSuccess)
-            {
+            if (response.isSuccess) {
                 const newRecognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
                 setRecognizer(newRecognizer);
             }
@@ -109,8 +110,10 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
             try {
                 SetDocumentImporting(true);
                 await documentImportService.importDocumentAsync(
+                    account!.homeAccountId!,
+                    selectedId,
                     documentFile,
-                    await AuthHelper.getSKaaSAccessToken(instance)
+                    await AuthHelper.getSKaaSAccessToken(instance),
                 );
                 dispatch(addAlert({ message: 'Document uploaded successfully', type: AlertType.Success }));
             } catch (e: any) {
@@ -119,6 +122,10 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
             }
             SetDocumentImporting(false);
         }
+
+        // Reset the file input so that the onChange event will
+        // be triggered even if the same file is selected again.
+        documentFileRef.current!.value = '';
     };
 
     const handleSubmit = (data: string) => {
@@ -182,16 +189,26 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         type="file"
                         ref={documentFileRef}
                         style={{ display: 'none' }}
-                        accept='.txt,.pdf'
+                        accept=".txt,.pdf"
                         multiple={false}
                         onChange={() => importDocument()}
                     />
-                    <Button disabled={ documentImporting } appearance="transparent" icon={<AttachRegular />} onClick={() => selectDocument()} />
+                    <Button
+                        disabled={documentImporting}
+                        appearance="transparent"
+                        icon={<AttachRegular />}
+                        onClick={() => selectDocument()}
+                    />
                     {documentImporting && <Spinner size="tiny" />}
                 </div>
                 <div className={classes.essentials}>
                     {recognizer && (
-                        <Button appearance="transparent" disabled={isListening} icon={<MicRegular />} onClick={() => handleSpeech()} />
+                        <Button
+                            appearance="transparent"
+                            disabled={isListening}
+                            icon={<MicRegular />}
+                            onClick={() => handleSpeech()}
+                        />
                     )}
                     <Button appearance="transparent" icon={<SendRegular />} onClick={() => handleSubmit(value)} />
                 </div>

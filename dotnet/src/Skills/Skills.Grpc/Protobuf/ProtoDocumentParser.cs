@@ -19,24 +19,24 @@ internal class ProtoDocumentParser
     /// <summary>
     /// Parses .proto document.
     /// </summary>
-    /// <param name="document">The .proto document.</param>
-    /// <param name="name">The .proto file logical name.</param>
+    /// <param name="protoDocument">The .proto document.</param>
+    /// <param name="protoFileName">The .proto file logical name.</param>
     /// <returns>List of gRPC operations.</returns>
-    public IList<GrpcOperation> Parse(Stream document, string name)
+    public IList<GrpcOperation> Parse(Stream protoDocument, string protoFileName)
     {
-        Verify.NotNull(document, $"The {nameof(document)} parameter is not set to an instance of an object.");
-        Verify.NotNullOrWhiteSpace(name, ".proto file name is not provided.");
+        Verify.NotNull(protoDocument);
+        Verify.NotNullOrWhiteSpace(protoFileName);
 
-        using var textReader = new StreamReader(document);
+        using var textReader = new StreamReader(protoDocument);
 
         var descriptor = new FileDescriptorSet();
-        descriptor.Add(name, source: textReader);
+        descriptor.Add(protoFileName, source: textReader);
         descriptor.Process();
 
         var errors = descriptor.GetErrors();
-        if (errors != null && errors.Any())
+        if (errors != null && errors.Length != 0)
         {
-            throw new ProtobufParsingException($"Parsing of '{name}' .proto document has failed. Details: {string.Join(";", errors.AsEnumerable())}");
+            throw new ProtobufParsingException($"Parsing of '{protoFileName}' .proto document has failed. Details: {string.Join(";", errors.AsEnumerable())}");
         }
 
         return this.GetGrpcOperations(descriptor.Files.Single());
@@ -47,7 +47,7 @@ internal class ProtoDocumentParser
     /// </summary>
     /// <param name="model">The .proto document model.</param>
     /// <returns>List of gRPC operations.</returns>
-    private IList<GrpcOperation> GetGrpcOperations(FileDescriptorProto model)
+    private List<GrpcOperation> GetGrpcOperations(FileDescriptorProto model)
     {
         var operations = new List<GrpcOperation>();
 
@@ -104,7 +104,7 @@ internal class ProtoDocumentParser
     /// </summary>
     /// <param name="fields">Message type fields.</param>
     /// <returns>The data contract fields.</returns>
-    private IList<GrpcOperationDataContractTypeFiled> GetDataContractFields(List<FieldDescriptorProto> fields)
+    private List<GrpcOperationDataContractTypeFiled> GetDataContractFields(List<FieldDescriptorProto> fields)
     {
         var result = new List<GrpcOperationDataContractTypeFiled>();
 

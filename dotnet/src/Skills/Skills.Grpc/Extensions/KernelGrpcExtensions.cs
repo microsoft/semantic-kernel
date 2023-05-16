@@ -86,7 +86,7 @@ public static class KernelGrpcExtensions
         Stream documentStream,
         string skillName)
     {
-        Verify.NotNull(kernel, nameof(kernel));
+        Verify.NotNull(kernel);
         Verify.ValidSkillName(skillName);
 
         // Parse
@@ -172,8 +172,8 @@ public static class KernelGrpcExtensions
             return context;
         }
 
-        var function = SKFunction.FromCustomMethod(
-            customFunction: ExecuteAsync,
+        var function = SKFunction.FromNativeFunction(
+            nativeFunction: ExecuteAsync,
             parameters: operationParameters.ToList(),
             description: operation.Name,
             skillName: skillName,

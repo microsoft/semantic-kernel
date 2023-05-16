@@ -3,6 +3,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.Config;
 
 namespace SemanticKernel.Service.Skills;
@@ -18,19 +19,12 @@ public class CopilotChatPlanner
     public IKernel Kernel { get; }
 
     /// <summary>
-    /// The planner's options.
-    /// </summary>
-    private readonly PlannerOptions _options;
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="CopilotChatPlanner"/> class.
     /// </summary>
     /// <param name="plannerKernel">The planner's kernel.</param>
-    /// <param name="options">The planner's options.</param>
-    public CopilotChatPlanner(IKernel plannerKernel, IOptions<PlannerOptions> options)
+    public CopilotChatPlanner(IKernel plannerKernel)
     {
         this.Kernel = plannerKernel;
-        this._options = options.Value;
     }
 
     /// <summary>
@@ -38,5 +32,15 @@ public class CopilotChatPlanner
     /// </summary>
     /// <param name="goal">The goal to create a plan for.</param>
     /// <returns>The plan.</returns>
-    public Task<Plan> CreatePlanAsync(string goal) => new ActionPlanner(this.Kernel).CreatePlanAsync(goal);
+    public Task<Plan> CreatePlanAsync(string goal)
+    {
+        FunctionsView plannerFunctionsView = this.Kernel.Skills.GetFunctionsView(true, true);
+        if (plannerFunctionsView.NativeFunctions.IsEmpty && plannerFunctionsView.SemanticFunctions.IsEmpty)
+        {
+            // No functions are available - return an empty plan.
+            return Task.FromResult(new Plan(goal));
+        }
+
+        return new ActionPlanner(this.Kernel).CreatePlanAsync(goal);
+    }
 }
