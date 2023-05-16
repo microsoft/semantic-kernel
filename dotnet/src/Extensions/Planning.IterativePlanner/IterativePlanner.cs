@@ -24,6 +24,10 @@ public sealed class IterativePlanner
     private readonly int _maxIterations;
     private const string StopSequence = "Observation:";
 
+    private static string NormalizeLineEndings(string src)
+    {
+        return src.Replace("\r\n", "\n");
+    }
     /// <summary>
     /// Initialize a new instance of the <see cref="IterativePlanner"/> class.
     /// </summary>
@@ -45,6 +49,7 @@ public sealed class IterativePlanner
 
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 
+        promptTemplate = NormalizeLineEndings(promptTemplate);
         this._functionFlowFunction = kernel.CreateSemanticFunction(
             promptTemplate: promptTemplate,
             //skillName: RestrictedSkillName,
@@ -57,6 +62,7 @@ public sealed class IterativePlanner
 
         this._context = kernel.CreateNewContext();
         this._kernel = kernel;
+        this.Steps = new List<NextStep>();
     }
 
     /// <summary>
@@ -77,10 +83,9 @@ public sealed class IterativePlanner
         this._context.Variables.Set("toolDescriptions", toolDescriptions);
         this._context.Variables.Set("question", goal);
 
-        this.Steps = new List<NextStep>();
         for (int i = 0; i < this._maxIterations; i++)
         {
-            var scratchPad = this.CreateScratchPad(this.Steps, goal);
+            var scratchPad = this.CreateScratchPad(goal);
             Thread.Sleep(1000);
             PrintColored(scratchPad);
             this._context.Variables.Set("agentScratchPad", scratchPad);
@@ -103,9 +108,9 @@ public sealed class IterativePlanner
         return "Result Not found";
     }
 
-    private string CreateScratchPad(List<NextStep> steps, string goal)
+    private string CreateScratchPad(string goal)
     {
-        if (steps.Count == 0)
+        if (this.Steps.Count == 0)
         {
             return string.Empty;
         }
@@ -113,7 +118,7 @@ public sealed class IterativePlanner
         var result = new StringBuilder("This was your previous work (but I haven't seen any of it! I only see what you return as final answer):");
         result.AppendLine();
         result.AppendLine("Question: " + goal);
-        foreach (var step in steps)
+        foreach (var step in this.Steps)
         {
             result.AppendLine("Thought: " + step.OriginalResponse);
             //result.AppendLine("Action: " + step.Action);
@@ -217,62 +222,6 @@ public sealed class IterativePlanner
     /// The name to use when creating semantic functions that are restricted from plan creation
     /// </summary>
     //private const string RestrictedSkillName = "SequentialPlanner_Excluded";
-    private const string Prefix =
-        @"Answer the following questions as best you can. You have access to the following tools:
-{tool_descriptions}";
-
-    private const string ToolFormatInstructions = @"the way you use the tools is by specifying a json blob.
-Specifically, this json should have a `action` key (with the name of the tool to use) and a `action_input` key (with the input to the tool going here).
-
-The only values that should be in the ""action"" field are: {tool_names}
-
-The $JSON_BLOB should only contain a SINGLE action, do NOT return a list of multiple actions. Here is an example of a valid $JSON_BLOB:
-
-```
-{{{{
-  ""action"": $TOOL_NAME,
-  ""action_input"": $INPUT
-}}}}
-```
-
-ALWAYS use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action:
-```
-$JSON_BLOB
-```
-Observation: the result of the action
-... (this Thought/Action/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question";
-
-    private const string ToolSuffix = @"Begin! Reminder to always use the exact characters `Final Answer` when responding.";
-
-    private const string FormatInstructions = @"Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question";
-
-    private const string Suffix = @"Begin!
-
-Question: {input}
-Thought:{agent_scratchpad}";
-
-    private const string ToolPrefix =
-        "Answer the following questions as best you can. You have access to the following tools:";
-
-
-  
-
-
 }
 
 public class ActionDetails

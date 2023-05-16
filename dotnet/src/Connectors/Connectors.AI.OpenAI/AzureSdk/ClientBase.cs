@@ -140,16 +140,23 @@ public abstract class ClientBase
 
         ValidateMaxTokens(requestSettings.MaxTokens);
         var options = CreateChatCompletionsOptions(requestSettings, chat);
-
-        Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
-            () => this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
-
-        if (response == null || response.Value.Choices.Count < 1)
+        try
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
-        }
+            Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
+                () => this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        return response.Value.Choices[0].Message.Content;
+            if (response == null || response.Value.Choices.Count < 1)
+            {
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
+            }
+
+            return response.Value.Choices[0].Message.Content;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     /// <summary>
