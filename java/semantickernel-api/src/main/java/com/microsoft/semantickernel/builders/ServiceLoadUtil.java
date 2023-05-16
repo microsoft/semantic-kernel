@@ -10,10 +10,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 
-class ServiceLoadUtil {
+public class ServiceLoadUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceLoadUtil.class);
 
-    static <T> T findServiceLoader(Class<T> clazz, String alternativeClassName) {
+    public static <T> T findServiceLoader(Class<T> clazz, String alternativeClassName) {
         List<T> services = findAllServiceLoaders(clazz);
         if (services.size() > 0) {
             return services.get(0);

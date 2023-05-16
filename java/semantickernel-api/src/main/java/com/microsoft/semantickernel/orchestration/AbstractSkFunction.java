@@ -27,7 +27,7 @@ public abstract class AbstractSkFunction<
     @Nullable private KernelSkillsSupplier skillsSupplier;
 
     public AbstractSkFunction(
-            AbstractSkFunction.DelegateTypes delegateType,
+            DelegateTypes delegateType,
             List<ParameterView> parameters,
             String skillName,
             String functionName,

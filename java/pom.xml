@@ -24,6 +24,8 @@
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
         <module>semantickernel-core</module>
+        <module>semantickernel-extensions-parent</module>
+        <module>semantickernel-connectors-parent</module>
     </modules>
 
     <dependencyManagement>

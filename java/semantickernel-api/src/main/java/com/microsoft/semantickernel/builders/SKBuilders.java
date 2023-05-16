@@ -5,7 +5,6 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.planner.SequentialPlannerSKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
@@ -15,10 +14,6 @@ public class SKBuilders {
 
     public static CompletionSKFunction.Builder completionFunctions() {
         return FunctionBuilders.getCompletionBuilder();
-    }
-
-    public static SequentialPlannerSKFunction.Builder plannerFunctions() {
-        return FunctionBuilders.getPlannerBuilder();
     }
 
     public static TextCompletion.Builder textCompletionService() {

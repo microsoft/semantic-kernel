@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 /// Context Variables is a data structure that holds temporary data while a task is being performed.
 /// It is accessed and manipulated by functions in the pipeline.
 /// </summary>
-class DefaultContextVariables implements ContextVariables {
+class DefaultContextVariables implements ContextVariables, WritableContextVariables {
 
     // TODO case insensitive
     private final Map<String, String> variables;
@@ -44,7 +44,7 @@ class DefaultContextVariables implements ContextVariables {
         return this;
     }
 
-    ContextVariables appendToVariable(@NonNull String key, @NonNull String content) {
+    public ContextVariables appendToVariable(@NonNull String key, @NonNull String content) {
         return setVariable(key, this.variables.get(key) + content);
     }
 
@@ -103,6 +103,13 @@ class DefaultContextVariables implements ContextVariables {
         return variables.get(key);
     }
 
+    public static class WritableBuilder implements WritableContextVariables.Builder {
+        @Override
+        public WritableContextVariables build(Map<String, String> map) {
+            return new DefaultContextVariables(map);
+        }
+    }
+
     public static class Builder implements ContextVariables.Builder {
 
         @Override
@@ -113,6 +120,11 @@ class DefaultContextVariables implements ContextVariables {
         @Override
         public ContextVariables build(String content) {
             return new DefaultContextVariables(content);
+        }
+
+        @Override
+        public ContextVariables build(Map<String, String> map) {
+            return new DefaultContextVariables(map);
         }
     }
     /*

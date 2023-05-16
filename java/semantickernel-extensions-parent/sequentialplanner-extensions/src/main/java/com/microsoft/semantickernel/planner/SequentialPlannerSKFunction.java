@@ -1,18 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.planner;
 
-import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 public interface SequentialPlannerSKFunction extends SKFunction<Void, SequentialPlannerSKContext> {
-
-    static SequentialPlannerSKFunction.Builder builder() {
-        return BuildersSingleton.INST.getFunctionBuilders().plannerBuilders(null);
-    }
 
     interface Builder {
         SequentialPlannerSKFunction createFunction(

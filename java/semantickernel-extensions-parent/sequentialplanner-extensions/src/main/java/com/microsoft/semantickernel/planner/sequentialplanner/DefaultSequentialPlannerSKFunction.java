@@ -1,22 +1,21 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.orchestration.planner; // Copyright (c) Microsoft. All rights
+package com.microsoft.semantickernel.planner.sequentialplanner; // Copyright (c) Microsoft. All rights
 // reserved.
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.DefaultCompletionSKContext;
-import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
 import com.microsoft.semantickernel.orchestration.DefaultSemanticSKFunction;
 import com.microsoft.semantickernel.planner.SequentialPlannerSKContext;
 import com.microsoft.semantickernel.planner.SequentialPlannerSKFunction;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
+import java.util.List;
 
 /// <summary>
 /// Standard Semantic Kernel callable function.
@@ -28,12 +27,12 @@ public class DefaultSequentialPlannerSKFunction
         extends DefaultSemanticSKFunction<Void, SequentialPlannerSKContext>
         implements SequentialPlannerSKFunction {
 
-    private final DefaultCompletionSKFunction delegate;
+    private final CompletionSKFunction delegate;
     private boolean registered = false;
 
-    public DefaultSequentialPlannerSKFunction(DefaultCompletionSKFunction func) {
+    public DefaultSequentialPlannerSKFunction(CompletionSKFunction func) {
         super(
-                func.getDelegateType(),
+                func.ContextSwitchInSKContextOutTaskSKContext,
                 func.getParameters(),
                 func.getSkillName(),
                 func.getName(),
@@ -42,6 +41,7 @@ public class DefaultSequentialPlannerSKFunction
 
         this.delegate = func;
     }
+
 
     public static DefaultSequentialPlannerSKFunction createFunction(
             String promptTemplate,
@@ -54,18 +54,20 @@ public class DefaultSequentialPlannerSKFunction
             double presencePenalty,
             double frequencyPenalty,
             @Nullable List<String> stopSequences) {
-        DefaultCompletionSKFunction delegate =
-                DefaultCompletionSKFunction.createFunction(
-                        promptTemplate,
-                        functionName,
-                        skillName,
-                        description,
-                        maxTokens,
-                        temperature,
-                        topP,
-                        presencePenalty,
-                        frequencyPenalty,
-                        stopSequences);
+        CompletionSKFunction delegate =
+                SKBuilders
+                        .completionFunctions()
+                        .createFunction(
+                                promptTemplate,
+                                functionName,
+                                skillName,
+                                description,
+                                maxTokens,
+                                temperature,
+                                topP,
+                                presencePenalty,
+                                frequencyPenalty,
+                                stopSequences);
 
         return new DefaultSequentialPlannerSKFunction(delegate);
     }
@@ -109,6 +111,8 @@ public class DefaultSequentialPlannerSKFunction
 
     @Override
     public void registerOnKernel(Kernel kernel) {
+        kernel.registerSemanticFunction(delegate);
+
         delegate.registerOnKernel(kernel);
         registered = true;
     }
