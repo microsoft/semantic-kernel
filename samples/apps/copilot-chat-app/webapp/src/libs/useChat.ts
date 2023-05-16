@@ -7,7 +7,6 @@ import { ChatState } from '../redux/features/conversations/ChatState';
 import { Conversations } from '../redux/features/conversations/ConversationsState';
 import {
     addConversation,
-    incrementBotProfilePictureIndex,
     setConversations,
     setSelectedConversation,
     updateConversation,
@@ -35,7 +34,7 @@ export const useChat = () => {
     const { instance, accounts } = useMsal();
     const account = useAccount(accounts[0] || {});
     const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
-    const { botProfilePictureIndex } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
     const connectors = useConnectors();
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
@@ -81,10 +80,9 @@ export const useChat = () => {
                         messages: chatMessages,
                         audience: [loggedInUser],
                         botTypingTimestamp: 0,
-                        botProfilePicture: botProfilePictures.at(botProfilePictureIndex) ?? '/assets/bot-icon-1.png',
+                        botProfilePicture: getBotProfilePicture(Object.keys(conversations).length)
                     };
 
-                    dispatch(incrementBotProfilePictureIndex());
                     dispatch(addConversation(newChat));
                     dispatch(setSelectedConversation(newChat.id));
 
@@ -173,7 +171,7 @@ export const useChat = () => {
             );
 
             if (chatSessions.length > 0) {
-                const conversations: Conversations = {};
+                const loadedConversations: Conversations = {};
                 for (const index in chatSessions) {
                     const chatSession = chatSessions[index];
                     const chatMessages = await chatService.getChatMessagesAsync(
@@ -187,19 +185,17 @@ export const useChat = () => {
                     // so we need to reverse the order for render
                     const orderedMessages = chatMessages.reverse();
 
-                    conversations[chatSession.id] = {
+                    loadedConversations[chatSession.id] = {
                         id: chatSession.id,
                         title: chatSession.title,
                         audience: [loggedInUser],
                         messages: orderedMessages,
                         botTypingTimestamp: 0,
-                        botProfilePicture: botProfilePictures[botProfilePictureIndex],
+                        botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
                     };
-
-                    dispatch(incrementBotProfilePictureIndex());
                 }
 
-                dispatch(setConversations(conversations));
+                dispatch(setConversations(loadedConversations));
                 dispatch(setSelectedConversation(chatSessions[0].id));
             } else {
                 // No chats exist, create first chat window
@@ -236,6 +232,10 @@ export const useChat = () => {
                 const errorMessage = `Unable to upload the bot. Details: ${e.message ?? e}`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
             });
+    };
+
+    const getBotProfilePicture = (index: number) => {
+        return botProfilePictures[index % botProfilePictures.length];
     };
 
     return {
