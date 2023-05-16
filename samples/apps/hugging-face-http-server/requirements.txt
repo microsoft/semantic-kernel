@@ -7,7 +7,7 @@ cryptography==39.0.2
 dataclasses==0.6
 diffusers==0.2.2
 filelock==3.4.1
-Flask==2.0.3
+Flask==2.2.5
 huggingface-hub==0.4.0
 idna==3.4
 importlib-metadata==4.8.3
