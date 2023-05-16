@@ -4,20 +4,21 @@
 QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
 The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
 """
-import qdrant_client
-from qdrant_client import QdrantClient
-from qdrant_client.http import models
-from qdrant_client.http.models import Distance, VectorParams
-from qdrant_client.http.models import CollectionStatus, UpdateStatus, PointStruct
-
 from logging import Logger
-from typing import List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
+
+
+if TYPE_CHECKING:
+    import qdrant_client
+    from qdrant_client.http import models
+    from qdrant_client.http.models import Distance, VectorParams
+    from qdrant_client.http.models import CollectionStatus, UpdateStatus, PointStruct
 
 
 class QdrantMemoryStore(MemoryStoreBase):
@@ -27,21 +28,21 @@ class QdrantMemoryStore(MemoryStoreBase):
     def __init__(
         self, hostip: str, port: Optional[int] = 6333, logger: Optional[Logger] = None
     ) -> None:
-        self._qdrantclient = QdrantClient(host=hostip, port=port)
-        self._logger = logger or NullLogger()
-
         """Initializes a new instance of the QdrantMemoryStore class.
 
         Arguments:
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
         try:
-            from qdrant_client import QdrantClient
+            import qdrant_client
         except ImportError:
             raise ValueError(
                 "Error: Unable to import qdrant client python package."
                 "Please install qdrant client using `pip install qdrant-client`."
             )
+
+        self._qdrantclient = qdrant_client(host=hostip, port=port)
+        self._logger = logger or NullLogger()
 
     async def create_collection_async(
         self, collection_name: str, vector_size: int, distance: Optional[str] = "Cosine"
