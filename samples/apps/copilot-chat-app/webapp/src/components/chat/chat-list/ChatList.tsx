@@ -21,7 +21,7 @@ const useClasses = makeStyles({
         },
     },
     list: {
-        overflowY: 'scroll',
+        overflowY: 'auto',
         overflowX: 'hidden',
         '&:hover': {
             '&::-webkit-scrollbar-thumb': {
