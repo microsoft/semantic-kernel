@@ -15,6 +15,11 @@
 Empowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(DelaySignKeyFile)' != '' ">
+    <DelaySign>true</DelaySign>
+    <KeyFile>$(DelaySignKeyFile)</KeyFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" PrivateAssets="none" />
     <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" PrivateAssets="none" />

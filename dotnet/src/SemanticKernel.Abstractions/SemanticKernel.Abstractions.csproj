@@ -15,6 +15,11 @@
     <Description>Semantic Kernel interfaces and abstractions. This package is automatically installed by Semantic Kernel packages if needed.</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(DelaySignKeyFile)' != '' ">
+    <DelaySign>true</DelaySign>
+    <KeyFile>$(DelaySignKeyFile)</KeyFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <!--Setting version overrides to minimum supported version, to maximize compatibility.-->
     <PackageReference Include="Microsoft.Bcl.HashCode" VersionOverride="[1.1.0, )" />

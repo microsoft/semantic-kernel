@@ -19,6 +19,11 @@
     <Description>Semantic Kernel connectors for OpenAI and Azure OpenAI. Contains clients for text completion, chat completion, embedding and DALL-E image generation.</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(DelaySignKeyFile)' != '' ">
+    <DelaySign>true</DelaySign>
+    <KeyFile>$(DelaySignKeyFile)</KeyFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
   </ItemGroup>
