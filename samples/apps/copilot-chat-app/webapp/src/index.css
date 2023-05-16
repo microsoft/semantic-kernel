@@ -23,4 +23,5 @@ body,
 }
 ::-webkit-scrollbar-thumb {
     border-radius: 12px;
+    visibility: 'hidden',
 }

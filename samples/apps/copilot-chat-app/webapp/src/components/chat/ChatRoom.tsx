@@ -24,16 +24,20 @@ const useClasses = makeStyles({
         height: '100%',
     },
     scroll: {
-        overflowY: 'auto',
+        overflowY: 'scroll',
+        '&:hover': {
+            '&::-webkit-scrollbar-thumb': {
+                backgroundColor: tokens.colorScrollbarOverlay,
+                visibility: 'visible',
+            },
+            '&::-webkit-scrollbar-track': {
+                backgroundColor: tokens.colorNeutralBackground1,
+                WebkitBoxShadow: 'inset 0 0 5px rgba(0, 0, 0, 0.1)',
+                visibility: 'visible',
+            },
+        },
         height: '-webkit-fill-available',
         ...shorthands.margin('4px'),
-        '&::-webkit-scrollbar-thumb': {
-            backgroundColor: tokens.colorScrollbarOverlay,
-        },
-        '&::-webkit-scrollbar-track': {
-            backgroundColor: tokens.colorNeutralBackground1,
-            WebkitBoxShadow: 'inset 0 0 5px rgba(0, 0, 0, 0.1)',
-        },
     },
     history: {
         ...shorthands.padding(tokens.spacingVerticalM),

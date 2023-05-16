@@ -21,12 +21,15 @@ const useClasses = makeStyles({
         },
     },
     list: {
-        overflowY: 'auto',
+        overflowY: 'scroll',
         overflowX: 'hidden',
-        ...shorthands.margin('4px'),
-        '&::-webkit-scrollbar-thumb': {
-            backgroundColor: tokens.colorScrollbarOverlay,
+        '&:hover': {
+            '&::-webkit-scrollbar-thumb': {
+                backgroundColor: tokens.colorScrollbarOverlay,
+                visibility: 'visible',
+            },
         },
+        ...shorthands.margin('4px'),
         '&::-webkit-scrollbar-track': {
             backgroundColor: 'transparent',
         },
