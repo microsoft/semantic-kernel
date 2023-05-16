@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -6,16 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="skprompt.txt" />
-  </ItemGroup>
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/InternalUtilities.props" />
+
 
   <ItemGroup>
-    <Compile Include="..\..\InternalUtilities\Diagnostics\CompilerServicesAttributes.cs" Link="Diagnostics\CompilerServicesAttributes.cs" />
-    <Compile Include="..\..\InternalUtilities\Diagnostics\ExceptionExtensions.cs" Link="Diagnostics\ExceptionExtensions.cs" />
-    <Compile Include="..\..\InternalUtilities\Diagnostics\HttpStatusCodeType.cs" Link="Diagnostics\HttpStatusCodeType.cs" />
-    <Compile Include="..\..\InternalUtilities\Diagnostics\NullableAttributes.cs" Link="Diagnostics\NullableAttributes.cs" />
-    <Compile Include="..\..\InternalUtilities\Diagnostics\Verify.cs" Link="Diagnostics\Verify.cs" />
+    <None Remove="skprompt.txt" />
   </ItemGroup>
 
   <ItemGroup>
