@@ -17,7 +17,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Postgres database with pgvector extension.
 /// </summary>
-/// <remarks></remarks>
 public class PostgresMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>
@@ -59,7 +58,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await foreach (var collection in this._dbConnector.GetCollectionsAsync(dbConnection, cancellationToken))
+        await foreach (var collection in this._dbConnector.GetCollectionsAsync(dbConnection, cancellationToken).ConfigureAwait(false))
         {
             yield return collection;
         }
@@ -159,7 +158,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
            withEmbeddings: withEmbeddings,
            cancellationToken: cancellationToken);
 
-        await foreach (var (entry, cosineSimilarity) in results)
+        await foreach (var (entry, cosineSimilarity) in results.ConfigureAwait(false))
         {
             MemoryRecord record = MemoryRecord.FromJsonMetadata(
                json: entry.MetadataString,
@@ -243,9 +242,9 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
     {
         record.Key = record.Metadata.Id;
 
-        await this._dbConnector.InsertOrUpdateAsync(
+        await this._dbConnector.UpsertAsync(
             conn: connection,
-            collection: collectionName,
+            collectionName: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
             embedding: new Vector(record.Embedding.Vector.ToArray()),
