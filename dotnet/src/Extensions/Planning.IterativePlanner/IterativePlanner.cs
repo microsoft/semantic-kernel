@@ -24,10 +24,7 @@ public sealed class IterativePlanner
     private readonly int _maxIterations;
     private const string StopSequence = "Observation:";
 
-    private static string NormalizeLineEndings(string src)
-    {
-        return src.Replace("\r\n", "\n");
-    }
+ 
     /// <summary>
     /// Initialize a new instance of the <see cref="IterativePlanner"/> class.
     /// </summary>
@@ -49,7 +46,7 @@ public sealed class IterativePlanner
 
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 
-        promptTemplate = NormalizeLineEndings(promptTemplate);
+        
         this._functionFlowFunction = kernel.CreateSemanticFunction(
             promptTemplate: promptTemplate,
             //skillName: RestrictedSkillName,

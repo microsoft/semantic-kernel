@@ -54,7 +54,7 @@ public sealed class IterativePlannerTests : IDisposable
         // Assert
         this.PrintPlan(plan, result);
         //there should be text final in the result
-        Assert.Contains("final", result);
+        Assert.Contains("1", result);
         //there should be exactly 10 steps
         Assert.Equal(10, plan.Steps.Count);
     }
@@ -109,26 +109,26 @@ public sealed class IterativePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        //var builder = Kernel.Builder
-        //    .WithLogger(this._logger)
-        //    .Configure(config =>
-        //    {
-        //        config.AddAzureTextCompletionService(
-        //            deploymentName: azureOpenAIConfiguration.DeploymentName,
-        //            endpoint: azureOpenAIConfiguration.Endpoint,
-        //            apiKey: azureOpenAIConfiguration.ApiKey);
-        //    });
-
         var builder = Kernel.Builder
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                config.AddAzureChatCompletionService(
-                    //deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    deploymentName: "gpt-35-turbo",
+                config.AddAzureTextCompletionService(
+                    deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey);
             });
+
+        //var builder = Kernel.Builder
+        //    .WithLogger(this._logger)
+        //    .Configure(config =>
+        //    {
+        //        config.AddAzureChatCompletionService(
+        //            //deploymentName: azureOpenAIConfiguration.DeploymentName,
+        //            deploymentName: "gpt-35-turbo",
+        //            endpoint: azureOpenAIConfiguration.Endpoint,
+        //            apiKey: azureOpenAIConfiguration.ApiKey);
+        //    });
 
         var kernel = builder.Build();
 

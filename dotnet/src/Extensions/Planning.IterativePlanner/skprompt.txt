@@ -35,6 +35,3 @@ Question: {{$question}}
 {{$agentScratchPad}}
 
 Thought:
-
-
-
