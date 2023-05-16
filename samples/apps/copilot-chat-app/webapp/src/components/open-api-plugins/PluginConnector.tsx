@@ -74,7 +74,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [accessToken, setAccessToken] = useState('');
-    const [apiPropertiesInput, setApiRequirmentsInput] = useState(apiProperties);
+    const [apiPropertiesInput, setApiRequirementsInput] = useState(apiProperties);
 
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -237,7 +237,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                                     type="text"
                                                     id={'plugin-additional-info' + property}
                                                     onChange={(_e, input) => {
-                                                        setApiRequirmentsInput({
+                                                        setApiRequirementsInput({
                                                             ...apiPropertiesInput,
                                                             [property]: {
                                                                 ...propertyDetails,

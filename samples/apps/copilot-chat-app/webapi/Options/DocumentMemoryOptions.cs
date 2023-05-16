@@ -18,10 +18,10 @@ public class DocumentMemoryOptions
     public string GlobalDocumentCollectionName { get; set; } = "global-documents";
 
     /// <summary>
-    /// Gets or sets the prefix for the user document collection name.
+    /// Gets or sets the prefix for the chat document collection name.
     /// </summary>
     [Required, NotEmptyOrWhitespace]
-    public string UserDocumentCollectionNamePrefix { get; set; } = "user-documents-";
+    public string ChatDocumentCollectionNamePrefix { get; set; } = "chat-documents-";
 
     /// <summary>
     /// Gets or sets the maximum number of tokens to use when splitting a document into lines.

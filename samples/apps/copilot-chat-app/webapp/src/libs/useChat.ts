@@ -16,12 +16,19 @@ import { AuthHelper } from './auth/AuthHelper';
 import { useConnectors } from './connectors/useConnectors';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
-import { AuthorRoles } from './models/ChatMessage';
+import { AuthorRoles, ChatMessageState } from './models/ChatMessage';
 import { IChatSession } from './models/ChatSession';
 import { ChatUser } from './models/ChatUser';
+import { isPlan } from './semantic-kernel/sk-utilities';
 import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
 import { BotService } from './services/BotService';
 import { ChatService } from './services/ChatService';
+
+import botIcon1 from '../assets/bot-icons/bot-icon-1.png';
+import botIcon2 from '../assets/bot-icons/bot-icon-2.png';
+import botIcon3 from '../assets/bot-icons/bot-icon-3.png';
+import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
+import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
@@ -34,13 +41,7 @@ export const useChat = () => {
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
 
-    const botProfilePictures: string[] = [
-        '/assets/bot-icon-1.png',
-        '/assets/bot-icon-2.png',
-        '/assets/bot-icon-3.png',
-        '/assets/bot-icon-4.png',
-        '/assets/bot-icon-5.png',
-    ];
+    const botProfilePictures: string[] = [botIcon1, botIcon2, botIcon3, botIcon4, botIcon5];
 
     const loggedInUser: ChatUser = {
         id: account?.homeAccountId || '',
@@ -95,7 +96,13 @@ export const useChat = () => {
         }
     };
 
-    const getResponse = async (value: string, chatId: string) => {
+    const getResponse = async (
+        value: string,
+        chatId: string,
+        approvedPlanJson?: string,
+        planUserIntent?: string,
+        userCancelledPlan?: boolean,
+    ) => {
         const ask = {
             input: value,
             variables: [
@@ -114,6 +121,26 @@ export const useChat = () => {
             ],
         };
 
+        if (approvedPlanJson) {
+            ask.variables.push(
+                {
+                    key: 'proposedPlan',
+                    value: approvedPlanJson,
+                },
+                {
+                    key: 'planUserIntent',
+                    value: planUserIntent!,
+                },
+            );
+        }
+
+        if (userCancelledPlan) {
+            ask.variables.push({
+                key: 'userCancelledPlan',
+                value: 'true',
+            });
+        }
+
         try {
             var result = await sk.invokeAsync(
                 ask,
@@ -122,13 +149,13 @@ export const useChat = () => {
                 await AuthHelper.getSKaaSAccessToken(instance),
                 connectors.getEnabledPlugins(),
             );
-
             const messageResult = {
                 timestamp: new Date().getTime(),
                 userName: 'bot',
                 userId: 'bot',
                 content: result.value,
                 authorRole: AuthorRoles.Bot,
+                state: isPlan(result.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
             };
 
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));

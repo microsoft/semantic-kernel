@@ -39,7 +39,7 @@ After ensuring DeploySK.sh file found in this folder is executable, enter the fo
 
 Alternatively, you can deploy by clicking on the following button:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fmain%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fwebapi%2FDeploymentTemplates%2Fsk.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fmain%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fwebapi%2FDeploymentTemplates%2Fsk-new.json)
 
 
 ## Deploying with an existing Azure OpenAI account
@@ -123,6 +123,20 @@ check that you have correctly entered the values for the following settings:
 - Embedding:Label
 
 Both Completion:Endpoint and Embedding:Endpoint are ignored for OpenAI instances from [openai.com](https://openai.com) but MUST be properly populated when using Azure OpenAI instances.
+
+
+## Authorization
+
+All of the server's endpoints other than the /probe one require authorization to access.
+By default, the deployment templates set up the server so that an API key is required to access its endpoints.
+
+AAD authentication and authorization can also be set up manually after the automated deployment is done.
+
+To view the API key required by your instance, access the page for your Semantic Kernel app service in the Azure portal.
+From that page, click on the "Configuration" item in the "Settings" section of the left pane. Then click on the text that reads "Hidden value.
+Click to show value" next to the "Authorization:ApiKey" setting.
+
+To authorize requests with the API key, it must be added as the value of an "x-api-key" header added to the requests.
 
 
 ## Using web frontends to access your deployment
