@@ -42,6 +42,14 @@ public interface ContextVariables {
          * @return an instantiation of ContextVariables
          */
         ContextVariables build(String content);
+
+        /**
+         * Builds an instance with the given variables
+         *
+         * @param map Existing varibles
+         * @return an instantiation of ContextVariables
+         */
+        ContextVariables build(Map<String, String> map);
     }
 
     /**

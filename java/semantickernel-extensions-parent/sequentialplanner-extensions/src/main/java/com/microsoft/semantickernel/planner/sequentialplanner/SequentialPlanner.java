@@ -4,15 +4,15 @@ package com.microsoft.semantickernel.planner.sequentialplanner; // Copyright (c)
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
+import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.planner.PlannerBuilders;
 import com.microsoft.semantickernel.planner.SequentialPlannerRequestSettings;
 import com.microsoft.semantickernel.planner.SequentialPlannerSKContext;
-
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
@@ -56,26 +56,25 @@ public class SequentialPlanner {
         if (prompt != null) {
             promptTemplate = prompt;
         } else {
-
             promptTemplate = EmbeddedResource.read("skprompt.txt");
         }
 
         this.functionFlowFunction =
-                FunctionBuilders.getPlannerBuilder(kernel)
+                PlannerBuilders
+                        .getPlannerBuilder(kernel)
                         .createFunction(
                                 promptTemplate,
                                 null,
                                 RestrictedSkillName,
                                 "Given a request or command or goal generate a step by step plan to"
-                                    + " fulfill the request using functions. This ability is also"
-                                    + " known as decision making and function flow",
+                                        + " fulfill the request using functions. This ability is also"
+                                        + " known as decision making and function flow",
                                 this.config.getMaxTokens(),
                                 0.0,
                                 0.0,
                                 0.0,
                                 0.0,
                                 new ArrayList<>());
-        ;
 
         this.context = functionFlowFunction.buildContext();
     }
@@ -104,65 +103,4 @@ public class SequentialPlanner {
                             return functionFlowFunction.invokeAsync(updatedContext, null);
                         });
     }
-    /*
-        public void toPlanString(@Nullable String indent) {
-            if (indent == null) {
-                indent = " ";
-            }
-            String goalHeader = indent+"Goal: " + + "\n\n{indent}Steps:\n";
-
-            string stepItems = string.Join("\n", originalPlan.Steps.Select(step = >
-                    {
-            if (step.Steps.Count == 0) {
-                string skillName = step.SkillName;
-                string stepName = step.Name;
-
-                string parameters = string.Join(" ", step.Parameters.Select(param = > $"{param.Key}='{param.Value}'"));
-                if (!string.IsNullOrEmpty(parameters)) {
-                    parameters = $ " {parameters}";
-                }
-
-                string ? outputs = step.Outputs.FirstOrDefault();
-                if (!string.IsNullOrEmpty(outputs)) {
-                    outputs = $ " => {outputs}";
-                }
-
-                return $ "{indent}{indent}- {string.Join(". ", skillName, stepName)}{parameters}{outputs}";
-            } else {
-                string nestedSteps = step.ToPlanString(indent + indent);
-                return nestedSteps;
-            }
-            }));
-
-            return goalHeader + stepItems;
-
-        }
-    */
-    /*
-
-       if (string.IsNullOrEmpty(goal))
-       {
-           throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
-       }
-
-       string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config).ConfigureAwait(false);
-       this._context.Variables.Set("available_functions", relevantFunctionsManual);
-
-       this._context.Variables.Update(goal);
-
-       var planResult = await this._functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
-
-       string planResultString = planResult.Result.Trim();
-
-       try
-       {
-           var plan = planResultString.ToPlanFromXml(goal, this._context);
-           return plan;
-       }
-       catch (Exception e)
-       {
-           throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Plan parsing error, invalid XML", e);
-       }
-    */
-
 }

@@ -3,8 +3,6 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
-import com.microsoft.semantickernel.orchestration.planner.DefaultSequentialPlannerSKFunction;
-import com.microsoft.semantickernel.planner.SequentialPlannerSKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
@@ -88,67 +86,12 @@ public class SkFunctionBuilders implements FunctionBuilders {
         }
     }
 
-    private static class InternalSequentialPlannerSKFunctionBuilder
-            implements SequentialPlannerSKFunction.Builder {
-        private final @Nullable Kernel kernel;
-
-        private InternalSequentialPlannerSKFunctionBuilder(@Nullable Kernel kernel) {
-            this.kernel = kernel;
-        }
-
-        private SequentialPlannerSKFunction register(SequentialPlannerSKFunction function) {
-            if (kernel != null) {
-                kernel.registerSemanticFunction(function);
-            }
-            return function;
-        }
-
-        @Override
-        public SequentialPlannerSKFunction createFunction(
-                String promptTemplate,
-                @Nullable String functionName,
-                @Nullable String skillName,
-                @Nullable String description,
-                int maxTokens,
-                double temperature,
-                double topP,
-                double presencePenalty,
-                double frequencyPenalty,
-                @Nullable List<String> stopSequences) {
-            return register(
-                    DefaultSequentialPlannerSKFunction.createFunction(
-                            promptTemplate,
-                            functionName,
-                            skillName,
-                            description,
-                            maxTokens,
-                            temperature,
-                            topP,
-                            presencePenalty,
-                            frequencyPenalty,
-                            stopSequences));
-        }
-    }
-    ;
-
-    public static final SequentialPlannerSKFunction.Builder PLANNER_BUILDERS =
-            new InternalSequentialPlannerSKFunctionBuilder(null);
-
     @Override
     public CompletionSKFunction.Builder completionBuilders(@Nullable Kernel kernel) {
         if (kernel == null) {
             return COMPLETION_BUILDERS;
         } else {
             return new InternalCompletionBuilder(kernel);
-        }
-    }
-
-    @Override
-    public SequentialPlannerSKFunction.Builder plannerBuilders(@Nullable Kernel kernel) {
-        if (kernel == null) {
-            return PLANNER_BUILDERS;
-        } else {
-            return new InternalSequentialPlannerSKFunctionBuilder(kernel);
         }
     }
 }

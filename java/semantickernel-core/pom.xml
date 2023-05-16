@@ -16,16 +16,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
-            <artifactId>semantickernel-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
-            <artifactId>openai-sdk</artifactId>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
@@ -39,10 +31,6 @@
             <groupId>com.azure</groupId>
             <artifactId>azure-ai-openai</artifactId>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
-            <artifactId>openai-sdk</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -80,6 +68,22 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.microsoft.semantickernel</groupId>
+            <artifactId>semantickernel-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantickernel</groupId>
+            <artifactId>openai-sdk</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantickernel.connectors</groupId>
+            <artifactId>semantickernel-connectors</artifactId>
+            <version>0.2.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
