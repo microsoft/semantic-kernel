@@ -8,6 +8,7 @@ import { useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateMessageState } from '../../redux/features/conversations/conversationsSlice';
+import { convertToAnchorTags } from '../utils/TextUtils';
 import { PlanViewer } from './plan-viewer/PlanViewer';
 
 const useClasses = makeStyles({
@@ -158,7 +159,12 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                             {time}
                         </Label>
                     </div>
-                    {!isPlan && <div className={classes.content} dangerouslySetInnerHTML={{ __html: content }} />}
+                    {!isPlan && (
+                        <div
+                            className={classes.content}
+                            dangerouslySetInnerHTML={{ __html: convertToAnchorTags(content) }}
+                        />
+                    )}
                     {isPlan && (
                         <PlanViewer
                             plan={plan}
