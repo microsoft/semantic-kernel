@@ -18,7 +18,7 @@ internal sealed class TextCompletionStreamingResult : ITextCompletionStreamingRe
         this._choice = choice;
     }
 
-    public async Task<string> CompleteAsync(CancellationToken cancellationToken = default)
+    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
         var fullMessage = new StringBuilder();
         await foreach (var message in this._choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
@@ -29,7 +29,7 @@ internal sealed class TextCompletionStreamingResult : ITextCompletionStreamingRe
         return fullMessage.ToString();
     }
 
-    public IAsyncEnumerable<string> CompleteStreamAsync(CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default)
     {
         return this._choice.GetTextStreaming(cancellationToken);
     }

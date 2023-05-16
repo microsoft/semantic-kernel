@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
@@ -149,9 +148,13 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
+
             if (completionResponse is null)
             {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "No completions were found");
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
+                {
+                    Data = { { "ModelResponse", body } },
+                };
             }
 
             return completionResponse.Select((completion) => new TextCompletionStreamingResult(completion.Text)).ToList();

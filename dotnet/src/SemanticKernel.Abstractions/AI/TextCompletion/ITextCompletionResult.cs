@@ -7,5 +7,5 @@ namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
 public interface ITextCompletionResult
 {
-    Task<string> CompleteAsync(CancellationToken cancellationToken = default);
+    Task<string> GetCompletionAsync(CancellationToken cancellationToken = default);
 }

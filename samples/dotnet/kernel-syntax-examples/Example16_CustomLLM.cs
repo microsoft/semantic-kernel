@@ -20,13 +20,12 @@ using RepoUtils;
  */
 public class MyTextCompletionService : ITextCompletion
 {
-    public async Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        return await Task.FromResult(
-            new List<ITextCompletionResult>()
-            {
-                new MyTextCompletionStreamingResult()
-            });
+        return Task.FromResult<IReadOnlyList<ITextCompletionResult>>(new List<ITextCompletionResult>
+        {
+            new MyTextCompletionStreamingResult()
+        });
     }
 
     public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
@@ -48,7 +47,7 @@ exploring space. AI can also augment our abilities and inspire us to create new 
 of art, music, or literature. AI can also improve our well-being and happiness by
 providing personalized recommendations, entertainment, and assistance. AI is awesome";
 
-    public async Task<string> CompleteAsync(CancellationToken cancellationToken = default)
+    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
         // Forcing a 2 sec delay (Simulating custom LLM lag)
         await Task.Delay(2000, cancellationToken);
@@ -56,7 +55,7 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
         return Text;
     }
 
-    public async IAsyncEnumerable<string> CompleteStreamAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return Environment.NewLine;
 

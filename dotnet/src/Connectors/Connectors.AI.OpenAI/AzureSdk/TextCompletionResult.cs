@@ -16,7 +16,7 @@ internal sealed class TextCompletionResult : ITextCompletionResult
         this._choice = choice;
     }
 
-    public Task<string> CompleteAsync(CancellationToken cancellationToken = default)
+    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(this._choice.Text);
     }

@@ -7,5 +7,5 @@ namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
 public interface ITextCompletionStreamingResult : ITextCompletionResult
 {
-    IAsyncEnumerable<string> CompleteStreamAsync(CancellationToken cancellationToken = default);
+    IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default);
 }

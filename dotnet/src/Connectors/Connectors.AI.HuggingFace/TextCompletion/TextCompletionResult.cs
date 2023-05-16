@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
-internal class TextCompletionStreamingResult : ITextCompletionStreamingResult
+internal sealed class TextCompletionStreamingResult : ITextCompletionStreamingResult
 {
     private readonly string _result;
 
@@ -17,13 +17,13 @@ internal class TextCompletionStreamingResult : ITextCompletionStreamingResult
         this._result = result ?? string.Empty;
     }
 
-    public Task<string> CompleteAsync(CancellationToken cancellationToken = default)
+    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(this._result);
     }
 
-    public IAsyncEnumerable<string> CompleteStreamAsync(CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default)
     {
-        return this.CompleteAsync(cancellationToken).ToAsyncEnumerable();
+        return this.GetCompletionAsync(cancellationToken).ToAsyncEnumerable();
     }
 }

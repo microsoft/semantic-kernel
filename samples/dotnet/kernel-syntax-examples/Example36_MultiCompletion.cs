@@ -61,7 +61,7 @@ public static class Example36_MultiCompletion
 
         foreach (ITextCompletionResult completionResult in await textCompletion.GetCompletionsAsync(prompt, requestSettings))
         {
-            Console.WriteLine(await completionResult.CompleteAsync());
+            Console.WriteLine(await completionResult.GetCompletionAsync());
             Console.WriteLine("-------------");
         }
 

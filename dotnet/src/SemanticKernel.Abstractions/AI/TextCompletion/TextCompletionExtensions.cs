@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
 /// <summary>
-/// This sponsor class Keeps support to the previous methods to avoid any breaking changes.
+/// Class sponsor that holds extension methods for ITextCompletion interface.
 /// </summary>
 public static class TextCompletionExtensions
 {
@@ -32,7 +32,7 @@ public static class TextCompletionExtensions
 
         foreach (ITextCompletionResult result in completions)
         {
-            completionResult.Append(await result.CompleteAsync(cancellationToken).ConfigureAwait(false));
+            completionResult.Append(await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false));
         }
 
         return completionResult.ToString();
@@ -55,7 +55,7 @@ public static class TextCompletionExtensions
 
         await foreach (var completionResult in completionResults)
         {
-            await foreach (var word in completionResult.CompleteStreamAsync(cancellationToken))
+            await foreach (var word in completionResult.GetCompletionStreamingAsync(cancellationToken))
             {
                 yield return word;
             }

@@ -83,7 +83,7 @@ public static class Example37_MultiStreamingCompletion
         {
             string fullMessage = string.Empty;
 
-            await foreach (string message in completionResult.CompleteStreamAsync())
+            await foreach (string message in completionResult.GetCompletionStreamingAsync())
             {
                 fullMessage += message;
 
@@ -101,7 +101,7 @@ public static class Example37_MultiStreamingCompletion
     private static async Task ProcessStreamAsyncEnumerableAsync(ITextCompletionStreamingResult result, int resultNumber, int linesPerResult)
     {
         var fullSentence = string.Empty;
-        await foreach (var word in result.CompleteStreamAsync())
+        await foreach (var word in result.GetCompletionStreamingAsync())
         {
             fullSentence += word;
 
