@@ -59,7 +59,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connectors", "connectors", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.UnitTests", "src\Connectors\Connectors.UnitTests\Connectors.UnitTests.csproj", "{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi", "..\samples\apps\copilot-chat-app\webapi\WebApi.csproj", "{CCABF515-2C79-453E-A5A2-69C69B8D172E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CopilotChatWebApi", "..\samples\apps\copilot-chat-app\webapi\CopilotChatWebApi.csproj", "{CCABF515-2C79-453E-A5A2-69C69B8D172E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Qdrant", "src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
 EndProject
