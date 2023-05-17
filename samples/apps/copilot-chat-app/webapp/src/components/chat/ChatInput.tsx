@@ -9,11 +9,11 @@ import React, { useRef } from 'react';
 import { Constants } from '../../Constants';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
-import { useDocumentImportService } from '../../libs/semantic-kernel/useDocumentImport';
+import { DocumentImportService } from '../../libs/services/DocumentImportService';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
-import { useSKSpeechService } from './../../libs/semantic-kernel/useSKSpeech';
+import { SpeechService } from './../../libs/services/SpeechService';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
 const log = debug(Constants.debug.root).extend('chat-input');
@@ -70,34 +70,37 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const [previousValue, setPreviousValue] = React.useState('');
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
-    const speechService = useSKSpeechService(process.env.REACT_APP_BACKEND_URI as string);
     const [documentImporting, SetDocumentImporting] = React.useState(false);
-    const documentImportService = useDocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
+    const documentImportService = new DocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     React.useEffect(() => {
-        if (recognizer) return;
-        void (async () => {
+        async function initSpeechRecognizer() {
+            const speechService = new SpeechService(process.env.REACT_APP_BACKEND_URI as string);
+
             var response = await speechService.validSpeechKeyAsync();
             if (response.isSuccess) {
-                const newRecognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
-                setRecognizer(newRecognizer);
+                const recognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
+                setRecognizer(recognizer);
             }
-        })();
-    }, [recognizer, speechService]);
+        }
+
+        initSpeechRecognizer();
+    }, []);
 
     const handleSpeech = () => {
         setIsListening(true);
-
-        recognizer?.recognizeOnceAsync((result) => {
-            if (result.reason === speechSdk.ResultReason.RecognizedSpeech) {
-                if (result.text && result.text.length > 0) {
-                    handleSubmit(result.text);
+        if (recognizer) {
+            recognizer.recognizeOnceAsync((result) => {
+                if (result.reason === speechSdk.ResultReason.RecognizedSpeech) {
+                    if (result.text && result.text.length > 0) {
+                        handleSubmit(result.text);
+                    }
                 }
-            }
-            setIsListening(false);
-        });
+                setIsListening(false);
+            });
+        }
     };
 
     const selectDocument = () => {
