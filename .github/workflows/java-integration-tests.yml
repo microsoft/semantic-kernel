@@ -17,26 +17,28 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  java-integration-tests:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        java-versions: [jdk8, jdk11, jdk17]
+        java-versions: [8, 11, 17]
+
+    name: Java Tests on JDK${{ matrix.java-versions }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-        # Need to use different JDK for JDK 8
+      # Need to use JDK 11 to build for JDK 8
       - name: Set JDK
         id: set-jdk
         shell: bash
         run: |
-          if [[ ${{ matrix.java-versions }} == "jdk8" ]]; then
+          if [[ ${{ matrix.java-versions }} == 8 ]]; then
             echo "JDK_VERSION=11" >> $GITHUB_OUTPUT
           else
-            version=$(echo ${{ matrix.java-versions }} | sed 's/jdk//')
+            version=${{ matrix.java-versions }}
             echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
           fi
 
@@ -47,11 +49,11 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: ./mvnw -B -Pbug-check -DskipTests -X -Pcompile-${{ matrix.java-versions }} clean install --file pom.xml
+        run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
         working-directory: java
 
       - name: Run integration tests
-        run: ../mvnw -B -Pbug-check clean install --file pom.xml
+        run: ../mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
         working-directory: java/api-test
         env:
           OPENAI_API_KEY: ""
@@ -59,5 +61,8 @@ jobs:
           AZURE_OPENAI_API_KEY: ""
           AZURE_OPENAI_DEPLOYMENT_NAME: ""
 
-      - name: Build samples
-        run: cd java/samples && ../mvnw -B clean install --file pom.xml
+      # Samples build on JDK 17+
+      - name: Build semantic-kernel samples
+        run: ../../../java/mvnw -B -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
+        working-directory: samples/java/semantickernel-samples
+        if: ${{ matrix.java-versions >= 17 }}
