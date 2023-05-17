@@ -13,4 +13,4 @@ $FrontendScript = Join-Path '.' 'Start-Frontend.ps1'
 Start-Process pwsh -ArgumentList "-noexit", "-command $BackendScript"
 
 # Start frontend (in current PS process)
-& $FrontendScript -ClientId $ClientId -Tenant $Tenant
+& $FrontendScript
