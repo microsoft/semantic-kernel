@@ -59,7 +59,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connectors", "connectors", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.UnitTests", "src\Connectors\Connectors.UnitTests\Connectors.UnitTests.csproj", "{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CopilotChatApi", "..\samples\apps\copilot-chat-app\webapi\CopilotChatApi.csproj", "{CCABF515-2C79-453E-A5A2-69C69B8D172E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CopilotChatWebApi", "..\samples\apps\copilot-chat-app\webapi\CopilotChatWebApi.csproj", "{CCABF515-2C79-453E-A5A2-69C69B8D172E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Qdrant", "src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
 EndProject
@@ -86,6 +86,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCognitiveSearch", "src\Connectors\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj", "{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Grpc", "src\Skills\Skills.Grpc\Skills.Grpc.csproj", "{E52F805C-794A-4CA9-B684-DFF358B18820}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AI.HuggingFace", "src\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj", "{136823BE-8665-4D57-87E0-EF41535539E2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InternalUtilities", "InternalUtilities", "{4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}"
 	ProjectSection(SolutionItems) = preProject
@@ -216,10 +218,10 @@ Global
 		{E52F805C-794A-4CA9-B684-DFF358B18820}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E52F805C-794A-4CA9-B684-DFF358B18820}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E52F805C-794A-4CA9-B684-DFF358B18820}.Release|Any CPU.Build.0 = Release|Any CPU
-		{15DE246F-3E4E-49A1-BD82-D1CAFAFC7ED9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{15DE246F-3E4E-49A1-BD82-D1CAFAFC7ED9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{15DE246F-3E4E-49A1-BD82-D1CAFAFC7ED9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{15DE246F-3E4E-49A1-BD82-D1CAFAFC7ED9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{136823BE-8665-4D57-87E0-EF41535539E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{136823BE-8665-4D57-87E0-EF41535539E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{136823BE-8665-4D57-87E0-EF41535539E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{136823BE-8665-4D57-87E0-EF41535539E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -258,6 +260,7 @@ Global
 		{A350933D-F9D5-4AD3-8C4F-B856B5020297} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{E52F805C-794A-4CA9-B684-DFF358B18820} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
+		{136823BE-8665-4D57-87E0-EF41535539E2} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{4D3DAE63-41C6-4E1C-A35A-E77BDFC40675} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{15DE246F-3E4E-49A1-BD82-D1CAFAFC7ED9} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 	EndGlobalSection

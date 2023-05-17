@@ -12,7 +12,9 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
 
-async def retry(func, retries=15, delay=1):
+async def retry(func, retries=20):
+    min_delay = 2
+    max_delay = 7
     for i in range(retries):
         try:
             result = str(await func())
@@ -23,7 +25,7 @@ async def retry(func, retries=15, delay=1):
             logger.error(f"Retry {i + 1}: {e}")
             if i == retries - 1:  # Last retry
                 raise
-            time.sleep(delay)
+            time.sleep(max(min(i, max_delay), min_delay))
 
 
 async def summarize_function_test(kernel: sk.Kernel):
@@ -347,7 +349,7 @@ async def summarize_conversation_using_skill(kernel: sk.Kernel):
         Jane: What about you?
         John: That's cool. Let me see if mine will write a poem, too.
         John: Here's a poem my chatbot wrote:
-        John: The signularity of the universe is a mystery.
+        John: The singularity of the universe is a mystery.
         Jane: You might want to try using a different model.
         John: I'm using the GPT-2 model. That makes sense.
         John: Here is a new poem after updating the model.

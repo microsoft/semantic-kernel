@@ -7,11 +7,12 @@ import {
     useIsAuthenticated,
     useMsal,
 } from '@azure/msal-react';
-import { Avatar, Spinner, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { Spinner, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
+import { UserSettings } from './components/header/UserSettings';
 import { PluginGallery } from './components/open-api-plugins/PluginGallery';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
@@ -108,13 +109,7 @@ const App: FC = () => {
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                         <div className={classes.cornerItems}>
                             <PluginGallery />
-                            <Avatar
-                                className={classes.persona}
-                                key={account?.name}
-                                name={account?.name}
-                                size={28}
-                                badge={{ status: 'available' }}
-                            />
+                            <UserSettings />
                         </div>
                     </div>
                     {alerts &&
