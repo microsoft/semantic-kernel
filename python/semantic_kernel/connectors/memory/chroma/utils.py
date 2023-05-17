@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from typing import TYPE_CHECKING, List
 
 from numpy import array, linalg, ndarray
