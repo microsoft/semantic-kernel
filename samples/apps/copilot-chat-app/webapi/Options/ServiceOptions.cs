@@ -21,5 +21,5 @@ public class ServiceOptions
     /// <summary>
     /// Local directory in which to load semantic skills.
     /// </summary>
-    public string SemanticSkillsDirectory { get; set; } = string.Empty;
+    public string? SemanticSkillsDirectory { get; set; }
 }

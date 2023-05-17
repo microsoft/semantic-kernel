@@ -29,7 +29,7 @@ public static class CopilotChatSemanticKernelExtensions
                 .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
                 .WithConfiguration(
                     new KernelConfig().AddPlannerBackend(
-                        sp.GetRequiredService<IOptions<PlannerOptions>>().Value.AIService!)
+                        sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
                 ) // TODO verify planner has AI service configured
                 .Build()));
 
@@ -70,25 +70,11 @@ public static class CopilotChatSemanticKernelExtensions
     /// </summary>
     private static KernelConfig AddPlannerBackend(this KernelConfig kernelConfig, AIServiceOptions options)
     {
-        switch (options.AIService)
+        return options.Type switch
         {
-            case AIServiceOptions.AIServiceType.AzureOpenAI:
-                kernelConfig.AddAzureChatCompletionService(
-                    deploymentName: options.DeploymentOrModelId,
-                    endpoint: options.Endpoint,
-                    apiKey: options.Key);
-                break;
-
-            case AIServiceOptions.AIServiceType.OpenAI:
-                kernelConfig.AddOpenAIChatCompletionService(
-                    modelId: options.DeploymentOrModelId,
-                    apiKey: options.Key);
-                break;
-
-            default:
-                throw new ArgumentException($"Invalid {nameof(options.AIService)} value in '{AIServiceOptions.CompletionPropertyName}' settings.");
-        }
-
-        return kernelConfig;
+            AIServiceOptions.AIServiceType.AzureOpenAI => kernelConfig.AddAzureChatCompletionService(options.Models.Planner, options.Endpoint, options.Key),
+            AIServiceOptions.AIServiceType.OpenAI => kernelConfig.AddOpenAIChatCompletionService(options.Models.Planner, options.Key),
+            _ => throw new ArgumentException($"Invalid {nameof(options.Type)} value in '{AIServiceOptions.PropertyName}' settings."),
+        };
     }
 }
