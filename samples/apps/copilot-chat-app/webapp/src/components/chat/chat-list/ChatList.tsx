@@ -3,7 +3,7 @@
 import { makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 import { FC } from 'react';
-import { isPlan } from '../../../libs/semantic-kernel/sk-utilities';
+import { isPlan } from '../../../libs/utils/PlanUtils';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { ChatListItem } from './ChatListItem';
