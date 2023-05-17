@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -98,17 +99,24 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return await this.ExecuteCompleteRequestAsync(text, cancellationToken).ConfigureAwait(false);
+        foreach (var completion in await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false))
+        {
+            yield return completion;
+        }
     }
 
-    public IAsyncEnumerable<string> CompleteStreamAsync(
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.ExecuteCompleteRequestAsync(text, cancellationToken).ToAsyncEnumerable();
+        return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -120,14 +128,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
 
     #region private ================================================================================
 
-    /// <summary>
-    /// Performs HTTP request to given endpoint for text completion.
-    /// </summary>
-    /// <param name="text">Text to complete.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Completed text.</returns>
-    /// <exception cref="AIException">Exception when backend didn't respond with completed text.</exception>
-    private async Task<string> ExecuteCompleteRequestAsync(string text, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<ITextCompletionStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -143,12 +144,22 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
                 Content = new StringContent(JsonSerializer.Serialize(completionRequest))
             };
 
-            var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            var completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
+            List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
 
-            return completionResponse.First().Text!;
+            if (completionResponse is null)
+            {
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
+                {
+                    Data = { { "ModelResponse", body } },
+                };
+            }
+
+            return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c.Text));
         }
         catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {
