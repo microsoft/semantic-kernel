@@ -87,7 +87,7 @@ public class DocumentImportController : ControllerBase
         }
 
         if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat &&
-                !(await this.UserHasAccessToChatAsync(documentImportForm.UserId, documentImportForm.ChatId)))
+            !(await this.UserHasAccessToChatAsync(documentImportForm.UserId, documentImportForm.ChatId)))
         {
             return this.BadRequest("User does not have access to the chat session.");
         }

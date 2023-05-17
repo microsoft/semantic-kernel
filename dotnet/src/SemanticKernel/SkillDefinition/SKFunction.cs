@@ -257,7 +257,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// JSON serialized string representation of the function.
     /// </summary>
     public string ToString(bool writeIndented)
-       => JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = writeIndented });
+        => JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = writeIndented });
 
     /// <summary>
     /// Finalizer.

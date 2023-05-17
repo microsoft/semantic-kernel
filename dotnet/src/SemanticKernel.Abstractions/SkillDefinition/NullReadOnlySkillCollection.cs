@@ -36,12 +36,12 @@ internal class NullReadOnlySkillCollection : IReadOnlySkillCollection
     [DoesNotReturn]
     private static ISKFunction ThrowFunctionNotAvailable(string skillName, string functionName)
         => throw new KernelException(
-                KernelException.ErrorCodes.FunctionNotAvailable,
-                $"Function not available: {skillName}.{functionName}");
+            KernelException.ErrorCodes.FunctionNotAvailable,
+            $"Function not available: {skillName}.{functionName}");
 
     [DoesNotReturn]
     private static ISKFunction ThrowFunctionNotAvailable(string functionName)
         => throw new KernelException(
-                KernelException.ErrorCodes.FunctionNotAvailable,
-                $"Function not available: {functionName}");
+            KernelException.ErrorCodes.FunctionNotAvailable,
+            $"Function not available: {functionName}");
 }
