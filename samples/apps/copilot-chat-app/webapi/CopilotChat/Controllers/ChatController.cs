@@ -22,10 +22,10 @@ using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
-using SemanticKernel.Service.CopilotChat.Config;
 using SemanticKernel.Service.CopilotChat.Models;
-using SemanticKernel.Service.CopilotChat.Skills;
-using SemanticKernel.Service.Model;
+using SemanticKernel.Service.CopilotChat.Options;
+using SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
+using SemanticKernel.Service.Models;
 
 namespace SemanticKernel.Service.CopilotChat.Controllers;
 
@@ -153,7 +153,7 @@ public class ChatController : ControllerBase, IDisposable
                 skillName: "JiraSkill",
                 filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Skills/OpenApiSkills/JiraSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync,
-                serverUrlOverride: hasServerUrlOverride ? new System.Uri(serverUrlOverride) : null);
+                serverUrlOverride: hasServerUrlOverride ? new Uri(serverUrlOverride) : null);
         }
 
         // Microsoft Graph

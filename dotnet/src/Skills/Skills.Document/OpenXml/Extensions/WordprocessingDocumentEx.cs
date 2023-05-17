@@ -7,8 +7,10 @@ using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Microsoft.SemanticKernel.Skills.Document.OpenXml.Extensions;
 
-// Extension methods for DocumentFormat.OpenXml.Packaging.WordprocessingDocument
-// Note: the "Wordprocessing" vs "WordProcessing" typo is in the 3P class, we follow the original naming.
+/// <summary>
+/// Extension methods for DocumentFormat.OpenXml.Packaging.WordprocessingDocument
+/// Note: the "Wordprocessing" vs "WordProcessing" typo is in the 3P class, we follow the original naming.
+/// </summary>
 internal static class WordprocessingDocumentEx
 {
     internal static void Initialize(this WordprocessingDocument wordprocessingDocument)
