@@ -23,7 +23,7 @@ public class ContextVariablesTests
         string secondValue = Guid.NewGuid().ToString();
 
         // Act            
-        ContextVariables target = new ContextVariables();
+        ContextVariables target = new();
         target.Set(firstName, firstValue);
         target.Set(secondName, secondValue);
 
@@ -40,7 +40,7 @@ public class ContextVariablesTests
         // Arrange
         string anyName = Guid.NewGuid().ToString();
         string anyValue = Guid.NewGuid().ToString();
-        ContextVariables target = new ContextVariables();
+        ContextVariables target = new();
 
         // Act
         target[anyName] = anyValue;
@@ -54,7 +54,7 @@ public class ContextVariablesTests
     {
         // Arrange
         string anyName = Guid.NewGuid().ToString();
-        ContextVariables target = new ContextVariables();
+        ContextVariables target = new();
 
         // Act,Assert
         Assert.Throws<KeyNotFoundException>(() => target[anyName]);
@@ -66,7 +66,7 @@ public class ContextVariablesTests
         // Arrange
         string anyName = Guid.NewGuid().ToString();
         string anyValue = Guid.NewGuid().ToString();
-        ContextVariables target = new ContextVariables();
+        ContextVariables target = new();
 
         // Act
         target[anyName] = anyValue;
@@ -82,7 +82,7 @@ public class ContextVariablesTests
         // Arrange
         string anyName = Guid.NewGuid().ToString();
         string anyValue = Guid.NewGuid().ToString();
-        ContextVariables target = new ContextVariables();
+        ContextVariables target = new();
 
         // Act
         target[anyName] = anyValue;
@@ -97,7 +97,7 @@ public class ContextVariablesTests
         // Arrange
         string anyName = Guid.NewGuid().ToString();
         string anyContent = Guid.NewGuid().ToString();
-        ContextVariables target = new ContextVariables();
+        ContextVariables target = new();
 
         // Act
         target[anyName] = anyContent;
@@ -113,7 +113,7 @@ public class ContextVariablesTests
         // Arrange
         string anyName = Guid.NewGuid().ToString();
         string anyContent = Guid.NewGuid().ToString();
-        ContextVariables target = new ContextVariables();
+        ContextVariables target = new();
 
         // Act
         target.Set(anyName, anyContent);
@@ -129,7 +129,7 @@ public class ContextVariablesTests
         // Arrange
         string anyName = Guid.NewGuid().ToString();
         string anyContent = Guid.NewGuid().ToString();
-        ContextVariables target = new ContextVariables();
+        ContextVariables target = new();
 
         // Act
         target.Set(anyName, anyContent);
@@ -145,7 +145,7 @@ public class ContextVariablesTests
         // Arrange
         string anyName = Guid.NewGuid().ToString();
         string anyContent = Guid.NewGuid().ToString();
-        ContextVariables target = new ContextVariables();
+        ContextVariables target = new();
 
         // Act
         target.Set(anyName, anyContent);
@@ -161,7 +161,7 @@ public class ContextVariablesTests
         // Arrange
         string anyName = Guid.NewGuid().ToString();
         string anyContent = Guid.NewGuid().ToString();
-        ContextVariables target = new ContextVariables();
+        ContextVariables target = new();
 
         // Act
         target.Set(anyName, anyContent);
@@ -176,7 +176,7 @@ public class ContextVariablesTests
         // Arrange
         string anyName = Guid.NewGuid().ToString();
         string anyContent = Guid.NewGuid().ToString();
-        ContextVariables target = new ContextVariables();
+        ContextVariables target = new();
 
         // Act
         target.Set(anyName, anyContent);

@@ -37,7 +37,6 @@ internal static class TestHelpers
 
         string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/skills"));
 
-        IDictionary<string, ISKFunction> skill = target.ImportSemanticSkillFromDirectory(skillParentDirectory, skillNames);
-        return skill;
+        return target.ImportSemanticSkillFromDirectory(skillParentDirectory, skillNames);
     }
 }

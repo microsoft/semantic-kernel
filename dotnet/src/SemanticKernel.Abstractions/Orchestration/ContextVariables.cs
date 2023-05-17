@@ -162,7 +162,9 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
 
     #region private ================================================================================
 
-    // Important: names are case insensitive
+    /// <summary>
+    /// Important: names are case insensitive
+    /// </summary>
     private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.OrdinalIgnoreCase);
 
     #endregion
