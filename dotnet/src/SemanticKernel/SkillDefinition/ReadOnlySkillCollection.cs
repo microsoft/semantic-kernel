@@ -23,8 +23,8 @@ internal sealed class ReadOnlySkillCollection : IReadOnlySkillCollection
         this._skillCollection.GetFunction(skillName, functionName);
 
     /// <inheritdoc/>
-    public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance) =>
-        this._skillCollection.TryGetFunction(functionName, out functionInstance);
+    public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction) =>
+        this._skillCollection.TryGetFunction(functionName, out availableFunction);
 
     /// <inheritdoc/>
     public bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction) =>

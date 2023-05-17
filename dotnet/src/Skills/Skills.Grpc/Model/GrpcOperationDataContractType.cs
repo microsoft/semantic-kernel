@@ -19,12 +19,12 @@ internal class GrpcOperationDataContractType
     }
 
     /// <summary>
-    /// Data contract name;
+    /// Data contract name
     /// </summary>
     public string Name { get; set; }
 
     /// <summary>
-    /// 
+    /// List of fields
     /// </summary>
     public IList<GrpcOperationDataContractTypeFiled> Fields { get; } = new List<GrpcOperationDataContractTypeFiled>();
 }

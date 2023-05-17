@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace SemanticKernel.Services.CopilotChat.Skills.OpenApiSkills.GitHubSkill.Model;
+namespace SemanticKernel.Service.CopilotChat.Skills.OpenApiSkills.GitHubSkill.Model;
 
 /// <summary>
 /// Represents a pull request label.

@@ -119,7 +119,7 @@ public sealed class PlanTests : IDisposable
         // Assert
         Assert.NotNull(result);
         Assert.Equal(
-            $"Sent email to: something@email.com. Body: Roses are red, violets are blue, Roses are red, violets are blue, Roses are red, violets are blue, PlanInput is hard, so is this test. is hard, so is this test. is hard, so is this test.",
+            "Sent email to: something@email.com. Body: Roses are red, violets are blue, Roses are red, violets are blue, Roses are red, violets are blue, PlanInput is hard, so is this test. is hard, so is this test. is hard, so is this test.",
             result.Result);
     }
 
