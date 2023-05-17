@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace SemanticKernel.Service.Model;
 
 public class AskResult
