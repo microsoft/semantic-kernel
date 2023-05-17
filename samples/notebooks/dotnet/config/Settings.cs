@@ -136,14 +136,14 @@ public static class Settings
         // Print report
         if (useAzureOpenAI)
         {
-            Console.WriteLine("Settings: " + (string.IsNullOrWhiteSpace(model)
+            Console.WriteLine("Settings: " + (string.IsNullOrWhiteSpace(embeddingModel)
                 ? "ERROR: deployment name of embedding model is empty"
                 : $"OK: deployment name configured [{configFile}]"));
         }
         else
         {
-            Console.WriteLine("Settings: " + (string.IsNullOrWhiteSpace(model)
-                ? "ERROR: model name is empty"
+            Console.WriteLine("Settings: " + (string.IsNullOrWhiteSpace(embeddingModel)
+                ? "ERROR: embeddingModel name is empty"
                 : $"OK: AI model configured [{configFile}]"));
         }
         return embeddingModel;
