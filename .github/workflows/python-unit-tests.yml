@@ -43,11 +43,11 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Set export HNSWLIB_NO_NATIVE=1 for MacOS Python 3.11
+    - name: Updgrade command line tools for macOS + Python 3.11
       if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
       run: |
+        xcode-select --install
         clang --version
-        export HNSWLIB_NO_NATIVE=1
     - name: Install dependencies
       run: |
         python -m pip install poetry pytest
