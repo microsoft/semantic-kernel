@@ -19,20 +19,22 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
 /// </summary>
-public sealed class IterativePlanner
+public sealed class IterativePlannerText
 {
     private readonly int _maxIterations;
     private const string StopSequence = "Observation:";
 
- 
+
     /// <summary>
-    /// Initialize a new instance of the <see cref="IterativePlanner"/> class.
+    /// Initialize a new instance of the <see cref="IterativePlannerText"/> class.
+    /// This planer is optimized and tested for text completion ITextCompletion.
+    /// For Chat completion use the ones which Has Chat in the name
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="maxIterations"></param>
     /// <param name="config">The planner configuration.</param>
     /// <param name="prompt">Optional prompt override</param>
-    public IterativePlanner(
+    public IterativePlannerText(
         IKernel kernel,
         int maxIterations = 5,
         IterativePlannerConfig? config = null,
@@ -44,9 +46,8 @@ public sealed class IterativePlanner
 
         //this.Config.ExcludedSkills.Add(RestrictedSkillName);
 
-        string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
+        string promptTemplate = prompt ?? EmbeddedResource.Read("iterative-planer-text.txt");
 
-        
         this._functionFlowFunction = kernel.CreateSemanticFunction(
             promptTemplate: promptTemplate,
             //skillName: RestrictedSkillName,

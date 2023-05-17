@@ -11,11 +11,15 @@
 
 
   <ItemGroup>
-    <None Remove="skprompt.txt" />
+    <None Remove="iterartive-planer-text-chat.txt" />
+    <None Remove="iterative-planer-text.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="skprompt.txt">
+    <EmbeddedResource Include="iterartive-planer-text-chat.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="iterative-planer-text.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
@@ -27,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\..\Skills\Skills.Web\Skills.Web.csproj" />
   </ItemGroup>
 
 </Project>

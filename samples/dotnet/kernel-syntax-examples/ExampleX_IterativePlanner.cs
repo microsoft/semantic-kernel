@@ -38,7 +38,7 @@ public static class ExampleX_IterativePlanner
         //using bing :)
         //Result :Joe Biden's age divided by 2 is 39, which is the same as the number of years he has been in politics!
 
-        IterativePlanner planer = new IterativePlanner(kernel, 5);
+        IterativePlannerText planer = new IterativePlannerText(kernel, 5);
         var result = await planer.ExecutePlanAsync(goal);
 
         Console.WriteLine("Result :" + result);

@@ -7,14 +7,14 @@ using NCalc;
 namespace Planning.IterativePlanner;
 
 // usage :
-//var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-//var question = "what is the square root of 625";
-//IDictionary<string, ISKFunction> calculatorSkill = kernel.ImportSkill(new LanguageCalculatorSkill(kernel));
-//SKContext summary = await kernel.RunAsync(questions, calculatorSkill["Calculate"]);
-//Console.WriteLine("Result :");
-//Console.WriteLine(summary.Result);
+    //var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+    //var question = "what is the square root of 625";
+    //IDictionary<string, ISKFunction> calculatorSkill = kernel.ImportSkill(new LanguageCalculatorSkill(kernel));
+    //SKContext summary = await kernel.RunAsync(questions, calculatorSkill["Calculate"]);
+    //Console.WriteLine("Result :");
+    //Console.WriteLine(summary.Result);
 
-public class LanguageCalculatorSkill
+    public class LanguageCalculatorSkill
 {
     private readonly ISKFunction _mathTranslator;
 
@@ -51,19 +51,21 @@ expression:```Asin(1)```
 Question: {{ $input }}.
 ";
 
+    private const string ToolDescription = "Useful for when you need to answer questions about math.";
+
     public LanguageCalculatorSkill(IKernel kernel)
     {
         //A skill that enables the comprehension of mathematical problems presented in English / natural-language text, followed by the execution of the necessary calculations to solve those problems.
         this._mathTranslator = kernel.CreateSemanticFunction(
             MathTranslatorPrompt,
             skillName: nameof(LanguageCalculatorSkill),
-            description: "A skill that understands  mathematical calculations presented in english and can execute them to return a number",
+            description: ToolDescription,
             maxTokens: 50,
             temperature: 0.0,
             topP: 1);
     }
 
-    [SKFunction("Given a math calculation in english, perform the calculation and return a number.")]
+    [SKFunction(ToolDescription)]
     [SKFunctionName("Calculator")]
     public async Task<String> CalculateAsync(string input, SKContext context)
     {

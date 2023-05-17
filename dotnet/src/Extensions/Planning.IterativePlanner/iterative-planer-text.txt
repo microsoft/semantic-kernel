@@ -1,0 +1,37 @@
+Answer the following questions as best you can. You have access to the following tools:
+{{$toolDescriptions}}
+
+The way you use the tools is by specifying a json blob.
+Specifically, this json should have a `action` key (with the name of the tool to use) and a `action_input` key (with the input to the tool going here).
+
+The only values that should be in the "action" field are: {{$toolNames}}
+
+The $JSON_BLOB should only contain a SINGLE action, do NOT return a list of multiple actions. Here is an example of a valid $JSON_BLOB:
+
+```
+{
+  "action": $TOOL_NAME,
+  "action_input": $INPUT
+}
+```
+
+ALWAYS use the following format:
+
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action:
+```
+$JSON_BLOB
+```
+Observation: the result of the action
+... (this Thought/Action/Observation can repeat N times)
+
+If you find the final answer, as tool name use exact text :"Final Answer" and in the action_input put the answer. Format the number in nice human readable way.
+
+IMOPRTANT REMINDER: your each response should contain only one next step and only single one $JSON_BLOB. Do not provide more than one step.  
+Let’s Think Step by Step. 
+Begin! 
+Question: {{$question}}
+{{$agentScratchPad}}
+
+Thought:

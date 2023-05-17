@@ -47,7 +47,7 @@ public sealed class IterativePlannerTests : IDisposable
         // Arrange
         IKernel kernel = this.InitializeKernel();
         //lets limit it to 10 steps to have a long chain and scratchpad
-        var plan = new IterativePlanner(kernel, 12);
+        var plan = new IterativePlannerText(kernel, 12);
         var goal = "count down from 10 to one using subtraction functionality of the calculator tool, and decrementing value 1 by 1 ";
         var result = await plan.ExecutePlanAsync(goal);
 
@@ -59,7 +59,7 @@ public sealed class IterativePlannerTests : IDisposable
         Assert.Equal(10, plan.Steps.Count);
     }
 
-    private void PrintPlan(IterativePlanner plan, string result)
+    private void PrintPlan(IterativePlannerText plan, string result)
     {
         foreach (var step in plan.Steps)
         {
@@ -70,7 +70,7 @@ public sealed class IterativePlannerTests : IDisposable
             this._testOutputHelper.WriteLine("--");
         }
 
-        this._testOutputHelper.WriteLine(result);
+        this._testOutputHelper.WriteLine("Result:" + result);
     }
 
     [Fact]
@@ -78,9 +78,10 @@ public sealed class IterativePlannerTests : IDisposable
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
-        //lets limit it to only 2 steps, which should be 2 searches
-        var plan = new IterativePlanner(kernel, 2);
+        //it should be able to finish in 4 steps 
+        var plan = new IterativePlannerText(kernel, 4);
         var goal = "Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?";
+        //var goal = "Who is Leo DiCaprio's girlfriend? What is her current age ?";
 
         // Act
         var result = await plan.ExecutePlanAsync(goal);
@@ -96,9 +97,13 @@ public sealed class IterativePlannerTests : IDisposable
         Assert.Contains("girlfriend", firstStep.Thought);
 
         // second step should be a search for age of the girlfriend
-        //var secondStep = plan.Steps[1];
-        //Assert.Equal("Search", secondStep.Action);
-        //Assert.Contains("age", secondStep.Thought);
+        var secondStep = plan.Steps[1];
+        Assert.Equal("Search", secondStep.Action);
+        Assert.Contains("age", secondStep.Thought);
+
+        var thirdStep = plan.Steps[2];
+        Assert.Equal("Calculator", thirdStep.Action);
+        Assert.Contains("power", thirdStep.Thought);
     }
 
     private IKernel InitializeKernel()
@@ -134,7 +139,8 @@ public sealed class IterativePlannerTests : IDisposable
 
         BingConnector connector = new(this._bingApiKey);
 
-        var webSearchEngineSkill = new WebSearchEngineSkill(connector);
+        var webSearchEngineSkill = new WebSearchSkill(connector);
+        
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
 
