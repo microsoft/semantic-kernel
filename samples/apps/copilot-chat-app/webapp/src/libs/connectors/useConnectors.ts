@@ -27,7 +27,7 @@ export const useConnectors = () => {
         pluginHeaderTag: AuthHeaderTags,
     ) => {
         return await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, scopes).then(async (token: string) => {
-            return await sk.invokeAsync(ask, skillName, functionName, await AuthHelper.getSKaaSAccessToken(instance), [
+            return await sk.invokeAsync(ask, skillName, functionName, await AuthHelper.getSKaaSAccessToken(instance, inProgress), [
                 {
                     headerTag: pluginHeaderTag,
                     authData: token,

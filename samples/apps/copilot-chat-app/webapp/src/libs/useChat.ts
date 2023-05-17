@@ -32,7 +32,7 @@ import { IChatUser } from './models/ChatUser';
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
-    const { instance, accounts } = useMsal();
+    const { instance, accounts, inProgress } = useMsal();
     const account = useAccount(accounts[0] || {});
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
@@ -64,14 +64,14 @@ export const useChat = () => {
                     account?.homeAccountId!,
                     account?.name!,
                     chatTitle,
-                    await AuthHelper.getSKaaSAccessToken(instance),
+                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 )
                 .then(async (result: IChatSession) => {
                     const chatMessages = await chatService.getChatMessagesAsync(
                         result.id,
                         0,
                         1,
-                        await AuthHelper.getSKaaSAccessToken(instance),
+                        await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                     );
 
                     const newChat: ChatState = {
@@ -141,7 +141,7 @@ export const useChat = () => {
         try {
             var result = await chatService.getBotResponseAsync(
                 ask,
-                await AuthHelper.getSKaaSAccessToken(instance),
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 connectors.getEnabledPlugins(),
             );
 
@@ -165,7 +165,7 @@ export const useChat = () => {
         try {
             const chatSessions = await chatService.getAllChatsAsync(
                 account?.homeAccountId!,
-                await AuthHelper.getSKaaSAccessToken(instance),
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
 
             if (chatSessions.length > 0) {
@@ -176,7 +176,7 @@ export const useChat = () => {
                         chatSession.id,
                         0,
                         100,
-                        await AuthHelper.getSKaaSAccessToken(instance),
+                        await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                     );
 
                     // Messages are returned with most recent message at index 0 and oldest message at the last index,
@@ -212,7 +212,7 @@ export const useChat = () => {
         try {
             return botService.downloadAsync(
                 chatId,
-                await AuthHelper.getSKaaSAccessToken(instance),
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
         } catch (e: any) {
             const errorMessage = `Unable to download the bot. Details: ${e.message ?? e}`;
@@ -222,7 +222,7 @@ export const useChat = () => {
 
     const uploadBot = async (bot: Bot) => {
         botService
-            .uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
+            .uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance, inProgress))
             .then(() => loadChats())
             .catch((e: any) => {
                 const errorMessage = `Unable to upload the bot. Details: ${e.message ?? e}`;
