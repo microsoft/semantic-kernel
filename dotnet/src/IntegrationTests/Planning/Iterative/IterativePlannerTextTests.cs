@@ -6,21 +6,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
-using Microsoft.SemanticKernel.Skills.Web;
 using Planning.IterativePlanner;
-using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Planning.Iterative;
 
-public sealed class IterativePlannerTests : IDisposable
+public sealed class IterativePlannerTextTests : IDisposable
 {
-    public IterativePlannerTests(ITestOutputHelper output)
+    public IterativePlannerTextTests(ITestOutputHelper output)
     {
         this._logger = NullLogger.Instance;
         this._testOutputHelper = new RedirectOutput(output);
@@ -30,7 +27,7 @@ public sealed class IterativePlannerTests : IDisposable
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<IterativePlannerTests>()
+            .AddUserSecrets<IterativePlannerTextTests>()
             .Build();
 
         string? bingApiKeyCandidate = this._configuration["Bing:ApiKey"];
@@ -111,9 +108,6 @@ public sealed class IterativePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
-
         var builder = Kernel.Builder
             .WithLogger(this._logger)
             .Configure(config =>
@@ -160,7 +154,7 @@ public sealed class IterativePlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    ~IterativePlannerTests()
+    ~IterativePlannerTextTests()
     {
         this.Dispose(false);
     }

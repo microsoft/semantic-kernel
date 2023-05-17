@@ -1,0 +1,2 @@
+Question: {{$question}}
+{{$agentScratchPad}}

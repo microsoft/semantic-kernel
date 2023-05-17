@@ -11,12 +11,16 @@
 
 
   <ItemGroup>
-    <None Remove="iterartive-planer-text-chat.txt" />
+    <None Remove="iterative-planer-chat-system.txt" />
+    <None Remove="iterative-planer-chat-user.txt" />
     <None Remove="iterative-planer-text.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="iterartive-planer-text-chat.txt">
+    <EmbeddedResource Include="iterative-planer-chat-user.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="iterative-planer-chat-system.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="iterative-planer-text.txt">
@@ -29,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
     <ProjectReference Include="..\..\Skills\Skills.Web\Skills.Web.csproj" />

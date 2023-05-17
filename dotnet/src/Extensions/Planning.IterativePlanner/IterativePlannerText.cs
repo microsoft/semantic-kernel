@@ -2,14 +2,15 @@
 // Attempt to implement MRKL systems as described in https://arxiv.org/pdf/2205.00445.pdf
 // strongly inspired by https://github.com/hwchase17/langchain/tree/master/langchain/agents/mrkl
 
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Planning.IterativePlanner;
-
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -17,13 +18,11 @@ namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// A planner that uses semantic function to create a sequential plan.
-/// </summary>
-public sealed class IterativePlannerText
+    /// A planner that uses semantic function to create a sequential plan.
+    /// </summary>
+    public class IterativePlannerText
 {
-    private readonly int _maxIterations;
-    private const string StopSequence = "Observation:";
-
+    protected readonly int MaxIterations;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="IterativePlannerText"/> class.
@@ -34,54 +33,67 @@ public sealed class IterativePlannerText
     /// <param name="maxIterations"></param>
     /// <param name="config">The planner configuration.</param>
     /// <param name="prompt">Optional prompt override</param>
+    /// <param name="embeddedResourceName"></param>
     public IterativePlannerText(
         IKernel kernel,
         int maxIterations = 5,
-        IterativePlannerConfig? config = null,
-        string? prompt = null)
+        string? prompt = null,
+        string? embeddedResourceName = "iterative-planer-text.txt")
     {
-        this._maxIterations = maxIterations;
+        this.MaxIterations = maxIterations;
         Verify.NotNull(kernel);
-        this.Config = config ?? new();
 
-        //this.Config.ExcludedSkills.Add(RestrictedSkillName);
+        if (!string.IsNullOrEmpty(embeddedResourceName))
+        {
+            this._promptTemplate = EmbeddedResource.Read(embeddedResourceName);
+        }
 
-        string promptTemplate = prompt ?? EmbeddedResource.Read("iterative-planer-text.txt");
-
-        this._functionFlowFunction = kernel.CreateSemanticFunction(
-            promptTemplate: promptTemplate,
-            //skillName: RestrictedSkillName,
-            description: "Given a request or command or goal generate a step by step plan to " +
-                         "fulfill the request using functions. This ability is also known as decision making and function flow",
-            maxTokens: this.Config.MaxTokens,
-            temperature: 0.0,
-            stopSequences: new[] { StopSequence }
-        );
+        if (!string.IsNullOrEmpty(prompt))
+        {
+            this._promptTemplate = prompt;
+        }
 
         this._context = kernel.CreateNewContext();
-        this._kernel = kernel;
-        this.Steps = new List<NextStep>();
+        this.Kernel = kernel;
+        this.Steps = new List<AgentStep>();
     }
+
+    private ISKFunction InitiateSemanticFunction(IKernel kernel, string promptTemplate, string stopSequence)
+    {
+        return kernel.CreateSemanticFunction(
+            promptTemplate: promptTemplate,
+            //skillName: RestrictedSkillName,
+            description: "Given a request or command or goal generate multi-step plan to reach the goal, " +
+                         "after each step LLM is called to perform the reasoning for the nxt step",
+            maxTokens: this.MaxTokens,
+            temperature: 0.0,
+            stopSequences: new[] { stopSequence }
+        );
+    }
+
+    public int MaxTokens { get; set; } = 256;
 
     /// <summary>
     /// Create a plan for a goal.
     /// </summary>
     /// <param name="goal">The goal to create a plan for.</param>
     /// <returns>The plan.</returns>
-    public async Task<string> ExecutePlanAsync(string goal)
+    public virtual async Task<string> ExecutePlanAsync(string goal)
     {
         if (string.IsNullOrEmpty(goal))
         {
             throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
         }
 
-        (string toolNames, string toolDescriptions) = await this.GetToolNamesAndDescriptionsAsync().ConfigureAwait(false);
+        var functionFlowFunction = this.InitiateSemanticFunction(this.Kernel, this._promptTemplate, "Observation:");
+
+        (string toolNames, string toolDescriptions) = this.GetToolNamesAndDescriptions();
 
         this._context.Variables.Set("toolNames", toolNames);
         this._context.Variables.Set("toolDescriptions", toolDescriptions);
         this._context.Variables.Set("question", goal);
 
-        for (int i = 0; i < this._maxIterations; i++)
+        for (int i = 0; i < this.MaxIterations; i++)
         {
             var scratchPad = this.CreateScratchPad(goal);
             //PrintColored(scratchPad);
@@ -101,18 +113,20 @@ public sealed class IterativePlannerText
             nextStep.Observation = await this.InvokeActionAsync(nextStep.Action, nextStep.ActionInput).ConfigureAwait(false);
         }
 
-        return "Result Not found";
+        return "Result Not found, check out the steps to see what happen";
     }
 
-    private string CreateScratchPad(string goal)
+    protected virtual string CreateScratchPad(string goal)
     {
         if (this.Steps.Count == 0)
         {
             return string.Empty;
         }
 
-        var result = new StringBuilder("This was your previous work (but I haven't seen any of it! I only see what you return as final answer):");
-        result.AppendLine();
+        var result = new StringBuilder();
+        result.AppendLine("This was your previous work (but I haven't seen any of it! I only see what you return as final answer):");
+
+        //in the longer conversations without this it forgets the question on gpt-3.5
         result.AppendLine("Question: " + goal);
         foreach (var step in this.Steps)
         {
@@ -125,23 +139,38 @@ public sealed class IterativePlannerText
         return result.ToString();
     }
 
-    private async Task<string> InvokeActionAsync(string actionName, string actionActionInput)
+    protected virtual async Task<string> InvokeActionAsync(string actionName, string actionActionInput)
     {
-        var availableFunctions = await this._context.GetAvailableFunctionsAsync(this.Config).ConfigureAwait(false);
-        //ugly hack - fix later
-        var theFunction = availableFunctions.FirstOrDefault(x => x.Name == actionName);
+        //var availableFunctions = await this.Context.GetAvailableFunctionsAsync(this.Config).ConfigureAwait(false);
+        List<FunctionView> availableFunctions = this.GetAvailableFunctions();
+
+        var theFunction = availableFunctions.FirstOrDefault(f => f.Name == actionName);
+
         if (theFunction == null)
         {
-            throw new Exception("no such function" + actionName);
+            throw new ApplicationException("no such function" + actionName);
         }
 
-        var func = this._kernel.Func(theFunction.SkillName, theFunction.Name);
+        var func = this.Kernel.Func(theFunction.SkillName, theFunction.Name);
         var result = await func.InvokeAsync(actionActionInput).ConfigureAwait(false);
         PrintColored(result.Result);
         return result.Result;
     }
 
-    private static void PrintColored(string planResultString)
+    private List<FunctionView> GetAvailableFunctions()
+    {
+        FunctionsView functionsView = this._context.Skills.GetFunctionsView();
+
+        var availableFunctions =
+            functionsView.NativeFunctions
+                //.Concat(functionsView.SemanticFunctions) // for now semantic functions are not needed
+                .SelectMany(x => x.Value)
+                //.Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
+                .ToList();
+        return availableFunctions;
+    }
+
+    protected static void PrintColored(string planResultString)
     {
         var color = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Yellow;
@@ -150,10 +179,12 @@ public sealed class IterativePlannerText
         Console.ForegroundColor = color;
     }
 
-    private NextStep ParseResult(string input)
+    protected virtual AgentStep ParseResult(string input)
     {
-        var result = new NextStep();
-        result.OriginalResponse = input;
+        var result = new AgentStep
+        {
+            OriginalResponse = input
+        };
         //until Action:
         Regex untilAction = new Regex(@"(.*)(?=Action:)", RegexOptions.Singleline);
         Match untilActionMatch = untilAction.Match(input);
@@ -175,13 +206,14 @@ public sealed class IterativePlannerText
         if (actionMatch.Success)
         {
             var json = actionMatch.Value.Trim('`').Trim();
-            ActionDetails actionDetails = JsonSerializer.Deserialize<ActionDetails>(json);
-            result.Action = actionDetails.action;
-            result.ActionInput = actionDetails.action_input;
+            ActionDetails? actionDetails = JsonSerializer.Deserialize<ActionDetails>(json);
+            Debug.Assert(actionDetails != null, nameof(actionDetails) + " != null");
+            result.Action = actionDetails.Action;
+            result.ActionInput = actionDetails.ActionInput;
         }
         else
         {
-            throw new Exception("no action found");
+            throw new ApplicationException("no action found");
         }
         
         if (result.Action == "Final Answer")
@@ -192,45 +224,31 @@ public sealed class IterativePlannerText
         return result;
     }
 
-    private async Task<(string, string)> GetToolNamesAndDescriptionsAsync()
+    protected (string, string) GetToolNamesAndDescriptions()
     {
-        var availableFunctions = await this._context.GetAvailableFunctionsAsync(this.Config).ConfigureAwait(false);
-        //ugly hack - fix later
-        var filtered = availableFunctions.Where(x => !x.Name.StartsWith("func")).ToList();
-        string toolNames = String.Join(", ", filtered.Select(x => x.Name));
-        string toolDescriptions = ">" + String.Join("\n>", filtered.Select(x => x.Name + ": " + x.Description)); 
+        var availableFunctions = this.GetAvailableFunctions();
+       
+        string toolNames = String.Join(", ", availableFunctions.Select(x => x.Name));
+        string toolDescriptions = ">" + String.Join("\n>", availableFunctions.Select(x => x.Name + ": " + x.Description)); 
         return (toolNames, toolDescriptions);
     }
 
-    private IterativePlannerConfig Config { get; }
+    
 
     private readonly SKContext _context;
 
-    /// <summary>
-    /// the function flow semantic function, which takes a goal and creates an xml plan that can be executed
-    /// </summary>
-    private readonly ISKFunction _functionFlowFunction;
+    private ISKFunction _functionFlowFunction;
 
-    private readonly IKernel _kernel;
-    public List<NextStep> Steps { get; set; }
-
-    /// <summary>
-    /// The name to use when creating semantic functions that are restricted from plan creation
-    /// </summary>
-    //private const string RestrictedSkillName = "SequentialPlanner_Excluded";
+    protected readonly IKernel Kernel;
+    private readonly string _promptTemplate;
+    public List<AgentStep> Steps { get; set; }
 }
 
 public class ActionDetails
 {
-    public string action { get; set; }
-    public string action_input { get; set; }
-}
-public class NextStep   
-{
-    public string Thought { get; set; }
-    public string Action { get; set; }
-    public string ActionInput { get; set; }
-    public string Observation { get; set; }
-    public string FinalAnswer { get; set; }
-    public string OriginalResponse { get; set; }
+    [JsonPropertyName("action")]
+    public string? Action { get; set; }
+
+    [JsonPropertyName("action_input")]
+    public string? ActionInput { get; set; }
 }

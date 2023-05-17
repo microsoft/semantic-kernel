@@ -29,9 +29,5 @@ Observation: the result of the action
 If you find the final answer, as tool name use exact text :"Final Answer" and in the action_input put the answer. Format the number in nice human readable way.
 
 IMOPRTANT REMINDER: your each response should contain only one next step and only single one $JSON_BLOB. Do not provide more than one step.  
-Let’s Think Step by Step. 
+Let's Think Step by Step. 
 Begin! 
-Question: {{$question}}
-{{$agentScratchPad}}
-
-Thought:
