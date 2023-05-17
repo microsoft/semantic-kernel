@@ -126,6 +126,35 @@ public abstract class ClientBase
     /// <param name="requestSettings">AI request settings</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
+    private protected async Task<IReadOnlyList<IChatCompletionResult>> InternalGenerateMultiChatMessageAsync(
+        ChatHistory chat,
+        ChatRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(chat);
+        Verify.NotNull(requestSettings);
+
+        ValidateMaxTokens(requestSettings.MaxTokens);
+        var options = CreateChatCompletionsOptions(requestSettings, chat);
+
+        Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
+            () => this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+
+        if (response == null || response.Value.Choices.Count < 1)
+        {
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
+        }
+
+        return response.Value.Choices.Select(completion => new ChatCompletionResult(completion)).ToList();
+    }
+
+    /// <summary>
+    /// Generate a new chat message
+    /// </summary>
+    /// <param name="chat">Chat history</param>
+    /// <param name="requestSettings">AI request settings</param>
+    /// <param name="cancellationToken">Async cancellation token</param>
+    /// <returns>Generated chat message in string format</returns>
     private protected async Task<string> InternalGenerateChatMessageAsync(
         ChatHistory chat,
         ChatRequestSettings requestSettings,
@@ -189,7 +218,7 @@ public abstract class ClientBase
 
         await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
         {
-            await foreach (ChatMessage message in choice.GetMessageStreaming(cancellationToken))
+            await foreach (var message in choice.GetMessageStreaming(cancellationToken))
             {
                 yield return message.Content;
             }

@@ -13,7 +13,7 @@ public interface IChatCompletion
     /// </summary>
     /// <param name="instructions">Optional chat instructions for the AI service</param>
     /// <returns>Chat object</returns>
-    public ChatHistory CreateNewChat(string instructions = "");
+    ChatHistory CreateNewChat(string instructions = "");
 
     /// <summary>
     /// Generate a new chat message
@@ -22,7 +22,7 @@ public interface IChatCompletion
     /// <param name="requestSettings">AI request settings</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
-    public Task<string> GenerateMessageAsync(
+    Task<string> GenerateMessageAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
@@ -34,8 +34,23 @@ public interface IChatCompletion
     /// <param name="requestSettings">AI request settings</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Stream the generated chat message in string format</returns>
-    public IAsyncEnumerable<string> GenerateMessageStreamAsync(
+    IAsyncEnumerable<string> GenerateMessageStreamAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<IChatCompletionResult>> GetChatCompletionsAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default);
+}
+
+public interface IChatCompletionResult
+{
+    Task<IChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default);
+}
+
+public interface IChatCompletionStreamingResult : IChatCompletionResult
+{
+    IAsyncEnumerable<IChatMessage> GetChatMessageStreamingAsync(CancellationToken cancellationToken = default);
 }

@@ -70,6 +70,14 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         return this.InternalGenerateChatMessageStreamAsync(chat, requestSettings ?? new(), cancellationToken);
     }
 
+    public Task<IReadOnlyList<IChatCompletionResult>> GetChatCompletionsAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalGenerateMultiChatMessageAsync(chat, requestSettings ?? new(), cancellationToken);
+    }
+
     /// <inheritdoc/>
     public ChatHistory CreateNewChat(string instructions = "")
     {

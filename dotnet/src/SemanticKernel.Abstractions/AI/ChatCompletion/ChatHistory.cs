@@ -64,3 +64,9 @@ public class ChatHistory
         this.Messages.Add(new Message(authorRole, content));
     }
 }
+
+public interface IChatMessage
+{
+    string Role { get; }
+    string Content { get; }
+}
