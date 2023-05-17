@@ -112,8 +112,11 @@ public static class Program
 
         await Example35_GrpcSkills.RunAsync();
         Console.WriteLine("== DONE ==");
+      
+        await Example36_MultiCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
 
-        await Example36_Pinecone.RunAsync();
+        await Example37_MultiStreamingCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
