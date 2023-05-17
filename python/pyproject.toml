@@ -27,7 +27,7 @@ transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
 
 [tool.poetry.group.chromadb.dependencies]
-chromadb = "^0.3.22"
+chromadb = "^0.3.23"
 
 [tool.isort]
 profile = "black"
