@@ -90,11 +90,13 @@ dotnet_style_prefer_conditional_expression_over_assignment = true:silent
 dotnet_style_prefer_conditional_expression_over_return = true:silent
 dotnet_style_prefer_simplified_interpolation = true:suggestion
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
-dotnet_style_namespace_match_folder = true:suggestion
 dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_compound_assignment = true:suggestion
 # Code quality rules
 dotnet_code_quality_unused_parameters = all:suggestion
+
+[*.cs]
+dotnet_analyzer_diagnostic.severity = none
 
 # Suppressed diagnostics
 dotnet_diagnostic.CA1002.severity = none # Change 'List<string>' in '...' to use 'Collection<T>' ...
@@ -109,9 +111,61 @@ dotnet_diagnostic.CA2007.severity = none # Do not directly await a Task
 dotnet_diagnostic.CA2225.severity = none # Operator overloads have named alternates
 dotnet_diagnostic.CA2227.severity = none # Change to be read-only by removing the property setter
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
+
 dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool) is hidden by default, set to none to prevent IDE from changing on autosave
+dotnet_diagnostic.xUnit1004.severity = none # Test methods should not be skipped. Remove the Skip property to start running the test again.
+
+dotnet_diagnostic.RCS1021.severity = none # Use expression-bodied lambda.
+dotnet_diagnostic.RCS1032.severity = none # Remove redundant parentheses.
+dotnet_diagnostic.RCS1061.severity = none # Merge 'if' with nested 'if'.
+dotnet_diagnostic.RCS1069.severity = none # Remove unnecessary case label.
+dotnet_diagnostic.RCS1074.severity = none # Remove redundant constructor.
+dotnet_diagnostic.RCS1077.severity = none # Optimize LINQ method call.
+dotnet_diagnostic.RCS1118.severity = none # Mark local variable as const.
+dotnet_diagnostic.RCS1124.severity = none # Inline local variable.
+dotnet_diagnostic.RCS1129.severity = none # Remove redundant field initialization.
+dotnet_diagnostic.RCS1140.severity = none # Add exception to documentation comment.
+dotnet_diagnostic.RCS1141.severity = none # Add 'param' element to documentation comment.
+dotnet_diagnostic.RCS1142.severity = none # Add 'typeparam' element to documentation comment.
+dotnet_diagnostic.RCS1146.severity = none # Use conditional access.
+dotnet_diagnostic.RCS1151.severity = none # Remove redundant cast.
+dotnet_diagnostic.RCS1158.severity = none # Static member in generic type should use a type parameter.
+dotnet_diagnostic.RCS1161.severity = none # Enum should declare explicit value
+dotnet_diagnostic.RCS1163.severity = none # Unused parameter 'foo'.
+dotnet_diagnostic.RCS1170.severity = none # Use read-only auto-implemented property.
+dotnet_diagnostic.RCS1173.severity = none # Use coalesce expression instead of 'if'.
+dotnet_diagnostic.RCS1181.severity = none # Convert comment to documentation comment.
+dotnet_diagnostic.RCS1188.severity = none # Remove redundant auto-property initialization.
+dotnet_diagnostic.RCS1189.severity = none # Add region name to #endregion.
+dotnet_diagnostic.RCS1197.severity = none # Optimize StringBuilder.AppendLine call.
+dotnet_diagnostic.RCS1201.severity = none # Use method chaining.
+dotnet_diagnostic.RCS1205.severity = none # Order named arguments according to the order of parameters.
+dotnet_diagnostic.RCS1212.severity = none # Remove redundant assignment.
+dotnet_diagnostic.RCS1217.severity = none # Convert interpolated string to concatenation.
+dotnet_diagnostic.RCS1222.severity = none # Merge preprocessor directives.
+dotnet_diagnostic.RCS1226.severity = none # Add paragraph to documentation comment.
+dotnet_diagnostic.RCS1229.severity = none # Use async/await when necessary.
+dotnet_diagnostic.RCS1234.severity = none # Enum duplicate value
+dotnet_diagnostic.RCS1238.severity = none # Avoid nested ?: operators.
+dotnet_diagnostic.RCS1241.severity = none # Implement IComparable when implementing IComparable<T><T>.
+
+dotnet_diagnostic.IDE0001.severity = none # Simplify name
+dotnet_diagnostic.IDE0002.severity = none # Simplify member access
+dotnet_diagnostic.IDE0004.severity = none # Remove unnecessary cast
+dotnet_diagnostic.IDE0035.severity = none # Remove unreachable code
+dotnet_diagnostic.IDE0051.severity = none # Remove unused private member
+dotnet_diagnostic.IDE0052.severity = none # Remove unread private member
+dotnet_diagnostic.IDE0058.severity = none # Remove unused expression value
+dotnet_diagnostic.IDE0059.severity = none # Unnecessary assignment of a value
+dotnet_diagnostic.IDE0060.severity = none # Remove unused parameter
+dotnet_diagnostic.IDE0080.severity = none # Remove unnecessary suppression operator
+dotnet_diagnostic.IDE0100.severity = none # Remove unnecessary equality operator
+dotnet_diagnostic.IDE0110.severity = none # Remove unnecessary discards
+dotnet_diagnostic.IDE0032.severity = none # Use auto property
+dotnet_diagnostic.IDE0160.severity = none # Use block-scoped namespace
 
 # Diagnostics elevated as warnings
+dotnet_diagnostic.IDE0005.severity = warning # Remove unnecessary usings
 dotnet_diagnostic.CA1000.severity = warning # Do not declare static members on generic types
 dotnet_diagnostic.CA1031.severity = warning # Do not catch general exception types
 dotnet_diagnostic.CA1032.severity = warning # Add the following constructor to ...Exception: public ...
@@ -266,30 +320,6 @@ csharp_style_expression_bodied_local_functions = false:silent
 ##################
 # C# Style       #
 ##################
-
-# Disable unneccesary style rules by default
-[*.cs]
-dotnet_diagnostic.IDE0001.severity = none # Simplify name
-dotnet_diagnostic.IDE0002.severity = none # Simplify member access
-dotnet_diagnostic.IDE0004.severity = none # Remove unnecessary cast
-# dotnet_diagnostic.IDE0005.severity = none # Remove unnecessary usings
-dotnet_diagnostic.IDE0035.severity = none # Remove unreachable code
-dotnet_diagnostic.IDE0051.severity = none # Remove unused private member
-dotnet_diagnostic.IDE0052.severity = none # Remove unread private member
-dotnet_diagnostic.IDE0058.severity = none # Remove unused expression value
-dotnet_diagnostic.IDE0059.severity = none # Unnecessary assignment of a value
-dotnet_diagnostic.IDE0060.severity = none # Remove unused parameter
-dotnet_diagnostic.IDE0080.severity = none # Remove unnecessary suppression operator
-dotnet_diagnostic.IDE0100.severity = none # Remove unnecessary equality operator
-dotnet_diagnostic.IDE0110.severity = none # Remove unnecessary discards
-
-# Disable select expression-level style rules
-[*.cs]
-dotnet_diagnostic.IDE0032.severity = none # Use auto property
-
-# Disable select language style rules
-[*.cs]
-dotnet_diagnostic.IDE0160.severity = none # Use block-scoped namespace
 
 ###############################
 # VB Coding Conventions       #

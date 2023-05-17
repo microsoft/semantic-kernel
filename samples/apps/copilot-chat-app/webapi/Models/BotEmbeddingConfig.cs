@@ -2,9 +2,9 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Options;
 
-namespace SemanticKernel.Service.Model;
+namespace SemanticKernel.Service.Models;
 
 /// <summary>
 /// The embedding configuration of a bot. Used in the Bot object for portability.

@@ -51,8 +51,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// Create a native function instance, wrapping a native object method
     /// </summary>
-    /// <param name="methodContainerInstance">Object containing the method to invoke</param>
     /// <param name="methodSignature">Signature of the method to invoke</param>
+    /// <param name="methodContainerInstance">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
@@ -249,7 +249,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
-    /// <returns></returns>
     public override string ToString()
         => this.ToString(false);
 
@@ -257,7 +256,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// JSON serialized string representation of the function.
     /// </summary>
     public string ToString(bool writeIndented)
-       => JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = writeIndented });
+        => JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = writeIndented });
 
     /// <summary>
     /// Finalizer.

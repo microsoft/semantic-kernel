@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.TemplateEngine;
-using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Options;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
 
@@ -119,6 +119,7 @@ internal static class SemanticKernelExtensions
                 }
             }
         }
+
         return Task.CompletedTask;
     }
 

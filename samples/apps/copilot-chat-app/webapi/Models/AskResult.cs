@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Service.Model;
+namespace SemanticKernel.Service.Models;
 
 public class AskResult
 {

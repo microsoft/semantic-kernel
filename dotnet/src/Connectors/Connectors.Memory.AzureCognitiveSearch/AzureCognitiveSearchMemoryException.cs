@@ -4,7 +4,9 @@ using System;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
-#pragma warning disable CA1032
+#pragma warning disable CA1032 // Implement standard exception constructors
+#pragma warning disable RCS1194 // Implement exception constructors
+
 /// <summary>
 /// Exception thrown by the Azure Cognitive Search connector
 /// </summary>

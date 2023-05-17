@@ -138,17 +138,12 @@ public class QdrantMemoryStore : IMemoryStore
         try
         {
             var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
-            if (vectorData != null)
-            {
-                return MemoryRecord.FromJsonMetadata(
-                    json: vectorData.GetSerializedPayload(),
-                    embedding: new Embedding<float>(vectorData.Embedding),
-                    key: vectorData.PointId);
-            }
-            else
-            {
-                return null;
-            }
+            if (vectorData == null) { return null; }
+
+            return MemoryRecord.FromJsonMetadata(
+                json: vectorData.GetSerializedPayload(),
+                embedding: new Embedding<float>(vectorData.Embedding),
+                key: vectorData.PointId);
         }
         catch (HttpRequestException ex)
         {
@@ -185,9 +180,10 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="pointId">The unique indexed ID associated with the Qdrant vector record to get.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
+    /// <returns>Memory record</returns>
     /// <exception cref="QdrantMemoryException"></exception>
-    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -196,16 +192,11 @@ public class QdrantMemoryStore : IMemoryStore
 
             var vectorData = await vectorDataList.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
-            if (vectorData != null)
-            {
-                return MemoryRecord.FromJsonMetadata(
-                    json: vectorData.GetSerializedPayload(),
-                    embedding: new Embedding<float>(vectorData.Embedding));
-            }
-            else
-            {
-                return null;
-            }
+            if (vectorData == null) { return null; }
+
+            return MemoryRecord.FromJsonMetadata(
+                json: vectorData.GetSerializedPayload(),
+                embedding: new Embedding<float>(vectorData.Embedding));
         }
         catch (HttpRequestException ex)
         {
@@ -222,14 +213,17 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <summary>
-    /// Get a MemoryRecord from the Qdrant Vector database by a group of pointIds.
+    /// Get memory records from the Qdrant Vector database using a group of pointIds.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointIds">The unique indexed IDs associated with Qdrant vector records to get.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, bool withEmbeddings = false,
+    /// <returns>Memory records</returns>
+    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(
+        string collectionName,
+        IEnumerable<string> pointIds,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var vectorDataList = this._qdrantClient
@@ -271,7 +265,6 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointId">The unique indexed ID associated with the Qdrant vector record to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
     public async Task RemoveWithPointIdAsync(string collectionName, string pointId, CancellationToken cancellationToken = default)
     {
@@ -293,7 +286,6 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointIds">The unique indexed IDs associated with the Qdrant vector records to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
     public async Task RemoveWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancellationToken = default)
     {
@@ -388,7 +380,10 @@ public class QdrantMemoryStore : IMemoryStore
 
     private readonly IQdrantVectorDbClient _qdrantClient;
 
-    private async Task<QdrantVectorRecord> ConvertFromMemoryRecordAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
+    private async Task<QdrantVectorRecord> ConvertFromMemoryRecordAsync(
+        string collectionName,
+        MemoryRecord record,
+        CancellationToken cancellationToken = default)
     {
         string pointId;
 
@@ -400,7 +395,11 @@ public class QdrantMemoryStore : IMemoryStore
         // Check if the data store contains a record with the provided metadata ID
         else
         {
-            var existingRecord = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, record.Metadata.Id, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var existingRecord = await this._qdrantClient.GetVectorByPayloadIdAsync(
+                    collectionName,
+                    record.Metadata.Id,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
 
             if (existingRecord != null)
             {

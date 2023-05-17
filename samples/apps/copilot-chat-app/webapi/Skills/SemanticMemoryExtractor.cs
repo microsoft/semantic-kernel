@@ -4,7 +4,7 @@ using System.Globalization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service.Skills;
 

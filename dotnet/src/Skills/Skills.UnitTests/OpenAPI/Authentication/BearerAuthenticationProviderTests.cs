@@ -17,7 +17,7 @@ public class BearerAuthenticationProviderTests
         var token = Guid.NewGuid().ToString();
         using var request = new HttpRequestMessage();
 
-        var target = new BearerAuthenticationProvider(() => { return Task.FromResult(token); });
+        var target = new BearerAuthenticationProvider(() => Task.FromResult(token));
 
         // Act
         await target.AuthenticateRequestAsync(request);

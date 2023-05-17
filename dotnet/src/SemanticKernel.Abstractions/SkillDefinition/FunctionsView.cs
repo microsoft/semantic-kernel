@@ -75,12 +75,7 @@ public sealed class FunctionsView
                  && this.NativeFunctions[skillName]
                      .Any(x => string.Equals(x.Name, functionName, StringComparison.OrdinalIgnoreCase));
 
-        if (sf && nf)
-        {
-            throw new AmbiguousMatchException("There are 2 functions with the same name, one native and one semantic");
-        }
-
-        return sf;
+        return sf && nf ? throw new AmbiguousMatchException("There are 2 functions with the same name, one native and one semantic") : sf;
     }
 
     /// <summary>
@@ -100,11 +95,6 @@ public sealed class FunctionsView
                  && this.NativeFunctions[skillName]
                      .Any(x => string.Equals(x.Name, functionName, StringComparison.OrdinalIgnoreCase));
 
-        if (sf && nf)
-        {
-            throw new AmbiguousMatchException("There are 2 functions with the same name, one native and one semantic");
-        }
-
-        return nf;
+        return sf && nf ? throw new AmbiguousMatchException("There are 2 functions with the same name, one native and one semantic") : nf;
     }
 }

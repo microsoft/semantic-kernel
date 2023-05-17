@@ -67,5 +67,5 @@ internal static class RestApiOperationExtensions
     }
 
     private const string MediaTypeTextPlain = "text/plain";
-    private static readonly Regex s_invalidSymbolsRegex = new(@"[^0-9A-Za-z_]+");
+    private static readonly Regex s_invalidSymbolsRegex = new("[^0-9A-Za-z_]+");
 }

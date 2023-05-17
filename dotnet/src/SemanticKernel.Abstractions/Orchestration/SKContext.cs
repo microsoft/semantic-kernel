@@ -89,14 +89,11 @@ public sealed class SKContext
     /// <returns>Delegate to execute the function</returns>
     public ISKFunction Func(string skillName, string functionName)
     {
-        if (this.Skills is null)
-        {
-            throw new KernelException(
+        return this.Skills is null
+            ? throw new KernelException(
                 KernelException.ErrorCodes.SkillCollectionNotSet,
-                "Skill collection not found in the context");
-        }
-
-        return this.Skills.GetFunction(skillName, functionName);
+                "Skill collection not found in the context")
+            : this.Skills.GetFunction(skillName, functionName);
     }
 
     /// <summary>

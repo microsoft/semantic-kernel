@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Service.Model;
+namespace SemanticKernel.Service.Models;
 
 /// <summary>
 /// Form for importing a document from a POST Http request.

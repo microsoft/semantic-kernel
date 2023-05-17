@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Memory;
-using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Options;
 
-namespace SemanticKernel.Service.Model;
+namespace SemanticKernel.Service.Models;
 
 /// <summary>
 /// The data model of a bot for portability.

@@ -14,8 +14,8 @@ using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
-using SemanticKernel.Service.Config;
-using SemanticKernel.Service.Model;
+using SemanticKernel.Service.Models;
+using SemanticKernel.Service.Options;
 using SemanticKernel.Service.Skills;
 using SemanticKernel.Service.Storage;
 

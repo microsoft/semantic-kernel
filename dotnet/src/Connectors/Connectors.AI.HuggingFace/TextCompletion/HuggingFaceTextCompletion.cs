@@ -146,9 +146,9 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
             var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            var completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
+            List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
 
-            return completionResponse.First().Text!;
+            return completionResponse?[0].Text ?? string.Empty;
         }
         catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {

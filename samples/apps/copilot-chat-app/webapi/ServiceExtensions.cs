@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using SemanticKernel.Service.Auth;
-using SemanticKernel.Service.Config;
-using SemanticKernel.Service.Model;
+using SemanticKernel.Service.Models;
+using SemanticKernel.Service.Options;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service;

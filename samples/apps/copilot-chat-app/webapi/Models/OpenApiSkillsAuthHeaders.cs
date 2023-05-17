@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace SemanticKernel.Service.Model;
+namespace SemanticKernel.Service.Models;
 
 /// /// <summary>
 /// Represents the authentication headers for imported OpenAPI Plugin Skills.

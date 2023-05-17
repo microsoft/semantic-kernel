@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using SemanticKernel.Service.Config;
-using SemanticKernel.Service.Model;
+using SemanticKernel.Service.Models;
+using SemanticKernel.Service.Options;
 using SemanticKernel.Service.Storage;
 
 namespace SemanticKernel.Service.Controllers;

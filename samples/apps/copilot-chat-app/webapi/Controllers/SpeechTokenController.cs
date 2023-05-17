@@ -4,8 +4,8 @@ using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using SemanticKernel.Service.Config;
-using SemanticKernel.Service.Model;
+using SemanticKernel.Service.Models;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service.Controllers;
 

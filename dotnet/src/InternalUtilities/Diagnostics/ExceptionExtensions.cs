@@ -18,7 +18,8 @@ internal static class ExceptionExtensions
     /// <param name="ex">Exception.</param>
     /// <returns>True if <paramref name="ex"/> is a critical exception and should not be caught.</returns>
     internal static bool IsCriticalException(this Exception ex)
-        => ex is OutOfMemoryException
+    {
+        return ex is OutOfMemoryException
             or ThreadAbortException
             or AccessViolationException
             or AppDomainUnloadedException
@@ -26,4 +27,5 @@ internal static class ExceptionExtensions
             or CannotUnloadAppDomainException
             or InvalidProgramException
             or StackOverflowException;
+    }
 }

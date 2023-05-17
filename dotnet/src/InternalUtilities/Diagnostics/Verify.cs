@@ -15,7 +15,9 @@ internal static class Verify
 {
     private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");
 
-    // Equivalent of ArgumentNullException.ThrowIfNull
+    /// <summary>
+    /// Equivalent of ArgumentNullException.ThrowIfNull
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression("obj")] string? paramName = null)
     {
@@ -118,20 +120,28 @@ internal static class Verify
     }
 
     [DoesNotReturn]
-    private static void ThrowInvalidName(string kind, string name) =>
+    private static void ThrowInvalidName(string kind, string name)
+    {
         throw new KernelException(
             KernelException.ErrorCodes.InvalidFunctionDescription,
             $"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.");
+    }
 
     [DoesNotReturn]
-    internal static void ThrowArgumentNullException(string? paramName) =>
+    internal static void ThrowArgumentNullException(string? paramName)
+    {
         throw new ArgumentNullException(paramName);
+    }
 
     [DoesNotReturn]
-    internal static void ThrowArgumentWhiteSpaceException(string? paramName) =>
+    internal static void ThrowArgumentWhiteSpaceException(string? paramName)
+    {
         throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", paramName);
+    }
 
     [DoesNotReturn]
-    internal static void ThrowArgumentOutOfRangeException<T>(string? paramName, T actualValue, string message) =>
+    internal static void ThrowArgumentOutOfRangeException<T>(string? paramName, T actualValue, string message)
+    {
         throw new ArgumentOutOfRangeException(paramName, actualValue, message);
+    }
 }

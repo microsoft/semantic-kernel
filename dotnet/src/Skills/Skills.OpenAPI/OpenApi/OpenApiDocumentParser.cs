@@ -46,6 +46,40 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     #region private
 
     /// <summary>
+    /// Max depth to traverse down OpenApi schema to discover payload properties.
+    /// </summary>
+    private const int PayloadPropertiesHierarchyMaxDepth = 10;
+
+    /// <summary>
+    /// Name of property that contains OpenAPI document version.
+    /// </summary>
+    private const string OpenApiVersionPropertyName = "openapi";
+
+    /// <summary>
+    /// Latest supported version of OpenAPI document.
+    /// </summary>
+    private static readonly Version s_latestSupportedVersion = new(3, 0, 1);
+
+    /// <summary>
+    /// Used to convert operationId to SK function names.
+    /// </summary>
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
+
+    /// <summary>
+    /// List of supported Media Types.
+    /// </summary>
+    private static readonly List<string> s_supportedMediaTypes = new()
+    {
+        "application/json",
+        "text/plain"
+    };
+
+    /// <summary>
+    /// An instance of the OpenApiStreamReader class.
+    /// </summary>
+    private readonly OpenApiStreamReader _openApiReader = new();
+
+    /// <summary>
     /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
     /// This class relies on Microsoft.OpenAPI.NET library to work with OpenApi documents.
     /// The library, at the moment, does not support 3.1 spec, and the latest supported version is 3.0.1.
@@ -60,25 +94,25 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false);
         if (jsonObject == null)
         {
-            //The document is malformed.
-            throw new OpenApiDocumentParsingException($"Parsing of OpenAPI document failed.");
+            // The document is malformed.
+            throw new OpenApiDocumentParsingException("Parsing of OpenAPI document failed.");
         }
 
         if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropertyName, out var propertyNode))
         {
-            //The document is either malformed or has 2.x version that specifies document version in the 'swagger' property rather than in the 'openapi' one.
+            // The document is either malformed or has 2.x version that specifies document version in the 'swagger' property rather than in the 'openapi' one.
             return jsonObject;
         }
 
         if (propertyNode is not JsonValue value)
         {
-            //The 'openapi' property has unexpected type.
+            // The 'openapi' property has unexpected type.
             return jsonObject;
         }
 
         if (!Version.TryParse(value.ToString(), out var version))
         {
-            //The 'openapi' property is malformed.
+            // The 'openapi' property is malformed.
             return jsonObject;
         }
 
@@ -133,9 +167,9 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// Creates REST API operation.
     /// </summary>
+    /// <param name="serverUrl">The server url.</param>
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
-    /// <param name="serverUrl">The server url.</param>
     /// <returns>Rest operation.</returns>
     private static List<RestApiOperation> CreateRestApiOperations(string serverUrl, string path, OpenApiPathItem pathItem)
     {
@@ -356,35 +390,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     }
 
     /// <summary>
-    /// List of supported Media Types.
-    /// </summary>
-    private static readonly List<string> s_supportedMediaTypes = new()
-    {
-        "application/json",
-        "text/plain"
-    };
-
-    /// <summary>
-    /// An instance of the OpenApiStreamReader class.
-    /// </summary>
-    private readonly OpenApiStreamReader _openApiReader = new();
-
-    /// <summary>
-    /// Latest supported version of OpenAPI document.
-    /// </summary>
-    private static readonly Version s_latestSupportedVersion = new(3, 0, 1);
-
-    /// <summary>
-    /// Max depth to traverse down OpenApi schema to discover payload properties.
-    /// </summary>
-    private const int PayloadPropertiesHierarchyMaxDepth = 10;
-
-    /// <summary>
-    /// Name of property that contains OpenAPI document version.
-    /// </summary>
-    private const string OpenApiVersionPropertyName = "openapi";
-
-    /// <summary>
     /// Converts operation id to valid SK Function name.
     /// A function name can contain only ASCII letters, digits, and underscores.
     /// </summary>
@@ -399,7 +404,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         foreach (string token in tokens)
         {
             // Removes all characters that are not ASCII letters, digits, and underscores.
-            string formattedToken = Regex.Replace(token, "[^0-9A-Za-z_]", "");
+            string formattedToken = s_removeInvalidCharsRegex.Replace(token, "");
             result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
         }
 

@@ -53,8 +53,10 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
         this._vector = vector.ToArray();
     }
 
-    private static void ThrowNotSupportedEmbedding() =>
+    private static void ThrowNotSupportedEmbedding()
+    {
         throw new NotSupportedException($"Embeddings do not support type '{typeof(TEmbedding).Name}'. Supported types include: [ Single, Double ]");
+    }
 
     /// <summary>
     /// Gets the vector as an <see cref="IEnumerable{TEmbedding}"/>

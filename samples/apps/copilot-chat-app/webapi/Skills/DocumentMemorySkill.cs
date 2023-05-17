@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service.Skills;
 
