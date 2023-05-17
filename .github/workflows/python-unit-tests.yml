@@ -49,6 +49,9 @@ jobs:
         brew update
         brew install llvm
         echo 'export PATH="/usr/local/opt/llvm/bin:$PATH"' >> ~/.bash_profile
+        export LDFLAGS="-L/usr/local/opt/llvm/lib"
+        export CPPFLAGS="-I/usr/local/opt/llvm/include"
+        brew info llvm
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel setuptools
