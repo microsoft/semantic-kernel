@@ -2,6 +2,8 @@
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Exception
+using System.Threading;
+
 namespace System;
 #pragma warning restore IDE0130
 

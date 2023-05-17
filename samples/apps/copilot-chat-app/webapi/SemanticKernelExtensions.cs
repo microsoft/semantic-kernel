@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -10,8 +16,7 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.Config;
-using SemanticKernel.Service.Skills;
-using SemanticKernel.Service.Storage;
+using SemanticKernel.Service.CopilotChat.Extensions;
 
 namespace SemanticKernel.Service;
 
@@ -24,11 +29,6 @@ internal static class SemanticKernelExtensions
     /// Delegate to register skills with a Semantic Kernel
     /// </summary>
     public delegate Task RegisterSkillsWithKernel(IServiceProvider sp, IKernel kernel);
-
-    /// <summary>
-    /// Delegate to register skills with a planner.
-    /// </summary>
-    public delegate Task RegisterSkillsWithPlanner(IServiceProvider sp, CopilotChatPlanner planner);
 
     /// <summary>
     /// Add Semantic Kernel services
@@ -58,22 +58,8 @@ internal static class SemanticKernelExtensions
             .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()
                 .Get(AIServiceOptions.EmbeddingPropertyName)));
 
-        // Planner (AI plugins) support
-        IOptions<PlannerOptions>? plannerOptions = services.BuildServiceProvider().GetService<IOptions<PlannerOptions>>();
-        if (plannerOptions != null && plannerOptions.Value.Enabled)
-        {
-            services.AddScoped<CopilotChatPlanner>(sp => new CopilotChatPlanner(Kernel.Builder
-                .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
-                .WithConfiguration(
-                    new KernelConfig().AddCompletionBackend(sp.GetRequiredService<IOptions<PlannerOptions>>().Value.AIService!)) // TODO verify planner has AI service configured
-                .Build()));
-        }
-
         // Register skills
-        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterCopilotChatSkills);
-
-        // Register Planner skills (AI plugins) here.
-        // TODO: Move planner skill registration from SemanticKernelController to here.
+        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkills);
 
         return services;
     }
@@ -81,27 +67,13 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Register the skills with the kernel.
     /// </summary>
-    private static Task RegisterCopilotChatSkills(IServiceProvider sp, IKernel kernel)
+    private static Task RegisterSkills(IServiceProvider sp, IKernel kernel)
     {
-        // Chat skill
-        kernel.ImportSkill(new ChatSkill(
-                kernel: kernel,
-                chatMessageRepository: sp.GetRequiredService<ChatMessageRepository>(),
-                chatSessionRepository: sp.GetRequiredService<ChatSessionRepository>(),
-                promptOptions: sp.GetRequiredService<IOptions<PromptsOptions>>(),
-                planner: sp.GetRequiredService<CopilotChatPlanner>(),
-                plannerOptions: sp.GetRequiredService<IOptions<PlannerOptions>>().Value,
-                logger: sp.GetRequiredService<ILogger<ChatSkill>>()),
-            nameof(ChatSkill));
+        // Copilot chat skills
+        kernel.RegisterCopilotChatSkills(sp);
 
         // Time skill
         kernel.ImportSkill(new TimeSkill(), nameof(TimeSkill));
-
-        // Document memory skill
-        kernel.ImportSkill(new DocumentMemorySkill(
-                sp.GetRequiredService<IOptions<PromptsOptions>>(),
-                sp.GetRequiredService<IOptions<DocumentMemoryOptions>>().Value),
-            nameof(DocumentMemorySkill));
 
         // Semantic skills
         ServiceOptions options = sp.GetRequiredService<IOptions<ServiceOptions>>().Value;
@@ -119,6 +91,7 @@ internal static class SemanticKernelExtensions
                 }
             }
         }
+
         return Task.CompletedTask;
     }
 
