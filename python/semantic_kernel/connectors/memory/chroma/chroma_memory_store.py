@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from logging import Logger
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
