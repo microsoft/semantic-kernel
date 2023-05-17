@@ -166,11 +166,11 @@ public static class Settings
     }
 
     // Load settings from file
-	public static (bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId)
+    public static (bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId)
         LoadFromFile(string configFile = DefaultConfigFile)
     {
-		(bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId, string embeddingModel) = LoadFromFileInternal(configFile);
-		return (useAzureOpenAI, model, azureEndpoint, apiKey, orgId);
+        (bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId, string embeddingModel) = LoadFromFileInternal(configFile);
+        return (useAzureOpenAI, model, azureEndpoint, apiKey, orgId);
     }
 
     // Load settings from file
@@ -178,7 +178,7 @@ public static class Settings
         LoadFromFileWithEmbeddingModel(string configFile = DefaultConfigFile)
     {
         return LoadFromFileInternal(configFile);
-	}
+    }
 
     private static (bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId, string embeddingModel)
         LoadFromFileInternal(string configFile)
@@ -199,10 +199,10 @@ public static class Settings
             string apiKey = config[SecretKey];
             string orgId = config[OrgKey];
             if (orgId == "none") { orgId = ""; }
-			if(!config.TryGetValue(EmbeddingModelKey, out string embeddingModel))
-			{
-				embeddingModel = string.Empty;
-			}
+            if(!config.TryGetValue(EmbeddingModelKey, out string embeddingModel))
+            {
+                embeddingModel = string.Empty;
+            }
 
             return (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, embeddingModel);
         }
@@ -239,7 +239,7 @@ public static class Settings
         string azureEndpoint = "";
         string apiKey = "";
         string orgId = "";
-		string embeddingModel = "";
+        string embeddingModel = "";
 
         try
         {
