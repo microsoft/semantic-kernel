@@ -16,7 +16,7 @@ using RepoUtils;
 ///  instead initialize the index using <see cref="IPineconeClient.CreateIndexAsync(IndexDefinition, System.Threading.CancellationToken)"/>.
 ///  But note that it can take a few minutes for the index to be ready for use.
 /// </summary>
-public static class Example36_Pinecone
+public static class Example38_Pinecone
 {
     private const string MemoryCollectionName = "pinecone-test";
 
