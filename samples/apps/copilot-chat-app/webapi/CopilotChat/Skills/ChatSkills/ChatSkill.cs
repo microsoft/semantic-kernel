@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -130,68 +129,6 @@ public class ChatSkill
         }
 
         return $"User intent: {result}";
-    }
-
-    /// <summary>
-    /// Extract relevant memories based on the latest message.
-    /// </summary>
-    /// <param name="context">Contains the 'tokenLimit' and the 'contextTokenLimit' controlling the length of the prompt.</param>
-    [SKFunction("Extract user memories")]
-    [SKFunctionName("ExtractUserMemories")]
-    [SKFunctionContextParameter(Name = "chatId", Description = "Chat ID to extract history from")]
-    [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-    [SKFunctionContextParameter(Name = "contextTokenLimit", Description = "Maximum number of context tokens")]
-    public async Task<string> ExtractUserMemoriesAsync(SKContext context)
-    {
-        var chatId = context["chatId"];
-        var tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
-        var contextTokenLimit = int.Parse(context["contextTokenLimit"], new NumberFormatInfo());
-        var remainingToken = Math.Min(
-            tokenLimit,
-            Math.Floor(contextTokenLimit * this._promptOptions.MemoriesResponseContextWeight)
-        );
-
-        // Find the most recent message.
-        var latestMessage = await this._chatMessageRepository.FindLastByChatIdAsync(chatId);
-
-        // Search for relevant memories.
-        List<MemoryQueryResult> relevantMemories = new();
-        foreach (var memoryName in this._promptOptions.MemoryMap.Keys)
-        {
-            var results = context.Memory.SearchAsync(
-                SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName),
-                latestMessage.ToString(),
-                limit: 100,
-                minRelevanceScore: this._promptOptions.SemanticMemoryMinRelevance);
-            await foreach (var memory in results)
-            {
-                relevantMemories.Add(memory);
-            }
-        }
-
-        relevantMemories = relevantMemories.OrderByDescending(m => m.Relevance).ToList();
-
-        string memoryText = "";
-        foreach (var memory in relevantMemories)
-        {
-            var tokenCount = Utilities.TokenCount(memory.Metadata.Text);
-            if (remainingToken - tokenCount > 0)
-            {
-                memoryText += $"\n[{memory.Metadata.Description}] {memory.Metadata.Text}";
-                remainingToken -= tokenCount;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        // Update the token limit.
-        memoryText = $"Past memories (format: [memory type] <label>: <details>):\n{memoryText.Trim()}";
-        tokenLimit -= Utilities.TokenCount(memoryText);
-        context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-
-        return memoryText;
     }
 
     /// <summary>
@@ -673,7 +610,7 @@ public class ChatSkill
         {
             try
             {
-                var semanticMemory = await SemanticMemoryExtractor.ExtractCognitiveMemoryAsync(
+                var semanticMemory = await SemanticChatMemoryExtractor.ExtractCognitiveMemoryAsync(
                     memoryName,
                     this._kernel,
                     context,
@@ -703,7 +640,7 @@ public class ChatSkill
     /// <param name="memoryName">Name of the memory</param>
     private async Task CreateMemoryAsync(SemanticChatMemoryItem item, string chatId, SKContext context, string memoryName)
     {
-        var memoryCollectionName = SemanticMemoryExtractor.MemoryCollectionName(chatId, memoryName);
+        var memoryCollectionName = SemanticChatMemoryExtractor.MemoryCollectionName(chatId, memoryName);
 
         var memories = await context.Memory.SearchAsync(
                 collection: memoryCollectionName,

@@ -10,7 +10,7 @@ using SemanticKernel.Service.CopilotChat.Options;
 
 namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 
-internal static class SemanticMemoryExtractor
+internal static class SemanticChatMemoryExtractor
 {
     /// <summary>
     /// Returns the name of the semantic text memory collection that stores chat semantic memory.
