@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Service.Config;
+namespace SemanticKernel.Service.Options;
 
 /// <summary>
 /// Configuration settings for the memories store.

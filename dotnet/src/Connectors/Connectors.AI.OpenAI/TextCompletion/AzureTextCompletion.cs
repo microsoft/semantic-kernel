@@ -69,4 +69,3 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         return this.InternalCompleteTextAsync(text, requestSettings, cancellationToken);
     }
 }
-

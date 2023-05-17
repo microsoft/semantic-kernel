@@ -7,10 +7,10 @@ using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using SemanticKernel.Service.Config;
-using SemanticKernel.Service.CopilotChat.Config;
 using SemanticKernel.Service.CopilotChat.Models;
+using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service.CopilotChat.Extensions;
 

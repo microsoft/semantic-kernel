@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.Service.Model;
+using SemanticKernel.Service.Models;
 
 namespace SemanticKernel.Service.Controllers;
 
