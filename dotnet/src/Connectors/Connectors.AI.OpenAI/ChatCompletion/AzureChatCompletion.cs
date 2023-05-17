@@ -77,19 +77,20 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     }
 
     /// <inheritdoc/>
-    public Task<string> CompleteAsync(
+    public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken);
+        return this.InternalCompletionStreamAsync(text, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> CompleteStreamAsync(string text,
+    public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
+        string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextUsingChatStreamAsync(text, requestSettings, cancellationToken);
+        return this.InternalCompleteTextAsync(text, requestSettings, cancellationToken);
     }
 }

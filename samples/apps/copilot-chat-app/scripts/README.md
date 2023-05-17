@@ -11,8 +11,7 @@ To run Copilot Chat, you will need the following:
   [Learn more about possible values for this parameter](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority).
 - *Azure OpenAI or OpenAI API Key*
   - This is your API key for Azure OpenAI or OpenAI
-
-You also need to update [`appsettings.json`](../webapi/appsettings.json) with the relevant deployment or model information, as well as endpoint if you are using Azure OpenAI.
+- An updated [`appsettings.json`](../webapi/appsettings.json) file. At a minimum, you must fill out the `Completion` and `Embedding` sections per the instructions in the comments.
 
 For more information on how to prepare this data, [see the full instructions for Copilot Chat](../README.md).
 
