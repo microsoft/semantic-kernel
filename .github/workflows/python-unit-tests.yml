@@ -46,7 +46,7 @@ jobs:
     - name: Install hnswlib without binary on macOS with Python 3.11
       if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
       run: |
-        sudo pip3 install hnswlib --no-binary :all:
+        python -m pip install hnswlib --no-binary :all:
     - name: Install dependencies
       run: |
         python -m pip install poetry pytest
