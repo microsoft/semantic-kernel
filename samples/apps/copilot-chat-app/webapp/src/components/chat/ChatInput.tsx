@@ -14,9 +14,9 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { SpeechService } from './../../libs/services/SpeechService';
-import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
-import { updateFileUploadedFromUser } from './../../redux/features/conversations/conversationsSlice';
 import { getSelectedChatID } from './../../redux/app/store';
+import { updateFileUploadedFromUser } from './../../redux/features/conversations/conversationsSlice';
+import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -76,9 +76,6 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const documentImportService = new DocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
-
-    const { accounts } = useMsal();
-    const account = useAccount(accounts[0] || {});
 
     React.useEffect(() => {
         async function initSpeechRecognizer() {
