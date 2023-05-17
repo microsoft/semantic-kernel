@@ -5,7 +5,7 @@ QdrantMemoryStore provides functionality to add Qdrant vector database to suppor
 The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
 """
 from logging import Logger
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple, 
 
 from numpy import ndarray
 
@@ -45,7 +45,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         self._logger = logger or NullLogger()
 
     async def create_collection_async(
-        self, collection_name: str, vector_size: int, distance: Optional[str] = "Cosine"
+        self, collection_name: str, vector_size: int
     ) -> None:
         """Creates a new collection if it does not exist.
 
