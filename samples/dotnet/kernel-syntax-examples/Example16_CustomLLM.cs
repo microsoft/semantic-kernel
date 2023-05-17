@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,37 +20,47 @@ using RepoUtils;
  */
 public class MyTextCompletionService : ITextCompletion
 {
-    public async Task<string> CompleteAsync(
-        string text,
-        CompleteRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        // Your model logic here
-        var result = "...output from your custom model...";
+        return Task.FromResult<IReadOnlyList<ITextCompletionResult>>(new List<ITextCompletionResult>
+        {
+            new MyTextCompletionStreamingResult()
+        });
+    }
 
+    public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    {
+        return new List<ITextCompletionStreamingResult>()
+        {
+            new MyTextCompletionStreamingResult()
+        }.ToAsyncEnumerable();
+    }
+}
+
+public class MyTextCompletionStreamingResult : ITextCompletionStreamingResult
+{
+    private const string Text = @" ..output from your custom model... Example:
+AI is awesome because it can help us solve complex problems, enhance our creativity,
+and improve our lives in many ways. AI can perform tasks that are too difficult,
+tedious, or dangerous for humans, such as diagnosing diseases, detecting fraud, or
+exploring space. AI can also augment our abilities and inspire us to create new forms
+of art, music, or literature. AI can also improve our well-being and happiness by
+providing personalized recommendations, entertainment, and assistance. AI is awesome";
+
+    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    {
         // Forcing a 2 sec delay (Simulating custom LLM lag)
         await Task.Delay(2000, cancellationToken);
 
-        return result;
+        return Text;
     }
 
-    public async IAsyncEnumerable<string> CompleteStreamAsync(
-        string text,
-        CompleteRequestSettings requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return Environment.NewLine;
 
         // Your model logic here
-        var result = @" ..output from your custom model... Example: AI is awesome because it can help us
-solve complex problems, enhance our creativity, and improve our lives in many ways.
-AI can perform tasks that are too difficult, tedious, or dangerous for humans, such
-as diagnosing diseases, detecting fraud, or exploring space. AI can also augment our
-abilities and inspire us to create new forms of art, music, or literature. AI can
-also improve our well-being and happiness by providing personalized recommendations,
-entertainment, and assistance. AI is awesome";
-
-        var streamedOutput = result.Split(' ');
+        var streamedOutput = Text.Split(' ');
         foreach (string word in streamedOutput)
         {
             await Task.Delay(50, cancellationToken);
@@ -66,8 +77,8 @@ public static class Example16_CustomLLM
     {
         await CustomTextCompletionWithSKFunctionAsync();
 
-        await CustomTextCompletionStreamAsync();
         await CustomTextCompletionAsync();
+        await CustomTextCompletionStreamAsync();
     }
 
     private static async Task CustomTextCompletionWithSKFunctionAsync()

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 import { useAccount, useMsal } from '@azure/msal-react';
 import { Constants } from '../Constants';
 import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
@@ -7,7 +9,6 @@ import { ChatState } from '../redux/features/conversations/ChatState';
 import { Conversations } from '../redux/features/conversations/ConversationsState';
 import {
     addConversation,
-    incrementBotProfilePictureIndex,
     setConversations,
     setSelectedConversation,
     updateConversation,
@@ -18,24 +19,22 @@ import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
 import { AuthorRoles, ChatMessageState } from './models/ChatMessage';
 import { IChatSession } from './models/ChatSession';
-import { ChatUser } from './models/ChatUser';
-import { isPlan } from './semantic-kernel/sk-utilities';
-import { useSemanticKernel } from './semantic-kernel/useSemanticKernel';
 import { BotService } from './services/BotService';
 import { ChatService } from './services/ChatService';
+import { isPlan } from './utils/PlanUtils';
 
 import botIcon1 from '../assets/bot-icons/bot-icon-1.png';
 import botIcon2 from '../assets/bot-icons/bot-icon-2.png';
 import botIcon3 from '../assets/bot-icons/bot-icon-3.png';
 import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
 import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
+import { IChatUser } from './models/ChatUser';
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
     const { instance, accounts } = useMsal();
     const account = useAccount(accounts[0] || {});
-    const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
-    const { botProfilePictureIndex } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
     const connectors = useConnectors();
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
@@ -43,7 +42,7 @@ export const useChat = () => {
 
     const botProfilePictures: string[] = [botIcon1, botIcon2, botIcon3, botIcon4, botIcon5];
 
-    const loggedInUser: ChatUser = {
+    const loggedInUser: IChatUser = {
         id: account?.homeAccountId || '',
         fullName: account?.name || '',
         emailAddress: account?.username || '',
@@ -52,9 +51,9 @@ export const useChat = () => {
         lastTypingTimestamp: 0,
     };
 
-    const getAudienceMemberForId = (id: string, chatId: string, audience: ChatUser[]) => {
+    const getChatUserById = (id: string, chatId: string, users: IChatUser[]) => {
         if (id === `${chatId}-bot` || id.toLocaleLowerCase() === 'bot') return Constants.bot.profile;
-        return audience.find((member) => member.id === id);
+        return users.find((user) => user.id === id);
     };
 
     const createChat = async () => {
@@ -79,12 +78,10 @@ export const useChat = () => {
                         id: result.id,
                         title: result.title,
                         messages: chatMessages,
-                        audience: [loggedInUser],
-                        botTypingTimestamp: 0,
-                        botProfilePicture: botProfilePictures.at(botProfilePictureIndex) ?? '/assets/bot-icon-1.png',
+                        users: [loggedInUser],
+                        botProfilePicture: getBotProfilePicture(Object.keys(conversations).length)
                     };
 
-                    dispatch(incrementBotProfilePictureIndex());
                     dispatch(addConversation(newChat));
                     dispatch(setSelectedConversation(newChat.id));
 
@@ -142,13 +139,12 @@ export const useChat = () => {
         }
 
         try {
-            var result = await sk.invokeAsync(
+            var result = await chatService.getBotResponseAsync(
                 ask,
-                'ChatSkill',
-                'Chat',
                 await AuthHelper.getSKaaSAccessToken(instance),
                 connectors.getEnabledPlugins(),
             );
+
             const messageResult = {
                 timestamp: new Date().getTime(),
                 userName: 'bot',
@@ -173,7 +169,7 @@ export const useChat = () => {
             );
 
             if (chatSessions.length > 0) {
-                const conversations: Conversations = {};
+                const loadedConversations: Conversations = {};
                 for (const index in chatSessions) {
                     const chatSession = chatSessions[index];
                     const chatMessages = await chatService.getChatMessagesAsync(
@@ -187,19 +183,16 @@ export const useChat = () => {
                     // so we need to reverse the order for render
                     const orderedMessages = chatMessages.reverse();
 
-                    conversations[chatSession.id] = {
+                    loadedConversations[chatSession.id] = {
                         id: chatSession.id,
                         title: chatSession.title,
-                        audience: [loggedInUser],
+                        users: [loggedInUser],
                         messages: orderedMessages,
-                        botTypingTimestamp: 0,
-                        botProfilePicture: botProfilePictures[botProfilePictureIndex],
+                        botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
                     };
-
-                    dispatch(incrementBotProfilePictureIndex());
                 }
 
-                dispatch(setConversations(conversations));
+                dispatch(setConversations(loadedConversations));
                 dispatch(setSelectedConversation(chatSessions[0].id));
             } else {
                 // No chats exist, create first chat window
@@ -219,7 +212,6 @@ export const useChat = () => {
         try {
             return botService.downloadAsync(
                 chatId,
-                account?.homeAccountId || '',
                 await AuthHelper.getSKaaSAccessToken(instance),
             );
         } catch (e: any) {
@@ -238,8 +230,12 @@ export const useChat = () => {
             });
     };
 
+    const getBotProfilePicture = (index: number) => {
+        return botProfilePictures[index % botProfilePictures.length];
+    };
+
     return {
-        getAudienceMemberForId,
+        getChatUserById,
         createChat,
         loadChats,
         getResponse,
