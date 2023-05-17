@@ -3,8 +3,8 @@
 import { Label, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
-import { parsePlan } from '../../libs/semantic-kernel/sk-utilities';
 import { useChat } from '../../libs/useChat';
+import { parsePlan } from '../../libs/utils/PlanUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateMessageState } from '../../redux/features/conversations/conversationsSlice';
@@ -140,13 +140,13 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     }
 
     const isMe = message.authorRole === AuthorRoles.User;
-    const member = chat.getAudienceMemberForId(message.userName, selectedId, conversations[selectedId].audience);
+    const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
     const avatar = isMe
-        ? member?.photo
-            ? { image: { src: member.photo } }
+        ? user?.photo
+            ? { image: { src: user.photo } }
             : undefined
         : { image: { src: conversations[selectedId].botProfilePicture } };
-    const fullName = member?.fullName ?? message.userName;
+    const fullName = user?.fullName ?? message.userName;
 
     return (
         <>
