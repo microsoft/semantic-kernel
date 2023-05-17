@@ -8,10 +8,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.Service.CopilotChat.Config;
+using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
 
-namespace SemanticKernel.Service.CopilotChat.Skills;
+namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 
 /// <summary>
 /// This skill provides the functions to query the semantic chat memory.
@@ -33,8 +33,7 @@ public class SemanticChatMemorySkill
     /// </summary>
     public SemanticChatMemorySkill(
         IOptions<PromptsOptions> promptOptions,
-        ChatMessageRepository chatMessageRepository
-        )
+        ChatMessageRepository chatMessageRepository)
     {
         this._promptOptions = promptOptions.Value;
         this._chatMessageRepository = chatMessageRepository;
