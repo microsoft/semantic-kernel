@@ -64,6 +64,17 @@ param(
 Write-Host "#########################"
 Write-Host "# Backend configuration #"
 Write-Host "#########################"
+
+# Install dev certificate
+if ($IsWindows -or $IsMacOS)
+{
+    dotnet dev-certs https --trust
+}
+elseif ($IsLinux)
+{
+    dotnet dev-certs https
+}
+
 if ($OpenAI) 
 {
     $appsettingsOverrides = @{ AIService = @{ Type = "OpenAI"; Models = @{ Completion = $CompletionModel; Embedding = $EmbeddingModel; Planner = $PlannerModel } } }
