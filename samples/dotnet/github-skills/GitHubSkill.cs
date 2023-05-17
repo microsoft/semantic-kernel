@@ -129,7 +129,7 @@ BEGIN SUMMARY:
         try
         {
             var repositoryUri = source.Trim(new char[] { ' ', '/' });
-            var downloadSkillContext = new SKContext(new ContextVariables(), NullMemory.Instance, null, context.Log);
+            var downloadSkillContext = new SKContext(logger: context.Log);
             downloadSkillContext.Variables.Set(FilePathParamName, filePath);
 
             var repoBundle = $"{repositoryUri}/archive/refs/heads/{repositoryBranch}.zip";
