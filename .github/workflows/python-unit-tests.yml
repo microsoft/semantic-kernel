@@ -46,7 +46,7 @@ jobs:
     - name: Updgrade command line tools for macOS + Python 3.11
       if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
       run: |
-        xcode-select --install
+        softwareupdate --install -a
         clang --version
     - name: Install dependencies
       run: |
