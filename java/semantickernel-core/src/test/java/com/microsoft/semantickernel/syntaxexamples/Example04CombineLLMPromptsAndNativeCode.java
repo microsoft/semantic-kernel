@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.syntaxexamples; // Copyright (c) Microsoft. All rights
 // reserved.
 
-import com.microsoft.openai.AzureOpenAiClient;
+import com.microsoft.openai.AzureOpenAIClient;
 import com.microsoft.semantickernel.DefaultKernelTest;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
@@ -25,7 +25,7 @@ public class Example04CombineLLMPromptsAndNativeCode {
     @Test
     public void run() {
         com.microsoft.openai.OpenAIAsyncClient client =
-                new AzureOpenAiClient(
+                new AzureOpenAIClient(
                         DefaultKernelTest.mockCompletionOpenAIAsyncClient(new ArrayList<>()));
 
         KernelConfig kernelConfig =
@@ -41,7 +41,7 @@ public class Example04CombineLLMPromptsAndNativeCode {
 
         Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
         kernel.importSkill(new SearchEngineSkill(), null);
-        kernel.importSkills(
+        kernel.importSkill(
                 "SummarizeSkill",
                 KernelExtensions.importSemanticSkillFromDirectory(
                         "../../samples/skills", "SummarizeSkill"));
@@ -50,7 +50,7 @@ public class Example04CombineLLMPromptsAndNativeCode {
         String ask = "What's the tallest building in South America?";
 
         Mono<SKContext<?>> result =
-                kernel.runAsync(ask, kernel.getSkillCollection().getFunction("Search", null));
+                kernel.runAsync(ask, kernel.getSkills().getFunction("Search", null));
 
         Assertions.assertEquals(
                 "Gran Torre Santiago is the tallest building in South America",
@@ -59,7 +59,7 @@ public class Example04CombineLLMPromptsAndNativeCode {
         result =
                 kernel.runAsync(
                         ask,
-                        kernel.getSkillCollection().getFunction("Search", null),
+                        kernel.getSkills().getFunction("Search", null),
                         kernel.getSkill("SummarizeSkill").getFunction("Summarize", null));
 
         Assertions.assertEquals(

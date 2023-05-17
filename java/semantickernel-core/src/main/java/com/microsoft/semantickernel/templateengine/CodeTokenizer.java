@@ -5,6 +5,7 @@ package com.microsoft.semantickernel.templateengine; // Copyright (c) Microsoft.
 import com.microsoft.semantickernel.templateengine.blocks.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /// <summary>
@@ -59,7 +60,7 @@ public class CodeTokenizer {
 
         // Render NULL to ""
         if (text.isEmpty()) {
-            return new ArrayList<>();
+            return Collections.unmodifiableList(new ArrayList<>());
         }
 
         // Track what type of token we're reading

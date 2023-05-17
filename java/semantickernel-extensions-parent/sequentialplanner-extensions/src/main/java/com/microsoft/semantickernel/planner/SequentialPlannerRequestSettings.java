@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.planner; // Copyright (c) Microsoft. All rights reserved.
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 /// <summary>
 /// Common configuration for planner instances.

@@ -17,9 +17,6 @@
     <artifactId>semantickernel-extensions-parent</artifactId>
 
     <modules>
-        <!--
-        TODO: Implement planner
         <module>sequentialplanner-extensions</module>
-        -->
     </modules>
 </project>

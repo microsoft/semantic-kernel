@@ -32,8 +32,9 @@ public class Example00GettingStarted {
   public static OpenAIAsyncClient getClient(boolean useAzureOpenAI) {
     if (useAzureOpenAI) {
       return new OpenAIClientBuilder()
-          .setApiKey(Config.getOpenAIKey(AZURE_CONF_PROPERTIES))
-          .build();
+              .setApiKey(Config.getOpenAIKey(AZURE_CONF_PROPERTIES))
+              .setEndpoint(Config.getAzureOpenAIEndpoint(AZURE_CONF_PROPERTIES))
+              .build();
     }
 
     return new OpenAIClientBuilder()
@@ -67,7 +68,7 @@ public class Example00GettingStarted {
   public static void joke (Kernel kernel) {
 
     ReadOnlyFunctionCollection skill = kernel
-            .importSkills("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
+            .importSkill("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
                     "samples/skills", "FunSkill"));
 
     CompletionSKFunction function = skill.getFunction("Joke",

@@ -22,7 +22,7 @@ public class FunSkillTest extends AbstractKernelTest {
     public void tellAJoke() throws IOException {
         Mono<CompletionSKContext> result =
                 buildTextCompletionKernel()
-                        .importSkills(
+                        .importSkill(
                                 "FunSkill",
                                 KernelExtensions.importSemanticSkillFromDirectory(
                                         "../../../samples/skills", "FunSkill"))

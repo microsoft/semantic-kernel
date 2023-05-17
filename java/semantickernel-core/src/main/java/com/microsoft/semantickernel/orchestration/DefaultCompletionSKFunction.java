@@ -17,7 +17,6 @@ import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -169,7 +168,7 @@ public class DefaultCompletionSKFunction
                                     });
                 };
 
-        this.setSkillsSupplier(kernel::getSkillCollection);
+        this.setSkillsSupplier(kernel::getSkills);
         this.aiService = () -> kernel.getService(null, TextCompletion.class);
     }
 
@@ -187,12 +186,7 @@ public class DefaultCompletionSKFunction
             @Nullable String functionName,
             @Nullable String skillName,
             @Nullable String description,
-            int maxTokens,
-            double temperature,
-            double topP,
-            double presencePenalty,
-            double frequencyPenalty,
-            @Nullable List<String> stopSequences) {
+            PromptTemplateConfig.CompletionConfig completion) {
 
         if (functionName == null) {
             functionName = randomFunctionName();
@@ -201,19 +195,6 @@ public class DefaultCompletionSKFunction
         if (description == null) {
             description = "Generic function, unknown purpose";
         }
-
-        if (stopSequences == null) {
-            stopSequences = new ArrayList<>();
-        }
-
-        PromptTemplateConfig.CompletionConfig completion =
-                new PromptTemplateConfig.CompletionConfig(
-                        temperature,
-                        topP,
-                        presencePenalty,
-                        frequencyPenalty,
-                        maxTokens,
-                        stopSequences);
 
         PromptTemplateConfig config =
                 new PromptTemplateConfig(description, "completion", completion);

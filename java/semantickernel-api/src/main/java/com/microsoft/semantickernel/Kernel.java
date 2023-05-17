@@ -28,76 +28,12 @@ public interface Kernel {
      */
     KernelConfig getConfig();
 
-    /*
-    SKFunction<CompleteRequestSettings> registerSemanticFunction(
-        String promptTemplate,
-        @Nullable String functionName,
-        @Nullable String skillName,
-        @Nullable String description,
-        int maxTokens,
-        double temperature,
-        double topP,
-        double presencePenalty,
-        double frequencyPenalty,
-        List<String> stopSequences);
-
-        TODO:
-
-            /// <summary>
-            /// App logger
-            /// </summary>
-            ILogger Log { get; }
-
-            /// <summary>
-            /// Semantic memory instance
-            /// </summary>
-            ISemanticTextMemory Memory { get; }
-    */
-
     /**
      * Reference to the engine rendering prompt templates
      *
      * @return
      */
     PromptTemplateEngine getPromptTemplateEngine();
-
-    /*
-
-            /// <summary>
-            /// Reference to the read-only skill collection containing all the imported functions
-            /// </summary>
-            IReadOnlySkillCollection Skills { get; }
-
-            /// <summary>
-            /// Build and register a function in the internal skill collection, in a global generic skill.
-            /// </summary>
-            /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-            /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-            /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-            ISKFunction RegisterSemanticFunction(
-                    string functionName,
-                    SemanticFunctionConfig functionConfig);
-
-            /// <summary>
-            /// Build and register a function in the internal skill collection.
-            /// </summary>
-            /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
-            /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-            /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-            /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-            ISKFunction RegisterSemanticFunction(
-                    string skillName,
-                    string functionName,
-                    SemanticFunctionConfig functionConfig);
-
-            /// <summary>
-            /// Registers a custom function in the internal skill collection.
-            /// </summary>
-            /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
-            /// <param name="customFunction">The custom function to register.</param>
-            /// <returns>A C# function wrapping the function execution logic.</returns>
-            ISKFunction RegisterCustomFunction(string skillName, ISKFunction customFunction);
-    */
 
     /**
      * Set the semantic memory to use.
@@ -139,75 +75,6 @@ public interface Kernel {
      */
     Mono<SKContext<?>> runAsync(ContextVariables variables, SKFunction... pipeline);
 
-    /*
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="variables">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
-            ContextVariables variables,
-            params ISKFunction[] pipeline);
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
-            CancellationToken cancellationToken,
-            params ISKFunction[] pipeline);
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="input">Input to process</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
-            string input,
-            CancellationToken cancellationToken,
-            params ISKFunction[] pipeline);
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
-            ContextVariables variables,
-            CancellationToken cancellationToken,
-            params ISKFunction[] pipeline);
-
-    /// <summary>
-    /// Access registered functions by skill + name. Not case sensitive.
-    /// The function might be native or semantic, it's up to the caller handling it.
-    /// </summary>
-    /// <param name="skillName">Skill name</param>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Delegate to execute the function</returns>
-    ISKFunction Func(string skillName, string functionName);
-
-    /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <returns>SK context</returns>
-    SKContext CreateNewContext();
-
-    /// <summary>
-    /// Get one of the configured services. Currently limited to AI services.
-    /// </summary>
-    /// <param name="name">Optional name. If the name is not provided, returns the default T available</param>
-    /// <typeparam name="T">Service type</typeparam>
-    /// <returns>Instance of T</returns>
-    T GetService<T>(string name = "");
-    */
-
     /**
      * Import a set of skills
      *
@@ -216,18 +83,18 @@ public interface Kernel {
      * @return
      * @throws SkillsNotFoundException
      */
-    ReadOnlyFunctionCollection importSkills(
+    ReadOnlyFunctionCollection importSkill(
             String skillName, Map<String, SemanticFunctionConfig> skills)
             throws SkillsNotFoundException;
 
     /**
      * Get function collection with the skill name
      *
-     * @param funSkill
+     * @param skillName
      * @return
      * @throws SkillsNotFoundException
      */
-    ReadOnlyFunctionCollection getSkill(String funSkill) throws SkillsNotFoundException;
+    ReadOnlyFunctionCollection getSkill(String skillName) throws SkillsNotFoundException;
 
     /**
      * Imports the native functions annotated on the given object as a skill.
@@ -239,13 +106,11 @@ public interface Kernel {
     ReadOnlyFunctionCollection importSkill(Object nativeSkill, @Nullable String skillName);
 
     /**
-     * Returns all skills
-     *
-     * @return
+     * @return Reference to the read-only skill collection containing all the imported functions
      */
-    ReadOnlySkillCollection getSkillCollection();
+    ReadOnlySkillCollection getSkills();
 
-    CompletionSKFunction.Builder createSemanticFunction();
+    CompletionSKFunction.Builder getSemanticFunctionBuilder();
 
     /** Obtains the service with the given name and type */
     <T> T getService(@Nullable String name, Class<T> clazz) throws KernelException;

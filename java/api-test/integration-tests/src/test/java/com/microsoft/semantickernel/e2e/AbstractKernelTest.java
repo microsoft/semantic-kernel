@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.e2e;
 
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
-import com.microsoft.openai.AzureOpenAiClient;
+import com.microsoft.openai.AzureOpenAIClient;
 import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
@@ -26,7 +26,7 @@ public class AbstractKernelTest {
 
     public static Kernel buildTextCompletionKernel() throws IOException {
         String model = "text-davinci-003";
-        TextCompletion textCompletion = new OpenAITextCompletion(getAzureOpenAIAPI(), model);
+        TextCompletion textCompletion = new OpenAITextCompletion(getAzureOpenAIClient(), model);
 
         KernelConfig kernelConfig =
                 SKBuilders.kernelConfig()
@@ -36,12 +36,12 @@ public class AbstractKernelTest {
         return SKBuilders.kernel().setKernelConfig(kernelConfig).build();
     }
 
-    public static OpenAIAsyncClient getOpenAIAPI() throws IOException {
+    public static OpenAIAsyncClient getOpenAIClient() throws IOException {
         String apiKey = getToken(CONF_OPENAI_PROPERTIES);
         return new com.microsoft.openai.OpenAIClientBuilder().setApiKey(apiKey).build();
     }
 
-    public static OpenAIAsyncClient getAzureOpenAIAPI() throws IOException {
+    public static OpenAIAsyncClient getAzureOpenAIClient() throws IOException {
         String apiKey = getToken(AZURE_CONF_PROPERTIES);
 
         com.azure.ai.openai.OpenAIAsyncClient client =
@@ -50,14 +50,14 @@ public class AbstractKernelTest {
                         .credential(new AzureKeyCredential(apiKey))
                         .buildAsyncClient();
 
-        return new AzureOpenAiClient(client);
+        return new AzureOpenAIClient(client);
     }
 
     public static String getAzureModel() throws IOException {
         return getConfigValue(AZURE_CONF_PROPERTIES, "model");
     }
 
-    public static String getOpenAiModel() throws IOException {
+    public static String getOpenAIModel() throws IOException {
         return getConfigValue(CONF_OPENAI_PROPERTIES, "model");
     }
 

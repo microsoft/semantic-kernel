@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
-
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
-import com.microsoft.openai.AzureOpenAiClient;
+import com.microsoft.openai.AzureOpenAIClient;
 import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +21,11 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Properties;
 
-public class InlineFunctionWithPreBuiltSkillTest {
+public class InlineFunctionWithPreBuiltSkillExample {
     public static final String AZURE_CONF_PROPERTIES = "conf.properties";
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(InlineFunctionWithPreBuiltSkillTest.class);
+            LoggerFactory.getLogger(InlineFunctionWithPreBuiltSkillExample.class);
 
     private static final String MODEL = "text-davinci-003";
 
@@ -86,7 +87,7 @@ public class InlineFunctionWithPreBuiltSkillTest {
         String apiKey = getToken(AZURE_CONF_PROPERTIES);
 
         OpenAIAsyncClient client =
-                new AzureOpenAiClient(
+                new AzureOpenAIClient(
                         new OpenAIClientBuilder()
                                 .endpoint(getEndpoint(AZURE_CONF_PROPERTIES))
                                 .credential(new AzureKeyCredential(apiKey))
@@ -95,6 +96,7 @@ public class InlineFunctionWithPreBuiltSkillTest {
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, MODEL);
 
         String prompt = "{{$input}}\nSummarize the content above.";
+
         CompletionSKFunction summarizeFunc =
                 SKBuilders.completionFunctions()
                         .createFunction(
@@ -102,12 +104,8 @@ public class InlineFunctionWithPreBuiltSkillTest {
                                 "summarize",
                                 null,
                                 null,
-                                2000,
-                                0.2,
-                                0.5,
-                                0,
-                                0,
-                                new ArrayList<>());
+                                new PromptTemplateConfig.CompletionConfig(
+                                        0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
 
         KernelConfig kernelConfig =
                 new KernelConfig.Builder()
@@ -118,7 +116,7 @@ public class InlineFunctionWithPreBuiltSkillTest {
         Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
 
         CompletionSKFunction summarize =
-                kernel.getSkillCollection().getFunction("summarize", CompletionSKFunction.class);
+                kernel.getSkills().getFunction("summarize", CompletionSKFunction.class);
 
         if (summarize == null) {
             throw new RemoteException("No function");

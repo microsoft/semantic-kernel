@@ -1,4 +1,5 @@
-package com.microsoft.semantickernel.e2e;// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.e2e; // Copyright (c) Microsoft. All rights reserved.
 
 import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
@@ -10,11 +11,13 @@ import com.microsoft.semantickernel.coreskills.TextMemorySkill;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -29,13 +32,13 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
     @Test
     @EnabledIf("isOpenAIComTestEnabled")
     public void testEmbeddingGenerationOpenAI() throws IOException {
-        testEmbeddingGeneration(getOpenAIAPI(), EXPECTED_EMBEDDING_SIZE);
+        testEmbeddingGeneration(getOpenAIClient(), EXPECTED_EMBEDDING_SIZE);
     }
 
     @Test
     @EnabledIf("isAzureTestEnabled")
     public void testEmbeddingGenerationAzure() throws IOException {
-        testEmbeddingGeneration(getAzureOpenAIAPI(), EXPECTED_EMBEDDING_SIZE);
+        testEmbeddingGeneration(getAzureOpenAIClient(), EXPECTED_EMBEDDING_SIZE);
     }
 
     @Test
@@ -43,7 +46,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
     public void testEmbeddingGeneration() throws IOException {
         String model = "text-embedding-ada-002";
         EmbeddingGeneration<String, Double> embeddingGeneration =
-                new OpenAITextEmbeddingGeneration(getOpenAIAPI(), model);
+                new OpenAITextEmbeddingGeneration(getOpenAIClient(), model);
 
         List<String> data = new ArrayList<>();
         data.add("This is just a test");
@@ -56,7 +59,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
     public void testMemory() throws IOException {
         String model = "text-embedding-ada-002";
         EmbeddingGeneration<String, Double> embeddingGeneration =
-                new OpenAITextEmbeddingGeneration(getAzureOpenAIAPI(), model);
+                new OpenAITextEmbeddingGeneration(getAzureOpenAIClient(), model);
 
         Kernel kernel = buildTextEmbeddingsKernel();
 
@@ -109,7 +112,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
     private Kernel buildTextEmbeddingsKernel() throws IOException {
         String model = "text-embedding-ada-002";
         EmbeddingGeneration<String, Double> embeddingGeneration =
-                new OpenAITextEmbeddingGeneration(getOpenAIAPI(), model);
+                new OpenAITextEmbeddingGeneration(getOpenAIClient(), model);
 
         KernelConfig kernelConfig =
                 SKBuilders.kernelConfig()

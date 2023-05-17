@@ -4,15 +4,16 @@ package com.microsoft.semantickernel.planner.sequentialplanner; // Copyright (c)
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
-import com.microsoft.semantickernel.builders.SKBuilders;
-import com.microsoft.semantickernel.orchestration.SKFunction;
-import com.microsoft.semantickernel.planner.PlannerBuilders;
 import com.microsoft.semantickernel.planner.SequentialPlannerRequestSettings;
-import com.microsoft.semantickernel.planner.SequentialPlannerSKContext;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
+
+import javax.annotation.Nullable;
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
@@ -26,13 +27,13 @@ public class SequentialPlanner {
     private static final String RestrictedSkillName = "SequentialPlanner_Excluded";
 
     private final SequentialPlannerRequestSettings config;
-    private final SequentialPlannerSKContext context;
+    private final CompletionSKContext context;
 
     /// <summary>
     /// the function flow semantic function, which takes a goal and creates an xml plan that can be
     // executed
     /// </summary>
-    private final SKFunction<Void, SequentialPlannerSKContext> functionFlowFunction;
+    private final CompletionSKFunction functionFlowFunction;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
@@ -60,21 +61,21 @@ public class SequentialPlanner {
         }
 
         this.functionFlowFunction =
-                PlannerBuilders
-                        .getPlannerBuilder(kernel)
+                FunctionBuilders.getCompletionBuilder(kernel)
                         .createFunction(
                                 promptTemplate,
                                 null,
                                 RestrictedSkillName,
                                 "Given a request or command or goal generate a step by step plan to"
-                                        + " fulfill the request using functions. This ability is also"
-                                        + " known as decision making and function flow",
-                                this.config.getMaxTokens(),
-                                0.0,
-                                0.0,
-                                0.0,
-                                0.0,
-                                new ArrayList<>());
+                                    + " fulfill the request using functions. This ability is also"
+                                    + " known as decision making and function flow",
+                                new PromptTemplateConfig.CompletionConfig(
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        this.config.getMaxTokens(),
+                                        new ArrayList<>()));
 
         this.context = functionFlowFunction.buildContext();
     }
@@ -84,18 +85,18 @@ public class SequentialPlanner {
     /// </summary>
     /// <param name="goal">The goal to create a plan for.</param>
     /// <returns>The plan.</returns>
-    public Mono<SequentialPlannerSKContext> createPlanAsync(String goal) {
+    public Mono<CompletionSKContext> createPlanAsync(String goal) {
         if (goal == null || goal.isEmpty()) {
             // throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal
             // specified is empty");
             throw new RuntimeException();
         }
 
-        return this.context
+        return new DefaultSequentialPlannerSKContext(context)
                 .getFunctionsManualAsync(goal, this.config)
                 .flatMap(
                         relevantFunctionsManual -> {
-                            SequentialPlannerSKContext updatedContext =
+                            CompletionSKContext updatedContext =
                                     context.setVariable(
                                                     "available_functions", relevantFunctionsManual)
                                             .update(goal);

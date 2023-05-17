@@ -1,13 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.planner.sequentialplanner;
 
+import static com.microsoft.semantickernel.planner.SequentialPlannerSKContext.PlanSKFunctionsAreRemembered;
+import static com.microsoft.semantickernel.planner.SequentialPlannerSKContext.PlannerMemoryCollectionName;
+
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.*;
+import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.planner.SequentialPlannerRequestSettings;
-import com.microsoft.semantickernel.planner.SequentialPlannerSKContext;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
+import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,26 +20,11 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-public class DefaultSequentialPlannerSKContext extends AbstractSKContext<SequentialPlannerSKContext>
-        implements SequentialPlannerSKContext {
-    public DefaultSequentialPlannerSKContext(
-            ContextVariables variables,
-            @Nullable SemanticTextMemory memory,
-            @Nullable ReadOnlySkillCollection skills) {
-        super(variables, memory, skills);
-    }
+public class DefaultSequentialPlannerSKContext {
+    private final CompletionSKContext delegate;
 
-    @Override
-    protected SequentialPlannerSKContext getThis() {
-        return this;
-    }
-
-    @Override
-    public SequentialPlannerSKContext build(
-            ContextVariables variables,
-            @Nullable SemanticTextMemory memory,
-            @Nullable ReadOnlySkillCollection skills) {
-        return new DefaultSequentialPlannerSKContext(variables, memory, skills);
+    public DefaultSequentialPlannerSKContext(CompletionSKContext delegate) {
+        this.delegate = delegate;
     }
 
     /// <summary>
@@ -47,7 +35,6 @@ public class DefaultSequentialPlannerSKContext extends AbstractSKContext<Sequent
     // functions</param>
     /// <param name="config">The planner skill config.</param>
     /// <returns>A string containing the manual for all available functions.</returns>
-    @Override
     public Mono<String> getFunctionsManualAsync(
             @Nullable String semanticQuery, @Nullable SequentialPlannerRequestSettings config) {
         if (config == null) {
@@ -82,7 +69,7 @@ public class DefaultSequentialPlannerSKContext extends AbstractSKContext<Sequent
 
         // context.ThrowIfSkillCollectionNotSet();
 
-        ReadOnlySkillCollection skills = getSkills();
+        ReadOnlySkillCollection skills = delegate.getSkills();
         List<SKFunction<?, ?>> functions;
         if (skills != null) {
             functions = skills.getAllFunctions().getAll();
@@ -112,8 +99,8 @@ public class DefaultSequentialPlannerSKContext extends AbstractSKContext<Sequent
 
         if (semanticQuery == null
                 || semanticQuery.isEmpty()
-                || getSemanticMemory() == null
-                || getSemanticMemory() instanceof NullMemory
+                || delegate.getSemanticMemory() == null
+                || delegate.getSemanticMemory() instanceof NullMemory
                 || config.getRelevancyThreshold() == null) {
             // If no semantic query is provided, return all available functions.
             // If a Memory provider has not been registered, return all available functions.
@@ -129,9 +116,7 @@ public class DefaultSequentialPlannerSKContext extends AbstractSKContext<Sequent
                                         updatedContext.getSemanticMemory();
                                 if (updatedMemory == null) {
                                     return Mono.just(
-                                            new ArrayList<
-                                                    SKFunction<
-                                                            Void, SequentialPlannerSKContext>>());
+                                            new ArrayList<SKFunction<Void, CompletionSKContext>>());
                                 }
                                 // Search for functions that match the semantic query.
                                 return updatedMemory
@@ -182,90 +167,6 @@ public class DefaultSequentialPlannerSKContext extends AbstractSKContext<Sequent
                                         .filter(it -> it.getName().equals(missing)))
                 .collect(Collectors.toList());
     }
-    /*
-
-    internal const string PlannerMemoryCollectionName = "Planning.SKFunctionsManual";
-
-    internal const string PlanSKFunctionsAreRemembered = "Planning.SKFunctionsAreRemembered";
-
-    /// <summary>
-    /// Returns a string containing the manual for all available functions.
-    /// </summary>
-    /// <param name="context">The SKContext to get the functions manual for.</param>
-    /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
-    /// <param name="config">The planner skill config.</param>
-    /// <returns>A string containing the manual for all available functions.</returns>
-    public static async Task<string> GetFunctionsManualAsync(
-        this SKContext context,
-        string? semanticQuery = null,
-        SequentialPlannerConfig? config = null)
-    {
-        config ??= new SequentialPlannerConfig();
-        var functions = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false);
-
-        return string.Join("\n\n", functions.Select(x => x.ToManualString()));
-    }
-
-    /// <summary>
-    /// Returns a list of functions that are available to the user based on the semantic query and the excluded skills and functions.
-    /// </summary>
-    /// <param name="context">The SKContext</param>
-    /// <param name="config">The planner config.</param>
-    /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
-    /// <returns>A list of functions that are available to the user based on the semantic query and the excluded skills and functions.</returns>
-    public static async Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync(
-        this SKContext context,
-        SequentialPlannerConfig config,
-        string? semanticQuery = null)
-    {
-        var excludedSkills = config.ExcludedSkills ?? new();
-        var excludedFunctions = config.ExcludedFunctions ?? new();
-        var includedFunctions = config.IncludedFunctions ?? new();
-
-        context.ThrowIfSkillCollectionNotSet();
-
-        var functionsView = context.Skills!.GetFunctionsView();
-
-        var availableFunctions = functionsView.SemanticFunctions
-            .Concat(functionsView.NativeFunctions)
-            .SelectMany(x => x.Value)
-            .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
-            .ToList();
-
-        List<FunctionView>? result = null;
-        if (string.IsNullOrEmpty(semanticQuery) || context.Memory is NullMemory || config.RelevancyThreshold is null)
-        {
-            // If no semantic query is provided, return all available functions.
-            // If a Memory provider has not been registered, return all available functions.
-            result = availableFunctions;
-        }
-        else
-        {
-            result = new List<FunctionView>();
-
-            // Remember functions in memory so that they can be searched.
-            await RememberFunctionsAsync(context, availableFunctions).ConfigureAwait(false);
-
-            // Search for functions that match the semantic query.
-            var memories = context.Memory.SearchAsync(PlannerMemoryCollectionName, semanticQuery!, config.MaxRelevantFunctions, config.RelevancyThreshold.Value,
-                false,
-                context.CancellationToken);
-
-            // Add functions that were found in the search results.
-            result.AddRange(await GetRelevantFunctionsAsync(context, availableFunctions, memories).ConfigureAwait(false));
-
-            // Add any missing functions that were included but not found in the search results.
-            var missingFunctions = includedFunctions
-                .Except(result.Select(x => x.Name))
-                .Join(availableFunctions, f => f, af => af.Name, (_, af) => af);
-
-            result.AddRange(missingFunctions);
-        }
-
-        return result
-            .OrderBy(x => x.SkillName)
-            .ThenBy(x => x.Name);
-    }*/
 
     public Mono<? extends List<? extends SKFunction<?, ?>>> getRelevantFunctionsAsync(
             List<SKFunction<?, ?>> availableFunctions, List<MemoryQueryResult> memories) {
@@ -289,21 +190,17 @@ public class DefaultSequentialPlannerSKContext extends AbstractSKContext<Sequent
     /// </summary>
     /// <param name="context">The SKContext to save the functions to.</param>
     /// <param name="availableFunctions">The available functions to save.</param>
-    Mono<DefaultSequentialPlannerSKContext> rememberFunctionsAsync(
-            List<SKFunction<?, ?>> availableFunctions) {
+    Mono<CompletionSKContext> rememberFunctionsAsync(List<SKFunction<?, ?>> availableFunctions) {
         // Check if the functions have already been saved to memory.
-        if (getVariables().asMap().containsKey(PlanSKFunctionsAreRemembered)) {
-            return Mono.just(this);
+        if (delegate.getVariables().asMap().containsKey(PlanSKFunctionsAreRemembered)) {
+            return Mono.just(delegate);
         }
 
-        SemanticTextMemory memory = getSemanticMemory();
+        SemanticTextMemory memory = delegate.getSemanticMemory();
 
         if (memory == null) {
-            return Mono.just(
-                    new DefaultSequentialPlannerSKContext(
-                            (ContextVariables) setVariable(PlanSKFunctionsAreRemembered, "true"),
-                            null,
-                            getSkills()));
+            delegate.setVariable(PlanSKFunctionsAreRemembered, "true");
+            return Mono.just(delegate);
         }
 
         return Flux.fromIterable(availableFunctions)
@@ -347,11 +244,8 @@ public class DefaultSequentialPlannerSKContext extends AbstractSKContext<Sequent
                 .reduce(memory, SemanticTextMemory::merge)
                 .map(
                         newMemory -> {
-                            return new DefaultSequentialPlannerSKContext(
-                                    (ContextVariables)
-                                            setVariable(PlanSKFunctionsAreRemembered, "true"),
-                                    newMemory,
-                                    getSkills());
+                            delegate.setVariable(PlanSKFunctionsAreRemembered, "true");
+                            return delegate;
                         });
     }
 }

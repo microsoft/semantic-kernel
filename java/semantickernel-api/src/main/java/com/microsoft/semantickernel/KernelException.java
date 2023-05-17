@@ -1,117 +1,75 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /** Kernel logic exception */
 public class KernelException extends RuntimeException {
 
-    /*
-        /// <summary>
-        /// Semantic kernel error codes.
-        /// </summary>
-        public enum ErrorCodes {
-            /// <summary>
-            /// Unknown error.
-            /// </summary>
-            UnknownError =-1,
+    @Nonnull private final ErrorCodes errorCode;
 
-            /// <summary>
-            /// Invalid function description.
-            /// </summary>
-            InvalidFunctionDescription,
+    public KernelException(@Nonnull ErrorCodes error) {
+        this(error, null, null);
+    }
 
-            /// <summary>
-            /// Function overload not supported.
-            /// </summary>
-            FunctionOverloadNotSupported,
+    public KernelException(@Nonnull ErrorCodes errorCode, @Nullable String message) {
+        this(errorCode, message, null);
+    }
 
-            /// <summary>
-            /// Function not available.
-            /// </summary>
-            FunctionNotAvailable,
+    public KernelException(
+            @Nonnull ErrorCodes errorCode,
+            @Nullable String message,
+            @Nullable Throwable innerException) {
+        super(getDefaultMessage(errorCode, message), innerException);
+        this.errorCode = errorCode;
+    }
 
-            /// <summary>
-            /// Function type not supported.
-            /// </summary>
-            FunctionTypeNotSupported,
+    public ErrorCodes getErrorCode() {
+        return errorCode;
+    }
 
-            /// <summary>
-            /// Invalid function type.
-            /// </summary>
-            InvalidFunctionType,
+    /* Translate the error code into a default message */
+    private static String getDefaultMessage(
+            @Nonnull ErrorCodes errorCode, @Nullable String message) {
+        return String.format("%s: %s", errorCode.getMessage(), message);
+    }
 
-            /// <summary>
-            /// Invalid service configuration.
-            /// </summary>
-            InvalidServiceConfiguration,
-
-            /// <summary>
-            /// Service not found.
-            /// </summary>
-            ServiceNotFound,
-
-            /// <summary>
-            /// Skill collection not set.
-            /// </summary>
-            SkillCollectionNotSet,
-
-            /// <summary>
-            /// Represents an error that occurs when invoking a function.
-            /// </summary>
-            FunctionInvokeError,
-        }
-
-        /// <summary>
-        /// Error code.
-        /// </summary>
-        public ErrorCodes ErrorCode
-
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-    /// Constructor for KernelException.
+    /// <summary>
+    /// Semantic kernel error codes.
     /// </summary>
-    /// <param name="errCode">Error code to put in KernelException.</param>
-    /// <param name="message">Message to put in KernelException.</param>
-        public KernelException(ErrorCodes errCode, string?message=null) :
-
-        base(errCode, message) {
-            this.ErrorCode = errCode;
-        }
-
+    public enum ErrorCodes {
         /// <summary>
-    /// Constructor for KernelException.
-    /// </summary>
-    /// <param name="errCode">Error code to put in KernelException.</param>
-    /// <param name="message">Message to put in KernelException.</param>
-    /// <param name="e">Exception to embed in KernelException.</param>
-        public KernelException(ErrorCodes errCode, string message, Exception?e) :
+        /// Unknown error.
+        /// </summary>
+        UnknownError("Unknown error"),
 
-        base(errCode, message, e) {
-            this.ErrorCode = errCode;
+        InvalidFunctionDescription("Invalid function description"),
+
+        FunctionOverloadNotSupported("Function overload not supported"),
+
+        FunctionNotAvailable("Function not available"),
+
+        FunctionTypeNotSupported("Function type not supported"),
+
+        InvalidFunctionType("Invalid function type"),
+
+        InvalidServiceConfiguration("Invalid service configuration"),
+
+        ServiceNotFound("Service not found"),
+
+        SkillCollectionNotSet("Skill collection not set"),
+
+        FunctionInvokeError("Represents an error that occurs when invoking a function");
+
+        private final String message;
+
+        ErrorCodes(String message) {
+            this.message = message;
         }
 
-            #region private ================================================================================
-
-        private KernelException() {
-            // Not allowed, error code is required
+        public String getMessage() {
+            return message;
         }
-
-        private KernelException(string message) :
-
-        base(message) {
-            // Not allowed, error code is required
-        }
-
-        private KernelException(string message, Exception innerException) :
-
-        base(message, innerException) {
-            // Not allowed, error code is required
-        }
-
-            #endregion
-
-         */
+    }
 }

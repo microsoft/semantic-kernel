@@ -7,7 +7,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-class CaseInsensitiveMap<T> extends HashMap<String, T> {
+public class CaseInsensitiveMap<T> extends HashMap<String, T> {
     public CaseInsensitiveMap(Map<String, T> kvMap) {
         super();
         putAll(kvMap);
