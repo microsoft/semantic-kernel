@@ -81,4 +81,3 @@ public class OutlookMailConnector : IEmailConnector
         return messages;
     }
 }
-

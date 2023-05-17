@@ -35,10 +35,10 @@ namespace Microsoft.SemanticKernel;
 public sealed class Kernel : IKernel, IDisposable
 {
     /// <inheritdoc/>
-    public KernelConfig Config => this._config;
+    public KernelConfig Config { get; }
 
     /// <inheritdoc/>
-    public ILogger Log => this._log;
+    public ILogger Log { get; }
 
     /// <inheritdoc/>
     public ISemanticTextMemory Memory => this._memory;
@@ -47,7 +47,7 @@ public sealed class Kernel : IKernel, IDisposable
     public IReadOnlySkillCollection Skills => this._skillCollection.ReadOnlySkillCollection;
 
     /// <inheritdoc/>
-    public IPromptTemplateEngine PromptTemplateEngine => this._promptTemplateEngine;
+    public IPromptTemplateEngine PromptTemplateEngine { get; }
 
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
@@ -69,10 +69,10 @@ public sealed class Kernel : IKernel, IDisposable
         KernelConfig config,
         ILogger log)
     {
-        this._log = log;
-        this._config = config;
+        this.Log = log;
+        this.Config = config;
+        this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
-        this._promptTemplateEngine = promptTemplateEngine;
         this._skillCollection = skillCollection;
     }
 
@@ -101,14 +101,14 @@ public sealed class Kernel : IKernel, IDisposable
         if (string.IsNullOrWhiteSpace(skillName))
         {
             skillName = SkillCollection.GlobalSkill;
-            this._log.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
+            this.Log.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
         }
         else
         {
-            this._log.LogTrace("Importing skill {0}", skillName);
+            this.Log.LogTrace("Importing skill {0}", skillName);
         }
 
-        Dictionary<string, ISKFunction> skill = ImportSkill(skillInstance, skillName, this._log);
+        Dictionary<string, ISKFunction> skill = ImportSkill(skillInstance, skillName, this.Log);
         foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
             f.Value.SetDefaultSkillCollection(this.Skills);
@@ -164,7 +164,7 @@ public sealed class Kernel : IKernel, IDisposable
             variables,
             this._memory,
             this._skillCollection.ReadOnlySkillCollection,
-            this._log,
+            this.Log,
             cancellationToken);
 
         int pipelineStepCount = -1;
@@ -172,7 +172,7 @@ public sealed class Kernel : IKernel, IDisposable
         {
             if (context.ErrorOccurred)
             {
-                this._log.LogError(
+                this.Log.LogError(
                     context.LastException,
                     "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastErrorDescription);
                 return context;
@@ -187,14 +187,14 @@ public sealed class Kernel : IKernel, IDisposable
 
                 if (context.ErrorOccurred)
                 {
-                    this._log.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
+                    this.Log.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
                         pipelineStepCount, f.SkillName, f.Name, context.LastErrorDescription);
                     return context;
                 }
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
-                this._log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
+                this.Log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
                     pipelineStepCount, f.SkillName, f.Name, e.Message);
                 context.Fail(e.Message, e);
                 return context;
@@ -216,7 +216,7 @@ public sealed class Kernel : IKernel, IDisposable
         return new SKContext(
             memory: this._memory,
             skills: this._skillCollection.ReadOnlySkillCollection,
-            logger: this._log);
+            logger: this.Log);
     }
 
     /// <inheritdoc/>
@@ -294,11 +294,8 @@ public sealed class Kernel : IKernel, IDisposable
 
     #region private ================================================================================
 
-    private readonly ILogger _log;
-    private readonly KernelConfig _config;
     private readonly ISkillCollection _skillCollection;
     private ISemanticTextMemory _memory;
-    private readonly IPromptTemplateEngine _promptTemplateEngine;
 
     private ISKFunction CreateSemanticFunction(
         string skillName,
@@ -312,7 +309,7 @@ public sealed class Kernel : IKernel, IDisposable
                 $"Function type not supported: {functionConfig.PromptTemplateConfig}");
         }
 
-        ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig, this._log);
+        ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig, this.Log);
 
         // Connect the function to the current kernel skill collection, in case the function
         // is invoked manually without a context and without a way to find other functions.

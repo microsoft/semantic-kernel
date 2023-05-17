@@ -14,7 +14,8 @@
 
   <Target Name="AddInternalsVisibleTo" BeforeTargets="BeforeCompile">
     <!-- Handle Add InternalsVisibleTo to any targets that don't support it. -->
-    <ItemGroup Condition="'@(InternalsVisibleTo->Count())' &gt; 0 AND $([MSBuild]::VersionLessThan($(NETCoreSdkVersion), '5.0.0'))">
+    <ItemGroup
+      Condition="'@(InternalsVisibleTo->Count())' &gt; 0 AND $([MSBuild]::VersionLessThan($(NETCoreSdkVersion), '5.0.0'))">
       <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
         <_Parameter1 Condition="'%(InternalsVisibleTo.PublicKey)' != ''">%(InternalsVisibleTo.Identity), PublicKey="%(InternalsVisibleTo.PublicKey)</_Parameter1>
         <_Parameter1 Condition="'%(InternalsVisibleTo.PublicKey)' == ''">%(InternalsVisibleTo.Identity)</_Parameter1>

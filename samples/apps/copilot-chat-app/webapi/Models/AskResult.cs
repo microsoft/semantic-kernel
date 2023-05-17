@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SemanticKernel.Service.Model;
+namespace SemanticKernel.Service.Models;
 
 public class AskResult
 {
