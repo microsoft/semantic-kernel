@@ -21,7 +21,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture
 def qdrant_memory_record():
     return MemoryRecord(
-        id="test_id1",
+        id="1111",
         text="sample text1",
         is_reference=False,
         embedding=np.array([0.5, 0.5]),
@@ -80,7 +80,10 @@ async def test_does_collection_exist_async():
     result = await qdrant_mem_store.does_collection_exist_async("test_collection")
     assert result is True
 
-    result = await qdrant_mem_store.does_collection_exist_async("TEST_COLLECTION")
+    result = await qdrant_mem_store.does_collection_exist_async("test_collection1")
     assert result is True
+
+    await qdrant_mem_store.delete_collection_async("test_nocollection")
+    assert result is False
 
 
