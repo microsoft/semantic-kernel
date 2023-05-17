@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import numpy as np
 import pytest
 
