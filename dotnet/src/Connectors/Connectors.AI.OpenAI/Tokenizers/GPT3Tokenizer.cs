@@ -58,7 +58,9 @@ public static class GPT3Tokenizer
         (char)0x00F8, (char)0x00F9, (char)0x00FA, (char)0x00FB, (char)0x00FC, (char)0x00FD, (char)0x00FE, (char)0x00FF
     };
 
-    // Regex for English contractions, e.g. "he's", "we'll", "I'm" etc.
+    /// <summary>
+    /// Regex for English contractions, e.g. "he's", "we'll", "I'm" etc.
+    /// </summary>
     private static readonly Regex s_encodingRegex = new(
         @"'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+",
         RegexOptions.Compiled,
