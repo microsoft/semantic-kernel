@@ -9,9 +9,6 @@ export const conversationsSlice = createSlice({
     name: 'conversations',
     initialState,
     reducers: {
-        incrementBotProfilePictureIndex: (state: ConversationsState) => {
-            state.botProfilePictureIndex = ++state.botProfilePictureIndex % 5;
-        },
         setConversations: (state: ConversationsState, action: PayloadAction<Conversations>) => {
             state.conversations = action.payload;
         },
@@ -50,7 +47,6 @@ export const conversationsSlice = createSlice({
 });
 
 export const {
-    incrementBotProfilePictureIndex,
     setConversations,
     editConversationTitle,
     setSelectedConversation,

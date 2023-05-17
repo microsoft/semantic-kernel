@@ -4,6 +4,8 @@
     <AssemblyName>SemanticKernel.Connectors.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Connectors.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
+    <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
