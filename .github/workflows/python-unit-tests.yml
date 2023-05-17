@@ -44,10 +44,10 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Upgrade LLVM to latest version (MacOS only)
-      if: matrix.os == 'macos-latest'
+      if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
       run: |
         brew update
-        brew install llvm
+        brew install llvm@15
         echo 'export PATH="/usr/local/opt/llvm/bin:$PATH"' >> ~/.bash_profile
         export LDFLAGS="-L/usr/local/opt/llvm/lib"
         export CPPFLAGS="-I/usr/local/opt/llvm/include"
