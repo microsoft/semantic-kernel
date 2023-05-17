@@ -9,10 +9,10 @@ import reactor.core.publisher.Mono;
  * Create an OpenAIAsyncClient that delegates to an com.azure.ai.openai.OpenAIAsyncClient provided
  * by com.azure:azure-ai-openai
  */
-public class AzureOpenAiClient implements OpenAIAsyncClient {
+public class AzureOpenAIClient implements OpenAIAsyncClient {
     private final com.azure.ai.openai.OpenAIAsyncClient delegate;
 
-    public AzureOpenAiClient(com.azure.ai.openai.OpenAIAsyncClient delegate) {
+    public AzureOpenAIClient(com.azure.ai.openai.OpenAIAsyncClient delegate) {
         this.delegate = delegate;
     }
 

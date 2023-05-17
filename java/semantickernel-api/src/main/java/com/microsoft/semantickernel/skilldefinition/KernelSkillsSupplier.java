@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 public interface KernelSkillsSupplier extends Supplier<ReadOnlySkillCollection> {
 
-    public static KernelSkillsSupplier getInstance(Kernel kernel) {
-        return kernel::getSkillCollection;
+    static KernelSkillsSupplier getInstance(Kernel kernel) {
+        return kernel::getSkills;
     }
 }

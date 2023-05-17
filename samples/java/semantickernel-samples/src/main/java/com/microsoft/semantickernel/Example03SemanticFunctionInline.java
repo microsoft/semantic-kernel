@@ -2,6 +2,7 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import reactor.core.publisher.Mono;
 
@@ -24,18 +25,20 @@ public class Example03SemanticFunctionInline {
     public static void inlineFunction(Kernel kernel, String prompt, String functionName, String text) {
         SKFunction summarize =
                 kernel
-                        .createSemanticFunction()
+                        .getSemanticFunctionBuilder()
                         .createFunction(
                                 prompt,
                                 functionName,
                                 null,
                                 null,
-                                2000,
-                                0.2,
-                                0.5,
-                                0,
-                                0,
-                                new ArrayList<>());
+                                new PromptTemplateConfig.CompletionConfig(
+                                        0.2,
+                                        0.5,
+                                        0,
+                                        0,
+                                        2000,
+                                        new ArrayList<>()
+                                ));
 
         Mono<CompletionSKContext> result = summarize.invokeAsync(text);
 

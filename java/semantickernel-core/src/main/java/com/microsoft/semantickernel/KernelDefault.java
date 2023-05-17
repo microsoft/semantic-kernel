@@ -51,15 +51,14 @@ public class KernelDefault implements Kernel {
     }
 
     @Override
-    public <T> T getService(@Nullable String name, Class<T> clazz) throws KernelException {
+    public <T> T getService(@Nullable String serviceId, Class<T> clazz) throws KernelException {
         if (TextCompletion.class.isAssignableFrom(clazz)) {
-            name = kernelConfig.getTextCompletionServiceIdOrDefault(name);
-            Function<Kernel, TextCompletion> factory = kernelConfig.getTextCompletionServices(name);
+            Function<Kernel, TextCompletion> factory =
+                    kernelConfig.getTextCompletionServiceOrDefault(serviceId);
             if (factory == null) {
-                // TODO correct exception
-                throw new KernelException();
-                // throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "No text
-                // completion service available");
+                throw new KernelException(
+                        KernelException.ErrorCodes.ServiceNotFound,
+                        "No text completion service available");
             }
 
             return (T) factory.apply(this);
@@ -114,7 +113,7 @@ public class KernelDefault implements Kernel {
     /// <returns>A list of all the semantic functions found in the directory, indexed by function
     // name.</returns>
     @Override
-    public ReadOnlyFunctionCollection importSkills(
+    public ReadOnlyFunctionCollection importSkill(
             String skillName, Map<String, SemanticFunctionConfig> skills)
             throws SkillsNotFoundException {
         skills.entrySet().stream()
@@ -158,12 +157,12 @@ public class KernelDefault implements Kernel {
     }
 
     @Override
-    public ReadOnlySkillCollection getSkillCollection() {
+    public ReadOnlySkillCollection getSkills() {
         return defaultSkillCollection;
     }
 
     @Override
-    public CompletionSKFunction.Builder createSemanticFunction() {
+    public CompletionSKFunction.Builder getSemanticFunctionBuilder() {
         return FunctionBuilders.getCompletionBuilder(this);
     }
     /*
@@ -195,10 +194,10 @@ public class KernelDefault implements Kernel {
     */
 
     @Override
-    public ReadOnlyFunctionCollection getSkill(String funSkill) throws FunctionNotFound {
-        ReadOnlyFunctionCollection functions = this.defaultSkillCollection.getFunctions(funSkill);
+    public ReadOnlyFunctionCollection getSkill(String skillName) throws FunctionNotFound {
+        ReadOnlyFunctionCollection functions = this.defaultSkillCollection.getFunctions(skillName);
         if (functions == null) {
-            throw new FunctionNotFound(funSkill);
+            throw new FunctionNotFound(skillName);
         }
 
         return functions;

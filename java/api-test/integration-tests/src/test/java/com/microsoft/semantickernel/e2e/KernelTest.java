@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
@@ -26,31 +27,27 @@ public class KernelTest extends AbstractKernelTest {
     @Test
     @EnabledIf("isAzureTestEnabled")
     public void endToEndTextGenerationTestAzureOpenAI() throws IOException {
-        Kernel kernel = buildKernel(getAzureOpenAIAPI(), "text-davinci-003");
-        executeChatCompletion(kernel);
+        Kernel kernel = buildKernel(getAzureOpenAIClient(), "text-davinci-003");
+        executeCompletion(kernel);
     }
 
     @Test
     @EnabledIf("isAzureTestEnabled")
     public void endToEndTextGenerationTestOpenAI() throws IOException {
-        Kernel kernel = buildKernel(getOpenAIAPI(), getOpenAiModel());
-        executeChatCompletion(kernel);
+        Kernel kernel = buildKernel(getOpenAIClient(), getOpenAIModel());
+        executeCompletion(kernel);
     }
 
-    private static void executeChatCompletion(Kernel kernel) {
+    private static void executeCompletion(Kernel kernel) {
         CompletionSKFunction summarize =
-                kernel.createSemanticFunction()
+                kernel.getSemanticFunctionBuilder()
                         .createFunction(
                                 "{{$input}}\n" + "\n" + "One line TLDR with the fewest words.",
                                 null,
                                 "",
                                 null,
-                                256,
-                                0,
-                                0,
-                                0,
-                                0,
-                                new ArrayList<>());
+                                new PromptTemplateConfig.CompletionConfig(
+                                        0, 0, 0, 0, 256, new ArrayList<>()));
 
         String text1 =
                 "1st Law of Thermodynamics - Energy cannot be created or destroyed.\n"

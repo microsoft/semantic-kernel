@@ -1,6 +1,7 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import reactor.core.publisher.Mono;
@@ -28,18 +29,20 @@ public class Example04ContextVariablesChat {
         ChatBot: """;
 
     CompletionSKFunction chat = kernel
-            .createSemanticFunction()
+            .getSemanticFunctionBuilder()
             .createFunction(
                     prompt,
                     "ChatBot",
                     null,
                     null,
-                    2000,
-                    0.7,
-                    0.5,
-                    0,
-                    0,
-                    new ArrayList<>());
+                    new PromptTemplateConfig.CompletionConfig(
+                            0.7,
+                            0.5,
+                            0,
+                            0,
+                            2000,
+                            new ArrayList<>()
+                    ));
 
     CompletionSKContext readOnlySkContext = chat.buildContext();
 

@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
-
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
-import com.microsoft.openai.AzureOpenAiClient;
+import com.microsoft.openai.AzureOpenAIClient;
 import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +20,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
-public class InlineFunctionTest {
+public class InlineFunctionExample {
     public static final String AZURE_CONF_PROPERTIES = "conf.properties";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InlineFunctionTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InlineFunctionExample.class);
 
     private static final String MODEL = "text-davinci-003";
 
@@ -54,7 +55,7 @@ public class InlineFunctionTest {
         String apiKey = getToken(AZURE_CONF_PROPERTIES);
 
         OpenAIAsyncClient client =
-                new AzureOpenAiClient(
+                new AzureOpenAIClient(
                         new OpenAIClientBuilder()
                                 .endpoint(getEndpoint(AZURE_CONF_PROPERTIES))
                                 .credential(new AzureKeyCredential(apiKey))
@@ -72,18 +73,14 @@ public class InlineFunctionTest {
         String prompt = "{{$input}}\n" + "Summarize the content above.";
 
         CompletionSKFunction summarize =
-                kernel.createSemanticFunction()
+                kernel.getSemanticFunctionBuilder()
                         .createFunction(
                                 prompt,
                                 "summarize",
                                 null,
                                 null,
-                                2000,
-                                0.2,
-                                0.5,
-                                0,
-                                0,
-                                new ArrayList<>());
+                                new PromptTemplateConfig.CompletionConfig(
+                                        0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
 
         String text =
                 "Demo (ancient Greek poet)\n"

@@ -7,8 +7,6 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
 
 public class SkFunctionBuilders implements FunctionBuilders {
@@ -64,25 +62,26 @@ public class SkFunctionBuilders implements FunctionBuilders {
                 String promptTemplate,
                 @Nullable String functionName,
                 @Nullable String skillName,
+                @Nullable String description) {
+            return createFunction(
+                    promptTemplate,
+                    functionName,
+                    skillName,
+                    description,
+                    new PromptTemplateConfig.CompletionConfig());
+        }
+
+        @Override
+        public CompletionSKFunction createFunction(
+                String prompt,
+                @Nullable String functionName,
+                @Nullable String skillName,
                 @Nullable String description,
-                int maxTokens,
-                double temperature,
-                double topP,
-                double presencePenalty,
-                double frequencyPenalty,
-                @Nullable List<String> stopSequences) {
+                PromptTemplateConfig.CompletionConfig completionConfig) {
+
             return register(
                     DefaultCompletionSKFunction.createFunction(
-                            promptTemplate,
-                            functionName,
-                            skillName,
-                            description,
-                            maxTokens,
-                            temperature,
-                            topP,
-                            presencePenalty,
-                            frequencyPenalty,
-                            stopSequences));
+                            prompt, functionName, skillName, description, completionConfig));
         }
     }
 

@@ -6,8 +6,6 @@ import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
 
 public interface CompletionSKFunction
@@ -36,12 +34,13 @@ public interface CompletionSKFunction
                 String promptTemplate,
                 @Nullable String functionName,
                 @Nullable String skillName,
+                @Nullable String description);
+
+        CompletionSKFunction createFunction(
+                String prompt,
+                @Nullable String functionName,
+                @Nullable String skillName,
                 @Nullable String description,
-                int maxTokens,
-                double temperature,
-                double topP,
-                double presencePenalty,
-                double frequencyPenalty,
-                @Nullable List<String> stopSequences);
+                PromptTemplateConfig.CompletionConfig completionConfig);
     }
 }

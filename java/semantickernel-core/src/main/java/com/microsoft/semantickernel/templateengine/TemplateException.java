@@ -1,4 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine;
 
-public class TemplateException extends RuntimeException {}
+import com.microsoft.semantickernel.diagnostics.SKException;
+
+public class TemplateException extends SKException {}

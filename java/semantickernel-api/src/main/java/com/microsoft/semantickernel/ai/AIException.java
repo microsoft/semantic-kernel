@@ -1,130 +1,73 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.ai; // Copyright (c) Microsoft. All rights reserved.
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /** AI logic exception */
 public class AIException extends RuntimeException {
-    /*
+
+    @Nonnull private final ErrorCodes errorCode;
+
+    public AIException(@Nonnull ErrorCodes error) {
+        this(error, null, null);
+    }
+
+    public AIException(@Nonnull ErrorCodes errorCode, @Nullable String message) {
+        this(errorCode, message, null);
+    }
+
+    public AIException(
+            @Nonnull ErrorCodes errorCode,
+            @Nullable String message,
+            @Nullable Throwable innerException) {
+        super(getDefaultMessage(errorCode, message), innerException);
+        this.errorCode = errorCode;
+    }
+
+    public ErrorCodes getErrorCode() {
+        return errorCode;
+    }
+
+    /* Translate the error code into a default message */
+    private static String getDefaultMessage(
+            @Nonnull ErrorCodes errorCode, @Nullable String message) {
+        return String.format("%s: %s", errorCode.getMessage(), message);
+    }
+
     /// <summary>
     /// Possible error codes for exceptions
     /// </summary>
-    public enum ErrorCodes
-    {
-        /// <summary>
-        /// Unknown error.
-        /// </summary>
-        UnknownError = -1,
+    public enum ErrorCodes {
+        UnknownError("Unknown error"),
 
-        /// <summary>
-        /// No response.
-        /// </summary>
-        NoResponse,
+        NoResponse("No response"),
 
-        /// <summary>
-        /// Access is denied.
-        /// </summary>
-        AccessDenied,
+        AccessDenied("Access is denied"),
 
-        /// <summary>
-        /// The request was invalid.
-        /// </summary>
-        InvalidRequest,
+        InvalidRequest("The request was invalid"),
 
-        /// <summary>
-        /// The content of the response was invalid.
-        /// </summary>
-        InvalidResponseContent,
+        InvalidResponseContent("The content of the response was invalid"),
 
-        /// <summary>
-        /// The request was throttled.
-        /// </summary>
-        Throttling,
+        Throttling("The request was throttled"),
 
-        /// <summary>
-        /// The request timed out.
-        /// </summary>
-        RequestTimeout,
+        RequestTimeout("The request timed out"),
 
-        /// <summary>
-        /// There was an error in the service.
-        /// </summary>
-        ServiceError,
+        ServiceError("There was an error in the service"),
 
-        /// <summary>
-        /// The requested model is not available.
-        /// </summary>
-        ModelNotAvailable,
+        ModelNotAvailable("The requested model is not available"),
 
-        /// <summary>
-        /// The supplied configuration was invalid.
-        /// </summary>
-        InvalidConfiguration,
+        InvalidConfiguration("The supplied configuration was invalid"),
 
-        /// <summary>
-        /// The function is not supported.
-        /// </summary>
-        FunctionTypeNotSupported,
+        FunctionTypeNotSupported("The function is not supported");
+        private final String message;
+
+        ErrorCodes(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
-
-    /// <summary>
-    /// The exception's error code.
-    /// </summary>
-    public ErrorCodes ErrorCode { get; set; }
-
-    /// <summary>
-    /// The exception's detail.
-    /// </summary>
-    public string? Detail { get; set; }
-
-    /// <summary>
-    /// Construct an exception with an error code and message.
-    /// </summary>
-    /// <param name="errCode">Error code of the exception.</param>
-    /// <param name="message">Message of the exception</param>
-    public AIException(ErrorCodes errCode, string? message = null) : base(errCode, message)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    /// <summary>
-    /// Construct an exception with an error code, message, and existing exception.
-    /// </summary>
-    /// <param name="errCode">Error code of the exception.</param>
-    /// <param name="message">Message of the exception.</param>
-    /// <param name="e">An exception that was thrown.</param>
-    public AIException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    /// <summary>
-    /// Construct an exception with an error code, message, and existing exception.
-    /// </summary>
-    /// <param name="errCode">Error code of the exception.</param>
-    /// <param name="message">Message of the exception.</param>
-    /// <param name="detail">More details about the exception</param>
-    public AIException(ErrorCodes errCode, string message, string? detail) : this(errCode, message)
-    {
-        this.Detail = detail;
-    }
-
-    #region private ================================================================================
-
-    private AIException()
-    {
-        // Not allowed, error code is required
-    }
-
-    private AIException(string message) : base(message)
-    {
-        // Not allowed, error code is required
-    }
-
-    private AIException(string message, Exception innerException) : base(message, innerException)
-    {
-        // Not allowed, error code is required
-    }
-
-    #endregion
-
-     */
 }
