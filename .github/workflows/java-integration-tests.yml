@@ -45,7 +45,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
-          distribution: temurin
+          distribution: microsoft
           cache: maven
 
       - name: Build with Maven
