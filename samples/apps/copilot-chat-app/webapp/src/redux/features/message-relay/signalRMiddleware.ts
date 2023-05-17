@@ -4,9 +4,10 @@ import * as signalR from "@microsoft/signalr";
 import { AlertType } from "../../../libs/models/AlertType";
 import { IAskResult } from "../../../libs/semantic-kernel/model/AskResult";
 import { addAlert } from "../app/appSlice";
-import { AuthorRoles, IChatMessage } from './../../../libs/models/ChatMessage';
+import { AuthorRoles, ChatMessageState, IChatMessage } from './../../../libs/models/ChatMessage';
 import { ConversationTypingState, FileUploadedAlert } from './../conversations/ChatState';
 import { getSelectedChatID } from './../../app/store';
+import { isPlan } from './../../../libs/utils/PlanUtils';
 
 // These have to match the callback names used in the backend
 const receiveMessageFromServerCallbackName = "ReceiveMessage" as string;
@@ -131,6 +132,7 @@ export const registerSignalREvents = async (store: any) => {
             userId: 'bot',
             content: askResult.value,
             authorRole: AuthorRoles.Bot,
+            state: isPlan(askResult.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
         } as IChatMessage;
 
         store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
