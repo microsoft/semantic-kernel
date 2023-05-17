@@ -1,9 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import datetime
 import uuid
-from numpy import array, linalg, ndarray, zeros
-from qdrant_client import QdrantClient
+import struct
+
+import qdrant_client
 from qdrant_client.models import Filter, FieldCondition, MatchValue
+
+from numpy import array, linalg, ndarray, zeros
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 
@@ -22,7 +26,24 @@ def guid_comb_generator() -> str:
         str: A GUID-comb identifier.
     """
 
-    return str(uuid.uuid4())
+    guid_bytearr = bytearray(str(uuid.uuid4()), "utf-8")
+
+    # Get the current time in 100-nanosecond intervals since 1/1/1
+    # Convert the time to a byte array
+    currenttime = datetime.datetime.utcnow()
+    daystickssec = (currenttime - datetime.datetime(1970, 1, 1)).total_seconds() * 1000
+    currtickssec = currenttime.microsecond / 1000
+
+    daysbytes = struct.pack(">i", int(daystickssec))
+    currbytes = struct.pack(">i", int(currtickssec))
+
+    daysbytearr = bytearray(daysbytes)
+    currbytearr = bytearray(currbytes)
+
+    daysbytearr.reverse()
+    currbytearr.reverse()
+
+    return str(guid_bytearr)
 
 
 def compute_similarity_scores(
@@ -66,7 +87,7 @@ def compute_similarity_scores(
 
 
 def convert_from_memory_record(
-    qdrant_client: QdrantClient,
+    qdrant_client: qdrant_client,
     collection_name: str,
     record: MemoryRecord,
     vector_size: Optional[int] = 0,
