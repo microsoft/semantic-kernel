@@ -93,7 +93,7 @@ public class CalendarSkill
 
         if (string.IsNullOrWhiteSpace(subject))
         {
-            context.Fail($"Missing variables input to use as event subject.");
+            context.Fail("Missing variables input to use as event subject.");
             return;
         }
 

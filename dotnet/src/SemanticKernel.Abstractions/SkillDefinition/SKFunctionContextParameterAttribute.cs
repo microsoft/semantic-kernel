@@ -23,7 +23,7 @@ public sealed class SKFunctionContextParameterAttribute : Attribute
     /// </summary>
     public string Name
     {
-        get { return this._name; }
+        get => this._name;
         set
         {
             Verify.ValidFunctionParamName(value);

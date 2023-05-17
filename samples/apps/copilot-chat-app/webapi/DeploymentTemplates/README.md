@@ -32,7 +32,7 @@ For more options, see the deployment script.
 After ensuring DeploySK.sh file found in this folder is executable, enter the following command:
 
 ```bash
-./DeploySK.sh YOUR_DEPLOYMENT_NAME YOUR_SUBSCRIPTION_ID
+./DeploySK.sh -d DEPLOYMENT_NAME -s SUBSCRIPTION_ID
 ```
 
 ### Azure Portal
@@ -58,7 +58,7 @@ After entering the command above, you will be prompted to enter your Azure OpenA
 After ensuring the [DeploySK-Existing-AzureOpenAI.sh](DeploySK-Existing-AzureOpenAI.sh) file found in this folder is executable, enter the following command:
 
 ```bash
-./DeploySK-Existing-AzureOpenAI.sh YOUR_DEPLOYMENT_NAME YOUR_API_KEY "YOUR_AZURE_OPENAI_ENDPOINT" YOUR_SUBSCRIPTION_ID
+./DeploySK-Existing-AzureOpenAI.sh -d YOUR_DEPLOYMENT_NAME -s YOUR_SUBSCRIPTION_ID -e "YOUR_AZURE_OPENAI_ENDPOINT" -o YOUR_AZURE_OPENAI_API_KEY
 ```
 
 ### Azure Portal
@@ -84,7 +84,7 @@ After entering the command above, you will be prompted to enter your OpenAI API 
 After ensuring DeploySK-Existing-OpenAI.sh file found in this folder is executable, enter the following command:
 
 ```bash
-./DeploySK-Existing-AI.sh YOUR_DEPLOYMENT_NAME YOUR_API_KEY YOUR_SUBSCRIPTION_ID
+./DeploySK-Existing-AI.sh -d YOUR_DEPLOYMENT_NAME -s YOUR_SUBSCRIPTION_ID -o YOUR_OPENAI_API_KEY
 ```
 
 ### Azure Portal

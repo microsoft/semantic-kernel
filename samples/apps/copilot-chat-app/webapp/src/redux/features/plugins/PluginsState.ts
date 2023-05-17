@@ -24,6 +24,7 @@ export const enum AuthHeaderTags {
 
 export type PluginAuthRequirements = {
     username?: boolean;
+    email?: boolean;
     password?: boolean;
     personalAccessToken?: boolean;
     OAuth?: boolean;
@@ -79,10 +80,10 @@ export const initialState: PluginsState = {
     Jira: {
         name: Plugins.Jira,
         publisher: 'Atlassian',
-        description: 'Authorize Copilot Chat to post and link with Jira when there are issues.',
+        description: 'Authorize Copilot Chat to link with Jira and retrieve specific issues by providing the issue key.',
         enabled: false,
         authRequirements: {
-            username: true,
+            email: true,
             personalAccessToken: true,
             helpLink: 'https://developer.atlassian.com/cloud/confluence/basic-auth-for-rest-apis/',
         },
@@ -90,7 +91,7 @@ export const initialState: PluginsState = {
         headerTag: AuthHeaderTags.Jira,
         apiProperties: {
             'jira-server-url': {
-                description: 'base server url',
+                description: 'server url, i.e. "https://<your-domain>.atlassian.net/rest/api/latest/"',
                 required: true,
                 helpLink: 'https://confluence.atlassian.com/adminjiraserver/configuring-the-base-url-938847830.html',
             },
@@ -137,6 +138,7 @@ export const initialState: PluginsState = {
 export type EnablePluginPayload = {
     plugin: Plugins;
     username?: string;
+    email?: string;
     password?: string;
     accessToken?: string;
     apiProperties?: AdditionalApiProperties;

@@ -28,7 +28,6 @@ internal sealed class UpsertVectorResponse : QdrantResponse
         /// <summary>
         /// Sequential Number of the Operation
         /// </summary>
-
         [JsonPropertyName("operation_id")]
         public int OperationId { get; set; }
 

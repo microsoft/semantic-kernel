@@ -17,7 +17,7 @@ export const pluginsState = createSlice({
                     break;
                 case Plugins.Jira:
                     plugin = state.Jira;                    
-                    authData = `${action.payload.username}:${action.payload.accessToken}`;
+                    authData = `${action.payload.email}:${action.payload.accessToken}`;
                     break;
                 case Plugins.GitHub:
                     plugin = state.GitHub;
