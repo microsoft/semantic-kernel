@@ -21,7 +21,7 @@ public class SkillCollection : ISkillCollection
     internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
 
     /// <inheritdoc/>
-    public IReadOnlySkillCollection ReadOnlySkillCollection { get; private set; }
+    public IReadOnlySkillCollection ReadOnlySkillCollection { get; }
 
     public SkillCollection(ILogger? log = null)
     {
@@ -59,8 +59,8 @@ public class SkillCollection : ISkillCollection
     }
 
     /// <inheritdoc/>
-    public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance) =>
-        this.TryGetFunction(GlobalSkill, functionName, out functionInstance);
+    public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction) =>
+        this.TryGetFunction(GlobalSkill, functionName, out availableFunction);
 
     /// <inheritdoc/>
     public bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
