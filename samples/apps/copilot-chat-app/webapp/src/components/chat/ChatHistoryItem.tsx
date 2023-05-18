@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Label, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
+import { Text, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
 import { parsePlan } from '../../libs/semantic-kernel/sk-utilities';
@@ -38,6 +38,8 @@ const useClasses = makeStyles({
     },
     time: {
         color: tokens.colorNeutralForeground3,
+        fontSize: '12px',
+        fontWeight: 400
     },
     header: {
         position: 'relative',
@@ -153,10 +155,8 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                 {!isMe && <Persona className={classes.persona} avatar={avatar} />}
                 <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
                     <div className={classes.header}>
-                        {!isMe && <Label weight="semibold">{fullName}</Label>}
-                        <Label className={mergeClasses(classes.time, classes.alignEnd)} size="small">
-                            {time}
-                        </Label>
+                        {!isMe && <Text weight="semibold">{fullName}</Text>}
+                        <Text className={mergeClasses(classes.time, classes.alignEnd)}>{time}</Text>
                     </div>
                     {!isPlan && <div className={classes.content} dangerouslySetInnerHTML={{ __html: content }} />}
                     {isPlan && (
