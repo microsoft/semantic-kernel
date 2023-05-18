@@ -73,10 +73,6 @@ const App: FC = () => {
     const chat = useChat();
 
     useEffect(() => {
-        console.log('Loading App');
-    }, []);
-
-    useEffect(() => {
         if (isAuthenticated && account && appState === AppState.LoadingChats) {
             instance.setActiveAccount(account);
 
