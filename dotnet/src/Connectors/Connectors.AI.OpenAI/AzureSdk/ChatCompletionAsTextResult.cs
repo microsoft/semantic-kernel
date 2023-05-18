@@ -28,6 +28,6 @@ internal sealed class ChatCompletionAsTextResult : ITextCompletionStreamingResul
 
     public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default)
     {
-        return this._getCompletionStreamingAsyncImpl.Invoke(cancellationToken);
+        return this._getCompletionStreamingAsyncImpl(cancellationToken);
     }
 }
