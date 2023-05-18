@@ -4,6 +4,7 @@ import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/pl
 import { IChatMessage } from '../models/ChatMessage';
 import { IChatParticipant } from '../models/ChatParticipant';
 import { IChatSession } from '../models/ChatSession';
+import { IChatUser } from '../models/ChatUser';
 import { IAsk, IAskVariables } from '../semantic-kernel/model/Ask';
 import { IAskResult } from '../semantic-kernel/model/AskResult';
 import { BaseService } from './BaseService';
@@ -158,5 +159,27 @@ export class ChatService extends BaseService {
         );
 
         return result;
+    };
+
+    public getAllChatParticipantsAsync = async (chatId: string, accessToken: string): Promise<IChatUser[]> => {
+        const result = await this.getResponseAsync<any>(
+            {
+                commandPath: `chatParticipant/getAllParticipants/${chatId}`,
+                method: 'GET',
+            },
+            accessToken,
+        );
+
+        const chatUsers: IChatUser[] = result.map((participant: any) => {
+            return {
+                id: participant.userId,
+                online: false,
+                fullName: '',
+                emailAddress: '',
+                lastTypingTimestamp: 0,
+            } as IChatUser;
+        });
+
+        return chatUsers;
     };
 }

@@ -163,10 +163,15 @@ export const useChat = () => {
                         await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                     );
 
+                    const chatUsers = await chatService.getAllChatParticipantsAsync(
+                        chatSession.id,
+                        await AuthHelper.getSKaaSAccessToken(instance),
+                    );
+
                     loadedConversations[chatSession.id] = {
                         id: chatSession.id,
                         title: chatSession.title,
-                        users: [loggedInUser],
+                        users: chatUsers,
                         messages: chatMessages,
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
                     };

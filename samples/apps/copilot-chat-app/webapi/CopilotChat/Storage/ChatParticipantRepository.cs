@@ -32,6 +32,22 @@ public class ChatParticipantRepository : Repository<ChatParticipant>
         return base.StorageContext.QueryEntitiesAsync(e => e.UserId == userId);
     }
 
+    /// <summary>
+    /// Finds chat participants by chat id.
+    /// </summary>
+    /// <param name="chatId">The chat id.</param>
+    /// <returns>A list of chat participants in the same chat sessions.</returns>
+    public Task<IEnumerable<ChatParticipant>> FindByChatIdAsync(string chatId)
+    {
+        return base.StorageContext.QueryEntitiesAsync(e => e.ChatId == chatId);
+    }
+
+    /// <summary>
+    /// Checks if a user is in a chat session.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="chatId">The chat id.</param>
+    /// <returns>True if the user is in the chat session, false otherwise.</returns>
     public Task<bool> IsUserInChatAsync(string userId, string chatId)
     {
         return base.StorageContext.QueryEntitiesAsync(e => e.UserId == userId && e.ChatId == chatId).

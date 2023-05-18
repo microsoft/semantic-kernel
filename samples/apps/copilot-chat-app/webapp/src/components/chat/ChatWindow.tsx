@@ -2,6 +2,8 @@
 
 import { useMsal } from '@azure/msal-react';
 import {
+    AvatarGroupItem,
+    AvatarGroupPopover,
     Button,
     Input,
     InputOnChangeData,
@@ -181,6 +183,11 @@ export const ChatWindow: React.FC = () => {
                     </Popover>
                 </div>
                 <div className={classes.controls}>
+                    <AvatarGroupPopover>
+                        {conversations[selectedId].users.map((user) => (
+                            <AvatarGroupItem name={user.id} key={user.id} />
+                        ))}
+                    </AvatarGroupPopover>
                     <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
                 </div>
             </div>
