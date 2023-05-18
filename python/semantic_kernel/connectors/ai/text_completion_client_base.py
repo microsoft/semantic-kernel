@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
+from io import TextIOBase
 from logging import Logger
 from typing import TYPE_CHECKING
 
@@ -18,4 +19,12 @@ class TextCompletionClientBase(ABC):
         settings: "CompleteRequestSettings",
         logger: Logger,
     ) -> str:
+        pass
+
+    @abstractmethod
+    async def complete_stream_async(
+        self,
+        text: str,
+        settings: "CompleteRequestSettings"
+    ) -> TextIOBase:
         pass

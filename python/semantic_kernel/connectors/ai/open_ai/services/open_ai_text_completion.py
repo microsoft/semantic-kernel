@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from io import StringIO
 from logging import Logger
 from typing import Any, Optional
 
@@ -133,3 +134,9 @@ class OpenAITextCompletion(TextCompletionClientBase):
         return response.choices[0].text
 
     # TODO: complete w/ multiple...
+    
+    async def complete_stream_async(
+        self, text: str, request_settings: CompleteRequestSettings
+    ):
+        text = self.complete_async(text, request_settings)
+        return StringIO(text)

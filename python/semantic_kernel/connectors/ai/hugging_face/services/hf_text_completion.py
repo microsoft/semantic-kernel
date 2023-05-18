@@ -2,6 +2,7 @@
 
 from logging import Logger
 from typing import Optional
+from io import StringIO
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -102,3 +103,9 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)
+
+    async def complete_stream_async(
+        self, text: str, request_settings: CompleteRequestSettings
+    ):
+        text = self.complete_async(text, request_settings)
+        return StringIO(text)

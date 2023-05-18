@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from io import StringIO
 from logging import Logger
 from typing import Any, List, Optional, Tuple
 
@@ -129,6 +130,12 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         # TODO: tracking on token counts/etc.
 
         return response.choices[0].message.content
+    
+    async def complete_chat_stream_async(
+        self, text: str, request_settings: ChatRequestSettings
+    ):
+        text = self.complete_chat_async(text, request_settings)
+        return StringIO(text)
 
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
@@ -153,3 +160,9 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             max_tokens=request_settings.max_tokens,
         )
         return await self.complete_chat_async(prompt_to_message, chat_settings)
+
+    async def complete_stream_async(
+        self, text: str, request_settings: CompleteRequestSettings
+    ):
+        text = self.complete_async(text, request_settings)
+        return StringIO(text)

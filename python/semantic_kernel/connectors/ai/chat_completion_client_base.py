@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
+from io import TextIOBase
 from logging import Logger
 from typing import TYPE_CHECKING, List, Tuple
 
@@ -16,4 +17,12 @@ class ChatCompletionClientBase(ABC):
         settings: "ChatRequestSettings",
         logger: Logger,
     ) -> str:
+        pass
+
+    @abstractmethod
+    async def complete_chat_stream_async(
+        self,
+        text: str,
+        settings: "ChatRequestSettings"
+    ) -> TextIOBase:
         pass
