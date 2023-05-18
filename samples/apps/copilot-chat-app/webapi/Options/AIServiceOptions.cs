@@ -26,7 +26,7 @@ public sealed class AIServiceOptions
         /// </summary>
         OpenAI
     }
-    
+
     /// <summary>
     /// AI models to use.
     /// </summary>
