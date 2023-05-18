@@ -18,7 +18,7 @@ public class BasicAuthenticationProviderTests
         var credentials = Guid.NewGuid().ToString();
         using var request = new HttpRequestMessage();
 
-        var target = new BasicAuthenticationProvider(() => { return Task.FromResult(credentials); });
+        var target = new BasicAuthenticationProvider(() => Task.FromResult(credentials));
 
         // Act
         await target.AuthenticateRequestAsync(request);
