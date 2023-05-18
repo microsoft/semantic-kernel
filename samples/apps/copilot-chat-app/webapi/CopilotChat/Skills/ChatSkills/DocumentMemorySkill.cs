@@ -9,9 +9,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.Service.CopilotChat.Config;
+using SemanticKernel.Service.CopilotChat.Options;
 
-namespace SemanticKernel.Service.CopilotChat.Skills;
+namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 
 /// <summary>
 /// This skill provides the functions to query the document memory.

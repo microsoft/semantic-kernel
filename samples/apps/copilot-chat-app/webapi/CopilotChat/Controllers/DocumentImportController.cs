@@ -11,8 +11,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Text;
-using SemanticKernel.Service.CopilotChat.Config;
 using SemanticKernel.Service.CopilotChat.Models;
+using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
@@ -86,8 +86,8 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest("File size exceeds the limit.");
         }
 
-        if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat &&
-                !(await this.UserHasAccessToChatAsync(documentImportForm.UserId, documentImportForm.ChatId)))
+        if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat
+            && !(await this.UserHasAccessToChatAsync(documentImportForm.UserId, documentImportForm.ChatId)))
         {
             return this.BadRequest("User does not have access to the chat session.");
         }

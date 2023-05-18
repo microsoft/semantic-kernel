@@ -2,8 +2,8 @@
 
 import pytest
 
-from semantic_kernel import Kernel
 from semantic_kernel.core_skills import MathSkill
+from semantic_kernel import Kernel
 from semantic_kernel.orchestration.context_variables import ContextVariables
 
 

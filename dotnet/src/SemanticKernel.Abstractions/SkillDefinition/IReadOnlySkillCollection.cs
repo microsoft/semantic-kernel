@@ -31,9 +31,9 @@ public interface IReadOnlySkillCollection
     /// Check if a function is available in the current context, and return it.
     /// </summary>
     /// <param name="functionName">The name of the function to retrieve.</param>
-    /// <param name="functionInstance">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/>.</param>
+    /// <param name="availableFunction">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
-    bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance);
+    bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction);
 
     /// <summary>
     /// Check if a function is available in the current context, and return it.

@@ -16,13 +16,13 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.Service.CopilotChat.Config;
 using SemanticKernel.Service.CopilotChat.Models;
+using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Skills.OpenApiSkills.GitHubSkill.Model;
 using SemanticKernel.Service.CopilotChat.Skills.OpenApiSkills.JiraSkill.Model;
 using SemanticKernel.Service.CopilotChat.Storage;
 
-namespace SemanticKernel.Service.CopilotChat.Skills;
+namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 
 /// <summary>
 /// ChatSkill offers a more coherent chat experience by using memories
