@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Storage;
 
@@ -23,6 +25,7 @@ namespace SemanticKernel.Service.CopilotChat.Controllers;
 [Authorize]
 public class ChatParticipantController : ControllerBase
 {
+    private const string UserJoinedClientCall = "UserJoined";
     private readonly ILogger<ChatParticipantController> _logger;
     private readonly ChatParticipantRepository _chatParticipantRepository;
     private readonly ChatSessionRepository _chatSessionRepository;
@@ -46,12 +49,15 @@ public class ChatParticipantController : ControllerBase
     /// <summary>
     /// Join a use to a chat session given a chat id and a user id.
     /// </summary>
+    /// <param name="messageRelayHubContext">Message Hub that performs the real time relay service.</param>
     /// <param name="chatParticipantParam">Contains the user id and chat id.</param>
     [HttpPost]
     [Route("chatParticipant/join")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> JoinChatAsync([FromBody] ChatParticipant chatParticipantParam)
+    public async Task<IActionResult> JoinChatAsync(
+        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
+        [FromBody] ChatParticipant chatParticipantParam)
     {
         string userId = chatParticipantParam.UserId;
         string chatId = chatParticipantParam.ChatId;
@@ -75,6 +81,34 @@ public class ChatParticipantController : ControllerBase
         var chatParticipant = new ChatParticipant(userId, chatId);
         await this._chatParticipantRepository.CreateAsync(chatParticipant);
 
+        // Broadcast the user joined event to all the connected clients.
+        // Note that the client who initiated the request may not have joined the group.
+        await messageRelayHubContext.Clients.Group(chatId).SendAsync(UserJoinedClientCall, chatId, userId);
+
         return this.Ok(chatParticipant);
+    }
+
+    /// <summary>
+    /// Get a list of chat participants that have the same chat id.
+    /// </summary>
+    /// <param name="chatId">The Id of the chat to get all the participants from.</param>
+    [HttpGet]
+    [Route("chatParticipant/getAllParticipants/{chatId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetAllParticipantsAsync(Guid chatId)
+    {
+        // Make sure the chat session exists.
+        try
+        {
+            await this._chatSessionRepository.FindByIdAsync(chatId.ToString());
+        }
+        catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentOutOfRangeException)
+        {
+            return this.BadRequest("Chat session does not exist.");
+        }
+
+        var chatParticipants = await this._chatParticipantRepository.FindByChatIdAsync(chatId.ToString());
+        return this.Ok(chatParticipants);
     }
 }

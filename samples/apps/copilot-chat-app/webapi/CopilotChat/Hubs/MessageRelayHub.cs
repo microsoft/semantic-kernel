@@ -11,9 +11,9 @@ namespace SemanticKernel.Service.CopilotChat.Hubs;
 /// </summary>
 public class MessageRelayHub : Hub
 {
-    private readonly string _receiveMessageClientCall = "ReceiveMessage";
-    private readonly string _receiveTypingStateClientCall = "ReceiveTypingState";
-    private readonly string _receiveFileUploadedEventClientCall = "ReceiveFileUploadedEvent";
+    private const string ReceiveMessageClientCall = "ReceiveMessage";
+    private const string ReceiveTypingStateClientCall = "ReceiveTypingState";
+    private const string ReceiveFileUploadedEventClientCall = "ReceiveFileUploadedEvent";
     private readonly ILogger<MessageRelayHub> _logger;
 
     /// <summary>
@@ -44,7 +44,7 @@ public class MessageRelayHub : Hub
     /// <param name="message">The message to send.</param>
     public async Task SendMessageAsync(string chatId, object message)
     {
-        await this.Clients.OthersInGroup(chatId).SendAsync(this._receiveMessageClientCall, message, chatId);
+        await this.Clients.OthersInGroup(chatId).SendAsync(ReceiveMessageClientCall, message, chatId);
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class MessageRelayHub : Hub
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task SendTypingStateAsync(string chatId, object isTypingState)
     {
-        await this.Clients.OthersInGroup(chatId).SendAsync(this._receiveTypingStateClientCall, isTypingState, chatId);
+        await this.Clients.OthersInGroup(chatId).SendAsync(ReceiveTypingStateClientCall, isTypingState, chatId);
     }
 
     /// <summary>
@@ -66,6 +66,6 @@ public class MessageRelayHub : Hub
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task SendFileUploadedEventAsync(string chatId, object fileUploadedAlert)
     {
-        await this.Clients.OthersInGroup(chatId).SendAsync(this._receiveFileUploadedEventClientCall, fileUploadedAlert, chatId);
+        await this.Clients.OthersInGroup(chatId).SendAsync(ReceiveFileUploadedEventClientCall, fileUploadedAlert, chatId);
     }
 }
