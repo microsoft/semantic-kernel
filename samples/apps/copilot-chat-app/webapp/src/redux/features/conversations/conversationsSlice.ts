@@ -3,7 +3,7 @@
 import { createSlice, PayloadAction, Slice } from '@reduxjs/toolkit';
 import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
 import { IChatUser } from '../../../libs/models/ChatUser';
-import { ChatState, ConversationTypingState, FileUploadedAlert } from './ChatState';
+import { ChatState, FileUploadedAlert } from './ChatState';
 import { Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
 export const conversationsSlice: Slice<ConversationsState> = createSlice({
@@ -17,7 +17,6 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             const id = action.payload.id;
             const newTitle = action.payload.newTitle;
             state.conversations[id].title = newTitle;
-            state.conversations[id].lastUpdatedTimestamp = new Date().getTime();
             frontLoadChat(state, id);
         },
         setSelectedConversation: (state: ConversationsState, action: PayloadAction<string>) => {
@@ -46,7 +45,6 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             const { message, chatId } = action.payload;
             const id = chatId ?? state.selectedId;
             state.conversations[id].messages.push(message);
-            state.conversations[id].lastUpdatedTimestamp = new Date().getTime();
             frontLoadChat(state, id);
         },
         updateConversationFromServer: (
@@ -66,15 +64,26 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             state.conversations[id].messages[messageIndex].state = newMessageState;
             frontLoadChat(state, id);
         },
-        updateIsTypingFromUser: (state: ConversationsState, action: PayloadAction<ConversationTypingState>) => {
-            const id = action.payload.id;
-            const isTyping = action.payload.isTyping;
-            state.conversations[id].isTyping = isTyping;
+        updateUserIsTyping: (state: ConversationsState, action: PayloadAction<{ userId: string; chatId: string; isTyping: boolean }>) => {
+            const { userId, chatId, isTyping } = action.payload;
+            const conversation = state.conversations[chatId];
+            const user = conversation.users.find(u => u.id === userId);
+            if (user) {
+                user.isTyping = isTyping;
+            }
         },
-        updateIsTypingFromServer: (state: ConversationsState, action: PayloadAction<ConversationTypingState>) => {
-            const id = action.payload.id;
-            const isTyping = action.payload.isTyping;
-            state.conversations[id].isTyping = isTyping;
+        updateUserIsTypingFromServer: (state: ConversationsState, action: PayloadAction<{ userId: string; chatId: string; isTyping: boolean }>) => {
+            const { userId, chatId, isTyping } = action.payload;
+            const conversation = state.conversations[chatId];
+            const user = conversation.users.find(u => u.id === userId);
+            if (user) {
+                user.isTyping = isTyping;
+            }
+        },
+        updateBotIsTypingFromServer: (state: ConversationsState, action: PayloadAction<{ chatId: string; isTyping: boolean }>) => {
+            const { chatId, isTyping } = action.payload;
+            const conversation = state.conversations[chatId];
+            conversation.isBotTyping = isTyping;
         },
         updateFileUploadedFromUser: (
             state: ConversationsState,
@@ -96,8 +105,8 @@ export const {
     updateConversationFromUser,
     updateConversationFromServer,
     updateMessageState,
-    updateIsTypingFromUser,
-    updateIsTypingFromServer,
+    updateUserIsTyping,
+    updateUserIsTypingFromServer,
     updateFileUploadedFromUser,
 } = conversationsSlice.actions;
 

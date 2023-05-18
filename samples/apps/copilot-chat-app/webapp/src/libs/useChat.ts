@@ -45,7 +45,7 @@ export const useChat = () => {
         emailAddress: account?.username || '',
         photo: undefined, // TODO: Make call to Graph /me endpoint to load photo
         online: true,
-        lastTypingTimestamp: 0,
+        isTyping: false,
     };
 
     const getChatUserById = (id: string, chatId: string, users: IChatUser[]) => {
@@ -59,7 +59,6 @@ export const useChat = () => {
             await chatService
                 .createChatAsync(
                     account?.homeAccountId!,
-                    account?.name ?? account?.username!,
                     chatTitle,
                     await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 )
@@ -77,6 +76,7 @@ export const useChat = () => {
                         messages: chatMessages,
                         users: [loggedInUser],
                         botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
+                        isBotTyping: false,
                     };
 
                     dispatch(addConversation(newChat));
@@ -165,7 +165,7 @@ export const useChat = () => {
 
                     const chatUsers = await chatService.getAllChatParticipantsAsync(
                         chatSession.id,
-                        await AuthHelper.getSKaaSAccessToken(instance),
+                        await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                     );
 
                     loadedConversations[chatSession.id] = {
@@ -174,6 +174,7 @@ export const useChat = () => {
                         users: chatUsers,
                         messages: chatMessages,
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
+                        isBotTyping: false,
                     };
                 }
 
@@ -219,7 +220,7 @@ export const useChat = () => {
                     users: [loggedInUser],
                     messages: chatMessages,
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
-                    lastUpdatedTimestamp: new Date().getTime(),
+                    isBotTyping: false,
                 };
 
                 dispatch(addConversation(newChat));

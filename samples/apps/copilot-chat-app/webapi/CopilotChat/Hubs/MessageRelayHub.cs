@@ -12,7 +12,7 @@ namespace SemanticKernel.Service.CopilotChat.Hubs;
 public class MessageRelayHub : Hub
 {
     private const string ReceiveMessageClientCall = "ReceiveMessage";
-    private const string ReceiveTypingStateClientCall = "ReceiveTypingState";
+    private const string ReceiveUserTypingStateClientCall = "ReceiveUserTypingState";
     private const string ReceiveFileUploadedEventClientCall = "ReceiveFileUploadedEvent";
     private readonly ILogger<MessageRelayHub> _logger;
 
@@ -51,11 +51,12 @@ public class MessageRelayHub : Hub
     /// Sends the typing state to all users except the sender.
     /// </summary>
     /// <param name="chatId">The ChatID used as group id for SignalR.</param>
-    /// <param name="isTypingState">The typing state to send to other clients.</param>
+    /// <param name="userId">The user ID of the user who is typing.</param>
+    /// <param name="isTyping">Whether the user is typing.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public async Task SendTypingStateAsync(string chatId, object isTypingState)
+    public async Task SendUserTypingStateAsync(string chatId, string userId, bool isTyping)
     {
-        await this.Clients.OthersInGroup(chatId).SendAsync(ReceiveTypingStateClientCall, isTypingState, chatId);
+        await this.Clients.OthersInGroup(chatId).SendAsync(ReceiveUserTypingStateClientCall, chatId, userId, isTyping);
     }
 
     /// <summary>

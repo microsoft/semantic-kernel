@@ -4,7 +4,6 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { IChatMessage } from '../../libs/models/ChatMessage';
 import { ChatHistoryItem } from './ChatHistoryItem';
-import { ChatStatus } from './ChatStatus';
 
 const useClasses = makeStyles({
     root: {
@@ -47,7 +46,6 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({ messages, onGetRespons
                         messageIndex={index}
                     />
                 ))}
-            <ChatStatus />
         </div>
     );
 };

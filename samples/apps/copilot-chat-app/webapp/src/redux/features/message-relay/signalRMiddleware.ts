@@ -8,13 +8,14 @@ import { addAlert } from "../app/appSlice";
 import { AuthorRoles, ChatMessageState, IChatMessage } from './../../../libs/models/ChatMessage';
 import { isPlan } from './../../../libs/utils/PlanUtils';
 import { getSelectedChatID } from './../../app/store';
-import { ConversationTypingState, FileUploadedAlert } from './../conversations/ChatState';
+import { FileUploadedAlert } from './../conversations/ChatState';
 
 // These have to match the callback names used in the backend
 const receiveMessageFromServerCallbackName = "ReceiveMessage" as string;
 const receiveResponseFromServerCallbackName = "ReceiveResponse" as string;
 const userJoinedFromServerCallbackName = "UserJoined" as string;
-const receiveTypingStateFromServerCallbackName = "ReceiveTypingState" as string;
+const receiveUserTypingStateFromServerCallbackName = "ReceiveUserTypingState" as string;
+const receiveBotTypingStateFromServerCallbackName = "ReceiveBotTypingState" as string;
 const receiveFileUploadedAlertFromServerCallbackName = "ReceiveFileUploadedEvent" as string;
 
 // Set up a SignalR connection to the messageRelayHub on the server
@@ -97,8 +98,9 @@ export const signalRMiddleware = (store: any) => {
                 hubConnection.invoke("SendMessageAsync", getSelectedChatID(), action.payload.message)
                     .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
-            case "conversations/updateIsTypingFromUser":
-                hubConnection.invoke("SendTypingStateAsync", getSelectedChatID(), action.payload)
+            case "conversations/updateUserIsTyping":
+                const { userId, isTyping } = action.payload;
+                hubConnection.invoke("SendUserTypingStateAsync", getSelectedChatID(), userId, isTyping)
                     .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
             case "conversations/updateFileUploadedFromUser":
@@ -145,13 +147,17 @@ export const registerSignalREvents = async (store: any) => {
             online: false,
             fullName: '',
             emailAddress: '',
-            lastTypingTimestamp: 0,
+            isTyping: false,
         } as IChatUser;
         store.dispatch({ type: "conversations/addUserToConversation", payload: { user, chatId } });
     });
 
-    hubConnection.on(receiveTypingStateFromServerCallbackName, (typingState: ConversationTypingState, chatId: string) => {
-        store.dispatch({ type: "conversations/updateIsTypingFromServer", payload: { typingState, chatId } });
+    hubConnection.on(receiveUserTypingStateFromServerCallbackName, (chatId: string, userId: string, isTyping: boolean) => {
+        store.dispatch({ type: "conversations/updateUserIsTypingFromServer", payload: { chatId, userId, isTyping } });
+    });
+
+    hubConnection.on(receiveBotTypingStateFromServerCallbackName, (chatId: string, isTyping: boolean) => {
+        store.dispatch({ type: "conversations/updateBotIsTypingFromServer", payload: { chatId, isTyping } });
     });
 
     hubConnection.on(receiveFileUploadedAlertFromServerCallbackName, ( docUploadedAlert: FileUploadedAlert) => {
