@@ -11,7 +11,7 @@ const noResponseBodyStatusCodes = [202];
 
 export class BaseService {
     // eslint-disable-next-line @typescript-eslint/space-before-function-paren
-    constructor(protected readonly serviceUrl: string) { }
+    constructor(protected readonly serviceUrl: string) {}
 
     protected readonly getResponseAsync = async <T>(
         request: ServiceRequest,
@@ -28,9 +28,14 @@ export class BaseService {
             'Content-Type': 'application/json',
         });
 
-        // For each enabled plugin, pass its auth information as a customer header
-        // to the backend so the server can authenticate to the plugin
+        // API key auth for private hosted instances
+        if (process.env.REACT_APP_SK_API_KEY) {
+            headers.append(`x-sk-api-key`, process.env.REACT_APP_SK_API_KEY as string);
+        }
+
         if (enabledPlugins && enabledPlugins.length > 0) {
+            // For each enabled plugin, pass its auth information as a customer header
+            // to the backend so the server can authenticate to the plugin
             for (var idx in enabledPlugins) {
                 var plugin = enabledPlugins[idx];
                 headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData);
