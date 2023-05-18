@@ -66,14 +66,14 @@ Write-Host "# Backend configuration #"
 Write-Host "#########################"
 
 # Install dev certificate
-if ($IsWindows -or $IsMacOS)
-{
-    dotnet dev-certs https --trust
-    if ($LASTEXITCODE -ne 0) { exit(1) }
-}
-elseif ($IsLinux)
+if ($IsLinux)
 {
     dotnet dev-certs https
+    if ($LASTEXITCODE -ne 0) { exit(1) }
+}
+else # Windows/MacOS
+{
+    dotnet dev-certs https --trust
     if ($LASTEXITCODE -ne 0) { exit(1) }
 }
 
@@ -98,7 +98,7 @@ else {
 
 $appsettingsOverrides = @{ AIService = @{ Type = $aiServiceType; Endpoint = $Endpoint; Models = @{ Completion = $CompletionModel; Embedding = $EmbeddingModel; Planner = $PlannerModel } } }
 
-$webapiProjectPath = Join-Path $PSScriptRoot '../webapi'
+$webapiProjectPath = Join-Path "$PSScriptRoot" '../webapi'
 $appsettingsOverridesFilePath = Join-Path $webapiProjectPath 'appsettings.Development.json'
 
 Write-Host "Setting 'AIService:Key' user secret for $aiServiceType..."
