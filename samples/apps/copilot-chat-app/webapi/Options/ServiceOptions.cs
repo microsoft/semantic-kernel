@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SemanticKernel.Service.Config;
+namespace SemanticKernel.Service.Options;
 
 /// <summary>
 /// Configuration options for the CopilotChat service.

@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace SemanticKernel.Service.Config;
+namespace SemanticKernel.Service.Options;
 
 /// <summary>
 /// Configuration settings for connecting to Azure Cognitive Search.

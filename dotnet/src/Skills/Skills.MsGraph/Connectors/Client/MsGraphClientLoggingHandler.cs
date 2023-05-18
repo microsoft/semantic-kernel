@@ -19,7 +19,9 @@ namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 /// </remarks>
 public class MsGraphClientLoggingHandler : DelegatingHandler
 {
-    // From https://learn.microsoft.com/graph/best-practices-concept#reliability-and-support
+    /// <summary>
+    /// From https://learn.microsoft.com/graph/best-practices-concept#reliability-and-support
+    /// </summary>
     private const string ClientRequestIdHeaderName = "client-request-id";
 
     private readonly List<string> _headerNamesToLog = new()

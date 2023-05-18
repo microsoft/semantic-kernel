@@ -6,8 +6,8 @@ set -e
 
 # Parameters
 ClientId="$1"
-Tenant="${2:-common}"
-AzureOpenAIOrOpenAIKey="${3:-}"
+Tenant="common"
+AzureOpenAIOrOpenAIKey="${2:-}"
 
 ScriptDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ScriptDir"
