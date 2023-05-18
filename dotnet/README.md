@@ -34,7 +34,7 @@ kernel.Config.AddAzureTextCompletionService(
 );
 
 // Alternative using OpenAI
-// kernel.Config.AddOpenAITextCompletionService("davinci-openai",
+// kernel.Config.AddOpenAITextCompletionService(
 //     "text-davinci-003",               // OpenAI Model name
 //     "...your OpenAI API Key..."       // OpenAI API Key
 // );
