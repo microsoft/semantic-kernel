@@ -22,5 +22,8 @@ async def test_oai_embedding_service(create_kernel, get_oai_config):
         "test", id="info1", text="this is a test"
     )
     await kernel.memory.save_reference_async(
-        "test", external_id="info1", text="this is a test", external_source_name="external source"
+        "test",
+        external_id="info1",
+        text="this is a test",
+        external_source_name="external source",
     )

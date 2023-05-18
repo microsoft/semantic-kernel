@@ -1,18 +1,24 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
+
 import semantic_kernel.connectors.ai.hugging_face as sk_hf
 
-@pytest.fixture(scope="module", params=[("google/flan-t5-base", "text2text-generation"), ("facebook/bart-large-cnn", "summarization")])
+
+@pytest.fixture(
+    scope="module",
+    params=[
+        ("google/flan-t5-base", "text2text-generation"),
+        ("facebook/bart-large-cnn", "summarization"),
+    ],
+)
 def setup_hf_text_completion_function(create_kernel, request):
     kernel = create_kernel
 
     # Configure LLM service
     kernel.add_text_completion_service(
         request.param[0],
-        sk_hf.HuggingFaceTextCompletion(
-            request.param[0], task=request.param[1]
-        ),
+        sk_hf.HuggingFaceTextCompletion(request.param[0], task=request.param[1]),
     )
 
     # Define semantic function using SK prompt template language
@@ -25,8 +31,9 @@ def setup_hf_text_completion_function(create_kernel, request):
 
     # User input
     simple_input = "sleeping and "
-    
+
     yield kernel, text2text_function, simple_input
+
 
 @pytest.fixture(scope="module")
 def setup_summarize_function(create_kernel):
@@ -68,8 +75,9 @@ def setup_summarize_function(create_kernel):
     )
     yield kernel, summarize_function, text_to_summarize, additional_text
 
+
 @pytest.fixture(scope="module")
-def setup_tldr_function_for_oai_models(create_kernel):    
+def setup_tldr_function_for_oai_models(create_kernel):
     kernel = create_kernel
 
     # Define semantic function using SK prompt template language
@@ -97,6 +105,7 @@ def setup_tldr_function_for_oai_models(create_kernel):
     print(text_to_summarize)
     print()
     yield kernel, sk_prompt, text_to_summarize
+
 
 @pytest.fixture(scope="module")
 def setup_summarize_conversation_using_skill(create_kernel):

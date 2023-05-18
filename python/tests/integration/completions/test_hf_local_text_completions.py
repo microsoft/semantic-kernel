@@ -3,7 +3,7 @@
 import pytest
 
 import semantic_kernel as sk
-import semantic_kernel.connectors.ai.hugging_face as sk_hf
+
 
 @pytest.mark.asyncio
 async def test_text2text_generation_input_str(setup_hf_text_completion_function):
@@ -16,6 +16,7 @@ async def test_text2text_generation_input_str(setup_hf_text_completion_function)
     print(f"Completion using input string: '{output}'")
     assert len(output) > 0
 
+
 @pytest.mark.asyncio
 async def test_text2text_generation_input_vars(setup_hf_text_completion_function):
     kernel, text2text_function, simple_input = setup_hf_text_completion_function
@@ -27,6 +28,7 @@ async def test_text2text_generation_input_vars(setup_hf_text_completion_function
     output = str(summary).strip()
     print(f"Completion using context variables: '{output}'")
     assert len(output) > 0
+
 
 @pytest.mark.asyncio
 async def test_text2text_generation_input_context(setup_hf_text_completion_function):
@@ -41,10 +43,13 @@ async def test_text2text_generation_input_context(setup_hf_text_completion_funct
     print(f"Completion using input context: '{output}'")
     assert len(output) > 0
 
+
 @pytest.mark.asyncio
-async def test_text2text_generation_input_context_with_vars(setup_hf_text_completion_function):
+async def test_text2text_generation_input_context_with_vars(
+    setup_hf_text_completion_function,
+):
     kernel, text2text_function, simple_input = setup_hf_text_completion_function
-    
+
     # Complete input context with additional variables and print
     context = kernel.create_new_context()
     context["input"] = simple_input
@@ -57,8 +62,11 @@ async def test_text2text_generation_input_context_with_vars(setup_hf_text_comple
     print(f"Completion using context and additional variables: '{output}'")
     assert len(output) > 0
 
+
 @pytest.mark.asyncio
-async def test_text2text_generation_input_context_with_str(setup_hf_text_completion_function):
+async def test_text2text_generation_input_context_with_str(
+    setup_hf_text_completion_function,
+):
     kernel, text2text_function, simple_input = setup_hf_text_completion_function
 
     # Complete input context with additional input string and print
@@ -72,8 +80,11 @@ async def test_text2text_generation_input_context_with_str(setup_hf_text_complet
     print(f"Completion using context and additional string: '{output}'")
     assert len(output) > 0
 
+
 @pytest.mark.asyncio
-async def test_text2text_generation_input_context_with_vars_and_str(setup_hf_text_completion_function):
+async def test_text2text_generation_input_context_with_vars_and_str(
+    setup_hf_text_completion_function,
+):
     kernel, text2text_function, simple_input = setup_hf_text_completion_function
 
     # Complete input context with additional variables and string and print

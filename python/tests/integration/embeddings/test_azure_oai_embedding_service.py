@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+
 import pytest
 
 import semantic_kernel as sk
@@ -27,6 +28,8 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
         "test", id="info1", text="this is a test"
     )
     await kernel.memory.save_reference_async(
-        "test", external_id="info1", text="this is a test", external_source_name="external source"
+        "test",
+        external_id="info1",
+        text="this is a test",
+        external_source_name="external source",
     )
-

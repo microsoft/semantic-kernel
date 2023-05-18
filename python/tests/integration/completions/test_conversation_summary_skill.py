@@ -2,16 +2,20 @@
 
 import os
 
-from test_utils import retry
 import pytest
+from test_utils import retry
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.core_skills.conversation_summary_skill import ConversationSummarySkill
+from semantic_kernel.core_skills.conversation_summary_skill import (
+    ConversationSummarySkill,
+)
 
 
 @pytest.mark.asyncio
-async def test_azure_summarize_conversation_using_skill(setup_summarize_conversation_using_skill):
+async def test_azure_summarize_conversation_using_skill(
+    setup_summarize_conversation_using_skill,
+):
     kernel, chatTranscript = setup_summarize_conversation_using_skill
 
     if "Python_Integration_Tests" in os.environ:
@@ -45,7 +49,9 @@ async def test_azure_summarize_conversation_using_skill(setup_summarize_conversa
 
 
 @pytest.mark.asyncio
-async def test_oai_summarize_conversation_using_skill(setup_summarize_conversation_using_skill):
+async def test_oai_summarize_conversation_using_skill(
+    setup_summarize_conversation_using_skill,
+):
     kernel, chatTranscript = setup_summarize_conversation_using_skill
 
     if "Python_Integration_Tests" in os.environ:
@@ -65,7 +71,7 @@ async def test_oai_summarize_conversation_using_skill(setup_summarize_conversati
     )
 
     summary = await retry(
-        lambda:  kernel.run_async(
+        lambda: kernel.run_async(
             conversationSummarySkill["SummarizeConversation"], input_str=chatTranscript
         )
     )

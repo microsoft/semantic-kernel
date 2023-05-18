@@ -16,7 +16,7 @@ async def test_hf_embeddings_with_memories():
         sk_hf.HuggingFaceTextEmbedding("sentence-transformers/all-MiniLM-L6-v2"),
     )
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
-    
+
     # Add some documents to the semantic memory
     await kernel.memory.save_information_async(
         "test", id="info1", text="Sharks are fish."

@@ -1,14 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
 import os
+
+import pytest
+
 import semantic_kernel as sk
-import semantic_kernel.connectors.ai.hugging_face as sk_hf
+
 
 @pytest.fixture(scope="session")
 def create_kernel():
     kernel = sk.Kernel()
     return kernel
+
 
 @pytest.fixture(scope="session")
 def get_aoai_config():
@@ -22,6 +25,7 @@ def get_aoai_config():
         deployment_name = "text-embedding-ada-002"
 
     return deployment_name, api_key, endpoint
+
 
 @pytest.fixture(scope="session")
 def get_oai_config():
