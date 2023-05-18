@@ -34,10 +34,11 @@ public sealed class SequentialPlannerTests : IDisposable
     [Theory]
     [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
     [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
-    public async Task CreatePlanFunctionFlowAsync(bool usingChatModel, string prompt, string expectedFunction, string expectedSkill)
+    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedSkill)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel(false, usingChatModel);
+        bool useEmbeddings = false;
+        IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         TestHelpers.GetSkills(kernel, "FunSkill");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
@@ -100,7 +101,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false, bool usingChatModel = false)
+    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -112,7 +113,7 @@ public sealed class SequentialPlannerTests : IDisposable
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                if (usingChatModel)
+                if (useChatModel)
                 {
                     config.AddAzureChatCompletionService(
                         deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
