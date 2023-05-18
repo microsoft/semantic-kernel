@@ -4,17 +4,11 @@
 To run Copilot Chat, you will need the following:
 - *Application ID*
   - This is the Client ID (i.e., Application ID) associated with your Azure Active Directory (AAD) application registration, which you can find in the Azure portal.
-- *Tenant ID*
-  - This is the Tenant ID (i.e., Directory ID) associated with your AAD app registration.
-  [Learn more about possible values for this parameter](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority).
 - *Azure OpenAI or OpenAI API Key*
   - This is your API key for Azure OpenAI or OpenAI
 
 ## 1. Configure your environment
 ### Windows
-If you have not already, install PowerShell 6 or newer from https://learn.microsoft.com/powershell/scripting/install/installing-powershell.
-> You can run `$PSVersionTable.PSVersion` in PowerShell to verify the version.
- 
 Open a PowerShell terminal as an administrator, navigate to this directory, and run the following command:
 ```powershell
 ./Install-Requirements.ps1
