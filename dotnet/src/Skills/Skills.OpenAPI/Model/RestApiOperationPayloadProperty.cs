@@ -40,9 +40,13 @@ public sealed class RestApiOperationPayloadProperty
     /// <param name="name">Property name.</param>
     /// <param name="type">Property type.</param>
     /// <param name="isRequired">Flag specifying if the property is required or not.</param>
-    /// <param name="description">Property description.</param>
     /// <param name="properties">Properties.</param>
-    public RestApiOperationPayloadProperty(string name, string type, bool isRequired, IList<RestApiOperationPayloadProperty> properties,
+    /// <param name="description">Property description.</param>
+    public RestApiOperationPayloadProperty(
+        string name,
+        string type,
+        bool isRequired,
+        IList<RestApiOperationPayloadProperty> properties,
         string? description = null)
     {
         this.Name = name;

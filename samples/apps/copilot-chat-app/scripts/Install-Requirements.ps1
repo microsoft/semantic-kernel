@@ -11,11 +11,16 @@ if ($IsWindows)
     [System.Net.ServicePointManager]::SecurityProtocol = 3072
 
     # Install chocolatey if not already installed
-    if (!(Test-Path -Path "$env:ProgramData\Chocolatey"))
+    $ChocoInstalled = $false
+    if (Get-Command choco.exe -ErrorAction SilentlyContinue) {
+        $ChocoInstalled = $true
+    }
+    if (!$ChocoInstalled)
     {
         Write-Host "Installing Chocolatey..."
         Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1')
         $env:PATH += ";%ALLUSERSPROFILE%\chocolatey\bin"
+        refreshenv
     }
 
     # Ensure required packages are installed

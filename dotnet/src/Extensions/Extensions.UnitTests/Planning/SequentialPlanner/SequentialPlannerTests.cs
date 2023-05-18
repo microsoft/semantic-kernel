@@ -159,8 +159,7 @@ public sealed class SequentialPlannerTests
         var functionsView = new FunctionsView();
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
 
-        var planString =
-            @"<plan>notvalid<</plan>";
+        var planString = "<plan>notvalid<</plan>";
         var returnContext = new SKContext(
             new ContextVariables(planString),
             memory.Object,
