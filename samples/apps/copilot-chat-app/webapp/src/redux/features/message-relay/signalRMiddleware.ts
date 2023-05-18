@@ -2,6 +2,7 @@
 
 import * as signalR from "@microsoft/signalr";
 import { AlertType } from "../../../libs/models/AlertType";
+import { IChatUser } from "../../../libs/models/ChatUser";
 import { IAskResult } from "../../../libs/semantic-kernel/model/AskResult";
 import { addAlert } from "../app/appSlice";
 import { AuthorRoles, ChatMessageState, IChatMessage } from './../../../libs/models/ChatMessage';
@@ -12,6 +13,7 @@ import { ConversationTypingState, FileUploadedAlert } from './../conversations/C
 // These have to match the callback names used in the backend
 const receiveMessageFromServerCallbackName = "ReceiveMessage" as string;
 const receiveResponseFromServerCallbackName = "ReceiveResponse" as string;
+const userJoinedFromServerCallbackName = "UserJoined" as string;
 const receiveTypingStateFromServerCallbackName = "ReceiveTypingState" as string;
 const receiveFileUploadedAlertFromServerCallbackName = "ReceiveFileUploadedEvent" as string;
 
@@ -135,6 +137,17 @@ export const registerSignalREvents = async (store: any) => {
         } as IChatMessage;
 
         store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
+    });
+
+    hubConnection.on(userJoinedFromServerCallbackName, (chatId: string, userId: string) => {
+        const user = {
+            id: userId,
+            online: false,
+            fullName: '',
+            emailAddress: '',
+            lastTypingTimestamp: 0,
+        } as IChatUser;
+        store.dispatch({ type: "conversations/addUserToConversation", payload: { user, chatId } });
     });
 
     hubConnection.on(receiveTypingStateFromServerCallbackName, (typingState: ConversationTypingState, chatId: string) => {
