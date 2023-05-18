@@ -11,17 +11,14 @@ import {
     addConversation,
     setConversations,
     setSelectedConversation,
-    updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from './auth/AuthHelper';
 import { useConnectors } from './connectors/useConnectors';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
-import { AuthorRoles, ChatMessageState } from './models/ChatMessage';
 import { IChatSession } from './models/ChatSession';
 import { BotService } from './services/BotService';
 import { ChatService } from './services/ChatService';
-import { isPlan } from './utils/PlanUtils';
 
 import botIcon1 from '../assets/bot-icons/bot-icon-1.png';
 import botIcon2 from '../assets/bot-icons/bot-icon-2.png';
@@ -62,7 +59,6 @@ export const useChat = () => {
             await chatService
                 .createChatAsync(
                     account?.homeAccountId!,
-                    account?.name!,
                     chatTitle,
                     await AuthHelper.getSKaaSAccessToken(instance),
                 )
@@ -137,22 +133,11 @@ export const useChat = () => {
         }
 
         try {
-            var result = await chatService.getBotResponseAsync(
+            await chatService.getBotResponseAsync(
                 ask,
                 await AuthHelper.getSKaaSAccessToken(instance),
                 connectors.getEnabledPlugins(),
             );
-
-            const messageResult = {
-                timestamp: new Date().getTime(),
-                userName: 'bot',
-                userId: 'bot',
-                content: result.value,
-                authorRole: AuthorRoles.Bot,
-                state: isPlan(result.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
-            };
-
-            dispatch(updateConversation({ message: messageResult, chatId: chatId }));
         } catch (e: any) {
             const errorMessage = `Unable to generate bot response. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));

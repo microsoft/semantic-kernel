@@ -2,7 +2,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
-import { ChatState } from './ChatState';
+import { ChatState, ConversationTypingState, FileUploadedAlert } from './ChatState';
 import { Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
 export const conversationsSlice = createSlice({
@@ -26,7 +26,14 @@ export const conversationsSlice = createSlice({
             state.conversations = { [newId]: action.payload, ...state.conversations };
             state.selectedId = newId;
         },
-        updateConversation: (
+        /*
+        * updateConversationFromUser() and updateConversationFromServer() both update the conversations state.
+        * However they are for different purposes. The former action is for updating the conversation from the
+        * user and will be captured by the SignalR middleware and the payload will be broadcasted to all clients
+        * in the same group.
+        * The updateConversationFromUser() action is triggered by the SignalR middleware when a response is received.
+        */
+        updateConversationFromUser: (
             state: ConversationsState,
             action: PayloadAction<{ message: IChatMessage; chatId?: string }>,
         ) => {
@@ -34,6 +41,14 @@ export const conversationsSlice = createSlice({
             const id = chatId ?? state.selectedId;
             state.conversations[id].messages.push(message);
             frontLoadChat(state, id);
+        },
+        updateConversationFromServer: (
+            state: ConversationsState,
+            action: PayloadAction<{ message: IChatMessage; chatId: string }>,
+        ) => {
+            const { message, chatId } = action.payload;
+            state.conversations[chatId].messages.push(message);
+            frontLoadChat(state, chatId);
         },
         updateMessageState: (
             state: ConversationsState,
@@ -44,6 +59,25 @@ export const conversationsSlice = createSlice({
             state.conversations[id].messages[messageIndex].state = newMessageState;
             frontLoadChat(state, id);
         },
+        updateIsTypingFromUser: (state: ConversationsState, action: PayloadAction<ConversationTypingState>) => {
+            const id = action.payload.id;
+            const isTyping = action.payload.isTyping;
+            state.conversations[id].isTyping = isTyping;
+        },
+        updateIsTypingFromServer: (state: ConversationsState, action: PayloadAction<ConversationTypingState>) => {
+            const id = action.payload.id;
+            const isTyping = action.payload.isTyping;
+            state.conversations[id].isTyping = isTyping;
+        },
+        updateFileUploadedFromUser: (
+            state: ConversationsState,
+            action: PayloadAction<FileUploadedAlert>,
+        ) => {
+            const alert = action.payload;
+            const id = action.payload.id;
+            state.alerts[id] = alert;
+            frontLoadChat(state, id);
+        },
     },
 });
 
@@ -52,8 +86,12 @@ export const {
     editConversationTitle,
     setSelectedConversation,
     addConversation,
-    updateConversation,
+    updateConversationFromUser,
+    updateConversationFromServer,
     updateMessageState,
+    updateIsTypingFromUser,
+    updateIsTypingFromServer,
+    updateFileUploadedFromUser,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

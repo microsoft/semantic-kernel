@@ -9,4 +9,16 @@ export interface ChatState {
     users: IChatUser[];
     messages: IChatMessage[];
     botProfilePicture: string;
+    isTyping?: boolean;
+}
+
+export interface ConversationTypingState {
+    id: string;
+    isTyping: boolean;
+}
+
+export interface FileUploadedAlert {
+    id: string;
+    fileOwner: string;
+    fileName: string;
 }
