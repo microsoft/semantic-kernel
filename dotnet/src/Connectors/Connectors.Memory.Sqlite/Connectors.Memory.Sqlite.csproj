@@ -24,8 +24,4 @@
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernelConnectorsSqliteTests"/>
-  </ItemGroup>
-
 </Project>
