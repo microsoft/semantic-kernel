@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Options;
 
-namespace SemanticKernel.Service.CopilotChat.Config;
+namespace SemanticKernel.Service.CopilotChat.Options;
 
 /// <summary>
 /// Configuration settings for the chat store.

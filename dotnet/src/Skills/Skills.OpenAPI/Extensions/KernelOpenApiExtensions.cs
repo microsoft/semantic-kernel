@@ -109,8 +109,8 @@ public static class KernelOpenApiExtensions
     /// <param name="parentDirectory">Directory containing the skill directory.</param>
     /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="userAgent">Optional user agent header value.</param>
+    /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken"></param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
