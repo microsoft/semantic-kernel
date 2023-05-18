@@ -41,8 +41,8 @@ param deployQdrant bool = true
 param deploySpeechServices bool = true
 
 
-module openAI 'main.bicep' = {
-  name: 'openAIDeployment'
+module semanticKernel 'main.bicep' = {
+  name: 'SemanticKernel'
   params: {
     name: name
     appServiceSku: appServiceSku
@@ -62,4 +62,4 @@ module openAI 'main.bicep' = {
 }
 
 
-output endpoint string = openAI.outputs.deployedUrl
+output endpoint string = semanticKernel.outputs.deployedUrl
