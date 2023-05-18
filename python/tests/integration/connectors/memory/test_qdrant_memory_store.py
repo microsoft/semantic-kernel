@@ -38,7 +38,7 @@ def test_qdrant_constructor():
 
 @pytest.mark.asyncio
 async def test_create_and_get_collection_async():
-    qdrant_mem_store =  QdrantMemoryStore(":memory:", local=True)
+    qdrant_mem_store = QdrantMemoryStore(":memory:", local=True)
 
     await qdrant_mem_store.create_collection_async("test_collection")
     result = await qdrant_mem_store.get_collection_async("test_collection")
@@ -59,7 +59,7 @@ async def test_get_collections_async():
 
 @pytest.mark.asyncio
 async def test_delete_collection_async():
-    qdrant_mem_store =  QdrantMemoryStore(":memory:", local=True)
+    qdrant_mem_store = QdrantMemoryStore(":memory:", local=True)
 
     await qdrant_mem_store.create_collection_async("test_collection4")
     await qdrant_mem_store.delete_collection_async("test_collection4")
@@ -74,7 +74,7 @@ async def test_delete_collection_async():
 
 @pytest.mark.asyncio
 async def test_does_collection_exist_async():
-    qdrant_mem_store =  QdrantMemoryStore(":memory:", local=True)
+    qdrant_mem_store = QdrantMemoryStore(":memory:", local=True)
 
     await qdrant_mem_store.create_collection_async("test_collection")
     result = await qdrant_mem_store.does_collection_exist_async("test_collection")
