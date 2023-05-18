@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -301,14 +302,16 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
         string? input = null,
+        CancellationToken cancellationToken = default,
         CompleteRequestSettings? settings = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
+        ISemanticTextMemory? memory = null,
+        ILogger? logger = null)
     {
         if (input != null) { this.State.Update(input); }
 
         SKContext context = new(
             this.State,
+            memory: memory,
             logger: logger,
             cancellationToken: cancellationToken);
 
@@ -316,7 +319,9 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null)
+    public async Task<SKContext> InvokeAsync(
+        SKContext context,
+        CompleteRequestSettings? settings = null)
     {
         if (this.Function is not null)
         {
