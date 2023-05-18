@@ -1,8 +1,8 @@
 # Task Description
 
-1. Please extract a list of entities related to {{$topic}} from between the <context> tags.
+1. Please extract a list of entities related to {{$topic}} from the text between the <context> tags.
 2. As the first part of your response, generate a bulleted list of each of the items in (1) together with an explanation of what they are.
-3. Go over each item in your bulleted list and read the explanation of what it is. Keep items which are factual nuggets relating to {{$topic}}.
+3. Go over each item in your bulleted list and read the explanation of what it is. Keep items which are related to {{$topic}} and present in the context
 4. Go over each item in your bulleted list and check for duplicates. Keep only one example of each. Duplicates may be:
     - Abbreviations
     - Reuse as adjectives
@@ -14,11 +14,54 @@
 9. Make sure that you return valid JSON for (7)
 10. Any quotes appearing within a string in (7) should be escaped by a double backslash.
 
+# Example
+
+In the following example, the task is to extract entities related to food:
+
+<context>
+Oranges and lemons,
+Say the bells of St. Clement's.
+
+You owe me five farthings,
+Say the bells of St. Martin's.
+
+When will you pay me?
+Say the bells at Old Bailey.
+
+When I grow rich,
+Say the bells at Shoreditch.
+
+When will that be?
+Say the bells of Stepney.
+
+I do not know,
+Says the great bell at Bow.
+</context>
+
+Response:
+- Orange: This is a fruit mentioned in the context
+- Lemon: This is a fruit mentioned in the context
+
+<json_block>
+[
+    {
+        "entity_name": "Orange",
+        "reason": "This is a fruit mentioned in the context"
+    },
+    {
+        "entity_name": "Lemon",
+        "reason": "This is a fruit mentioned in the context"
+    }
+]
+</json_block>
+
 
 # Task
 
-Extract entities related to {{$topic}} from the following context. Ensure the content between <json_block> and </json_block> is valid JSON.
+Extract entities related to {{$topic}} from the following context. Ensure the content between <json_block> and </json_block> is valid JSON. Do not produce any output after the closing </json_block> tag.
 
 <context>
 {{$input}}
 </context>
+
+Response:
