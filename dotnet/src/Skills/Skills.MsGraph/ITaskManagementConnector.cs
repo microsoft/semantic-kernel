@@ -17,7 +17,7 @@ public interface ITaskManagementConnector
     /// </summary>
     /// <param name="listId">ID of the list in which to add the task.</param>
     /// <param name="task">Task to add.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Added task definition.</returns>
     Task<TaskManagementTask> AddTaskAsync(string listId, TaskManagementTask task, CancellationToken cancellationToken = default);
 
@@ -26,19 +26,19 @@ public interface ITaskManagementConnector
     /// </summary>
     /// <param name="listId">ID of the list from which to delete the task.</param>
     /// <param name="taskId">ID of the task to delete.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task DeleteTaskAsync(string listId, string taskId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get the default task list.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<TaskManagementTaskList?> GetDefaultTaskListAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get all the task lists.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>All of the user's task lists.</returns>
     Task<IEnumerable<TaskManagementTaskList>> GetTaskListsAsync(CancellationToken cancellationToken = default);
 
@@ -46,7 +46,8 @@ public interface ITaskManagementConnector
     /// Get the all tasks in a task list.
     /// </summary>
     /// <param name="listId">ID of the list from which to get the tasks.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="includeCompleted">Whether to include completed tasks.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>All of the tasks in the specified task list.</returns>
-    Task<IEnumerable<TaskManagementTask>> GetTasksAsync(string listId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<TaskManagementTask>> GetTasksAsync(string listId, bool includeCompleted, CancellationToken cancellationToken = default);
 }

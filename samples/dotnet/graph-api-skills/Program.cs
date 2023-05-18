@@ -105,10 +105,10 @@ public sealed class Program
             if (azureOpenAIConfiguration != null)
             {
                 sk.Config.AddAzureTextCompletionService(
-                    serviceId: azureOpenAIConfiguration.ServiceId,
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
+                    apiKey: azureOpenAIConfiguration.ApiKey,
+                    serviceId: azureOpenAIConfiguration.ServiceId);
             }
         }
 
@@ -118,7 +118,6 @@ public sealed class Program
             if (openAIConfiguration != null)
             {
                 sk.Config.AddOpenAITextCompletionService(
-                    serviceId: openAIConfiguration.ServiceId,
                     modelId: openAIConfiguration.ModelId,
                     apiKey: openAIConfiguration.ApiKey);
             }

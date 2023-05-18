@@ -47,7 +47,7 @@ public class SequentialPlanParserTests
         ContextVariables? variables = null,
         CancellationToken cancellationToken = default)
     {
-        return new SKContext(variables ?? new ContextVariables(), kernel.Memory, kernel.Skills, kernel.Log, cancellationToken);
+        return new SKContext(variables, kernel.Memory, kernel.Skills, kernel.Log, cancellationToken);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
@@ -77,7 +77,7 @@ public class SequentialPlanParserTests
 
             var result = this.CreateSKContext(kernel);
             result.Variables.Update(resultString);
-            mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, null))
+            mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
                 .ReturnsAsync(result);
 
             if (string.IsNullOrEmpty(name))
@@ -90,18 +90,10 @@ public class SequentialPlanParserTests
             }
             else
             {
-                if (isSemantic)
-                {
-                    skills.Setup(x => x.GetSemanticFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
-                        .Returns(mockFunction.Object);
-                    skills.Setup(x => x.HasSemanticFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name))).Returns(true);
-                }
-                else
-                {
-                    skills.Setup(x => x.GetNativeFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
-                        .Returns(mockFunction.Object);
-                    skills.Setup(x => x.HasNativeFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name))).Returns(true);
-                }
+                skills.Setup(x => x.GetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
+                    .Returns(mockFunction.Object);
+                ISKFunction? outFunc = mockFunction.Object;
+                skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
             }
         }
 
@@ -126,7 +118,7 @@ public class SequentialPlanParserTests
 <plan>
     <function.SummarizeSkill.Summarize/>
     <function.WriterSkill.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
-    <function.email.GetEmailAddressAsync input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
+    <function.email.GetEmailAddressAsync input=""John Doe"" setContextVariable=""EMAIL_ADDRESS"" appendToResult=""PLAN_RESULT""/>
     <function.email.SendEmailAsync input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
 </plan>";
         var goal = "Summarize an input, translate to french, and e-mail to John Doe";
@@ -149,22 +141,22 @@ public class SequentialPlanParserTests
             {
                 Assert.Equal("WriterSkill", step.SkillName);
                 Assert.Equal("Translate", step.Name);
-                Assert.Equal("French", step.NamedParameters["language"]);
-                Assert.True(step.NamedOutputs.ContainsKey("TRANSLATED_SUMMARY"));
+                Assert.Equal("French", step.Parameters["language"]);
+                Assert.True(step.Outputs.Contains("TRANSLATED_SUMMARY"));
             },
             step =>
             {
                 Assert.Equal("email", step.SkillName);
                 Assert.Equal("GetEmailAddressAsync", step.Name);
-                Assert.Equal("John Doe", step.NamedParameters["input"]);
-                Assert.True(step.NamedOutputs.ContainsKey("EMAIL_ADDRESS"));
+                Assert.Equal("John Doe", step.Parameters["input"]);
+                Assert.True(step.Outputs.Contains("EMAIL_ADDRESS"));
             },
             step =>
             {
                 Assert.Equal("email", step.SkillName);
                 Assert.Equal("SendEmailAsync", step.Name);
-                Assert.Equal("$TRANSLATED_SUMMARY", step.NamedParameters["input"]);
-                Assert.Equal("$EMAIL_ADDRESS", step.NamedParameters["email_address"]);
+                Assert.Equal("$TRANSLATED_SUMMARY", step.Parameters["input"]);
+                Assert.Equal("$EMAIL_ADDRESS", step.Parameters["email_address"]);
             }
         );
     }

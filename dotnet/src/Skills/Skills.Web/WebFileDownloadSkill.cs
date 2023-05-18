@@ -18,16 +18,9 @@ namespace Microsoft.SemanticKernel.Skills.Web;
 public class WebFileDownloadSkill : IDisposable
 {
     /// <summary>
-    /// Parameter names.
-    /// <see cref="ContextVariables"/>
+    /// Skill parameter: where to save file.
     /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Where to save file.
-        /// </summary>
-        public const string FilePath = "filePath";
-    }
+    public const string FilePathParamName = "filePath";
 
     private readonly ILogger _logger;
     private readonly HttpClientHandler _httpClientHandler;
@@ -54,15 +47,15 @@ public class WebFileDownloadSkill : IDisposable
     [SKFunction("Downloads a file to local storage")]
     [SKFunctionName("DownloadToFile")]
     [SKFunctionInput(Description = "URL of file to download")]
-    [SKFunctionContextParameter(Name = Parameters.FilePath, Description = "Path where to save file locally")]
+    [SKFunctionContextParameter(Name = FilePathParamName, Description = "Path where to save file locally")]
     public async Task DownloadToFileAsync(string source, SKContext context)
     {
         this._logger.LogDebug($"{nameof(this.DownloadToFileAsync)} got called");
 
-        if (!context.Variables.Get(Parameters.FilePath, out string filePath))
+        if (!context.Variables.Get(FilePathParamName, out string filePath))
         {
             this._logger.LogError($"Missing context variable in {nameof(this.DownloadToFileAsync)}");
-            string errorMessage = $"Missing variable {Parameters.FilePath}";
+            string errorMessage = $"Missing variable {FilePathParamName}";
             context.Fail(errorMessage);
 
             return;

@@ -17,28 +17,42 @@ const log = debug(Constants.debug.root).extend('chat-room');
 
 const useClasses = makeStyles({
     root: {
+        ...shorthands.overflow('hidden'),
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
         height: '100%',
-        display: 'grid',
-        gridTemplateColumns: '1fr',
-        gridTemplateRows: '1fr auto',
-        gridTemplateAreas: "'history' 'input'",
+    },
+    scroll: {
+        overflowY: 'scroll',
+        '&:hover': {
+            '&::-webkit-scrollbar-thumb': {
+                backgroundColor: tokens.colorScrollbarOverlay,
+                visibility: 'visible',
+            },
+            '&::-webkit-scrollbar-track': {
+                backgroundColor: tokens.colorNeutralBackground1,
+                WebkitBoxShadow: 'inset 0 0 5px rgba(0, 0, 0, 0.1)',
+                visibility: 'visible',
+            },
+        },
+        height: '-webkit-fill-available',
+        ...shorthands.margin('4px'),
     },
     history: {
-        ...shorthands.gridArea('history'),
         ...shorthands.padding(tokens.spacingVerticalM),
-        overflowY: 'auto',
-        display: 'grid',
+        marginLeft: '40px',
+        paddingRight: '40px',
+        display: 'flex',
+        justifyContent: 'center',
     },
     input: {
-        ...shorthands.gridArea('input'),
         ...shorthands.padding(tokens.spacingVerticalM),
-        backgroundColor: tokens.colorNeutralBackground4,
     },
 });
 
 export const ChatRoom: React.FC = () => {
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { audience } = conversations[selectedId];
     const messages = conversations[selectedId].messages;
     const classes = useClasses();
 
@@ -58,7 +72,7 @@ export const ChatRoom: React.FC = () => {
     React.useEffect(() => {
         if (!shouldAutoScroll) return;
         scrollToTarget(scrollTargetRef.current);
-    }, [messages, audience, shouldAutoScroll]);
+    }, [messages, shouldAutoScroll]);
 
     React.useEffect(() => {
         const onScroll = () => {
@@ -82,8 +96,14 @@ export const ChatRoom: React.FC = () => {
         return null;
     }
 
-    const handleSubmit = async (value: string) => {
+    const handleSubmit = async (
+        value: string,
+        approvedPlanJson?: string,
+        planUserIntent?: string,
+        userCancelledPlan?: boolean,
+    ) => {
         log('submitting user chat message');
+
         const chatInput = {
             timestamp: new Date().getTime(),
             userId: account?.homeAccountId,
@@ -91,20 +111,25 @@ export const ChatRoom: React.FC = () => {
             content: value,
             authorRole: AuthorRoles.User,
         };
+
         setIsBotTyping(true);
         dispatch(updateConversation({ message: chatInput }));
+
         try {
-            await chat.getResponse(value, selectedId);
+            await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userCancelledPlan);
         } finally {
             setIsBotTyping(false);
         }
+
         setShouldAutoScroll(true);
     };
 
     return (
         <div className={classes.root}>
-            <div ref={scrollViewTargetRef} className={classes.history}>
-                <ChatHistory audience={audience} messages={messages} />
+            <div ref={scrollViewTargetRef} className={classes.scroll}>
+                <div ref={scrollViewTargetRef} className={classes.history}>
+                    <ChatHistory messages={messages} onGetResponse={handleSubmit} />
+                </div>
                 <div>
                     <div ref={scrollTargetRef} />
                 </div>

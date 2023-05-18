@@ -50,7 +50,7 @@ internal sealed class VarBlock : Block, ITextRendering
             return false;
         }
 
-        if (!Regex.IsMatch(this.Name, "^[a-zA-Z0-9_]*$"))
+        if (!s_validNameRegex.IsMatch(this.Name))
         {
             errorMsg = $"The variable name '{this.Name}' contains invalid characters. " +
                        "Only alphanumeric chars and underscore are allowed.";
@@ -68,14 +68,20 @@ internal sealed class VarBlock : Block, ITextRendering
 
         if (string.IsNullOrEmpty(this.Name))
         {
-            const string errMsg = "Variable rendering failed, the variable name is empty";
-            this.Log.LogError(errMsg);
-            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, errMsg);
+            const string ErrMsg = "Variable rendering failed, the variable name is empty";
+            this.Log.LogError(ErrMsg);
+            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, ErrMsg);
         }
 
-        var exists = variables.Get(this.Name, out string value);
-        if (!exists) { this.Log.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name); }
+        if (variables.Get(this.Name, out string value))
+        {
+            return value;
+        }
 
-        return exists ? value : string.Empty;
+        this.Log.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name);
+
+        return string.Empty;
     }
+
+    private static readonly Regex s_validNameRegex = new("^[a-zA-Z0-9_]*$");
 }

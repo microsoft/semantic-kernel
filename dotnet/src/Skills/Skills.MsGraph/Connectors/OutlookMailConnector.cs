@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Diagnostics;
+using Microsoft.SemanticKernel.Skills.MsGraph.Models;
 
 namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 
@@ -35,13 +37,13 @@ public class OutlookMailConnector : IEmailConnector
         Ensure.NotNullOrWhitespace(content, nameof(content));
         Ensure.NotNull(recipients, nameof(recipients));
 
-        Message message = new Message
+        Message message = new()
         {
             Subject = subject,
             Body = new ItemBody { ContentType = BodyType.Text, Content = content },
             ToRecipients = recipients.Select(recipientAddress => new Recipient
             {
-                EmailAddress = new EmailAddress
+                EmailAddress = new()
                 {
                     Address = recipientAddress
                 }
@@ -49,5 +51,33 @@ public class OutlookMailConnector : IEmailConnector
         };
 
         await this._graphServiceClient.Me.SendMail(message).Request().PostAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Models.EmailMessage>> GetMessagesAsync(
+        int? top, int? skip, string? select, CancellationToken cancellationToken = default)
+    {
+        IUserMessagesCollectionRequest query = this._graphServiceClient.Me.Messages.Request();
+
+        if (top.HasValue)
+        {
+            query.Top(top.Value);
+        }
+
+        if (skip.HasValue)
+        {
+            query.Skip(skip.Value);
+        }
+
+        if (!string.IsNullOrEmpty(select))
+        {
+            query.Select(select);
+        }
+
+        IUserMessagesCollectionPage result = await query.GetAsync(cancellationToken).ConfigureAwait(false);
+
+        IEnumerable<EmailMessage> messages = result.Select(m => m.ToEmailMessage());
+
+        return messages;
     }
 }

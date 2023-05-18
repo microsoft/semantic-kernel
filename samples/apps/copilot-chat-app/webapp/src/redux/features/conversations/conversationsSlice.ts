@@ -1,17 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ChatMessage } from '../../../libs/models/ChatMessage';
+import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
 import { ChatState } from './ChatState';
 import { Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
 export const conversationsSlice = createSlice({
-    name: 'hub',
+    name: 'conversations',
     initialState,
     reducers: {
-        incrementBotProfilePictureIndex: (state: ConversationsState) => {
-            state.botProfilePictureIndex = ++state.botProfilePictureIndex % 5;
-        },
         setConversations: (state: ConversationsState, action: PayloadAction<Conversations>) => {
             state.conversations = action.payload;
         },
@@ -27,26 +24,36 @@ export const conversationsSlice = createSlice({
         addConversation: (state: ConversationsState, action: PayloadAction<ChatState>) => {
             const newId = action.payload.id ?? '';
             state.conversations = { [newId]: action.payload, ...state.conversations };
+            state.selectedId = newId;
         },
         updateConversation: (
             state: ConversationsState,
-            action: PayloadAction<{ message: ChatMessage; chatId?: string }>,
+            action: PayloadAction<{ message: IChatMessage; chatId?: string }>,
         ) => {
             const { message, chatId } = action.payload;
             const id = chatId ?? state.selectedId;
             state.conversations[id].messages.push(message);
             frontLoadChat(state, id);
         },
+        updateMessageState: (
+            state: ConversationsState,
+            action: PayloadAction<{ newMessageState: ChatMessageState; messageIndex: number; chatId?: string }>,
+        ) => {
+            const { newMessageState, messageIndex, chatId } = action.payload;
+            const id = chatId ?? state.selectedId;
+            state.conversations[id].messages[messageIndex].state = newMessageState;
+            frontLoadChat(state, id);
+        },
     },
 });
 
 export const {
-    incrementBotProfilePictureIndex,
     setConversations,
     editConversationTitle,
     setSelectedConversation,
     addConversation,
-    updateConversation
+    updateConversation,
+    updateMessageState,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

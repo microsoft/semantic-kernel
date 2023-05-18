@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using SemanticKernel.Service.Auth;
-using SemanticKernel.Service.Config;
-using SemanticKernel.Service.Skills;
-using SemanticKernel.Service.Storage;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service;
 
@@ -18,49 +21,34 @@ internal static class ServicesExtensions
     /// </summary>
     internal static IServiceCollection AddOptions(this IServiceCollection services, ConfigurationManager configuration)
     {
-        // General  configuration
+        // General configuration
         services.AddOptions<ServiceOptions>()
             .Bind(configuration.GetSection(ServiceOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
-        // AI service configurations
+        // AI service configurations for Semantic Kernel
         services.AddOptions<AIServiceOptions>(AIServiceOptions.CompletionPropertyName)
             .Bind(configuration.GetSection(AIServiceOptions.CompletionPropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         services.AddOptions<AIServiceOptions>(AIServiceOptions.EmbeddingPropertyName)
             .Bind(configuration.GetSection(AIServiceOptions.EmbeddingPropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
-        // Chat log storage configuration
-        services.AddOptions<ChatStoreOptions>()
-            .Bind(configuration.GetSection(ChatStoreOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+        // Authorization configuration
+        services.AddOptions<AuthorizationOptions>()
+            .Bind(configuration.GetSection(AuthorizationOptions.PropertyName))
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         // Memory store configuration
         services.AddOptions<MemoriesStoreOptions>()
             .Bind(configuration.GetSection(MemoriesStoreOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
-
-        // Azure speech token configuration
-        services.AddOptions<AzureSpeechOptions>()
-            .Bind(configuration.GetSection(AzureSpeechOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
-
-        // Bot schema configuration
-        services.AddOptions<BotSchemaOptions>()
-            .Bind(configuration.GetSection(BotSchemaOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
-
-        // Document memory options
-        services.AddOptions<DocumentMemoryOptions>()
-            .Bind(configuration.GetSection(DocumentMemoryOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
-
-        // Planner options
-        services.AddOptions<SequentialPlannerOptions>()
-            .Bind(configuration.GetSection(SequentialPlannerOptions.PropertyName))
-            .ValidateDataAnnotations().ValidateOnStart();
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
 
         return services;
     }
@@ -123,64 +111,46 @@ internal static class ServicesExtensions
     }
 
     /// <summary>
-    /// Add persistent chat store services.
+    /// Trim all string properties, recursively.
     /// </summary>
-    internal static void AddPersistentChatStore(this IServiceCollection services)
+    private static void TrimStringProperties<T>(T options) where T : class
     {
-        IStorageContext<ChatSession> chatSessionInMemoryContext;
-        IStorageContext<ChatMessage> chatMessageInMemoryContext;
+        Queue<object> targets = new();
+        targets.Enqueue(options);
 
-        ChatStoreOptions chatStoreConfig = services.BuildServiceProvider().GetRequiredService<IOptions<ChatStoreOptions>>().Value;
-
-        switch (chatStoreConfig.Type)
+        while (targets.Count > 0)
         {
-            case ChatStoreOptions.ChatStoreType.Volatile:
+            object target = targets.Dequeue();
+            Type targetType = target.GetType();
+            foreach (PropertyInfo property in targetType.GetProperties())
             {
-                chatSessionInMemoryContext = new VolatileContext<ChatSession>();
-                chatMessageInMemoryContext = new VolatileContext<ChatMessage>();
-                break;
-            }
-
-            case ChatStoreOptions.ChatStoreType.Filesystem:
-            {
-                if (chatStoreConfig.Filesystem == null)
+                // Skip enumerations
+                if (property.PropertyType.IsEnum)
                 {
-                    throw new InvalidOperationException("ChatStore:Filesystem is required when ChatStore:Type is 'Filesystem'");
+                    continue;
                 }
 
-                string fullPath = Path.GetFullPath(chatStoreConfig.Filesystem.FilePath);
-                string directory = Path.GetDirectoryName(fullPath) ?? string.Empty;
-                chatSessionInMemoryContext = new FileSystemContext<ChatSession>(
-                    new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_sessions{Path.GetExtension(fullPath)}")));
-                chatMessageInMemoryContext = new FileSystemContext<ChatMessage>(
-                    new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_messages{Path.GetExtension(fullPath)}")));
-
-                break;
-            }
-
-            case ChatStoreOptions.ChatStoreType.Cosmos:
-            {
-                if (chatStoreConfig.Cosmos == null)
+                // Property is a built-in type, readable, and writable.
+                if (property.PropertyType.Namespace == "System" &&
+                    property.CanRead &&
+                    property.CanWrite)
                 {
-                    throw new InvalidOperationException("ChatStore:Cosmos is required when ChatStore:Type is 'Cosmos'");
+                    // Property is a non-null string.
+                    if (property.PropertyType == typeof(string) &&
+                        property.GetValue(target) != null)
+                    {
+                        property.SetValue(target, property.GetValue(target)!.ToString()!.Trim());
+                    }
                 }
-#pragma warning disable CA2000 // Dispose objects before losing scope - objects are singletons for the duration of the process and disposed when the process exits.
-                chatSessionInMemoryContext = new CosmosDbContext<ChatSession>(
-                    chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.ChatSessionsContainer);
-                chatMessageInMemoryContext = new CosmosDbContext<ChatMessage>(
-                    chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.ChatMessagesContainer);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                break;
-            }
-
-            default:
-            {
-                throw new InvalidOperationException(
-                    $"Invalid 'ChatStore' setting 'chatStoreConfig.Type'.");
+                else
+                {
+                    // Property is a non-built-in and non-enum type - queue it for processing.
+                    if (property.GetValue(target) != null)
+                    {
+                        targets.Enqueue(property.GetValue(target)!);
+                    }
+                }
             }
         }
-
-        services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));
-        services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
     }
 }

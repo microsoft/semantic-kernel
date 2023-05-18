@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 
 /// <summary>
-/// Interface for OpenApi document classes.
+/// Interface for OpenApi document parser classes.
 /// </summary>
 internal interface IOpenApiDocumentParser
 {

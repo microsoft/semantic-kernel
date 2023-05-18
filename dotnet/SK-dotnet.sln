@@ -59,7 +59,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connectors", "connectors", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.UnitTests", "src\Connectors\Connectors.UnitTests\Connectors.UnitTests.csproj", "{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CopilotChatApi", "..\samples\apps\copilot-chat-app\webapi\CopilotChatApi.csproj", "{CCABF515-2C79-453E-A5A2-69C69B8D172E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CopilotChatWebApi", "..\samples\apps\copilot-chat-app\webapi\CopilotChatWebApi.csproj", "{CCABF515-2C79-453E-A5A2-69C69B8D172E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Qdrant", "src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
 EndProject
@@ -75,13 +75,24 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.MetaPackage"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImportDocument", "..\samples\apps\copilot-chat-app\importdocument\ImportDocument.csproj", "{94E14913-D600-4448-A5C5-A268C23B2C3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planning.ActionPlanner", "src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj", "{994BEF0B-E277-4D10-BB13-FE670D26620D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planning.ActionPlanner", "src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj", "{994BEF0B-E277-4D10-BB13-FE670D26620D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extensions", "extensions", "{078F96B4-09E1-4E0E-B214-F71A4F4BF633}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Extensions.UnitTests", "src\Extensions\Extensions.UnitTests\Extensions.UnitTests.csproj", "{F51017A9-15C8-472D-893C-080046D710A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.UnitTests", "src\Extensions\Extensions.UnitTests\Extensions.UnitTests.csproj", "{F51017A9-15C8-472D-893C-080046D710A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planning.SequentialPlanner", "src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj", "{A350933D-F9D5-4AD3-8C4F-B856B5020297}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planning.SequentialPlanner", "src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj", "{A350933D-F9D5-4AD3-8C4F-B856B5020297}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCognitiveSearch", "src\Connectors\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj", "{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Grpc", "src\Skills\Skills.Grpc\Skills.Grpc.csproj", "{E52F805C-794A-4CA9-B684-DFF358B18820}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AI.HuggingFace", "src\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj", "{136823BE-8665-4D57-87E0-EF41535539E2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InternalUtilities", "InternalUtilities", "{4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\InternalUtilities.props = src\InternalUtilities\InternalUtilities.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -197,6 +208,18 @@ Global
 		{A350933D-F9D5-4AD3-8C4F-B856B5020297}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A350933D-F9D5-4AD3-8C4F-B856B5020297}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A350933D-F9D5-4AD3-8C4F-B856B5020297}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E52F805C-794A-4CA9-B684-DFF358B18820}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E52F805C-794A-4CA9-B684-DFF358B18820}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E52F805C-794A-4CA9-B684-DFF358B18820}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E52F805C-794A-4CA9-B684-DFF358B18820}.Release|Any CPU.Build.0 = Release|Any CPU
+		{136823BE-8665-4D57-87E0-EF41535539E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{136823BE-8665-4D57-87E0-EF41535539E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{136823BE-8665-4D57-87E0-EF41535539E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{136823BE-8665-4D57-87E0-EF41535539E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -229,10 +252,14 @@ Global
 		{627742DB-1E52-468A-99BD-6FF1A542D25B} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{E3299033-EB81-4C4C-BCD9-E8DC40937969} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{94E14913-D600-4448-A5C5-A268C23B2C3B} = {FA3720F1-C99A-49B2-9577-A940257098BF}
-		{078F96B4-09E1-4E0E-B214-F71A4F4BF633} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{994BEF0B-E277-4D10-BB13-FE670D26620D} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+		{078F96B4-09E1-4E0E-B214-F71A4F4BF633} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{F51017A9-15C8-472D-893C-080046D710A6} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{A350933D-F9D5-4AD3-8C4F-B856B5020297} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+		{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{E52F805C-794A-4CA9-B684-DFF358B18820} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
+		{136823BE-8665-4D57-87E0-EF41535539E2} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{4D3DAE63-41C6-4E1C-A35A-E77BDFC40675} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

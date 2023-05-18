@@ -5,11 +5,71 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel;
 
+#pragma warning disable RCS1194 // Implement exception constructors
+
 /// <summary>
-/// Kernel logic exception
+/// Exception thrown for errors related to kernel logic.
 /// </summary>
-public class KernelException : Exception<KernelException.ErrorCodes>
+public class KernelException : SKException
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelException"/> class with a provided error code.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    public KernelException(ErrorCodes errorCode)
+        : this(errorCode, message: null, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelException"/> class with a provided error code and message.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">The exception message.</param>
+    public KernelException(ErrorCodes errorCode, string? message)
+        : this(errorCode, message, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelException"/> class with a provided error code, message, and inner exception.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">A string that describes the error.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception.</param>
+    public KernelException(ErrorCodes errorCode, string? message, Exception? innerException)
+        : base(GetDefaultMessage(errorCode, message), innerException)
+    {
+        this.ErrorCode = errorCode;
+    }
+
+    /// <summary>
+    /// Gets the error code for this exception.
+    /// </summary>
+    public ErrorCodes ErrorCode { get; }
+
+    /// <summary>Translate the error code into a default message.</summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="defaultMessage">Default error message if nothing available.</param>
+    private static string GetDefaultMessage(ErrorCodes errorCode, string? defaultMessage)
+    {
+        string description = errorCode switch
+        {
+            ErrorCodes.InvalidFunctionDescription => "Invalid function description",
+            ErrorCodes.FunctionOverloadNotSupported => "Function overload not supported",
+            ErrorCodes.FunctionNotAvailable => "Function not available",
+            ErrorCodes.FunctionTypeNotSupported => "Function type not supported",
+            ErrorCodes.InvalidFunctionType => "Invalid function type",
+            ErrorCodes.InvalidServiceConfiguration => "Invalid service configuration",
+            ErrorCodes.ServiceNotFound => "Service not found",
+            ErrorCodes.SkillCollectionNotSet => "Skill collection not set",
+            ErrorCodes.FunctionInvokeError => "Function invoke error",
+            _ => $"Unknown error ({errorCode:G})",
+        };
+
+        return defaultMessage is not null ? $"{description}: {defaultMessage}" : description;
+    }
+
     /// <summary>
     /// Semantic kernel error codes.
     /// </summary>
@@ -65,49 +125,4 @@ public class KernelException : Exception<KernelException.ErrorCodes>
         /// </summary>
         FunctionInvokeError,
     }
-
-    /// <summary>
-    /// Error code.
-    /// </summary>
-    public ErrorCodes ErrorCode { get; set; }
-
-    /// <summary>
-    /// Constructor for KernelException.
-    /// </summary>
-    /// <param name="errCode">Error code to put in KernelException.</param>
-    /// <param name="message">Message to put in KernelException.</param>
-    public KernelException(ErrorCodes errCode, string? message = null) : base(errCode, message)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    /// <summary>
-    /// Constructor for KernelException.
-    /// </summary>
-    /// <param name="errCode">Error code to put in KernelException.</param>
-    /// <param name="message">Message to put in KernelException.</param>
-    /// <param name="e">Exception to embed in KernelException.</param>
-    public KernelException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    #region private ================================================================================
-
-    private KernelException()
-    {
-        // Not allowed, error code is required
-    }
-
-    private KernelException(string message) : base(message)
-    {
-        // Not allowed, error code is required
-    }
-
-    private KernelException(string message, Exception innerException) : base(message, innerException)
-    {
-        // Not allowed, error code is required
-    }
-
-    #endregion
 }

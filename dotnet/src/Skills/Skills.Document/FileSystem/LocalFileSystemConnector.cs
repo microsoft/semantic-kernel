@@ -18,7 +18,7 @@ public class LocalFileSystemConnector : IFileSystemConnector
     /// Get the contents of a file as a read-only stream.
     /// </summary>
     /// <param name="filePath">Path to file</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="PathTooLongException"></exception>
@@ -44,7 +44,7 @@ public class LocalFileSystemConnector : IFileSystemConnector
     /// Get a writeable stream to a file.
     /// </summary>
     /// <param name="filePath">Path to file</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="PathTooLongException"></exception>
@@ -70,7 +70,7 @@ public class LocalFileSystemConnector : IFileSystemConnector
     /// Get a writeable stream to a file.
     /// </summary>
     /// <param name="filePath">Path to file</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="PathTooLongException"></exception>

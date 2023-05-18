@@ -54,9 +54,14 @@ public static class SKContextSequentialPlannerExtensions
         var excludedFunctions = config.ExcludedFunctions ?? new();
         var includedFunctions = config.IncludedFunctions ?? new();
 
-        context.ThrowIfSkillCollectionNotSet();
+        if (context.Skills == null)
+        {
+            throw new KernelException(
+                KernelException.ErrorCodes.SkillCollectionNotSet,
+                "Skill collection not found in the context");
+        }
 
-        var functionsView = context.Skills!.GetFunctionsView();
+        var functionsView = context.Skills.GetFunctionsView();
 
         var availableFunctions = functionsView.SemanticFunctions
             .Concat(functionsView.NativeFunctions)
@@ -139,14 +144,14 @@ public static class SKContextSequentialPlannerExtensions
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
             var memoryEntry = await context.Memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false,
-                cancel: context.CancellationToken).ConfigureAwait(false);
+                cancellationToken: context.CancellationToken).ConfigureAwait(false);
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
                 // Memory now supports these such strategies.
                 await context.Memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: textToEmbed, id: key, description: description,
-                    additionalMetadata: string.Empty, cancel: context.CancellationToken).ConfigureAwait(false);
+                    additionalMetadata: string.Empty, cancellationToken: context.CancellationToken).ConfigureAwait(false);
             }
         }
 

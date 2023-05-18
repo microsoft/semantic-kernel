@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Reliability;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
@@ -22,14 +22,14 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, IEmbed
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="handlerFactory">Retry handler factory for HTTP requests.</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     public AzureTextEmbeddingGeneration(
         string modelId,
         string endpoint,
         string apiKey,
-        IDelegatingHandlerFactory? handlerFactory = null,
-        ILogger? log = null) : base(modelId, endpoint, apiKey, handlerFactory, log)
+        HttpClient? httpClient = null,
+        ILogger? logger = null) : base(modelId, endpoint, apiKey, httpClient, logger)
     {
     }
 
@@ -38,15 +38,15 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, IEmbed
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
-    /// <param name="handlerFactory">Retry handler factory for HTTP requests.</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     public AzureTextEmbeddingGeneration(
         string modelId,
         string endpoint,
-        TokenCredential credentials,
-        IDelegatingHandlerFactory? handlerFactory = null,
-        ILogger? log = null) : base(modelId, endpoint, credentials, handlerFactory, log)
+        TokenCredential credential,
+        HttpClient? httpClient = null,
+        ILogger? logger = null) : base(modelId, endpoint, credential, httpClient, logger)
     {
     }
 
@@ -54,7 +54,7 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, IEmbed
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
     /// <param name="data">List of strings to generate embeddings for</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of embeddings</returns>
     public Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(
         IList<string> data,

@@ -55,7 +55,7 @@ public sealed class WebSkillTests : IDisposable
         // Act
         SKContext result = await kernel.RunAsync(
             prompt,
-            search["SearchAsync"]
+            search["Search"]
         );
 
         // Assert
@@ -72,7 +72,7 @@ public sealed class WebSkillTests : IDisposable
         var download = kernel.ImportSkill(skill, "WebFileDownload");
         string fileWhereToSaveWebPage = Path.GetTempFileName();
         var contextVariables = new ContextVariables("https://www.microsoft.com");
-        contextVariables.Set(WebFileDownloadSkill.Parameters.FilePath, fileWhereToSaveWebPage);
+        contextVariables.Set(WebFileDownloadSkill.FilePathParamName, fileWhereToSaveWebPage);
 
         // Act
         await kernel.RunAsync(contextVariables, download["DownloadToFile"]);

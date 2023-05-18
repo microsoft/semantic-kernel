@@ -1,11 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AuthenticatedTemplate, UnauthenticatedTemplate, useAccount, useIsAuthenticated, useMsal } from '@azure/msal-react';
-import { Avatar, Spinner, Subtitle1, makeStyles } from '@fluentui/react-components';
+import {
+    AuthenticatedTemplate,
+    UnauthenticatedTemplate,
+    useAccount,
+    useIsAuthenticated,
+    useMsal,
+} from '@azure/msal-react';
+import { Spinner, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
+import { UserSettings } from './components/header/UserSettings';
+import { PluginGallery } from './components/open-api-plugins/PluginGallery';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
 import { Login } from './components/views/Login';
@@ -13,16 +21,18 @@ import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { removeAlert } from './redux/features/app/appSlice';
+import { CopilotChatTokens } from './styles';
 
-const useClasses = makeStyles({
+export const useClasses = makeStyles({
     container: {
+        ...shorthands.overflow('hidden'),
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'stretch',
-        justifyContent: 'space-between',
+        width: '100%',
+        height: '100vh',
     },
     header: {
-        backgroundColor: '#9c2153',
+        backgroundColor: CopilotChatTokens.backgroundColor,
         width: '100%',
         height: '48px',
         color: '#FFF',
@@ -37,6 +47,10 @@ const useClasses = makeStyles({
     persona: {
         marginRight: '20px',
     },
+    cornerItems: {
+        display: 'flex',
+        ...shorthands.gap(tokens.spacingHorizontalXS),
+    },
 });
 
 enum AppState {
@@ -46,19 +60,22 @@ enum AppState {
 }
 
 const App: FC = () => {
-    const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const classes = useClasses();
+
+    const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const { alerts } = useAppSelector((state: RootState) => state.app);
     const dispatch = useAppDispatch();
-        
+
     const { instance, accounts, inProgress } = useMsal();
-    const account = useAccount(accounts[0] || {});    
+    const account = useAccount(accounts[0] || {});
     const isAuthenticated = useIsAuthenticated();
 
     const chat = useChat();
 
     useEffect(() => {
-        if (isAuthenticated && account && appState === AppState.LoadingChats) {            
+        if (isAuthenticated && account && appState === AppState.LoadingChats) {
+            instance.setActiveAccount(account);
+
             // Load all chats from memory
             async function loadChats() {
                 if (await chat.loadChats()) {
@@ -79,24 +96,21 @@ const App: FC = () => {
     return (
         <div>
             <UnauthenticatedTemplate>
-                <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
+                <div className={classes.container}>
                     <div className={classes.header}>
-                        <Subtitle1 as="h1">Copilot Chat</Subtitle1>                        
+                        <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                     </div>
                     <Login />
                 </div>
             </UnauthenticatedTemplate>
             <AuthenticatedTemplate>
-                <div style={{ display: 'flex', width: '100%', flexDirection: 'column', height: '100vh' }}>
+                <div className={classes.container}>
                     <div className={classes.header}>
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
-                        <Avatar
-                            className={classes.persona}
-                            key={account?.name}
-                            name={account?.name}
-                            size={28}
-                            badge={{ status: 'available' }}
-                        />
+                        <div className={classes.cornerItems}>
+                            <PluginGallery />
+                            <UserSettings />
+                        </div>
                     </div>
                     {alerts &&
                         Object.keys(alerts).map((key) => {

@@ -4,7 +4,7 @@ The Semantic Kernel OpenAPI Skill enables developers to take any REST API that f
 
 ## The `AuthenticateRequestAsyncCallback` delegate
 
-[`AuthenticateRequestAsyncCallback`](../../../SemanticKernel.Abstractions/Connectors/WebApi/Rest/AuthenticateRequestAsyncCallback.cs) is a delegate type that serves as a callback function for adding authentication information to HTTP requests sent by the OpenAPI skill.
+[`AuthenticateRequestAsyncCallback`](AuthenticateRequestAsyncCallback.cs) is a delegate type that serves as a callback function for adding authentication information to HTTP requests sent by the OpenAPI skill.
 
 ```csharp
 public delegate Task AuthenticateRequestAsyncCallback(HttpRequestMessage request);

@@ -9,5 +9,3 @@ For each function the list includes details about the input parameters.
 {{this.ListOfFunctions}}
 - End list of functions.
 Goal: {{ $input }}
-{"plan":{
-"rationale": 

@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT License.
 
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.Service.Config;
-using SemanticKernel.Service.Model;
-using SemanticKernel.Service.Skills;
-using SemanticKernel.Service.Storage;
+using SemanticKernel.Service.Models;
 
 namespace SemanticKernel.Service.Controllers;
 
@@ -19,17 +19,10 @@ namespace SemanticKernel.Service.Controllers;
 public class SemanticKernelController : ControllerBase
 {
     private readonly ILogger<SemanticKernelController> _logger;
-    private readonly PromptSettings _promptSettings;
-    private readonly ServiceOptions _options;
 
-    public SemanticKernelController(
-        IOptions<ServiceOptions> options,
-        PromptSettings promptSettings,
-        ILogger<SemanticKernelController> logger)
+    public SemanticKernelController(ILogger<SemanticKernelController> logger)
     {
         this._logger = logger;
-        this._options = options.Value;
-        this._promptSettings = promptSettings;
     }
 
     /// <summary>
@@ -41,11 +34,6 @@ public class SemanticKernelController : ControllerBase
     /// and attempt to invoke the function with the given name.
     /// </remarks>
     /// <param name="kernel">Semantic kernel obtained through dependency injection</param>
-    /// <param name="chatRepository">Storage repository to store chat sessions</param>
-    /// <param name="chatMessageRepository">Storage repository to store chat messages</param>
-    /// <param name="documentMemoryOptions">Options for document memory handling.</param>
-    /// <param name="plannerFactory">Factory for planners to use to create function sequences.</param>
-    /// <param name="plannerOptions">Options for the planner.</param>
     /// <param name="ask">Prompt along with its parameters</param>
     /// <param name="skillName">Skill in which function to invoke resides</param>
     /// <param name="functionName">Name of function to invoke</param>
@@ -58,11 +46,6 @@ public class SemanticKernelController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AskResult>> InvokeFunctionAsync(
         [FromServices] IKernel kernel,
-        [FromServices] ChatSessionRepository chatRepository,
-        [FromServices] ChatMessageRepository chatMessageRepository,
-        [FromServices] IOptions<DocumentMemoryOptions> documentMemoryOptions,
-        [FromServices] PlannerFactoryAsync plannerFactory,
-        [FromServices] IOptions<SequentialPlannerOptions> plannerOptions,
         [FromBody] Ask ask,
         string skillName, string functionName)
     {
@@ -73,21 +56,14 @@ public class SemanticKernelController : ControllerBase
             return this.BadRequest("Input is required.");
         }
 
-        // Not required for Copilot Chat, but this is how to register additional skills for the service to provide.
-        if (!string.IsNullOrWhiteSpace(this._options.SemanticSkillsDirectory))
+        // Put ask's variables in the context we will use.
+        var contextVariables = new ContextVariables(ask.Input);
+        foreach (var input in ask.Variables)
         {
-            kernel.RegisterSemanticSkills(this._options.SemanticSkillsDirectory, this._logger);
+            contextVariables.Set(input.Key, input.Value);
         }
 
-        kernel.RegisterNativeSkills(
-            chatSessionRepository: chatRepository,
-            chatMessageRepository: chatMessageRepository,
-            promptSettings: this._promptSettings,
-            plannerFactory: plannerFactory,
-            plannerOptions: plannerOptions.Value,
-            documentMemoryOptions: documentMemoryOptions.Value,
-            logger: this._logger);
-
+        // Get the function to invoke
         ISKFunction? function = null;
         try
         {
@@ -98,14 +74,7 @@ public class SemanticKernelController : ControllerBase
             return this.NotFound($"Failed to find {skillName}/{functionName} on server");
         }
 
-        // Put ask's variables in the context we will use
-        var contextVariables = new ContextVariables(ask.Input);
-        foreach (var input in ask.Variables)
-        {
-            contextVariables.Set(input.Key, input.Value);
-        }
-
-        // Run function
+        // Run the function.
         SKContext result = await kernel.RunAsync(contextVariables, function!);
         if (result.ErrorOccurred)
         {

@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Reliability;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -22,39 +24,57 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
-    /// <param name="handlerFactory">Retry handler factory for HTTP requests.</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
     public OpenAIChatCompletion(
         string modelId,
         string apiKey,
         string? organization = null,
-        IDelegatingHandlerFactory? handlerFactory = null,
-        ILogger? log = null
-    ) : base(modelId, apiKey, organization, handlerFactory, log)
+        HttpClient? httpClient = null,
+        ILogger? logger = null
+    ) : base(modelId, apiKey, organization, httpClient, logger)
     {
     }
 
     /// <inheritdoc/>
     public Task<string> GenerateMessageAsync(
         ChatHistory chat,
-        ChatRequestSettings requestSettings,
+        ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGenerateChatMessageAsync(chat, requestSettings, cancellationToken);
+        return this.InternalGenerateChatMessageAsync(chat, requestSettings ?? new(), cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string> GenerateMessageStreamAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalGenerateChatMessageStreamAsync(chat, requestSettings ?? new(), cancellationToken);
     }
 
     /// <inheritdoc/>
     public ChatHistory CreateNewChat(string instructions = "")
     {
-        return this.InternalCreateNewChat(instructions);
+        return InternalCreateNewChat(instructions);
     }
 
     /// <inheritdoc/>
-    public Task<string> CompleteAsync(
+    public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken);
+        return this.InternalGetTextCompletionAsChat(text, requestSettings, cancellationToken).ToAsyncEnumerable();
+    }
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(this.InternalGetTextCompletionAsChat(text, requestSettings, cancellationToken) as IReadOnlyList<ITextCompletionResult>);
     }
 }

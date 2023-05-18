@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextCompletion;
@@ -33,21 +33,21 @@ public sealed class HuggingFaceTextCompletionTests
     public async Task HuggingFaceLocalAndRemoteTextCompletionAsync()
     {
         // Arrange
-        const string input = "This is test";
+        const string Input = "This is test";
 
         using var huggingFaceLocal = new HuggingFaceTextCompletion(new Uri(Endpoint), Model);
         using var huggingFaceRemote = new HuggingFaceTextCompletion(this.GetApiKey(), Model);
 
         // Act
-        var localResponse = await huggingFaceLocal.CompleteAsync(input, new CompleteRequestSettings());
-        var remoteResponse = await huggingFaceRemote.CompleteAsync(input, new CompleteRequestSettings());
+        var localResponse = await huggingFaceLocal.CompleteAsync(Input, new CompleteRequestSettings());
+        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input, new CompleteRequestSettings());
 
         // Assert
         Assert.NotNull(localResponse);
         Assert.NotNull(remoteResponse);
 
-        Assert.StartsWith(input, localResponse, StringComparison.Ordinal);
-        Assert.StartsWith(input, remoteResponse, StringComparison.Ordinal);
+        Assert.StartsWith(Input, localResponse, StringComparison.Ordinal);
+        Assert.StartsWith(Input, remoteResponse, StringComparison.Ordinal);
     }
 
     private string GetApiKey()

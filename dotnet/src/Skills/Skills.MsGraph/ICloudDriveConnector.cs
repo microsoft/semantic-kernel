@@ -17,7 +17,7 @@ public interface ICloudDriveConnector
     /// <param name="filePath">Path to the file.</param>
     /// <param name="type">Type of link to create.</param>
     /// <param name="scope">Scope of the link.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Shareable link.</returns>
     Task<string> CreateShareLinkAsync(string filePath, string type = "view", string scope = "anonymous", CancellationToken cancellationToken = default);
 
@@ -25,7 +25,7 @@ public interface ICloudDriveConnector
     /// Get the content of a file.
     /// </summary>
     /// <param name="filePath">Path to the remote file.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<Stream> GetFileContentStreamAsync(string filePath, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -33,7 +33,6 @@ public interface ICloudDriveConnector
     /// </summary>
     /// <param name="filePath">Path of the local file to upload.</param>
     /// <param name="destinationPath">Remote path to store the file, which is relative to the root of the OneDrive folder and should begin with the '/' character.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns></returns>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task UploadSmallFileAsync(string filePath, string destinationPath, CancellationToken cancellationToken = default);
 }

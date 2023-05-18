@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
@@ -55,7 +54,7 @@ public class QdrantVectorRecord
     /// <summary>
     /// Serializes the metadata to JSON.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Serialized payload</returns>
     public string GetSerializedPayload()
     {
         return JsonSerializer.Serialize(this.Payload);
@@ -68,9 +67,8 @@ public class QdrantVectorRecord
     /// <param name="embedding"></param>
     /// <param name="json"></param>
     /// <param name="tags"></param>
-    /// <returns></returns>
-    /// <exception cref="QdrantMemoryException"></exception>
-    [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Following 'IsSupported' pattern of System.Numerics.")]
+    /// <returns>Vector record</returns>
+    /// <exception cref="QdrantMemoryException">Qdrant exception</exception>
     public static QdrantVectorRecord FromJsonMetadata(string pointId, IEnumerable<float> embedding, string json, List<string>? tags = null)
     {
         var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
@@ -78,9 +76,7 @@ public class QdrantVectorRecord
         {
             return new QdrantVectorRecord(pointId, embedding, payload, tags);
         }
-        else
-        {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.UnableToDeserializeRecordPayload, "Failed to deserialize payload");
-        }
+
+        throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.UnableToDeserializeRecordPayload);
     }
 }

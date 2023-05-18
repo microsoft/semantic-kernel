@@ -20,7 +20,7 @@ public sealed class SKFunctionTests3
         var skillInstance = new LocalExampleSkill();
         MethodInfo[] methods = skillInstance.GetType()
             .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name != "GetType" && m.Name != "Equals" && m.Name != "GetHashCode" && m.Name != "ToString")
+            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
         IEnumerable<ISKFunction> functions = from method in methods select SKFunction.FromNativeMethod(method, skillInstance, "skill");
@@ -43,7 +43,7 @@ public sealed class SKFunctionTests3
         var instance = new InvalidSkill();
         MethodInfo[] methods = instance.GetType()
             .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name != "GetType" && m.Name != "Equals" && m.Name != "GetHashCode")
+            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode")
             .ToArray();
 
         // Act - Assert that no exception occurs
@@ -62,6 +62,73 @@ public sealed class SKFunctionTests3
 
         // Assert
         Assert.Equal(3, count);
+    }
+
+    [Fact]
+    public async Task ItCanImportNativeFunctionsAsync()
+    {
+        // Arrange
+        var context = Kernel.Builder.Build().CreateNewContext();
+        context["done"] = "NO";
+
+        // Note: the function doesn't have any SK attributes
+        async Task<SKContext> ExecuteAsync(SKContext contextIn)
+        {
+            Assert.Equal("NO", contextIn["done"]);
+            contextIn["canary"] = "YES";
+
+            await Task.Delay(0);
+            return contextIn;
+        }
+
+        // Act
+
+        ISKFunction function = SKFunction.FromNativeFunction(
+            nativeFunction: ExecuteAsync,
+            parameters: null,
+            description: "description",
+            skillName: "skillName",
+            functionName: "functionName");
+
+        SKContext result = await function.InvokeAsync(context);
+
+        // Assert
+        Assert.Equal("YES", context["canary"]);
+        Assert.Equal("YES", result["canary"]);
+    }
+
+    [Fact]
+    public async Task ItCanImportNativeFunctionsWithExternalReferencesAsync()
+    {
+        // Arrange
+        var context = Kernel.Builder.Build().CreateNewContext();
+        context["done"] = "NO";
+
+        // Note: This is an important edge case that affects the function signature and how delegates
+        //       are handled internally: the function references an external variable and cannot be static.
+        //       This scenario is used for gRPC functions.
+        string variableOutsideTheFunction = "foo";
+
+        async Task<SKContext> ExecuteAsync(SKContext contextIn)
+        {
+            string referenceToExternalVariable = variableOutsideTheFunction;
+            contextIn["canary"] = "YES";
+
+            await Task.Delay(0);
+            return contextIn;
+        }
+
+        // Act. Note: this will throw an exception if SKFunction doesn't handle the function type.
+        ISKFunction function = SKFunction.FromNativeFunction(
+            nativeFunction: ExecuteAsync,
+            description: "description",
+            skillName: "skillName",
+            functionName: "functionName");
+
+        SKContext result = await function.InvokeAsync(context);
+
+        // Assert
+        Assert.Equal("YES", result["canary"]);
     }
 
     private sealed class InvalidSkill

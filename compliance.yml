@@ -17,10 +17,10 @@ steps:
     ErrorLevel: 'warn'
 
 - task: UseDotNet@2
-  displayName: 'Use .NET 6.0'
+  displayName: 'Use .NET 7.0'
   inputs:
     packageType: 'sdk'
-    version: '6.x'
+    version: '7.x'
 
 - task: Semmle@1
   env: 
@@ -51,6 +51,7 @@ steps:
     scanType: 'Register'
     verbosity: 'Verbose'
     alertWarningLevel: 'High'
+    failOnAlert: true
 
 - task: PublishSecurityAnalysisLogs@3
   inputs:

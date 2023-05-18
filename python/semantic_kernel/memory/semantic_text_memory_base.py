@@ -26,7 +26,6 @@ class SemanticTextMemoryBase(ABC):
         external_id: str,
         external_source_name: str,
         description: Optional[str] = None,
-        # TODO: ctoken?
     ) -> None:
         pass
 
@@ -34,7 +33,7 @@ class SemanticTextMemoryBase(ABC):
     async def get_async(
         self,
         collection: str,
-        query: str,  # TODO: ctoken?
+        query: str,
     ) -> Optional[MemoryQueryResult]:
         pass
 

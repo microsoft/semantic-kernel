@@ -5,11 +5,63 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Planning;
 
+#pragma warning disable RCS1194 // Implement exception constructors
+
 /// <summary>
-/// Planning exception.
+/// Exception thrown for errors related to planning.
 /// </summary>
-public class PlanningException : Exception<PlanningException.ErrorCodes>
+public class PlanningException : SKException
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PlanningException"/> class with a provided error code.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    public PlanningException(ErrorCodes errorCode)
+        : this(errorCode, message: null, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PlanningException"/> class with a provided error code and message.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">The exception message.</param>
+    public PlanningException(ErrorCodes errorCode, string? message)
+        : this(errorCode, message, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PlanningException"/> class with a provided error code, message, and inner exception.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">A string that describes the error.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception.</param>
+    public PlanningException(ErrorCodes errorCode, string? message, Exception? innerException)
+        : base(GetDefaultMessage(errorCode, message), innerException)
+    {
+        this.ErrorCode = errorCode;
+    }
+
+    /// <summary>
+    /// Gets the error code for this exception.
+    /// </summary>
+    public ErrorCodes ErrorCode { get; }
+
+    /// <summary>Translate the error code into a default message.</summary>
+    private static string GetDefaultMessage(ErrorCodes errorCode, string? message)
+    {
+        string description = errorCode switch
+        {
+            ErrorCodes.InvalidGoal => "Invalid goal",
+            ErrorCodes.InvalidPlan => "Invalid plan",
+            ErrorCodes.InvalidConfiguration => "Invalid configuration",
+            _ => $"Unknown error ({errorCode:G})",
+        };
+
+        return message is not null ? $"{description}: {message}" : description;
+    }
+
     /// <summary>
     /// Error codes for <see cref="PlanningException"/>.
     /// </summary>
@@ -23,61 +75,16 @@ public class PlanningException : Exception<PlanningException.ErrorCodes>
         /// <summary>
         /// Invalid goal.
         /// </summary>
-        InvalidGoal = 0,
+        InvalidGoal,
 
         /// <summary>
         /// Invalid plan.
         /// </summary>
-        InvalidPlan = 1,
+        InvalidPlan,
 
         /// <summary>
         /// Invalid configuration.
         /// </summary>
-        InvalidConfiguration = 2,
+        InvalidConfiguration,
     }
-
-    /// <summary>
-    /// Gets the error code of the exception.
-    /// </summary>
-    public ErrorCodes ErrorCode { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PlanningException"/> class.
-    /// </summary>
-    /// <param name="errCode">The error code.</param>
-    /// <param name="message">The message.</param>
-    public PlanningException(ErrorCodes errCode, string? message = null) : base(errCode, message)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PlanningException"/> class.
-    /// </summary>
-    /// <param name="errCode">The error code.</param>
-    /// <param name="message">The message.</param>
-    /// <param name="e">The inner exception.</param>
-    public PlanningException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    #region private ================================================================================
-
-    private PlanningException()
-    {
-        // Not allowed, error code is required
-    }
-
-    private PlanningException(string message) : base(message)
-    {
-        // Not allowed, error code is required
-    }
-
-    private PlanningException(string message, Exception innerException) : base(message, innerException)
-    {
-        // Not allowed, error code is required
-    }
-
-    #endregion
 }

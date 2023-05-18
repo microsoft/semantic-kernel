@@ -145,7 +145,7 @@ def _split_text_lines(text: str, max_token_per_line: int, trim: bool) -> List[st
 
 
 def _split_str_lines(
-    text: str, max_tokens: int, seprators: List[List[str]], trim: bool
+    text: str, max_tokens: int, separators: List[List[str]], trim: bool
 ) -> List[str]:
     if not text:
         return []
@@ -153,7 +153,7 @@ def _split_str_lines(
     text = text.replace("\r\n", "\n")
     lines = []
     was_split = False
-    for split_option in seprators:
+    for split_option in separators:
         if not lines:
             lines, was_split = _split_str(text, max_tokens, split_option, trim)
         else:
@@ -224,7 +224,7 @@ def _split_list(
     text: List[str], max_tokens: int, separators: List[str], trim: bool
 ) -> List[str]:
     """
-    Split list of sring into lines.
+    Split list of string into lines.
     """
     if not text:
         return []

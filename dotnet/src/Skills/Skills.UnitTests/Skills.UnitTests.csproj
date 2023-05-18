@@ -4,6 +4,8 @@
     <AssemblyName>SemanticKernel.Skills.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Skills.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
+    <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
@@ -11,11 +13,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Grpc\protoV3.proto" />
     <None Remove="OpenAPI\TestSkills\documentV3_1.yaml" />
     <None Remove="OpenAPI\TestSkills\openapi.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Grpc\Protobuf\TestSkills\protoV3.proto" />
     <EmbeddedResource Include="OpenAPI\TestSkills\documentV2_0.json" />
     <EmbeddedResource Include="OpenAPI\TestSkills\documentV3_1.yaml" />
     <EmbeddedResource Include="OpenAPI\TestSkills\documentV3_0.json" />
@@ -35,6 +39,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
     <ProjectReference Include="..\Skills.Document\Skills.Document.csproj" />
+    <ProjectReference Include="..\Skills.Grpc\Skills.Grpc.csproj" />
     <ProjectReference Include="..\Skills.MsGraph\Skills.MsGraph.csproj" />
     <ProjectReference Include="..\Skills.OpenAPI\Skills.OpenAPI.csproj" />
     <ProjectReference Include="..\Skills.Web\Skills.Web.csproj" />

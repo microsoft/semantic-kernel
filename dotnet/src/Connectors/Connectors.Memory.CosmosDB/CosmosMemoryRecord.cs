@@ -37,4 +37,3 @@ public class CosmosMemoryRecord
     /// </summary>
     public string MetadataString { get; set; } = string.Empty;
 }
-

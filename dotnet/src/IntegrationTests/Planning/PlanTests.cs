@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -43,9 +44,8 @@ public sealed class PlanTests : IDisposable
 
         // Assert
         Assert.Equal(prompt, plan.Description);
-        Assert.Equal(prompt, plan.Name);
-        // TODO: avoid hardcoded names, tests shouldn't fail when refactoring code
-        Assert.Equal("Microsoft.SemanticKernel.Planning.Plan", plan.SkillName);
+        Assert.Equal(string.Empty, plan.Name);
+        Assert.Equal(typeof(Plan).FullName, plan.SkillName);
         Assert.Empty(plan.Steps);
     }
 
@@ -55,6 +55,28 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
+
+        var plan = new Plan(emailSkill["SendEmailAsync"]);
+
+        // Act
+        var cv = new ContextVariables();
+        cv.Update(inputToEmail);
+        cv.Set("email_address", expectedEmail);
+        var result = await target.RunAsync(cv, plan);
+
+        // Assert
+        Assert.Equal(expectedBody, result.Result);
+    }
+
+    [Theory]
+    [InlineData("This is a story about a dog.", "kai@email.com")]
+    public async Task CanExecuteAsChatAsync(string inputToEmail, string expectedEmail)
+    {
+        // Arrange
+        IKernel target = this.InitializeKernel(false, true);
+
         var emailSkill = target.ImportSkill(new EmailSkillFake());
         var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
 
@@ -119,7 +141,7 @@ public sealed class PlanTests : IDisposable
         // Assert
         Assert.NotNull(result);
         Assert.Equal(
-            $"Sent email to: something@email.com. Body: Roses are red, violets are blue, Roses are red, violets are blue, Roses are red, violets are blue, PlanInput is hard, so is this test. is hard, so is this test. is hard, so is this test.",
+            "Sent email to: something@email.com. Body: Roses are red, violets are blue, Roses are red, violets are blue, Roses are red, violets are blue, PlanInput is hard, so is this test. is hard, so is this test. is hard, so is this test.",
             result.Result);
     }
 
@@ -138,7 +160,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("email_address", "$TheEmailFromState");
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv,
+            Parameters = cv,
         };
 
         var plan = new Plan(goal);
@@ -172,7 +194,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("email_address", string.Empty);
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv,
+            Parameters = cv,
         };
 
         var plan = new Plan(goal);
@@ -207,7 +229,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("email_address", "$TheEmailFromState");
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv
+            Parameters = cv
         };
 
         var plan = new Plan(goal);
@@ -241,22 +263,26 @@ public sealed class PlanTests : IDisposable
 
         var cv = new ContextVariables();
         cv.Set("language", inputLanguage);
-        var outputs = new ContextVariables();
-        outputs.Set("TRANSLATED_SUMMARY", string.Empty);
+        var outputs = new List<string>
+        {
+            "TRANSLATED_SUMMARY"
+        };
         var translatePlan = new Plan(writerSkill["Translate"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
         cv.Update(inputName);
-        outputs = new ContextVariables();
-        outputs.Set("TheEmailFromState", string.Empty);
+        outputs = new List<string>
+        {
+            "TheEmailFromState"
+        };
         var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
@@ -264,7 +290,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("input", "$TRANSLATED_SUMMARY");
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv
+            Parameters = cv
         };
 
         var plan = new Plan(goal);
@@ -310,23 +336,27 @@ public sealed class PlanTests : IDisposable
 
         var cv = new ContextVariables();
         cv.Set("language", inputLanguage);
-        var outputs = new ContextVariables();
-        outputs.Set("TRANSLATED_SUMMARY", string.Empty);
+        var outputs = new List<string>
+        {
+            "TRANSLATED_SUMMARY"
+        };
 
         var translatePlan = new Plan(writerSkill["Translate"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
         cv.Update(inputName);
-        outputs = new ContextVariables();
-        outputs.Set("TheEmailFromState", string.Empty);
+        outputs = new List<string>
+        {
+            "TheEmailFromState"
+        };
         var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
@@ -334,7 +364,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("input", "$TRANSLATED_SUMMARY");
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv
+            Parameters = cv
         };
 
         var plan = new Plan(goal);
@@ -365,23 +395,27 @@ public sealed class PlanTests : IDisposable
 
         var cv = new ContextVariables();
         cv.Set("language", inputLanguage);
-        var outputs = new ContextVariables();
-        outputs.Set("TRANSLATED_SUMMARY", string.Empty);
+        var outputs = new List<string>
+        {
+            "TRANSLATED_SUMMARY"
+        };
 
         var translatePlan = new Plan(writerSkill["Translate"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
         cv.Update(inputName);
-        outputs = new ContextVariables();
-        outputs.Set("TheEmailFromState", string.Empty);
+        outputs = new List<string>
+        {
+            "TheEmailFromState"
+        };
         var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
         {
-            NamedParameters = cv,
-            NamedOutputs = outputs,
+            Parameters = cv,
+            Outputs = outputs,
         };
 
         cv = new ContextVariables();
@@ -389,7 +423,7 @@ public sealed class PlanTests : IDisposable
         cv.Set("input", "$TRANSLATED_SUMMARY");
         var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
         {
-            NamedParameters = cv
+            Parameters = cv
         };
 
         var plan = new Plan(goal);
@@ -436,7 +470,7 @@ public sealed class PlanTests : IDisposable
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false)
+    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -448,22 +482,28 @@ public sealed class PlanTests : IDisposable
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                config.AddAzureTextCompletionService(
-                    serviceId: azureOpenAIConfiguration.ServiceId,
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
+                if (useChatModel)
+                {
+                    config.AddAzureChatCompletionService(
+                        deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey);
+                }
+                else
+                {
+                    config.AddAzureTextCompletionService(
+                        deploymentName: azureOpenAIConfiguration.DeploymentName,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey);
+                }
 
                 if (useEmbeddings)
                 {
                     config.AddAzureTextEmbeddingGenerationService(
-                        serviceId: azureOpenAIEmbeddingsConfiguration.ServiceId,
                         deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                         endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                         apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
                 }
-
-                config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
             });
 
         if (useEmbeddings)

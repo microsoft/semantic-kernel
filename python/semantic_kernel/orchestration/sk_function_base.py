@@ -107,7 +107,6 @@ class SKFunctionBase(ABC):
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
-        # TODO: ctoken
     ) -> SKContext:
         """
         Invokes the function with an explicit string input
@@ -133,7 +132,6 @@ class SKFunctionBase(ABC):
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
-        # TODO: ctoken
     ) -> SKContext:
         """
         Invokes the function with an explicit string input

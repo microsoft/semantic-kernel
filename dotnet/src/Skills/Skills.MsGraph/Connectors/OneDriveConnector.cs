@@ -39,21 +39,6 @@ public class OneDriveConnector : ICloudDriveConnector
             .Request().GetAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    /// <exception cref="NotImplementedException">This method is not yet supported for <see cref="OneDriveConnector"/>.</exception>
-    public Task<Stream> GetWriteableFileStreamAsync(string filePath, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    /// <exception cref="NotImplementedException">This method is not yet supported for <see cref="OneDriveConnector"/>.</exception>
-    public Task<Stream> CreateFileAsync(string filePath, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
     public async Task<bool> FileExistsAsync(string filePath, CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));

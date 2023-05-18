@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -29,7 +30,7 @@ public sealed class SequentialPlanner
         SequentialPlannerConfig? config = null,
         string? prompt = null)
     {
-        Verify.NotNull(kernel, $"{this.GetType().FullName} requires a kernel instance.");
+        Verify.NotNull(kernel);
         this.Config = config ?? new();
 
         this.Config.ExcludedSkills.Add(RestrictedSkillName);
@@ -55,6 +56,11 @@ public sealed class SequentialPlanner
     /// <returns>The plan.</returns>
     public async Task<Plan> CreatePlanAsync(string goal)
     {
+        if (string.IsNullOrEmpty(goal))
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
+        }
+
         string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config).ConfigureAwait(false);
         this._context.Variables.Set("available_functions", relevantFunctionsManual);
 
@@ -64,9 +70,15 @@ public sealed class SequentialPlanner
 
         string planResultString = planResult.Result.Trim();
 
-        var plan = planResultString.ToPlanFromXml(goal, this._context);
-
-        return plan;
+        try
+        {
+            var plan = planResultString.ToPlanFromXml(goal, this._context);
+            return plan;
+        }
+        catch (Exception e)
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Plan parsing error, invalid XML", e);
+        }
     }
 
     private SequentialPlannerConfig Config { get; }

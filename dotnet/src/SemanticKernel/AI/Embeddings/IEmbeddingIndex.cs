@@ -42,7 +42,7 @@ public static class EmbeddingIndexExtensions
         double minScore = 0.0)
         where TEmbedding : unmanaged
     {
-        Verify.NotNull(index, "Embedding index cannot be NULL");
+        Verify.NotNull(index);
         await foreach (var match in index.GetNearestMatchesAsync(collection, embedding, 1, minScore))
         {
             return match;

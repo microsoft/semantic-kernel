@@ -118,7 +118,7 @@ public interface IKernel
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
     Task<SKContext> RunAsync(
@@ -129,7 +129,7 @@ public interface IKernel
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="input">Input to process</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
     Task<SKContext> RunAsync(
@@ -141,7 +141,7 @@ public interface IKernel
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
     Task<SKContext> RunAsync(
@@ -170,5 +170,5 @@ public interface IKernel
     /// <param name="name">Optional name. If the name is not provided, returns the default T available</param>
     /// <typeparam name="T">Service type</typeparam>
     /// <returns>Instance of T</returns>
-    T GetService<T>(string name = "");
+    T GetService<T>(string? name = null);
 }

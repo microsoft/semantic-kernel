@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -22,36 +21,29 @@ namespace GitHubSkills;
 public class GitHubSkill
 {
     /// <summary>
-    /// Parameter names.
-    /// <see cref="ContextVariables"/>
+    /// Name of the repository repositoryBranch which will be downloaded and summarized.
     /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Name of the repository repositoryBranch which will be downloaded and summarized.
-        /// </summary>
-        public const string RepositoryBranch = "repositoryBranch";
+    public const string RepositoryBranchParamName = "repositoryBranch";
 
-        /// <summary>
-        /// The search string to match against the names of files in the repository.
-        /// </summary>
-        public const string SearchPattern = "searchPattern";
+    /// <summary>
+    /// The search string to match against the names of files in the repository.
+    /// </summary>
+    public const string SearchPatternParamName = "searchPattern";
 
-        /// <summary>
-        /// Document file path.
-        /// </summary>
-        public const string FilePath = "filePath";
+    /// <summary>
+    /// Document file path.
+    /// </summary>
+    public const string FilePathParamName = "filePath";
 
-        /// <summary>
-        /// Directory to which to extract compressed file's data.
-        /// </summary>
-        public const string DestinationDirectoryPath = "destinationDirectoryPath";
+    /// <summary>
+    /// Directory to which to extract compressed file's data.
+    /// </summary>
+    public const string DestinationDirectoryPathParamName = "destinationDirectoryPath";
 
-        /// <summary>
-        /// Name of the memory collection used to store the code summaries.
-        /// </summary>
-        public const string MemoryCollectionName = "memoryCollectionName";
-    }
+    /// <summary>
+    /// Name of the memory collection used to store the code summaries.
+    /// </summary>
+    public const string MemoryCollectionNameParamName = "memoryCollectionName";
 
     /// <summary>
     /// The max tokens to process in a single semantic function call.
@@ -110,17 +102,17 @@ BEGIN SUMMARY:
     [SKFunction("Downloads a repository and summarizes the content")]
     [SKFunctionName("SummarizeRepository")]
     [SKFunctionInput(Description = "URL of the GitHub repository to summarize")]
-    [SKFunctionContextParameter(Name = Parameters.RepositoryBranch,
+    [SKFunctionContextParameter(Name = RepositoryBranchParamName,
         Description = "Name of the repository repositoryBranch which will be downloaded and summarized")]
-    [SKFunctionContextParameter(Name = Parameters.SearchPattern, Description = "The search string to match against the names of files in the repository")]
+    [SKFunctionContextParameter(Name = SearchPatternParamName, Description = "The search string to match against the names of files in the repository")]
     public async Task SummarizeRepositoryAsync(string source, SKContext context)
     {
-        if (!context.Variables.Get(Parameters.RepositoryBranch, out string repositoryBranch) || string.IsNullOrEmpty(repositoryBranch))
+        if (!context.Variables.Get(RepositoryBranchParamName, out string repositoryBranch) || string.IsNullOrEmpty(repositoryBranch))
         {
             repositoryBranch = "main";
         }
 
-        if (!context.Variables.Get(Parameters.SearchPattern, out string searchPattern) || string.IsNullOrEmpty(searchPattern))
+        if (!context.Variables.Get(SearchPatternParamName, out string searchPattern) || string.IsNullOrEmpty(searchPattern))
         {
             searchPattern = "*.md";
         }
@@ -132,15 +124,15 @@ BEGIN SUMMARY:
         try
         {
             var repositoryUri = source.Trim(new char[] { ' ', '/' });
-            var context1 = new SKContext(new ContextVariables(), NullMemory.Instance, null, context.Log);
-            context1.Variables.Set(Parameters.FilePath, filePath);
+            var context1 = new SKContext(logger: context.Log);
+            context1.Variables.Set(FilePathParamName, filePath);
             await this._downloadSkill.DownloadToFileAsync($"{repositoryUri}/archive/refs/heads/{repositoryBranch}.zip", context1);
 
             ZipFile.ExtractToDirectory(filePath, directoryPath);
 
             await this.SummarizeCodeDirectoryAsync(directoryPath, searchPattern, repositoryUri, repositoryBranch, context);
 
-            context.Variables.Set(Parameters.MemoryCollectionName, $"{repositoryUri}-{repositoryBranch}");
+            context.Variables.Set(MemoryCollectionNameParamName, $"{repositoryUri}-{repositoryBranch}");
         }
         finally
         {

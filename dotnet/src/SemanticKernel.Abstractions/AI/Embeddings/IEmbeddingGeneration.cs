@@ -20,7 +20,7 @@ public interface IEmbeddingGeneration<TValue, TEmbedding>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
     /// <param name="data">List of strings to generate embeddings for</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of embeddings</returns>
     Task<IList<Embedding<TEmbedding>>> GenerateEmbeddingsAsync(IList<TValue> data, CancellationToken cancellationToken = default);
 }
@@ -37,13 +37,13 @@ public static class EmbeddingGenerationExtensions
     /// <typeparam name="TEmbedding">The numeric type of the embedding data.</typeparam>
     /// <param name="generator">The embedding generator.</param>
     /// <param name="value">A value from which an <see cref="Embedding{TEmbedding}"/> will be generated.</param>
-    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of <see cref="Embedding{TEmbedding}"/> structs representing the input <paramref name="value"/>.</returns>
     public static async Task<Embedding<TEmbedding>> GenerateEmbeddingAsync<TValue, TEmbedding>
         (this IEmbeddingGeneration<TValue, TEmbedding> generator, TValue value, CancellationToken cancellationToken = default)
         where TEmbedding : unmanaged
     {
-        Verify.NotNull(generator, "Embeddings generator cannot be NULL");
+        Verify.NotNull(generator);
         return (await generator.GenerateEmbeddingsAsync(new[] { value }, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
     }
 }

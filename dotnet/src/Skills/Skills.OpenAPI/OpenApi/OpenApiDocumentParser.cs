@@ -9,12 +9,14 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
-using Microsoft.SemanticKernel.Connectors.WebApi.Rest.Model;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
@@ -44,6 +46,40 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     #region private
 
     /// <summary>
+    /// Max depth to traverse down OpenApi schema to discover payload properties.
+    /// </summary>
+    private const int PayloadPropertiesHierarchyMaxDepth = 10;
+
+    /// <summary>
+    /// Name of property that contains OpenAPI document version.
+    /// </summary>
+    private const string OpenApiVersionPropertyName = "openapi";
+
+    /// <summary>
+    /// Latest supported version of OpenAPI document.
+    /// </summary>
+    private static readonly Version s_latestSupportedVersion = new(3, 0, 1);
+
+    /// <summary>
+    /// Used to convert operationId to SK function names.
+    /// </summary>
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
+
+    /// <summary>
+    /// List of supported Media Types.
+    /// </summary>
+    private static readonly List<string> s_supportedMediaTypes = new()
+    {
+        "application/json",
+        "text/plain"
+    };
+
+    /// <summary>
+    /// An instance of the OpenApiStreamReader class.
+    /// </summary>
+    private readonly OpenApiStreamReader _openApiReader = new();
+
+    /// <summary>
     /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
     /// This class relies on Microsoft.OpenAPI.NET library to work with OpenApi documents.
     /// The library, at the moment, does not support 3.1 spec, and the latest supported version is 3.0.1.
@@ -58,25 +94,25 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false);
         if (jsonObject == null)
         {
-            //The document is malformed.
-            throw new OpenApiDocumentParsingException($"Parsing of OpenAPI document failed.");
+            // The document is malformed.
+            throw new OpenApiDocumentParsingException("Parsing of OpenAPI document failed.");
         }
 
         if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropertyName, out var propertyNode))
         {
-            //The document is either malformed or has 2.x version that specifies document version in the 'swagger' property rather than in the 'openapi' one.
+            // The document is either malformed or has 2.x version that specifies document version in the 'swagger' property rather than in the 'openapi' one.
             return jsonObject;
         }
 
         if (propertyNode is not JsonValue value)
         {
-            //The 'openapi' property has unexpected type.
+            // The 'openapi' property has unexpected type.
             return jsonObject;
         }
 
         if (!Version.TryParse(value.ToString(), out var version))
         {
-            //The 'openapi' property is malformed.
+            // The 'openapi' property is malformed.
             return jsonObject;
         }
 
@@ -94,7 +130,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// Should be replaced later when there's more convenient way to convert YAML content to JSON one.
     /// </summary>
     /// <param name="stream">The YAML/JSON content stream.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>JSON content stream.</returns>
     private static async Task<JsonObject?> ConvertContentToJsonAsync(Stream stream, CancellationToken cancellationToken = default)
     {
@@ -131,9 +167,9 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// Creates REST API operation.
     /// </summary>
+    /// <param name="serverUrl">The server url.</param>
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
-    /// <param name="serverUrl">The server url.</param>
     /// <returns>Rest operation.</returns>
     private static List<RestApiOperation> CreateRestApiOperations(string serverUrl, string path, OpenApiPathItem pathItem)
     {
@@ -145,9 +181,18 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
             var operationItem = operationPair.Value;
 
+            try
+            {
+                Verify.ValidFunctionName(operationItem.OperationId);
+            }
+            catch (KernelException)
+            {
+                operationItem.OperationId = ConvertOperationIdToValidFunctionName(operationItem.OperationId);
+            }
+
             var operation = new RestApiOperation(
                 operationItem.OperationId,
-                serverUrl,
+                new Uri(serverUrl),
                 path,
                 new HttpMethod(method),
                 operationItem.Description,
@@ -345,33 +390,30 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     }
 
     /// <summary>
-    /// List of supported Media Types.
+    /// Converts operation id to valid SK Function name.
+    /// A function name can contain only ASCII letters, digits, and underscores.
     /// </summary>
-    private static readonly List<string> s_supportedMediaTypes = new List<string>
+    /// <param name="operationId">The operation id.</param>
+    /// <returns>Valid SK Function name.</returns>
+    private static string ConvertOperationIdToValidFunctionName(string operationId)
     {
-        "application/json",
-        "text/plain"
-    };
+        // Tokenize operation id on forward and back slashes
+        string[] tokens = operationId.Split('/', '\\');
+        string result = "";
 
-    /// <summary>
-    /// An instance of the OpenApiStreamReader class.
-    /// </summary>
-    private readonly OpenApiStreamReader _openApiReader = new();
+        foreach (string token in tokens)
+        {
+            // Removes all characters that are not ASCII letters, digits, and underscores.
+            string formattedToken = s_removeInvalidCharsRegex.Replace(token, "");
+            result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
+        }
 
-    /// <summary>
-    /// Latest supported version of OpenAPI document.
-    /// </summary>
-    private static readonly Version s_latestSupportedVersion = new Version(3, 0, 1);
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{1}\" when invoking function.", operationId, result);
+        Console.ResetColor();
 
-    /// <summary>
-    /// Max depth to traverse down OpenApi schema to discover payload properties.
-    /// </summary>
-    private const int PayloadPropertiesHierarchyMaxDepth = 10;
-
-    /// <summary>
-    /// Name of property that contains OpenAPI document version.
-    /// </summary>
-    private const string OpenApiVersionPropertyName = "openapi";
+        return result;
+    }
 
     #endregion
 }

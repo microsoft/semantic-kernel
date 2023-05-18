@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -10,58 +11,27 @@ using RepoUtils;
 /**
  * The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
  */
-
 // ReSharper disable once InconsistentNaming
-// ReSharper disable CommentTypo
 public static class Example17_ChatGPT
 {
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== SK with ChatGPT ========");
-
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        // Add your chat completion service
-        kernel.Config.AddOpenAIChatCompletionService("chat", "gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
-
-        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        var chat = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");
-
-        // First user message
-        chat.AddUserMessage("Hi, I'm looking for book suggestions");
-
-        // First bot message
-        string reply = await chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings());
-        chat.AddAssistantMessage(reply);
-
-        // Second user message
-        chat.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
-
-        // Second bot message
-        reply = await chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings());
-        chat.AddAssistantMessage(reply);
-
-        Console.WriteLine("Chat content:");
-        Console.WriteLine("------------------------");
-        foreach (var message in chat.Messages)
-        {
-            Console.WriteLine($"{message.AuthorRole}: {message.Content}");
-            Console.WriteLine("------------------------");
-        }
+        await AzureOpenAIChatSampleAsync();
+        await OpenAIChatSampleAsync();
 
         /* Output:
 
         Chat content:
         ------------------------
-        system: You are a librarian, expert about books
+        System: You are a librarian, expert about books
         ------------------------
-        user: Hi, I'm looking for book suggestions
+        User: Hi, I'm looking for book suggestions
         ------------------------
-        assistant: Sure, I'd be happy to help! What kind of books are you interested in? Fiction or non-fiction? Any particular genre?
+        Assistant: Sure, I'd be happy to help! What kind of books are you interested in? Fiction or non-fiction? Any particular genre?
         ------------------------
-        user: I love history and philosophy, I'd like to learn something new about Greece, any suggestion?
+        User: I love history and philosophy, I'd like to learn something new about Greece, any suggestion?
         ------------------------
-        assistant: Great! For history and philosophy books about Greece, here are a few suggestions:
+        Assistant: Great! For history and philosophy books about Greece, here are a few suggestions:
 
         1. "The Greeks" by H.D.F. Kitto - This is a classic book that provides an overview of ancient Greek history and culture, including their philosophy, literature, and art.
 
@@ -76,5 +46,75 @@ public static class Example17_ChatGPT
         I hope these suggestions are helpful!
         ------------------------
         */
+    }
+
+    private static async Task OpenAIChatSampleAsync()
+    {
+        Console.WriteLine("======== Open AI - ChatGPT ========");
+
+        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+
+        // Add your chat completion service
+        kernel.Config.AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+
+        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
+
+        await StartChatAsync(chatGPT);
+    }
+
+    private static async Task AzureOpenAIChatSampleAsync()
+    {
+        Console.WriteLine("======== Azure Open AI - ChatGPT ========");
+
+        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+
+        // Add your chat completion service
+        kernel.Config.AddAzureChatCompletionService(
+            Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+            Env.Var("AZURE_OPENAI_ENDPOINT"),
+            Env.Var("AZURE_OPENAI_KEY"));
+
+        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
+
+        await StartChatAsync(chatGPT);
+    }
+
+    private static async Task StartChatAsync(IChatCompletion chatGPT)
+    {
+        Console.WriteLine("Chat content:");
+        Console.WriteLine("------------------------");
+
+        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");
+
+        // First user message
+        chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
+        await MessageOutputAsync(chatHistory);
+
+        // First bot assistant message
+        string reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        chatHistory.AddAssistantMessage(reply);
+        await MessageOutputAsync(chatHistory);
+
+        // Second user message
+        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
+        await MessageOutputAsync(chatHistory);
+
+        // Second bot assistant message
+        reply = await chatGPT.GenerateMessageAsync(chatHistory);
+        chatHistory.AddAssistantMessage(reply);
+        await MessageOutputAsync(chatHistory);
+    }
+
+    /// <summary>
+    /// Outputs the last message of the chat history
+    /// </summary>
+    private static Task MessageOutputAsync(ChatHistory chatHistory)
+    {
+        var message = chatHistory.Messages.Last();
+
+        Console.WriteLine($"{message.AuthorRole}: {message.Content}");
+        Console.WriteLine("------------------------");
+
+        return Task.CompletedTask;
     }
 }

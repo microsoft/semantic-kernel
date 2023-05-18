@@ -14,7 +14,7 @@ export enum AuthorRoles {
     Participant,
 }
 
-export interface ChatMessage {
+export interface IChatMessage {
     timestamp: number;
     userName: 'bot' | string;
     userId: string;
@@ -22,4 +22,12 @@ export interface ChatMessage {
     id?: string;
     authorRole: AuthorRoles;
     debug?: string;
+    state?: ChatMessageState; // if plan needs approval
+}
+
+export enum ChatMessageState {
+    NoOp,
+    PlanApprovalRequired,
+    PlanApproved,
+    PlanRejected,
 }

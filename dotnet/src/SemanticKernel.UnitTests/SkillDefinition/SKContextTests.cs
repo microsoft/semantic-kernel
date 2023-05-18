@@ -29,7 +29,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(variables, NullMemory.Instance, this._skills.Object, this._log.Object);
+        var target = new SKContext(variables, skills: this._skills.Object, logger: this._log.Object);
         variables.Set("foo1", "bar1");
 
         // Act
@@ -52,12 +52,12 @@ public class SKContextTests
     {
         // Arrange
         IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportSkill(new Parrot(), "test");
-        this._skills.Setup(x => x.GetNativeFunction("func")).Returns(skill["say"]);
+        this._skills.Setup(x => x.GetFunction("func")).Returns(skill["say"]);
         var target = new SKContext(new ContextVariables(), NullMemory.Instance, this._skills.Object, this._log.Object);
         Assert.NotNull(target.Skills);
 
         // Act
-        var say = target.Skills.GetNativeFunction("func");
+        var say = target.Skills.GetFunction("func");
         SKContext result = await say.InvokeAsync("ciao");
 
         // Assert

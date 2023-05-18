@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextEmbedding;
@@ -32,8 +32,8 @@ public class HuggingFaceEmbeddingGenerationTests : IDisposable
     public async Task ItReturnsEmbeddingsCorrectlyAsync()
     {
         // Arrange
-        const int expectedEmbeddingCount = 1;
-        const int expectedVectorCount = 8;
+        const int ExpectedEmbeddingCount = 1;
+        const int ExpectedVectorCount = 8;
         List<string> data = new() { "test_string_1", "test_string_2", "test_string_3" };
 
         using var service = this.CreateService(HuggingFaceTestHelper.GetTestResponse("embeddings_test_response.json"));
@@ -43,8 +43,8 @@ public class HuggingFaceEmbeddingGenerationTests : IDisposable
 
         // Assert
         Assert.NotNull(embeddings);
-        Assert.Equal(expectedEmbeddingCount, embeddings.Count);
-        Assert.Equal(expectedVectorCount, embeddings.First().Count);
+        Assert.Equal(ExpectedEmbeddingCount, embeddings.Count);
+        Assert.Equal(ExpectedVectorCount, embeddings.First().Count);
     }
 
     /// <summary>

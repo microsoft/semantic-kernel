@@ -18,8 +18,8 @@ public static class Example15_MemorySkill
             .WithLogger(ConsoleLogger.Log)
             .Configure(c =>
             {
-                c.AddOpenAITextCompletionService("davinci", "text-davinci-003", Env.Var("OPENAI_API_KEY"));
-                c.AddOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
+                c.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
+                c.AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
             })
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
@@ -38,8 +38,8 @@ public static class Example15_MemorySkill
         kernel.ImportSkill(new TextMemorySkill());
 
         // Build a semantic function that saves info to memory
-        const string SAVE_FUNCTION_DEFINITION = @"{{save $info}}";
-        var memorySaver = kernel.CreateSemanticFunction(SAVE_FUNCTION_DEFINITION);
+        const string SaveFunctionDefinition = @"{{save $info}}";
+        var memorySaver = kernel.CreateSemanticFunction(SaveFunctionDefinition);
 
         var context = kernel.CreateNewContext();
         context[TextMemorySkill.CollectionParam] = MemoryCollectionName;
@@ -63,12 +63,12 @@ public static class Example15_MemorySkill
 
         context[TextMemorySkill.LimitParam] = "2";
         string ask = "where did I grow up?";
-        answer = memorySkill.Recall(ask, context);
+        answer = await memorySkill.RecallAsync(ask, context);
         Console.WriteLine("Ask: {0}", ask);
         Console.WriteLine("Answer:\n{0}", answer);
 
         ask = "where do I live?";
-        answer = memorySkill.Recall(ask, context);
+        answer = await memorySkill.RecallAsync(ask, context);
         Console.WriteLine("Ask: {0}", ask);
         Console.WriteLine("Answer:\n{0}", answer);
 
@@ -88,7 +88,7 @@ public static class Example15_MemorySkill
         Console.WriteLine("========= Example: Using Recall in a Semantic Function =========");
 
         // Build a semantic function that uses memory to find facts
-        const string RECALL_FUNCTION_DEFINITION = @"
+        const string RecallFunctionDefinition = @"
 Consider only the facts below when answering questions.
 
 About me: {{recall 'where did I grow up?'}}
@@ -99,7 +99,7 @@ Question: {{$query}}
 Answer:
 ";
 
-        var aboutMeOracle = kernel.CreateSemanticFunction(RECALL_FUNCTION_DEFINITION, maxTokens: 100);
+        var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, maxTokens: 100);
 
         context["query"] = "Do I live in the same town where I grew up?";
         context[TextMemorySkill.RelevanceParam] = "0.8";

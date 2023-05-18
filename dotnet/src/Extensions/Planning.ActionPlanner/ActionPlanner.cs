@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
@@ -36,6 +38,7 @@ public sealed class ActionPlanner
     // Context used to access the list of functions in the kernel
     private readonly SKContext _context;
     private readonly IKernel _kernel;
+    private readonly ILogger _logger;
 
     // TODO: allow to inject skill store
     /// <summary>
@@ -43,11 +46,15 @@ public sealed class ActionPlanner
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="prompt">Optional prompt override</param>
+    /// <param name="logger">Optional logger</param>
     public ActionPlanner(
         IKernel kernel,
-        string? prompt = null)
+        string? prompt = null,
+        ILogger? logger = null)
     {
-        Verify.NotNull(kernel, "The planner requires a non-null kernel instance");
+        Verify.NotNull(kernel);
+
+        this._logger = logger ?? new NullLogger<ActionPlanner>();
 
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 
@@ -70,15 +77,14 @@ public sealed class ActionPlanner
             throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
         }
 
-        SKContext result = await this._plannerFunction.InvokeAsync(goal, this._context).ConfigureAwait(false);
+        this._context.Variables.Update(goal);
 
-        var json = """{"plan":{ "rationale":""" + result;
+        SKContext result = await this._plannerFunction.InvokeAsync(this._context).ConfigureAwait(false);
 
-        // extract and parse JSON
         ActionPlanResponse? planData;
         try
         {
-            planData = JsonSerializer.Deserialize<ActionPlanResponse?>(json, new JsonSerializerOptions
+            planData = JsonSerializer.Deserialize<ActionPlanResponse?>(result.ToString(), new JsonSerializerOptions
             {
                 AllowTrailingCommas = true,
                 DictionaryKeyPolicy = null,
@@ -98,28 +104,31 @@ public sealed class ActionPlanner
         }
 
         // Build and return plan
-        ISKFunction function;
+        Plan plan;
         if (planData.Plan.Function.Contains("."))
         {
             var parts = planData.Plan.Function.Split('.');
-            function = this._context.Skills!.GetFunction(parts[0], parts[1]);
+            plan = new Plan(goal, this._context.Skills!.GetFunction(parts[0], parts[1]));
+        }
+        else if (!string.IsNullOrWhiteSpace(planData.Plan.Function))
+        {
+            plan = new Plan(goal, this._context.Skills!.GetFunction(planData.Plan.Function));
         }
         else
         {
-            function = this._context.Skills!.GetFunction(planData.Plan.Function);
+            // No function was found - return a plan with no steps.
+            plan = new Plan(goal);
         }
-
-        var plan = new Plan(goal);
-        plan.AddSteps(function);
 
         // Create a plan using the function and the parameters suggested by the planner
         var variables = new ContextVariables();
-        foreach (KeyValuePair<string, string> p in planData.Plan.Parameters)
+        foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
         {
-            plan.State[p.Key] = p.Value;
+            if (p.Value != null)
+            {
+                plan.State[p.Key] = p.Value.ToString();
+            }
         }
-
-        //Console.WriteLine(JsonSerializer.Serialize(planData, new JsonSerializerOptions { WriteIndented = true }));
 
         var context = this._kernel.CreateNewContext();
         context.Variables.Update(variables);
@@ -140,7 +149,7 @@ public sealed class ActionPlanner
     [SKFunctionInput(Description = "The current goal processed by the planner", DefaultValue = "")]
     public string ListOfFunctions(string goal, SKContext context)
     {
-        Verify.NotNull(context.Skills, "The planner requires a non-null skill collection");
+        Verify.NotNull(context.Skills);
         var functionsAvailable = context.Skills.GetFunctionsView();
 
         // Prepare list using the format used by skprompt.txt
@@ -158,33 +167,33 @@ public sealed class ActionPlanner
     [SKFunctionInput(Description = "The current goal processed by the planner", DefaultValue = "")]
     public string GoodExamples(string goal, SKContext context)
     {
-        return """
+        return @"
 [EXAMPLE]
 - List of functions:
 // Read a file.
 FileIOSkill.ReadAsync
-Parameter "path": Source file.
+Parameter ""path"": Source file.
 // Write a file.
 FileIOSkill.WriteAsync
-Parameter "path": Destination file.
-Parameter "content": File content.
+Parameter ""path"": Destination file. (default value: sample.txt)
+Parameter ""content"": File content.
 // Get the current time.
 TimeSkill.Time
 No parameters.
 // Makes a POST request to a uri.
 HttpSkill.PostAsync
-Parameter "body": The body of the request.
+Parameter ""body"": The body of the request.
 - End list of functions.
-Goal: create a file called "something.txt".
-{"plan":{
-"rationale": "the list contains a function that allows to create files",
-"function": "FileIOSkill.WriteAsync",
-"parameters": {
-"path": "something.txt",
-"content": null
+Goal: create a file called ""something.txt"".
+{""plan"":{
+""rationale"": ""the list contains a function that allows to create files"",
+""function"": ""FileIOSkill.WriteAsync"",
+""parameters"": {
+""path"": ""something.txt"",
+""content"": null
 }}}
 #END-OF-PLAN
-""";
+";
     }
 
     // TODO: generate string programmatically
@@ -193,7 +202,7 @@ Goal: create a file called "something.txt".
     [SKFunctionInput(Description = "The current goal processed by the planner", DefaultValue = "")]
     public string EdgeCaseExamples(string goal, SKContext context)
     {
-        return """
+        return @"
 [EXAMPLE]
 - List of functions:
 // Get the current time.
@@ -201,23 +210,23 @@ TimeSkill.Time
 No parameters.
 // Write a file.
 FileIOSkill.WriteAsync
-Parameter "path": Destination file.
-Parameter "content": File content.
+Parameter ""path"": Destination file. (default value: sample.txt)
+Parameter ""content"": File content.
 // Makes a POST request to a uri.
 HttpSkill.PostAsync
-Parameter "body": The body of the request.
+Parameter ""body"": The body of the request.
 // Read a file.
 FileIOSkill.ReadAsync
-Parameter "path": Source file.
+Parameter ""path"": Source file.
 - End list of functions.
 Goal: tell me a joke.
-{"plan":{
-"rationale": "the list does not contain functions to tell jokes or something funny",
-"function": "",
-"parameters": {}
+{""plan"":{
+""rationale"": ""the list does not contain functions to tell jokes or something funny"",
+""function"": """",
+""parameters"": {
 }}}
 #END-OF-PLAN
-""";
+";
     }
 
     private void PopulateList(StringBuilder list, IDictionary<string, List<FunctionView>> functions)
@@ -230,7 +239,15 @@ Goal: tell me a joke.
             foreach (FunctionView func in skill.Value)
             {
                 // Function description
-                list.AppendLine($"// {AddPeriod(func.Description)}");
+                if (func.Description != null)
+                {
+                    list.AppendLine($"// {AddPeriod(func.Description)}");
+                }
+                else
+                {
+                    this._logger.LogWarning("{0}.{1} is missing a description", func.SkillName, func.Name);
+                    list.AppendLine($"// Function {func.SkillName}.{func.Name}.");
+                }
 
                 // Function name
                 list.AppendLine($"{func.SkillName}.{func.Name}");
@@ -239,7 +256,8 @@ Goal: tell me a joke.
                 foreach (var p in func.Parameters)
                 {
                     var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description;
-                    list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)}");
+                    var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $" (default value: {p.DefaultValue})";
+                    list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)} {defaultValueString}");
                 }
             }
         }

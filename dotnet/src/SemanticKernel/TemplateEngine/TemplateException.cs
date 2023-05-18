@@ -5,20 +5,73 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
+#pragma warning disable RCS1194 // Implement exception constructors
+
 /// <summary>
-/// Template exception.
+/// Exception thrown for errors related to templating.
 /// </summary>
-public class TemplateException : Exception<TemplateException.ErrorCodes>
+public class TemplateException : SKException
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TemplateException"/> class with a provided error code.
+    /// </summary>
+    /// <param name="error">The error code.</param>
+    public TemplateException(ErrorCodes error)
+        : this(error, message: null, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TemplateException"/> class with a provided error code and message.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">The exception message.</param>
+    public TemplateException(ErrorCodes errorCode, string? message)
+        : this(errorCode, message, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TemplateException"/> class with a provided error code, message, and inner exception.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">A string that describes the error.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception.</param>
+    public TemplateException(ErrorCodes errorCode, string? message, Exception? innerException)
+        : base(GetDefaultMessage(errorCode, message), innerException)
+    {
+        this.ErrorCode = errorCode;
+    }
+
+    /// <summary>
+    /// Gets the error code for this exception.
+    /// </summary>
+    public ErrorCodes ErrorCode { get; }
+
+    /// <summary>Translate the error code into a default message.</summary>
+    private static string GetDefaultMessage(ErrorCodes errorCode, string? message)
+    {
+        string description = errorCode switch
+        {
+            ErrorCodes.SyntaxError => "Syntax error",
+            ErrorCodes.UnexpectedBlockType => "Unexpected block type",
+            ErrorCodes.FunctionNotFound => "Function not found",
+            ErrorCodes.RuntimeError => "Runtime error",
+            _ => $"Unknown error ({errorCode:G})",
+        };
+
+        return message is not null ? $"{description}: {message}" : description;
+    }
+
     /// <summary>
     /// Error codes for <see cref="TemplateException"/>.
     /// </summary>
     public enum ErrorCodes
     {
         /// <summary>
-        /// Unknown/undefined error type. Don't use this value.
+        /// Unknown error.
         /// </summary>
-        Unknown = -1,
+        UnknownError = -1,
 
         /// <summary>
         /// Syntax error, the template syntax used is not valid.
@@ -40,50 +93,4 @@ public class TemplateException : Exception<TemplateException.ErrorCodes>
         /// </summary>
         RuntimeError = 3,
     }
-
-    /// <summary>
-    /// Error code.
-    /// </summary>
-    public ErrorCodes ErrorCode { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TemplateException"/> class.
-    /// </summary>
-    /// <param name="errCode">The template error type.</param>
-    /// <param name="message">The exception message.</param>
-    public TemplateException(ErrorCodes errCode, string? message = null)
-        : base(errCode, message)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    /// <summary>
-    /// Construct an exception with an error code, message, and existing exception.
-    /// </summary>
-    /// <param name="errCode">Error code of the exception.</param>
-    /// <param name="message">Message of the exception.</param>
-    /// <param name="e">An exception that was thrown.</param>
-    public TemplateException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    #region private ================================================================================
-
-    private TemplateException()
-    {
-        // Not allowed, error code is required
-    }
-
-    private TemplateException(string message) : base(message)
-    {
-        // Not allowed, error code is required
-    }
-
-    private TemplateException(string message, Exception innerException) : base(message, innerException)
-    {
-        // Not allowed, error code is required
-    }
-
-    #endregion
 }

@@ -84,8 +84,8 @@ const getSKaaSAccessToken = async (instance: IPublicClientApplication) => {
             const token = await instance.acquireTokenPopup({ scopes: Constants.msal.skScopes, account: instance.getAllAccounts()[0] });
             return token.accessToken;
         }
+        throw new Error(`Failed to get access token for web service: ${ex}`);
     }
-    throw new Error('Failed to get access token for web service.');
 };
 
 export const AuthHelper = {

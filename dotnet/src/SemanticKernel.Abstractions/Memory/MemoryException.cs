@@ -5,11 +5,64 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Memory;
 
+#pragma warning disable RCS1194 // Implement exception constructors
+
 /// <summary>
-/// Memory logic exception
+/// Exception thrown for errors related to memory logic.
 /// </summary>
-public class MemoryException : Exception<MemoryException.ErrorCodes>
+public class MemoryException : SKException
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MemoryException"/> class with a provided error code.
+    /// </summary>
+    /// <param name="error">The error code.</param>
+    public MemoryException(ErrorCodes error)
+        : this(error, message: null, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MemoryException"/> class with a provided error code and message.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">The exception message.</param>
+    public MemoryException(ErrorCodes errorCode, string? message)
+        : this(errorCode, message, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MemoryException"/> class with a provided error code, message, and inner exception.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">A string that describes the error.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception.</param>
+    public MemoryException(ErrorCodes errorCode, string? message, Exception? innerException)
+        : base(GetDefaultMessage(errorCode, message), innerException)
+    {
+        this.ErrorCode = errorCode;
+    }
+
+    /// <summary>
+    /// Gets the error code for this exception.
+    /// </summary>
+    public ErrorCodes ErrorCode { get; }
+
+    /// <summary>Translate the error code into a default message.</summary>
+    private static string GetDefaultMessage(ErrorCodes errorCode, string? message)
+    {
+        string description = errorCode switch
+        {
+            ErrorCodes.FailedToCreateCollection => "Failed to create collection",
+            ErrorCodes.FailedToDeleteCollection => "Failed to delete collection",
+            ErrorCodes.UnableToDeserializeMetadata => "Unable to deserialize metadata",
+            ErrorCodes.AttemptedToAccessNonexistentCollection => "Attempted to access non-existent collection",
+            _ => $"Unknown error ({errorCode:G})",
+        };
+
+        return message is not null ? $"{description}: {message}" : description;
+    }
+
     /// <summary>
     /// Semantic kernel memory error codes.
     /// </summary>
@@ -40,49 +93,4 @@ public class MemoryException : Exception<MemoryException.ErrorCodes>
         /// </summary>
         AttemptedToAccessNonexistentCollection,
     }
-
-    /// <summary>
-    /// Error code.
-    /// </summary>
-    public ErrorCodes ErrorCode { get; set; }
-
-    /// <summary>
-    /// Constructor for MemoryException.
-    /// </summary>
-    /// <param name="errCode">Error code to put in MemoryException.</param>
-    /// <param name="message">Message to put in MemoryException.</param>
-    public MemoryException(ErrorCodes errCode, string? message = null) : base(errCode, message)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    /// <summary>
-    /// Constructor for MemoryException.
-    /// </summary>
-    /// <param name="errCode">Error code to put in MemoryException.</param>
-    /// <param name="message">Message to put in MemoryException.</param>
-    /// <param name="e">Exception to embed in MemoryException.</param>
-    public MemoryException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    #region private ================================================================================
-
-    private MemoryException()
-    {
-        // Not allowed, error code is required
-    }
-
-    private MemoryException(string message) : base(message)
-    {
-        // Not allowed, error code is required
-    }
-
-    private MemoryException(string message, Exception innerException) : base(message, innerException)
-    {
-        // Not allowed, error code is required
-    }
-
-    #endregion
 }

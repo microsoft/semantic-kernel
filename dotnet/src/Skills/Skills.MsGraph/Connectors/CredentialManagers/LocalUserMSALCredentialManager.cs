@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
 /// <remarks>
 /// https://learn.microsoft.com/azure/active-directory/develop/msal-net-token-cache-serialization?tabs=desktop
 /// </remarks>
-public class LocalUserMSALCredentialManager
+public sealed class LocalUserMSALCredentialManager
 {
     /// <summary>
     /// An in-memory cache of IPublicClientApplications by clientId and tenantId.
@@ -49,14 +49,14 @@ public class LocalUserMSALCredentialManager
     public static async Task<LocalUserMSALCredentialManager> CreateAsync()
     {
         // Initialize persistent storage for the token cache
-        const string cacheSchemaName = "com.microsoft.semantickernel.tokencache";
+        const string CacheSchemaName = "com.microsoft.semantickernel.tokencache";
 
         var storage = new StorageCreationPropertiesBuilder("sk.msal.cache", MsalCacheHelper.UserRootDirectory)
             .WithMacKeyChain(
-                serviceName: $"{cacheSchemaName}.service",
-                accountName: $"{cacheSchemaName}.account")
+                serviceName: $"{CacheSchemaName}.service",
+                accountName: $"{CacheSchemaName}.account")
             .WithLinuxKeyring(
-                schemaName: cacheSchemaName,
+                schemaName: CacheSchemaName,
                 collection: MsalCacheHelper.LinuxKeyRingDefaultCollection,
                 secretLabel: "MSAL token cache for Semantic Kernel skills.",
                 attribute1: new KeyValuePair<string, string>("Version", "1"),

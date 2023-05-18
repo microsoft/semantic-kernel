@@ -24,7 +24,7 @@ internal sealed class ActionPlanResponse
         /// <summary>
         /// Parameter values
         /// </summary>
-        public Dictionary<string, string> Parameters { get; set; } = new();
+        public Dictionary<string, object> Parameters { get; set; } = new();
     }
 
     /// <summary>

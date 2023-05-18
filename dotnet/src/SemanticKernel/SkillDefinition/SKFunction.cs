@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
@@ -51,8 +51,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// Create a native function instance, wrapping a native object method
     /// </summary>
-    /// <param name="methodContainerInstance">Object containing the method to invoke</param>
     /// <param name="methodSignature">Signature of the method to invoke</param>
+    /// <param name="methodContainerInstance">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
@@ -64,7 +64,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         if (string.IsNullOrWhiteSpace(skillName)) { skillName = SkillCollection.GlobalSkill; }
 
-        MethodDetails methodDetails = GetMethodDetails(methodSignature, methodContainerInstance, log);
+        MethodDetails methodDetails = GetMethodDetails(methodSignature, methodContainerInstance, true, log);
 
         // If the given method is not a valid SK function
         if (!methodDetails.HasSkFunctionAttribute)
@@ -84,6 +84,37 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <summary>
+    /// Create a native function instance, wrapping a delegate function
+    /// </summary>
+    /// <param name="nativeFunction">Function to invoke</param>
+    /// <param name="skillName">SK skill name</param>
+    /// <param name="functionName">SK function name</param>
+    /// <param name="description">SK function description</param>
+    /// <param name="parameters">SK function parameters</param>
+    /// <param name="log">Application logger</param>
+    /// <returns>SK function instance</returns>
+    public static ISKFunction FromNativeFunction(
+        Delegate nativeFunction,
+        string skillName,
+        string functionName,
+        string description,
+        IEnumerable<ParameterView>? parameters = null,
+        ILogger? log = null)
+    {
+        MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, false, log);
+
+        return new SKFunction(
+            delegateType: methodDetails.Type,
+            delegateFunction: methodDetails.Function,
+            parameters: (parameters ?? Enumerable.Empty<ParameterView>()).ToList(),
+            description: description,
+            skillName: skillName,
+            functionName: functionName,
+            isSemantic: false,
+            log: log);
+    }
+
+    /// <summary>
     /// Create a native function instance, given a semantic function configuration.
     /// </summary>
     /// <param name="skillName">Name of the skill to which the function to create belongs.</param>
@@ -97,14 +128,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SemanticFunctionConfig functionConfig,
         ILogger? log = null)
     {
-        Verify.NotNull(functionConfig, "Function configuration is empty");
+        Verify.NotNull(functionConfig);
 
         async Task<SKContext> LocalFunc(
             ITextCompletion client,
             CompleteRequestSettings requestSettings,
             SKContext context)
         {
-            Verify.NotNull(client, "AI LLM backed is empty");
+            Verify.NotNull(client);
 
             try
             {
@@ -115,14 +146,16 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
             catch (AIException ex)
             {
-                const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
-                log?.LogError(ex, message, skillName, functionName, ex.Message, ex.Detail);
+                const string Message = "Something went wrong while rendering the semantic function" +
+                                       " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
+                log?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
                 context.Fail(ex.Message, ex);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                const string message = "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}";
-                log?.LogError(ex, message, skillName, functionName, ex.Message);
+                const string Message = "Something went wrong while rendering the semantic function" +
+                                       " or while executing the text completion. Function: {0}.{1}. Error: {2}";
+                log?.LogError(ex, Message, skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
 
@@ -155,46 +188,28 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
-        string input,
-        SKContext? context = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? log = null,
-        CancellationToken? cancel = null)
+        SKContext context,
+        CompleteRequestSettings? settings = null)
     {
-        if (context == null)
-        {
-            var cToken = cancel ?? default;
-            log ??= NullLogger.Instance;
-            context = new SKContext(
-                new ContextVariables(""),
-                NullMemory.Instance,
-                this._skillCollection,
-                log,
-                cToken);
-        }
-
-        context.Variables.Update(input);
-
-        return this.InvokeAsync(context, settings, log, cancel);
+        return this.IsSemantic
+            ? this.InvokeSemanticAsync(context, settings)
+            : this.InvokeNativeAsync(context);
     }
 
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
-        SKContext? context = null,
+        string? input = null,
         CompleteRequestSettings? settings = null,
-        ILogger? log = null,
-        CancellationToken? cancel = null)
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
     {
-        if (context == null)
-        {
-            var cToken = cancel ?? default;
-            log ??= NullLogger.Instance;
-            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cToken);
-        }
+        SKContext context = new(
+            new ContextVariables(input),
+            skills: this._skillCollection,
+            logger: logger,
+            cancellationToken: cancellationToken);
 
-        return this.IsSemantic
-            ? this.InvokeSemanticAsync(context, settings)
-            : this.InvokeNativeAsync(context);
+        return this.InvokeAsync(context, settings);
     }
 
     /// <inheritdoc/>
@@ -207,7 +222,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
-        Verify.NotNull(serviceFactory, "AI LLM service factory is empty");
+        Verify.NotNull(serviceFactory);
         this.VerifyIsSemantic();
         this._aiService = serviceFactory.Invoke();
         return this;
@@ -216,7 +231,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
     {
-        Verify.NotNull(settings, "AI LLM request settings are empty");
+        Verify.NotNull(settings);
         this.VerifyIsSemantic();
         this._aiRequestSettings = settings;
         return this;
@@ -232,6 +247,18 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public override string ToString()
+        => this.ToString(false);
+
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public string ToString(bool writeIndented)
+        => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
+
+    /// <summary>
     /// Finalizer.
     /// </summary>
     ~SKFunction()
@@ -241,6 +268,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     #region private
 
+    private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
+    private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly DelegateTypes _delegateType;
     private readonly Delegate _function;
     private readonly ILogger _log;
@@ -292,7 +321,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         ILogger? log = null
     )
     {
-        Verify.NotNull(delegateFunction, "The function delegate is empty");
+        Verify.NotNull(delegateFunction);
         Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
         Verify.ParametersUniqueness(parameters);
@@ -495,9 +524,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
         context.Skills ??= this._skillCollection;
     }
 
-    private static MethodDetails GetMethodDetails(MethodInfo methodSignature, object? methodContainerInstance, ILogger? log = null)
+    private static MethodDetails GetMethodDetails(
+        MethodInfo methodSignature,
+        object? methodContainerInstance,
+        bool skAttributesRequired = true,
+        ILogger? log = null)
     {
-        Verify.NotNull(methodSignature, "Method is NULL");
+        Verify.NotNull(methodSignature);
 
         var result = new MethodDetails
         {
@@ -515,11 +548,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (!result.HasSkFunctionAttribute || skFunctionAttribute == null)
         {
-            log?.LogTrace("Method {0} doesn't have SKFunctionAttribute", result.Name);
-            return result;
+            log?.LogTrace("Method '{0}' doesn't have '{1}' attribute", result.Name, typeof(SKFunctionAttribute).Name);
+            if (skAttributesRequired) { return result; }
         }
-
-        result.HasSkFunctionAttribute = true;
+        else
+        {
+            result.HasSkFunctionAttribute = true;
+        }
 
         (result.Type, result.Function, bool hasStringParam) = GetDelegateInfo(methodContainerInstance, methodSignature);
 
@@ -556,9 +591,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
         else if (skMainParam != null)
         {
             // The developer used [SKFunctionInput] on a function that doesn't support a string input
-            throw new KernelException(
-                KernelException.ErrorCodes.InvalidFunctionDescription,
-                "The function doesn't have a string parameter, do not use " + typeof(SKFunctionInputAttribute));
+            var message = $"The method '{result.Name}' doesn't have a string parameter, do not use '{typeof(SKFunctionInputAttribute).Name}' attribute.";
+            throw new KernelException(KernelException.ErrorCodes.InvalidFunctionDescription, message);
         }
 
         // Handle named arg passed via the SKContext object
@@ -570,9 +604,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
         // Note: the name "input" is reserved for the main parameter
         Verify.ParametersUniqueness(result.Parameters);
 
-        result.Description = skFunctionAttribute.Description ?? "";
+        result.Description = skFunctionAttribute?.Description ?? "";
 
-        log?.LogTrace("Method {0} found", result.Name);
+        log?.LogTrace("Method '{0}' found, type `{1}`", result.Name, result.Type.ToString("G"));
 
         return result;
     }
@@ -680,16 +714,24 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             throw new KernelException(
                 KernelException.ErrorCodes.FunctionTypeNotSupported,
-                $"Function {method.Name} has an invalid signature 'Func<SKContext, SKContext>'. " +
+                $"Function '{method.Name}' has an invalid signature 'Func<SKContext, SKContext>'. " +
                 "Please use 'Func<SKContext, Task<SKContext>>' instead.");
         }
 
         throw new KernelException(
             KernelException.ErrorCodes.FunctionTypeNotSupported,
-            $"Function {method.Name} has an invalid signature not supported by the kernel");
+            $"Function '{method.Name}' has an invalid signature not supported by the kernel.");
     }
 
-    [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate result can be null")]
+    /// <summary>
+    /// Compare a method against the given signature type using Delegate.CreateDelegate.
+    /// </summary>
+    /// <param name="instance">Optional object containing the given method</param>
+    /// <param name="userMethod">Method to inspect</param>
+    /// <param name="delegateDefinition">Definition of the delegate, i.e. method signature</param>
+    /// <param name="result">The delegate to use, if the function returns TRUE, otherwise NULL</param>
+    /// <returns>True if the method to inspect matches the delegate type</returns>
+    [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate can return NULL")]
     private static bool EqualMethods(
         object? instance,
         MethodInfo userMethod,
