@@ -33,7 +33,7 @@ kernel.Config.AddAzureTextCompletionService(
 );
 
 // Alternative using OpenAI
-// kernel.Config.AddOpenAITextCompletionService("davinci-openai",
+// kernel.Config.AddOpenAITextCompletionService(
 //     "text-davinci-003",               // OpenAI Model name
 //     "...your OpenAI API Key..."       // OpenAI API Key
 // );
@@ -67,7 +67,7 @@ Console.WriteLine(await summarize.InvokeAsync(text2));
 
 The previous code shows how to invoke individual semantic functions, but you can
 also chain functions (aka prompt chaining) to process the initial input with multiple
-operations. 
+operations.
 
 The following code for example, translates an initial text to math symbols and
 then generates a summary:
