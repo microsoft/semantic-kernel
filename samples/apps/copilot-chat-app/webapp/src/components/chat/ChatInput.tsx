@@ -175,7 +175,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         if (chatInput) {
                             setValue(chatInput.value);
                         }
-                        // User is considered typing if the input is focused
+                        // User is considered typing if the input is in focus
                         dispatch(updateUserIsTyping({ userId: account!.homeAccountId!, chatId: selectedId, isTyping: true }));
                     }}
                     onChange={(_event, data) => setValue(data.value)}
@@ -191,7 +191,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         }
                     }}
                     onBlur={() => {
-                        // User is considered not typing if the input is not focused
+                        // User is considered not typing if the input is not  in focus
                         dispatch(updateUserIsTyping({ userId: account!.homeAccountId!, chatId: selectedId, isTyping: false }));
                     }}
                 />
