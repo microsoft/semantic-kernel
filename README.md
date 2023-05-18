@@ -116,6 +116,11 @@ from here:
 **Requirements:** C# notebooks require [.NET 7](https://dotnet.microsoft.com/download)
 and the VS Code [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode).
 
+## Deploy Semantic Kernel to Azure in a web app service ☁️
+
+Getting Semantic Kernel deployed to Azure as web app service is easy with one-click deployments. Click [here](https://aka.ms/sk-docs-azuredeploy) to learn more on how to deploy to Azure.
+
+
 ## Contributing and Community
 
 We welcome your contributions and suggestions to SK community! One of the easiest
