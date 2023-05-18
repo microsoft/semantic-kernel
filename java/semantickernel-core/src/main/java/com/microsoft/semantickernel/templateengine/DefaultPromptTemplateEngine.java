@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.templateengine; // Copyright (c) Microsoft.
 
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.templateengine.blocks.Block;
+import com.microsoft.semantickernel.templateengine.blocks.CodeBlock;
 import com.microsoft.semantickernel.templateengine.blocks.CodeRendering;
 import com.microsoft.semantickernel.templateengine.blocks.TextRendering;
 
@@ -67,12 +68,13 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
     /// <inheritdoc/>
     public Mono<String> renderAsync(List<Block> blocks, SKContext context) {
         return Flux.fromIterable(blocks)
-                .map(
+                .flatMap(
                         block -> {
                             if (block instanceof TextRendering) {
-                                return ((TextRendering) block).render(context.getVariables());
+                                return Mono.just(
+                                        ((TextRendering) block).render(context.getVariables()));
                             } else if (block instanceof CodeRendering) {
-                                // result.Append(await dynamicBlock.RenderCodeAsync(context));
+                                return ((CodeBlock) block).renderCodeAsync(context);
                             } else {
                                 // const string error = "Unexpected block type, the block doesn't
                                 // have a rendering method";
@@ -80,7 +82,7 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
                                 //    throw new
                                 // TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, error);
                             }
-                            return "";
+                            return Mono.just("");
                         })
                 .collectList()
                 .map(
@@ -118,38 +120,11 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
          */
     }
 
-    /*
-    /// <inheritdoc/>
-    public IList<Block> RenderVariables(IList<Block> blocks, ContextVariables? variables)
-    {
-        this._log.LogTrace("Rendering variables");
-        return blocks.Select(block => block.Type != BlockTypes.Variable
-            ? block
-            : new TextBlock(((ITextRendering)block).Render(variables), this._log)).ToList();
-    }
+    public static class Builder implements PromptTemplateEngine.Builder {
 
-    /// <inheritdoc/>
-    public async Task<IList<Block>> RenderCodeAsync(
-        IList<Block> blocks,
-        SKContext executionContext)
-    {
-        this._log.LogTrace("Rendering code");
-        var updatedBlocks = new List<Block>();
-        foreach (var block in blocks)
-        {
-            if (block.Type != BlockTypes.Code)
-            {
-                updatedBlocks.Add(block);
-            }
-            else
-            {
-                var codeResult = await ((ICodeRendering)block).RenderCodeAsync(executionContext);
-                updatedBlocks.Add(new TextBlock(codeResult, this._log));
-            }
+        @Override
+        public PromptTemplateEngine build() {
+            return new DefaultPromptTemplateEngine();
         }
-
-        return updatedBlocks;
     }
-
-     */
 }

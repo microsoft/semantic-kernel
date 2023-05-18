@@ -100,7 +100,7 @@ public class Example04ContextVariablesChat {
 
   public static void run (boolean useAzureOpenAI)
       throws ExecutionException, InterruptedException, TimeoutException {
-    OpenAIAsyncClient client = Example00GettingStarted.getClient(useAzureOpenAI);
+    OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
     Kernel kernel = Example00GettingStarted.getKernel(client);
 
     startChat(kernel);

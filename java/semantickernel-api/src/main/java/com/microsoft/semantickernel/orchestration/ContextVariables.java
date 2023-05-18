@@ -3,8 +3,6 @@ package com.microsoft.semantickernel.orchestration;
 
 // Copyright (c) Microsoft. All rights reserved.
 
-import reactor.util.annotation.NonNull;
-
 import java.util.Map;
 
 import javax.annotation.CheckReturnValue;
@@ -21,16 +19,7 @@ public interface ContextVariables {
     Map<String, String> asMap();
 
     @CheckReturnValue
-    ContextVariables copy();
-
-    /**
-     * Set the value
-     *
-     * @param key variable name
-     * @param content value to set
-     * @return Contect for fluent calls
-     */
-    ContextVariables setVariable(@NonNull String key, @NonNull String content);
+    WritableContextVariables writableClone();
 
     interface Builder {
         ContextVariables build();

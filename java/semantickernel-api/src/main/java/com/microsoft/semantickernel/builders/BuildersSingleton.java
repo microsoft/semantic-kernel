@@ -4,8 +4,10 @@ package com.microsoft.semantickernel.builders;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
+import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import org.slf4j.Logger;
@@ -34,34 +36,45 @@ public enum BuildersSingleton {
     private static final String FALLBACK_VARIABLE_BUILDER_CLASS =
             "com.microsoft.semantickernel.orchestration.DefaultContextVariables$Builder";
 
+    private static final String FALLBACK_CONTEXT_BUILDER_CLASS =
+            "com.microsoft.semantickernel.orchestration.DefaultSemanticSKContext$Builder";
+    private static final String FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS =
+            "com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine$Builder";
+
     private final FunctionBuilders functionBuilders;
     private final Kernel.InternalBuilder kernelBuilder;
     private final TextCompletion.Builder textCompletionBuilder;
     private final EmbeddingGeneration.Builder<String, Double> textEmbeddingGenerationBuilder;
     private final ReadOnlySkillCollection.Builder readOnlySkillCollection;
-
     private final PromptTemplate.Builder promptTemplate;
     private final ContextVariables.Builder variables;
+    private final SKContext.Builder context;
+    private final PromptTemplateEngine.Builder promptTemplateEngine;
 
     BuildersSingleton() {
         try {
             functionBuilders =
                     ServiceLoadUtil.findServiceLoader(
                             FunctionBuilders.class, FALLBACK_FUNCTION_BUILDER_CLASS);
+
             kernelBuilder =
                     ServiceLoadUtil.findServiceLoader(
                             Kernel.InternalBuilder.class, FALLBACK_KERNEL_BUILDER_CLASS);
+
             textCompletionBuilder =
                     ServiceLoadUtil.findServiceLoader(
                             TextCompletion.Builder.class, FALLBACK_TEXT_COMPLETION_BUILDER_CLASS);
+
             textEmbeddingGenerationBuilder =
                     ServiceLoadUtil.findServiceLoader(
                             EmbeddingGeneration.Builder.class,
                             FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS);
+
             readOnlySkillCollection =
                     ServiceLoadUtil.findServiceLoader(
                             ReadOnlySkillCollection.Builder.class,
                             FALLBACK_SKILL_COLLECTION_BUILDER_CLASS);
+
             promptTemplate =
                     ServiceLoadUtil.findServiceLoader(
                             PromptTemplate.Builder.class, FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS);
@@ -69,6 +82,15 @@ public enum BuildersSingleton {
             variables =
                     ServiceLoadUtil.findServiceLoader(
                             ContextVariables.Builder.class, FALLBACK_VARIABLE_BUILDER_CLASS);
+
+            context =
+                    ServiceLoadUtil.findServiceLoader(
+                            SKContext.Builder.class, FALLBACK_CONTEXT_BUILDER_CLASS);
+
+            promptTemplateEngine =
+                    ServiceLoadUtil.findServiceLoader(
+                            PromptTemplateEngine.Builder.class,
+                            FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS);
 
         } catch (Throwable e) {
             Logger LOGGER = LoggerFactory.getLogger(BuildersSingleton.class);
@@ -119,7 +141,15 @@ public enum BuildersSingleton {
         return promptTemplate;
     }
 
+    public PromptTemplateEngine.Builder getPromptTemplateEngineBuilder() {
+        return promptTemplateEngine;
+    }
+
     public ContextVariables.Builder variables() {
         return variables;
+    }
+
+    public SKContext.Builder context() {
+        return context;
     }
 }

@@ -16,7 +16,7 @@ public class Example05UsingThePlanner {
     }
 
     public static void run(boolean useAzureOpenAI) {
-        OpenAIAsyncClient client = Example00GettingStarted.getClient(useAzureOpenAI);
+        OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
         Kernel kernel = Example00GettingStarted.getKernel(client);
 
         SequentialPlanner planner = getPlanner(kernel);

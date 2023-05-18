@@ -23,7 +23,7 @@ public class Example06MemoryAndEmbeddings {
   }
 
   public static void run (boolean useAzureOpenAI) {
-    OpenAIAsyncClient client = Example00GettingStarted.getClient(useAzureOpenAI);
+    OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
     Kernel kernel = getKernel(client);
   }
 

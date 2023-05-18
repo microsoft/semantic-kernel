@@ -46,6 +46,8 @@ public interface ReadOnlySkillCollection {
     @Nullable
     ReadOnlyFunctionCollection getFunctions(String skillName);
 
+    boolean hasFunction(String functionName);
+
     public interface Builder {
         public ReadOnlySkillCollection build();
     }

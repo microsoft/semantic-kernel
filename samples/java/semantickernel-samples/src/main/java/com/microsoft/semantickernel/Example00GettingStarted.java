@@ -20,27 +20,6 @@ import reactor.core.publisher.Mono;
  * <a href="https://openai.com/product">Get started with OpenAI</a>
  */
 public class Example00GettingStarted {
-  public static final String OPEN_AI_CONF_PROPERTIES = "samples/java/semantickernel-samples/conf.openai.properties";
-  public static final String AZURE_CONF_PROPERTIES = "samples/java/semantickernel-samples/conf.azure.properties";
-
-  /**
-   * Returns the client that will handle AzureOpenAI or OpenAI requests.
-   *
-   * @param useAzureOpenAI  whether to use AzureOpenAI or OpenAI.
-   * @return                client to be used by the kernel.
-   */
-  public static OpenAIAsyncClient getClient(boolean useAzureOpenAI) {
-    if (useAzureOpenAI) {
-      return new OpenAIClientBuilder()
-              .setApiKey(Config.getOpenAIKey(AZURE_CONF_PROPERTIES))
-              .setEndpoint(Config.getAzureOpenAIEndpoint(AZURE_CONF_PROPERTIES))
-              .build();
-    }
-
-    return new OpenAIClientBuilder()
-        .setApiKey(Config.getOpenAIKey(OPEN_AI_CONF_PROPERTIES))
-        .build();
-  }
 
   /**
    * Returns a Semantic Kernel with Text Completion.
@@ -82,7 +61,7 @@ public class Example00GettingStarted {
   }
 
   public static void run (boolean useAzureOpenAI) {
-    OpenAIAsyncClient client = getClient(useAzureOpenAI);
+    OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
     Kernel kernel = getKernel(client);
     joke(kernel);
   }

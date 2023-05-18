@@ -28,7 +28,10 @@ public class Example03VariablesTest {
                 kernel.importSkill(new StaticTextSkill(), "text");
 
         ContextVariables variables =
-                SKBuilders.variables().build("Today is: ").setVariable("day", "Monday");
+                SKBuilders.variables()
+                        .build("Today is: ")
+                        .writableClone()
+                        .setVariable("day", "Monday");
 
         Mono<SKContext<?>> result =
                 kernel.runAsync(

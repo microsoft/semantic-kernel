@@ -72,7 +72,7 @@ public abstract class AbstractSKContext<T extends SKContext<T>> implements SKCon
         } else {
             clonedSkill = skills.copy();
         }
-        return build(variables.copy(), memory, clonedSkill);
+        return build(variables.writableClone(), memory, clonedSkill);
     }
 
     @Nullable

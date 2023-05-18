@@ -3,8 +3,10 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
+import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
+import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
 import reactor.core.publisher.Mono;
 
@@ -207,5 +209,14 @@ public abstract class AbstractSkFunction<
     public ContextType buildContext() {
         assertSkillSupplierRegistered();
         return buildContext(SKBuilders.variables().build(), null, getSkillsSupplier().get());
+    }
+
+    @Override
+    public Mono<ContextType> invokeWithCustomInputAsync(
+            ContextVariables input,
+            SemanticTextMemory semanticMemory,
+            ReadOnlySkillCollection skills) {
+        ContextType tmpContext = buildContext(input, semanticMemory, skills);
+        return invokeAsync(tmpContext, null);
     }
 }

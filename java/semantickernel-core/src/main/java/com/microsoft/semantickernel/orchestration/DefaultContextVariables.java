@@ -93,7 +93,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     }
 
     @Override
-    public DefaultContextVariables copy() {
+    public WritableContextVariables writableClone() {
         return new DefaultContextVariables(variables);
     }
 
