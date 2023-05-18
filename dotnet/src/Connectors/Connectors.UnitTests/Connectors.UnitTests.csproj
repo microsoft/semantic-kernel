@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
     <ProjectReference Include="..\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj" />
     <ProjectReference Include="..\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
   </ItemGroup>
