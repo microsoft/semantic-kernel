@@ -122,10 +122,10 @@ public class PineconeDocument
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeDocument" /> class.
     /// </summary>
-    /// <param name="id">The unique ID of a vector.</param>
     /// <param name="values">Vector dense data. This should be the same length as the dimension of the index being queried.</param>
-    /// <param name="sparseValues">sparseValues.</param>
+    /// <param name="id">The unique ID of a vector.</param>
     /// <param name="metadata">metadata.</param>
+    /// <param name="sparseValues">sparseValues.</param>
     /// <param name="score"></param>
     [JsonConstructor]
     public PineconeDocument(

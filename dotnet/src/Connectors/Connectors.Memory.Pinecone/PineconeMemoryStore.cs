@@ -67,7 +67,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             throw new PineconeMemoryException(
                 PineconeMemoryException.ErrorCodes.IndexNotReady,
-                $"Index creation is not supported within memory store. " +
+                "Index creation is not supported within memory store. " +
                 $"It should be created manually or using {nameof(IPineconeClient.CreateIndexAsync)}. " +
                 $"Ensure index state is {IndexState.Ready}.");
         }
@@ -124,7 +124,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         try
         {
             await request.ConfigureAwait(false);
-
         }
         catch (HttpRequestException ex)
         {
@@ -468,8 +467,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// Remove a MemoryRecord from the Pinecone Vector database by pointId.
     /// </summary>
     /// <param name="indexName"> The name associated with the index to remove the Pinecone vector record from.</param>
-    /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="documentId">The unique indexed ID associated with the Pinecone vector record to remove.</param>
+    /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="PineconeMemoryException"></exception>
@@ -495,8 +494,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// Remove a MemoryRecord from the Pinecone Vector database by a group of pointIds.
     /// </summary>
     /// <param name="indexName"> The name associated with the index to remove the Pinecone vector record from.</param>
-    /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="documentIds">The unique indexed IDs associated with the Pinecone vector records to remove.</param>
+    /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="PineconeMemoryException"></exception>

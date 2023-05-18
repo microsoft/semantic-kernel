@@ -52,9 +52,9 @@ public interface IPineconeClient
     /// <param name="vector">The vector to compare the collection's vectors with.</param>
     /// <param name="threshold">The minimum relevance threshold for returned results.</param>
     /// <param name="topK">The maximum number of similarity results to return.</param>
-    /// <param name="indexNamespace">The name assigned to a collection of vectors.</param>
     /// <param name="includeValues"> Whether to include the vector values</param>
     /// <param name="includeMetadata"> Whether to include the metadata</param>
+    /// <param name="indexNamespace">The name assigned to a collection of vectors.</param>
     /// <param name="filter"> A filter to apply to the results</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
@@ -89,9 +89,9 @@ public interface IPineconeClient
     /// </remarks>
     /// <param name="indexName"> The name of the index</param>
     /// <param name="ids"> The ids to delete</param>
-    /// <param name="deleteAll"> Whether to delete all vectors</param>
     /// <param name="indexNamespace"> The namespace to use</param>
     /// <param name="filter"> The filter to use</param>
+    /// <param name="deleteAll"> Whether to delete all vectors</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of Object</returns>
     Task DeleteAsync(

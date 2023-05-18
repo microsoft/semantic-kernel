@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 /// <summary>
 ///  Query parameters for use in a query request.
 /// </summary>
-public class Query
+public sealed class Query
 {
     /// <summary>
     /// The number of results to return for each query.
@@ -84,6 +84,5 @@ public class Query
     [JsonConstructor]
     private Query()
     {
-
     }
 }

@@ -77,7 +77,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
             yield break;
         }
 
-        if (!data.Vectors.Any())
+        if (data.Vectors.Count == 0)
         {
             this._logger.LogWarning("Vectors not found");
             yield break;
@@ -130,7 +130,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
             yield break;
         }
 
-        if (!queryResponse.Matches.Any())
+        if (queryResponse.Matches.Count == 0)
         {
             this._logger.LogWarning("No matches found");
             yield break;
@@ -181,7 +181,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
             }
         }
 
-        if (!documents.Any())
+        if (documents.Count == 0)
         {
             this._logger.LogWarning("No relevant documents found");
             yield break;
@@ -260,7 +260,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         {
             throw new PineconeMemoryException(
                 PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Must provide at least one of ids, filter, or deleteAll");
+                "Must provide at least one of ids, filter, or deleteAll");
         }
 
         ids = ids?.ToList();
@@ -543,7 +543,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         {
             throw new PineconeMemoryException(
                 PineconeMemoryException.ErrorCodes.IndexNotFound,
-                $"Index not found in Pinecone. Create index to perform operations with vectors.");
+                "Index not found in Pinecone. Create index to perform operations with vectors.");
         }
 
         if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
