@@ -273,6 +273,9 @@ public sealed class OpenAICompletionTests : IDisposable
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
 
         Assert.NotNull(openAIConfiguration);
+        Assert.NotNull(openAIConfiguration.ModelId);
+        Assert.NotNull(openAIConfiguration.ApiKey);
+        Assert.NotNull(openAIConfiguration.ServiceId);
 
         kernel.Config.AddOpenAITextCompletionService(
             modelId: openAIConfiguration.ModelId,
@@ -287,9 +290,12 @@ public sealed class OpenAICompletionTests : IDisposable
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
 
         Assert.NotNull(openAIConfiguration);
+        Assert.NotNull(openAIConfiguration.ChatModelId);
+        Assert.NotNull(openAIConfiguration.ApiKey);
+        Assert.NotNull(openAIConfiguration.ServiceId);
 
         kernel.Config.AddOpenAIChatCompletionService(
-            modelId: openAIConfiguration.ChatModelId!,
+            modelId: openAIConfiguration.ChatModelId,
             apiKey: openAIConfiguration.ApiKey,
             serviceId: openAIConfiguration.ServiceId);
 
@@ -301,6 +307,10 @@ public sealed class OpenAICompletionTests : IDisposable
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
         Assert.NotNull(azureOpenAIConfiguration);
+        Assert.NotNull(azureOpenAIConfiguration.DeploymentName);
+        Assert.NotNull(azureOpenAIConfiguration.Endpoint);
+        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
+        Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
         kernel.Config.AddAzureTextCompletionService(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
@@ -316,9 +326,13 @@ public sealed class OpenAICompletionTests : IDisposable
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
         Assert.NotNull(azureOpenAIConfiguration);
+        Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
+        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
+        Assert.NotNull(azureOpenAIConfiguration.Endpoint);
+        Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
         kernel.Config.AddAzureChatCompletionService(
-            deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+            deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);

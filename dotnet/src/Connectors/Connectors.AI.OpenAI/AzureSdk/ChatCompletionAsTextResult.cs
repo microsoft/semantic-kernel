@@ -22,12 +22,8 @@ internal sealed class ChatCompletionAsTextResult : ITextCompletionStreamingResul
     }
 
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
-    {
-        return this._getCompletionAsyncImpl(cancellationToken);
-    }
+        => this._getCompletionAsyncImpl(cancellationToken);
 
     public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default)
-    {
-        return this._getCompletionStreamingAsyncImpl(cancellationToken);
-    }
+        => this._getCompletionStreamingAsyncImpl(cancellationToken);
 }
