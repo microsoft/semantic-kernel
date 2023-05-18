@@ -86,6 +86,11 @@ public class SemanticKernelController : ControllerBase
             return this.BadRequest(result.LastErrorDescription);
         }
 
-        return this.Ok(new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) });
+        return this.Ok(new AskResult
+        {
+            Value = result.Result,
+            Variables = result.Variables.Select(
+                v => new KeyValuePair<string, string>(v.Key, v.Value))
+        });
     }
 }

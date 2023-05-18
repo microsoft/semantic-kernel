@@ -151,7 +151,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
             time;
     }
 
-    const isMe = message.authorRole === AuthorRoles.User || message.userId === account?.homeAccountId!;
+    const isMe = message.authorRole === AuthorRoles.User && message.userId === account!.homeAccountId!;
     const isBot = message.authorRole !== AuthorRoles.User && message.userId === 'bot';
     const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
     const fullName = user?.fullName ?? message.userName;
