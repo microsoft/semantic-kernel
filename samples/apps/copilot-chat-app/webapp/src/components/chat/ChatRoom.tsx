@@ -9,8 +9,7 @@ import { AuthorRoles } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { updateConversationFromUser, updateIsTypingFromUser } from '../../redux/features/conversations/conversationsSlice';
-import { getSelectedChatID, store } from './../../redux/app/store';
+import { updateConversationFromUser } from '../../redux/features/conversations/conversationsSlice';
 import { ChatHistory } from './ChatHistory';
 import { ChatInput } from './ChatInput';
 
@@ -67,12 +66,6 @@ export const ChatRoom: React.FC = () => {
 
     const chat = useChat();
 
-    const chatID = getSelectedChatID() as string;
-    const typingState = {
-        id: chatID,
-        isTyping: false
-    };
-
     React.useEffect(() => {
         if (!shouldAutoScroll) return;
         scrollToTarget(scrollTargetRef.current);
@@ -116,15 +109,9 @@ export const ChatRoom: React.FC = () => {
             authorRole: AuthorRoles.User,
         };
 
-        typingState.isTyping = true
-        dispatch(updateIsTypingFromUser( typingState ));
         dispatch(updateConversationFromUser({ message: chatInput }));
-        try {
-            await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userCancelledPlan);
-        } finally {
-            typingState.isTyping = false;
-            dispatch(updateIsTypingFromUser( typingState ));
-        }
+
+        await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userCancelledPlan);
 
         setShouldAutoScroll(true);
     };
@@ -140,7 +127,7 @@ export const ChatRoom: React.FC = () => {
                 </div>
             </div>
             <div className={classes.input}>
-                <ChatInput isTyping={store.getState().conversations.conversations[chatID].isTyping} onSubmit={handleSubmit} />
+                <ChatInput onSubmit={handleSubmit} />
             </div>
         </div>
     );
