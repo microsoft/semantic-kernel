@@ -5,7 +5,7 @@ QdrantMemoryStore provides functionality to add Qdrant vector database to suppor
 The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
 """
 from logging import Logger
-from typing import TYPE_CHECKING, List, Optional, Tuple, 
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from numpy import ndarray
 

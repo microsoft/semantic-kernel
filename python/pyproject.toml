@@ -26,9 +26,11 @@ torch = "^2.0.0"
 transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
 
-
 [tool.poetry.group.qdrant.dependencies]
 qdrant-client = {version = "^1.1.7", python = ">=3.8,<3.12"}
+
+[tool.poetry.group.chromadb.dependencies]
+chromadb = "^0.3.23"
 
 [tool.isort]
 profile = "black"

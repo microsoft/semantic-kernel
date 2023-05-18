@@ -7,7 +7,7 @@ import struct
 import qdrant_client
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
-from numpy import array, linalg, ndarray, zeros
+from numpy import zeros
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 
