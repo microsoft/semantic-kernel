@@ -78,13 +78,15 @@ internal static class SemanticChatMemoryExtractor
             throw new ArgumentException($"Memory name {memoryName} is not supported.");
         }
 
+        // Token limit for chat history
         var tokenLimit = options.CompletionTokenLimit;
-        var remainingToken = tokenLimit - options.ResponseTokenLimit;
-        var contextTokenLimit = remainingToken;
+        var remainingToken =
+            tokenLimit -
+            options.ResponseTokenLimit -
+            Utilities.TokenCount(memoryPrompt); ;
 
         var memoryExtractionContext = Utilities.CopyContextWithVariablesClone(context);
         memoryExtractionContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
-        memoryExtractionContext.Variables.Set("contextTokenLimit", contextTokenLimit.ToString(new NumberFormatInfo()));
         memoryExtractionContext.Variables.Set("memoryName", memoryName);
         memoryExtractionContext.Variables.Set("format", options.MemoryFormat);
         memoryExtractionContext.Variables.Set("knowledgeCutoff", options.KnowledgeCutoffDate);

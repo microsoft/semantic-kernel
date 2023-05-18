@@ -303,6 +303,8 @@ public class ChatSkill
         // Invoke the model
         chatContext.Variables.Set("UserIntent", userIntent);
         chatContext.Variables.Set("ChatContext", chatContextText);
+        chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
+        chatContext.Variables.Set("audience", chatContext["userName"]);
 
         var completionFunction = this._kernel.CreateSemanticFunction(
             this._promptOptions.SystemChatPrompt,
