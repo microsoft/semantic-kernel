@@ -26,6 +26,8 @@ public class BotController : ControllerBase
     private readonly IMemoryStore _memoryStore;
     private readonly ChatSessionRepository _chatRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
+    private readonly ChatParticipantRepository _chatParticipantRepository;
+
     private readonly BotSchemaOptions _botSchemaOptions;
     private readonly AIServiceOptions _embeddingOptions;
     private readonly DocumentMemoryOptions _documentMemoryOptions;
@@ -36,6 +38,7 @@ public class BotController : ControllerBase
     /// <param name="memoryStore">The memory store.</param>
     /// <param name="chatRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
+    /// <param name="chatParticipantRepository">The chat participant repository.</param>
     /// <param name="aiServiceOptions">The AI service options where we need the embedding settings from.</param>
     /// <param name="botSchemaOptions">The bot schema options.</param>
     /// <param name="documentMemoryOptions">The document memory options.</param>
@@ -44,6 +47,7 @@ public class BotController : ControllerBase
         IMemoryStore memoryStore,
         ChatSessionRepository chatRepository,
         ChatMessageRepository chatMessageRepository,
+        ChatParticipantRepository chatParticipantRepository,
         IOptionsSnapshot<AIServiceOptions> aiServiceOptions,
         IOptions<BotSchemaOptions> botSchemaOptions,
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
@@ -53,6 +57,7 @@ public class BotController : ControllerBase
         this._memoryStore = memoryStore;
         this._chatRepository = chatRepository;
         this._chatMessageRepository = chatMessageRepository;
+        this._chatParticipantRepository = chatParticipantRepository;
         this._botSchemaOptions = botSchemaOptions.Value;
         this._embeddingOptions = aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName);
         this._documentMemoryOptions = documentMemoryOptions.Value;
@@ -99,8 +104,9 @@ public class BotController : ControllerBase
         try
         {
             // 1. Create a new chat and get the chat id.
-            var newChat = new ChatSession(userId, chatTitle);
+            var newChat = new ChatSession(chatTitle);
             await this._chatRepository.CreateAsync(newChat);
+            await this._chatParticipantRepository.CreateAsync(new ChatParticipant(userId, newChat.Id));
             chatId = newChat.Id;
 
             string oldChatId = bot.ChatHistory.First().ChatId;
@@ -108,7 +114,12 @@ public class BotController : ControllerBase
             // 2. Update the app's chat storage.
             foreach (var message in bot.ChatHistory)
             {
-                var chatMessage = new ChatMessage(message.UserId, message.UserName, chatId, message.Content, ChatMessage.AuthorRoles.Participant)
+                var chatMessage = new ChatMessage(
+                    message.UserId,
+                    message.UserName,
+                    chatId, message.Content,
+                    ChatMessage.AuthorRoles.Participant
+                )
                 {
                     Timestamp = message.Timestamp
                 };

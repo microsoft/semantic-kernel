@@ -9,7 +9,8 @@ import { AuthorRoles } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { updateConversation } from '../../redux/features/conversations/conversationsSlice';
+import { updateConversationFromUser, updateIsTypingFromUser } from '../../redux/features/conversations/conversationsSlice';
+import { getSelectedChatID, store } from './../../redux/app/store';
 import { ChatHistory } from './ChatHistory';
 import { ChatInput } from './ChatInput';
 
@@ -64,10 +65,13 @@ export const ChatRoom: React.FC = () => {
     const scrollTargetRef = React.useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = React.useState(true);
 
-    // hardcode to care only about the bot typing for now.
-    const [isBotTyping, setIsBotTyping] = React.useState(false);
-
     const chat = useChat();
+
+    const chatID = getSelectedChatID() as string;
+    const typingState = {
+        id: chatID,
+        isTyping: false
+    };
 
     React.useEffect(() => {
         if (!shouldAutoScroll) return;
@@ -112,13 +116,14 @@ export const ChatRoom: React.FC = () => {
             authorRole: AuthorRoles.User,
         };
 
-        setIsBotTyping(true);
-        dispatch(updateConversation({ message: chatInput }));
-
+        typingState.isTyping = true
+        dispatch(updateIsTypingFromUser( typingState ));
+        dispatch(updateConversationFromUser({ message: chatInput }));
         try {
             await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userCancelledPlan);
         } finally {
-            setIsBotTyping(false);
+            typingState.isTyping = false;
+            dispatch(updateIsTypingFromUser( typingState ));
         }
 
         setShouldAutoScroll(true);
@@ -135,7 +140,7 @@ export const ChatRoom: React.FC = () => {
                 </div>
             </div>
             <div className={classes.input}>
-                <ChatInput isTyping={isBotTyping} onSubmit={handleSubmit} />
+                <ChatInput isTyping={store.getState().conversations.conversations[chatID].isTyping} onSubmit={handleSubmit} />
             </div>
         </div>
     );
