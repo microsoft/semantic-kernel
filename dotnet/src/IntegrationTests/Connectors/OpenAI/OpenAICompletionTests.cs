@@ -184,7 +184,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.IsType<AIException>(context.LastException);
         Assert.Equal(AIException.ErrorCodes.InvalidRequest, ((AIException)context.LastException).ErrorCode);
         Assert.Contains("The request is not valid, HTTP status: 400", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase); // This messasge could change in the future, comes from Azure OpenAI
+        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase); // This message could change in the future, comes from Azure OpenAI
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -196,7 +196,7 @@ public sealed class OpenAICompletionTests : IDisposable
     {
         // Arrange
         var prompt =
-            $"Given a json input and a request. Apply the request on the json input and return the result. " +
+            "Given a json input and a request. Apply the request on the json input and return the result. " +
             $"Put the result in between <result></result> tags{lineEnding}" +
             $"Input:{lineEnding}{{\"name\": \"John\", \"age\": 30}}{lineEnding}{lineEnding}Request:{lineEnding}name";
 
