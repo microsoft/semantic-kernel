@@ -203,4 +203,3 @@ internal sealed class Database
         return cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 }
-
