@@ -66,7 +66,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.GetTextCompletionAsChat(text, requestSettings, cancellationToken).ToAsyncEnumerable();
+        return this.InternalGetTextCompletionAsChat(text, requestSettings, cancellationToken).ToAsyncEnumerable();
     }
 
     /// <inheritdoc/>
@@ -75,16 +75,6 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(this.GetTextCompletionAsChat(text, requestSettings, cancellationToken) as IReadOnlyList<ITextCompletionResult>);
-    }
-
-    private List<ITextCompletionStreamingResult> GetTextCompletionAsChat(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
-    {
-        return new List<ITextCompletionStreamingResult>
-        {
-            new ChatCompletionAsTextResult(
-                (cancellationTokenInvoke) => this.InternalCompleteTextUsingChatStreamAsync(text, requestSettings, cancellationTokenInvoke),
-                (cancellationTokenInvoke) => this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationTokenInvoke))
-        };
+        return Task.FromResult(this.InternalGetTextCompletionAsChat(text, requestSettings, cancellationToken) as IReadOnlyList<ITextCompletionResult>);
     }
 }

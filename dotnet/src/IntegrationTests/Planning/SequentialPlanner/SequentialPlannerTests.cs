@@ -37,7 +37,7 @@ public sealed class SequentialPlannerTests : IDisposable
     public async Task CreatePlanFunctionFlowAsync(bool usingChatModel, string prompt, string expectedFunction, string expectedSkill)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel(usingChatModel);
+        IKernel kernel = this.InitializeKernel(false, usingChatModel);
         TestHelpers.GetSkills(kernel, "FunSkill");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
@@ -54,12 +54,11 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(false, "Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterSkill", "<!--===ENDPART===-->")]
-    [InlineData(true, "Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterSkill", "<!--===ENDPART===-->")]
-    public async Task CreatePlanWithDefaultsAsync(bool usingChatModel, string prompt, string expectedFunction, string expectedSkill, string expectedDefault)
+    [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterSkill", "<!--===ENDPART===-->")]
+    public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedSkill, string expectedDefault)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel(usingChatModel);
+        IKernel kernel = this.InitializeKernel();
         TestHelpers.GetSkills(kernel, "WriterSkill");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
@@ -77,12 +76,12 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(false, "Write a poem or joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
-    [InlineData(true, "Write a poem or joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
-    public async Task CreatePlanGoalRelevantAsync(bool usingChatModel, string prompt, string expectedFunction, string expectedSkill)
+    [InlineData("Write a poem or joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
+    public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedSkill)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel(usingChatModel, true);
+        bool useEmbeddings = true;
+        IKernel kernel = this.InitializeKernel(useEmbeddings);
 
         // Import all sample skills available for demonstration purposes.
         TestHelpers.ImportSampleSkills(kernel);
@@ -101,7 +100,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
     }
 
-    private IKernel InitializeKernel(bool usingChatModel, bool useEmbeddings = false)
+    private IKernel InitializeKernel(bool useEmbeddings = false, bool usingChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
