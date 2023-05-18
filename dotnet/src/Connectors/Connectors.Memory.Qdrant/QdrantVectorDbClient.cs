@@ -18,8 +18,8 @@ using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
 /// <summary>
-/// An implementation of a client for the Qdrant VectorDB. This class is used to
-/// connect, create, delete, and get embeddings data from a Qdrant VectorDB instance.
+/// An implementation of a client for the Qdrant VectorDB. This class is used to connect, create,
+/// delete, and get embeddings data from a Qdrant VectorDB instance.
 /// </summary>
 public class QdrantVectorDbClient : IQdrantVectorDbClient
 {
@@ -177,7 +177,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         try
         {
             response.EnsureSuccessStatusCode();
-            var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+            var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
             if (result?.Status == "ok")
             {
                 this._log.LogDebug("Vector being deleted");
@@ -216,7 +216,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         try
         {
             response.EnsureSuccessStatusCode();
-            var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+            var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
             if (result?.Status == "ok")
             {
                 this._log.LogDebug("Vector being deleted");
@@ -470,5 +470,5 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         return (response, responseContent);
     }
 
-    #endregion
+    #endregion private ================================================================================
 }

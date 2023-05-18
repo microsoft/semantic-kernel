@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
+
 internal sealed class GetVectorsResponse : QdrantResponse
 {
     internal sealed class Record
@@ -36,4 +37,5 @@ internal sealed class GetVectorsResponse : QdrantResponse
     [JsonPropertyName("result")]
     public IEnumerable<Record> Result { get; set; } = new List<Record>();
 }
+
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
