@@ -37,7 +37,7 @@ public class ExternalInformationSkill
     /// <summary>
     /// Proposed plan to return for approval.
     /// </summary>
-    private Plan? _proposedPlan;
+    public Plan? ProposedPlan { get; private set; }
 
     /// <summary>
     /// Create a new instance of ExternalInformationSkill.
@@ -55,9 +55,10 @@ public class ExternalInformationSkill
     /// </summary>
     [SKFunction("Acquire external information")]
     [SKFunctionName("AcquireExternalInformation")]
-    [SKFunctionContextParameter(Name = "userIntent", Description = "The intent of the user.")]
+    [SKFunctionInput(Description = "The intent to whether external information is needed")]
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-    public async Task<string> AcquireExternalInformationAsync(SKContext context)
+    [SKFunctionContextParameter(Name = "proposedPlan", Description = "Previously proposed plan that is approved")]
+    public async Task<string> AcquireExternalInformationAsync(string userIntent, SKContext context)
     {
         FunctionsView functions = this._planner.Kernel.Skills.GetFunctionsView(true, true);
         if (functions.NativeFunctions.IsEmpty && functions.SemanticFunctions.IsEmpty)
@@ -69,7 +70,7 @@ public class ExternalInformationSkill
         // If plan was returned at this point, that means it was approved and should be run
         var planApproved = context.Variables.Get("proposedPlan", out var planJson);
 
-        if (planApproved)
+        if (planApproved && !string.IsNullOrWhiteSpace(planJson))
         {
             // Reload the plan with the planner's kernel so
             // it has full context to be executed
@@ -86,11 +87,11 @@ public class ExternalInformationSkill
             int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
             // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
-            bool extractJsonFromOpenApi = this.TryExtractJsonFromOpenApiPlanResult(newPlanContext.Result, out string planResult);
+            bool extractJsonFromOpenApi =
+                this.TryExtractJsonFromOpenApiPlanResult(newPlanContext, newPlanContext.Result, out string planResult);
             if (extractJsonFromOpenApi)
             {
-                int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptOptions.RelatedInformationContextWeight);
-                planResult = this.OptimizeOpenApiSkillJson(planResult, relatedInformationTokenLimit, plan);
+                planResult = this.OptimizeOpenApiSkillJson(planResult, tokenLimit, plan);
             }
             else
             {
@@ -98,13 +99,7 @@ public class ExternalInformationSkill
                 planResult = newPlanContext.Variables.Input;
             }
 
-            string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
-
-            // Adjust the token limit using the number of tokens in the information text.
-            tokenLimit -= Utilities.TokenCount(informationText);
-            context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-
-            return informationText;
+            return $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
         }
         else
         {
@@ -130,7 +125,7 @@ public class ExternalInformationSkill
                     }
                 }
 
-                this._proposedPlan = plan;
+                ProposedPlan = plan;
             }
         }
 
@@ -142,7 +137,7 @@ public class ExternalInformationSkill
     /// <summary>
     /// Try to extract json from the planner response as if it were from an OpenAPI skill.
     /// </summary>
-    private bool TryExtractJsonFromOpenApiPlanResult(string openApiSkillResponse, out string json)
+    private bool TryExtractJsonFromOpenApiPlanResult(SKContext context, string openApiSkillResponse, out string json)
     {
         try
         {
@@ -160,11 +155,11 @@ public class ExternalInformationSkill
         }
         catch (JsonException)
         {
-            this._logger.LogDebug("Unable to extract JSON from planner response, it is likely not from an OpenAPI skill.");
+            context.Log.LogDebug("Unable to extract JSON from planner response, it is likely not from an OpenAPI skill.");
         }
         catch (InvalidOperationException)
         {
-            this._logger.LogDebug("Unable to extract JSON from planner response, it may already be proper JSON.");
+            context.Log.LogDebug("Unable to extract JSON from planner response, it may already be proper JSON.");
         }
 
         json = string.Empty;
@@ -177,8 +172,6 @@ public class ExternalInformationSkill
     /// </summary>
     private string OptimizeOpenApiSkillJson(string jsonContent, int tokenLimit, Plan plan)
     {
-        int jsonTokenLimit = (int)(tokenLimit * this._promptOptions.RelatedInformationContextWeight);
-
         // Remove all new line characters + leading and trailing white space
         jsonContent = Regex.Replace(jsonContent.Trim(), @"[\n\r]", string.Empty);
         var document = JsonDocument.Parse(jsonContent);
@@ -201,7 +194,7 @@ public class ExternalInformationSkill
         int jsonContentTokenCount = Utilities.TokenCount(jsonContent);
 
         // Return the JSON content if it does not exceed the token limit
-        if (jsonContentTokenCount < jsonTokenLimit)
+        if (jsonContentTokenCount < tokenLimit)
         {
             return jsonContent;
         }
@@ -224,7 +217,7 @@ public class ExternalInformationSkill
             {
                 // Save property name for result interpolation
                 JsonProperty firstProperty = document.RootElement.EnumerateObject().First();
-                jsonTokenLimit -= Utilities.TokenCount(firstProperty.Name);
+                tokenLimit -= Utilities.TokenCount(firstProperty.Name);
                 resultsDescriptor = string.Format(CultureInfo.InvariantCulture, "{0}: ", firstProperty.Name);
 
                 // Extract object to be truncated
@@ -241,10 +234,10 @@ public class ExternalInformationSkill
             {
                 int propertyTokenCount = Utilities.TokenCount(property.ToString());
 
-                if (jsonTokenLimit - propertyTokenCount > 0)
+                if (tokenLimit - propertyTokenCount > 0)
                 {
                     itemList.Add(property);
-                    jsonTokenLimit -= propertyTokenCount;
+                    tokenLimit -= propertyTokenCount;
                 }
                 else
                 {
@@ -261,10 +254,10 @@ public class ExternalInformationSkill
             {
                 int itemTokenCount = Utilities.TokenCount(item.ToString());
 
-                if (jsonTokenLimit - itemTokenCount > 0)
+                if (tokenLimit - itemTokenCount > 0)
                 {
                     itemList.Add(item);
-                    jsonTokenLimit -= itemTokenCount;
+                    tokenLimit -= itemTokenCount;
                 }
                 else
                 {

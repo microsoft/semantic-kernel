@@ -44,11 +44,11 @@ public class SemanticChatMemorySkill
     /// </summary>
     /// <param name="context">The SKContext</param>
     /// <returns>A string containing the relevant memories.</returns>
-    [SKFunction("Query user memories")]
-    [SKFunctionName("QueryUserMemories")]
+    [SKFunction("Query chat memories")]
+    [SKFunctionName("QueryChatMemories")]
     [SKFunctionContextParameter(Name = "chatId", Description = "Chat ID to query history from")]
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-    public async Task<string> QueryUserMemoriesAsync(SKContext context)
+    public async Task<string> QueryChatMemoriesAsync(SKContext context)
     {
         var chatId = context["chatId"];
         var tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
