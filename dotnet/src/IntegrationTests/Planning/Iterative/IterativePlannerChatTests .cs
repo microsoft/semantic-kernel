@@ -105,20 +105,29 @@ public sealed class IterativePlannerChatTests : IDisposable
 
     private IKernel InitializeKernel()
     {
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
+        //AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+
+        //var builder = Kernel.Builder
+        //    .WithLogger(this._logger)
+        //    .Configure(config =>
+        //    {
+        //        config.AddAzureChatCompletionService(
+        //            //deploymentName: azureOpenAIConfiguration.DeploymentName,
+        //            deploymentName: "gpt-35-turbo",
+        //            endpoint: azureOpenAIConfiguration.Endpoint,
+        //            apiKey: azureOpenAIConfiguration.ApiKey);
+        //    });
 
         var builder = Kernel.Builder
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                config.AddAzureChatCompletionService(
-                    //deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    deploymentName: "gpt-35-turbo",
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
+                config.AddOpenAIChatCompletionService("gpt-3.5-turbo", openAIConfiguration.ApiKey);
             });
 
+        //kernel.Config.AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
         var kernel = builder.Build();
 
         BingConnector connector = new(this._bingApiKey);

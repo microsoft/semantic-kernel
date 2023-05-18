@@ -69,7 +69,7 @@ Question: {{ $input }}.
     [SKFunctionName("Calculator")]
     public async Task<String> CalculateAsync(string input, SKContext context)
     {
-        this._mathTranslator.RequestSettings.ResultsPerPrompt = 0;
+        //this._mathTranslator.RequestSettings.ResultsPerPrompt = 0;
         var answer = await this._mathTranslator.InvokeAsync(input).ConfigureAwait(false);
         //Console.WriteLine(answer.Result);
         if (answer.ErrorOccurred)
