@@ -52,6 +52,7 @@ jobs:
         run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
         working-directory: java
 
+      # API tests run on JDK 17+
       - name: Run integration tests
         run: ../mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
         working-directory: java/api-test
@@ -60,6 +61,7 @@ jobs:
           AZURE_OPENAI_ENDPOINT: ""
           AZURE_OPENAI_API_KEY: ""
           AZURE_OPENAI_DEPLOYMENT_NAME: ""
+        if: ${{ matrix.java-versions >= 17 }}
 
       # Samples build on JDK 17+
       - name: Build semantic-kernel samples
