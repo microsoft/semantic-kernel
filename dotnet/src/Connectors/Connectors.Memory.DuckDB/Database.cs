@@ -60,29 +60,13 @@ internal sealed class Database
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task UpdateAsync(DuckDBConnection conn,
+    public async Task UpdateOrInsertAsync(DuckDBConnection conn,
         string collection, string key, string? metadata, string? embedding, string? timestamp, CancellationToken cancellationToken = default)
     {
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-             UPDATE {TableName}
-             SET metadata=?3, embedding=?4, timestamp=?5
-             WHERE collection=?1
-                AND key=?2; ";
-        cmd.Parameters.Add(new DuckDBParameter(collection));
-        cmd.Parameters.Add(new DuckDBParameter(key));
-        cmd.Parameters.Add(new DuckDBParameter(metadata ?? string.Empty));
-        cmd.Parameters.Add(new DuckDBParameter(embedding ?? string.Empty));
-        cmd.Parameters.Add(new DuckDBParameter(timestamp ?? string.Empty));
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    public async Task InsertOrIgnoreAsync(DuckDBConnection conn,
-        string collection, string key, string? metadata, string? embedding, string? timestamp, CancellationToken cancellationToken = default)
-    {
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-             INSERT OR IGNORE INTO {TableName} VALUES(?1, ?2, ?3, ?4, ?5); ";
+             INSERT INTO {TableName} VALUES(?1, ?2, ?3, ?4, ?5)
+             ON CONFLICT (collection, key) DO UPDATE SET metadata=?3, embedding=?4, timestamp=?5; ";
         cmd.Parameters.Add(new DuckDBParameter(collection));
         cmd.Parameters.Add(new DuckDBParameter(key));
         cmd.Parameters.Add(new DuckDBParameter(metadata ?? string.Empty));

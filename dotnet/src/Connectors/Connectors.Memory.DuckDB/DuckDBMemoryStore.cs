@@ -257,9 +257,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     {
         record.Key = record.Metadata.Id;
 
-        // Update
-        await this._dbConnector.UpdateAsync(
-            conn: connection,
+        await this._dbConnector.UpdateOrInsertAsync(conn: connection,
             collection: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
@@ -267,15 +265,25 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
             timestamp: ToTimestampString(record.Timestamp),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        // Insert if entry does not exists
-        await this._dbConnector.InsertOrIgnoreAsync(
-            conn: connection,
-            collection: collectionName,
-            key: record.Key,
-            metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding),
-            timestamp: ToTimestampString(record.Timestamp),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+        //// Update
+        //await this._dbConnector.UpdateAsync(
+        //    conn: connection,
+        //    collection: collectionName,
+        //    key: record.Key,
+        //    metadata: record.GetSerializedMetadata(),
+        //    embedding: JsonSerializer.Serialize(record.Embedding),
+        //    timestamp: ToTimestampString(record.Timestamp),
+        //    cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        //// Insert if entry does not exists
+        //await this._dbConnector.InsertOrIgnoreAsync(
+        //    conn: connection,
+        //    collection: collectionName,
+        //    key: record.Key,
+        //    metadata: record.GetSerializedMetadata(),
+        //    embedding: JsonSerializer.Serialize(record.Embedding),
+        //    timestamp: ToTimestampString(record.Timestamp),
+        //    cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return record.Key;
     }
