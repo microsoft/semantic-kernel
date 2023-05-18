@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Planning;
 
 namespace SemanticKernel.Service.CopilotChat.Models;
@@ -12,7 +14,7 @@ public class ProposedPlan
     /// Plan object to be approved or invoked.
     /// </summary>
     [JsonPropertyName("proposedPlan")]
-    public Plan plan { get; set; }
+    public Plan Plan { get; set; }
 
     /// <summary>
     /// Create a new proposed plan.
@@ -20,6 +22,6 @@ public class ProposedPlan
     /// <param name="plan">Proposed plan object</param>
     public ProposedPlan(Plan plan)
     {
-        this.plan = plan;
+        this.Plan = plan;
     }
 }

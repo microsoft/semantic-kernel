@@ -31,7 +31,7 @@ public class JsonPathSkill
     {
         if (string.IsNullOrWhiteSpace(json))
         {
-            context.Fail($"Missing input JSON.");
+            context.Fail("Missing input JSON.");
             return string.Empty;
         }
 
@@ -58,7 +58,7 @@ public class JsonPathSkill
     {
         if (string.IsNullOrWhiteSpace(json))
         {
-            context.Fail($"Missing input JSON.");
+            context.Fail("Missing input JSON.");
             return string.Empty;
         }
 

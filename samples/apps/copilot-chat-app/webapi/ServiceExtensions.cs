@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using SemanticKernel.Service.Auth;
-using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service;
 
