@@ -17,7 +17,7 @@ from semantic_kernel.utils.null_logger import NullLogger
 if TYPE_CHECKING:
     import qdrant_client
     from qdrant_client.http import models
-    from qdrant_client.http.models import Distance, VectorParams
+    from qdrant_client.http.models import Distance, VectorParams, CollectionInfo
     from qdrant_client.http.models import CollectionStatus, UpdateStatus, PointStruct
 
 
@@ -26,7 +26,11 @@ class QdrantMemoryStore(MemoryStoreBase):
     _logger: Logger
 
     def __init__(
-        self, hostip: str, port: Optional[int] = 6333, logger: Optional[Logger] = None
+        self,
+        hostip: str,
+        port: Optional[int] = 6333,
+        logger: Optional[Logger] = None,
+        local: Optional[bool] = False,
     ) -> None:
         """Initializes a new instance of the QdrantMemoryStore class.
 
@@ -41,7 +45,11 @@ class QdrantMemoryStore(MemoryStoreBase):
                 "Please install qdrant client using `pip install qdrant-client`."
             )
 
-        self._qdrantclient = qdrant_client(host=hostip, port=port)
+        if local:
+            self._qdrantclient = qdrant_client(host=hostip)
+        else:
+            self._qdrantclient = qdrant_client(host=hostip, port=port)
+
         self._logger = logger or NullLogger()
 
     async def create_collection_async(
@@ -71,6 +79,17 @@ class QdrantMemoryStore(MemoryStoreBase):
             List[str] -- The list of collections.
         """
         return list(self._qdrantclient.get_collections())
+
+    async def get_collection(self, collection_name: str) -> CollectionInfo:
+        """Gets the a collections based upon collection name.
+
+        Returns:
+            CollectionInfo -- Collection Information from Qdrant about collection.
+        """
+        collection_info = self._qdrantclient.get_collection(
+            collection_name=collection_name
+        )
+        return collection_info
 
     async def delete_collection_async(self, collection_name: str) -> None:
         """Deletes a collection.
@@ -127,7 +146,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             wait=True,
             points=[
                 PointStruct(
-                    id=record._id, vector=record._embedding, payload=record._payload
+                    id=record._key, vector=record._embedding, payload=record._payload
                 ),
             ],
         )

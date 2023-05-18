@@ -32,13 +32,13 @@ def qdrant_memory_record():
 
 
 def test_qdrant_constructor():
-    qdrant_mem_store = QdrantMemoryStore
+    qdrant_mem_store = QdrantMemoryStore(":memory:", local=True)
     assert qdrant_mem_store._client is not None
 
 
 @pytest.mark.asyncio
 async def test_create_and_get_collection_async():
-    qdrant_mem_store = QdrantMemoryStore
+    qdrant_mem_store =  QdrantMemoryStore(":memory:", local=True)
 
     await qdrant_mem_store.create_collection_async("test_collection")
     result = await qdrant_mem_store.get_collection_async("test_collection")
@@ -47,7 +47,7 @@ async def test_create_and_get_collection_async():
 
 @pytest.mark.asyncio
 async def test_get_collections_async():
-    qdrant_mem_store = QdrantMemoryStore
+    qdrant_mem_store = QdrantMemoryStore(":memory:", local=True)
 
     await qdrant_mem_store.create_collection_async("test_collection1")
     await qdrant_mem_store.create_collection_async("test_collection2")
@@ -59,11 +59,11 @@ async def test_get_collections_async():
 
 @pytest.mark.asyncio
 async def test_delete_collection_async():
-    qdrant_mem_store = QdrantMemoryStore
+    qdrant_mem_store =  QdrantMemoryStore(":memory:", local=True)
 
-    await qdrant_mem_store.create_collection_async("test_collection")
-    await qdrant_mem_store.delete_collection_async("test_collection")
-    result = await qdrant_mem_store.get_collections_async()
+    await qdrant_mem_store.create_collection_async("test_collection4")
+    await qdrant_mem_store.delete_collection_async("test_collection4")
+    result = await qdrant_mem_store.get_collections()
     assert len(result) == 0
 
     await qdrant_mem_store.create_collection_async("test_collection")
@@ -74,14 +74,12 @@ async def test_delete_collection_async():
 
 @pytest.mark.asyncio
 async def test_does_collection_exist_async():
-    qdrant_mem_store = QdrantMemoryStore
+    qdrant_mem_store =  QdrantMemoryStore(":memory:", local=True)
 
     await qdrant_mem_store.create_collection_async("test_collection")
     result = await qdrant_mem_store.does_collection_exist_async("test_collection")
     assert result is True
 
-    result = await qdrant_mem_store.does_collection_exist_async("test_collection1")
-    assert result is True
-
-    await qdrant_mem_store.delete_collection_async("test_nocollection")
+    await qdrant_mem_store.delete_collection_async("test_collection")
+    result = await qdrant_mem_store.does_collection_exist_async("test_collection")
     assert result is False
