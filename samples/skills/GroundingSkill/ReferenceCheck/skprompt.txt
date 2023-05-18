@@ -1,0 +1,34 @@
+# Task Description
+
+1. Go over each item in the list between the <reference_items> tags and for each item, read through the data between the <context> tags and determine if each item is grounded in any of the data between the <context> tags. Be sure to consider all of the reference items.
+2. When looking for references to the items in (1) look for re-phrasings, alternate names or equivalent meanings in the context in addition to exact matches
+3. As the first part of your response, return a bulleted list of the items in (1) together with an explanation of whether or not they were referred to in the context, making sure to consider step (2) where you note down references in the form of re-phrasings, alternate names or equivalent meanings in the context, as well as exact matches.
+4. Split the list into two sub-lists, those items which are referenced in the context (these are 'grounded') and those which are not (these are 'ungrounded').
+5. Make one last pass over the two lists from (4) and make sure that they are in the list of items between the <reference_items> tags, drop them otherwise.
+6. Please return the two lists (grounded and ungrounded) of items from (6) in the following JSON format:
+   1. Each ungrounded entity should be turned into a dictionary with two keys, 'entity_name' and 'explanation'
+   2. The value of the 'entity_name' should be the name taken from the <reference_items>
+   3. The value of the 'explanation' should be your explanation as to why the entity is ungrounded in the context
+   4. Create a list of these dictionaries from all of your list of ungrounded entities
+   5. Repeat the process with the grounded entities
+   6. Create a dictionary with a key 'grounded' whose value is the list of dictionaries of grounded entities.
+   7. Add a second key, 'ungrounded', to this dictionary, whose value is the list of dictionaries of ungrounded entities
+7. Return the JSON dictionary you have just generated between a <json_block> and a </json_block> tag.
+8. Ensure that you return valid JSON
+9. Any quotes appearing within a string should be escaped by a double backslash
+
+# Task
+
+Below are the reference items, and the context that you need to parse for references to the items.
+
+<reference_items>
+{{$input}}
+</reference_items>
+
+<context>
+{{$reference_context}}
+</context>
+
+Please put your response after the "Response:". Ensure that the content between <json_block> and </json_block> is valid JSON.
+
+Response:
