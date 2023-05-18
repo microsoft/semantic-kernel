@@ -7,78 +7,65 @@ import com.microsoft.semantickernel.orchestration.ContextVariables;
 import javax.annotation.Nullable;
 
 public class FunctionIdBlock extends Block implements TextRendering {
+    private final String skillName;
+
+    private final String functionName;
+
     public FunctionIdBlock(String content) {
         super(content, BlockTypes.FunctionId);
-    }
 
-    @Override
-    public boolean isValid() {
-        return false;
+        String[] functionNameParts = this.getContent().split("\\.");
+        if (functionNameParts.length > 2) {
+            throw new RuntimeException(
+                    "A function name can contain at most one dot separating the skill name from the"
+                            + " function name");
+        }
+
+        if (functionNameParts.length == 2) {
+            this.skillName = functionNameParts[0];
+            this.functionName = functionNameParts[1];
+            return;
+        }
+
+        this.functionName = this.getContent();
+        this.skillName = "";
     }
 
     @Override
     @Nullable
     public String render(ContextVariables variables) {
-        return null;
-    }
-    /*
-    internal override BlockTypes Type => BlockTypes.FunctionId;
-
-    internal string SkillName { get; } = string.Empty;
-
-    internal string FunctionName { get; } = string.Empty;
-
-    public FunctionIdBlock(string? text, ILogger? log = null)
-        : base(text?.Trim(), log)
-    {
-        var functionNameParts = this.Content.Split('.');
-        if (functionNameParts.Length > 2)
-        {
-            this.Log.LogError("Invalid function name `{0}`", this.Content);
-            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                "A function name can contain at most one dot separating the skill name from the function name");
-        }
-
-        if (functionNameParts.Length == 2)
-        {
-            this.SkillName = functionNameParts[0];
-            this.FunctionName = functionNameParts[1];
-            return;
-        }
-
-        this.FunctionName = this.Content;
+        return this.getContent();
     }
 
-    public override bool IsValid(out string errorMsg)
-    {
-        if (!Regex.IsMatch(this.Content, "^[a-zA-Z0-9_.]*$"))
-        {
-            errorMsg = "The function identifier is empty";
+    public boolean isValid() {
+        if (!this.getContent().matches("^[a-zA-Z0-9_.]*$")) {
+            // errorMsg = "The function identifier is empty";
             return false;
         }
 
-        if (HasMoreThanOneDot(this.Content))
-        {
-            errorMsg = "The function identifier can contain max one '.' char separating skill name from function name";
+        if (hasMoreThanOneDot(this.getContent())) {
+            // errorMsg = "The function identifier can contain max one '.' char separating skill
+            // name from function name";
             return false;
         }
 
-        errorMsg = "";
+        // errorMsg = "";
         return true;
     }
 
-    public string Render(ContextVariables? variables)
-    {
-        return this.Content;
+    private static boolean hasMoreThanOneDot(String value) {
+        if (value == null || value.length() < 2) {
+            return false;
+        }
+
+        return value.matches("^.*\\..*\\..*$");
     }
 
-    private static bool HasMoreThanOneDot(string? value)
-    {
-        if (value == null || value.Length < 2) { return false; }
-
-        int count = 0;
-        return value.Any(t => t == '.' && ++count > 1);
+    public String getSkillName() {
+        return skillName;
     }
 
-     */
+    public String getFunctionName() {
+        return functionName;
+    }
 }

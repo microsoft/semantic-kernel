@@ -28,7 +28,7 @@ public interface PromptTemplate {
      */
     Mono<String> renderAsync(SKContext executionContext, PromptTemplateEngine promptTemplateEngine);
 
-    public interface Builder {
-        public PromptTemplate build(String promptTemplate, PromptTemplateConfig config);
+    interface Builder {
+        PromptTemplate build(String promptTemplate, PromptTemplateConfig config);
     }
 }

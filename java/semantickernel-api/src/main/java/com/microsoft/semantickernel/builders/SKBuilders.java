@@ -5,8 +5,10 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
+import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
@@ -40,7 +42,15 @@ public class SKBuilders {
         return BuildersSingleton.INST.getPromptTemplateBuilder();
     }
 
+    public static PromptTemplateEngine.Builder promptTemplateEngine() {
+        return BuildersSingleton.INST.getPromptTemplateEngineBuilder();
+    }
+
     public static ContextVariables.Builder variables() {
         return BuildersSingleton.INST.variables();
+    }
+
+    public static SKContext.Builder context() {
+        return BuildersSingleton.INST.context();
     }
 }

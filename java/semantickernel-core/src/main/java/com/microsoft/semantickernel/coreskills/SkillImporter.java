@@ -6,8 +6,6 @@ import com.microsoft.semantickernel.skilldefinition.FunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 
-import reactor.core.publisher.Mono;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,9 +19,6 @@ public class SkillImporter {
                         .filter(method -> method.isAnnotationPresent(DefineSKFunction.class))
                         .map(
                                 method -> {
-                                    if (!method.getReturnType().isAssignableFrom(Mono.class)) {
-                                        throw new RuntimeException("Skill must return a Mono");
-                                    }
                                     return NativeSKFunction.fromNativeMethod(
                                             method,
                                             skillInstance,

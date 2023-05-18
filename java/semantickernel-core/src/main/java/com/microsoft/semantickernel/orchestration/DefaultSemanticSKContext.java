@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
@@ -30,5 +32,14 @@ public class DefaultSemanticSKContext extends AbstractSKContext<SemanticSKContex
             @Nullable SemanticTextMemory memory,
             @Nullable ReadOnlySkillCollection skillCollection) {
         return new DefaultSemanticSKContext(variables, memory, skillCollection);
+    }
+
+    public static class Builder implements SKContext.Builder {
+
+        @Override
+        public SKContext build(ReadOnlySkillCollection skills) {
+            return new DefaultSemanticSKContext(
+                    SKBuilders.variables().build(), NullMemory.getInstance(), skills);
+        }
     }
 }

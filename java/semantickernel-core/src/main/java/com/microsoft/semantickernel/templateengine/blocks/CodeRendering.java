@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.templateengine.blocks; // Copyright (c) Mic
 
 import com.microsoft.semantickernel.orchestration.SKContext;
 
-import java.util.concurrent.FutureTask;
+import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 
@@ -18,5 +18,5 @@ public interface CodeRendering {
     /// <param name="context">SK execution context</param>
     /// <returns>Rendered content</returns>
     @Nullable
-    FutureTask<String> renderCodeAsync(SKContext context);
+    Mono<String> renderCodeAsync(SKContext context);
 }

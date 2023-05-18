@@ -147,4 +147,9 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
             @Nullable ReadOnlySkillCollection skills);
 
     ContextType buildContext();
+
+    Mono<ContextType> invokeWithCustomInputAsync(
+            ContextVariables variablesClone,
+            SemanticTextMemory semanticMemory,
+            ReadOnlySkillCollection skills);
 }
