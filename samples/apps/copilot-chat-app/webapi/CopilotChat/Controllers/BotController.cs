@@ -44,7 +44,7 @@ public class BotController : ControllerBase
         IMemoryStore memoryStore,
         ChatSessionRepository chatRepository,
         ChatMessageRepository chatMessageRepository,
-        IOptionsSnapshot<AIServiceOptions> aiServiceOptions,
+        IOptions<AIServiceOptions> aiServiceOptions,
         IOptions<BotSchemaOptions> botSchemaOptions,
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<BotController> logger)
@@ -54,7 +54,7 @@ public class BotController : ControllerBase
         this._chatRepository = chatRepository;
         this._chatMessageRepository = chatMessageRepository;
         this._botSchemaOptions = botSchemaOptions.Value;
-        this._embeddingOptions = aiServiceOptions.Get(AIServiceOptions.EmbeddingPropertyName);
+        this._embeddingOptions = aiServiceOptions.Value;
         this._documentMemoryOptions = documentMemoryOptions.Value;
     }
 
@@ -87,7 +87,7 @@ public class BotController : ControllerBase
         {
             return this.BadRequest("Incompatible schema. " +
                                    $"The supported bot schema is {this._botSchemaOptions.Name}/{this._botSchemaOptions.Version} " +
-                                   $"for the {this._embeddingOptions.DeploymentOrModelId} model from {this._embeddingOptions.AIService}. " +
+                                   $"for the {this._embeddingOptions.Models.Embedding} model from {this._embeddingOptions.Type}. " +
                                    $"But the uploaded file is with schema {bot.Schema.Name}/{bot.Schema.Version} " +
                                    $"for the {bot.EmbeddingConfigurations.DeploymentOrModelId} model from {bot.EmbeddingConfigurations.AIService}.");
         }
@@ -170,8 +170,8 @@ public class BotController : ControllerBase
         // The app can define what schema/version it supports before the community comes out with an open schema.
         return externalBotSchema.Name.Equals(botSchemaOptions.Name, StringComparison.OrdinalIgnoreCase)
                && externalBotSchema.Version == botSchemaOptions.Version
-               && externalBotEmbeddingConfig.AIService == embeddingOptions.AIService
-               && externalBotEmbeddingConfig.DeploymentOrModelId.Equals(embeddingOptions.DeploymentOrModelId, StringComparison.OrdinalIgnoreCase);
+               && externalBotEmbeddingConfig.AIService == embeddingOptions.Type
+               && externalBotEmbeddingConfig.DeploymentOrModelId.Equals(embeddingOptions.Models.Embedding, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -221,8 +221,8 @@ public class BotController : ControllerBase
             // get the embedding configuration
             EmbeddingConfigurations = new BotEmbeddingConfig
             {
-                AIService = this._embeddingOptions.AIService,
-                DeploymentOrModelId = this._embeddingOptions.DeploymentOrModelId
+                AIService = this._embeddingOptions.Type,
+                DeploymentOrModelId = this._embeddingOptions.Models.Embedding
             }
         };
 
