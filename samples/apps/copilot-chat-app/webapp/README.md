@@ -15,10 +15,24 @@ Aside from debugging within browsers, you can launch a debug session in Visual S
 > Go [here](https://code.visualstudio.com/docs/typescript/typescript-debugging) to learn more about debugging client-code in Visual Studio Code.
 
 ## Serve a production build
-By default, we run the app using `yarn start`, which starts a local development server. This enables some additional development behaviors and debuggings features, such as `React.StrictMode`, which will render the app twice to find bug caused by impure rendering.
+By default, we run the app using `yarn start`, which starts a local development server. This enables some additional development behaviors and debuggings features, such as `React.StrictMode`, which will render the app twice to find bugs caused by impure rendering.
 
 If you want to serve a production build of the WebApp (as static files) without any development-specific features,
-1. Run `yarn build`. 
+1. Run  
+    ``` 
+    yarn build 
+    ```
+    
     This will generate an optimized and minified production-ready build of the app in the `/build` directory.
-1. Once the build is complete, and you have the `/build` directory, run `yarn serve`. 
-    This will start the server and serve the production build.
+1. Once the build is complete, and you have the `/build` directory, run 
+
+    ``` 
+    yarn serve 
+    ```
+    
+    This will start the server and serve the production build. You should see an output similar to:
+    ```
+    Serving!                                
+    - Local:    http://localhost:3000       
+    - Network:  http://192.168.0.100:3000  
+    ```
