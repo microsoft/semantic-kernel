@@ -330,7 +330,7 @@ public sealed class Plan : ISKFunction
                 return result;
             }
 
-            context.Variables.Update(result.Result.ToString());
+            context.Variables.Update(result.Result);
         }
         else
         {

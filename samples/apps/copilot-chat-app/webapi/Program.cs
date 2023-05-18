@@ -1,7 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using SemanticKernel.Service.CopilotChat.Extensions;
 
 namespace SemanticKernel.Service;
 
@@ -27,7 +36,12 @@ public sealed class Program
         builder.Services
             .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Program>>()) // some services require an un-templated ILogger
             .AddOptions(builder.Configuration)
-            .AddSemanticKernelServices()
+            .AddSemanticKernelServices();
+
+        // Add CopilotChat services.
+        builder.Services
+            .AddCopilotChatOptions(builder.Configuration)
+            .AddCopilotChatPlannerServices()
             .AddPersistentChatStore();
 
         // Add in the rest of the services.
